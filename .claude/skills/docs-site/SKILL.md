@@ -92,16 +92,16 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   **Editor UI captures (Inspector, windows, pickers) do not** — they stay in the dark editor theme in both site
   themes; never report a missing `-light` for them.
 - **Editor captures have no frame around them.** In `/docs` and `/tutorials` an image renders in a plain
-  `doc-image-panel` wrapper (`src/theme/MDXComponents/Img`): it fills the article, and the capture's own 1px edge and
-  rounded corners are the only frame — never add a window, padding or shadow around it. The exception is
-  `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page, which keeps the bare scene look.
-  So name inspector captures anything but `demo`/`scene`, and name scene footage exactly that.
-  A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (background recoloured, no edge).
-- `.sample-scene` (the background-recolouring filter) is applied by `themedImages.js` only to `demo`/`scene`
-  files inside a **hardcoded list of sample folders** — a new sample must be added to that regex.
+  full-width wrapper (`doc-image-panel`, `src/theme/MDXComponents/Img`): no window, padding or shadow, the
+  capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
+  which keeps the bare scene look. So name inspector captures anything but `demo`/`scene`, and name scene footage
+  exactly that. A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (recoloured background).
+- Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
+  `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
+  and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
-- Click or Enter opens the image in a modal (Esc closes). Images outside
-  `/docs` and `/tutorials` are capped at 640×520; article captures and `.sample-scene` media fill the article.
+- Click or Enter opens the image in a modal (Esc closes). Bare images are capped at 640×520;
+  captures in `doc-image-panel` and `.sample-scene` media fill the article.
 - Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
 - A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
   (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
@@ -164,7 +164,7 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - **Code blocks fit the article width** without horizontal scrolling. Site table columns are equal and fixed, so
   long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
-  and previews follow the Introduction's feature cards: site tokens, one edge, no shadow, no frame around a capture.
+  and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
 - Text stays left-aligned (never justified) and fills the article width.
 - A bug found in package code while writing docs is not fixed on the docs branch: report it and offer a separate
   task in its own worktree.
@@ -183,8 +183,8 @@ to refresh the root `README.md`.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
-4. If the sample ships `demo`/`scene` captures, add its folder to the sample regex in
-   `Website/src/remark/themedImages.js`.
+4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its `Samples~/` folder name
+   to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
 5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
    `package.json` → `samples`.
 
@@ -220,6 +220,10 @@ Dev servers serve one locale at a time and are only for quick hot-reload iterati
 don't reload config or remark plugins, and the user does not look at them: `website-dev` / `website-dev-ru` in
 `.claude/launch.json`, started with `preview_start`. They use `autoPort`, so dev servers of different worktrees get
 different ports. There is no launch entry for the production build on purpose: only `serve-all.sh` starts it.
+Both run `npm run start` / `start:ru`, so `prestart` runs `sync-i18n` first: it creates `Website/tutorials/`,
+`changelog/` and `i18n/`, without which a fresh worktree's `docusaurus start` fails. `Documentation/ru/**`, sample
+READMEs and the changelogs reach the site as copies: after editing them run `npm --prefix Website run sync-i18n`
+for a running dev server to see the change.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
@@ -270,15 +274,18 @@ regenerate or `git checkout Website/api` before building:
 3. `docfx-postprocess.mjs` makes it MDX-safe: `<xref>` → links (own pages, learn.microsoft.com, Unity Scripting
    Reference), `<pre><code>` → fenced code, heading anchors as `{#id}`, escaped `<T`/`{}`, no "Inherited Members",
    front matter with a short `sidebar_label`, and `toc.yml` → `sidebar.js` (namespace → Classes/Interfaces/…
-   groups). A type name that appears in two namespaces (`TypeExtensions`, `VisualElementExtensions`) gets a
-   namespace suffix in its label — Docusaurus derives one translation key per label and the `ru` build fails
-   on duplicates.
+   groups). A type name that appears in two namespaces (`VisualElementExtensions` in `UIElements` and
+   `UIElements.Editors`) gets a namespace suffix in its label — Docusaurus derives one translation key per label
+   and the `ru` build fails on duplicates. Unity links point at the Scripting Reference of the Editor in
+   `Aspid.FastTools/ProjectSettings/ProjectVersion.txt` (members move between versions);
+   `node --test scripts/unity-script-reference.test.mjs` checks the URL builder.
 
 `Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
 prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the
 postprocess script and regenerate. Translations are not generated; the `ru` locale falls back to the English
-pages. The Math satellite assembly is not documented — it compiles only when `com.unity.mathematics` is
-installed, which this project does not.
+pages. The Math satellite assembly (`Aspid.FastTools.VisualElements.Math`, `INotifyValueChangedMathExtensions`) is
+not in `/api` only because `ASSEMBLIES` in `docfx-projects.mjs` does not list it; it compiles in this project
+(`com.unity.mathematics` comes in transitively), so documenting it means adding it there.
 
 ## Design
 
@@ -287,12 +294,17 @@ The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as
 sidebar footer appearance menu, next to the theme (`NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
 `html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. Colour things with `--venom-accent*`
 / `--ifm-color-primary*`, never a literal green, unless it mimics Unity or means success (`--venom-emerald`).
-Fonts: IBM Plex Serif/Mono from Google Fonts, iA Writer Quattro body self-hosted in `src/fonts/` (OFL, keep the
-licence file). Prism themes are Ayu-based, in `src/prism/venom.js`.
+Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) from Google Fonts; iA Writer Quattro, the
+samples' editor font, is self-hosted in `src/fonts/` (OFL, keep the licence file) for navigation labels only — sidebar
+and TOC, `--venom-font-family-nav`. Prism themes are Ayu-based, in `src/prism/venom.js`, with a transparent background.
 
 ### Introduction feature cards
 
-There is no landing page: `/` redirects to `/docs`. On the introduction, `src/remark/introBanner.js` turns the README's
+There is no landing page: `/` redirects to `/docs`. The README banner GIF (6 MB) stays for GitHub only: the plugin
+renders it as `src/components/IntroBanner`, which plays `media/banner.mp4` with the poster `media/banner-poster.jpg`.
+Both are encoded from the GIF — re-encode them when it changes (`ffmpeg -i <gif> -movflags +faststart -c:v libx264
+-pix_fmt yuv420p -preset veryslow -crf 22 -tune animation -an -vf fps=25 banner.mp4`, poster: `-frames:v 1 -q:v 4`).
+On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
 there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`.
@@ -300,7 +312,11 @@ The Inspector GIFs of the first two cards are cropped in `custom.css` to hide th
 
 The same plugin replaces the Installation section's instruction, URL block and version note with
 `src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with a toggle
-between the latest preview and `#upm-preview/<packageVersion>` (`customFields.packageVersion` from `package.json`).
+between the latest version and `<url>/<packageVersion>` (`customFields.packageVersion` from `package.json`). The
+README's URL carries the channel — `#upm-preview` for a prerelease, `#upm` for a stable version — and
+`scripts/set-version.sh` switches it together with the badge label. The panel pins from the branch its own URL names,
+out of `customFields.packageVersions` (the tags of both branches, per branch); `UPM_BRANCH` in `docusaurus.config.js`
+follows the `package.json` version the same way and only decides where the working-tree version is offered.
 Its text is written in the component per locale, so update it when the README's install steps change.
 
 `static/img/logo.png` and `favicon.png` are copies of the package icon
@@ -317,16 +333,50 @@ below 997px the navigation uses Docusaurus' mobile menu. On desktop (≥997px) t
 switcher built from the navbar's left items, search), scrolling document list, pinned footer (GitHub,
 language, theme).
 
-Admonitions are outline-only: a coloured border and heading on the article surface, inline code in the neutral chip.
-`src/components/BackgroundWindows` cuts windows into the reading surface for `.doc-background-window` elements;
-since captures lost their frame nothing carries that class. `DotRipple` draws the click ripple in the accent colour everywhere.
+Blocks follow the admonitions: a frame on the article surface, no fill of their own. Admonitions carry a coloured
+2px border and heading; code blocks, tables, `<details>`, cards, panels and the diagrams (`StyleSides`,
+`ProfilerHierarchy`, the feature previews) a 2px `--venom-line-strong` frame with the 12px `--ifm-pre-border-radius`.
+Their surface is `--venom-block-surface` (transparent), or `--venom-reading-surface` where it must stay opaque (sticky
+cells). A fill is kept only where content needs it: inline code chips (`--ifm-code-background`), Unity mock-ups (their editor
+skin) and the letterbox behind captures. Controls and popovers (section switcher, search, floating TOC, the install
+version list) are opaque in the article's own `--venom-reading-surface`, so the page has one surface colour, with a
+1px frame. Radii come in three steps: 12px for blocks, 10px for buttons, popovers, dialogs and selected items (sidebar,
+search results), 6px for small plaques (the Esc/Close keys, `kbd`, status badges, accent swatches, items inside a
+popover); inline code keeps 4px so it does not turn into a pill. Unity mock-ups keep the editor's own radii. Table rows have no zebra; the header is muted and closed by a 2px rule, its inline code without a chip.
+Captures have no frame around them (see Images).
+`DotRipple` draws the click ripple in the accent colour on the empty canvas around the article.
+
+A selection mark sits on the frame line, not inside it, and matches its 2px: the picked call in `StyleSides`, the
+selected row in `ProfilerHierarchy`, the marked code lines in `AgentSession` and the introduction's animated previews,
+the install panel's tab underline (which runs the strip's side padding past its label on both sides, the first one
+from the card's edge). At a rounded corner the mark stops where the straight edge ends. Where the block scrolls or
+clips (Hierarchy, the feature cards), this needs `overflow: clip; overflow-clip-margin: border-box` inside
+`@supports`; Safari lacks it and keeps the mark just inside the frame.
+
+Colours in the **light theme** have roles, so nothing is darkened more than contrast needs (a darker tone reads muddy);
+the dark theme's colours are bright enough to serve every role and are left alone:
+
+- `--venom-accent`: text (links, the picked item) — the mark hue darkened only to 4.5:1 on white;
+- `--venom-canvas-accent`: text on the grey canvas (the sidebar's active item, the TOC) — 4.5:1 there;
+- `--venom-accent-mark`: marks and tints (frame bars, underlines, outlines, focus rings, dots, `--venom-glow*`) — 3:1;
+- `--venom-accent-fill` / `-fill-ink`: filled surfaces with text (the primary button, the active install step) —
+  the text accent with white ink, except yellow (bright amber with dark ink) and mono (a mid grey).
+
+Light yellow leans amber, since a darkened true yellow turns olive. Status colours split the same way:
+`--venom-{emerald,sapphire,ruby,amber}` for an admonition's heading and icon, `…-mark` for its frame. The light Prism
+theme (`src/prism/venom.js`) is Ayu Light's hues darkened only to 4.6:1 on the inline-code chip. Static light SVGs that
+draw code or marks (`Documentation/Images/*-light.svg`) use the same values; update them when the palette changes.
 
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow
-keys, Enter and Esc. `node --test scripts/search.test.mjs` checks matching and Markdown extraction.
+keys, Enter and Esc. `node --test scripts/*.test.mjs` in `Website/` (`npm test`) checks matching, Markdown extraction and index URLs.
+
+`src/components/DotRipple` draws the click ripples on the dot background; the number of waves is unlimited, and
+`waves.js` culls, per grid row, the waves whose ring misses it. `node --test scripts/dot-ripple.test.mjs` checks
+that no dot of a ring is dropped.
 
 ## Deploy
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package `Documentation/`,
 a sample's `Documentation/`, the root `README.md` or `CHANGELOG*.md`, and on PRs (build only); it runs
-`check-readme` before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
+`check-readme` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.

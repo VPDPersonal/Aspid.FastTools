@@ -31,6 +31,12 @@ Switching a component type with ComponentTypeSelector
 
 The selected class must have its own script file that Unity recognizes. If no suitable script is found, the type stays unchanged and the Console shows a warning.
 
+The switch follows the rules of **Add Component**: it first adds the components the new class lists in `[RequireComponent]`, and one Undo reverts the switch together with them. The type stays unchanged and the Console shows a warning when:
+
+- the new class is `[DisallowMultipleComponent]` and the GameObject already has one;
+- the switch would remove a class another component requires;
+- a component the new class requires cannot be added, such as an abstract class like `Collider`.
+
 ## Package sample
 
 Try component type switching in the [Types sample](../Samples~/Types/Documentation/README.md).

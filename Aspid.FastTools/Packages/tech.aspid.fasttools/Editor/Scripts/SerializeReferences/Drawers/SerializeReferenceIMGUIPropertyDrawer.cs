@@ -223,7 +223,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     canFix ? "Fix" : null,
                     canFix
                         ? $"Missing type: {typeName}.\nClick Fix to re-point this reference to an existing type, keeping its data."
-                        : $"Missing type: {typeName}.\nOpen this asset from the Project window to repair it.",
+                        : $"Missing type: {typeName}.\n{SerializeReferenceHelpers.GetMissingTypeRepairHint(property)}",
                     canFix
                         ? () =>
                         {
@@ -274,7 +274,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // "Make unique" stays right-pinned.
                 var noticeRect = new Rect(content.x - FoldoutArrowIndent, y,
                     content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
-                var persistent = property.Persistent();
 
                 // Navigation needs the live property: expansion state is cached per SerializedObject, so the
                 // ancestor isExpanded writes must go through the inspector's own.
@@ -283,7 +282,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     sharedIndex > 0 ? $"Shared reference #{sharedIndex}" : "Shared reference",
                     "Make unique",
                     SerializeReferenceHelpers.BuildSharedReferenceDetail(property),
-                    () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
+                    () => SerializeReferenceHelpers.MakeReferenceUnique(property),
                     ridColor: indexColor,
                     onMessageClick: () => SerializeReferenceSharedNavigation.NavigateFrom(property));
 
@@ -392,8 +391,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
-                currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
+                currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(property, currentType),
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
                     : Type.GetType(assemblyQualifiedName, throwOnError: false)));
@@ -402,6 +402,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
+                SerializeReferenceMissingListGuard.NoteReplaced(persistent);
+
                 // Each target gets its own instance built from that target's previous value, so the reference is
                 // never aliased across objects. One Undo step covers them all.
                 if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
@@ -418,6 +420,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var single = persistent.managedReferenceValue;
                 persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, single));
                 persistent.isExpanded = type is not null;
+                SerializeReferenceHelpers.InvalidateReferenceMemos();
             }
         }
 
@@ -483,12 +486,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         name => SerializeReferenceTemplates.SaveConfirmed(name, value)));
             }
 
+            var hasTemplates = false;
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
             {
                 if (fieldType != null && !fieldType.IsAssignableFrom(template.Type)) continue;
                 if (!filter(template.Type)) continue;
                 var name = template.Name;
                 menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => ApplyTemplate(persistent, name));
+                hasTemplates = true;
+            }
+
+            var missingTemplates = SerializeReferenceTemplates.UnresolvedNames().Count;
+            if (missingTemplates > 0)
+            {
+                if (hasTemplates) menu.AddSeparator("Paste Template/");
+                menu.AddItem(new GUIContent($"Paste Template/Remove Missing ({missingTemplates})…"), false,
+                    SerializeReferenceTemplates.RemoveUnresolvedConfirmed);
             }
 
             menu.ShowAsContext();
@@ -496,6 +509,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Paste(SerializedProperty target)
             {
+                SerializeReferenceMissingListGuard.NoteReplaced(target);
+
                 if (SerializeReferenceHelpers.IsEditingMultipleObjects(target))
                 {
                     SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
@@ -511,6 +526,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var value = SerializeReferenceClipboard.CreateInstance();
                 target.SetManagedReferenceAndApply(value);
                 target.isExpanded = value is not null;
+                SerializeReferenceHelpers.InvalidateReferenceMemos();
             }
         }
 
@@ -530,6 +546,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             persistent.SetManagedReferenceAndApply(instance);
             persistent.isExpanded = true;
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
         }
 
         private static string GetCaption(SerializedProperty property, Type currentType, out string missingTooltip)

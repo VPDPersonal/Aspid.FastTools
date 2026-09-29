@@ -13,7 +13,8 @@ const TEXT = {
       <>Choose <b>+ → Install package from git URL…</b></>,
       <>Paste the URL and press <b>Install</b></>,
     ],
-    latest: 'Latest preview',
+    // The README's URL picks the channel: `#upm-preview` for a prerelease, `#upm` for a stable version.
+    latest: {preview: 'Latest preview', release: 'Latest release'},
     pinned: 'Pin',
     pick: 'Choose a version',
     versions: 'All versions',
@@ -25,7 +26,7 @@ const TEXT = {
       <>Выберите <b>+ → Install package from git URL…</b></>,
       <>Вставьте URL и нажмите <b>Install</b></>,
     ],
-    latest: 'Последняя',
+    latest: {preview: 'Последняя', release: 'Последняя'},
     pinned: 'Версия',
     pick: 'Выберите версию',
     versions: 'Все версии',
@@ -165,8 +166,11 @@ export default function InstallPanel({url}) {
   const text = TEXT[i18n.currentLocale] ?? TEXT.en;
   const ref = useRef(null);
   const [frame, setFrame] = useFrames(ref);
+  // Pin from the branch the README's URL names (`...git#upm-preview`), not the working tree's.
+  const branch = url.split('#')[1];
+  const versions = packageVersions[branch] ?? [];
   const [pinned, setPinned] = useState(false);
-  const [version, setVersion] = useState(packageVersion);
+  const [version, setVersion] = useState(versions.includes(packageVersion) ? packageVersion : versions[0]);
   const shown = pinned ? `${url}/${version}` : url;
   // Another version types another URL, so the walk-through plays again from the start.
   const choose = (nextPinned, nextVersion = version) => {
@@ -195,8 +199,8 @@ export default function InstallPanel({url}) {
       <div className={styles.bar}>
         <div className={styles.meta}>
           <div className={styles.segmented} role="radiogroup">
-            <button type="button" role="radio" aria-checked={!pinned} onClick={() => choose(false)}>{text.latest}</button>
-            <VersionTab versions={packageVersions} value={version} active={pinned} text={text} onChoose={(value) => choose(true, value)} />
+            <button type="button" role="radio" aria-checked={!pinned} onClick={() => choose(false)}>{text.latest[branch === 'upm-preview' ? 'preview' : 'release']}</button>
+            {versions.length > 0 && <VersionTab versions={versions} value={version} active={pinned} text={text} onChoose={(value) => choose(true, value)} />}
           </div>
           <a className={styles.versions} href={RELEASES} target="_blank" rel="noopener noreferrer">{text.versions}</a>
         </div>

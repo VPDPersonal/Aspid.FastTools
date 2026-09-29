@@ -8,7 +8,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceTypeUsageIndex
     {
-        // Identity is (asset, document, rid); the rest is payload.
+        // Identity is (asset, document, rid, override target); the rest is payload.
         public readonly struct Usage : IEquatable<Usage>
         {
             public readonly string Guid;
@@ -17,21 +17,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public readonly bool Resolves;
             public readonly ManagedTypeName StoredType;
 
-            public Usage(string guid, long fileId, long rid, bool resolves, ManagedTypeName storedType)
+            // Set by a prefab instance override: FileId is the PrefabInstance document, which the YAML repair cannot
+            // edit.
+            public readonly bool IsOverride;
+
+            // The overridden object of an override, zero and empty otherwise. Two components of one instance can
+            // override the same rid, so it is part of the identity.
+            public readonly long TargetFileId;
+            public readonly string TargetGuid;
+
+            public Usage(string guid, long fileId, long rid, bool resolves, ManagedTypeName storedType, bool isOverride = false,
+                long targetFileId = 0, string targetGuid = null)
             {
                 Guid = guid ?? string.Empty;
                 FileId = fileId;
                 Rid = rid;
                 Resolves = resolves;
                 StoredType = storedType;
+                IsOverride = isOverride;
+                TargetFileId = targetFileId;
+                TargetGuid = targetGuid ?? string.Empty;
             }
 
             public bool Equals(Usage other) =>
-                string.Equals(Guid, other.Guid, StringComparison.Ordinal) && FileId == other.FileId && Rid == other.Rid;
+                string.Equals(Guid, other.Guid, StringComparison.Ordinal) && FileId == other.FileId && Rid == other.Rid &&
+                TargetFileId == other.TargetFileId && string.Equals(TargetGuid, other.TargetGuid, StringComparison.Ordinal);
 
             public override bool Equals(object obj) => obj is Usage other && Equals(other);
 
-            public override int GetHashCode() => unchecked((Guid.GetHashCode() * 397 ^ FileId.GetHashCode()) * 397 ^ Rid.GetHashCode());
+            public override int GetHashCode() => unchecked(
+                (((Guid.GetHashCode() * 397 ^ FileId.GetHashCode()) * 397 ^ Rid.GetHashCode()) * 397 ^
+                    TargetFileId.GetHashCode()) * 397 ^ TargetGuid.GetHashCode());
         }
 
         private static Dictionary<string, HashSet<Usage>> _index;
@@ -143,18 +159,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void AddAsset(string path, string guid)
         {
+            foreach (var usage in CollectUsages(path, guid))
+                AddUsage(SerializeReferenceHelpers.StoredTypeKey(usage.StoredType), usage);
+        }
+
+        // RefIds entries plus the types set by prefab instance overrides, which live outside any RefIds block.
+        public static IEnumerable<Usage> CollectUsages(string path, string guid) =>
+            CollectUsages(SerializeReferenceYaml.ReadLines(path), guid);
+
+        // One read feeds both passes, so a project sweep reads each file once; lines is null for an unreadable file.
+        public static IEnumerable<Usage> CollectUsages(string[] lines, string guid)
+        {
+            if (lines is null) yield break;
+
             // Data-only: resolving display names would load every asset.
-            foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+            foreach (var document in SerializeReferenceGraphScanner.Build(lines))
             {
                 foreach (var node in document.Nodes)
                 {
                     if (node.StoredType.IsEmpty) continue;
-
-                    var key = SerializeReferenceHelpers.StoredTypeKey(node.StoredType);
-                    AddUsage(key, new Usage(guid, document.FileId, node.Rid, node.Resolves, node.StoredType));
+                    yield return new Usage(guid, document.FileId, node.Rid, node.Resolves, node.StoredType);
                 }
             }
+
+            foreach (var entry in SerializeReferenceYamlEditor.FindPrefabOverrideReferences(lines))
+            {
+                yield return new Usage(guid, entry.FileId, entry.Rid,
+                    SerializeReferenceHelpers.StoredTypeResolves(entry.StoredType), entry.StoredType, isOverride: true,
+                    entry.TargetFileId, entry.TargetGuid);
+            }
         }
+
+        // A cheap probe a sweep may run before CollectUsages: a file with no such line holds no usage at all.
+        public static bool MayHoldUsages(string line) =>
+            line.IndexOf("RefIds:", StringComparison.Ordinal) >= 0 ||
+            line.IndexOf("managedReferences[", StringComparison.Ordinal) >= 0;
 
         private static void AddUsage(string key, Usage usage)
         {

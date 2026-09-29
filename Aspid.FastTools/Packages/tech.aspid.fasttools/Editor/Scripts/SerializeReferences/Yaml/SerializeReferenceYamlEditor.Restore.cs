@@ -9,6 +9,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static partial class SerializeReferenceYamlEditor
     {
+        private static readonly System.Random _ridRandom = new();
+
+        private static readonly Regex _anyRid = new(@"rid:\s*(?<rid>-?\d+)", RegexOptions.Compiled);
+
         // Captures the full RefIds entry block behind a top-level array element, verbatim indentation and all — the
         // exact text needed to re-materialize it later. The missing-list guard snapshots with this BEFORE a list
         // resize destroys the element, since Unity collapses a named missing rid into the anonymous sentinel.
@@ -51,9 +55,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Re-points the array element at a fresh rid — one past the document's maximum, so it collides with nothing
-        // surviving — and re-inserts the captured entry under it. It acts only while the element holds a null id, so
-        // a slot the user has since re-assigned is never clobbered. The caller reimports the asset.
+        // Re-points the array element at a free rid and re-inserts the captured entry under it. It acts only while the
+        // element holds a null id, so a slot the user has since re-assigned is never clobbered. The caller reimports
+        // the asset.
         public static bool TryRestoreArrayElementReference(string assetPath, long fileId, string elementPath,
             IReadOnlyList<string> entryLines)
         {
@@ -78,7 +82,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return false;
                 if (currentRid >= 0) return false;
 
-                var freshRid = NextFreeRid(lines, start, end);
+                var freshRid = PickRestoreRid(lines, start, end, entryLines);
 
                 var pointerIndent = IndentOf(lines[pointerLine]);
                 lines[pointerLine] = new string(' ', pointerIndent) + $"- rid: {freshRid}";
@@ -92,13 +96,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (i == refIdsStart) result.AddRange(entry);
                 }
 
-                WritePreservingNewlines(assetPath, result);
+                if (!TryWritePreservingNewlines(assetPath, result)) return false;
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
             }
             catch (Exception exception)
             {
                 Debug.LogError($"[Aspid FastTools] Failed to restore managed reference at '{elementPath}' in '{assetPath}': {exception}");
+                return false;
+            }
+        }
+
+        // The element pointers of a top-level array field, in order. Read straight from disk, never through the probe
+        // cache, because the missing-list guard compares the file before a save with the file after it.
+        public static bool TryReadTopLevelArrayRids(string assetPath, long fileId, string fieldName, out List<long> rids)
+        {
+            rids = null;
+
+            try
+            {
+                if (string.IsNullOrEmpty(fieldName)) return false;
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
+
+                var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false;
+
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return false;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return false;
+
+                var found = new List<long>();
+                if (!TryCollectArrayElementPointers(lines, start, refIdsStart, fieldName, null, found)) return false;
+
+                rids = found;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[Aspid FastTools] Failed to read array '{fieldName}' in '{assetPath}': {exception}");
                 return false;
             }
         }
@@ -197,6 +234,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             pointerLine = -1;
             currentRid = 0;
 
+            var pointerLines = new List<int>();
+            var rids = new List<long>();
+            if (!TryCollectArrayElementPointers(lines, start, fieldsEnd, fieldName, pointerLines, rids)) return false;
+            if (index < 0 || index >= rids.Count) return false;
+
+            pointerLine = pointerLines[index];
+            currentRid = rids[index];
+            return true;
+        }
+
+        // Collects the "- rid: N" element lines of the top-level array field; false when the field is not found or an
+        // element id does not parse. pointerLines is optional.
+        private static bool TryCollectArrayElementPointers(string[] lines, int start, int fieldsEnd, string fieldName,
+            List<int> pointerLines, List<long> rids)
+        {
             var fieldPattern = new Regex($@"^(?<lead>\s*){Regex.Escape(fieldName)}:\s*$");
             var itemPattern = new Regex(@"^(?<lead>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$");
 
@@ -213,7 +265,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var fieldIndent = field.Groups["lead"].Length;
                 if (topIndent >= 0 && fieldIndent != topIndent) continue;
-                var count = 0;
 
                 for (var j = i + 1; j < fieldsEnd; j++)
                 {
@@ -227,36 +278,53 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         continue;
                     }
 
-                    if (count == index)
-                    {
-                        pointerLine = j;
-                        return long.TryParse(item.Groups["rid"].Value, out currentRid);
-                    }
+                    if (!long.TryParse(item.Groups["rid"].Value, out var rid)) return false;
 
-                    count++;
+                    pointerLines?.Add(j);
+                    rids.Add(rid);
                 }
 
-                return false;
+                return true;
             }
 
             return false;
         }
 
-        // The smallest positive id greater than every "rid: N" in the document. Scans both field pointers and RefIds
-        // entries so a reused id can never alias a surviving reference.
-        private static long NextFreeRid(string[] lines, int start, int end)
+        // Prefers the snapshot's own rid: Unity has just dropped it, and instance overrides keyed to it
+        // ("managedReferences[rid].field") keep applying. Otherwise a random positive 63-bit id, as Unity allocates —
+        // never "max + 1": Unity hands out ids sequentially within a session, so the base's max + 1 is often the id
+        // of an override a variant, nested prefab or scene already holds, and the two would merge into one entry.
+        private static long PickRestoreRid(string[] lines, int start, int end, IReadOnlyList<string> entryLines)
         {
-            var ridPattern = new Regex(@"rid:\s*(?<rid>-?\d+)");
-            var max = 0L;
+            var used = CollectRids(lines, start, end);
+
+            if (SerializeReferenceYaml.TryParseEntryHeaderRid(entryLines[0], out var original)
+                && original > 0 && !used.Contains(original))
+                return original;
+
+            var buffer = new byte[8];
+            while (true)
+            {
+                _ridRandom.NextBytes(buffer);
+                var candidate = BitConverter.ToInt64(buffer, 0) & long.MaxValue;
+                if (candidate > 0 && !used.Contains(candidate)) return candidate;
+            }
+        }
+
+        // Every "rid: N" in the document — field pointers and RefIds entries alike — so a chosen id never aliases a
+        // surviving reference.
+        private static HashSet<long> CollectRids(string[] lines, int start, int end)
+        {
+            var result = new HashSet<long>();
 
             for (var i = start; i < end; i++)
             {
-                foreach (Match match in ridPattern.Matches(lines[i]))
-                    if (long.TryParse(match.Groups["rid"].Value, out var value) && value > max)
-                        max = value;
+                foreach (Match match in _anyRid.Matches(lines[i]))
+                    if (long.TryParse(match.Groups["rid"].Value, out var value))
+                        result.Add(value);
             }
 
-            return max + 1;
+            return result;
         }
 
         // Copies the captured entry, rewriting only its header's rid to freshRid (the type / data lines are preserved

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
+using System.Collections.Generic;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -17,11 +18,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public int damage;
     }
 
+    // Declared field types that Unity names with '/' between nested types (Outer/IEffect).
+    internal sealed class NestedTypeHolder
+    {
+        internal interface IEffect { }
+
+        [Serializable]
+        internal sealed class Impl : IEffect { }
+    }
+
+    internal interface ITestGenericEffect<T> { }
+
+    internal sealed class NestedFieldTypeObject : ScriptableObject
+    {
+        [SerializeReference] public NestedTypeHolder.IEffect effect;
+        [SerializeReference] public ITestGenericEffect<NestedTypeHolder.Impl> generic;
+        [SerializeReference] public NestedTypeHolder.IEffect[] effects = { null };
+    }
+
     // Two managed-reference fields, used to prove Link to Existing actually shares one rid.
     internal sealed class LinkerTestObject : ScriptableObject
     {
         [SerializeReference] public ITestWeapon a;
         [SerializeReference] public ITestWeapon b;
+    }
+
+    // A managed-reference list, used to note a clear on one of its elements.
+    internal sealed class ReferenceListTestObject : ScriptableObject
+    {
+        [SerializeReference] public List<ITestWeapon> weapons = new();
     }
 
     // A required managed reference and a required string type field.

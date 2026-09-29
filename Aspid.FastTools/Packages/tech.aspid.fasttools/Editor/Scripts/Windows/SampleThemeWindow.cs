@@ -111,37 +111,80 @@ namespace Aspid.FastTools.Editors.Internal
         private static readonly Dictionary<Renderer, MaterialPropertyBlock> AnimatedRenderers = new();
         private static double _nextUpdate;
         private static bool _suspended;
+        private static bool _subscribed;
 
         internal static SampleThemeMode Mode => (SampleThemeMode)SessionState.GetInt(ModeKey, 0);
 
         static SampleThemePreview()
         {
-            EditorApplication.update += Update;
-            Camera.onPreCull += BeforeCamera;
-            Camera.onPostRender += _ => RestoreAnimated();
-            RenderPipelineManager.beginCameraRendering += (_, camera) => BeforeCamera(camera);
-            RenderPipelineManager.endCameraRendering += (_, _) => RestoreAnimated();
-            AssemblyReloadEvents.beforeAssemblyReload += Restore;
-            EditorApplication.quitting += Restore;
-            EditorApplication.playModeStateChanged += state =>
-            {
-                _suspended = state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode;
-                Restore();
-            };
-            EditorSceneManager.sceneClosing += (_, _) => Restore();
-            EditorSceneManager.sceneSaving += (_, _) =>
-            {
-                _suspended = true;
-                Restore();
-                EditorApplication.delayCall += () => _suspended = false;
-            };
+            if (Mode != SampleThemeMode.Authored) Subscribe();
         }
 
         internal static void SetMode(SampleThemeMode mode)
         {
             Restore();
             SessionState.SetInt(ModeKey, (int)mode);
+
+            if (mode == SampleThemeMode.Authored) Unsubscribe();
+            else Subscribe();
+
             Apply();
+        }
+
+        // Editor hooks exist only while a preview is on, so a project that never picks Light or Dark pays nothing.
+        private static void Subscribe()
+        {
+            if (_subscribed) return;
+            _subscribed = true;
+
+            EditorApplication.update += Update;
+            Camera.onPreCull += BeforeCamera;
+            Camera.onPostRender += AfterCamera;
+            RenderPipelineManager.beginCameraRendering += BeforeCameraRendering;
+            RenderPipelineManager.endCameraRendering += AfterCameraRendering;
+            AssemblyReloadEvents.beforeAssemblyReload += Restore;
+            EditorApplication.quitting += Restore;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            EditorSceneManager.sceneClosing += OnSceneClosing;
+            EditorSceneManager.sceneSaving += OnSceneSaving;
+        }
+
+        private static void Unsubscribe()
+        {
+            if (!_subscribed) return;
+            _subscribed = false;
+
+            EditorApplication.update -= Update;
+            Camera.onPreCull -= BeforeCamera;
+            Camera.onPostRender -= AfterCamera;
+            RenderPipelineManager.beginCameraRendering -= BeforeCameraRendering;
+            RenderPipelineManager.endCameraRendering -= AfterCameraRendering;
+            AssemblyReloadEvents.beforeAssemblyReload -= Restore;
+            EditorApplication.quitting -= Restore;
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorSceneManager.sceneClosing -= OnSceneClosing;
+            EditorSceneManager.sceneSaving -= OnSceneSaving;
+        }
+
+        private static void AfterCamera(Camera _) => RestoreAnimated();
+
+        private static void BeforeCameraRendering(ScriptableRenderContext _, Camera camera) => BeforeCamera(camera);
+
+        private static void AfterCameraRendering(ScriptableRenderContext _, Camera __) => RestoreAnimated();
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            _suspended = state == PlayModeStateChange.ExitingEditMode || state == PlayModeStateChange.ExitingPlayMode;
+            Restore();
+        }
+
+        private static void OnSceneClosing(Scene _, bool __) => Restore();
+
+        private static void OnSceneSaving(Scene _, string __)
+        {
+            _suspended = true;
+            Restore();
+            EditorApplication.delayCall += () => _suspended = false;
         }
 
         internal static void Refresh()

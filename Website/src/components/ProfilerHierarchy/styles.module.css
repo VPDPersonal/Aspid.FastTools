@@ -4,13 +4,14 @@
   margin-bottom: var(--ifm-leading);
 }
 .window {
-  --ph-bg: var(--ifm-code-background);
+  /* The article surface, like code blocks: no fill of its own, but opaque for the sticky cells below. */
+  --ph-bg: var(--venom-reading-surface);
   --ph-line: var(--venom-line);
   --ph-fg: var(--venom-fg);
   --ph-muted: var(--venom-muted);
-  --ph-accent: var(--venom-accent);
+  --ph-accent: var(--venom-accent-mark);
   /* Opaque, so sticky cells on narrow screens hide the names scrolling under them. */
-  --ph-selected: color-mix(in srgb, var(--venom-accent) 12%, var(--ifm-code-background));
+  --ph-selected: color-mix(in srgb, var(--venom-accent-mark) 12%, var(--ph-bg));
   --ph-indent: 1.35rem;
   --ph-pad: 0.9rem;
   --ph-row: 1.75rem;
@@ -18,7 +19,7 @@
   overflow: hidden;
   color: var(--ph-fg);
   background: var(--ph-bg);
-  border: 1px solid var(--venom-line-strong);
+  border: 2px solid var(--venom-line-strong);
   border-radius: var(--ifm-pre-border-radius);
   font: 400 0.8125rem/1 var(--ifm-font-family-monospace);
 }
@@ -46,7 +47,7 @@
   color: var(--ph-muted);
   background: transparent;
   border: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   opacity: 0.7;
   transition: color 0.2s, opacity 0.2s;
@@ -73,16 +74,16 @@
 }
 .row > span { display: flex; align-items: center; }
 .row > span + span { justify-content: center; }
-/* Column rules only in the header: the tree guides are the body's only lines. */
+/* Column rules only in the header: the tree guides are the body's only lines. The header closes with the same 2px
+   rule as the site's table headers. */
 .head > span + span { border-left: 1px solid var(--ph-line); }
 .head {
   height: 2rem;
   color: var(--ph-muted);
-  border-bottom: 1px solid var(--ph-line);
+  border-bottom: 2px solid var(--venom-line-strong);
   font-size: 0.75rem;
 }
 .head > span:first-child { padding-left: var(--ph-pad); }
-.head + .row { margin-top: 0.35rem; }
 
 /* Rows appear as their `using` scope opens and fold away with their parent. The states share one selector base and
    grow in specificity: the minifier merges rules across files and may reorder them. */
@@ -126,7 +127,7 @@
 .swatch[data-marker='integrate'] { background: #ecc676; }
 .name { transition: color 0.4s; }
 .line { margin-left: 0.5ch; color: var(--ph-muted); }
-.row.selected .name { color: var(--ph-accent); }
+.row.selected .name { color: var(--venom-accent); }
 
 /* Tree guides under each ancestor's caret: a line passing by, a branch, the last branch. A first child's guide
    lifts up to its parent's caret. */
@@ -155,6 +156,16 @@
 .row:not(.head) .alloc { color: var(--venom-fg-strong); }
 .flash { animation: tick 0.3s ease-out; }
 @keyframes tick { from { color: var(--venom-fg-strong); text-shadow: 0 0 8px color-mix(in srgb, var(--venom-fg-strong) 35%, transparent); } }
+
+/* The selected row's bar sits on the frame line, as in StyleSides: where the browser can clip at the frame's outer edge,
+   the table reaches 2px over the left frame. Each row pads and clips its fill by those 2px, so the frame shows through
+   beside every row and only the selected row's inset bar covers it; the text stays put. Elsewhere (Safari) the window
+   keeps its inner clip and the bar stays just inside the frame. */
+@supports (overflow-clip-margin: border-box) {
+  .window { overflow: clip; overflow-clip-margin: border-box; }
+  .table { margin-left: -2px; border-bottom-left-radius: var(--ifm-pre-border-radius); }
+  .row { padding-left: 2px; background-clip: content-box; }
+}
 
 @container (max-width: 560px) {
   .window { --ph-indent: 1rem; --ph-pad: 0.6rem; font-size: 0.75rem; }

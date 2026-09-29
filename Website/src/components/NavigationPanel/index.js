@@ -49,7 +49,7 @@ function PanelFooter() {
   return (
     <footer className={styles.footer}>
       {github && <a className={styles.icon} href={github.href} target="_blank" rel="noopener noreferrer" aria-label={github['aria-label'] ?? github.label} title={github.label}><GitHubIcon /></a>}
-      {customFields.assetStore && <a className={styles.icon} href={customFields.assetStore} target="_blank" rel="noopener noreferrer" aria-label={assetStoreLabel} title={assetStoreLabel}><UnityIcon /></a>}
+      {customFields.assetStore && <a className={clsx(styles.icon, styles.unity)} href={customFields.assetStore} target="_blank" rel="noopener noreferrer" aria-label={assetStoreLabel} title={assetStoreLabel}><UnityIcon /></a>}
       <LocaleSwitcher />
       <AppearanceSwitcher />
     </footer>

@@ -1,8 +1,8 @@
 /* The introduction card's session at article width: one frame, no shadow, text a step larger than in the card. */
 .panel { margin: 0 0 var(--ifm-leading); }
 .window {
-  overflow: hidden;
-  border: 1px solid var(--venom-line-strong);
+  /* No overflow clip: the marked code lines draw their bar on this frame (FeaturePreview's `.framed`). */
+  border: 2px solid var(--venom-line-strong);
   border-radius: var(--ifm-pre-border-radius);
 }
 .window pre { font-size: 0.8125rem; }

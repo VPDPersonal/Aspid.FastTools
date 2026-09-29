@@ -13,7 +13,9 @@ existing component's members can break those packages.
 
 Read and mirror, in full, before writing:
 - `PKG/Editor/Scripts/VisualElements/Internal/Components/AspidContainers/AspidBox*.cs` - theme + status only;
-- `.../Components/AspidLabels/` - child components, nested preset, own style structs in `Styles/`;
+- `.../Components/AspidDividingLines/` - own style structs in `Styles/`, one `Set<Property>` per `[UxmlAttribute]`;
+- `.../Components/AspidLabels/` - child components, nested preset. Its extensions lack `SetLabelFontStyle` and
+  `SetLineDirection`: do not copy that gap;
 - `.../Internal/Styles/` - `ThemeStyle`, `StatusStyle`, `InlineStyle<T>`, `AspidStyles`;
 - the component's sheet in `PKG/Editor/Resources/UI/Components/Aspid-FastTools-Aspid<Name>.uss`.
 
@@ -22,6 +24,10 @@ Read and mirror, in full, before writing:
 `Components/<Group>/Aspid<Name>.cs`, `Aspid<Name>Preset.cs`, `Aspid<Name>Extensions.cs`, optional
 `Styles/Aspid<Name><Property>Style.cs`, plus the `.uss` and every `.meta`. Namespace
 `Aspid.FastTools.UIElements.Editors.Internal` with `// ReSharper disable once CheckNamespace`.
+
+Preset and Extensions are skipped only when there is nothing to configure (`AspidSwitch` is a `BaseField<bool>`,
+`AspidWindowFooter` takes one constructor flag) or the element is a child that its owner configures through the
+owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` / `AspidGradientButton`).
 
 ## Rules
 
@@ -42,6 +48,13 @@ Read and mirror, in full, before writing:
   shared palette `var(--aspid-colors-*)` / `var(--aspid-icons-*)` so theme overrides work, own classes
   `aspid-fasttools-<block>[__<element>][--<modifier>]`, own custom properties
   `--aspid-fasttools-{colors|prop|metrics|icons}-<name>`. No inline `style.*` for anything a theme should control.
+  A new colour goes into `Aspid-FastTools-Default-Dark.uss` as a token, never as a literal in a component sheet.
+- UI drawn inside a regular Inspector (drawers, fields, notices) sits on Unity's own background: colour it with
+  `var(--unity-colors-*)`, not the dark palette. A built-in icon takes `var(--unity-icons-*)` where Unity has one;
+  otherwise keep the `d_` icon and override it under `.aspid-fasttools-skin--light`, which
+  `AddAspidThemeStyleSheets()` sets on the light skin — `resource()` does not pick the skin variant.
+  Its IMGUI twin picks the same Unity colours by `EditorGUIUtility.isProSkin` (see `InspectorNoticeGUI`), and
+  `EditorGUIUtility.IconContent` takes the plain icon name, since it adds the `d_` prefix on the dark skin itself.
 
 ## Pitfalls
 

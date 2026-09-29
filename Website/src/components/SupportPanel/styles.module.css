@@ -7,7 +7,7 @@
   gap: 24px;
   margin-bottom: 1rem;
   padding: 22px 26px;
-  background: var(--ifm-code-background);
+  background: var(--venom-block-surface);
   border: 2px solid var(--venom-line-strong);
   border-radius: 12px;
 }
@@ -24,7 +24,7 @@
   gap: 8px;
   padding: 9px 16px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 10px;
   font: 500 0.78rem/1.4 var(--ifm-font-family-monospace);
   letter-spacing: 0.06em;
   text-decoration: none;
@@ -33,11 +33,16 @@
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 :global(.markdown) a.primary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
-  color: var(--venom-accent-ink);
-  background: var(--venom-accent);
+  color: var(--venom-accent-fill-ink);
+  background: var(--venom-accent-fill);
 }
 :global(.markdown) a.primary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover {
-  background: color-mix(in srgb, var(--venom-accent) 85%, var(--venom-fg-strong));
+  background: color-mix(in srgb, var(--venom-accent-fill) 85%, var(--venom-fg-strong));
+}
+/* In the light theme the mix runs in OKLCH, so the amber fill darkens to deeper amber rather than to olive. */
+:global(html[data-theme='light']) :global(.markdown) a.primary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover {
+  background: color-mix(in oklch, var(--venom-accent-fill) 88%, var(--venom-fg-strong));
+  text-decoration: none;
 }
 :global(.markdown) a.primary::after { content: '→'; transition: transform 0.15s; }
 :global(.markdown) a.primary:hover::after { transform: translateX(3px); }
