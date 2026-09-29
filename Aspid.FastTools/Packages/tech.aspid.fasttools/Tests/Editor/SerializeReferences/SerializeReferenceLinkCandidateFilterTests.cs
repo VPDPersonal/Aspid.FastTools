@@ -20,6 +20,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [Serializable]
     internal sealed class LinkPistol : ILinkWeapon { }
 
+    [Serializable]
+    internal sealed class LinkHolster<T> : ILinkWeapon { }
+
     internal sealed class LinkFilterTestObject : ScriptableObject
     {
         // Read only through reflection by the constraint resolver.
@@ -37,7 +40,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// <summary>
     /// Locks <b>Link to Existing</b> to the <c>[TypeSelector]</c> narrowing the field's picker enforces:
     /// <see cref="SerializeReferenceLinker.CollectLinkCandidates"/> with the drawer's filter must drop an instance the
-    /// dropdown would never offer, for literal and member-referenced constraints alike.
+    /// dropdown would never offer, for literal and member-referenced constraints alike. Each candidate's label names
+    /// its type as the picker does.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceLinkCandidateFilterTests
@@ -74,6 +78,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void NoConstraint_OffersEveryAssignableCandidate() =>
             AssertCandidates(nameof(LinkFilterTestObject.spare),
                 nameof(LinkFilterTestObject.sword), nameof(LinkFilterTestObject.pistol));
+
+        [Test]
+        public void MenuLabel_FormatsGenericArguments() =>
+            Assert.AreEqual("Link to Existing/LinkHolster<Int32>  (spare)",
+                SerializeReferenceHelpers.GetLinkToExistingMenuLabel(typeof(LinkHolster<int>), path: "spare"));
 
         private void AssertCandidates(string fieldName, params string[] expectedPaths)
         {

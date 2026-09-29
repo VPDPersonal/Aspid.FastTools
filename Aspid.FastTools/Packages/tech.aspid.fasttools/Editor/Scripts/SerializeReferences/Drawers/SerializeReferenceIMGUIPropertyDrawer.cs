@@ -450,7 +450,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var usagesType = SerializeReferenceHelpers.GetCurrentType(property);
             if (usagesType != null)
             {
-                menu.AddItem(new GUIContent($"Find Usages of {usagesType.Name}"), false,
+                menu.AddItem(new GUIContent(SerializeReferenceHelpers.GetFindUsagesMenuLabel(usagesType)), false,
                     () => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
             }
 
@@ -459,8 +459,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(property, filter: filter))
                 {
                     var path = candidate.Path;
-                    menu.AddItem(new GUIContent($"Link to Existing/{candidate.Type.Name}  ({path})"), false,
-                        () => SerializeReferenceLinker.LinkTo(persistent, path));
+                    var label = SerializeReferenceHelpers.GetLinkToExistingMenuLabel(candidate.Type, path);
+                    menu.AddItem(new GUIContent(label), false, () => SerializeReferenceLinker.LinkTo(persistent, path));
                 }
             }
 
