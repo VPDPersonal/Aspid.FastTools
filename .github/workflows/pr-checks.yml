@@ -1,0 +1,122 @@
+name: PR checks
+
+# pull_request_target: runs the base branch's copy with a write token, so labels work on fork PRs too.
+# It never checks out the PR's code — everything below reads the PR through the API only.
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize, ready_for_review, labeled, unlabeled]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # Conventional Commits title with a known scope; sets the type, breaking-change and area labels.
+  title:
+    name: PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const TYPES = {
+              feat: 'type: feature', fix: 'type: fix', perf: 'type: performance', refactor: 'type: refactor',
+              docs: 'type: documentation', test: 'type: test', chore: 'type: chore', ci: 'type: ci', style: 'type: style',
+            };
+            const SCOPES = [
+              // features
+              'types', 'ids', 'enums', 'serialize-references', 'profiler-markers', 'visual-elements', 'serialized-property',
+              // layers
+              'runtime', 'editor', 'generators', 'analyzers', 'samples', 'package',
+              // repository
+              'website', 'docs', 'changelog', 'release', 'ci', 'github', 'skills', 'claude', 'deps',
+            ];
+            // Longest prefix wins; a file can add several areas.
+            const PKG = 'Aspid.FastTools/Packages/tech.aspid.fasttools/';
+            const AREAS = [
+              [PKG + 'Runtime/', 'area: runtime'],
+              [PKG + 'Editor/', 'area: editor'],
+              [PKG + 'Tests/Editor/', 'area: editor'],
+              [PKG + 'Documentation/', 'area: docs'],
+              [PKG + 'Samples~/', 'area: samples'],
+              ['Aspid.FastTools.Generators/', 'area: generator'],
+              ['Aspid.FastTools.Analyzers/', 'area: analyzer'],
+              ['Aspid.FastTools.YamlTests/', 'area: editor'],
+              ['Aspid.FastTools/Assets/DevTests/', 'area: editor'],
+              ['Website/', 'area: website'],
+              ['docs/', 'area: docs'],
+              ['README', 'area: docs'],
+              ['CHANGELOG', 'area: docs'],
+              ['.claude/', 'area: claude'],
+              ['skills/', 'area: claude'],
+              ['AGENTS.md', 'area: claude'],
+              ['.github/', 'area: ci'],
+              ['scripts/', 'area: ci'],
+            ];
+
+            const pr = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+            const title = pr.title;
+            const errors = [];
+
+            const m = /^([a-z]+)(?:\(([a-z0-9-]+)\))?(!)?: (.+)$/.exec(title);
+            if (!m) errors.push('Title must be `type(scope): summary` (Conventional Commits).');
+            else {
+              const [, type, scope, , summary] = m;
+              if (!TYPES[type]) errors.push(`Unknown type \`${type}\`; use one of: ${Object.keys(TYPES).join(', ')}.`);
+              if (scope && !SCOPES.includes(scope)) errors.push(`Unknown scope \`${scope}\`; use one of: ${SCOPES.join(', ')} (or none).`);
+              if (/\.$/.test(summary)) errors.push('Summary has no trailing period.');
+            }
+            if (title.length > 72) errors.push(`Title is ${title.length} characters; keep it within 72.`);
+
+            // Labels are updated even when the title fails, so a later fix only has to touch the title.
+            const current = pr.labels.map(l => l.name);
+            const add = new Set();
+            const remove = new Set();
+            if (m && TYPES[m[1]]) {
+              add.add(TYPES[m[1]]);
+              current.filter(l => l.startsWith('type: ') && l !== TYPES[m[1]]).forEach(l => remove.add(l));
+            }
+            if (m?.[3]) add.add('breaking-change');
+
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: pr.number });
+            for (const { filename } of files)
+              for (const [prefix, label] of AREAS)
+                if (filename.startsWith(prefix)) add.add(label);
+
+            const toAdd = [...add].filter(l => !current.includes(l));
+            if (toAdd.length) await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: toAdd });
+            for (const name of remove)
+              await github.rest.issues.removeLabel({ owner, repo, issue_number: pr.number, name }).catch(() => {});
+
+            if (errors.length) core.setFailed(errors.join('\n'));
+
+  # User-visible package code changed → a CHANGELOG entry, or the `no-changelog` label.
+  changelog:
+    name: CHANGELOG
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const PKG = 'Aspid.FastTools/Packages/tech.aspid.fasttools/';
+            const pr = context.payload.pull_request;
+            if (pr.labels.some(l => l.name === 'no-changelog')) return core.info('`no-changelog` label set.');
+
+            const { owner, repo } = context.repo;
+            const files = (await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: pr.number }))
+              .map(f => f.filename);
+            const shipped = files.filter(f =>
+              f.startsWith(PKG + 'Runtime/') || f.startsWith(PKG + 'Editor/') ||
+              (f.startsWith(PKG + 'Samples~/') && !f.includes('/Documentation/')) ||
+              (f.startsWith(PKG) && /^[^/]+\.dll$/.test(f.slice(PKG.length))));
+            if (!shipped.length) return core.info('No shipped package code changed.');
+            if (files.some(f => /(^|\/)CHANGELOG(\.ru)?\.md$/.test(f))) return core.info('CHANGELOG updated.');
+
+            core.setFailed(
+              `Package code changed (${shipped.slice(0, 3).join(', ')}${shipped.length > 3 ? ', …' : ''}) ` +
+              'but CHANGELOG.md did not. Add an entry under [Unreleased], or the `no-changelog` label if users see no change.');
