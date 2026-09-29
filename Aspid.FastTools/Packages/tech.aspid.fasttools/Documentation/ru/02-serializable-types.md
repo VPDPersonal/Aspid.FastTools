@@ -97,7 +97,8 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Пускает в список абстрактные классы (<code lang="csharp">Abstract</code>), интерфейсы (<code lang="csharp">Interface</code>), оба вида или ни один. На <code lang="csharp">[SerializeReference]</code> игнорируется |
 | <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает о пустом имени типа или <code lang="csharp">null</code> в managed-ссылке |
 
-В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся. Правило определяется классом объекта, поэтому поле runtime-объекта под <code lang="csharp">#if UNITY_EDITOR</code> их тоже не предлагает.
+> [!NOTE]
+> В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся. Правило определяется классом объекта, поэтому поле runtime-объекта под <code lang="csharp">#if UNITY_EDITOR</code> их тоже не предлагает.
 
 ### Обязательное поле
 
@@ -210,44 +211,38 @@ public sealed class Enchanted<T> : MeleeWeapon
 
 ## TypeSelectorWindow
 
-<code lang="class-name">TypeSelectorWindow</code> открывает то же окно из своего инспектора или окна редактора, например по кнопке в IMGUI:
+<code lang="class-name">TypeSelectorWindow</code> открывает то же окно из кастомного инспектора или окна редактора, например по кнопке UI Toolkit:
 
 ```csharp
-using Aspid.FastTools.Types;
 using Aspid.FastTools.Types.Editors;
 
-if (GUI.Button(buttonRect, "Select weapon"))
-{
-    TypeSelectorWindow.Show(
-        GUIUtility.GUIToScreenRect(buttonRect),
-        new TypeSelectorFilter
-        {
-            Types = new[] { typeof(Weapon) },
-            Allow = TypeAllow.None
-        },
-        currentAqn: selectedTypeName,
-        onSelected: aqn => selectedTypeName = aqn);
-}
+var button = new Button { text = "Select weapon" };
+button.clicked += () => TypeSelectorWindow.Show(
+    GUIUtility.GUIToScreenRect(button.worldBound),
+    new TypeSelectorFilter { Types = new[] { typeof(Weapon) } },
+    currentAqn: selectedTypeName,
+    onSelected: aqn => selectedTypeName = aqn);
 ```
 
 Обработчик получает assembly-qualified name или <code lang="csharp">null</code> при выборе `<None>`; закрытие окна без выбора его не вызывает.
 
 | <code lang="csharp">currentAqn</code> | Отмечено при открытии |
 |---|---|
+| Имя типа из списка | Этот тип; окно открывается в его группе |
 | <code lang="csharp">""</code> (по умолчанию) | `<None>` |
 | <code lang="csharp">null</code> | Ничего |
 | Имя, которого нет в списке | Ничего: Enter сразу после открытия не сотрёт сохранённое имя |
 
-### Фильтры окна
+### TypeSelectorFilter
 
 | Свойство | По умолчанию | Назначение |
 |---|---|---|
-| <code lang="csharp">Types</code> | пусто — любые типы | Все базовые типы, которым должен соответствовать кандидат |
+| <code lang="csharp">Types</code> | пусто — любые типы | Базовые типы; кандидат совместим с каждым |
 | <code lang="csharp">Allow</code> | <code lang="csharp">None</code>; у <code lang="csharp">[TypeSelector]</code> — <code lang="csharp">All</code> | Разрешённые категории: абстрактные классы и интерфейсы |
-| <code lang="csharp">Predicate</code> | <code lang="csharp">null</code> | Дополнительное условие после проверки типа и категории |
+| <code lang="csharp">Predicate</code> | <code lang="csharp">null</code> | Условие поверх <code lang="csharp">Types</code> и <code lang="csharp">Allow</code> |
 | <code lang="csharp">AdditionalTypes</code> | <code lang="csharp">null</code> | Кандидаты, обходящие <code lang="csharp">Types</code>, <code lang="csharp">Allow</code> и <code lang="csharp">Predicate</code>; фильтр <code lang="csharp">Hidden</code> сохраняется |
-| <code lang="csharp">ArgumentFilter</code> | <code lang="csharp">null</code> | Дополнительный фильтр аргументов, выбираемых вручную |
-| <code lang="csharp">InferredArgumentFilter</code> | <code lang="csharp">null</code> | Фильтр аргументов, выведенных из типа поля |
+| <code lang="csharp">ArgumentFilter</code> | <code lang="csharp">null</code> | Условие для аргументов, выбираемых вручную, сверх ограничений <code lang="csharp">where</code> |
+| <code lang="csharp">InferredArgumentFilter</code> | <code lang="csharp">null</code> | Фильтр аргументов, выведенных из <code lang="csharp">Types</code>; получает generic-определение, параметр и аргумент |
 | <code lang="csharp">IncludeHidden</code> | <code lang="csharp">false</code> | Показывать типы с <code lang="csharp">Hidden = true</code>, в том числе в аргументах |
 | <code lang="csharp">HideNoneOption</code> | <code lang="csharp">false</code> | Скрыть `<None>` на корневой странице |
 

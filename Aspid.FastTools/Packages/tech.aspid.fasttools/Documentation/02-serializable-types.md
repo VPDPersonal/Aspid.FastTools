@@ -97,7 +97,8 @@ To allow a set of classes, give them a common interface or base class and pass i
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Lets abstract classes (<code lang="csharp">Abstract</code>), interfaces (<code lang="csharp">Interface</code>), both or neither into the list. Ignored on <code lang="csharp">[SerializeReference]</code> |
 | <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Warns about an empty type name or a <code lang="csharp">null</code> managed reference |
 
-In the Inspector of a runtime object, the picker leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them. The rule follows the object's class, so a runtime object's field declared under <code lang="csharp">#if UNITY_EDITOR</code> leaves them out too.
+> [!NOTE]
+> In the Inspector of a runtime object, the picker leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them. The rule follows the object's class, so a runtime object's field declared under <code lang="csharp">#if UNITY_EDITOR</code> leaves them out too.
 
 ### Required field
 
@@ -210,44 +211,38 @@ Choose <code lang="class-name">Enchanted&lt;T&gt;</code> in the <code lang="csha
 
 ## TypeSelectorWindow
 
-<code lang="class-name">TypeSelectorWindow</code> opens the same picker from a custom inspector or editor window, for example from an IMGUI button:
+<code lang="class-name">TypeSelectorWindow</code> opens the same picker from a custom inspector or editor window, for example from a UI Toolkit button:
 
 ```csharp
-using Aspid.FastTools.Types;
 using Aspid.FastTools.Types.Editors;
 
-if (GUI.Button(buttonRect, "Select weapon"))
-{
-    TypeSelectorWindow.Show(
-        GUIUtility.GUIToScreenRect(buttonRect),
-        new TypeSelectorFilter
-        {
-            Types = new[] { typeof(Weapon) },
-            Allow = TypeAllow.None
-        },
-        currentAqn: selectedTypeName,
-        onSelected: aqn => selectedTypeName = aqn);
-}
+var button = new Button { text = "Select weapon" };
+button.clicked += () => TypeSelectorWindow.Show(
+    GUIUtility.GUIToScreenRect(button.worldBound),
+    new TypeSelectorFilter { Types = new[] { typeof(Weapon) } },
+    currentAqn: selectedTypeName,
+    onSelected: aqn => selectedTypeName = aqn);
 ```
 
 The callback receives an assembly-qualified name, or <code lang="csharp">null</code> for `<None>`; dismissing the window without a choice does not invoke it.
 
 | <code lang="csharp">currentAqn</code> | Marked on opening |
 |---|---|
+| A name from the list | That type; the window opens in its group |
 | <code lang="csharp">""</code> (the default) | `<None>` |
 | <code lang="csharp">null</code> | Nothing |
 | A name missing from the list | Nothing: Enter right after opening cannot erase the stored name |
 
-### Window filters
+### TypeSelectorFilter
 
 | Property | Default | Purpose |
 |---|---|---|
-| <code lang="csharp">Types</code> | empty: any type | Base types every candidate must satisfy |
+| <code lang="csharp">Types</code> | empty: any type | Base types; a candidate must be assignable to each |
 | <code lang="csharp">Allow</code> | <code lang="csharp">None</code>; <code lang="csharp">All</code> on <code lang="csharp">[TypeSelector]</code> | Allowed categories: abstract classes and interfaces |
-| <code lang="csharp">Predicate</code> | <code lang="csharp">null</code> | An additional condition after type and category checks |
+| <code lang="csharp">Predicate</code> | <code lang="csharp">null</code> | A condition on top of <code lang="csharp">Types</code> and <code lang="csharp">Allow</code> |
 | <code lang="csharp">AdditionalTypes</code> | <code lang="csharp">null</code> | Candidates that bypass <code lang="csharp">Types</code>, <code lang="csharp">Allow</code>, and <code lang="csharp">Predicate</code>; <code lang="csharp">Hidden</code> filtering remains |
-| <code lang="csharp">ArgumentFilter</code> | <code lang="csharp">null</code> | An additional filter for manually selected arguments |
-| <code lang="csharp">InferredArgumentFilter</code> | <code lang="csharp">null</code> | A filter for arguments inferred from the field type |
+| <code lang="csharp">ArgumentFilter</code> | <code lang="csharp">null</code> | A condition on manually chosen arguments, on top of their <code lang="csharp">where</code> constraints |
+| <code lang="csharp">InferredArgumentFilter</code> | <code lang="csharp">null</code> | A filter for arguments inferred from <code lang="csharp">Types</code>; receives the generic definition, the parameter and the argument |
 | <code lang="csharp">IncludeHidden</code> | <code lang="csharp">false</code> | Offer types marked <code lang="csharp">Hidden = true</code>, as generic arguments too |
 | <code lang="csharp">HideNoneOption</code> | <code lang="csharp">false</code> | Hide `<None>` on the root page |
 
