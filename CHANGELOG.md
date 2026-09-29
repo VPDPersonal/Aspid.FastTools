@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Sample Themes window hooks the editor update loop, camera rendering and scene saving only while a **Light** or **Dark** preview is on; in the default **Authored** mode it adds no editor callbacks.
 - `Aspid.FastTools.VisualElements.Math` is no longer compiled as an empty assembly in projects without `com.unity.mathematics`.
 - The animated dot background of the FastTools window and the settings page draws all its dots as one mesh instead of tessellating a path per dot on every frame, and pauses while Unity is in the background, so an idle open window no longer keeps the editor busy.
+- `[TypeSelector]` on an array or `List<T>` field now applies to the collection itself (`applyToCollection`): its drawer draws the list and a picker for each element. `PropertyField` and `EditorGUILayout.PropertyField` on such a list now get the picker-backed **+** in UI Toolkit and IMGUI, and a `PropertyField` on a single element of it no longer shows the picker. `SerializeReferenceIMGUIList.Draw` and `SerializeReferenceEditorGUI.CreateList` add the constraints of a `[TypeSelector]` on the list field to `baseTypes`. Managed-reference lists drawn by the package now honor `[NonReorderable]`.
 
 ### Removed
 
@@ -129,6 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Persistent()` keeps the `context` of the source `SerializedObject`, so an `ExposedReference` read or written through the copy resolves in the same table (for example a `PlayableDirector`) instead of the default value in the asset.
 - *Link to Existing* in the `[SerializeReference]` context menu now offers only instances the field's type picker accepts under its `[TypeSelector]` base types, including member-referenced ones; it used to offer any instance assignable to the declared field type.
 - *Find Usages* in the `[SerializeReference]` context menu now lists usages of the exact type in the field (namespace and assembly included); it used to match every stored class name containing its name, such as `PistolMk2` or a `Pistol` from another namespace. A typed `sr:` query still matches class names by substring.
+- In the default UI Toolkit Inspector, **+** of an empty `[TypeSelector]` `[SerializeReference]` list now opens the type picker; it used to append a `<None>` entry, and the picker appeared only once the list had an element.
 
 ## [1.0.0-rc.8] — 2026-09-06
 
