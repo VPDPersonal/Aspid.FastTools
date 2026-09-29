@@ -1,0 +1,181 @@
+/*
+ * The SerializeReference Tooling quick start. The card, the preview column and the steps are the install panel's
+ * (InstallPanel/styles.module.css); this file draws the mock-up: Unity's Tools menu, then the Aspid FastTools window.
+ * The window has only a dark theme (Aspid-FastTools-Default-Dark.uss), so the mock-up stays dark in both site themes.
+ */
+
+.section { --prp-ease: cubic-bezier(0.2, 0.7, 0.2, 1); }
+/* No URL bar below, so the steps row closes the card itself. */
+.top { border-bottom: 0; }
+/* The menu path wraps, so the walk-through keeps most of the width. */
+.section ol { flex: none; width: 40%; }
+.section ol b { white-space: normal; }
+.preview { flex: 1 1 60%; min-height: 330px; background: #000; }
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: rgb(190 190 190);
+  background: #282828;
+  font: 11px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ---------- Unity's menu bar, cropped on the left so Tools sits near the edge ---------- */
+
+.menubar { display: flex; gap: 2px; margin-left: -128px; padding: 3px 6px; background: #191919; border-bottom: 1px solid #111; white-space: nowrap; }
+.menubar > span { position: relative; padding: 1px 7px; color: #c4c4c4; border-radius: 3px; }
+.menubar > span[data-open] { color: #fff; background: #3a79bb; }
+
+.menu {
+  position: absolute;
+  z-index: 1;
+  margin: 0;
+  padding: 4px 0;
+  background: #2f2f2f;
+  border: 1px solid #1c1c1c;
+  border-radius: 5px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.5);
+  list-style: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.25s var(--prp-ease);
+}
+.menu[data-open] { opacity: 1; transform: none; }
+.menu li { position: relative; display: flex; justify-content: space-between; gap: 18px; margin: 0; padding: 2px 12px; color: #d2d2d2; white-space: nowrap; }
+.menu li i { color: #9a9a9a; font-style: normal; }
+.menu[data-open] > li[data-hover] { color: #fff; background: #3a79bb; }
+.menu[data-open] > li[data-hover] > i { color: #fff; }
+.separator { height: 1px; margin: 4px 0 !important; padding: 0 !important; background: #444; }
+.menuTools { top: calc(100% + 3px); left: 0; }
+/* A submenu opens beside its item, a moment after its parent, as the pointer walks the path. */
+.submenu { top: -5px; left: calc(100% - 2px); transition-delay: 0.35s; }
+.submenuLast { transition-delay: 0.7s; }
+
+/* ---------- The Aspid FastTools window ---------- */
+
+.window {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.45s var(--prp-ease);
+}
+.window[data-open] { opacity: 1; transform: none; }
+
+.tabs { display: flex; align-items: stretch; gap: 4px; padding: 0 4px; }
+.tabs > span { display: flex; align-items: center; justify-content: center; padding: 6px 8px 5px; color: rgb(150 150 150); border-bottom: 2px solid rgb(45 45 45); white-space: nowrap; }
+.tab { flex: 1; gap: 10px; }
+.tab em { color: rgb(110 110 110); font-style: normal; font-size: 9.5px; }
+.tab[data-active] { color: rgb(220 220 220); border-bottom-color: rgb(120 235 145) !important; }
+.tab[data-active] em { color: rgb(150 150 150); }
+.tabIcon { width: 26px; }
+/* The package's own tab icons (Editor/Resources/Icons), alpha masks that the window tints with its text colour. */
+.tabIcon i { display: block; flex: none; width: 14px; height: 14px; background: rgb(150 150 150); -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.iconHome { -webkit-mask-image: url('./icons/home.png'); mask-image: url('./icons/home.png'); }
+.iconSettings { -webkit-mask-image: url('./icons/settings.png'); mask-image: url('./icons/settings.png'); }
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 8px;
+}
+
+.panel, .card, .summary { background: rgb(12 12 12); border: 1px solid rgb(45 45 45); border-radius: 6px; }
+.panel { display: flex; flex-direction: column; gap: 2px; padding: 7px 10px 8px; }
+.panel strong { color: rgb(220 220 220); font-size: 12px; font-weight: 600; }
+.panel > span:not(.button) { color: rgb(150 150 150); font-size: 10px; }
+.button { align-self: stretch; margin-top: 5px; padding: 3px 8px; color: rgb(220 220 220); background: rgb(255 255 255 / 0.06); border-radius: 5px; font-weight: 600; transition: background-color 0.2s ease; }
+.button[data-press] { background: rgb(255 255 255 / 0.16); transition-delay: 0.45s; }
+
+.empty { display: flex; flex-direction: column; align-items: center; gap: 3px; margin: auto; padding: 0 16px; text-align: center; }
+.empty strong { color: rgb(220 220 220); font-size: 14px; font-weight: 600; }
+.empty span { color: rgb(150 150 150); font-size: 10px; }
+
+.results { display: flex; flex-direction: column; gap: 6px; animation: prpFade 0.35s ease; }
+@keyframes prpFade { from { opacity: 0; transform: translateY(4px); } }
+/* Always the warning colour, as in the window: `SetLabelStatus(Warning)` on the results header. */
+.header { padding-bottom: 3px; color: rgb(245 185 85); border-bottom: 1px solid rgb(125 85 20); font-size: 13px; font-weight: 600; }
+.hint { margin: 0; color: rgb(190 190 190); font-size: 10px; line-height: 1.35; }
+
+.card { padding: 6px 10px 7px; transition: border-color 0.2s ease; }
+.card[data-picking] { border-color: rgb(165 115 30); }
+.cardHead { display: flex; align-items: baseline; gap: 8px; margin: -2px -4px 0; padding: 2px 4px 5px; border-bottom: 1px solid rgb(45 45 45); border-radius: 4px; }
+.card[data-picking] .cardHead { background: linear-gradient(90deg, rgb(85 55 10 / 0.9), rgb(85 55 10 / 0.15)); border-bottom-color: rgb(125 85 20); }
+.cardHead b { color: rgb(245 185 85); font-size: 12px; font-weight: 600; }
+.cardHead > span { color: rgb(150 150 150); }
+.fixAll { margin-left: auto; color: rgb(220 220 220) !important; font-weight: 600; white-space: pre; }
+.card[data-picking] .fixAll { color: rgb(245 185 85) !important; }
+
+.picker { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; animation: prpFade 0.3s ease; }
+.search { display: flex; align-items: center; padding: 2px 6px; color: rgb(220 220 220); border: 1px solid rgb(45 45 45); border-radius: 5px; font-weight: 600; }
+.search::before { content: '⌕'; margin-right: 5px; color: rgb(190 190 190); }
+.search i { margin-left: auto; color: rgb(150 150 150); font-style: normal; }
+.typed { display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; animation: prpType 0.6s steps(6) 0.25s forwards; }
+@keyframes prpType { to { max-width: 60px; } }
+.pick { display: flex; align-items: center; gap: 6px; padding: 2px 6px; color: rgb(220 220 220); border-radius: 4px; opacity: 0; animation: prpShow 0.2s ease 0.9s forwards; transition: background-color 0.2s ease 1.3s; }
+.card[data-picking] .pick { background: rgb(85 55 10); }
+.script { display: inline-grid; place-items: center; width: 11px; height: 12px; color: #2a2a2a; background: rgb(232 232 232); border-radius: 2px; font-size: 8px; font-weight: 700; }
+@keyframes prpShow { to { opacity: 1; } }
+
+.entries { margin: 5px 0 0; padding: 0; list-style: none; font-size: 10px; }
+.entries li { display: flex; justify-content: space-between; gap: 10px; margin: 0; padding: 1px 0; color: rgb(190 190 190); white-space: nowrap; }
+.entries li span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.entries li span:last-child { color: rgb(150 150 150); }
+
+/* The operation summary is a warning help box: an icon, the title with Undo, a rule, then the message. */
+.summary { display: flex; align-items: center; gap: 10px; padding: 7px 10px; background: rgb(45 30 5 / 0.6); border-color: rgb(125 85 20); animation: prpFade 0.35s ease; }
+.warningIcon { flex: none; color: rgb(245 185 85); font-size: 20px; line-height: 1; }
+.summary > div { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
+.summaryHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 3px; border-bottom: 1px solid rgb(125 85 20); }
+.summaryHead strong { color: rgb(245 185 85); font-weight: 600; }
+.undo { padding: 1px 8px; color: rgb(220 220 220); border: 1px solid rgb(125 85 20); border-radius: 5px; font-weight: 600; }
+.summary > div > span { color: rgb(185 135 60); font-size: 10px; }
+
+/* ---------- Unity's confirmation dialog ---------- */
+
+.dialog { position: absolute; inset: 0; display: grid; place-items: center; background: rgb(0 0 0 / 0.45); opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+.dialog[data-open] { opacity: 1; }
+.alert {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: min(236px, 80%);
+  padding: 14px 14px 12px;
+  color: rgb(222 222 222);
+  background: rgb(50 50 52);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 12px;
+  box-shadow: 0 14px 36px rgb(0 0 0 / 0.6);
+  text-align: center;
+  transform: scale(0.96);
+  transition: transform 0.3s var(--prp-ease);
+}
+.dialog[data-open] .alert { transform: none; }
+.alert strong { color: #fff; font-size: 11.5px; font-weight: 700; }
+.alert p { margin: 0; font-size: 10px; line-height: 1.35; }
+.alertButtons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-self: stretch; margin-top: 4px; }
+.alertButtons span { padding: 3px 0; color: #eee; background: rgb(255 255 255 / 0.14); border-radius: 6px; font-size: 10.5px; }
+.alertButtons span[data-default] { color: #fff; background: #0a64d8; }
+.dialog[data-open] .alertButtons span[data-default] { animation: prpPress 0.3s ease 1.2s; }
+@keyframes prpPress { 50% { background: #0a4fa8; } }
+
+/* The install panel stacks the steps under the walk-through at this width; they take the full row then. */
+@container (max-width: 600px) {
+  .section ol { width: auto; }
+  .preview { min-height: 360px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section *, .section *::before, .section *::after { animation-duration: 0.001ms !important; animation-delay: 0s !important; transition-duration: 0.001ms !important; transition-delay: 0s !important; }
+}

@@ -114,6 +114,11 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   component (`SetPadding(8)` → `StyleSides`, the Styles table of VisualElement Extensions), which gets every row as
   `<StyleSidesRow call="…">` with the second cell as children. Markdown keeps the table, and the rows and their
   translations stay in the page; changing that first cell detaches the component.
+- An ordered list can have one too: `LISTS` in `liveDiagrams.js` maps the bold text of its first item to a component
+  (`Tools → Aspid 🐍 → FastTools → Project References` → `ProjectReferencesPanel`, the SerializeReference Tooling quick
+  start), which gets each item's text as a `<span>` child, so the steps and their translation stay in the page; changing
+  that bold text detaches it. The panel reuses the install panel's card and steps and draws the Aspid FastTools window,
+  which has only a dark theme, so its mock-up stays dark in both site themes.
 
 ## Writing a feature page (docs/)
 
