@@ -22,7 +22,7 @@ The list follows the field type; the attribute can narrow it with extra types. F
 | <code lang="csharp">Modifier&lt;float&gt; _damageModifier</code> | DamageModifier, Modifier&lt;Single&gt; |
 | <code lang="csharp">List&lt;IModifier&gt; _perks</code> | AmmoModifier, DamageModifier, NameModifier, Modifier&lt;T&gt; with a choice of <code lang="class-name">T</code> |
 
-Only concrete classes that do not derive from <code lang="class-name">UnityEngine.Object</code> are offered. Generic arguments are inferred from the field type; when they cannot be, the window asks for each one. A constraint can also come [from another field](02-serializable-types.md#dynamic-base-types-via-member-references): <code lang="csharp">[TypeSelector(nameof(_category))]</code>.
+Only concrete classes that do not derive from <code lang="class-name">UnityEngine.Object</code> are offered. In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs, `Editor` folders) are left out: a player build cannot create them. Generic arguments are inferred from the field type; when they cannot be, the window asks for each one. A constraint can also come [from another field](02-serializable-types.md#dynamic-base-types-via-member-references): <code lang="csharp">[TypeSelector(nameof(_category))]</code>.
 
 ## How a class appears in the list
 
@@ -49,7 +49,9 @@ An empty field shows **Required reference is not set**; `<None>` can still be ch
 
 ## Lists and nested fields
 
-In a list with <code lang="csharp">[TypeSelector]</code>, **+** opens the class picker and adds a new instance; `<None>` adds an empty element. A <code lang="csharp">[SerializeReference]</code> field inside the chosen class — such as <code lang="csharp">_chargeEffect</code> on <code lang="class-name">Railgun</code> — gets the selector without the attribute.
+In a list with <code lang="csharp">[TypeSelector]</code>, **+** opens the class picker and adds a new instance; `<None>` adds an empty element; with several objects selected, each gets its own instance in one Undo group. A <code lang="csharp">[SerializeReference]</code> field inside the chosen class — such as <code lang="csharp">_chargeEffect</code> on <code lang="class-name">Railgun</code> — gets the selector without the attribute.
+
+A nested field keeps its own drawer instead of the automatic selector when it has <code lang="csharp">[TypeSelector]</code>, an attribute with a `[CustomPropertyDrawer]`, or a `[CustomPropertyDrawer]` for its declared type, a base class, an interface or an open generic type. In a list such a drawer draws each element, and **+** still opens the class picker. A drawer for the chosen class alone, such as <code lang="class-name">Pistol</code>, does not replace the selector.
 
 ## Switching the class
 
@@ -75,6 +77,7 @@ Right-click the field header:
 |---|---|
 | **Copy / Paste Serialize Reference** | Moves the class and data to another compatible field; a copied empty field clears the target on paste |
 | **Save as Template…**, **Paste Template** | Saves the value under a name and creates an instance from it; templates stay on this machine |
+| **Paste Template → Remove Missing (N)…** | Deletes, after confirmation, templates whose class does not load; shown only when there are any |
 | **Link to Existing** | Points the field at the instance of another field on the same object |
 | **Find Usages of Pistol** | Searches the project for the class through Unity Search |
 | **Create New Script…** | Creates a <code lang="csharp">[Serializable]</code> class for the field type and assigns it after compilation |
@@ -109,7 +112,9 @@ A missing reference with Fix and the → Pistol? suggestion in the Inspector
 | **Fix** | Opens the class picker, including classes hidden with <code lang="csharp">Hidden</code> |
 | **→ Pistol?** | Assigns the suggested class; the tooltip gives the reason: [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom), the same or a similar name, shared fields |
 
-For an asset on disk the repair rewrites the file, and Undo does not revert it. In a scene or Prefab Mode it applies in memory and restores only top-level fields — save the scene or prefab afterwards. With several objects selected, in an unsaved scene and on a prefab instance Fix is unavailable: repair the source prefab or use [SerializeReference Tooling](04-serialize-reference-tooling.md).
+For an asset on disk the repair rewrites the file, and Undo does not revert it. In a scene or Prefab Mode it applies in memory and restores only top-level fields. Until you save, Undo brings the missing reference back with its data; saving (Prefab Mode Auto Save included) makes the repair final and clears that object's Undo history. If the asset has unsaved changes, Fix first offers to save it, because the reimport would discard them.
+
+Fix is unavailable with several objects selected, in an unsaved scene, and on a component inherited from a prefab. When the class is missing in a source prefab, repair it there (the tooltip names it); when the instance sets the class through an override, choose a new class on the instance or revert the override. While a prefab is open in Prefab Mode, Fix on its asset in the Project window is refused: repair the field in Prefab Mode. For everything else use [SerializeReference Tooling](04-serialize-reference-tooling.md).
 
 ## Custom IMGUI inspector
 
