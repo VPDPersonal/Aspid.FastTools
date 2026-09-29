@@ -12,6 +12,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const string ProviderId = "sr";
         private const string FilterId = "sr:";
+        private const string ExactPrefix = "=";
         private const string DisplayName = "Managed References";
 
         [SearchItemProvider]
@@ -33,24 +34,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static void OpenSearch(Type type)
         {
             if (type is null) return;
-            var query = $"{FilterId}{type.Name}";
-            var context = SearchService.CreateContext(ProviderId, query);
+            var context = SearchService.CreateContext(ProviderId, QueryFor(type));
             SearchService.ShowWindow(context, "Find Usages", saveFilters: false);
+        }
+
+        // The menu opens on one concrete type, so its query names the stored identity exactly: a class-name substring
+        // would also list PistolMk2 and namesakes from other namespaces or assemblies.
+        internal static string QueryFor(Type type) =>
+            $"{FilterId}{ExactPrefix}{ManagedTypeName.FromType(type).FullName}";
+
+        internal static string Token(string query)
+        {
+            var token = (query ?? string.Empty).Trim();
+            return token.StartsWith(FilterId, StringComparison.OrdinalIgnoreCase)
+                ? token[FilterId.Length..].Trim()
+                : token;
+        }
+
+        // An '=' token is the exact "Namespace.Class, Assembly" the menu writes; a free-typed token keeps matching any
+        // stored class name that contains it.
+        internal static bool Matches(string token, ManagedTypeName storedType)
+        {
+            if (string.IsNullOrEmpty(token)) return false;
+
+            if (token.StartsWith(ExactPrefix, StringComparison.Ordinal))
+                return string.Equals(storedType.FullName, token[ExactPrefix.Length..].Trim(), StringComparison.Ordinal);
+
+            return (storedType.Class ?? string.Empty).IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         // Null is the synchronous fetch convention.
         private static object FetchItems(SearchContext context, List<SearchItem> items, SearchProvider provider)
         {
-            var token = (context.searchQuery ?? string.Empty).Trim();
-            if (token.StartsWith(FilterId, StringComparison.OrdinalIgnoreCase))
-                token = token[FilterId.Length..].Trim();
-
+            var token = Token(context.searchQuery);
             if (token.Length == 0) return null;
 
             foreach (var usage in SerializeReferenceTypeUsageIndex.AllUsages())
             {
+                if (!Matches(token, usage.StoredType)) continue;
+
                 var className = usage.StoredType.Class ?? string.Empty;
-                if (className.IndexOf(token, StringComparison.OrdinalIgnoreCase) < 0) continue;
 
                 var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
                 if (string.IsNullOrEmpty(path)) continue;

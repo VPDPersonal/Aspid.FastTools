@@ -22,8 +22,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Every other managed reference in the object assignable to this field, minus this property and its
-        // ancestors and descendants, which would form a self-cycle.
-        public static List<LinkCandidate> CollectLinkCandidates(SerializedProperty property)
+        // ancestors and descendants, which would form a self-cycle. The filter applies the same [TypeSelector]
+        // narrowing the picker enforces, so linking cannot assign a type the dropdown would hide.
+        public static List<LinkCandidate> CollectLinkCandidates(SerializedProperty property, Func<Type, bool> filter = null)
         {
             var result = new List<LinkCandidate>();
             if (property is null) return result;
@@ -61,6 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var type = value.GetType();
                 if (fieldType != null && !fieldType.IsAssignableFrom(type)) continue;
+                if (filter is not null && !filter(type)) continue;
 
                 if (!seen.Add(rid)) continue;
 
