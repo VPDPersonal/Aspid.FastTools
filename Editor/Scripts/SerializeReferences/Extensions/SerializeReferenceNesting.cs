@@ -25,8 +25,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var field = child.GetFieldInfo();
             if (field is null) return false;
 
-            if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true) ||
-                CustomDrawerRegistry.DeclaresDrawnAttribute(field, isManagedReference: true))
+            // [TypeSelector] applies to a collection, not to its elements, so its list draws them with the picker
+            // itself, ahead of any type drawer, as the drawer did when it reached each element.
+            var isArrayElement = child.IsArrayElement();
+            if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true)) return !isArrayElement;
+            if (CustomDrawerRegistry.DeclaresDrawnAttribute(field, isManagedReference: true, isArrayElement: isArrayElement))
                 return true;
 
             // Unity applies a type drawer to each element, never to the list, so the list keeps the picker-backed add.
@@ -34,7 +37,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // The declared type, not the stored one: Unity ships no picker, so a drawer of the stored type would take
             // the dropdown away as soon as that type is picked.
-            var declaredType = child.IsArrayElement()
+            var declaredType = isArrayElement
                 ? field.FieldType.GetCollectionElementTypeOrSelf()
                 : field.FieldType;
             return CustomDrawerRegistry.HasDrawerFor(declaredType, isManagedReference: true);

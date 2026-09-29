@@ -2,7 +2,11 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
+using Aspid.FastTools.Types;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
@@ -18,12 +22,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class ListAddTestObject : ScriptableObject
     {
         [SerializeReference] public List<ITestWeapon> sidearms = new();
+        [TypeSelector] [SerializeReference] public List<ITestWeapon> selected = new();
         public List<ListAddTestLoadout> loadouts = new();
         public List<int> counts = new();
     }
 
     // Covers the picker-backed "+" of managed-reference lists: which array and objects an element's "+" appends to,
-    // one independent instance per selected object, and the argument checks of the public IMGUI list.
+    // one independent instance per selected object, the "+" of an empty [TypeSelector] list in the default inspector,
+    // and the argument checks of the public IMGUI list.
     [TestFixture]
     internal sealed class SerializeReferenceListAddTests
     {
@@ -109,6 +115,55 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+            }
+        }
+
+        // The attribute applies to the list itself, so the "+" is set up before any element exists to set it up.
+        [UnityTest]
+        public IEnumerator DefaultInspector_EmptySelectorList_OverridesTheAddButton()
+        {
+            var obj = ScriptableObject.CreateInstance<ListAddTestObject>();
+            var window = ScriptableObject.CreateInstance<EditorWindow>();
+            try
+            {
+                window.ShowUtility();
+                window.rootVisualElement.Add(new InspectorElement(obj));
+
+                yield return null;
+
+                Assert.IsNotNull(FindList(window.rootVisualElement, nameof(ListAddTestObject.selected)).overridingAddButtonBehavior,
+                    "The first \"+\" of an empty [TypeSelector] list must open the type picker, not append a <None> entry.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(window);
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator DefaultInspector_EmptySelectorList_MultipleObjects_OverridesTheAddButton()
+        {
+            var first = ScriptableObject.CreateInstance<ListAddTestObject>();
+            var second = ScriptableObject.CreateInstance<ListAddTestObject>();
+            var editor = Editor.CreateEditor(new Object[] { first, second });
+            var window = ScriptableObject.CreateInstance<EditorWindow>();
+            try
+            {
+                window.ShowUtility();
+                window.rootVisualElement.Add(new InspectorElement(editor));
+
+                yield return null;
+
+                Assert.IsNotNull(FindList(window.rootVisualElement, nameof(ListAddTestObject.selected)).overridingAddButtonBehavior,
+                    "A multi-object selection must get the picker-backed \"+\" too, one instance per object.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(window);
+                Object.DestroyImmediate(editor);
                 Object.DestroyImmediate(first);
                 Object.DestroyImmediate(second);
             }
@@ -263,6 +318,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 Object.DestroyImmediate(obj);
             }
+        }
+
+        private static ListView FindList(VisualElement root, string bindingPath)
+        {
+            var listView = root.Query<ListView>().Where(view => view.bindingPath == bindingPath).First();
+            Assert.IsNotNull(listView, $"The inspector must draw a list bound to '{bindingPath}'.");
+            return listView;
         }
     }
 }

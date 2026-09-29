@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEngine;
 using System.Reflection;
 using System.Collections;
 
@@ -63,6 +64,10 @@ namespace Aspid.FastTools.Editors
 
             return current;
         }
+
+        // Unity's own list honors [NonReorderable]; a list the package draws in its place must too.
+        internal static bool IsNonReorderable(this SerializedProperty listProperty) =>
+            listProperty.GetFieldInfo()?.IsDefined(typeof(NonReorderableAttribute), inherit: true) ?? false;
 
         private static FieldInfo GetFieldIncludingBaseClasses(Type type, string name)
         {

@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
@@ -68,6 +69,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeReference, DrawnDerivedInspector] public object attributed;
         [SerializeReference] public List<DrawnBaseEffect> drawnList = new();
         [SerializeReference] public List<UndrawnEffect> undrawnList = new();
+        [TypeSelector] [SerializeReference] public List<DrawnBaseEffect> selectorList = new();
     }
 
     // A nested managed reference goes back to Unity whenever Unity would pick a custom drawer for its declared type:
@@ -178,12 +180,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsTrue(SerializeReferenceNesting.DrawsOwnHeader(undrawnList.GetArrayElementAtIndex(0), depth: 0));
         }
 
+        [Test]
+        public void DrawsOwnHeader_SelectorListGoesToItsDrawerAndDrawsItsElements()
+        {
+            _host.selectorList.Add(new DrawnDerivedEffect());
+
+            using var serializedObject = new SerializedObject(_host);
+            var selectorList = serializedObject.FindProperty(nameof(DrawnNestingHost.selectorList));
+
+            Assert.IsFalse(SerializeReferenceNesting.DrawsOwnHeader(selectorList, depth: 0),
+                "[TypeSelector] applies to the collection, so Unity hands the list to the attribute's drawer.");
+            Assert.IsTrue(SerializeReferenceNesting.DrawsOwnHeader(selectorList.GetArrayElementAtIndex(0), depth: 0),
+                "Unity no longer hands [TypeSelector] to an element, so the list draws it with the picker, ahead of the " +
+                "element type's drawer.");
+        }
+
         [TestCase(nameof(DrawnNestingHost.drawnList), typeof(PropertyField))]
         [TestCase(nameof(DrawnNestingHost.undrawnList), typeof(SerializeReferenceField))]
+        [TestCase(nameof(DrawnNestingHost.selectorList), typeof(SerializeReferenceField))]
         public void ListField_BindItem_HandsOverTheSameElementsAsTheIMGUIList(string listName, Type expectedField)
         {
             _host.drawnList.Add(new DrawnDerivedEffect());
             _host.undrawnList.Add(new UndrawnEffect());
+            _host.selectorList.Add(new DrawnDerivedEffect());
 
             using var serializedObject = new SerializedObject(_host);
             var list = serializedObject.FindProperty(listName);
