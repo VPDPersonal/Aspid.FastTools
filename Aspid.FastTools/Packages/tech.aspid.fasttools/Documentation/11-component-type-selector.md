@@ -26,8 +26,6 @@ The list offers the concrete subclasses of the class that declares the field, wi
 | **Speed** | 40 | — | 25 |
 | **Armor** | — | 10 | — |
 
-A ScriptableObject works the same way.
-
 ## When the type does not change
 
 The switch follows the rules of **Add Component**: it first adds the components the new class lists in <code lang="csharp">[RequireComponent]</code>, and one Undo reverts it together with them. The class stays as it was and the Console shows a warning when:

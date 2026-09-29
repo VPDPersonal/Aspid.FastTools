@@ -26,8 +26,6 @@ public abstract class EnemyBase : MonoBehaviour
 | **Speed** | 40 | — | 25 |
 | **Armor** | — | 10 | — |
 
-В ScriptableObject поле работает так же.
-
 ## Когда тип не меняется
 
 Смена следует правилам **Add Component**: сначала добавляет компоненты из <code lang="csharp">[RequireComponent]</code> нового класса, и один Undo откатывает её вместе с ними. Класс остаётся прежним, а Console показывает предупреждение, если:
