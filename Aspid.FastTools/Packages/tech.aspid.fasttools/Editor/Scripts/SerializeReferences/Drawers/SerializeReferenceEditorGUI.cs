@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -39,7 +40,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         /// <param name="property">An array/list property whose elements are managed references.</param>
         /// <param name="label"><paramref name="property"/> header label; <see langword="null"/> uses its display name.</param>
-        /// <param name="baseTypes">Extra base types every element type must be assignable to besides the declared one; <see langword="null"/> or an empty array adds none.</param>
+        /// <param name="baseTypes">Extra base types every element type must be assignable to besides the declared one and a <c>[TypeSelector]</c> on the field; <see langword="null"/> or an empty array adds none.</param>
         /// <returns>The list to add to the inspector's visual tree.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed-reference array.</exception>
@@ -53,7 +54,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 label ?? property.displayName,
                 property,
                 SerializeReferenceHelpers.GetArrayElementType(property),
-                baseTypes);
+                TypeSelectorConstraintResolver.AppendFieldConstraints(property, baseTypes));
         }
 
         /// <summary>

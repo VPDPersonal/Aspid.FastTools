@@ -19,6 +19,17 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual(TypeAllow.All, attribute.Allow);
         }
 
+        // Unity then hands the drawer the collection itself, so an empty list can still open the picker from "+".
+        [Test]
+        public void EveryConstructor_AppliesToTheCollection()
+        {
+            Assert.IsTrue(new TypeSelectorAttribute().applyToCollection);
+            Assert.IsTrue(new TypeSelectorAttribute(typeof(IDisposable)).applyToCollection);
+            Assert.IsTrue(new TypeSelectorAttribute(typeof(IDisposable), typeof(Exception)).applyToCollection);
+            Assert.IsTrue(new TypeSelectorAttribute("_member").applyToCollection);
+            Assert.IsTrue(new TypeSelectorAttribute("_member", "Some.Type, Some").applyToCollection);
+        }
+
         [Test]
         public void Unconstrained_HasNoNames()
         {
