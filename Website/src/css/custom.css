@@ -797,23 +797,6 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 @media (prefers-reduced-motion: reduce) {
   .floating-toc__panel, .floating-toc__bar, .floating-toc__button { transition: none; }
 }
-/* Docusaurus' back-to-top button in the site's control style, stacked above the floating TOC where both show.
-   `html` outranks the theme's own module class, which has the same single-class weight and loads later. */
-html .theme-back-to-top-button {
-  right: 1.5rem; bottom: 1.5rem; width: 2.5rem; height: 2.5rem;
-  background: var(--venom-reading-surface); border: 1px solid var(--venom-line-strong); border-radius: 10px;
-  box-shadow: 0 4px 14px #0004;
-}
-html .theme-back-to-top-button::after { background-color: var(--venom-muted); -webkit-mask-size: 1.5rem 1.5rem; mask-size: 1.5rem 1.5rem; }
-html .theme-back-to-top-button:hover { background: var(--venom-reading-surface); border-color: var(--venom-divider); }
-html .theme-back-to-top-button:hover::after { background-color: var(--venom-fg-strong); }
-@media (max-width: 996px) { html .theme-back-to-top-button { right: 1rem; bottom: 1rem; } }
-@media (max-width: 1399px) {
-  html:has(.floating-toc) .theme-back-to-top-button { bottom: calc(1.5rem + 2.5rem + 0.5rem); }
-}
-@media (max-width: 996px) {
-  html:has(.floating-toc) .theme-back-to-top-button { bottom: calc(1rem + 2.5rem + 0.5rem); }
-}
 .floating-toc__title { padding: 0 0.75rem 0.5rem; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--venom-line); margin-bottom: 0.4rem; }
 .floating-toc__panel .table-of-contents { padding: 0; border: 0; font-size: 0.875rem; }
 .floating-toc__panel .table-of-contents li { margin: 0.25rem 0; }
