@@ -875,14 +875,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var usagesType = SerializeReferenceHelpers.GetCurrentType(_property);
             if (usagesType != null)
-                evt.menu.AppendAction($"Find Usages of {usagesType.Name}",
+                evt.menu.AppendAction(SerializeReferenceHelpers.GetFindUsagesMenuLabel(usagesType),
                     _ => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
 
             if (SerializeReferenceHelpers.NoticesApply(_property))
                 foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(_property, filter: _filter))
                 {
                     var path = candidate.Path;
-                    evt.menu.AppendAction($"Link to Existing/{candidate.Type.Name}  ({path})", _ => LinkToExisting(path));
+                    evt.menu.AppendAction(SerializeReferenceHelpers.GetLinkToExistingMenuLabel(candidate.Type, path),
+                        _ => LinkToExisting(path));
                 }
 
             if (_fieldType != null)

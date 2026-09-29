@@ -722,6 +722,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    IsValidGenericArgument(argument);
         }
 
+        #region Context menu
+        // Menu items name a type the way its field and the picker do (Modifier<Single>, or its [TypeSelectorDisplay]
+        // name), not by the arity form Type.Name gives (Modifier`1).
+        public static string GetFindUsagesMenuLabel(Type type) =>
+            $"Find Usages of {GetMenuTypeTitle(type)}";
+
+        public static string GetLinkToExistingMenuLabel(Type type, string path) =>
+            $"Link to Existing/{GetMenuTypeTitle(type)}  ({path})";
+
+        // Both menu APIs split on '/', so a slash in a custom display name becomes the look-alike division slash.
+        private static string GetMenuTypeTitle(Type type) =>
+            TypeSelectorHelpers.GetTypeSelectorTitle(type).Replace(oldChar: '/', newChar: '∕');
+        #endregion
+
         #region Missing-type repair
         public static ManagedTypeName GetMissingTypeName(SerializedProperty property) =>
             TryGetMissingType(property, out _, out var storedType) ? storedType : default;
