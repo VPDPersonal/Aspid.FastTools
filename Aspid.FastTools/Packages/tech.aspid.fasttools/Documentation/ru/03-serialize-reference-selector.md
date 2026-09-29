@@ -16,7 +16,6 @@
 
 ```csharp
 public interface IMelee : IWeapon { }
-public interface IRanged : IWeapon { }
 public sealed class Sword : IMelee { }
 
 public abstract class StatusEffect { }
@@ -25,19 +24,18 @@ public class Modifier<T> : IModifier { }
 public sealed class DamageModifier : Modifier<float> { }
 ```
 
-| Поле <code lang="class-name">Loadout</code> с <code lang="csharp">[TypeSelector]</code> | Классы в списке |
+| Тип поля | Что в списке |
 |---|---|
-| <code lang="csharp">IWeapon _primary;</code> | <code lang="class-name">Crossbow</code>, <code lang="class-name">Pistol</code>, <code lang="class-name">Railgun</code>, <code lang="class-name">Shotgun</code>, <code lang="class-name">Sword</code> |
-| <code lang="csharp">IWeapon _meleeBackup;</code> и <code lang="csharp">typeof(IMelee)</code> | <code lang="class-name">Sword</code> |
-| <code lang="csharp">StatusEffect _onHit;</code>, абстрактный класс | <code lang="class-name">BurnEffect</code>, <code lang="class-name">FreezeEffect</code> |
-| <code lang="csharp">Modifier&lt;float&gt; _damageModifier;</code> | <code lang="class-name">DamageModifier</code>, <code lang="class-name">Modifier&lt;Single&gt;</code> |
-| <code lang="csharp">List&lt;IModifier&gt; _perks;</code> | <code lang="class-name">AmmoModifier</code>, <code lang="class-name">DamageModifier</code>, <code lang="class-name">NameModifier</code>, <code lang="class-name">Modifier&lt;T&gt;</code> с выбором <code lang="class-name">T</code> |
+| Интерфейс <code lang="class-name">IWeapon</code> | Классы, реализующие его: <code lang="class-name">Crossbow</code>, <code lang="class-name">Pistol</code>, <code lang="class-name">Railgun</code>, <code lang="class-name">Shotgun</code>, <code lang="class-name">Sword</code> |
+| <code lang="class-name">IWeapon</code> и <code lang="csharp">typeof(IMelee)</code> в атрибуте | Классы, подходящие под оба: <code lang="class-name">Sword</code> |
+| Абстрактный класс <code lang="class-name">StatusEffect</code> | Его наследники: <code lang="class-name">BurnEffect</code>, <code lang="class-name">FreezeEffect</code> |
+| <code lang="class-name">Modifier&lt;float&gt;</code> | Наследник <code lang="class-name">DamageModifier</code> и сам <code lang="class-name">Modifier&lt;Single&gt;</code> |
+| <code lang="class-name">List&lt;IModifier&gt;</code> | <code lang="class-name">AmmoModifier</code>, <code lang="class-name">DamageModifier</code>, <code lang="class-name">NameModifier</code> и <code lang="class-name">Modifier&lt;T&gt;</code> с выбором <code lang="class-name">T</code> |
 
-- В списке только конкретные классы, не наследующие <code lang="class-name">UnityEngine.Object</code>.
 - В инспекторе runtime-объекта нет классов из editor-only сборок (`UnityEditor`, asmdef только для Editor, папки `Editor`): билд плеера не сможет их создать.
 - Аргументы generic-класса выводятся из типа поля; если вывести их нельзя, окно спрашивает каждый и предлагает только типы, которые Unity умеет сериализовать.
 - Ограничение можно взять и [из другого поля](02-serializable-types.md#ограничение-из-другого-поля).
-- Строку класса в списке настраивает [`[TypeSelectorDisplay]`](02-serializable-types.md#typeselectordisplay).
+- [`[TypeSelectorDisplay]`](02-serializable-types.md#typeselectordisplay) настраивает строку класса в списке или скрывает класс.
 
 ## Обязательное поле
 
@@ -52,6 +50,8 @@ public sealed class DamageModifier : Modifier<float> { }
 
 В списке с <code lang="csharp">[TypeSelector]</code> кнопка «+» открывает выбор класса и добавляет новый экземпляр, а `<None>` — пустой элемент. При нескольких выбранных объектах каждый получает свой экземпляр, всё в одной группе Undo.
 
+![«+» у Sidearms открывает выбор класса и добавляет Shotgun](../Images/aspid_fasttools_serialize_reference_list.gif)
+
 ## Смена класса
 
 Новый экземпляр получает значения полей с теми же именами:
@@ -64,7 +64,10 @@ public sealed class DamageModifier : Modifier<float> { }
 
 ![Смена Pistol на Shotgun сохраняет Damage = 37](../Images/aspid_fasttools_serialize_reference_selector.gif)
 
-Вложенная ссылка с тем же именем переходит в новый класс тем же экземпляром, а не копией.
+> [!NOTE]
+> Вложенная ссылка с тем же именем переходит в новый класс тем же экземпляром, а не копией.
+>
+> Скрипт `.cs`, перетащенный из Project на заголовок поля, так же меняет класс поля на свой.
 
 ## Меню заголовка
 
@@ -80,9 +83,7 @@ public sealed class DamageModifier : Modifier<float> { }
 | **Create New Script…** | Создаёт <code lang="csharp">[Serializable]</code> класс под тип поля и назначает его после компиляции |
 | **Save as Template…** | Сохраняет значение под именем; шаблоны хранятся в настройках редактора на этом компьютере, не в проекте |
 | **Paste Template → …** | Создаёт экземпляр из шаблона; в списке только подходящие полю |
-| **Paste Template → Remove Missing (N)…** | Удаляет шаблоны, класс которых не загружается; есть, только когда такие шаблоны есть |
-
-Скрипт `.cs`, перетащенный из Project на заголовок, назначает свой класс с переносом данных, как при выборе из списка.
+| **Paste Template → Remove Missing (N)…** | Удаляет шаблоны, класс которых не загружается; виден, только если такие шаблоны есть |
 
 > [!WARNING]
 > Copy/Paste и шаблоны не переносят вложенные поля <code lang="csharp">[SerializeReference]</code>: скопированный <code lang="class-name">Railgun</code> вставится без <code lang="csharp">_chargeEffect</code>.
@@ -108,20 +109,19 @@ public sealed class DamageModifier : Modifier<float> { }
 | **Fix** | Открывает выбор класса, включая скрытые через <code lang="csharp">Hidden</code> |
 | **→ Pistol** | Назначает предложенный класс; причина в подсказке: [`[MovedFrom]`](04-serialize-reference-tooling.md#миграции-с-movedfrom), то же имя, то же имя в другом регистре или похожее имя |
 
-На ассете Fix переписывает файл, и Undo его не отменит. В сцене и Prefab Mode исправление остаётся в памяти: Undo его отменяет, а сохранение делает окончательным и очищает историю Undo объекта.
-
 > [!WARNING]
-> Исправление в памяти возвращает только простые поля верхнего уровня: вложенные объекты, массивы, списки, векторы и цвета получают значения по умолчанию.
+> На ассете Fix переписывает файл, и Undo его не отменит.
+>
+> В сцене и Prefab Mode исправление остаётся в памяти: Undo его отменяет, а сохранение делает окончательным и очищает историю Undo объекта. Такое исправление возвращает только простые поля верхнего уровня: вложенные объекты, массивы, списки, векторы, цвета и ссылки на объекты получают значения по умолчанию.
 
 ### Когда Fix нет
 
 | Случай | Что делать |
 |---|---|
-| Выбрано несколько объектов | Выберите один |
-| В сцене или Prefab Mode есть несохранённые изменения | Сохраните — Fix появится |
+| Выбрано несколько объектов | Выберите один: до этого **Missing type** не показывается |
+| В сцене или Prefab Mode есть несохранённые изменения | Сохраните: до этого поле показывает `<None>` без **Missing type** |
 | Экземпляр префаба, класс хранится в исходном префабе | Исправьте исходный префаб, его имя в подсказке |
 | Экземпляр префаба, класс задан override | Выберите новый класс на экземпляре или отмените override |
-| Ассет префаба в Project, пока префаб открыт в Prefab Mode | Исправьте поле в Prefab Mode |
 
 Остальное исправляет [SerializeReference Tooling](04-serialize-reference-tooling.md).
 
@@ -146,9 +146,8 @@ public sealed class DamageModifier : Modifier<float> { }
 
 ## Ограничения
 
-- **Конструктор.** Экземпляр создаётся конструктором без параметров, в том числе непубличным; если его нет — без инициализаторов полей.
-- **<code lang="csharp">Allow</code> на <code lang="csharp">[SerializeReference]</code>** не действует — анализатор `AFT0002` предупредит об этом.
-- **Пустой выбор.** Если ограничениям не отвечает ни один класс, анализаторы `AFT0003`, `AFT0005` и `AFT0009` предупредят об этом, а на поле с типом из <code lang="class-name">UnityEngine.Object</code> — ошибка `AFT0004`.
+- **Allow.** На <code lang="csharp">[SerializeReference]</code> не действует — анализатор `AFT0002` предупредит об этом.
+- **Несовместимые ограничения.** Если ни один класс не подходит сразу под тип поля и все типы из атрибута, список классов будет пустым: например, <code lang="csharp">[TypeSelector(typeof(Sword))]</code> на поле <code lang="csharp">StatusEffect _onHit;</code>. Анализаторы `AFT0003`, `AFT0005` и `AFT0009` предупредят об этом при компиляции.
 
 ## Пример в пакете
 

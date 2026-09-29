@@ -47,7 +47,7 @@
 4. **Сужение.** `Melee Backup` объявлено как `IWeapon`, но несёт `[TypeSelector(typeof(IMelee))]`, поэтому предлагается только `Sword`. `Holster` делает то же самое внутри обычного `[Serializable]`-контейнера, на уровень глубже.
 5. **Вложенность.** Выберите `Railgun` в `Primary` и `BurnEffect` в его `Charge Effect`: эффект — собственный `[SerializeReference]` со своим списком. При попадании рейлгана манекен загорается.
 6. **Абстрактная база.** `On Hit` — это `StatusEffect`; пикер предлагает `BurnEffect` и `FreezeEffect`, но никогда — абстрактную базу.
-7. **Generics.** `Damage Modifier` — `Modifier<float>`: `T` зафиксирован, поэтому предлагаются `DamageModifier` и `Modifier<float>`, и создаются сразу. `Perks` — `List<IModifier>`: предлагает закрытые подклассы **и** открытый `Modifier<T>`, который запрашивает `T` на второй странице.
+7. **Generics.** `Damage Modifier` — `Modifier<float>`: `T` зафиксирован, поэтому предлагаются `DamageModifier` и `Modifier<Single>`, и создаются сразу. `Perks` — `List<IModifier>`: предлагает закрытые подклассы **и** открытый `Modifier<T>`, который запрашивает `T` на второй странице.
 8. **Required.** Поставьте `Primary` в `<None>`: появится предупреждение, а **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение. Сборка плеера его не проверяет, см. [где проверяются обязательные поля](../../../Documentation/ru/04-serialize-reference-tooling.md#где-проверяются-обязательные-поля).
 9. **Правый клик по любому списку** — Copy / Paste, Make Unique Reference, Save as Template, Find Usages и Create New Script.
 

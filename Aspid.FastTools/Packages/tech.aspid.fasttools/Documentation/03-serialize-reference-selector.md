@@ -16,7 +16,6 @@ The list follows the field type; the attribute can narrow it with extra types.
 
 ```csharp
 public interface IMelee : IWeapon { }
-public interface IRanged : IWeapon { }
 public sealed class Sword : IMelee { }
 
 public abstract class StatusEffect { }
@@ -25,19 +24,18 @@ public class Modifier<T> : IModifier { }
 public sealed class DamageModifier : Modifier<float> { }
 ```
 
-| <code lang="class-name">Loadout</code> field with <code lang="csharp">[TypeSelector]</code> | Classes in the list |
+| Field type | What is listed |
 |---|---|
-| <code lang="csharp">IWeapon _primary;</code> | <code lang="class-name">Crossbow</code>, <code lang="class-name">Pistol</code>, <code lang="class-name">Railgun</code>, <code lang="class-name">Shotgun</code>, <code lang="class-name">Sword</code> |
-| <code lang="csharp">IWeapon _meleeBackup;</code> and <code lang="csharp">typeof(IMelee)</code> | <code lang="class-name">Sword</code> |
-| <code lang="csharp">StatusEffect _onHit;</code>, an abstract class | <code lang="class-name">BurnEffect</code>, <code lang="class-name">FreezeEffect</code> |
-| <code lang="csharp">Modifier&lt;float&gt; _damageModifier;</code> | <code lang="class-name">DamageModifier</code>, <code lang="class-name">Modifier&lt;Single&gt;</code> |
-| <code lang="csharp">List&lt;IModifier&gt; _perks;</code> | <code lang="class-name">AmmoModifier</code>, <code lang="class-name">DamageModifier</code>, <code lang="class-name">NameModifier</code>, <code lang="class-name">Modifier&lt;T&gt;</code> with a choice of <code lang="class-name">T</code> |
+| Interface <code lang="class-name">IWeapon</code> | Classes that implement it: <code lang="class-name">Crossbow</code>, <code lang="class-name">Pistol</code>, <code lang="class-name">Railgun</code>, <code lang="class-name">Shotgun</code>, <code lang="class-name">Sword</code> |
+| <code lang="class-name">IWeapon</code> and <code lang="csharp">typeof(IMelee)</code> in the attribute | Classes that fit both: <code lang="class-name">Sword</code> |
+| Abstract class <code lang="class-name">StatusEffect</code> | Its subclasses: <code lang="class-name">BurnEffect</code>, <code lang="class-name">FreezeEffect</code> |
+| <code lang="class-name">Modifier&lt;float&gt;</code> | The subclass <code lang="class-name">DamageModifier</code> and <code lang="class-name">Modifier&lt;Single&gt;</code> itself |
+| <code lang="class-name">List&lt;IModifier&gt;</code> | <code lang="class-name">AmmoModifier</code>, <code lang="class-name">DamageModifier</code>, <code lang="class-name">NameModifier</code> and <code lang="class-name">Modifier&lt;T&gt;</code> with a choice of <code lang="class-name">T</code> |
 
-- Only concrete classes that do not derive from <code lang="class-name">UnityEngine.Object</code> are offered.
 - In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs, `Editor` folders) are left out: a player build cannot create them.
 - Generic arguments are inferred from the field type; when they cannot be, the window asks for each one and offers only types Unity can serialize.
 - A constraint can also come [from another field](02-serializable-types.md#constraint-from-another-field).
-- A class's row in the list is set by [`[TypeSelectorDisplay]`](02-serializable-types.md#typeselectordisplay).
+- [`[TypeSelectorDisplay]`](02-serializable-types.md#typeselectordisplay) sets a class's row in the list or hides the class.
 
 ## Required field
 
@@ -52,6 +50,8 @@ With <code lang="csharp">Required = true</code>, an empty field shows **Required
 
 In a list with <code lang="csharp">[TypeSelector]</code>, “+” opens the class picker and adds a new instance, and `<None>` adds an empty element. With several objects selected, each gets its own instance, all in one Undo group.
 
+![“+” on Sidearms opens the class picker and adds a Shotgun](Images/aspid_fasttools_serialize_reference_list.gif)
+
 ## Switching the class
 
 The new instance receives the values of fields with the same names:
@@ -64,7 +64,10 @@ The new instance receives the values of fields with the same names:
 
 ![Switching from Pistol to Shotgun keeps Damage = 37](Images/aspid_fasttools_serialize_reference_selector.gif)
 
-A nested reference with the same name moves to the new class as the same instance, not a copy.
+> [!NOTE]
+> A nested reference with the same name moves to the new class as the same instance, not a copy.
+>
+> A `.cs` script dragged from Project onto the field header switches the field to its class the same way.
 
 ## Header menu
 
@@ -81,8 +84,6 @@ Right-click the field header:
 | **Save as Template…** | Saves the value under a name; templates live in the editor settings on this machine, not in the project |
 | **Paste Template → …** | Creates an instance from a template; only templates that fit the field are listed |
 | **Paste Template → Remove Missing (N)…** | Deletes templates whose class does not load; shown only when there are any |
-
-A `.cs` script dragged from Project onto the header assigns its class and carries data over, as picking from the list does.
 
 > [!WARNING]
 > Copy/Paste and templates do not carry nested <code lang="csharp">[SerializeReference]</code> fields: a copied <code lang="class-name">Railgun</code> pastes without its <code lang="csharp">_chargeEffect</code>.
@@ -108,20 +109,19 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 | **Fix** | Opens the class picker, including classes hidden with <code lang="csharp">Hidden</code> |
 | **→ Pistol** | Assigns the suggested class; the tooltip gives the reason: [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom), the same name, the same name in another case, or a similar name |
 
-On an asset, Fix rewrites the file, and Undo does not revert it. In a scene or Prefab Mode the repair stays in memory: Undo reverts it, and saving makes it final and clears the object's Undo history.
-
 > [!WARNING]
-> An in-memory repair brings back only flat top-level fields: nested objects, arrays, lists, vectors and colours get their default values.
+> On an asset, Fix rewrites the file, and Undo does not revert it.
+>
+> In a scene or Prefab Mode the repair stays in memory: Undo reverts it, and saving makes it final and clears the object's Undo history. Such a repair brings back only flat top-level fields: nested objects, arrays, lists, vectors, colours and object references get their default values.
 
 ### When there is no Fix
 
 | Case | What to do |
 |---|---|
-| Several objects selected | Select one |
-| Unsaved changes in the scene or Prefab Mode | Save — Fix appears |
+| Several objects selected | Select one: until then **Missing type** is not shown |
+| Unsaved changes in the scene or Prefab Mode | Save: until then the field shows `<None>` without **Missing type** |
 | Prefab instance, class stored in the source prefab | Repair the source prefab; the tooltip names it |
 | Prefab instance, class set through an override | Choose a new class on the instance or revert the override |
-| Prefab asset in Project while the prefab is open in Prefab Mode | Repair the field in Prefab Mode |
 
 [SerializeReference Tooling](04-serialize-reference-tooling.md) repairs everything else.
 
@@ -146,9 +146,8 @@ Constraints on top of the field type go in the <code lang="csharp">baseTypes</co
 
 ## Limitations
 
-- **Constructor.** An instance is created with the parameterless constructor, non-public included; without one, field initializers do not run.
-- **<code lang="csharp">Allow</code> on <code lang="csharp">[SerializeReference]</code>** has no effect — analyzer `AFT0002` reports it.
-- **No candidates.** When no class meets the constraints, analyzers `AFT0003`, `AFT0005` and `AFT0009` report it, and a field whose type derives from <code lang="class-name">UnityEngine.Object</code> is error `AFT0004`.
+- **Allow.** Has no effect on <code lang="csharp">[SerializeReference]</code> — analyzer `AFT0002` reports it.
+- **Incompatible constraints.** When no class fits both the field type and all the attribute's types, the class list is empty — for example, <code lang="csharp">[TypeSelector(typeof(Sword))]</code> on <code lang="csharp">StatusEffect _onHit;</code>. Analyzers `AFT0003`, `AFT0005` and `AFT0009` report it at compile time.
 
 ## Package sample
 
