@@ -1,0 +1,27 @@
+# Weekly, one grouped PR per ecosystem, titled `chore(deps): …` so it passes the PR title check.
+# NuGet is left out on purpose: Roslyn versions in the generator/analyzer projects are pinned to what Unity ships.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore(deps)
+    labels: [dependencies]
+    groups:
+      actions:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /Website
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore(deps)
+    labels: [dependencies]
+    open-pull-requests-limit: 1
+    groups:
+      website:
+        patterns: ['*']
+        update-types: [minor, patch]
