@@ -68,9 +68,13 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   highlighted on the site (`introBanner.js` → `src/components/InlineCode`). Use it for every inline C# snippet, in prose
   and in tables — never for paths, flags, diagnostic IDs (`AFT0010`) or Profiler column names (`Calls`) — and escape
   `<`, `>`, `{`, `}` as in `<pre>` cells.
-  `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the whole text in that token's
-  colour: Profiler marker names in a result column, a lone type (`T`; in `System.Type` only `Type`), a bare method
-  name (`Update`; in `styleSheets.Add` only `Add`).
+  `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the text in that token's
+  colour: Profiler marker names in a result column, a lone type (`T`; in `System.Type` only `Type`; in `List<Weapon>`
+  both names, brackets plain), a bare method name (`Update`; in `styleSheets.Add` only `Add`). A namespace stays in the
+  normal text colour, in code blocks too (`using Aspid.FastTools.Types;`, the `System.` of `System.Type`): write it as
+  `<code lang="csharp">UnityEngine.Scripting</code>`. Prism leaves a lone generic type or `System.Type` in `csharp`
+  uncoloured, so use `class-name` for them; a qualified method call reads best as `csharp` with its parentheses
+  (`Type.GetType()`). Fields, properties and enum values stay plain, as in code blocks.
 - **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
   would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
 - The package is English. A translation is a sibling file: `Documentation/ru/06-enum-values.md`,
@@ -163,6 +167,9 @@ to every main doc page, always to the English file and its `ru/` twin together.
   `~/.dotnet/tools/ilspycmd -t UnityEditor.ObjectNames /Applications/Unity/Hub/Editor/6000.0.64f1/Unity.app/Contents/Managed/UnityEngine/UnityEditor.CoreModule.dll`.
 - **Code blocks fit the article width** without horizontal scrolling. Site table columns are equal and fixed, so
   long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
+- **No caption under a capture on a feature page**: the section text already says what it shows, so the image keeps
+  only its alt text (Serializable Type System, ProfilerMarkers). The caption paragraph stays for live diagrams, tutorial
+  pages and the `## Package sample` gif (see below).
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
   and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
 - Text stays left-aligned (never justified) and fills the article width.
