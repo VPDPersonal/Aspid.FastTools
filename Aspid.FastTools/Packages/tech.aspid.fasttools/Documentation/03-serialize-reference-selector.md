@@ -22,7 +22,7 @@ The list follows the field type; the attribute can narrow it with extra types. F
 | <code lang="csharp">Modifier&lt;float&gt; _damageModifier</code> | DamageModifier, Modifier&lt;Single&gt; |
 | <code lang="csharp">List&lt;IModifier&gt; _perks</code> | AmmoModifier, DamageModifier, NameModifier, Modifier&lt;T&gt; with a choice of <code lang="class-name">T</code> |
 
-Only concrete classes that do not derive from <code lang="class-name">UnityEngine.Object</code> are offered. In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs, `Editor` folders) are left out: a player build cannot create them. Generic arguments are inferred from the field type; when they cannot be, the window asks for each one. A constraint can also come [from another field](02-serializable-types.md#dynamic-base-types-via-member-references): <code lang="csharp">[TypeSelector(nameof(_category))]</code>.
+Only concrete classes that do not derive from <code lang="class-name">UnityEngine.Object</code> are offered. In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs, `Editor` folders) are left out: a player build cannot create them. Generic arguments are inferred from the field type; when they cannot be, the window asks for each one and offers only types Unity can serialize. A constraint can also come [from another field](02-serializable-types.md#constraint-from-another-field): <code lang="csharp">[TypeSelector(nameof(_category))]</code>.
 
 ## How a class appears in the list
 

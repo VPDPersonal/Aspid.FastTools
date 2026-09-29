@@ -22,7 +22,7 @@
 | <code lang="csharp">Modifier&lt;float&gt; _damageModifier</code> | DamageModifier, Modifier&lt;Single&gt; |
 | <code lang="csharp">List&lt;IModifier&gt; _perks</code> | AmmoModifier, DamageModifier, NameModifier, Modifier&lt;T&gt; с выбором <code lang="class-name">T</code> |
 
-В списке только конкретные классы, не наследующие <code lang="class-name">UnityEngine.Object</code>. В инспекторе runtime-объекта классы из editor-only сборок (`UnityEditor`, asmdef только для Editor, папки `Editor`) не предлагаются: билд плеера не сможет их создать. Аргументы generic-класса выводятся из типа поля; если вывести их нельзя, окно спрашивает каждый. Ограничение можно взять и [из другого поля](02-serializable-types.md#ограничение-из-другого-поля): <code lang="csharp">[TypeSelector(nameof(_category))]</code>.
+В списке только конкретные классы, не наследующие <code lang="class-name">UnityEngine.Object</code>. В инспекторе runtime-объекта классы из editor-only сборок (`UnityEditor`, asmdef только для Editor, папки `Editor`) не предлагаются: билд плеера не сможет их создать. Аргументы generic-класса выводятся из типа поля; если вывести их нельзя, окно спрашивает каждый и предлагает только типы, которые Unity умеет сериализовать. Ограничение можно взять и [из другого поля](02-serializable-types.md#ограничение-из-другого-поля): <code lang="csharp">[TypeSelector(nameof(_category))]</code>.
 
 ## Как класс выглядит в списке
 
