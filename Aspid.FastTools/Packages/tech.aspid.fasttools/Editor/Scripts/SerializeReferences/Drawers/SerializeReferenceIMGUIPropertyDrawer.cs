@@ -456,7 +456,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (SerializeReferenceHelpers.NoticesApply(property))
             {
-                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(property))
+                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(property, filter: filter))
                 {
                     var path = candidate.Path;
                     menu.AddItem(new GUIContent($"Link to Existing/{candidate.Type.Name}  ({path})"), false,

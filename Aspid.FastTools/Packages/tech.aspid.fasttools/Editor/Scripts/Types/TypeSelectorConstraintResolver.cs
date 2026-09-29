@@ -18,6 +18,19 @@ namespace Aspid.FastTools.Types.Editors
                 attributedProperty.GetDeclaringInstance() ?? attributedProperty.serializedObject.targetObject,
                 assemblyQualifiedNames);
 
+        // For a list drawn through an API that takes its own constraints: [TypeSelector] applies to the collection,
+        // so its elements no longer resolve the attribute themselves.
+        internal static Type[] AppendFieldConstraints(SerializedProperty listProperty, Type[] baseTypes)
+        {
+            var selector = listProperty.GetFieldInfo()?.GetCustomAttribute<TypeSelectorAttribute>(inherit: true);
+            if (selector is null || selector.AssemblyQualifiedNames.Length is 0) return baseTypes;
+
+            var resolved = Resolve(listProperty, selector.AssemblyQualifiedNames).Types;
+            if (resolved.Length is 0) return baseTypes;
+
+            return baseTypes is null || baseTypes.Length is 0 ? resolved : baseTypes.Concat(resolved).ToArray();
+        }
+
         internal static Result Resolve(object targetObject, IReadOnlyList<string> assemblyQualifiedNames)
         {
             var types = new List<Type>();

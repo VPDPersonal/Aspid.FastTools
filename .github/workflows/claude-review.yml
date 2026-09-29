@@ -1,0 +1,40 @@
+name: Claude review
+
+# One review when a PR leaves draft; later rounds on request with `@claude` (claude.yml).
+on:
+  pull_request:
+    types: [ready_for_review]
+
+jobs:
+  review:
+    # Fork PRs get no secrets; Dependabot PRs are not worth the tokens.
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request of a Unity package. Read AGENTS.md first; its rules are the review baseline.
+
+            Report only problems a maintainer would fix before merging:
+            - correctness bugs and missed edge cases, with the input that breaks
+            - Unity APIs newer than 6000.0, editor-only APIs reachable from runtime code
+            - public API changes without a CHANGELOG entry or an updated skill in skills/
+            - generator/analyzer code that writes to Console or references SourceGenerator.Foundations
+
+            Skip style, naming and praise. At most 8 findings, most severe first, each as an inline comment on the line.
+            Finish with one top-level comment: "No blocking issues" or the count of findings. Write in English.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

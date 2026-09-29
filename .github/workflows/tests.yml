@@ -25,11 +25,11 @@ jobs:
           - name: YAML engine
             path: Aspid.FastTools.YamlTests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
           dotnet-version: 6.0.x
@@ -79,7 +79,7 @@ jobs:
           - name: dev project
             unity: project
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Create the test project
         id: project
@@ -91,7 +91,7 @@ jobs:
           [ -n "$version" ] || { echo "::error::make-unity-test-project.sh printed no Unity version"; exit 1; }
           echo "unity=$version" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ci-unity-project/Library
           key: unity-library-${{ steps.project.outputs.unity }}-${{ hashFiles('Aspid.FastTools/Packages/tech.aspid.fasttools/**') }}
@@ -110,7 +110,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ steps.project.outputs.unity }})
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: unity-test-results-${{ steps.project.outputs.unity }}

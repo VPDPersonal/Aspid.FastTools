@@ -2,6 +2,8 @@ using System;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
+using Aspid.FastTools.Editors;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -14,12 +16,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Persists the header foldout's expanded state across selection changes, like Unity's own PropertyField list.
         private const string ViewDataKeyPrefix = "aspid-fasttools-serialize-reference-list::";
 
-        private readonly Type[] _baseTypes;
         private readonly SerializedProperty _property;
 
         // Carried into the element fields, so a graph nested through lists counts toward the same depth cap as one
         // nested through plain fields.
         private readonly int _depth;
+
+        // The element fields currently bound, so a re-resolved constraint reaches them without a rebind.
+        private readonly HashSet<SerializeReferenceField> _elementFields = new();
+
+        // Mutable on purpose: a [TypeSelector] member-referenced constraint re-resolves while the inspector is open
+        // and replaces it through SetBaseTypes; the add picker reads it when it opens.
+        private Type[] _baseTypes;
 
         public SerializeReferenceListField(string label, SerializedProperty property, Type elementType,
             Type[] baseTypes = null, int depth = 0)
@@ -33,7 +41,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var listView = new ListView
             {
                 showBorder = true,
-                reorderable = true,
+                reorderable = !property.IsNonReorderable(),
                 showFoldoutHeader = true,
                 headerTitle = label,
                 showAddRemoveFooter = true,
@@ -45,7 +53,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 viewDataKey = ViewDataKeyPrefix + property.propertyPath,
                 makeItem = () => new VisualElement(),
                 bindItem = BindItem,
-                unbindItem = (element, _) => element.Clear(),
+                unbindItem = UnbindItem,
             };
 
             // Under a multi-object selection too: the native add would copy the last element's rid into every object,
@@ -64,9 +72,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             listView.Bind(serializedObject);
         }
 
+        // Replaces the constraint after construction, for the add picker and every bound element field alike.
+        internal void SetBaseTypes(Type[] baseTypes)
+        {
+            _baseTypes = baseTypes;
+            foreach (var field in _elementFields) field.SetBaseTypes(baseTypes);
+        }
+
         private void BindItem(VisualElement element, int index)
         {
-            element.Clear();
+            UnbindItem(element, index);
 
             var elementProperty = GetElementProperty(index);
             if (elementProperty is null) return;
@@ -80,7 +95,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            element.Add(new SerializeReferenceField(elementProperty.displayName, elementProperty, _baseTypes, _depth));
+            var elementField = new SerializeReferenceField(elementProperty.displayName, elementProperty, _baseTypes, _depth);
+            _elementFields.Add(elementField);
+            element.Add(elementField);
+        }
+
+        private void UnbindItem(VisualElement element, int index)
+        {
+            if (element.childCount > 0 && element[0] is SerializeReferenceField elementField)
+                _elementFields.Remove(elementField);
+
+            element.Clear();
         }
 
         // Null while the view and the data disagree, such as just after a tail element is removed. The next binding

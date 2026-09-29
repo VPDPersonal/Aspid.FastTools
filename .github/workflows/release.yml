@@ -64,7 +64,7 @@ jobs:
           echo "Releasing v$VERSION"
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -103,7 +103,7 @@ jobs:
           echo "package.json version matches: $PKG_VERSION"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -148,7 +148,7 @@ jobs:
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
           dotnet-version: '6.0.x'

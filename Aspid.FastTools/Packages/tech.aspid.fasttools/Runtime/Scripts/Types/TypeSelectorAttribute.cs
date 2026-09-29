@@ -11,7 +11,11 @@ namespace Aspid.FastTools.Types
     /// Draws the field with the type-selector window.
     /// </summary>
     /// <remarks>
-    /// With several base types the picker shows only types assignable to all of them.
+    /// <para>With several base types the picker shows only types assignable to all of them.</para>
+    /// <para>
+    /// On an array or <see cref="System.Collections.Generic.List{T}"/> field it applies to the collection itself: each
+    /// element gets a picker, and the add button of a <c>[SerializeReference]</c> list opens one, even when empty.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -80,6 +84,7 @@ namespace Aspid.FastTools.Types
         /// </summary>
         /// <param name="types">The base constraint types.</param>
         public TypeSelectorAttribute(params Type[]? types)
+            : base(applyToCollection: true)
         {
             // A generic type parameter has no assembly-qualified name; skip it rather than store a null entry.
             AssemblyQualifiedNames = types?
@@ -120,6 +125,7 @@ namespace Aspid.FastTools.Types
         /// Each entry is resolved independently, member-first; see <see cref="TypeSelectorAttribute(string)"/>.
         /// </param>
         public TypeSelectorAttribute(params string[]? assemblyQualifiedNames)
+            : base(applyToCollection: true)
         {
             AssemblyQualifiedNames = assemblyQualifiedNames?
                 .Where(name => !string.IsNullOrWhiteSpace(name))
