@@ -1,11 +1,18 @@
-## Summary
+<!-- Anything the maintainer must do or decide? Keep this block, one checkbox per ask; otherwise delete it. -->
+> [!IMPORTANT]
+> - [ ] 
 
-<!-- 1–3 bullets: what changed and why. -->
+**Why.** <!-- 1–2 sentences: the problem, not a recap of the diff. -->
 
-## Notes for review
+**What**
+- <!-- One fact per bullet, up to 5. -->
 
-<!-- Optional: things you specifically want eyes on, trade-offs you considered, or risks. Delete this section if not applicable. -->
+<!-- More than 3 files? Say where to start: **Start with:** `path/to/file` -->
 
-## Linked issues
+<details><summary>Verification</summary>
 
-<!-- Closes #N, Refs #N. Delete this section if not applicable. -->
+- <!-- How it was tested, one check per line. -->
+
+</details>
+
+<!-- Closes #N -->
