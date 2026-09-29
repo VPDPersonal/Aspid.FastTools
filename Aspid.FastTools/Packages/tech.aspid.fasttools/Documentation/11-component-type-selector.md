@@ -1,42 +1,42 @@
 # ComponentTypeSelector
 
-`ComponentTypeSelector` changes the type of an existing component or ScriptableObject in the Inspector. Switching between subclasses preserves shared field values.
+Change a component's class right in the Inspector while shared fields keep their values.
 
 ## Quick start
 
-Add the field to a base class. The picker offers compatible concrete types and has no `<None>` entry.
-
 ```csharp
-using UnityEngine;
-using Aspid.FastTools.Types;
-
 public abstract class EnemyBase : MonoBehaviour
 {
     [SerializeField] private ComponentTypeSelector _enemyType;
-    [SerializeField, Min(0)] private float _health = 100f;
+    [SerializeField] private float _health = 100f;
 }
 ```
 
-Save the base class as `EnemyBase.cs`. Create subclasses in **separate files** matching their class names:
-
 | FastEnemy.cs | ArmoredEnemy.cs |
 |---|---|
-| <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private float _speed = 25f;&#10;&#125;</code></pre> | <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private int _armor = 10;&#10;&#125;</code></pre> |
+| <pre lang="csharp"><code>public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private float _speed = 25f;&#10;&#125;</code></pre> | <pre lang="csharp"><code>public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private int _armor = 10;&#10;&#125;</code></pre> |
 
-Add **FastEnemy** to a GameObject, set **Health = 75**, and select **ArmoredEnemy** in the picker. The shared `Health` remains, `Speed` disappears, and `Armor` appears. Do not assume fields unique to the previous class will survive a later switch back.
+The list offers the concrete subclasses of the class that declares the field, with no `<None>` entry.
 
-![Switching a component type with ComponentTypeSelector](Images/component-type-selector.gif)
+![Picking ArmoredEnemy instead of FastEnemy keeps Health = 75](Images/component-type-selector.gif)
 
-Switching a component type with ComponentTypeSelector
+| Field | FastEnemy | ArmoredEnemy picked | Back to FastEnemy |
+|---|---|---|---|
+| **Health** | 75 | 75 | 75 |
+| **Speed** | 40 | — | 25 |
+| **Armor** | — | 10 | — |
 
-The selected class must have its own script file that Unity recognizes. If no suitable script is found, the type stays unchanged and the Console shows a warning.
+A ScriptableObject works the same way.
 
-The switch follows the rules of **Add Component**: it first adds the components the new class lists in `[RequireComponent]`, and one Undo reverts the switch together with them. The type stays unchanged and the Console shows a warning when:
+## When the type does not change
 
-- the new class is `[DisallowMultipleComponent]` and the GameObject already has one;
+The switch follows the rules of **Add Component**: it first adds the components the new class lists in <code lang="csharp">[RequireComponent]</code>, and one Undo reverts it together with them. The class stays as it was and the Console shows a warning when:
+
+- the class has no script file of its own with the same name, such as a nested class or a second class in a file;
+- the new class is marked <code lang="csharp">[DisallowMultipleComponent]</code> and the GameObject already has one;
 - the switch would remove a class another component requires;
-- a component the new class requires cannot be added, such as an abstract class like `Collider`.
+- the new class requires a component that cannot be added, such as the abstract <code lang="class-name">Collider</code>.
 
 ## Package sample
 
-Try component type switching in the [Types sample](../Samples~/Types/Documentation/README.md).
+The [Types](../Samples~/Types/Documentation/README.md) sample shows component type switching.
