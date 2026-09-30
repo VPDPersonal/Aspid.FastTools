@@ -28,17 +28,17 @@ Project References and Asset References are tabs of one window. **Scan Project**
 | Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Pistol** — apply a class with the same or a similar name; the tooltip gives the reason |
 | Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
 
-Every action asks for **Rewrite** and skips open and locked files. `<None>` in the class picker clears the group's references and deletes their data, fields sharing the same `rid` included; it asks for **Clear** and has no Undo.
+Every action asks for **Rewrite**. `<None>` in the class picker clears the group's references and deletes their data, fields sharing the same `rid` included; it asks for **Clear** and has no Undo.
 
 ### What repair preserves
 
-A repair rewrites only the entry's class, namespace and assembly; its data and `rid` stay. When the group's fields have different types, the confirmation warns that the pick may not fit every entry: incompatible ones become <code lang="csharp">null</code> on reimport.
+A repair rewrites only the entry's class, namespace and assembly; its data and `rid` stay. When the group's fields have different types, the pick may not fit every entry: incompatible ones become <code lang="csharp">null</code> on reimport.
 
 The summary after a rewrite has **Undo**: it restores the old class on entries that still hold the new one. It is gone after **Rescan**, closing the window or a domain reload; **Edit → Undo** does not revert a rewrite.
 
 ### Prefab instance overrides
 
-A missing class set through a prefab instance override — in a variant, a nested prefab or an instance in a scene — is listed in a separate **Prefab instance overrides** card, and the build checks count it as missing. An old name listed in <code lang="csharp">[MovedFrom]</code> is shown there as a pending migration and passes the checks.
+A missing class set through a prefab instance override — in a variant, a nested prefab or an instance in a scene — is listed in a separate **Prefab instance overrides** card.
 
 ![Prefab instance overrides card with a missing GhostRailgun in the EliteLoadout variant](Images/aspid_fasttools_serialize_reference_prefab_overrides.png)
 
@@ -46,15 +46,15 @@ A missing class set through a prefab instance override — in a variant, a neste
 
 ## Asset References: inspect one asset
 
-Assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**, or click an entry row in Project References. References are grouped by host object, each with its field path and `rid`:
+Assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**, or click an entry row in Project References.
 
 ![Asset References with a missing GhostCrossbow, a SHARED Pistol and an orphaned Railgun entry](Images/aspid_fasttools_serialize_reference_asset_references.png)
 
 | Label | Meaning |
 |---|---|
 | Band with **Fix Missing ▼** (**Fix ▼** on a migration) | The stored class is not found; the button opens the class picker |
-| **Smart Fix → Pistol** row | A class picked as by **Smart Fix** in Project References; a click writes it into the file |
-| **Migrate → Crossbow** row | The class was renamed with <code lang="csharp">[MovedFrom]</code>; a click writes the new name into the file |
+| **Smart Fix → Pistol** row | A class picked as by **Smart Fix** in Project References |
+| **Migrate → Crossbow** row | The class was renamed with <code lang="csharp">[MovedFrom]</code> |
 | Band with **Change ▼**, **Assign ▼** or **Assign Required ▼** | Changes the class of a healthy reference, fills an empty or required field; the asset is saved at once |
 | **SHARED** | Several fields point at one instance; matching colours mark the connected fields |
 | **Orphaned** | An entry no field points at; **Clear** deletes it from the file, without Undo |
@@ -71,7 +71,7 @@ When <code lang="class-name">CrossbowLauncher</code> is renamed to <code lang="c
 |---|---|
 | `type: {class: CrossbowLauncher, …}` | `type: {class: Crossbow, …}` |
 
-A group becomes a pending migration when exactly one class in the project lists the old name in <code lang="csharp">[MovedFrom]</code> and it fits the field; the build checks do not count such a group as missing. When several classes list the name, or the stored class is a closed generic, the group stays a missing type.
+A group becomes a pending migration only when exactly one class that fits the field lists the old name in <code lang="csharp">[MovedFrom]</code> and the stored class is not a closed generic; the build checks do not count such a group as missing.
 
 Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old name any more. **Migrate all** does not rewrite it:
 
@@ -136,7 +136,7 @@ Exit code `2` means the check itself failed.
 
 ### Report
 
-The header counts the violations and the files that were not scanned because they are not text YAML:
+The report starts with a header:
 
 ```text
 # SerializeReference Gate Report
@@ -148,7 +148,7 @@ The header counts the violations and the files that were not scanned because the
 
 Skipped files do not change the exit code.
 
-After the header, each violation occupies one line. Fields are tab-separated:
+Then one line per violation, tab-separated:
 
 ```text
 KIND    assetPath    fileId    rid    className    fieldPath    origin
@@ -157,11 +157,11 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 | Field | Contents |
 |---|---|
 | `KIND` | `MissingType` or `RequiredUnset` |
-| `assetPath` | File path, such as `Assets/Presets/BrokenWeaponPreset.asset` |
+| `assetPath` | File path |
 | `fileId` | Host object ID within the file; for a prefab instance override, the ID of the prefab instance |
 | `rid` | Managed-reference ID; in `RequiredUnset` rows, `-2` for an empty <code lang="csharp">[SerializeReference]</code> and `0` for a <code lang="csharp">string</code> or <code lang="class-name">SerializableType</code> |
-| `className` | Stored class name for `MissingType`, without separate namespace or assembly fields |
-| `fieldPath` | Required field path; for a `MissingType` override, the overridden field when the instance overrides it; otherwise empty |
+| `className` | Stored class name for `MissingType` |
+| `fieldPath` | Required field path; for a `MissingType` override, the overridden field; otherwise empty |
 | `origin` | `override` for a type set by a prefab instance override; otherwise empty |
 
 In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead.
@@ -179,13 +179,13 @@ Every setting is in **Tools → Aspid 🐍 → FastTools → Settings**; the sha
 | **Auto de-alias duplicated list elements** | On | Gives a duplicated list element its own instance instead of a shared `rid` |
 | **Breakage detection** | On | After scripts or assets change, reports newly missing references with a notification and in the Console |
 
-Breakage detection is personal and kept in `EditorPrefs` for this project. The others are shared: they are saved to `ProjectSettings/SerializeReferenceSharedSettings.asset` and apply to the whole team and CI.
+Breakage detection is kept locally in `EditorPrefs`; the other settings live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI.
 
 ## Limitations
 
-- **Open and locked files.** Rewrites skip open scenes, Prefab Mode, assets with unsaved changes and read-only files version control could not check out (with an error in the Console). Asset References offers to save an unsaved asset; save and close the scene or Prefab Mode, or repair the field with [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types). In Project References, `<None>` clears references of open copies in memory, and the scan keeps listing them until the copies are saved.
+- **Open and locked files.** Rewrites skip open scenes, Prefab Mode, assets with unsaved changes and read-only files version control could not check out. Asset References offers to save an unsaved asset; save and close the scene or Prefab Mode, or repair the field with [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types). In Project References, `<None>` clears references of open copies in memory; save the copies to write the change to the files.
 - **Scenes and missing parents.** In a scene or under a missing parent reference, Asset References repairs only missing types; change other fields in the Inspector.
-- **Required in scenes.** Scenes are read from YAML: fields of components and by-value containers are checked, <code lang="csharp">[SerializeReference]</code> fields themselves included; fields inside managed references, collections and prefab instance overrides are not. A field absent from the scene file is not a violation.
+- **Required in scenes.** Fields of components and by-value containers are checked, <code lang="csharp">[SerializeReference]</code> fields themselves included; fields inside managed references, collections and prefab instance overrides are not. A field absent from the scene file is not a violation.
 
 ## Package sample
 
