@@ -21,6 +21,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         private const string ProbeAssetPath = "Assets/__AspidGateScannerRequiredProbe__.asset";
         private const string EngineAssetPath = "Assets/__AspidGateScannerEngineProbe__.asset";
+        private const string ExcludedFolderPath = "Assets/__AspidGateScannerExcluded__";
+        private const string ExcludedProbePath = ExcludedFolderPath + "/Probe.asset";
+        private const string SharedSettingsPath = "ProjectSettings/SerializeReferenceSharedSettings.asset";
 
         // Scan(RequiredOnly) is the exact call the Project References "Required violations" group makes; this proves
         // it surfaces both an unset managed reference and an unset [TypeSelector(Required = true)] string field on a
@@ -344,6 +347,67 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void ScanAssetRequiredFields_NonCandidatePath_ReturnsEmpty()
         {
             Assert.AreEqual(0, SerializeReferenceGateScanner.ScanAssetRequiredFields("Assets/Fake.txt").Count);
+        }
+
+        // Asset References inspects the one asset the user picked, so an excluded folder, which keeps the asset out
+        // of the project audit, must not hide its required fields there, just as it does not hide its missing types.
+        [Test]
+        public void ScanAssetRequiredFields_AssetInExcludedFolder_StillReportsUnsetFields()
+        {
+            WithExcludedProbe(() =>
+            {
+                var violations = SerializeReferenceGateScanner.ScanAssetRequiredFields(ExcludedProbePath);
+
+                Assert.IsTrue(violations.Any(v => v.FieldPath == nameof(RequiredTestObject.requiredRef)),
+                    "A picked asset in an excluded folder must still report its unset required reference.");
+                Assert.IsTrue(violations.Any(v => v.FieldPath == nameof(RequiredTestObject.requiredString)),
+                    "A picked asset in an excluded folder must still report its unset required string field.");
+            });
+        }
+
+        // The Project References audit skips excluded folders, so re-auditing an edited file there adds nothing to it.
+        [Test]
+        public void RescanRequiredFields_AssetInExcludedFolder_AddsNothing()
+        {
+            WithExcludedProbe(() =>
+            {
+                var refreshed = SerializeReferenceGateScanner.RescanRequiredFields(
+                    Array.Empty<GateViolation>(), new[] { ExcludedProbePath });
+
+                Assert.IsFalse(refreshed.Any(v => v.AssetPath == ExcludedProbePath),
+                    "The project audit must keep skipping a file in an excluded folder after a rescan.");
+            });
+        }
+
+        // Saves an unset RequiredTestObject into a folder the shared settings exclude, then removes the folder and
+        // puts the settings file back byte for byte.
+        private static void WithExcludedProbe(Action body)
+        {
+            var excludedFolders = SerializeReferenceSettings.ExcludedFolders;
+            var settingsFile = File.Exists(SharedSettingsPath) ? File.ReadAllBytes(SharedSettingsPath) : null;
+            try
+            {
+                AssetDatabase.CreateFolder(parentFolder: "Assets", newFolderName: Path.GetFileName(ExcludedFolderPath));
+                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<RequiredTestObject>(), ExcludedProbePath);
+                SerializeReferenceSettings.ExcludedFolders = excludedFolders.Append(ExcludedFolderPath).ToArray();
+                Assume.That(SerializeReferenceHelpers.IsScanCandidate(ExcludedProbePath), Is.False);
+
+                body();
+            }
+            finally
+            {
+                try
+                {
+                    SerializeReferenceSettings.ExcludedFolders = excludedFolders;
+                }
+                finally
+                {
+                    if (settingsFile is null) File.Delete(SharedSettingsPath);
+                    else File.WriteAllBytes(SharedSettingsPath, settingsFile);
+
+                    AssetDatabase.DeleteAsset(ExcludedFolderPath);
+                }
+            }
         }
 
         // The Inspect Asset graph (SerializeReferenceGraphView) badges an empty [SerializeReference] slot as REQUIRED

@@ -164,10 +164,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 builder.AppendLine($"    … and {paths.Count - MaxListedPaths} more");
         }
 
+        // Asset References calls this for the one asset the user picked, so an excluded folder does not hide its
+        // required fields, as it does not hide its missing types. The project audit filters excluded folders itself.
         public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath)
         {
             var violations = new List<GateViolation>();
-            if (string.IsNullOrEmpty(assetPath) || !SerializeReferenceHelpers.IsScanCandidate(assetPath)) return violations;
+            if (!SerializeReferenceYaml.IsCandidateAssetPath(assetPath)) return violations;
 
             _scriptRequiredFieldsCache.Clear();
 
@@ -187,7 +189,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var violations = cached.Where(violation => !paths.Contains(violation.AssetPath)).ToList();
 
-            foreach (var path in paths)
+            foreach (var path in paths.Where(SerializeReferenceHelpers.IsScanCandidate))
                 violations.AddRange(ScanAssetRequiredFields(path));
 
             return violations;
