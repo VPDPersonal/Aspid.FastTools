@@ -1,39 +1,45 @@
 # Пример ProfilerMarkers
 
-Стая кубов, которой управляет обычный C#-класс, и `this.Marker()` вокруг каждой фазы. Генератор превращает каждый вызов в статический `ProfilerMarker`, поэтому Profiler показывает именованное дерево кадра без единого поля маркера, написанного руками. Справочник — [ProfilerMarkers](../../../Documentation/ru/05-profiler-markers.md).
+Стая кубов, у которой каждая фаза кадра видна в Profiler под своим именем.
 
-```csharp
-using var _ = this.Marker();                   // "FlockSimulation.Step (line)", до конца метода
-using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (line)", блок
-    ComputeSteering(neighborRadius);
-```
+![Симуляция стаи, фазы которой измеряют маркеры.](Images/demo.gif)
 
-![Дерево Flock показывает вложенность сгенерированных маркеров. У Steering.Agent — 120 вызовов на 120 агентов; время зависит от машины.](Images/profiler-markers.png)
-
-Дерево Flock показывает вложенность сгенерированных маркеров. У Steering.Agent — 120 вызовов на 120 агентов; время зависит от машины.
+Симуляция стаи, фазы которой измеряют маркеры.
 
 ## Как открыть
 
-1. Импортируйте пример и откройте `Scenes/ProfilerMarkers.unity`.
-2. Откройте **Window → Analysis → Profiler**, войдите в Play Mode и выберите кадр в модуле CPU.
-3. В режиме **Hierarchy** разверните `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update (…)`.
+1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **ProfilerMarkers**.
+2. Откройте `Scenes/ProfilerMarkers.unity` и **Window → Analysis → Profiler**, войдите в Play Mode и выберите кадр в модуле CPU.
+3. В режиме **Hierarchy** разверните `PlayerLoop` до строки <code lang="string">Flock.Update (74)</code> — она лежит под строкой Unity <code lang="string">Flock.Update() [Invoke]</code>.
 
-Примеру нужен встроенный модуль Unity **Physics**, он включён по умолчанию; без него скрипты примера не компилируются, а в сцене остаются пропавшие скрипты.
-
-Для записи переключайте **Light / Dark / Authored** в `Tools → Aspid 🐍 → FastTools → Sample Themes`.
-
-![Симуляция стаи, фазы которой измеряют показанные выше маркеры.](Images/demo.gif)
-
-Симуляция стаи, фазы которой измеряют показанные выше маркеры.
+Нужен встроенный модуль Unity **Physics** — без него скрипты примера не компилируются.
 
 ## Попробуйте
 
-1. **Дерево повторяет области `using`.** Под `Flock.Update` лежит `FlockSimulation.Step`, под ним `FlockSimulation.Steering` и `FlockSimulation.Integrate`, а рядом — `Flock.ApplyTransforms`. Вложенность не нужно настраивать, она следует за кодом.
-2. **Один маркер, много сэмплов.** `Steering.Agent` стоит внутри цикла. Profiler показывает одну строку с `Calls`, равным числу агентов, а не строку на агента: имя фиксировано на точку вызова.
-3. **Покрутите ручки.** В Play Mode поднимите `Count` у **Flock** до 400: стая пересоздаётся сразу. Сравните время `Steering` на следующих кадрах, пропустив кадр пересоздания. Уменьшите `Neighbor Radius`: для найденных соседей станет меньше вычислений, но проверка всех пар останется — алгоритм имеет сложность O(N²). Чтобы заметно сократить число проверок, уменьшите `Count`. Конкретное время зависит от машины.
-4. **Любой класс, любая область.** `FlockSimulation` — не `MonoBehaviour`. Локальная функция в `Flock.InitializeAgents` получает маркер с именем `InitializeAgents`, объемлющего метода. Найдите его в кадре запуска или изменения `Count`.
-5. **Суффикс со строкой.** Каждое имя заканчивается `(line)`, поэтому два маркера в одном методе не пересекаются, а маркер, перемещённый по файлу, меняет суффикс. Поищите в Profiler `FlockSimulation.`, чтобы увидеть их все.
-6. **Бесплатно в релизной сборке.** Сгенерированный диспетчер обёрнут в `#if ENABLE_PROFILER`; без профайлера каждый вызов возвращает `default`.
+![Маркеры под Flock.Update вложены как в коде; у FlockSimulation.Steering.Agent — 120 вызовов на 120 агентов.](Images/profiler-markers.png)
+
+Маркеры под Flock.Update вложены как в коде; у FlockSimulation.Steering.Agent — 120 вызовов на 120 агентов.
+
+1. **Дерево повторяет области <code lang="csharp">using</code>.** Под <code lang="string">Flock.Update</code> лежат <code lang="string">FlockSimulation.Step</code> и рядом с ним <code lang="string">Flock.ApplyTransforms</code>, а под <code lang="string">Step</code> — <code lang="string">FlockSimulation.Steering</code> и <code lang="string">FlockSimulation.Integrate</code>. Вложенность ничем не настраивается, её задают области в коде:
+
+   ```csharp
+   public void Step(float deltaTime, float neighborRadius, float maxSpeed)
+   {
+       using var _ = this.Marker();
+
+       using (this.Marker().WithName("Steering"))
+           ComputeSteering(neighborRadius);
+
+       using (this.Marker().WithName("Integrate"))
+           Integrate(deltaTime, maxSpeed);
+   }
+   ```
+
+2. **Один маркер на цикл.** <code lang="string">FlockSimulation.Steering.Agent</code> стоит внутри цикла по агентам: Profiler показывает одну строку с `Calls`, равным числу агентов, а не строку на каждого агента.
+3. **Больше агентов.** В Play Mode поднимите **Count** у **Flock** до `400`: на следующем кадре стая пересоздаётся, `Calls` у <code lang="string">FlockSimulation.Steering.Agent</code> становится `400`, а <code lang="string">FlockSimulation.Steering</code> занимает больше времени.
+4. **Не только MonoBehaviour.** <code lang="class-name">FlockSimulation</code> — обычный C#-класс, и его маркеры работают так же. Маркер в локальной функции <code lang="function">CreateAgent</code> называется по объемлющему методу — <code lang="string">Flock.InitializeAgents (53)</code>: он есть в первом кадре и в кадре, где меняется **Count**, с `Calls` по числу созданных агентов.
+5. **Номер строки в имени.** Каждое имя заканчивается номером строки вызова — <code lang="string">FlockSimulation.Steering (62)</code>, — поэтому маркеры на разных строках одного метода не совпадают по имени, а переехавший вызов меняет номер. Поиск <code lang="string">Flock</code> в Profiler находит все маркеры примера.
+6. **Релизная сборка.** Сгенерированный код маркеров обёрнут в <code lang="csharp">#if ENABLE_PROFILER</code>: в сборке плеера без **Development Build** вызовы ничего не замеряют и возвращают <code lang="csharp">default</code>.
 
 ## Куда смотреть
 
@@ -41,3 +47,5 @@ using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (lin
 |---|---|
 | `Scripts/FlockSimulation.cs` | Маркеры на весь метод, на блок и на итерацию в обычном классе |
 | `Scripts/Flock.cs` | Точка входа кадра, маркер внутри локальной функции |
+
+Справочник — [ProfilerMarkers](../../../Documentation/ru/05-profiler-markers.md).

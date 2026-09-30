@@ -30,20 +30,20 @@ import styles from './styles.module.css';
 // docs/media/samples-gallery/scenes.py.
 const samples = [
   { id: 'enum-values', feature: 'EnumValues', image: surfaces, lightImage: surfacesLight, clip: surfacesClip, lightClip: surfacesClipLight,
-    en: ['EnumValues sample scene', "A walker on surface tiles: each surface's colour, trail and speed come from tables in the Inspector."],
-    ru: ['Сцена примера EnumValues', 'Ходок по плиткам: цвет, след и скорость каждой поверхности задаются таблицами в инспекторе.'] },
+    en: ['EnumValues sample scene', "A walker crosses surface tiles, and each surface's color, trail and speed come from tables in the Inspector."],
+    ru: ['Сцена примера EnumValues', 'Персонаж идёт по плиткам, а цвет, след и скорость на каждой поверхности берутся из таблиц в инспекторе.'] },
   { id: 'types', feature: 'Types', image: types, lightImage: typesLight, clip: typesClip, lightClip: typesClipLight,
     en: ['Types sample scene', 'A spawner whose enemy type and wave pattern are picked in the Inspector, without touching code.'],
     ru: ['Сцена примера Types', 'Спавнер, в котором тип врага и схема волны выбираются в инспекторе, без правки кода.'] },
   { id: 'serialize-references', feature: 'SerializeReferences', image: weapons, lightImage: weaponsLight, clip: weaponsClip, lightClip: weaponsClipLight,
-    en: ['SerializeReferences sample scene', 'A turret with polymorphic weapons, plus deliberately broken assets for the repair tools.'],
-    ru: ['Сцена примера SerializeReferences', 'Турель с полиморфным оружием и намеренно сломанные ассеты для инструментов ремонта.'] },
+    en: ['SerializeReferences sample scene', 'A turret whose weapons and their effects are picked in the Inspector, plus assets broken on purpose for you to repair.'],
+    ru: ['Сцена примера SerializeReferences', 'Турель, у которой оружие и его эффекты выбираются в инспекторе, и нарочно сломанные ассеты, чтобы их починить.'] },
   { id: 'editor-tools', feature: 'EditorTools', image: abilities, lightImage: abilitiesLight,
     en: ['EditorTools sample window', "An editor window and an Inspector built in code with the package's helpers."],
     ru: ['Окно примера EditorTools', 'Окно редактора и инспектор, собранные в коде на хелперах пакета.'] },
   { id: 'profiler-markers', feature: 'ProfilerMarkers', image: flock, lightImage: flockLight, clip: flockClip, lightClip: flockClipLight,
-    en: ['ProfilerMarkers sample scene', 'A flock of cubes whose frame the Profiler shows as a named marker tree.'],
-    ru: ['Сцена примера ProfilerMarkers', 'Стая кубов, чей кадр Profiler показывает именованным деревом маркеров.'] },
+    en: ['ProfilerMarkers sample scene', 'A flock of cubes whose every frame phase shows up in the Profiler under its own name.'],
+    ru: ['Сцена примера ProfilerMarkers', 'Стая кубов, у которой каждая фаза кадра видна в Profiler под своим именем.'] },
 ];
 
 /** The preview image, and over it the scene's clip: loaded near the viewport, playing while on screen. */

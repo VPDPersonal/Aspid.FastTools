@@ -7,7 +7,7 @@ import remarkCrossInstanceLinks from './src/remark/crossInstanceLinks.js';
 import remarkThemedImages from './src/remark/themedImages.js';
 import remarkAgentPrompt from './src/remark/agentPrompt.js';
 import remarkLiveDiagrams from './src/remark/liveDiagrams.js';
-import remarkIntroBanner, {remarkStatusBadges} from './src/remark/introBanner.js';
+import remarkIntroBanner, {remarkInlineCode, remarkStatusBadges} from './src/remark/introBanner.js';
 import {ACCENT_BOOT_SCRIPT} from './src/accents.js';
 
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
@@ -167,6 +167,7 @@ const config = {
         include: ['index.mdx', '*/README.md'],
         numberPrefixParser: samplePrefixParser,
         ...markdownOptions,
+        beforeDefaultRemarkPlugins: [remarkInlineCode, ...markdownOptions.beforeDefaultRemarkPlugins],
         // `<Sample>/README.md` → `Samples~/<Sample>/Documentation/README.md`, translations as `README.<locale>.md`;
         // the overview `index.mdx` → `Website/src/samples/index.mdx` (`index.<locale>.mdx`).
         editUrl: ({ docPath, locale }) =>

@@ -42,6 +42,11 @@ function highlightInlineCode(node) {
   node.children?.forEach(highlightInlineCode);
 }
 
+/** Highlights `<code lang="…">` on pages that do not run the introduction plugin (the sample pages). */
+export function remarkInlineCode() {
+  return (tree) => highlightInlineCode(tree);
+}
+
 /** Keep the package README unchanged while placing the site's TOC after its banner. */
 export function remarkStatusBadges() {
   return (tree) => {
