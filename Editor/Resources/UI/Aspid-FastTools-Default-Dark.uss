@@ -98,6 +98,8 @@
     --aspid-colors-status-warning-tint-darkness:    rgba(45, 30, 5, 0.3);
     --aspid-colors-status-error-tint:               rgba(125, 35, 35, 0.25);
     --aspid-colors-status-info-tint:                rgba(25, 75, 130, 0.25);
+    --aspid-colors-status-info-tint-light:          rgb(160, 189, 226);
+    --aspid-colors-status-info-tint-lightness:      rgb(186, 204, 228);
 
     --aspid-colors-status-success-blob:             rgb(41, 71, 54);
     --aspid-colors-status-warning-blob:             rgb(77, 64, 31);

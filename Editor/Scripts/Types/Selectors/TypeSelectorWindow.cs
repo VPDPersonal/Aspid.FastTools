@@ -27,6 +27,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             var window = CreateInstance<TypeSelectorWindow>();
             var view = new TypeSelectorView(filter, currentAqn, onSelected, onDismiss: window.Close);
+            view.UseDropdownStyle();
 
             window.rootVisualElement.AddChild(view);
 

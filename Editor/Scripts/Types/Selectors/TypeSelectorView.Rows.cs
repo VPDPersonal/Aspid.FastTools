@@ -25,12 +25,13 @@ namespace Aspid.FastTools.Types.Editors
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
         private const string ItemIconCollapsedModifier = ItemIconClass + "--collapsed";
 
-        private const string ContainerFallbackIcon = "d_Folder Icon";
-        private const string ContainerOpenFallbackIcon = "d_FolderOpened Icon";
-        private const string FavoritesCollapsedIcon = "d_Favorite";
-        private const string FavoritesExpandedIcon = "d_Favorite Icon";
-        private const string RecentCollapsedIcon = "d_UnityEditor.HistoryWindow";
-        private const string RecentExpandedIcon = "d_UnityEditor.HistoryWindow";
+        // Plain names: IconContent picks the skin's variant, and SkinIcon asks for the dark one outside a dropdown.
+        private const string ContainerFallbackIcon = "Folder Icon";
+        private const string ContainerOpenFallbackIcon = "FolderOpened Icon";
+        private const string FavoritesCollapsedIcon = "Favorite";
+        private const string FavoritesExpandedIcon = "Favorite Icon";
+        private const string RecentCollapsedIcon = "UnityEditor.HistoryWindow";
+        private const string RecentExpandedIcon = "UnityEditor.HistoryWindow";
 
         private VisualElement CreateListItem()
         {
@@ -174,7 +175,7 @@ namespace Aspid.FastTools.Types.Editors
             if (node.IsSectionTitle)
             {
                 sectionCollapsed = Nav.IsSectionCollapsed(node.SectionKey);
-                texture = TypeSelectorIconResolver.Resolve(SectionIcon(node.SectionKey, sectionCollapsed));
+                texture = TypeSelectorIconResolver.Resolve(SkinIcon(SectionIcon(node.SectionKey, sectionCollapsed)));
             }
             else
             {
@@ -191,7 +192,7 @@ namespace Aspid.FastTools.Types.Editors
                         var fallback = node.HasChildren
                             ? (isSelected ? ContainerOpenFallbackIcon : ContainerFallbackIcon)
                             : null;
-                        texture = TypeSelectorIconResolver.Resolve(fallback);
+                        texture = TypeSelectorIconResolver.Resolve(SkinIcon(fallback));
                     }
                 }
             }
@@ -201,6 +202,10 @@ namespace Aspid.FastTools.Types.Editors
                 .SetImage(texture)
                 .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
         }
+
+        // An Aspid window is dark on either skin, so the picker embedded in one keeps the dark variant.
+        private string SkinIcon(string icon) =>
+            icon is null || ClassListContains(DropdownModifier) ? icon : "d_" + icon;
 
         private static string SectionIcon(string sectionKey, bool collapsed)
         {
