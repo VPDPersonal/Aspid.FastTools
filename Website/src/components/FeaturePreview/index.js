@@ -44,10 +44,10 @@ const FRAMES = [[0.56, 0.2], [0.59, 0.17], [0.55, 0.21], [0.57, 0.19], [0.6, 0.1
 function Frame({steering, integrate}) {
   return (
     <div className={styles.frame}>
-      <span className={clsx(styles.bar, styles.barStep)} data-marker="step">FlockSimulation.Step (3)</span>
+      <span className={clsx(styles.bar, styles.barStep)} data-marker="step">FlockSimulation.Step</span>
       <div className={styles.frameRow}>
-        <span className={clsx(styles.bar, styles.barSteer)} data-marker="steer" style={{flexBasis: `${steering * 100}%`}}>FlockSimulation.Steering (4)</span>
-        <span className={clsx(styles.bar, styles.barIntegrate)} data-marker="integrate" style={{flexBasis: `${integrate * 100}%`}}>FlockSimulation.Integrate (6)</span>
+        <span className={clsx(styles.bar, styles.barSteer)} data-marker="steer" style={{flexBasis: `${steering * 100}%`}}>FlockSimulation.Steering</span>
+        <span className={clsx(styles.bar, styles.barIntegrate)} data-marker="integrate" style={{flexBasis: `${integrate * 100}%`}}>FlockSimulation.Integrate</span>
       </div>
     </div>
   );

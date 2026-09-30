@@ -15,9 +15,9 @@ and ref structs.
 ```csharp
 public void Step()
 {
-    using var _ = this.Marker();                          // FlockSimulation.Step (12)
+    using var _ = this.Marker();                          // FlockSimulation.Step
 
-    using (this.Marker().WithName("Steering"))            // FlockSimulation.Steering (14)
+    using (this.Marker().WithName("Steering"))            // FlockSimulation.Steering
         foreach (var agent in _agents)
             using (this.Marker().WithName("Steering.Agent"))   // one row, Calls = agent count
                 ComputeSteering(agent);
@@ -29,18 +29,21 @@ across `yield return` or `await` measures only the part before it — put the ma
 
 ## Names
 
-`Type.Member (line)`, where `line` is the line of the `Marker()` call:
+`Type.Member`, without the line, so edits do not rename markers. When calls in one type produce the same name, later
+ones get an ordinal in source order (by file path, then line): `Type.Member`, `Type.Member #2`, `Type.Member #3`; a
+suffix that another call's own `WithName` already takes is skipped. Adding a same-named call above others renumbers
+them, so give calls whose captures are compared or read by `ProfilerRecorder` a unique `WithName`. Member names:
 
 - constructor -> `Ctor`; static constructor -> `StaticCtor`; finalizer -> `Finalize`; property or indexer accessor ->
   property name / `Indexer`; event accessor -> event name; field or auto-property initializer -> field / property
   name; operator -> `op_Addition` and the like; lambda or local function -> the enclosing member; explicit interface
   implementation -> the interface member name;
-- nested type -> only the innermost type name (`Agent.Move (line)`), so same-named types in different namespaces or
+- nested type -> only the innermost type name (`Agent.Move`), so same-named types in different namespaces or
   outer types show the same name;
-- generic class -> one marker per closed type (`Worker<List<Int32>>.Run (line)`); generic struct -> one marker for all
-  (`Job<T>.Execute (line)`), so Burst can compile it.
+- generic class -> one marker per closed type (`Worker<List<Int32>>.Run`); generic struct -> one marker for all
+  (`Job<T>.Execute`), so Burst can compile it.
 
-`WithName("X")` replaces only the member part (`FlockSimulation.X (line)`). It is read from source at compile time:
+`WithName("X")` replaces only the member part (`FlockSimulation.X`). It is read from source at compile time:
 only a literal `"X"`, `@"X"` or a hole-free `$"X"` chained directly on `this.Marker()` counts. Variables, `const`,
 `nameof`, concatenation and interpolation holes are ignored (the member name stays). For runtime-computed names use a
 hand-written `static readonly ProfilerMarker`.
@@ -61,7 +64,6 @@ hand-written `static readonly ProfilerMarker`.
   `this.Marker()` at each real call site.
 - **One call per line.** Calls on the same line of a type (including across `partial` files) share the first call's
   marker. The line is the one `[CallerLineNumber]` reports, so `#line` directives apply.
-- **Line numbers move** with edits; compare Profiler captures by name without the `(line)` suffix.
 - **No marker, warning `AFT0010`:** every call the generator cannot mark — the cases above, a call inside a
   `private`/`protected` nested type (or a type nested in one; typical for `private struct MyJob : IJob`) or in
   `Outer<T>.Inner<T>` where the inner type parameter shadows the outer one. Such a `private`/`protected` nested type

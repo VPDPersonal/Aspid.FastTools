@@ -3,8 +3,8 @@
 A flock of cubes steered by a plain C# simulation, with `this.Marker()` around each phase. The source generator turns every call site into a static `ProfilerMarker`, so the Profiler shows a named tree of the frame with no marker fields written by hand. The API reference lives in [ProfilerMarkers](../../../Documentation/05-profiler-markers.md).
 
 ```csharp
-using var _ = this.Marker();                   // "FlockSimulation.Step (line)", the rest of the method
-using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (line)", the block
+using var _ = this.Marker();                   // "FlockSimulation.Step", the rest of the method
+using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering", the block
     ComputeSteering(neighborRadius);
 ```
 
@@ -16,7 +16,7 @@ The Flock tree shows how generated markers nest. Steering.Agent has 120 calls fo
 
 1. Import the sample and open `Scenes/ProfilerMarkers.unity`.
 2. Open **Window → Analysis → Profiler**, enter Play Mode and select a frame in the CPU module.
-3. In **Hierarchy** view, expand `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update (…)`.
+3. In **Hierarchy** view, expand `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update`.
 
 The sample needs Unity's built-in **Physics** module, which is enabled by default; without it the sample scripts are not compiled and the scene shows missing scripts.
 
@@ -32,7 +32,7 @@ The flock simulation whose phases are measured by the markers above.
 2. **One marker, many samples.** `Steering.Agent` sits inside a loop. The Profiler shows one row with `Calls` equal to the agent count, not one row per agent: the name is fixed per call site.
 3. **Turn the knobs.** In Play Mode, raise `Count` on **Flock** to 400: the flock is recreated immediately. Compare `Steering` on subsequent frames, skipping the recreation frame. Lower `Neighbor Radius`: fewer neighbors need extra calculations, but every pair is still checked — the algorithm is O(N²). Lower `Count` to substantially reduce the number of checks. Actual timings depend on your machine.
 4. **Any class, any scope.** `FlockSimulation` is not a `MonoBehaviour`. The local function in `Flock.InitializeAgents` gets its marker named after `InitializeAgents`, the enclosing method. Find it in the startup frame or a frame where you change `Count`.
-5. **The line suffix.** Every name ends with `(line)`, so two markers in one method never collide, and a marker moved in the file changes its suffix. Search the Profiler for `FlockSimulation.` to list all of them.
+5. **Names survive edits.** Add an empty line above `Step` in `FlockSimulation.cs`: after the recompile every marker keeps its name, so captures from before and after the edit compare row by row. Search the Profiler for `FlockSimulation.` to list all of them.
 6. **Free in a release build.** The generated dispatcher is wrapped in `#if ENABLE_PROFILER`; without the profiler every call returns `default`.
 
 ## Where to look

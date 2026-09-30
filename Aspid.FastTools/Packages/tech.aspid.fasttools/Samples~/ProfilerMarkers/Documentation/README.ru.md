@@ -3,8 +3,8 @@
 Стая кубов, которой управляет обычный C#-класс, и `this.Marker()` вокруг каждой фазы. Генератор превращает каждый вызов в статический `ProfilerMarker`, поэтому Profiler показывает именованное дерево кадра без единого поля маркера, написанного руками. Справочник — [ProfilerMarkers](../../../Documentation/ru/05-profiler-markers.md).
 
 ```csharp
-using var _ = this.Marker();                   // "FlockSimulation.Step (line)", до конца метода
-using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (line)", блок
+using var _ = this.Marker();                   // "FlockSimulation.Step", до конца метода
+using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering", блок
     ComputeSteering(neighborRadius);
 ```
 
@@ -16,7 +16,7 @@ using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (lin
 
 1. Импортируйте пример и откройте `Scenes/ProfilerMarkers.unity`.
 2. Откройте **Window → Analysis → Profiler**, войдите в Play Mode и выберите кадр в модуле CPU.
-3. В режиме **Hierarchy** разверните `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update (…)`.
+3. В режиме **Hierarchy** разверните `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update`.
 
 Примеру нужен встроенный модуль Unity **Physics**, он включён по умолчанию; без него скрипты примера не компилируются, а в сцене остаются пропавшие скрипты.
 
@@ -32,7 +32,7 @@ using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (lin
 2. **Один маркер, много сэмплов.** `Steering.Agent` стоит внутри цикла. Profiler показывает одну строку с `Calls`, равным числу агентов, а не строку на агента: имя фиксировано на точку вызова.
 3. **Покрутите ручки.** В Play Mode поднимите `Count` у **Flock** до 400: стая пересоздаётся сразу. Сравните время `Steering` на следующих кадрах, пропустив кадр пересоздания. Уменьшите `Neighbor Radius`: для найденных соседей станет меньше вычислений, но проверка всех пар останется — алгоритм имеет сложность O(N²). Чтобы заметно сократить число проверок, уменьшите `Count`. Конкретное время зависит от машины.
 4. **Любой класс, любая область.** `FlockSimulation` — не `MonoBehaviour`. Локальная функция в `Flock.InitializeAgents` получает маркер с именем `InitializeAgents`, объемлющего метода. Найдите его в кадре запуска или изменения `Count`.
-5. **Суффикс со строкой.** Каждое имя заканчивается `(line)`, поэтому два маркера в одном методе не пересекаются, а маркер, перемещённый по файлу, меняет суффикс. Поищите в Profiler `FlockSimulation.`, чтобы увидеть их все.
+5. **Имена переживают правки.** Добавьте пустую строку над `Step` в `FlockSimulation.cs`: после перекомпиляции каждый маркер сохранит имя, и захваты до и после правки сравниваются строка в строку. Поищите в Profiler `FlockSimulation.`, чтобы увидеть их все.
 6. **Бесплатно в релизной сборке.** Сгенерированный диспетчер обёрнут в `#if ENABLE_PROFILER`; без профайлера каждый вызов возвращает `default`.
 
 ## Куда смотреть

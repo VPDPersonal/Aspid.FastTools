@@ -9,7 +9,8 @@ using System.Runtime.CompilerServices;
 public static class ProfilerMarkerExtensionsForGenerator
 {
     /// <summary>
-    /// Opens the <see cref="ProfilerMarker"/> of this call site, named <c>Type.Member (line)</c>.
+    /// Opens the <see cref="ProfilerMarker"/> of this call site, named <c>Type.Member</c>; a name repeated in one type
+    /// gets an ordinal in source order, <c>Type.Member #2</c>.
     /// </summary>
     /// <param name="instance">The instance the scope is opened on; its value is never read.</param>
     /// <param name="line">The line of the call, filled in by the compiler; the value is never read.</param>

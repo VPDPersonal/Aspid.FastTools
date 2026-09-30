@@ -73,14 +73,14 @@ function snapshot(t) {
   };
 }
 
-// Marker name, source line, depth, swatch, and the tree guides drawn at each ancestor level. The swatches are the bar
+// Marker name, depth, swatch, and the tree guides drawn at each ancestor level. The swatches are the bar
 // colours of the ProfilerMarkers timeline on the introduction (`FeaturePreview`), so the two previews read as one.
 // A guide is `[kind, first]`: `first` lifts it up to the parent's caret.
 const ROWS = {
-  step: {name: 'FlockSimulation.Step', line: 3, depth: 0, parent: true, swatch: 'step', guides: []},
-  steer: {name: 'FlockSimulation.Steering', line: 5, depth: 1, parent: true, swatch: 'steer', guides: [['tee', true]]},
-  agent: {name: 'FlockSimulation.Steering.Agent', line: 9, depth: 2, swatch: 'steer', guides: [['pass'], ['elbow', true]]},
-  integrate: {name: 'FlockSimulation.Integrate', line: 14, depth: 1, swatch: 'integrate', guides: [['elbow']]},
+  step: {name: 'FlockSimulation.Step', depth: 0, parent: true, swatch: 'step', guides: []},
+  steer: {name: 'FlockSimulation.Steering', depth: 1, parent: true, swatch: 'steer', guides: [['tee', true]]},
+  agent: {name: 'FlockSimulation.Steering.Agent', depth: 2, swatch: 'steer', guides: [['pass'], ['elbow', true]]},
+  integrate: {name: 'FlockSimulation.Integrate', depth: 1, swatch: 'integrate', guides: [['elbow']]},
 };
 const ORDER = ['step', 'steer', 'agent', 'integrate'];
 const PARENT = {steer: 'step', agent: 'steer', integrate: 'step'};
@@ -174,7 +174,7 @@ export default function ProfilerHierarchy({alt}) {
             <span>Marker</span><span className={styles.calls}>Calls</span><span className={styles.alloc}>GC Alloc</span><span>Time ms</span>
           </div>
           {rows.map((row) => {
-            const {name, line, depth, parent, swatch, guides} = ROWS[row.id];
+            const {name, depth, parent, swatch, guides} = ROWS[row.id];
             const isSelected = row.id === selected;
             // Roving tabindex: the selected row, or the first one before anything is selected, takes the focus.
             const focusable = row.visible && (isSelected || (!visible.includes(selected) && row.id === visible[0]));
@@ -196,7 +196,7 @@ export default function ProfilerHierarchy({alt}) {
                         onClick={(event) => { event.stopPropagation(); toggle(row.id, !row.open); select(row.id); }} />
                     : <span className={styles.leaf} />}
                   <span className={styles.swatch} data-marker={swatch} />
-                  <span className={styles.name}>{name}</span> <span className={styles.line}>({line})</span>
+                  <span className={styles.name}>{name}</span>
                 </span>
                 <span className={clsx(styles.num, styles.calls)}>{row.calls}</span>
                 <span className={clsx(styles.num, styles.alloc)}>0 B</span>

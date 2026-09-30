@@ -10,23 +10,24 @@
 
 ## Marker()
 
-Имя маркера собирается из типа, метода и номера строки вызова:
+Имя маркера собирается из типа и метода:
 
 | Где вызван <code lang="csharp">this.Marker()</code> | Имя маркера |
 |---|---|
-| <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step (строка)</code> |
-| <code lang="csharp">FlockSimulation()</code> | <code lang="string">FlockSimulation.Ctor (строка)</code> |
-| <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (строка)</code> |
-| <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (строка)</code> |
-| <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (строка)</code> |
-| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (строка)</code> |
-| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (строка)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (строка)</code> |
-| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute (строка)</code> для любого <code lang="class-name">T</code> |
-| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (строка)</code> для любого <code lang="class-name">T</code> |
+| <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step</code> |
+| второй вызов в <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step #2</code> |
+| <code lang="csharp">FlockSimulation()</code> | <code lang="string">FlockSimulation.Ctor</code> |
+| <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed</code> |
+| <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer</code> |
+| <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed</code> |
+| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move</code> |
+| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run</code><br /><code lang="string">Worker&lt;Single&gt;.Run</code> |
+| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute</code> для любого <code lang="class-name">T</code> |
+| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run</code> для любого <code lang="class-name">T</code> |
 
 ## WithName()
 
-<code lang="csharp">.WithName("Steering")</code> заменяет в имени маркера метод на свой текст: <code lang="string">FlockSimulation.Step (5)</code> → <code lang="string">FlockSimulation.Steering (5)</code>.
+<code lang="csharp">.WithName("Steering")</code> заменяет в имени маркера метод на свой текст: <code lang="string">FlockSimulation.Step</code> → <code lang="string">FlockSimulation.Steering</code>.
 
 ```csharp
 public void Step()
@@ -58,7 +59,7 @@ public void Step()
 
 ## Ограничения
 
-- **Номер строки в имени** меняется, когда вызов переезжает: сравнивайте захваты до и после правки по имени без номера.
+- **Номера повторяющегося имени** идут по порядку вызовов в типе, поэтому вызов с тем же именем, добавленный выше, перенумерует те, что ниже, — дайте вызовам, которые сравниваете между правками, свой <code lang="csharp">WithName()</code>.
 - **Вызов без маркера.** Если маркер для вызова не создаётся — на объекте другого типа (<code lang="csharp">other.Marker()</code>), в статическом классе, во вложенном <code lang="csharp">private</code> или <code lang="csharp">protected</code> типе, — анализатор `AFT0010` предупредит об этом.
 - **Выброшенный замер.** <code lang="csharp">this.Marker();</code> без <code lang="csharp">using</code> начинает замер, который никогда не заканчивается, — анализатор `AFT0011` предупредит об этом.
 

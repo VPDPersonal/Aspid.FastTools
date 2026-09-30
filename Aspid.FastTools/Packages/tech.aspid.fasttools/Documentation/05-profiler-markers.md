@@ -10,23 +10,24 @@ Profiler markers in one line, with no fields or names to keep up by hand.
 
 ## Marker()
 
-The marker name is built from the type, the method and the call's line number:
+The marker name is built from the type and the method:
 
 | Where <code lang="csharp">this.Marker()</code> is called | Marker name |
 |---|---|
-| <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step (line)</code> |
-| <code lang="csharp">FlockSimulation()</code> | <code lang="string">FlockSimulation.Ctor (line)</code> |
-| <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (line)</code> |
-| <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (line)</code> |
-| <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (line)</code> |
-| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (line)</code> |
-| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (line)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (line)</code> |
-| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute (line)</code> for any <code lang="class-name">T</code> |
-| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (line)</code> for any <code lang="class-name">T</code> |
+| <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step</code> |
+| second call in <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step #2</code> |
+| <code lang="csharp">FlockSimulation()</code> | <code lang="string">FlockSimulation.Ctor</code> |
+| <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed</code> |
+| <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer</code> |
+| <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed</code> |
+| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move</code> |
+| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run</code><br /><code lang="string">Worker&lt;Single&gt;.Run</code> |
+| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute</code> for any <code lang="class-name">T</code> |
+| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run</code> for any <code lang="class-name">T</code> |
 
 ## WithName()
 
-<code lang="csharp">.WithName("Steering")</code> replaces the method in the marker name with its own text: <code lang="string">FlockSimulation.Step (5)</code> → <code lang="string">FlockSimulation.Steering (5)</code>.
+<code lang="csharp">.WithName("Steering")</code> replaces the method in the marker name with its own text: <code lang="string">FlockSimulation.Step</code> → <code lang="string">FlockSimulation.Steering</code>.
 
 ```csharp
 public void Step()
@@ -58,7 +59,7 @@ The generator creates one static field per call site, so measuring allocates not
 
 ## Limitations
 
-- **The line number in the name** changes when the call moves: compare captures from before and after an edit by the name without it.
+- **Numbers of a repeated name** follow the order of calls in the type, so a call with the same name added above renumbers the ones below it — give calls you compare across edits their own <code lang="csharp">WithName()</code>.
 - **Calls without a marker.** When a call gets no marker — on an object of another type (<code lang="csharp">other.Marker()</code>), in a static class, in a <code lang="csharp">private</code> or <code lang="csharp">protected</code> nested type — analyzer `AFT0010` warns about it.
 - **A discarded scope.** <code lang="csharp">this.Marker();</code> without <code lang="csharp">using</code> begins a sample that never ends — analyzer `AFT0011` warns about it.
 

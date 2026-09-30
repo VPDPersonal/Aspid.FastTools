@@ -126,7 +126,6 @@
 .swatch[data-marker='steer'] { background: #86b9ec; }
 .swatch[data-marker='integrate'] { background: #ecc676; }
 .name { transition: color 0.4s; }
-.line { margin-left: 0.5ch; color: var(--ph-muted); }
 .row.selected .name { color: var(--venom-accent); }
 
 /* Tree guides under each ancestor's caret: a line passing by, a branch, the last branch. A first child's guide
