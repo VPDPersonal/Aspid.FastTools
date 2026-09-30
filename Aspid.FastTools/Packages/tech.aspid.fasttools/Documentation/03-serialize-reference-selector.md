@@ -107,7 +107,7 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 | Action | What it does |
 |---|---|
 | **Fix** | Opens the class picker, including classes hidden with <code lang="csharp">Hidden</code> |
-| **→ Pistol** | Assigns the suggested class; the tooltip gives the reason: [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom), the same name, the same name in another case, or a similar name |
+| **→ Pistol** | Assigns the suggested class; the tooltip gives the reason: the same name, the same name in another case, or a similar name |
 
 > [!WARNING]
 > On an asset, Fix rewrites the file, and Undo does not revert it.

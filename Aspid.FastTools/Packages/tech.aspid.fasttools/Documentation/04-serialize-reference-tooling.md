@@ -25,7 +25,7 @@ Project References and Asset References are tabs of one window. **Scan Project**
 
 | Group | Header button | Row under the header |
 |---|---|---|
-| Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Pistol** — apply a class matched by name or <code lang="csharp">[MovedFrom]</code>; the tooltip gives the reason |
+| Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Pistol** — apply a class with the same or a similar name; the tooltip gives the reason |
 | Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
 
 Every action asks for **Rewrite** and skips open and locked files. `<None>` in the class picker clears the group's references and deletes their data, fields sharing the same `rid` included; it asks for **Clear** and has no Undo.
