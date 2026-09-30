@@ -34,6 +34,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string BadgeClass = RootClass + "__badge";
         private const string BadgeSharedClass = BadgeClass + "--shared";
+        private const string BadgeTextClass = RootClass + "__badge-text";
 
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
@@ -245,10 +246,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!document.Shared.Contains(rid)) return badges;
 
-            var shared = new Label("SHARED").AddClass(BadgeClass).AddClass(BadgeSharedClass);
+            // A Label with children is sized by them, not by its text, so the text and the chip are siblings.
             var chip = new VisualElement().AddClass(ChipClass);
             chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
-            shared.AddChild(chip);
+
+            var shared = new VisualElement()
+                .AddClass(BadgeClass)
+                .AddClass(BadgeSharedClass)
+                .AddChild(new Label("SHARED").AddClass(BadgeTextClass))
+                .AddChild(chip);
 
             return badges.AddChild(shared);
         }

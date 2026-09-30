@@ -410,6 +410,11 @@
     background-color:                                     var(--aspid-colors-status-info-dark);
 }
 
+.aspid-fasttools-reference-graph__badge-text {
+    margin:                                               0;
+    padding:                                              0;
+}
+
 .aspid-fasttools-reference-graph__chip {
     width:                                                8px;
     height:                                               8px;
