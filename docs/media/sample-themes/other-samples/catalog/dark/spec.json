@@ -1,0 +1,18 @@
+{
+  "states": {"idle": "idle.png", "hover": "hover.png", "afterHover": "after-hover.png", "after": "after.png", "undo": "idle.png"},
+  "crop": [0, 216, 2000, 1104],
+  "scale": 2,
+  "fps": 25,
+  "cursor": "../cursor.png",
+  "hotspot": [5, 5],
+  "start": [720, 468],
+  "timeline": [
+    {"state": "idle", "hold": 0.8},
+    {"state": "idle", "to": [372, 440], "dur": 0.6, "hover": [[272, 423.5, 468, 453.5], "hover"]},
+    {"state": "hover", "hold": 0.3},
+    {"state": "afterHover", "hold": 1.0},
+    {"state": "after", "to": [690, 478], "dur": 0.4, "hover": [[272, 423.5, 468, 453.5], "afterHover"]},
+    {"state": "after", "hold": 1.0},
+    {"state": "undo", "hold": 2.0}
+  ]
+}
