@@ -31,21 +31,39 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
+        // The path the Inspector shows for the field: a SerializableType field by its own path, not by the backing
+        // string the SerializedProperty iterator stops on, so it matches RequiredFieldDescriptor.Path of the scene scan.
+        internal static string GetFieldPath(SerializedProperty property)
+        {
+            var path = property.propertyPath;
+            if (property.name != SerializableTypeUtility.BackingFieldName || !TryGetWrapperField(property, out _)) return path;
+
+            return path[..path.LastIndexOf('.')];
+        }
+
         private static FieldInfo GetAttributeField(SerializedProperty property)
         {
             var field = property.GetFieldInfo();
             if (field?.Name != SerializableTypeUtility.BackingFieldName) return field;
 
+            return TryGetWrapperField(property, out var wrapperField) ? wrapperField : field;
+        }
+
+        // The SerializableType field whose backing string this property is.
+        private static bool TryGetWrapperField(SerializedProperty property, out FieldInfo wrapperField)
+        {
+            wrapperField = null;
+
             var path = property.propertyPath;
             var lastDotIndex = path.LastIndexOf('.');
-            if (lastDotIndex < 0) return field;
+            if (lastDotIndex < 0) return false;
 
             using var parentProperty = property.serializedObject.FindProperty(path[..lastDotIndex]);
             var parentField = parentProperty?.GetFieldInfo();
+            if (parentField is null || !IsSerializableTypeField(parentField.FieldType)) return false;
 
-            return parentField is not null && IsSerializableTypeField(parentField.FieldType)
-                ? parentField
-                : field;
+            wrapperField = parentField;
+            return true;
         }
 
         internal static bool IsViolation(SerializedProperty property)
