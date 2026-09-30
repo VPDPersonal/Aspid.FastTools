@@ -35,15 +35,16 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
         private void CreateGUI()
         {
-            rootVisualElement.Clear();
-            rootVisualElement.AddToClassList("ability-catalog");
+            rootVisualElement
+                .ClearChildren()
+                .AddClass("ability-catalog");
             var theme = (PreviewTheme)SessionState.GetInt(ThemeKey, 0);
             ApplyTheme(theme);
             var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
             var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 System.IO.Path.GetDirectoryName(scriptPath) + "/AbilityCatalog.uss");
             if (stylesheet != null)
-                rootVisualElement.styleSheets.Add(stylesheet);
+                rootVisualElement.AddStyleSheet(stylesheet);
 
             Reload();
 
@@ -58,7 +59,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var create = new Button()
                 .SetText("Create")
                 .SetTooltip("Creates a new AbilityConfig asset next to the selected one")
-                .AddClicked(CreateAsset);
+                .AddClicked(CreateAsset)
+                .AddClass("ability-primary");
 
             var toolbar = new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
@@ -66,26 +68,23 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetPaddingX(6)
                 .SetPaddingY(4)
                 .AddChild(_search)
-                .AddChild(create);
+                .AddChild(create)
+                .AddClass("ability-toolbar");
 
             _list = new ListView()
                 .SetItemsSource(_filtered)
                 .SetFixedItemHeight(64)
                 .SetSelectionType(SelectionType.Single)
                 .SetShowAlternatingRowBackgrounds(AlternatingRowBackground.None)
-                .SetMakeItem(() =>
-                {
-                    var row = new VisualElement();
-                    row.AddToClassList("ability-row");
-                    row.Add(new Label { name = "abilityName" });
-                    row.Add(new Label { name = "abilityStats" });
-                    return row;
-                })
+                .SetMakeItem(() => new VisualElement()
+                    .AddClass("ability-row")
+                    .AddChild(new Label().SetName("abilityName"))
+                    .AddChild(new Label().SetName("abilityStats")))
                 .SetBindItem((element, index) =>
                 {
                     var ability = _filtered[index];
-                    element.Q<Label>("abilityName").text = ability.AbilityName;
-                    element.Q<Label>("abilityStats").text = $"{ability.ManaCost} MP   /   {ability.Cooldown:0.##} s cooldown";
+                    element.Q<Label>("abilityName").SetText(ability.AbilityName);
+                    element.Q<Label>("abilityStats").SetText($"{ability.ManaCost} MP   /   {ability.Cooldown:0.##} s cooldown");
                 })
                 .AddSelectionChanged(selection => ShowDetails(selection.FirstOrDefault() as AbilityConfig))
                 .SetFlexGrow(1);
@@ -95,39 +94,42 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetBorderColor(new Color(0.2f, 0.2f, 0.2f))
                 .SetBorderWidth(right: 1)
                 .AddChild(toolbar)
-                .AddChild(_list);
+                .AddChild(_list)
+                .AddClass("ability-sidebar");
 
             _details = new ScrollView()
-                .SetFlexGrow(1);
-            _details.AddToClassList("ability-details");
-            left.AddToClassList("ability-sidebar");
-            create.AddToClassList("ability-primary");
-            toolbar.AddToClassList("ability-toolbar");
-
-            var header = new VisualElement();
-            header.AddToClassList("ability-header");
-            header.Add(new Label("Ability catalog") { name = "catalogTitle" });
-            header.Add(new Label("Tune your abilities. See every change.") { name = "catalogSubtitle" });
-            var themeField = new EnumField("Theme", theme);
-            themeField.style.position = Position.Absolute;
-            themeField.style.right = 20;
-            themeField.style.top = 20;
-            themeField.style.width = 190;
-            themeField.labelElement.style.minWidth = 44;
-            themeField.labelElement.style.width = 44;
-            themeField.RegisterValueChangedCallback(evt =>
-            {
-                var selected = (PreviewTheme)evt.newValue;
-                SessionState.SetInt(ThemeKey, (int)selected);
-                ApplyTheme(selected);
-            });
-            header.Add(themeField);
-            rootVisualElement.Add(header);
-            rootVisualElement.Add(new VisualElement()
-                .SetFlexDirection(FlexDirection.Row)
                 .SetFlexGrow(1)
-                .AddChild(left)
-                .AddChild(_details));
+                .AddClass("ability-details");
+
+            var themeField = new EnumField("Theme", theme)
+                .SetPosition(Position.Absolute)
+                .SetRight(20)
+                .SetTop(20)
+                .SetWidth(190)
+                .AddValueChanged(evt =>
+                {
+                    var selected = (PreviewTheme)evt.newValue;
+                    SessionState.SetInt(ThemeKey, (int)selected);
+                    ApplyTheme(selected);
+                });
+
+            themeField.labelElement
+                .SetMinWidth(44)
+                .SetWidth(44);
+
+            var header = new VisualElement()
+                .AddClass("ability-header")
+                .AddChild(new Label("Ability catalog").SetName("catalogTitle"))
+                .AddChild(new Label("Tune your abilities. See every change.").SetName("catalogSubtitle"))
+                .AddChild(themeField);
+
+            rootVisualElement
+                .AddChild(header)
+                .AddChild(new VisualElement()
+                    .SetFlexDirection(FlexDirection.Row)
+                    .SetFlexGrow(1)
+                    .AddChild(left)
+                    .AddChild(_details));
 
             Select(null);
         }
@@ -217,9 +219,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(new Label("Effect")
                     .SetWidth(120))
                 .AddChild(effectLabel)
-                .AddChild(effectButton);
-
-            effectRow.AddToClassList("ability-effect-row");
+                .AddChild(effectButton)
+                .AddClass("ability-effect-row");
 
             // A one-click balance pass: chainable typed setters, Undo included, applied once at the end.
             var halveCooldown = new Button()
@@ -231,32 +232,31 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                     var manaCost = serializedObject.FindProperty("_manaCost");
                     cooldown.SetFloat(cooldown.floatValue * 0.5f);
                     manaCost.SetIntAndApply(manaCost.intValue + 5);
-                });
+                })
+                .AddClass("ability-action");
 
-            halveCooldown.AddToClassList("ability-action");
             var selectAsset = new Button()
                 .SetText("Select asset")
-                .AddClicked(() => Selection.activeObject = config);
-            selectAsset.AddToClassList("ability-action");
-            var actions = new VisualElement();
-            actions.AddToClassList("ability-actions");
-            actions.Add(halveCooldown);
-            actions.Add(selectAsset);
+                .AddClicked(() => Selection.activeObject = config)
+                .AddClass("ability-action");
 
-            var description = new TextField("Description")
-            {
-                multiline = true,
-                bindingPath = "_description"
-            };
-            description.AddToClassList("ability-description");
+            var actions = new VisualElement()
+                .AddClass("ability-actions")
+                .AddChild(halveCooldown)
+                .AddChild(selectAsset);
+
+            var description = new TextField("Description") { multiline = true }
+                .SetBindingPath("_description")
+                .AddClass("ability-description");
 
             var title = new Label(config.AbilityName)
                 .SetFontSize(24)
                 .AddBoldUnityFontStyleAndWeight()
                 .SetMarginBottom(18)
                 .SetTooltip("Double-click to open the script")
-                .AddOpenScriptCommand(config);
-            title.AddToClassList("ability-detail-title");
+                .AddOpenScriptCommand(config)
+                .AddClass("ability-detail-title");
+
             title.TrackSerializedObjectValue(serializedObject, _ =>
             {
                 title.SetText(config.AbilityName);
@@ -274,11 +274,10 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                     .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
                     .BindTo(serializedObject))
                 .AddChild(effectRow)
-                .AddChild(actions);
+                .AddChild(actions)
+                .AddChild(new Label("Changes are saved to the asset. Use Undo to restore previous values.")
+                    .AddClass("ability-hint"));
 
-            var hint = new Label("Changes are saved to the asset. Use Undo to restore previous values.");
-            hint.AddToClassList("ability-hint");
-            _details.Add(hint);
             RefreshEffect();
 
             void RefreshEffect()
@@ -289,8 +288,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             }
         }
 
-        private void ApplyTheme(PreviewTheme theme) => rootVisualElement.EnableInClassList(
-            "ability-catalog--light", theme == PreviewTheme.Light || (theme == PreviewTheme.Editor && !EditorGUIUtility.isProSkin));
+        private void ApplyTheme(PreviewTheme theme) => rootVisualElement.EnableClass(
+            "ability-catalog--light",
+            enable: theme == PreviewTheme.Light || (theme == PreviewTheme.Editor && !EditorGUIUtility.isProSkin));
 
         private void CreateAsset()
         {
