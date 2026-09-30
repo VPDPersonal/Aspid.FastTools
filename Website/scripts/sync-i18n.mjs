@@ -6,6 +6,7 @@
  *   Samples~/<Sample>/Documentation/README.md          → tutorials/<Sample>/README.md
  *   Samples~/<Sample>/Documentation/README.<locale>.md → i18n/<locale>/docusaurus-plugin-content-docs-tutorials/current/<Sample>/README.md
  *   CHANGELOG.md / CHANGELOG.<locale>.md   → changelog/index.md / i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/index.md
+ *   ROADMAP.md / ROADMAP.<locale>.md       → roadmap/index.md / i18n/<locale>/docusaurus-plugin-content-docs-roadmap/current/index.md
  *
  * Files are copied, not symlinked: webpack resolves symlinks to their real path, which breaks the
  * relative Markdown links inside a translation. `Website/i18n` is a build artifact and is gitignored.
@@ -23,6 +24,7 @@ const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const repoDir = path.resolve(siteDir, '..');
 const packageDir = path.resolve(siteDir, '../Aspid.FastTools/Packages/tech.aspid.fasttools');
 const changelogDir = path.join(siteDir, 'changelog');
+const roadmapDir = path.join(siteDir, 'roadmap');
 const docsDir = path.join(packageDir, 'Documentation');
 const samplesDir = path.join(packageDir, 'Samples~');
 const tutorialsDir = path.join(siteDir, 'tutorials');
@@ -35,6 +37,7 @@ const locales = fs
 
 fs.rmSync(i18nDir, { recursive: true, force: true });
 fs.rmSync(changelogDir, { recursive: true, force: true });
+fs.rmSync(roadmapDir, { recursive: true, force: true });
 fs.rmSync(tutorialsDir, { recursive: true, force: true });
 
 function copy(source, destination) {
@@ -129,6 +132,61 @@ function writeChangelogSidebar(source, destination) {
 writeChangelog(path.join(repoDir, 'CHANGELOG.md'), path.join(changelogDir, 'index.md'));
 writeChangelogSidebar(path.join(repoDir, 'CHANGELOG.md'), path.join(changelogDir, 'sidebars.json'));
 
+/**
+ * The roadmap is served at /roadmap: `## ` stages (1.1, Later) hold `### ` themes. Headings of a translation get the
+ * English file's anchors by position, so one sidebar links every locale; the translated headings become the
+ * sidebar labels through the plugin's `current.json`. The language-switch line and the H1 suffix go as in the changelog.
+ */
+const roadmapHeading = /^(#{2,3}) (.+)$/gm;
+const headingAnchor = (heading) => heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const roadmapHeadings = (source) => [...fs.readFileSync(source, 'utf8').matchAll(roadmapHeading)].map(([, level, text]) => ({ level: level.length, text }));
+const englishRoadmap = path.join(repoDir, 'ROADMAP.md');
+const roadmapAnchors = roadmapHeadings(englishRoadmap).map(({ text }) => headingAnchor(text));
+
+function writeRoadmap(source, destination, title) {
+  let index = 0;
+  const body = fs
+    .readFileSync(source, 'utf8')
+    .replace(/^> .*ROADMAP(?:\.[a-z]{2})?\.md.*\n\n/m, '')
+    .replace(/^# (.+?)(?: \([A-Z]{2}\))?$/m, (line, heading) => `# ${title ?? heading}`)
+    .replace(roadmapHeading, (line) => `${line} {#${roadmapAnchors[index++]}}`);
+  const date = lastCommitDate(source);
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  fs.writeFileSync(destination, `---\nslug: /\ndisplayed_sidebar: roadmap\n${date ? `last_update:\n  date: ${date}\n` : ''}---\n\n${body}`);
+}
+
+// Stages become categories and themes their links; a stage without themes (Suggest an idea) is a link itself.
+function writeRoadmapSidebar(destination) {
+  const items = [];
+  roadmapHeadings(englishRoadmap).forEach(({ level, text }, i) => {
+    const link = { type: 'link', label: text, href: `/roadmap#${roadmapAnchors[i]}` };
+    if (level === 2) items.push({ ...link, stage: true });
+    else {
+      const stage = items.at(-1);
+      if (stage.type === 'link') items[items.length - 1] = { type: 'category', label: stage.label, className: 'doc-menu-group', collapsible: false, items: [] };
+      items.at(-1).items.push(link);
+    }
+  });
+  const sidebars = { roadmap: items.map(({ stage, ...item }) => item) };
+  fs.writeFileSync(destination, `${JSON.stringify(sidebars, null, 2)}\n`);
+}
+
+// Sidebar labels of a translation: its own headings, matched to the English ones by position.
+function writeRoadmapLabels(source, destination) {
+  const english = roadmapHeadings(englishRoadmap);
+  const labels = {};
+  roadmapHeadings(source).forEach(({ text }, i) => {
+    if (!english[i]) return;
+    const hasThemes = english[i].level === 2 && english[i + 1]?.level === 3;
+    labels[`sidebar.roadmap.${hasThemes ? 'category' : 'link'}.${english[i].text}`] = { message: text };
+  });
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  fs.writeFileSync(destination, `${JSON.stringify(labels, null, 2)}\n`);
+}
+
+writeRoadmap(englishRoadmap, path.join(roadmapDir, 'index.md'));
+writeRoadmapSidebar(path.join(roadmapDir, 'sidebars.json'));
+
 // The gallery that opens the Samples section lives in the site, not in the package.
 const samplesIndexDir = path.join(siteDir, 'src', 'samples');
 copy(path.join(samplesIndexDir, 'index.mdx'), path.join(tutorialsDir, 'index.mdx'));
@@ -155,6 +213,13 @@ for (const locale of locales) {
     const navbar = path.join(interfaceTranslations, 'docusaurus-theme-classic', 'navbar.json');
     const title = fs.existsSync(navbar) ? JSON.parse(fs.readFileSync(navbar, 'utf8'))['item.label.Changelog']?.message : undefined;
     writeChangelog(changelog, path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-changelog', 'current', 'index.md'), title);
+  }
+  const roadmap = path.join(repoDir, `ROADMAP.${locale}.md`);
+  if (fs.existsSync(roadmap)) {
+    const navbar = path.join(interfaceTranslations, 'docusaurus-theme-classic', 'navbar.json');
+    const title = fs.existsSync(navbar) ? JSON.parse(fs.readFileSync(navbar, 'utf8'))['item.label.Roadmap']?.message : undefined;
+    writeRoadmap(roadmap, path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-roadmap', 'current', 'index.md'), title);
+    writeRoadmapLabels(roadmap, path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-roadmap', 'current.json'));
   }
 
   copy(path.join(docsDir, locale), path.join(i18nDir, locale, 'docusaurus-plugin-content-docs', 'current'));

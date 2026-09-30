@@ -55,7 +55,7 @@ export default function searchPlugin(context) {
             entries.push({
               title: plainText(heading || doc.title),
               url: indexUrl(doc.permalink, {trailingSlash: context.siteConfig.trailingSlash, baseUrl: context.baseUrl}),
-              section: {default: 'Docs', tutorials: 'Samples', api: 'API', changelog: 'Changelog'}[id] ?? id,
+              section: {default: 'Docs', tutorials: 'Samples', api: 'API', changelog: 'Changelog', roadmap: 'Roadmap'}[id] ?? id,
               description: plainText(doc.description || ''),
               text: plainText(markdown),
             });

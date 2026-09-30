@@ -9,6 +9,7 @@ import AnimatedPreview from '@site/src/components/FeaturePreview';
 import InlineCode from '@site/src/components/InlineCode';
 import IntroBanner from '@site/src/components/IntroBanner';
 import InstallPanel from '@site/src/components/InstallPanel';
+import {RoadmapIdea, RoadmapTheme, RoadmapTrack} from '@site/src/components/Roadmap';
 import ProfilerHierarchy from '@site/src/components/ProfilerHierarchy';
 import StyleSides, {StyleSidesRow} from '@site/src/components/StyleSides';
 import SupportPanel from '@site/src/components/SupportPanel';
@@ -32,4 +33,4 @@ function FeatureCardMore() {
   return <Translate id="featureCard.more">Read more</Translate>;
 }
 
-export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy, StyleSides, StyleSidesRow, AgentSession, AgentPrompt};
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy, StyleSides, StyleSidesRow, AgentSession, AgentPrompt, RoadmapTrack, RoadmapTheme, RoadmapIdea};

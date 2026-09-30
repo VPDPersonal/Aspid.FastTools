@@ -1,7 +1,7 @@
 name: Docs
 
 # Builds the Docusaurus site in Website/ and publishes it to GitHub Pages.
-# Content comes from the package (Documentation/ and Samples~/*/Documentation/) and the root CHANGELOG*.md,
+# Content comes from the package (Documentation/ and Samples~/*/Documentation/) and the root CHANGELOG*.md / ROADMAP*.md,
 # so any change there rebuilds the site.
 
 on:
@@ -13,6 +13,7 @@ on:
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
+      - 'ROADMAP*.md'
       - '.github/workflows/docs.yml'
   pull_request:
     paths:
@@ -21,11 +22,16 @@ on:
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
+      - 'ROADMAP*.md'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
+  # The roadmap shows its issues' states and votes as of the build; a daily build keeps them current.
+  schedule:
+    - cron: '17 4 * * *'
 
 permissions:
   contents: read
+  issues: read
 
 # Deploys queue in one group so none is cancelled halfway; a PR build only competes with newer pushes to its own PR.
 concurrency:
@@ -55,6 +61,8 @@ jobs:
         working-directory: Website
       - run: npm run build
         working-directory: Website
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'
         with:
