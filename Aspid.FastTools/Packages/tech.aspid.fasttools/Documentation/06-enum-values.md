@@ -77,31 +77,14 @@ public enum StatusEffect
 | <code lang="csharp">Burning &#124; Slowed</code> | <code lang="csharp">0.3</code> |
 | <code lang="csharp">None</code> | <code lang="csharp">1</code> |
 
-<ol className="enum-lookup-flow">
-  <li>
-    <strong>Exact match</strong>
-    <span>Look for the entire requested set of flags.</span>
-    <code>Burning | Slowed → 0.3</code>
-    <small>The exact row wins, even when it is farther down.</small>
-    <em>No exact row →</em>
-  </li>
-  <li>
-    <strong>First matching row</strong>
-    <span>All of its flags must be present in the request.</span>
-    <code>Burning | Slowed | Frozen → 0.9</code>
-    <small>Burning sits above Burning | Slowed.</small>
-    <em>No matching row →</em>
-  </li>
-  <li>
-    <strong>Default Value</strong>
-    <span>Return the configured fallback.</span>
-    <code>Frozen → 0</code>
-    <small>The None row does not match: zero matches only zero.</small>
-  </li>
-</ol>
+| Request | Result |
+|---|---|
+| <code lang="csharp">Burning &#124; Slowed</code> | <code lang="csharp">0.3</code> — the exact row wins, even below <code lang="csharp">Burning</code> |
+| <code lang="csharp">Burning &#124; Slowed &#124; Frozen</code> | <code lang="csharp">0.9</code> — no exact row; the first row whose flags are all in the request is <code lang="csharp">Burning</code> |
+| <code lang="csharp">Frozen</code> | <code lang="csharp">0</code> — **Default Value**: <code lang="csharp">None</code> matches only <code lang="csharp">None</code> |
 
 > [!NOTE]
-> The second pass takes the topmost matching row, not the most complete one: to let a combination win, place it above single flags.
+> The topmost matching row wins, not the most complete one: to let a combination win, place it above single flags.
 
 ## Equals()
 

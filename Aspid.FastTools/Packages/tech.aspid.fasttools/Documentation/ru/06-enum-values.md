@@ -77,31 +77,14 @@ public enum StatusEffect
 | <code lang="csharp">Burning &#124; Slowed</code> | <code lang="csharp">0.3</code> |
 | <code lang="csharp">None</code> | <code lang="csharp">1</code> |
 
-<ol className="enum-lookup-flow">
-  <li>
-    <strong>Точное совпадение</strong>
-    <span>Ищем весь запрошенный набор флагов.</span>
-    <code>Burning | Slowed → 0.3</code>
-    <small>Точная строка побеждает, даже если стоит ниже.</small>
-    <em>Нет точной строки →</em>
-  </li>
-  <li>
-    <strong>Первая подходящая строка</strong>
-    <span>Все её флаги должны входить в запрос.</span>
-    <code>Burning | Slowed | Frozen → 0.9</code>
-    <small>Burning стоит выше Burning | Slowed.</small>
-    <em>Нет подходящей строки →</em>
-  </li>
-  <li>
-    <strong>Default Value</strong>
-    <span>Возвращаем значение по умолчанию.</span>
-    <code>Frozen → 0</code>
-    <small>Строка None не подходит: ноль совпадает только с нулём.</small>
-  </li>
-</ol>
+| Запрос | Результат |
+|---|---|
+| <code lang="csharp">Burning &#124; Slowed</code> | <code lang="csharp">0.3</code> — точная строка побеждает, хотя стоит ниже <code lang="csharp">Burning</code> |
+| <code lang="csharp">Burning &#124; Slowed &#124; Frozen</code> | <code lang="csharp">0.9</code> — точной строки нет, первая строка, все флаги которой есть в запросе, — <code lang="csharp">Burning</code> |
+| <code lang="csharp">Frozen</code> | <code lang="csharp">0</code> — **Default Value**: <code lang="csharp">None</code> совпадает только с <code lang="csharp">None</code> |
 
 > [!NOTE]
-> Во втором проходе побеждает верхняя подходящая строка, а не самая полная: чтобы побеждала комбинация, ставьте её выше одиночных флагов.
+> Побеждает верхняя подходящая строка, а не самая полная: чтобы побеждала комбинация, ставьте её выше одиночных флагов.
 
 ## Equals()
 
