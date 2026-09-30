@@ -21,7 +21,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Container keys from the document's top level down to the field's parent; empty for a top-level field.
         public readonly string[] Parents;
 
-        // The dotted path, matching what SerializedProperty reports, so gate reports read alike either way.
+        // The dotted path the Inspector shows. The object-load scan reports the same one (a SerializableType field by
+        // its own path, not its backing string), so gate reports read alike for scenes, prefabs and assets.
         public string Path => Parents is { Length: > 0 } ? string.Join(".", Parents) + "." + FieldName : FieldName;
 
         public RequiredFieldDescriptor(string fieldName, RequiredFieldKind kind)

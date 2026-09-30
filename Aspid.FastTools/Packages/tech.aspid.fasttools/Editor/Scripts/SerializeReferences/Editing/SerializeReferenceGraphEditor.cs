@@ -191,7 +191,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The caller disposes the returned SerializedObject. A violation's field path is already a property path, so
-        // unlike the graph route no conversion applies.
+        // unlike the graph route no conversion applies; for a SerializableType field it names the wrapper, whose type
+        // name lives in the backing string.
         public static bool TryResolveRequiredStringProperty(GateViolation violation,
             out SerializedObject serializedObject, out SerializedProperty property)
         {
@@ -201,7 +202,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (SerializeReferenceHelpers.IsScene(violation.AssetPath)) return false;
 
             return TryResolveProperty(violation.AssetPath, violation.FileId, violation.FieldPath,
-                SerializedPropertyType.String, out serializedObject, out property);
+                    SerializedPropertyType.String, out serializedObject, out property) ||
+                TryResolveProperty(violation.AssetPath, violation.FileId,
+                    $"{violation.FieldPath}.{SerializableTypeUtility.BackingFieldName}",
+                    SerializedPropertyType.String, out serializedObject, out property);
         }
 
         public static string ToSerializedPropertyPath(string graphPath) =>
