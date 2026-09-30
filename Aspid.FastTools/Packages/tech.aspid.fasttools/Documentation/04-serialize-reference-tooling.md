@@ -52,9 +52,9 @@ Assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**
 
 | Label | Meaning |
 |---|---|
-| Band with **Fix Missing ▼** (**Fix ▼** on a migration) | The stored class is not found; the button opens the class picker |
+| Band with **Fix Missing ▼** | The stored class is not found; the button opens the class picker |
 | **Smart Fix → Pistol** row | A class picked as by **Smart Fix** in Project References |
-| **Migrate → Crossbow** row | The class was renamed with <code lang="csharp">[MovedFrom]</code> |
+| **Migrate → Crossbow** row under a **Fix ▼** band | The class was renamed with <code lang="csharp">[MovedFrom]</code>: the row writes the new name, **Fix ▼** picks a different class |
 | Band with **Change ▼**, **Assign ▼** or **Assign Required ▼** | Changes the class of a healthy reference, fills an empty or required field; the asset is saved at once |
 | **SHARED** | Several fields point at one instance; matching colours mark the connected fields |
 | **Orphaned** | An entry no field points at; **Clear** deletes it from the file, without Undo |
