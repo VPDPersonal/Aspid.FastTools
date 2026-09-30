@@ -65,7 +65,8 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
   on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`).
 - **Highlighted inline code**: `<code lang="csharp">void Run&lt;T&gt;()</code>` is plain inline code on GitHub and is
-  highlighted on the site (`introBanner.js` → `src/components/InlineCode`). Use it for every inline C# snippet, in prose
+  highlighted on the site (`introBanner.js` → `src/components/InlineCode`; sample pages get it from `remarkInlineCode`
+  in the `tutorials` instance). Use it for every inline C# snippet, in prose
   and in tables — never for paths, flags, diagnostic IDs (`AFT0010`) or Profiler column names (`Calls`) — and escape
   `<`, `>`, `{`, `}` as in `<pre>` cells.
   `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the text in that token's
@@ -183,6 +184,31 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - Text stays left-aligned (never justified) and fills the article width.
 - A bug found in package code while writing docs is not fixed on the docs branch: report it and offer a separate
   task in its own worktree.
+
+## Writing a sample page (tutorials/)
+
+Rules the user confirmed while reworking the five sample READMEs; the feature-page rules above apply too.
+
+- **Order:** `# <Name> Sample`, the lead, `demo.gif` with its caption, `## Open it`, `## Try`, optional sections for a
+  second scenario (SerializeReferences: Repair, IMGUI inspector), `## Where to look`, then one closing line
+  `Reference: [Feature](…)` (ru `Справочник — […](…)`). No code block or capture above the demo: an Inspector capture
+  goes into the step that uses it.
+- **Lead = the sample's card description** in `SamplesGallery/index.js`, word for word in both places; change them
+  together.
+- **Import step, same on every page:** «Import the sample: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** →
+  **Import** on **X**.» / «Импортируйте пример: … → **Import** у **X**.» The next step opens the scene and enters Play
+  Mode with one sentence on what the reader sees, no mechanics.
+- **No recording notes** (Sample Themes, the Ability Catalog Theme menu): they are for our captures, and the Light
+  preview swaps the EnumValues palette, so edits to the asset stop showing.
+- **Try steps run in Edit Mode** unless a step says «enter Play Mode»: open `## Try` with «Exit Play Mode and select
+  **X**.» A step must be visible in the sample as shipped (change a value first when the scene holds the default);
+  anything read from saved files (Scan Project, CI) says «Save the scene».
+- **Code is the sample's own**: quote real lines (comments may go), never an invented call attributed to a sample
+  file. A result that only a hypothetical call shows goes into a results table instead.
+- **Inspector labels are bold** (**Enemy Type**, **Mana Cost**), class names `class-name`, marker names `string`,
+  as on feature pages; picker in ru is «окно выбора».
+- **Say it once:** a fact documented on the feature page (the header menu, the custom-inspector API) is a link to that
+  section, not a copy. `## Where to look` lists only files that show FastTools.
 
 ## Adding a main doc page
 
