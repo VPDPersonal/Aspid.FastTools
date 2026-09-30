@@ -1,3 +1,7 @@
+# Retired media
+
+This recipe's output, `aspid_fasttools_enum_values.gif`, was removed from the package on 2026-09-30: no page used it. The EnumValues page now shows the [damage multipliers captures](../enum-values-multipliers/README.md), and `encode.sh` writes into this folder so it does not bring the GIF back into the package.
+
 # EnumValues native Inspector recording
 
 Recorded on 2026-09-13 in Unity 6000.4.0f1. `capture.cs.txt` clones the imported SurfacePalette in memory, removes Stone and Sand from Tile Colors, and displays the actual property drawer in a temporary 640×600 Inspector. Footprint Colors stays unchanged. No UI scale or style override.
