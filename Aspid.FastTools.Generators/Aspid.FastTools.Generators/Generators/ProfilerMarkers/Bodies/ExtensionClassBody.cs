@@ -29,11 +29,11 @@ internal static class ExtensionClassBody
             var type = typeGroup.First().Type;
 
             // Outer.Inner and Outer_Inner both flatten to __Outer_Inner…; the second one gets a suffix.
-            var className = MakeUnique(type.ClassName, name => classNames.Add((type.Namespace ?? string.Empty) + "." + name));
+            var className = MakeUnique(type.ClassName, separator: "_", name => classNames.Add((type.Namespace ?? string.Empty) + "." + name));
 
             // Hint names compare case-insensitively and may not contain '@'.
             var hintPrefix = type.Namespace is null ? string.Empty : type.Namespace.Replace("@", string.Empty) + ".";
-            var hintName = MakeUnique(hintPrefix + className, name => hintNames.Add(name));
+            var hintName = MakeUnique(hintPrefix + className, separator: "_", name => hintNames.Add(name));
 
             // Calls sharing a line share the first one's marker: [CallerLineNumber] cannot tell them apart.
             var calls = typeGroup
@@ -48,15 +48,41 @@ internal static class ExtensionClassBody
         }
     }
 
-    private static string MakeUnique(string name, Func<string, bool> tryAdd)
+    private static string MakeUnique(string name, string separator, Func<string, bool> tryAdd)
     {
         if (tryAdd(name)) return name;
 
         for (var i = 2; ; i++)
         {
-            var candidate = $"{name}_{i}";
+            var candidate = $"{name}{separator}{i}";
             if (tryAdd(candidate)) return candidate;
         }
+    }
+
+    // The line is not part of the name, so an edit above a call does not rename its marker. A label repeated
+    // in one type gets an ordinal in source order instead: Step, Step #2. A name that another call's own label
+    // already takes is skipped, so every call keeps a marker of its own.
+    private static ImmutableArray<string> BuildLabels(ImmutableArray<MarkerCall> calls)
+    {
+        var taken = new HashSet<string>(calls.Select(static call => call.Label), StringComparer.Ordinal);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var labels = new string[calls.Length];
+
+        // By file first: an edit in one partial file must not reorder the calls of another.
+        var sourceOrder = Enumerable.Range(0, calls.Length)
+            .OrderBy(i => calls[i].FilePath, StringComparer.Ordinal)
+            .ThenBy(i => calls[i].Line)
+            .ThenBy(i => calls[i].Column);
+
+        foreach (var i in sourceOrder)
+        {
+            var label = calls[i].Label;
+
+            // A repeated label is already in taken, so MakeUnique starts from #2.
+            labels[i] = seen.Add(label) ? label : MakeUnique(label, separator: " #", taken.Add);
+        }
+
+        return labels.ToImmutableArray();
     }
 
     private static Microsoft.CodeAnalysis.Text.SourceText GenerateForType(TypeData type, string className, ImmutableArray<MarkerCall> calls)
@@ -77,7 +103,7 @@ internal static class ExtensionClassBody
             .AppendLineIf(type.IsObsolete, "[global::System.Obsolete]")
             .AppendLine($"internal static class {className}")
             .BeginBlock()
-            .AppendProfilerMarkers(type, names, calls, isPerClosedType)
+            .AppendProfilerMarkers(type, names, calls, BuildLabels(calls), isPerClosedType)
             .AppendMarker(type, names, calls, isPerClosedType)
             .EndBlock()
             .EndBlockIf(hasNamespace);
@@ -90,6 +116,7 @@ internal static class ExtensionClassBody
         TypeData type,
         GeneratedNames names,
         ImmutableArray<MarkerCall> calls,
+        ImmutableArray<string> labels,
         bool isPerClosedType)
     {
         // Marker() reads the fields only under ENABLE_PROFILER, so without it they would still
@@ -110,7 +137,7 @@ internal static class ExtensionClassBody
 
             var call = calls[i];
             code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
-                .AppendLine($"{fieldVisibility} static readonly {ProfilerMarker} {call.FieldName} = new({BuildMarkerValueExpression(type, names, call, isPerClosedType)});");
+                .AppendLine($"{fieldVisibility} static readonly {ProfilerMarker} {call.FieldName} = new({BuildMarkerValueExpression(type, names, labels[i], isPerClosedType)});");
         }
 
         if (isPerClosedType)
@@ -183,9 +210,9 @@ internal static class ExtensionClassBody
         return code;
     }
 
-    private static string BuildMarkerValueExpression(TypeData type, GeneratedNames names, MarkerCall call, bool isPerClosedType)
+    private static string BuildMarkerValueExpression(TypeData type, GeneratedNames names, string label, bool isPerClosedType)
     {
-        // call.Label may originate from a user-supplied .WithName("...") literal and can contain
+        // The label may originate from a user-supplied .WithName("...") literal and can contain
         // quotes, backslashes or braces. Every literal fragment is emitted through ToLiteral so the
         // result is always valid C# — the raw label is never interpolated verbatim into the source.
         var typeParameters = type.OwnTypeParameters.Length > 0
@@ -193,19 +220,19 @@ internal static class ExtensionClassBody
             : System.Array.Empty<string>();
 
         if (typeParameters.Length is 0)
-            return ToLiteral($"{type.TypeName}.{call.Label} ({call.Line})");
+            return ToLiteral($"{type.TypeName}.{label}");
 
         if (!isPerClosedType)
-            return ToLiteral($"{type.TypeName}<{string.Join(", ", typeParameters)}>.{call.Label} ({call.Line})");
+            return ToLiteral($"{type.TypeName}<{string.Join(", ", typeParameters)}>.{label}");
 
-        // The label names each closed type, so build it from escaped literals and TypeName(typeof(T))
+        // The name differs per closed type, so build it from escaped literals and TypeName(typeof(T))
         // calls instead of one interpolated string, which would break on braces inside the label.
         var typeofExpressions = string.Join(
             " + \", \" + ",
             typeParameters.Select(p => $"{names.TypeName}(typeof({ProfilerMarkersGenerator.EscapeIdentifier(p)}))"));
 
         var prefix = ToLiteral($"{type.TypeName}<");
-        var suffix = ToLiteral($">.{call.Label} ({call.Line})");
+        var suffix = ToLiteral($">.{label}");
         return $"{prefix} + {typeofExpressions} + {suffix}";
     }
 

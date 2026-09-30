@@ -98,7 +98,7 @@ public class ProfilerMarkersGeneratorTests
             text, @"static\s+readonly\s+global::Unity\.Profiling\.ProfilerMarker\s+(\w+)\s*=");
         Assert.Single(fieldDeclarations);
 
-        Assert.Equal(new[] { "Foo.Run (5)", "Foo.Run (5)" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
+        Assert.Equal(new[] { "Foo.Run", "Foo.Run" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Fact]
@@ -302,10 +302,9 @@ public class ProfilerMarkersGeneratorTests
         // add and remove are on different lines, so they get distinct fields and markers.
         var fields = Regex.Matches(text, @"\bChanged_Marker_Line_\d+\b")
             .Select(m => m.Value).Distinct().ToArray();
-        var names = Regex.Matches(text, @"""Foo\.Changed \(\d+\)""")
-            .Select(m => m.Value).Distinct().ToArray();
         Assert.Equal(2, fields.Length);
-        Assert.Equal(2, names.Length);
+        Assert.Contains("\"Foo.Changed\"", text);
+        Assert.Contains("\"Foo.Changed #2\"", text);
         Assert.DoesNotContain("add_Changed", text);
         Assert.DoesNotContain("remove_Changed", text);
 
@@ -335,8 +334,8 @@ public class ProfilerMarkersGeneratorTests
         var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
 
         Assert.Contains("Changed_Marker_Line_", text);
-        Assert.Contains("\"Foo.Changed (", text);
-        Assert.DoesNotContain("INotifier.Changed (", text);
+        Assert.Contains("\"Foo.Changed\"", text);
+        Assert.DoesNotContain("INotifier.Changed", text);
         Assert.DoesNotContain("add_Changed", text);
 
         GeneratorTestHost.AssertNoErrors(run);
@@ -541,7 +540,7 @@ public class ProfilerMarkersGeneratorTests
         Assert.Single(generated);
         Assert.Contains("_count_Marker_Line_", generated[0].SourceText.ToString());
         GeneratorTestHost.AssertCallsBindToGenerated(run);
-        Assert.Equal(new[] { "Foo._count (5)" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
+        Assert.Equal(new[] { "Foo._count" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Theory]
@@ -741,7 +740,7 @@ public class ProfilerMarkersGeneratorTests
         var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
 
         Assert.Contains("Indexer_Marker_Line_", text);
-        Assert.Contains("\"Foo.Indexer (", text);
+        Assert.Contains("\"Foo.Indexer\"", text);
         Assert.DoesNotContain("this[]", text);
 
         GeneratorTestHost.AssertNoErrors(run);

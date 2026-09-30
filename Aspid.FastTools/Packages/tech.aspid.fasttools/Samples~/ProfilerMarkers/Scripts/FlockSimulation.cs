@@ -57,9 +57,9 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         /// <param name="maxSpeed">Maximum speed in world units per second.</param>
         public void Step(float deltaTime, float neighborRadius, float maxSpeed)
         {
-            using var _ = this.Marker(); // Wraps the whole method: "FlockSimulation.Step (line)".
+            using var _ = this.Marker(); // Wraps the whole method: "FlockSimulation.Step".
 
-            using (this.Marker().WithName("Steering")) // "FlockSimulation.Steering (line)", nested under Step.
+            using (this.Marker().WithName("Steering")) // "FlockSimulation.Steering", nested under Step.
                 ComputeSteering(neighborRadius);
 
             using (this.Marker().WithName("Integrate"))

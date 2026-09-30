@@ -32,31 +32,31 @@ public class ProfilerMarkersExecutionTests
             {
                 public class Foo
                 {
-                    public static readonly System.Func<Foo, int> Hook = f => { using var _ = f.Marker(); /*hook*/ return 0; };
-                    public System.Func<Foo, int> Selector { get; } = f => { using var _ = f.Marker(); /*auto*/ return 0; };
+                    public static readonly System.Func<Foo, int> Hook = f => { using var _ = f.Marker(); return 0; };
+                    public System.Func<Foo, int> Selector { get; } = f => { using var _ = f.Marker(); return 0; };
 
-                    public Foo() { using var _ = this.Marker(); /*ctor*/ }
+                    public Foo() { using var _ = this.Marker(); }
 
                     public void Step()
                     {
-                        using var _ = this.Marker(); /*step*/
-                        void Local() { using var __ = this.Marker(); /*local*/ }
+                        using var _ = this.Marker();
+                        void Local() { using var __ = this.Marker(); }
                         Local();
-                        System.Action lambda = () => { using var __ = this.Marker(); /*lambda*/ };
+                        System.Action lambda = () => { using var __ = this.Marker(); };
                         lambda();
                     }
 
-                    public int Speed { get { using var _ = this.Marker(); /*speed*/ return 0; } }
+                    public int Speed { get { using var _ = this.Marker(); return 0; } }
 
-                    public int this[int i] { get { using var _ = this.Marker(); /*indexer*/ return i; } }
+                    public int this[int i] { get { using var _ = this.Marker(); return i; } }
 
                     public event System.Action Changed
                     {
-                        add { using var _ = this.Marker(); /*add*/ }
-                        remove { using var _ = this.Marker(); /*remove*/ }
+                        add { using var _ = this.Marker(); }
+                        remove { using var _ = this.Marker(); }
                     }
 
-                    public static Foo operator +(Foo a, Foo b) { using var _ = a.Marker(); /*op*/ return a; }
+                    public static Foo operator +(Foo a, Foo b) { using var _ = a.Marker(); return a; }
                 }
 
                 public static class Probe
@@ -79,17 +79,17 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Foo.Ctor ({LineOf(source, "ctor")})",
-            $"Foo.Hook ({LineOf(source, "hook")})",
-            $"Foo.Selector ({LineOf(source, "auto")})",
-            $"Foo.Step ({LineOf(source, "step")})",
-            $"Foo.Step ({LineOf(source, "local")})",
-            $"Foo.Step ({LineOf(source, "lambda")})",
-            $"Foo.Speed ({LineOf(source, "speed")})",
-            $"Foo.Indexer ({LineOf(source, "indexer")})",
-            $"Foo.Changed ({LineOf(source, "add")})",
-            $"Foo.Changed ({LineOf(source, "remove")})",
-            $"Foo.op_Addition ({LineOf(source, "op")})",
+            "Foo.Ctor",
+            "Foo.Hook",
+            "Foo.Selector",
+            "Foo.Step",
+            "Foo.Step #2",
+            "Foo.Step #3",
+            "Foo.Speed",
+            "Foo.Indexer",
+            "Foo.Changed",
+            "Foo.Changed #2",
+            "Foo.op_Addition",
         }, Run(source));
     }
 
@@ -101,12 +101,12 @@ public class ProfilerMarkersExecutionTests
             {
                 public class Box<T>
                 {
-                    public static System.Action<Box<T>> Hook { get; } = b => { using var _ = b.Marker(); /*box*/ };
+                    public static System.Action<Box<T>> Hook { get; } = b => { using var _ = b.Marker(); };
                 }
 
                 public record Rec
                 {
-                    public System.Action<Rec> Hook { get; init; } = r => { using var _ = r.Marker(); /*rec*/ };
+                    public System.Action<Rec> Hook { get; init; } = r => { using var _ = r.Marker(); };
                 }
 
                 public static class Probe
@@ -123,8 +123,8 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Box<Int32>.Hook ({LineOf(source, "box")})",
-            $"Rec.Hook ({LineOf(source, "rec")})",
+            "Box<Int32>.Hook",
+            "Rec.Hook",
         }, Run(source));
     }
 
@@ -139,14 +139,14 @@ public class ProfilerMarkersExecutionTests
                     public void A()
                     {
                         using var _ = this
-                            .Marker() /*a*/
+                            .Marker()
                             .WithName("A");
                     }
 
                     public void B()
                     {
                         using var _ = this.Marker
-                        ( /*b*/
+                        (
                         );
                     }
                 }
@@ -157,8 +157,8 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Foo.A ({LineOf(source, "a")})",
-            $"Foo.B ({LineOf(source, "b")})",
+            "Foo.A",
+            "Foo.B",
         }, Run(source));
     }
 
@@ -173,14 +173,110 @@ public class ProfilerMarkersExecutionTests
                 #line 100
                     public void A() { using var _ = this.Marker(); }
                 #line default
-                    public void B() { using var _ = this.Marker(); /*b*/ }
+                    public void B() { using var _ = this.Marker(); }
                 }
 
                 public static class Probe { public static void Run() { new Foo().A(); new Foo().B(); } }
             }
             """;
 
-        Assert.Equal(new[] { "Foo.A (100)", $"Foo.B ({LineOf(source, "b")})" }, Run(source));
+        Assert.Equal(new[] { "Foo.A", "Foo.B" }, Run(source));
+    }
+
+    [Fact]
+    public void RepeatedName_GetsAnOrdinalInSourceOrder()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Step()
+                    {
+                        using var _ = this.Marker();
+                        using (this.Marker()) { }
+                    }
+
+                    public void Update() { using var _ = this.Marker().WithName("Step"); }
+                }
+
+                public static class Probe { public static void Run() { new Foo().Update(); new Foo().Step(); } }
+            }
+            """;
+
+        Assert.Equal(new[] { "Foo.Step #3", "Foo.Step", "Foo.Step #2" }, Run(source));
+    }
+
+    [Fact]
+    public void OrdinalTakenByWithName_IsSkipped()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Step() { using var _ = this.Marker(); }
+                    public void Update() { using var _ = this.Marker().WithName("Step"); }
+                    public void Late() { using var _ = this.Marker().WithName("Step #2"); }
+                }
+
+                public static class Probe { public static void Run() { new Foo().Step(); new Foo().Update(); new Foo().Late(); } }
+            }
+            """;
+
+        Assert.Equal(new[] { "Foo.Step", "Foo.Step #3", "Foo.Step #2" }, Run(source));
+    }
+
+    [Fact]
+    public void EditAboveACall_KeepsItsName()
+    {
+        static string Source(string padding) => $$"""
+            namespace Sample
+            {
+                public class Foo
+                {{{padding}}
+                    public void Run() { using var _ = this.Marker(); }
+                    public void Walk() { using var _ = this.Marker().WithName("Run"); }
+                }
+
+                public static class Probe { public static void Run() { new Foo().Run(); new Foo().Walk(); } }
+            }
+            """;
+
+        Assert.Equal(new[] { "Foo.Run", "Foo.Run #2" }, Run(Source(string.Empty)));
+        Assert.Equal(new[] { "Foo.Run", "Foo.Run #2" }, Run(Source("\n\n\n")));
+    }
+
+    [Fact]
+    public void PartialFiles_AreNumberedFileByFile()
+    {
+        // B sits lower in its file than A in its own, but User0.cs comes first.
+        var run = GeneratorTestHost.RunProfilerMarkers(new[]
+        {
+            """
+            namespace Sample
+            {
+                public partial class Foo
+                {
+
+                    public void B() { using var _ = this.Marker().WithName("Step"); }
+                }
+            }
+            """,
+            """
+            namespace Sample
+            {
+                public partial class Foo
+                {
+                    public void A() { using var _ = this.Marker().WithName("Step"); }
+                }
+
+                public static class Probe { public static void Run() { new Foo().A(); new Foo().B(); } }
+            }
+            """,
+        });
+
+        Assert.Equal(new[] { "Foo.Step #2", "Foo.Step" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Fact]
@@ -189,9 +285,9 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             namespace Sample
             {
-                public class Pool<T> { public void Get() { using var _ = this.Marker(); /*one*/ } }
-                public class Pool { public void Get() { using var _ = this.Marker(); /*zero*/ } }
-                public class Pool<T, U> { public void Get() { using var _ = this.Marker(); /*two*/ } }
+                public class Pool<T> { public void Get() { using var _ = this.Marker(); } }
+                public class Pool { public void Get() { using var _ = this.Marker(); } }
+                public class Pool<T, U> { public void Get() { using var _ = this.Marker(); } }
 
                 public static class Probe
                 {
@@ -207,9 +303,9 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Pool.Get ({LineOf(source, "zero")})",
-            $"Pool<Int32>.Get ({LineOf(source, "one")})",
-            $"Pool<Int32, String>.Get ({LineOf(source, "two")})",
+            "Pool.Get",
+            "Pool<Int32>.Get",
+            "Pool<Int32, String>.Get",
         }, Run(source));
     }
 
@@ -219,7 +315,7 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             namespace Sample
             {
-                public class Foo<T> { public void A() { using var _ = this.Marker(); /*a*/ } }
+                public class Foo<T> { public void A() { using var _ = this.Marker(); } }
 
                 public static class Probe
                 {
@@ -232,8 +328,7 @@ public class ProfilerMarkersExecutionTests
             }
             """;
 
-        var line = LineOf(source, "a");
-        Assert.Equal(new[] { $"Foo<List<Int32>>.A ({line})", $"Foo<List<String>>.A ({line})" }, Run(source));
+        Assert.Equal(new[] { "Foo<List<Int32>>.A", "Foo<List<String>>.A" }, Run(source));
     }
 
     [Fact]
@@ -242,7 +337,7 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             namespace Sample
             {
-                public struct Worker<T> { public void Execute() { using var _ = this.Marker(); /*a*/ } }
+                public struct Worker<T> { public void Execute() { using var _ = this.Marker(); } }
 
                 public static class Probe
                 {
@@ -260,8 +355,7 @@ public class ProfilerMarkersExecutionTests
         // Burst cannot run typeof(T), so the struct's markers are literals in the non-generic class.
         Assert.DoesNotContain("typeof", GeneratorTestHost.GeneratedText(run));
 
-        var line = LineOf(source, "a");
-        Assert.Equal(new[] { $"Worker<T>.Execute ({line})", $"Worker<T>.Execute ({line})" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
+        Assert.Equal(new[] { "Worker<T>.Execute", "Worker<T>.Execute" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Fact]
@@ -272,8 +366,8 @@ public class ProfilerMarkersExecutionTests
             {
                 public class Foo
                 {
-                    public void A() { using var _ = this.Marker().WithName($"Br{{ace}}"); /*a*/ }
-                    public void B() { using var _ = this.Marker().WithName("Line\u2028Sep\u2029Par\u0085Next"); /*b*/ }
+                    public void A() { using var _ = this.Marker().WithName($"Br{{ace}}"); }
+                    public void B() { using var _ = this.Marker().WithName("Line\u2028Sep\u2029Par\u0085Next"); }
                 }
 
                 public static class Probe { public static void Run() { new Foo().A(); new Foo().B(); } }
@@ -282,8 +376,8 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Foo.Br{{ace}} ({LineOf(source, "a")})",
-            $"Foo.Line\u2028Sep\u2029Par\u0085Next ({LineOf(source, "b")})",
+            "Foo.Br{ace}",
+            "Foo.Line\u2028Sep\u2029Par\u0085Next",
         }, Run(source));
     }
 
@@ -300,14 +394,14 @@ public class ProfilerMarkersExecutionTests
 
                 public class Foo
                 {
-                    public void A() { using var _ = Other.WithName(this.Marker(), "Wrong"); /*a*/ }
+                    public void A() { using var _ = Other.WithName(this.Marker(), "Wrong"); }
                 }
 
                 public static class Probe { public static void Run() => new Foo().A(); }
             }
             """;
 
-        Assert.Equal(new[] { $"Foo.A ({LineOf(source, "a")})" }, Run(source));
+        Assert.Equal(new[] { "Foo.A" }, Run(source));
     }
 
     [Fact]
@@ -316,7 +410,7 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             namespace Sample
             {
-                public class Bar { public void Run() { using var _ = this.Marker(); /*bar*/ } }
+                public class Bar { public void Run() { using var _ = this.Marker(); } }
 
                 public class Foo
                 {
@@ -329,7 +423,7 @@ public class ProfilerMarkersExecutionTests
                     {
                         using var a = _bar.Marker(); /*foreign*/
                         using var b = ((object)this).Marker();
-                        if (_other is not null) { using var c = _other.Marker(); /*same*/ }
+                        if (_other is not null) { using var c = _other.Marker(); }
                     }
                 }
 
@@ -350,8 +444,8 @@ public class ProfilerMarkersExecutionTests
         Assert.DoesNotContain($"Run_Marker_Line_{LineOf(source, "foreign")}", text);
         Assert.Equal(new[]
         {
-            $"Foo.Run ({LineOf(source, "same")})",
-            $"Bar.Run ({LineOf(source, "bar")})",
+            "Foo.Run",
+            "Bar.Run",
         }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
@@ -361,7 +455,7 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             namespace Sample
             {
-                public class ViewBase { public void Show() { using var _ = this.Marker(); /*base*/ } }
+                public class ViewBase { public void Show() { using var _ = this.Marker(); } }
 
                 public class Host
                 {
@@ -379,7 +473,7 @@ public class ProfilerMarkersExecutionTests
 
         // Popup gets no overload of its own, and extension lookup finds ViewBase's in the same namespace
         // before the global fallback: the call opens nothing unless a ViewBase call shares its line (AFT0010 warns).
-        Assert.Equal(new[] { $"ViewBase.Show ({LineOf(source, "base")})" }, Run(source));
+        Assert.Equal(new[] { "ViewBase.Show" }, Run(source));
     }
 
     [Fact]
@@ -390,7 +484,7 @@ public class ProfilerMarkersExecutionTests
             {
                 public class O<T> { public class N { } public class J<U> { } }
 
-                public class Foo<T> { public void A() { using var _ = this.Marker(); /*a*/ } }
+                public class Foo<T> { public void A() { using var _ = this.Marker(); } }
 
                 public static class Probe
                 {
@@ -406,14 +500,13 @@ public class ProfilerMarkersExecutionTests
             }
             """;
 
-        var line = LineOf(source, "a");
         Assert.Equal(new[]
         {
-            $"Foo<O<Int32>.N>.A ({line})",
-            $"Foo<O<String>.N>.A ({line})",
-            $"Foo<O<Int32>.J<String>>.A ({line})",
-            $"Foo<Int32[]>.A ({line})",
-            $"Foo<Dictionary<Int32, String>.KeyCollection>.A ({line})",
+            "Foo<O<Int32>.N>.A",
+            "Foo<O<String>.N>.A",
+            "Foo<O<Int32>.J<String>>.A",
+            "Foo<Int32[]>.A",
+            "Foo<Dictionary<Int32, String>.KeyCollection>.A",
         }, Run(source));
     }
 
@@ -425,8 +518,8 @@ public class ProfilerMarkersExecutionTests
             {
                 public class Outer<T>
                 {
-                    public class Inner { public void Get() { using var _ = this.Marker(); /*inner*/ } }
-                    public class Inner<U> { public void Get() { using var _ = this.Marker(); /*generic*/ } }
+                    public class Inner { public void Get() { using var _ = this.Marker(); } }
+                    public class Inner<U> { public void Get() { using var _ = this.Marker(); } }
                 }
 
                 public static class Probe
@@ -442,8 +535,8 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Inner.Get ({LineOf(source, "inner")})",
-            $"Inner<String>.Get ({LineOf(source, "generic")})",
+            "Inner.Get",
+            "Inner<String>.Get",
         }, Run(source));
     }
 
@@ -457,9 +550,9 @@ public class ProfilerMarkersExecutionTests
 
                 public class Foo : IFoo
                 {
-                    void IFoo.Run() { using var _ = this.Marker(); /*run*/ }
-                    int IFoo.Value { get { using var _ = this.Marker(); /*value*/ return 0; } }
-                    event System.Action IFoo.Changed { add { using var _ = this.Marker(); /*add*/ } remove { } }
+                    void IFoo.Run() { using var _ = this.Marker(); }
+                    int IFoo.Value { get { using var _ = this.Marker(); return 0; } }
+                    event System.Action IFoo.Changed { add { using var _ = this.Marker(); } remove { } }
                 }
 
                 public static class Probe
@@ -477,9 +570,9 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Foo.Run ({LineOf(source, "run")})",
-            $"Foo.Value ({LineOf(source, "value")})",
-            $"Foo.Changed ({LineOf(source, "add")})",
+            "Foo.Run",
+            "Foo.Value",
+            "Foo.Changed",
         }, Run(source));
     }
 
@@ -491,14 +584,14 @@ public class ProfilerMarkersExecutionTests
             {
                 public class Foo
                 {
-                    public void Run(int x) { using var _ = this.Marker().WithName($"X{x}"); /*a*/ }
+                    public void Run(int x) { using var _ = this.Marker().WithName($"X{x}"); }
                 }
 
                 public static class Probe { public static void Run() => new Foo().Run(1); }
             }
             """;
 
-        Assert.Equal(new[] { $"Foo.Run ({LineOf(source, "a")})" }, Run(source));
+        Assert.Equal(new[] { "Foo.Run" }, Run(source));
     }
 
     [Fact]
@@ -507,8 +600,8 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             namespace Sample
             {
-                public struct Job { public void Execute() { using var _ = this.Marker(); /*job*/ } }
-                public ref struct Span { public void Execute() { using var _ = this.Marker(); /*span*/ } }
+                public struct Job { public void Execute() { using var _ = this.Marker(); } }
+                public ref struct Span { public void Execute() { using var _ = this.Marker(); } }
 
                 public static class Probe { public static void Run() { new Job().Execute(); new Span().Execute(); } }
             }
@@ -516,8 +609,8 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Job.Execute ({LineOf(source, "job")})",
-            $"Span.Execute ({LineOf(source, "span")})",
+            "Job.Execute",
+            "Span.Execute",
         }, Run(source));
     }
 
@@ -526,8 +619,8 @@ public class ProfilerMarkersExecutionTests
     {
         // Unity's script template declares no namespace.
         const string source = """
-            public class Foo { public void Run() { using var _ = this.Marker(); /*foo*/ } }
-            public class Box<T> { public void Run() { using var _ = this.Marker(); /*box*/ } }
+            public class Foo { public void Run() { using var _ = this.Marker(); } }
+            public class Box<T> { public void Run() { using var _ = this.Marker(); } }
 
             public static class Probe { public static void Run() { new Foo().Run(); new Box<int>().Run(); } }
             """;
@@ -536,8 +629,8 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Foo.Run ({LineOf(source, "foo")})",
-            $"Box<Int32>.Run ({LineOf(source, "box")})",
+            "Foo.Run",
+            "Box<Int32>.Run",
         }, GeneratorTestHost.Execute(run, "Probe"));
     }
 
@@ -547,8 +640,8 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             namespace Sample
             {
-                [System.Obsolete("x")] public class Foo { public void Run() { using var _ = this.Marker(); /*foo*/ } }
-                [System.Obsolete("x", true)] public class Bar { public void Run() { using var _ = this.Marker(); /*bar*/ } }
+                [System.Obsolete("x")] public class Foo { public void Run() { using var _ = this.Marker(); } }
+                [System.Obsolete("x", true)] public class Bar { public void Run() { using var _ = this.Marker(); } }
 
                 [System.Obsolete]
                 public static class Probe { public static void Run() { new Foo().Run(); new Bar().Run(); } }
@@ -557,8 +650,8 @@ public class ProfilerMarkersExecutionTests
 
         Assert.Equal(new[]
         {
-            $"Foo.Run ({LineOf(source, "foo")})",
-            $"Bar.Run ({LineOf(source, "bar")})",
+            "Foo.Run",
+            "Bar.Run",
         }, Run(source));
     }
 

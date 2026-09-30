@@ -30,9 +30,9 @@ public class IncrementalCacheTests
     }
 
     [Theory]
-    [InlineData("this.Marker().WithName(\"A\")", "this.Marker().WithName(\"B\")", "Foo.B (5)")]
-    [InlineData("this.Marker()", "\n        this.Marker()", "Foo.Run (6)")]
-    public void ProfilerMarkers_RelevantEdit_ChangesOutput(string before, string after, string expectedLabel)
+    [InlineData("this.Marker().WithName(\"A\")", "this.Marker().WithName(\"B\")", "\"Foo.B\"")]
+    [InlineData("this.Marker()", "\n        this.Marker()", "case 6:")]
+    public void ProfilerMarkers_RelevantEdit_ChangesOutput(string before, string after, string expectedText)
     {
         static string Source(string call) => $$"""
             namespace Sample
@@ -53,8 +53,8 @@ public class IncrementalCacheTests
         driver = driver.RunGenerators(MakeCompilation(Source(after), "// unrelated", stubs));
         var second = driver.GetRunResult().Results.Single().GeneratedSources.Single().SourceText.ToString();
 
-        Assert.DoesNotContain($"\"{expectedLabel}\"", first);
-        Assert.Contains($"\"{expectedLabel}\"", second);
+        Assert.DoesNotContain(expectedText, first);
+        Assert.Contains(expectedText, second);
     }
 
     private static void AssertCachedAfterUnrelatedEdit(string targetSource, IIncrementalGenerator generator)
