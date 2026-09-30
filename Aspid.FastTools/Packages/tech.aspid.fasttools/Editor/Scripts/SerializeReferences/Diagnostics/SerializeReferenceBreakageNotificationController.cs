@@ -39,15 +39,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var message = typeLevel
                 ? migratable == count
                     ? $"{report.TypeCount} managed-reference {typeWord} carr{(report.TypeCount == 1 ? "ies" : "y")} " +
-                      "an outdated name after a [MovedFrom] rename — open Repair to migrate"
-                    : $"{report.TypeCount} managed-reference {typeWord} just became missing — open Repair"
+                      "an outdated name after a [MovedFrom] rename — open Project References to migrate"
+                    : $"{report.TypeCount} managed-reference {typeWord} just became missing — open Project References"
                 : migratable == count
                     ? $"{count} managed reference{plural} carr{(count == 1 ? "ies" : "y")} an outdated type name " +
-                      $"after a [MovedFrom] rename ({report.TypeCount} {typeWord}) — open Repair to migrate"
+                      $"after a [MovedFrom] rename ({report.TypeCount} {typeWord}) — open Project References to migrate"
                     : migratable > 0
                         ? $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}; " +
-                          $"{migratable} auto-migratable after a [MovedFrom] rename) — open Repair"
-                        : $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}) — open Repair";
+                          $"{migratable} auto-migratable after a [MovedFrom] rename) — open Project References"
+                        : $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}) " +
+                          "— open Project References";
 
             ShowToast(message);
 
