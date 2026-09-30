@@ -50,13 +50,19 @@ namespace Aspid.FastTools.Types
         public TypeAllow Allow { get; set; } = TypeAllow.All;
 
         /// <summary>
-        /// Gets or sets a value indicating whether an unset field shows an inline "required" warning and counts as a
-        /// violation for the build/CI gate.
+        /// Gets or sets a value indicating whether an unset field shows an inline "required" warning and is reported
+        /// as a required violation.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// "Unset" means <see langword="null"/> for a <c>[SerializeReference]</c> field and an empty name for a
         /// <c>string</c> or <see cref="SerializableType"/> field. A reference that is set but whose type no longer
-        /// resolves is not a violation of this flag — the separate missing-type gate covers that.
+        /// resolves is not a violation of this flag — the separate missing-type check covers that.
+        /// </para>
+        /// <para>
+        /// Asset References marks the field in any gate mode, Project References → Scan Project reports it when the
+        /// gate is Warn or Fail, and the CI gate only with <c>-srGateRequired</c>. The player build never checks it.
+        /// </para>
         /// </remarks>
         /// <example>
         /// <code>
