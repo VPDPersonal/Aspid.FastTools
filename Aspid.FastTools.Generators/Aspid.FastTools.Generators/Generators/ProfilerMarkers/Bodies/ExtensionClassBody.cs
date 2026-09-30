@@ -164,8 +164,12 @@ internal static class ExtensionClassBody
         ImmutableArray<MarkerCall> calls,
         bool isPerClosedType)
     {
+        // A struct is taken by reference: by value, every call copies the whole instance, which is never read.
+        // The fallback Marker<T>(this T) still loses: it is generic and less specific.
+        var modifier = type.IsValueType ? "in " : string.Empty;
+
         code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
-            .AppendLine($"public static {ProfilerMarker}.AutoScope Marker{type.TypeParamList}(this {type.FullyQualifiedDisplay} {names.Instance}, [{CallerLineNumberAttribute}] int {names.Line} = -1){type.ConstraintsClause}")
+            .AppendLine($"public static {ProfilerMarker}.AutoScope Marker{type.TypeParamList}(this {modifier}{type.FullyQualifiedDisplay} {names.Instance}, [{CallerLineNumberAttribute}] int {names.Line} = -1){type.ConstraintsClause}")
             .BeginBlock()
             .AppendLine("#if ENABLE_PROFILER")
             .AppendLine($"switch ({names.Line})")

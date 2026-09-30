@@ -28,6 +28,19 @@ public class ProfilerMarkersTypeShapeTests
             .ToArray();
     }
 
+    // How the overload each Marker() call of the first source binds to takes the instance, in source order.
+    private static RefKind[] BoundReceiverRefKinds(GeneratorRun run)
+    {
+        var tree = run.OutputCompilation.SyntaxTrees.First();
+        var model = run.OutputCompilation.GetSemanticModel(tree);
+        return tree.GetRoot().DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax>()
+            .Select(call => (IMethodSymbol)model.GetSymbolInfo(call).Symbol!)
+            .Where(method => method.Name == "Marker")
+            .Select(method => method.ReducedFrom!.Parameters[0].RefKind)
+            .ToArray();
+    }
+
     [Fact]
     public void KeywordNamespace_Compiles() => AssertCompilesAndBinds("""
         namespace Game.@event
@@ -104,7 +117,52 @@ public class ProfilerMarkersTypeShapeTests
         public class Outer<T> { public class Inner { public void Run() { using var _ = this.Marker(); } } }
         public struct Job { public void Execute() { using var _ = this.Marker(); } }
         public ref struct Span { public void Execute() { using var _ = this.Marker(); } }
+        public struct Worker<T> { public void Execute() { using var _ = this.Marker(); } }
         """);
+
+    // By value, every call would copy the whole struct, which the overload never reads.
+    [Fact]
+    public void ValueTypes_TakeTheInstanceByIn()
+    {
+        var run = AssertCompilesAndBinds("""
+            namespace Sample
+            {
+                public class Foo { public void Run() { using var _ = this.Marker(); } }
+                public class Box<T> { public void Run() { using var _ = this.Marker(); } }
+                public struct Job { public void Execute() { using var _ = this.Marker(); } }
+                public readonly struct Frozen { public void Execute() { using var _ = this.Marker(); } }
+                public ref struct Span { public void Execute() { using var _ = this.Marker(); } }
+                public struct Worker<T> { public void Execute() { using var _ = this.Marker(); } }
+            }
+            """);
+
+        Assert.Equal(new[] { RefKind.None, RefKind.None, RefKind.In, RefKind.In, RefKind.In, RefKind.In }, BoundReceiverRefKinds(run));
+    }
+
+    [Fact]
+    public void StructReceivers_BindToTheInOverload()
+    {
+        var run = AssertCompilesAndBinds("""
+            namespace Sample
+            {
+                public struct Job
+                {
+                    private static readonly Job Shared = default;
+
+                    public void Execute() { using var _ = this.Marker(); }
+                    public readonly void Peek() { using var _ = this.Marker(); }
+                    public static void Local() { var job = new Job(); using var _ = job.Marker(); }
+                    public static void Field() { using var _ = Shared.Marker(); }
+                    public static void Parameter(in Job job) { using var _ = job.Marker(); }
+                    public static void Temporary() { using var _ = Create().Marker(); }
+
+                    private static Job Create() => default;
+                }
+            }
+            """);
+
+        Assert.Equal(Enumerable.Repeat(RefKind.In, 6), BoundReceiverRefKinds(run));
+    }
 
     [Fact]
     public void ObsoleteTypes_CompileWithoutObsoleteDiagnostics()
