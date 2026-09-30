@@ -48,7 +48,7 @@ That completes the basic scenario. The sections below are independent exercises 
 5. **Nesting.** Choose `Railgun` in `Primary` and `BurnEffect` in its `Charge Effect`: the effect is a `[SerializeReference]` of its own with its own dropdown. The dummy catches fire when the railgun hits.
 6. **Abstract base.** `On Hit` is a `StatusEffect`; the picker offers `BurnEffect` and `FreezeEffect`, never the abstract base.
 7. **Generics.** `Damage Modifier` is a `Modifier<float>`: `T` is fixed, so `DamageModifier` and `Modifier<Single>` are offered and created directly. `Perks` is a `List<IModifier>`: it offers the closed subclasses **and** the open `Modifier<T>`, which asks for `T` on a second page.
-8. **Required.** Set `Primary` to `<None>`: a notice appears, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation. A player build does not check it; see [where required fields are checked](../../../Documentation/04-serialize-reference-tooling.md#where-required-fields-are-checked).
+8. **Required.** Set `Primary` to `<None>`: a notice appears, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation. A player build does not check it; see [what each run checks](../../../Documentation/04-serialize-reference-tooling.md#what-each-run-checks).
 9. **Right-click any dropdown** for Copy / Paste, Make Unique Reference, Save as Template, Find Usages and Create New Script.
 
 ## Advanced exercises: repair
