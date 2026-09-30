@@ -34,7 +34,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var severity = new EnumField("Build / CI gate", SerializeReferenceSettings.BuildSeverity)
             {
-                tooltip = "Off: never check. Warn: log missing / unset-required references. Fail: abort the build / fail the CI job.\n"
+                tooltip = "Off: never check. Warn: log violations. Fail: abort the build / fail the CI job.\n"
+                    + "The player build checks missing types only; unset Required fields are checked by the CI gate with "
+                    + "-srGateRequired and by Project References → Scan Project.\n"
                     + "Stored in a committed ProjectSettings asset, so it travels to a clean CI runner. "
                     + "CLI flags -srGateWarnOnly / -srGateFail override it per run.",
             };
@@ -43,7 +45,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SyncFromSettings<EnumField, Enum>(severity, () => SerializeReferenceSettings.BuildSeverity);
             container.Add(severity);
             container.Add(AspidSettingsUI.CreateRowNote(
-                "Off — never check · Warn — log missing / unset-required references · Fail — abort the build / CI job."));
+                "Off — never check · Warn — log · Fail — abort the build / CI job. "
+                    + "Unset Required fields are checked by CI with -srGateRequired and Scan Project, not by the build."));
 
             container.Add(new SerializeReferenceExcludedFoldersField().WithScopeStripe(AspidSettingsUI.SharedScopeClass));
         }
