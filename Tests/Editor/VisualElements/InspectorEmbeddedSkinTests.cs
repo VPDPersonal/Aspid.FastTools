@@ -168,6 +168,25 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         [UnityTest]
+        public IEnumerator ThemeStyleSheets_LightPalette_OnlyInsideAspidWindow()
+        {
+            var window = new VisualElement().AddClass(AspidStyles.WindowClass).AddAspidThemeStyleSheets();
+            var inWindow = new VisualElement().AddAspidThemeStyleSheets();
+            var inInspector = new VisualElement().AddAspidThemeStyleSheets();
+            window.Add(inWindow);
+            _window.rootVisualElement.Add(window);
+            _window.rootVisualElement.Add(inInspector);
+            yield return null;
+
+            Assert.AreEqual(!EditorGUIUtility.isProSkin, window.ClassListContains(AspidStyles.PaletteLightClass),
+                "The window root must take the light palette exactly on the light skin.");
+            Assert.AreEqual(!EditorGUIUtility.isProSkin, inWindow.ClassListContains(AspidStyles.PaletteLightClass),
+                "A themed element inside the window redeclares the palette, so it must take the light one too.");
+            Assert.IsFalse(inInspector.ClassListContains(AspidStyles.PaletteLightClass),
+                "A themed element outside an Aspid window keeps Default-Dark.");
+        }
+
+        [UnityTest]
         public IEnumerator TypeField_FolderIcon_DarkSkin() => AssertFolderIcon(lightSkin: false, "d_Folder Icon");
 
         [UnityTest]

@@ -10,6 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             where T : VisualElement
         {
             element.AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet);
+            element.AddStyleSheetFromResources(AspidStyles.LightStyleSheet);
             UpdateSkinClass(element);
 
             // A switch of the editor skin restyles the panel, so the class follows it without a rebuild.
@@ -20,6 +21,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             element.RegisterCallback<AttachToPanelEvent>(_ =>
             {
+                UpdateSkinClass(element);
                 OnThemeChanged();
                 AspidThemeSettings.Changed += OnThemeChanged;
             });
@@ -39,7 +41,23 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private static void OnCustomStyleResolved(CustomStyleResolvedEvent evt) =>
             UpdateSkinClass((VisualElement)evt.currentTarget);
 
-        private static void UpdateSkinClass(VisualElement element) =>
-            element.EnableInClassList(AspidStyles.SkinLightClass, !EditorGUIUtility.isProSkin);
+        // Every element that declares the palette takes the light one, not only the window root: each redeclares
+        // Default-Dark on itself, and an inherited value would lose to it.
+        private static void UpdateSkinClass(VisualElement element)
+        {
+            var lightSkin = !EditorGUIUtility.isProSkin;
+            element.EnableInClassList(AspidStyles.SkinLightClass, lightSkin);
+            element.EnableInClassList(AspidStyles.PaletteLightClass, lightSkin && IsInWindow(element));
+        }
+
+        private static bool IsInWindow(VisualElement element)
+        {
+            for (var current = element; current is not null; current = current.hierarchy.parent)
+            {
+                if (current.ClassListContains(AspidStyles.WindowClass)) return true;
+            }
+
+            return false;
+        }
     }
 }

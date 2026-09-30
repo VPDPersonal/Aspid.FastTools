@@ -73,7 +73,9 @@ namespace Aspid.FastTools.Editors
                 return;
             }
 
+            // The template brings Default-Dark for UI Builder; the theme sheets add the light palette and the override.
             tree.CloneTree(this);
+            this.AddAspidThemeStyleSheets();
 
             _toast = this.Q<Label>(ToastName);
             if (_toast != null)

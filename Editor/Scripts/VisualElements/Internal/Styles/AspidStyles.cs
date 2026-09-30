@@ -4,9 +4,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     internal static class AspidStyles
     {
         public const string DefaultStyleSheet = "UI/Aspid-FastTools-Default-Dark";
+        public const string LightStyleSheet = "UI/Aspid-FastTools-Default-Light";
         public const string BackgroundStyle = "aspid-fasttools-background";
         public const string BackgroundRoundedState = BackgroundStyle + "--rounded";
         public const string InspectorStyleClass = "aspid-fasttools-inspector-container";
         public const string SkinLightClass = "aspid-fasttools-skin--light";
+        public const string WindowClass = "aspid-fasttools-window";
+        public const string PaletteLightClass = "aspid-fasttools-palette--light";
     }
 }

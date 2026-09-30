@@ -87,8 +87,10 @@ namespace Aspid.FastTools.Editors
             minSize = _minWindowSize;
             titleContent = new GUIContent("Aspid FastTools", Resources.Load<Texture2D>(WindowIconPath));
 
+            // The window class goes first: it makes the theme sheets pick the light palette on the light skin.
             var root = rootVisualElement;
-            root.AddAspidThemeStyleSheets()
+            root.AddClass(AspidStyles.WindowClass)
+                .AddAspidThemeStyleSheets()
                 .AddStyleSheetFromResources(WindowStyleSheetPath)
                 .AddClass(RootClass);
 
