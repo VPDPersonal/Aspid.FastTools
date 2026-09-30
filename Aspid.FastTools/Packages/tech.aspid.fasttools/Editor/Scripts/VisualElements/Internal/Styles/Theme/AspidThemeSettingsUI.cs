@@ -16,8 +16,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             "/*\n" +
             " * Aspid FastTools — editor theme override.\n" +
             " * Redefine any design token below to recolor the Aspid editor UI.\n" +
-            " * This sheet is layered on top of the built-in Default-Dark palette,\n" +
-            " * so you only need to declare the tokens you want to change.\n" +
+            " * This sheet is layered on top of the built-in palette, Default-Dark or, in the\n" +
+            " * Aspid FastTools window on the light skin, Default-Light, so you only need to\n" +
+            " * declare the tokens you want to change.\n" +
             " * Full token list: Packages/tech.aspid.fasttools/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss\n" +
             " * Fields drawn inside a regular Inspector follow Unity's editor theme instead.\n" +
             " */\n" +
@@ -52,7 +53,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 objectType = typeof(StyleSheet),
                 allowSceneObjects = false,
                 value = AspidThemeSettings.OverrideStyleSheet,
-                tooltip = "A USS sheet layered on top of the built-in Default-Dark palette; redefine any "
+                tooltip = "A USS sheet layered on top of the built-in palette (Default-Dark, or Default-Light in "
+                    + "the Aspid FastTools window on the light skin); redefine any "
                     + "--aspid-colors-* / --aspid-icons-* token inside a :root block. Applies live; clear to return "
                     + "to the default look.\n"
                     + "Per-user setting — stored locally, never committed.",

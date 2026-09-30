@@ -77,11 +77,6 @@
     background-color:       rgba(0, 0, 0, 0);
 }
 
-/* Unity's light-skin text is near black, which vanishes on an Aspid window's dark palette. */
-.aspid-fasttools-skin--light .aspid-fasttools-type-selector__search-field .unity-base-text-field__input {
-    color:                  var(--aspid-colors-text-lightness);
-}
-
 .aspid-fasttools-type-selector__search-field
     .unity-search-field-base__search-button {
     width:                  11px;
@@ -339,7 +334,7 @@ ToolbarSearchField TextElement {
 }
 
 /* The dropdown sits on Unity's popup background, so on the light skin it takes Unity's light colours and the palette's
-   darker text shades; embedded in an Aspid window the picker keeps the window's dark palette. */
+   darker text shades; embedded in an Aspid window the picker takes the window's palette. */
 .aspid-fasttools-type-selector--dropdown.aspid-fasttools-skin--light {
     --aspid-colors-bg-dark:                         var(--unity-colors-dropdown-background);
     --aspid-colors-shade-darkness:                  var(--unity-colors-dropdown-border);

@@ -147,13 +147,10 @@ namespace Aspid.FastTools.Types.Editors
             Focus();
         }
 
-        // A dropdown sits on Unity's popup background, not in an Aspid window, so it follows the editor skin: the
-        // stylesheet swaps in a light palette on the light skin, and folder and section icons take the skin's variant.
-        internal void UseDropdownStyle()
-        {
+        // A dropdown sits on Unity's popup background, not in an Aspid window: on the light skin the stylesheet swaps
+        // in Unity's light colours.
+        internal void UseDropdownStyle() =>
             this.AddClass(DropdownModifier);
-            _listView.RefreshItems();
-        }
 
         private void BuildUI()
         {
