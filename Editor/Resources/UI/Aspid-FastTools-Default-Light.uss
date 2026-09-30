@@ -1,5 +1,6 @@
-/* The palette of an Aspid window on Unity's light skin. Each token keeps its role from Default-Dark, so a "lightness"
-   text is still the most prominent one and here the darkest. Fields drawn in a regular Inspector keep Default-Dark. */
+/* The palette of an Aspid window or settings page on Unity's light skin. Each token keeps its role from Default-Dark,
+   so a "lightness" text is still the most prominent one and here the darkest. Fields drawn in a regular Inspector keep
+   Default-Dark. */
 .aspid-fasttools-palette--light {
 
     --aspid-colors-bg-darkness:                     rgb(246, 246, 246);
