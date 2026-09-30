@@ -5,6 +5,7 @@ build/
 npm-install.log
 i18n/
 changelog/
+/roadmap/
 tutorials/
 docfx/projects/
 .serve-all.log

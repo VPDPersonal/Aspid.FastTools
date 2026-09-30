@@ -6,11 +6,11 @@ import {prefersReducedMotion, useInView, useLoop} from './effects';
 import enumMedia from './media/enum.mp4';
 import styles from './styles.module.css';
 
-/** Highlighted C# lines; `active` marks the line the neighbouring preview currently shows. */
-function Code({code, active = -1}) {
+/** Highlighted C# lines; `active` marks the line the neighbouring preview currently shows. The roadmap reuses it. */
+export function Code({code, active = -1, language = 'csharp'}) {
   const theme = usePrismTheme();
   return (
-    <Highlight theme={theme} code={code} language="csharp">
+    <Highlight theme={theme} code={code} language={language}>
       {({tokens, getTokenProps}) => (
         <pre className={styles.snippet} style={{color: theme.plain.color}}>
           {tokens.map((line, index) => (

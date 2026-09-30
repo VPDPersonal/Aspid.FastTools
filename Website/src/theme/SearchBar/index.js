@@ -20,7 +20,7 @@ function SearchIcon() {
 
 export default function SearchBar() {
   const ru = useDocusaurusContext().i18n.currentLocale === 'ru';
-  const sectionLabel = (section) => ru ? ({Docs: 'Документация', Samples: 'Примеры', Changelog: 'Изменения'}[section] || section) : section;
+  const sectionLabel = (section) => ru ? ({Docs: 'Документация', Samples: 'Примеры', Changelog: 'Изменения', Roadmap: 'Планы'}[section] || section) : section;
   const history = useHistory();
   const location = useLocation();
   const id = useId();
