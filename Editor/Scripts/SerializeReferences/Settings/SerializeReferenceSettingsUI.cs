@@ -14,7 +14,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 container.Add(CreateBreakageDetectionSwitch());
                 container.Add(AspidSettingsUI.CreateRowNote(
-                    "Watches for references broken by script renames / deletes and points at Repair."));
+                    "Watches for references broken by script renames / deletes and points at Project References."));
             }
 
             if ((scope & AspidSettingsScope.Shared) == 0) return;
@@ -54,7 +54,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 value = SerializeReferenceSettings.BreakageDetectionEnabled,
                 tooltip = "Watch for managed references that just became missing (renamed/deleted scripts) and surface a "
-                    + "toast pointing at Repair. Turn off to silence the domain-reload / import-time detection entirely.\n"
+                    + "toast pointing at Project References. Turn off to silence the domain-reload / import-time detection entirely.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
             breakageDetection.WithScopeStripe(AspidSettingsUI.UserScopeClass);
