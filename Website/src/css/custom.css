@@ -107,6 +107,9 @@
   --ifm-menu-color-background-active: var(--venom-glow-soft);
   --ifm-menu-color-background-hover: rgba(18, 19, 22, 0.05);
   --ifm-navbar-background-color: rgba(247, 247, 248, 0.85);
+  /* The image viewer's dimmed page and the lift of the picture above it. */
+  --venom-overlay: rgba(247, 247, 248, 0.88);
+  --venom-overlay-shadow: 0 18px 48px -16px rgba(18, 19, 22, 0.3);
   --ifm-navbar-shadow: 0 1px 0 var(--venom-line);
   --ifm-footer-background-color: var(--venom-panel);
   /* Inline code chips keep a fill; framed blocks (code, cards, panels) stay on the article surface, like the admonitions. */
@@ -204,6 +207,8 @@ html[data-theme='dark'] {
   --ifm-menu-color-background-active: var(--venom-glow-soft);
   --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.04);
   --ifm-navbar-background-color: rgba(10, 11, 15, 0.85);
+  --venom-overlay: rgba(3, 6, 9, 0.88);
+  --venom-overlay-shadow: 0 18px 48px -16px rgba(0, 0, 0, 0.7);
   --ifm-navbar-shadow: 0 1px 0 var(--venom-line);
   --ifm-footer-background-color: var(--venom-panel);
   --ifm-code-background: #0e1015;
@@ -1300,12 +1305,129 @@ html[data-theme='light'] .theme-doc-markdown .feature-card__preview:has(img[src*
 }
 .theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
 .theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }
-.doc-image-dialog { position: fixed; inset: 0; margin: auto; width: fit-content; max-width: 94vw; max-height: 94dvh; padding: 3.25rem 1rem 1rem; color: var(--venom-fg); background: var(--venom-bg); border: 1px solid var(--venom-line-strong); border-radius: 10px; cursor: zoom-out; }
-.doc-image-dialog::backdrop { background: #030609dc; backdrop-filter: blur(5px); }
-.doc-image-dialog img { display: block; max-width: 100%; max-height: 76dvh; width: auto; height: auto; object-fit: contain; margin: auto; border-radius: 4px; }
-.doc-image-dialog p { font-size: 0.8125rem; color: var(--venom-muted); margin: 0.8rem 0 0; text-align: center; }
-.doc-image-close { position: absolute; top: 0.7rem; right: 1rem; padding: 4px 8px; background: var(--venom-reading-surface); color: var(--venom-fg); border: 1px solid var(--venom-line-strong); border-radius: 6px; font: 0.8125rem var(--ifm-font-family-base); cursor: pointer; }
-.doc-image-close kbd { margin-left: 6px; box-shadow: none; font-size: 0.75rem; }
+/* Image viewer: the picture lies straight on the dimmed page with only its article frame; the controls sit in the corner. */
+.doc-image-dialog {
+  --doc-image-top: 1.5rem;
+  --doc-image-side: 4.5rem;
+  --doc-image-bottom: 1.5rem;
+  --doc-image-caption: 0px;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: var(--venom-fg);
+  background: var(--venom-overlay);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 0;
+  outline: none;
+  animation: doc-image-fade-in 160ms ease-out;
+}
+.doc-image-dialog::backdrop { background: transparent; }
+.doc-image-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  padding: var(--doc-image-top) var(--doc-image-side) var(--doc-image-bottom);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  outline: none;
+}
+.doc-image-dialog[data-zoomed] .doc-image-view { padding: 0; overflow: auto; }
+.doc-image-dialog[data-panning],
+.doc-image-dialog[data-panning] .doc-image-picture { cursor: grabbing; user-select: none; }
+.doc-image-dialog[data-closing] { pointer-events: none; animation: doc-image-fade-out 140ms ease-in forwards; }
+.doc-image-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: auto;
+  animation: doc-image-rise 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.doc-image-dialog[data-closing] .doc-image-figure { animation: doc-image-sink 140ms ease-in forwards; }
+.doc-image-figure--captioned { --doc-image-caption: 2.25rem; }
+.doc-image-picture {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: calc(100vw - 2 * var(--doc-image-side));
+  max-height: calc(100dvh - var(--doc-image-top) - var(--doc-image-bottom) - var(--doc-image-caption));
+  object-fit: contain;
+  background: var(--ifm-code-background);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+  box-shadow: var(--venom-overlay-shadow);
+  cursor: zoom-out;
+}
+.doc-image-picture--zoomable { cursor: zoom-in; }
+/* SVG artwork supplies its own outline, as in the article. */
+.doc-image-picture--vector { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+.doc-image-dialog[data-zoomed] .doc-image-picture { max-width: none; max-height: none; border-radius: 0; }
+.doc-image-dialog[data-zoomed] figcaption { display: none; }
+.doc-image-figure figcaption {
+  max-width: min(72ch, calc(100vw - 2 * var(--doc-image-side)));
+  margin: 0;
+  color: var(--venom-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+  cursor: text;
+}
+.doc-image-controls { position: absolute; top: 1rem; right: 1rem; z-index: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.doc-image-control {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  color: var(--venom-fg);
+  background: color-mix(in srgb, var(--venom-panel) 80%, transparent);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, transform 0.12s ease;
+}
+.doc-image-control:hover { color: var(--venom-fg-strong); border-color: var(--venom-divider); }
+.doc-image-control:active { transform: scale(0.94); }
+.doc-image-control svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+/* The key hint shows beside the button on hover, like a tooltip, so the corner stays two plain buttons. */
+.doc-image-control kbd {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 0.5rem);
+  translate: 0 -50%;
+  padding: 1px 6px;
+  color: var(--venom-muted);
+  background: var(--venom-panel);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 4px;
+  box-shadow: none;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms;
+}
+.doc-image-control:is(:hover, :focus-visible) kbd { opacity: 1; }
+@media (hover: none) { .doc-image-control kbd { display: none; } }
+@media (max-width: 640px) {
+  .doc-image-dialog { --doc-image-top: 4rem; --doc-image-side: 0.75rem; --doc-image-bottom: 1rem; }
+  .doc-image-figure--captioned { --doc-image-caption: 4.5rem; }
+  .doc-image-controls { top: 0.75rem; right: 0.75rem; flex-direction: row-reverse; }
+}
+@keyframes doc-image-fade-in { from { opacity: 0; } }
+@keyframes doc-image-fade-out { to { opacity: 0; } }
+@keyframes doc-image-rise { from { opacity: 0; transform: scale(0.96); } }
+@keyframes doc-image-sink { to { transform: scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .doc-image-dialog, .doc-image-figure { animation: none !important; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
 /* Enum lookup: keep the three passes readable as a sequence on narrow screens. */
 .theme-doc-markdown .enum-lookup-flow {
