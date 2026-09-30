@@ -6,7 +6,7 @@ Light palette follows the site's neutral tokens: background #EEF0F3, platform #D
 
 demo.gif and demo-light.gif come from enum-values-dark.mkv and enum-values-light.mkv: lossless FFV1 archives of 355 actual camera-rendered PNG frames each (rendered at 1440x810 with 4x MSAA, stored cropped to the GIF area x=169,y=270,width=1101,height=331; 20 fps, 17.75 s), captured by record.cs.txt in the imported EnumValues scene with the Dark and Light previews (`other-samples/record.sh <project> EnumValues <Dark|Light>`). There is a 60-frame warmup before capture; movement, speeds and trail geometry are the live sample behavior and identical in both themes. 355 frames are one walker round trip (frame 356 equals frame 1), so both GIFs loop seamlessly. encode.sh writes both GIFs from them, 256 colors, sierra2_4a; no recoloring after rendering. .meta GUIDs are retained.
 
-source-light.mkv is the earlier 100-frame (5 s) light recording from the same start; the gallery preview uses its frame 30, see `docs/media/samples-gallery/`.
+source-light.mkv is the earlier 100-frame (5 s) light recording from the same start; the gallery now uses the paired enum-values recordings above, see `docs/media/samples-gallery/`.
 
 Validation: Unity compilation completed without errors. validate.cs.txt exercised Light, Dark and Authored on EnumValues, Types, SerializeReferences and ProfilerMarkers, verifying camera restoration, no dirty scenes and unchanged material asset colors. Original SerializeReferences scene restored clean outside Play Mode; capture framerate restored to 0. The temporary recording object and render textures were disposed.
 
