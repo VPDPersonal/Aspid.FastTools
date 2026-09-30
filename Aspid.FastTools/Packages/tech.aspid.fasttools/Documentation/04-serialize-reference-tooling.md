@@ -40,7 +40,7 @@ Rewrites skip open scenes, Prefab Mode and assets with unsaved changes. Asset Re
 
 A repair rewrites only the entry's class, namespace and assembly; its data and `rid` stay. When the group's fields have different types, the confirmation warns that the pick may not fit every entry: incompatible ones become <code lang="csharp">null</code> on reimport.
 
-The summary after a rewrite has **Undo**: it restores the old class on entries that still hold the new one. **Rescan** clears the summaries, their Undo included.
+The summary after a rewrite has **Undo**: it restores the old class on entries that still hold the new one. The summaries stay while you switch tabs, so you can open an entry in Asset References and come back; **Rescan**, closing the window or a domain reload clears them, their Undo included.
 
 ### Clearing with None
 
