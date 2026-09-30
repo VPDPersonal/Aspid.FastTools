@@ -1,41 +1,39 @@
 # ComponentTypeSelector
 
-`ComponentTypeSelector` меняет тип уже добавленного компонента или ScriptableObject через инспектор. При переключении между наследниками значения общих полей сохраняются.
+Класс компонента меняется прямо в инспекторе, а общие поля сохраняют значения.
 
 ## Быстрый старт
 
-Добавьте поле в базовый класс. В селекторе появятся совместимые конкретные типы; пункта `<None>` нет.
-
 ```csharp
-using UnityEngine;
-using Aspid.FastTools.Types;
-
 public abstract class EnemyBase : MonoBehaviour
 {
     [SerializeField] private ComponentTypeSelector _enemyType;
-    [SerializeField, Min(0)] private float _health = 100f;
+    [SerializeField] private float _health = 100f;
 }
 ```
 
-Сохраните базу в `EnemyBase.cs`. Создайте наследников в **отдельных файлах**, совпадающих с именами классов:
-
 | FastEnemy.cs | ArmoredEnemy.cs |
 |---|---|
-| <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private float _speed = 25f;&#10;&#125;</code></pre> | <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private int _armor = 10;&#10;&#125;</code></pre> |
+| <pre lang="csharp"><code>public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private float _speed = 25f;&#10;&#125;</code></pre> | <pre lang="csharp"><code>public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private int _armor = 10;&#10;&#125;</code></pre> |
 
-Добавьте **FastEnemy** на GameObject, задайте **Health = 75** и через селектор выберите **ArmoredEnemy**. Общий `Health` сохранится, поле `Speed` исчезнет, появится `Armor`. Уникальные поля прежнего класса не следует считать сохранёнными для обратного переключения.
+Список предлагает конкретных наследников класса, где объявлено поле; пункта `<None>` нет.
 
-![Смена типа компонента через ComponentTypeSelector](../Images/component-type-selector.gif)
+![Выбор ArmoredEnemy вместо FastEnemy сохраняет Health = 75](../Images/component-type-selector.gif)
 
-Смена типа компонента через ComponentTypeSelector
+| Поле | FastEnemy | Выбран ArmoredEnemy | Снова FastEnemy |
+|---|---|---|---|
+| **Health** | 75 | 75 | 75 |
+| **Speed** | 40 | — | 25 |
+| **Armor** | — | 10 | — |
 
-Выбранный класс должен иметь собственный файл скрипта, который распознаёт Unity. Если подходящий скрипт не найден, тип не меняется, а Console показывает предупреждение.
+## Когда тип не меняется
 
-Смена типа подчиняется правилам **Add Component**: сначала она добавляет компоненты из `[RequireComponent]` нового класса, и один Undo откатывает смену вместе с ними. Тип не меняется, а Console показывает предупреждение, если:
+Смена следует правилам **Add Component**: сначала добавляет компоненты из <code lang="csharp">[RequireComponent]</code> нового класса, и один Undo откатывает её вместе с ними. Класс остаётся прежним, а Console показывает предупреждение, если:
 
-- новый класс помечен `[DisallowMultipleComponent]` и такой компонент на GameObject уже есть;
+- у класса нет своего файла скрипта с тем же именем — например, вложенный класс или второй класс в файле;
+- новый класс помечен <code lang="csharp">[DisallowMultipleComponent]</code>, а такой компонент на GameObject уже есть;
 - смена убрала бы класс, который нужен другому компоненту;
-- нужный новому классу компонент нельзя добавить, например абстрактный класс вроде `Collider`.
+- новому классу нужен компонент, который нельзя добавить, например абстрактный <code lang="class-name">Collider</code>.
 
 ## Пример в пакете
 

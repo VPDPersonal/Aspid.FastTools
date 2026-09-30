@@ -125,12 +125,9 @@ The other style methods work the same way.
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>manaCost.bindingPath = "_manaCost";&#10;manaCost.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>manaCost.BindTo(&#10;    serializedObject, "_manaCost");</code></pre> |
-
-| Unity | FastTools |
-|---|---|
-| <code lang="csharp">bindingPath</code> | <code lang="function">SetBindingPath</code> |
-| <code lang="function">BindProperty</code> | <code lang="function">BindPropertyTo</code> |
-| <code lang="function">Unbind</code> | <code lang="function">UnbindFrom</code> |
+| <pre lang="csharp"><code>manaCost.bindingPath = "_manaCost";</code></pre> | <pre lang="csharp"><code>manaCost.SetBindingPath(&#10;    "_manaCost");</code></pre> |
+| <pre lang="csharp"><code>manaCost.BindProperty(property);</code></pre> | <pre lang="csharp"><code>manaCost.BindPropertyTo(property);</code></pre> |
+| <pre lang="csharp"><code>manaCost.Unbind();</code></pre> | <pre lang="csharp"><code>manaCost.UnbindFrom();</code></pre> |
 
 <code lang="class-name">PropertyField</code> gets <code lang="function">SetLabel</code> and <code lang="function">AddValueChanged</code> / <code lang="function">RemoveValueChanged</code> with a <code lang="class-name">SerializedPropertyChangeEvent</code>:
 

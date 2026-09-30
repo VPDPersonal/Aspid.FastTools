@@ -125,12 +125,9 @@
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>manaCost.bindingPath = "_manaCost";&#10;manaCost.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>manaCost.BindTo(&#10;    serializedObject, "_manaCost");</code></pre> |
-
-| Unity | FastTools |
-|---|---|
-| <code lang="csharp">bindingPath</code> | <code lang="function">SetBindingPath</code> |
-| <code lang="function">BindProperty</code> | <code lang="function">BindPropertyTo</code> |
-| <code lang="function">Unbind</code> | <code lang="function">UnbindFrom</code> |
+| <pre lang="csharp"><code>manaCost.bindingPath = "_manaCost";</code></pre> | <pre lang="csharp"><code>manaCost.SetBindingPath(&#10;    "_manaCost");</code></pre> |
+| <pre lang="csharp"><code>manaCost.BindProperty(property);</code></pre> | <pre lang="csharp"><code>manaCost.BindPropertyTo(property);</code></pre> |
+| <pre lang="csharp"><code>manaCost.Unbind();</code></pre> | <pre lang="csharp"><code>manaCost.UnbindFrom();</code></pre> |
 
 У <code lang="class-name">PropertyField</code> есть <code lang="function">SetLabel</code> и <code lang="function">AddValueChanged</code> / <code lang="function">RemoveValueChanged</code> с <code lang="class-name">SerializedPropertyChangeEvent</code>:
 

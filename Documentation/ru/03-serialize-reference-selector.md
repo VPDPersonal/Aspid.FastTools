@@ -1,274 +1,154 @@
 # SerializeReference Selector
 
-Выбирайте реализацию интерфейса или базового класса прямо в поле `[SerializeReference]`. Селектор создаёт экземпляр, раскрывает его поля и переносит совместимые данные при смене типа. Здесь — настройка отдельных полей в инспекторе; аудит проекта, массовое восстановление и CI описаны в [SerializeReference Tooling](04-serialize-reference-tooling.md).
+Реализацию выбирают прямо в инспекторе — из списка с поиском, без своего редактора.
 
 <a id="inspector-type-dropdown"></a>
 
 ## Быстрый старт
 
-Добавьте `[TypeSelector]` рядом с `[SerializeReference]`: реализацию можно будет выбрать в окне с поиском, без собственного редактора.
-
-| Создание в коде | Выбор в инспекторе |
+| До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>[SerializeReference]&#10;private IWeapon _primary = new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]&#10;[SerializeReference]&#10;private IWeapon _primary;</code></pre> |
+| <pre lang="csharp"><code>[SerializeReference]&#10;private IWeapon _primary =&#10;    new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]&#10;[SerializeReference]&#10;private IWeapon _primary;</code></pre> |
 
-Селектор хранит **экземпляр с данными**. Если нужно сохранить только имя класса и создать объект позже из кода, используйте [Serializable Type System](02-serializable-types.md).
+## Какие классы в списке
 
-![Смена Pistol на Shotgun сохраняет Damage = 37 и добавляет поле Pellets](../Images/aspid_fasttools_serialize_reference_selector.gif)
-
-Смена Pistol на Shotgun сохраняет Damage = 37 и добавляет поле Pellets
-
-Готовая сцена с оружием, эффектами и вложенными модификаторами есть в [примере SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
-
-## Настройка выбора
-
-Тип поля задаёт базовую совместимость: для `IWeapon` предлагаются его реализации, для абстрактного класса — конкретные наследники. В инспекторе runtime-объекта классы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`) не предлагаются: билд плеера не сможет их создать. Используйте `[Serializable]` на классах, данные которых должны сохраняться Unity.
-
-| Задача | Как сделать |
-|---|---|
-| Оставить только оружие ближнего боя | `[TypeSelector(typeof(IMelee))]` на поле `IWeapon`: кандидат должен подходить полю и реализовывать `IMelee` |
-| Показывать предупреждение у пустого поля | `[TypeSelector(Required = true)]` |
-| Управлять ограничением из другого поля | `[TypeSelector(nameof(_category))]`; пример — [ограничение из другого поля](02-serializable-types.md#ограничение-из-другого-поля) |
-| Изменить имя, группу, подсказку или иконку | `[TypeSelectorDisplay(...)]` на классе |
-| Скрыть реализацию из обычного выбора | `[TypeSelectorDisplay(Hidden = true)]` |
-
-`TypeSelector.Allow` на `[SerializeReference]` не используется: селектор создаёт экземпляры конкретных классов. Интерфейсы, абстрактные классы, структуры, `string`, делегаты и наследники `UnityEngine.Object` не подходят в качестве создаваемого значения.
-
-### Имя и группа в списке
-
-Добавьте атрибут к `Shotgun` из примера:
+Список строится по типу поля; атрибут может сузить его дополнительными типами.
 
 ```csharp
-[Serializable]
-[TypeSelectorDisplay(
-    Name = "Дробовик",
-    Group = "Оружие/Дальнее",
-    Tooltip = "Оружие с несколькими дробинами")]
-public sealed class Shotgun : IWeapon
-{
-    [SerializeField, Min(0)] private int _damage = 20;
-    [SerializeField, Min(1)] private int _pellets = 6;
+public interface IMelee : IWeapon { }
+public sealed class Sword : IMelee { }
 
-    public void Fire() => Debug.Log($"Shotgun: {_damage} dmg, {_pellets} pellets");
-}
+public abstract class StatusEffect { }
+
+public class Modifier<T> : IModifier { }
+public sealed class DamageModifier : Modifier<float> { }
 ```
 
-Класс появится как **Оружие → Дальнее → Дробовик**. Поиск продолжит находить его по настоящему имени `Shotgun`. Эти подписи не переименовывают сохранённый тип.
+| Тип поля | Что в списке |
+|---|---|
+| Интерфейс <code lang="class-name">IWeapon</code> | Классы, реализующие его: <code lang="class-name">Crossbow</code>, <code lang="class-name">Pistol</code>, <code lang="class-name">Railgun</code>, <code lang="class-name">Shotgun</code>, <code lang="class-name">Sword</code> |
+| <code lang="class-name">IWeapon</code> и <code lang="csharp">typeof(IMelee)</code> в атрибуте | Классы, подходящие под оба: <code lang="class-name">Sword</code> |
+| Абстрактный класс <code lang="class-name">StatusEffect</code> | Его наследники: <code lang="class-name">BurnEffect</code>, <code lang="class-name">FreezeEffect</code> |
+| <code lang="class-name">Modifier&lt;float&gt;</code> | Наследник <code lang="class-name">DamageModifier</code> и сам <code lang="class-name">Modifier&lt;Single&gt;</code> |
+| <code lang="class-name">List&lt;IModifier&gt;</code> | <code lang="class-name">AmmoModifier</code>, <code lang="class-name">DamageModifier</code>, <code lang="class-name">NameModifier</code> и <code lang="class-name">Modifier&lt;T&gt;</code> с выбором <code lang="class-name">T</code> |
 
-`Hidden = true` скрывает тип из обычного выбора, но уже назначенное значение продолжает отображаться, а присваивание из кода остаётся доступным. Настройка не наследуется подклассами. Полный список параметров — в [TypeSelectorDisplay](02-serializable-types.md#typeselectordisplay).
+- В инспекторе runtime-объекта нет классов из editor-only сборок (`UnityEditor`, asmdef только для Editor, папки `Editor`): билд плеера не сможет их создать.
+- Аргументы generic-класса выводятся из типа поля; если вывести их нельзя, окно спрашивает каждый и предлагает только типы, которые Unity умеет сериализовать.
+- Ограничение можно взять и [из другого поля](02-serializable-types.md#ограничение-из-другого-поля).
+- [`[TypeSelectorDisplay]`](02-serializable-types.md#typeselectordisplay) настраивает строку класса в списке или скрывает класс.
 
-### Обязательное поле
+## Обязательное поле
 
 ```csharp
 [TypeSelector(Required = true)]
 [SerializeReference] private IWeapon _primary;
 ```
 
-У пустого поля появится **Required reference is not set**. Атрибут не создаёт значение сам и не запрещает выбрать `<None>`; проверку `null` в игровом коде он тоже не заменяет. Потерянный тип диагностируется отдельно от незаполненного поля.
+С <code lang="csharp">Required = true</code> пустое поле показывает **Required reference is not set**; подробнее — в разделе [Обязательное поле](02-serializable-types.md#обязательное-поле).
 
-Для проверки обязательных полей в CI включите [`-srGateRequired`](04-serialize-reference-tooling.md#запуск-в-ci). Обычная проверка перед сборкой ищет потерянные типы; границы проверки `Required` описаны в [SerializeReference Tooling](04-serialize-reference-tooling.md#где-проверяются-обязательные-поля).
+## Списки
 
-## Списки и вложенные ссылки
+В списке с <code lang="csharp">[TypeSelector]</code> кнопка «+» открывает выбор класса и добавляет новый экземпляр, а `<None>` — пустой элемент. При нескольких выбранных объектах каждый получает свой экземпляр, всё в одной группе Undo.
 
-Для массива или списка атрибуты ставятся на поле коллекции. В одном списке могут находиться разные реализации и `null`.
+![«+» у Sidearms открывает выбор класса и добавляет Shotgun](../Images/aspid_fasttools_serialize_reference_list.gif)
 
-```csharp
-// Дополнительно: using System.Collections.Generic;
+## Смена класса
 
-[TypeSelector]
-[SerializeReference] private List<IWeapon> _sidearms = new();
+Новый экземпляр получает значения полей с теми же именами:
 
-[TypeSelector]
-[SerializeReference] private IWeapon[] _slots = new IWeapon[2];
-```
-
-В списке UI Toolkit кнопка **+** открывает выбор типа и добавляет новый экземпляр. Выбор `<None>` добавляет пустой элемент. При мультивыделении каждый объект получает собственный экземпляр в одной группе Undo. Для такого же добавления в собственном IMGUI-инспекторе используйте `SerializeReferenceIMGUIList.Draw` — [пример ниже](#собственный-imgui-инспектор).
-
-### Вложенный селектор без повторения атрибута
-
-Внутреннее поле `[SerializeReference]` получает селектор автоматически. Например, добавьте к примеру оружие, которое оборачивает другое оружие:
-
-```csharp
-[Serializable]
-public sealed class DoubleShot : IWeapon
-{
-    [SerializeReference] public IWeapon Weapon;
-
-    public void Fire()
-    {
-        Weapon?.Fire();
-        Weapon?.Fire();
-    }
-}
-```
-
-Выберите **DoubleShot** в `Primary`, затем **Pistol** в его поле **Weapon**. Повторять `[TypeSelector]` у `Weapon` не нужно. Так же обрабатываются вложенные массивы и списки managed-ссылок.
-
-Автоматическая отрисовка охватывает восемь уровней вложенности, после чего используется стандартная отрисовка Unity. Это ограничение отрисовки, а не запрет на хранение более глубокого графа. Дочернее поле рисуется своим drawer'ом вместо автоматического селектора, если у него есть:
-
-- `[TypeSelector]` или атрибут с `[CustomPropertyDrawer]`;
-- `[CustomPropertyDrawer]` для объявленного типа поля, базового класса, интерфейса или открытого generic-типа, например `typeof(IWeapon)` для `Weapon`. В списке такой drawer рисует каждый элемент, а **+** по-прежнему открывает выбор типа.
-
-Drawer только для выбранного типа, например `Pistol`, селектор не заменяет.
-
-## Работа с данными
-
-### Что происходит при смене типа
-
-Селектор создаёт экземпляр выбранного класса и пытается перенести данные предыдущего. Для примера из быстрого старта результат такой:
-
-| Поле | Pistol до смены | Shotgun после смены |
+| Поле | <code lang="class-name">Pistol</code> | → <code lang="class-name">Shotgun</code> |
 |---|---|---|
-| `_damage` | `37` | `37`: совпадают имя и форма данных |
-| `_pellets` | Отсутствует | `6`: начальное значение нового экземпляра |
+| **Damage** | 37 | 37 |
+| **Magazine Size** | 12 | — |
+| **Pellets** | — | 8, начальное значение |
 
-Перенос рассчитан на совместимые сериализуемые поля. Переименованные поля и несовместимые структуры данных требуют отдельной миграции. Поля, которых нет в новом типе, не хранятся «про запас»: если настроить **Pellets = 12**, перейти на `Pistol`, а затем снова на `Shotgun`, **Pellets** станет `6`.
-
-Совпадающие по имени и совместимые вложенные поля `[SerializeReference]` переносятся с сохранением существующих экземпляров. Смена внешнего типа сама по себе не делает их независимыми копиями.
-
-<details>
-<summary>Начальные значения и конструктор</summary>
-
-При создании вызывается конструктор без параметров, в том числе непубличный. Если такого конструктора нет, экземпляр создаётся без вызова конструктора: полагаться на инициализаторы полей в этом случае нельзя. Для предсказуемых начальных значений оставьте классу конструктор без параметров.
-
-</details>
-
-### Copy / Paste и шаблоны
-
-Правый клик по **заголовку поля ссылки** открывает контекстное меню.
-
-| Действие | Результат |
-|---|---|
-| **Copy Serialize Reference** | Запоминает тип и сериализуемые данные текущего значения |
-| **Paste Serialize Reference** | Создаёт новый экземпляр в совместимом поле; учитывает его тип и дополнительные ограничения |
-| **Save as Template…** | Сохраняет текущее значение под именем |
-| **Paste Template → имя** | Создаёт экземпляр из подходящего сохранённого шаблона |
-| **Paste Template → Remove Missing (N)…** | Удаляет после подтверждения сохранённые шаблоны, тип которых не загружается; пункт есть, только если такие шаблоны есть |
-
-Копирование пустой ссылки тоже имеет смысл: следующая вставка очистит целевое поле. При мультивыделении Copy берёт значение первого объекта; выбор типа и Paste создают независимый экземпляр для каждого объекта в одной группе Undo. При смене типа данные переносятся из собственного предыдущего значения каждого объекта. Уведомления `Required`, `Missing type` и `Shared reference` проверяйте при выборе одного объекта.
+![Смена Pistol на Shotgun сохраняет Damage = 37](../Images/aspid_fasttools_serialize_reference_selector.gif)
 
 > [!NOTE]
-> Буфер обмена и шаблоны переносят данные через `JsonUtility`; вложенный граф `[SerializeReference]` этим способом не копируется целиком. Для отделения общей ссылки вместе с её вложенными managed-ссылками используйте **Make unique**.
+> Вложенная ссылка с тем же именем переходит в новый класс тем же экземпляром, а не копией.
+>
+> Скрипт `.cs`, перетащенный из Project на заголовок поля, так же меняет класс поля на свой.
 
-Шаблоны хранятся локально в `EditorPrefs` для текущего проекта: это личные заготовки, они не передаются команде через Git. Сохранение под существующим именем запрашивает подтверждение замены.
+## Меню заголовка
 
-### Другие действия в заголовке
+Правый клик по заголовку поля:
 
-- **Перетащить `.cs` из Project** — назначить экземпляр совместимого класса скрипта. Данные переносятся по тем же правилам, что и при выборе типа.
-- **Find Usages of …** — найти использования текущего типа в проекте.
-- **Create New Script…** — сохранить заготовку сериализуемого класса, совместимого с объявленным типом поля. После успешной компиляции селектор назначает новый экземпляр. Заготовку нужно дополнить логикой; методы интерфейса могут содержать `NotImplementedException`, а абстрактные члены базового класса потребуется реализовать вручную.
+| Пункт | Что делает |
+|---|---|
+| **Copy Serialize Reference** | Копирует класс и данные поля; копия живёт до перезагрузки домена |
+| **Paste Serialize Reference** | Вставляет копию в поле подходящего типа; копия пустого поля очищает его |
+| **Make Unique Reference** | Даёт полю собственную копию [общей ссылки](#общие-ссылки); у необщей ссылки пункта нет |
+| **Find Usages of Pistol** | Ищет класс в проекте через Unity Search |
+| **Link to Existing → …** | Указывает поле на экземпляр из другого поля того же объекта |
+| **Create New Script…** | Создаёт <code lang="csharp">[Serializable]</code> класс под тип поля и назначает его после компиляции |
+| **Save as Template…** | Сохраняет значение под именем; шаблоны хранятся в настройках редактора на этом компьютере, не в проекте |
+| **Paste Template → …** | Создаёт экземпляр из шаблона; в списке только подходящие полю |
+| **Paste Template → Remove Missing (N)…** | Удаляет шаблоны, класс которых не загружается; виден, только если такие шаблоны есть |
 
-## Общие ссылки и Make unique
+> [!WARNING]
+> Copy/Paste и шаблоны не переносят вложенные поля <code lang="csharp">[SerializeReference]</code>: скопированный <code lang="class-name">Railgun</code> вставится без <code lang="csharp">_chargeEffect</code>.
 
-Два поля одного компонента или `ScriptableObject` могут указывать на один экземпляр. Изменение его данных через любое из полей видно в обоих местах; селектор помечает такую связь как **Shared reference**. Общая ссылка может быть намеренной.
+## Общие ссылки
 
-Чтобы создать её, откройте контекстное меню целевого поля и выберите **Link to Existing → тип и путь**. Меню предлагает подходящие по типу поля ссылки внутри того же объекта-владельца. Это связывание с существующим экземпляром; прежнее значение целевого поля заменяется.
+Два поля объекта могут указывать на один экземпляр: правка через одно видна в другом. Такие поля помечены **Shared reference #N**, а **Make unique** даёт полю собственную копию вместе с вложенными ссылками.
 
-![Действие Make unique создаёт независимую копию общей ссылки](../Images/aspid_fasttools_serialize_reference_make_unique.png)
+![Make unique создаёт независимую копию общей ссылки](../Images/aspid_fasttools_serialize_reference_make_unique.png)
 
-Действие Make unique создаёт независимую копию общей ссылки
-
-Нажмите **Make unique** в уведомлении или **Make Unique Reference** в контекстном меню, чтобы редактировать поле независимо. Копируются также вложенные managed-ссылки; повторные ссылки внутри самой копии сохраняют общность.
-
-Автоматическое разделение ссылок после дублирования элемента списка управляется настройкой **Auto de-alias duplicated list elements** в [настройках FastTools](04-serialize-reference-tooling.md#проверка-перед-сборкой). Она включена по умолчанию.
-
-## Generic-типы
-
-Селектор выводит аргументы generic-кандидата из типа поля, когда это возможно. Если часть аргументов неизвестна, окно предлагает выбрать их на следующей странице.
-
-```csharp
-public interface IModifier { }
-
-[Serializable]
-public class Modifier<T> : IModifier
-{
-    public T Value;
-}
-
-// T уже известен: создаётся Modifier<float>.
-[TypeSelector]
-[SerializeReference] private Modifier<float> _damageModifier;
-
-// Для Modifier<T> потребуется выбрать T в окне селектора.
-[TypeSelector]
-[SerializeReference] private IModifier _modifier;
-```
-
-Интерфейс и класс объявите рядом с остальными типами, а поля добавьте в `Loadout`. Для первого поля аргумент — `float`; для второго можно выбрать, например, `int` или `string` на странице аргументов.
-
-<details>
-<summary>Вывод через интерфейсы и ограничения аргументов</summary>
-
-Аргументы выводятся и через реализуемые интерфейсы: поле `IConverter<string, string>` закрывает кандидат `Sequence<T> : IConverter<T, T>` как `Sequence<String>`.
-
-Кандидат исключается, если его нельзя закрыть под тип поля. Например, `ToString<TFrom> : IConverter<TFrom, string>` не подходит полю `IConverter<float, float>`. Если выходной параметр `IConverter` объявлен ковариантным, он может подойти полю `IConverter<float, object>`.
-
-Аргумент, выведенный из поля, обязан быть сериализуемым как значение только там, где кандидат хранит его как значение. Параметр за `[SerializeReference]` проверяется по правилам managed-ссылок. Страница ручного выбора предлагает сериализуемые типы.
-
-</details>
+Продублированный элемент списка получает собственный экземпляр, а не ссылку на тот же. За это отвечает настройка **Auto de-alias duplicated list elements** в [общих настройках](04-serialize-reference-tooling.md#общие-и-личные-настройки), по умолчанию она включена.
 
 <a id="repairing-broken-references"></a>
 
 ## Восстановление потерянного типа
 
-После переименования, переноса или удаления класса сохранённое имя может перестать разрешаться. У поля появляется **Missing type**. Пока данные ссылки остаются в ассете, их можно переназначить существующей реализации.
+После переименования, переноса или удаления класса у поля появляется **Missing type**, а данные остаются в ассете.
 
-![Потерянная ссылка с действиями Fix и Smart Fix в инспекторе](../Images/aspid_fasttools_serialize_reference_repair.png)
+![Потерянная ссылка с Fix и подсказкой → Pistol в инспекторе](../Images/aspid_fasttools_serialize_reference_repair.png)
 
-Потерянная ссылка с действиями Fix и Smart Fix в инспекторе
-
-| Действие | Когда использовать |
+| Действие | Что делает |
 |---|---|
-| **Fix** | Вы знаете подходящую замену: откройте выбор и назначьте существующий тип |
-| **Smart Fix** | Хотите применить предложенный вариант: проверьте тип и причину в подсказке, затем нажмите на предложение |
+| **Fix** | Открывает выбор класса, включая скрытые через <code lang="csharp">Hidden</code> |
+| **→ Pistol** | Назначает предложенный класс; причина в подсказке: [`[MovedFrom]`](04-serialize-reference-tooling.md#миграции-с-movedfrom), то же имя, то же имя в другом регистре или похожее имя |
 
-Smart Fix учитывает `[MovedFrom]`, имя, namespace, сборку и сходство полей. Это подсказка, которая применяется только по нажатию. Окно **Fix** допускает и скрытые через `Hidden` типы: восстановление старых данных может требовать реализации, убранной из обычного выбора.
+> [!WARNING]
+> На ассете Fix переписывает файл, и Undo его не отменит.
+>
+> В сцене и Prefab Mode исправление остаётся в памяти: Undo его отменяет, а сохранение делает окончательным и очищает историю Undo объекта. Такое исправление возвращает только простые поля верхнего уровня: вложенные объекты, массивы, списки, векторы, цвета и ссылки на объекты получают значения по умолчанию.
 
-Для ассета на диске Fix переписывает сохранённую запись типа и переимпортирует ассет; обычного Undo у такой записи в файл нет. В открытой сохранённой сцене и Prefab Mode восстановление применяется к объекту в памяти — после проверки результата сохраните сцену или префаб. До сохранения Undo возвращает отсутствующую ссылку вместе с данными, а предупреждение Unity об отсутствующих типах на объекте остаётся; сохранение (в том числе Auto Save в Prefab Mode) делает восстановление окончательным и очищает историю Undo этого объекта. Сохранение данных не означает автоматического преобразования несовместимых полей; восстановление в памяти также не гарантирует полного восстановления вложенного графа.
+### Когда Fix нет
 
-Если Fix недоступен, выберите один объект и проверьте, что сцена или Prefab Mode сохранены и не имеют несохранённых изменений. Компонент, унаследованный из префаба (вариант, вложенный префаб, экземпляр в сцене), показывает **Missing type** без Fix. Если тип сломан в исходном префабе, откройте префаб, названный в подсказке, и почините его там. Если тип задан override'ом самого экземпляра, в исходном префабе чинить нечего: назначьте новый тип на экземпляре или отмените override через Revert. Если проблема находится внутри потерянного родителя и поле недоступно, используйте [Asset References](04-serialize-reference-tooling.md#asset-references-разобрать-один-ассет).
+| Случай | Что делать |
+|---|---|
+| Выбрано несколько объектов | Выберите один: до этого **Missing type** не показывается |
+| В сцене или Prefab Mode есть несохранённые изменения | Сохраните: до этого поле показывает `<None>` без **Missing type** |
+| Экземпляр префаба, класс хранится в исходном префабе | Исправьте исходный префаб, его имя в подсказке |
+| Экземпляр префаба, класс задан override | Выберите новый класс на экземпляре или отмените override |
 
-Если у ассета есть несохранённые изменения, Fix сначала предлагает его сохранить: переимпорт отбросил бы эти изменения. Пока префаб открыт в Prefab Mode, Fix на его ассете в окне Project отклоняется — исправьте поле в Prefab Mode.
+Остальное исправляет [SerializeReference Tooling](04-serialize-reference-tooling.md).
 
-Плановое переименование лучше сопровождать [`[MovedFrom]`](04-serialize-reference-tooling.md#миграции-с-movedfrom). Для проверки и восстановления нескольких ассетов переходите к [SerializeReference Tooling](04-serialize-reference-tooling.md).
+## Собственный инспектор
 
-## Собственный IMGUI-инспектор
+Поле с <code lang="csharp">[TypeSelector]</code> в своём редакторе рисует обычный <code lang="class-name">PropertyField</code>: выбор класса и «+» списка появляются сами, вызывать пакет не нужно.
 
-Селектор работает в IMGUI и UI Toolkit. В собственном IMGUI-редакторе обычный `PropertyField` использует drawer поля, но для кнопки **+** с выбором типа у списка нужен `SerializeReferenceIMGUIList.Draw`.
+| UI Toolkit — CreateInspectorGUI | IMGUI — OnInspectorGUI |
+|---|---|
+| <pre lang="csharp"><code>new PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"))</code></pre> | <pre lang="csharp"><code>EditorGUILayout.PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"));</code></pre> |
 
-Для `Loadout` с полем `_sidearms` из примера выше поместите этот редактор в папку `Editor`:
+Если у поля <code lang="csharp">[SerializeReference]</code> нет атрибута <code lang="csharp">[TypeSelector]</code> или элемент списка рисуется отдельно через <code lang="function">GetArrayElementAtIndex</code>, <code lang="class-name">PropertyField</code> выбора класса не покажет. Его можно нарисовать в своём редакторе, вызвав один из методов:
 
-```csharp
-using UnityEditor;
-using UnityEngine;
-using Aspid.FastTools.SerializeReferences.Editors;
+| Метод | Что рисует |
+|---|---|
+| <code lang="csharp">SerializeReferenceEditorGUI.CreateField()</code> | Поле в <code lang="function">CreateInspectorGUI</code> |
+| <code lang="csharp">SerializeReferenceEditorGUI.CreateList()</code> | Список в <code lang="function">CreateInspectorGUI</code> |
+| <code lang="csharp">SerializeReferenceEditorGUI.DrawFieldLayout()</code> | Поле в <code lang="function">OnInspectorGUI</code> |
+| <code lang="csharp">SerializeReferenceIMGUIList.Draw()</code> | Список в <code lang="function">OnInspectorGUI</code> |
 
-[CustomEditor(typeof(Loadout))]
-public sealed class LoadoutEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        serializedObject.Update();
+Ограничения поверх типа поля передаются аргументом <code lang="csharp">baseTypes</code>, как типы в <code lang="csharp">[TypeSelector(...)]</code>.
 
-        EditorGUILayout.PropertyField(
-            serializedObject.FindProperty("_primary"), true);
+## Ограничения
 
-        SerializeReferenceIMGUIList.Draw(
-            serializedObject.FindProperty("_sidearms"),
-            new GUIContent("Sidearms"),
-            typeof(IWeapon));
+- **Allow.** На <code lang="csharp">[SerializeReference]</code> не действует — анализатор `AFT0002` предупредит об этом.
+- **Несовместимые ограничения.** Если ни один класс не подходит сразу под тип поля и все типы из атрибута, список классов будет пустым: например, <code lang="csharp">[TypeSelector(typeof(Sword))]</code> на поле <code lang="csharp">StatusEffect _onHit;</code>. Анализаторы `AFT0003`, `AFT0005` и `AFT0009` предупредят об этом при компиляции.
 
-        serializedObject.ApplyModifiedProperties();
-    }
-}
-```
+## Пример в пакете
 
-Остальные поля добавьте в редактор по мере необходимости. Для создания контролов без `[TypeSelector]` доступны `SerializeReferenceEditorGUI.CreateField`, `CreateList` и `DrawFieldLayout`; готовый редактор есть в [примере SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md#путь-imgui).
-
-## Если нужного типа нет в списке
-
-Проверьте, что класс конкретный, совместим с типом поля и дополнительными ограничениями, не наследует `UnityEngine.Object` и не помечен `Hidden = true`. Для generic-кандидата должны существовать допустимые аргументы. После ошибок компиляции дождитесь успешной перекомпиляции скриптов.
-
-Анализатор `AFT0004` сообщает о несовместимости с `UnityEngine.Object`, `AFT0003` и `AFT0009` — об ограничениях, которым ни один тип не удовлетворяет одновременно, `AFT0005` предупреждает о потенциально пустом селекторе. Параметр `Allow` не расширяет список создаваемых managed-ссылок.
-
-Атрибуты `[TypeSelector]` и `[TypeSelectorDisplay]` применяются только в редакторе. Сами реализации и их сериализованные данные остаются частью игры.
+Поля <code lang="class-name">Loadout</code> с этой страницы и ассеты с потерянными типами для **Fix** есть в примере [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
