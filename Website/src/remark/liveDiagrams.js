@@ -3,6 +3,7 @@
  * still show the picture; only the site renders the live version. The caption paragraph that repeats the alt
  * text stays in the document and keeps its caption style.
  * A table can have a live version too: Markdown keeps the table, and the component gets its rows as children.
+ * So can an ordered list: Markdown keeps the steps, and the component gets each item's text as a child.
  */
 // File name → component, or [component, props] when one component draws several pictures.
 const COMPONENTS = {
@@ -16,6 +17,11 @@ const COMPONENTS = {
 // First body cell → component that draws the table. Each row becomes `<RowComponent call="…">second cell</RowComponent>`.
 const TABLES = {
   'SetPadding(8)': ['StyleSides', 'StyleSidesRow'],
+};
+
+// First bold text of the first item → component that draws the ordered list; each item becomes a `<span>` child.
+const LISTS = {
+  'Tools → Aspid 🐍 → FastTools → Project References': 'ProjectReferencesPanel',
 };
 
 // `<code lang="csharp">` is already `InlineCode` in the docs instance; elsewhere it is still the portable tag.
@@ -51,11 +57,27 @@ function liveTable(node) {
   };
 }
 
+function liveList(node) {
+  if (!node.ordered) return undefined;
+  const items = node.children.map((item) => (item.children.length === 1 && item.children[0].type === 'paragraph'
+    ? item.children[0].children : undefined));
+  if (items.length === 0 || items.includes(undefined)) return undefined;
+  const strong = items[0].find((part) => part.type === 'strong');
+  const name = strong && LISTS[strong.children.map((part) => part.value ?? '').join('')];
+  if (!name) return undefined;
+  return {
+    type: 'mdxJsxFlowElement',
+    name,
+    attributes: [],
+    children: items.map((children) => ({type: 'mdxJsxFlowElement', name: 'span', attributes: [], children})),
+  };
+}
+
 export default function remarkLiveDiagrams() {
   return (tree) => {
     tree.children.forEach((node, index, siblings) => {
-      if (node.type === 'table') {
-        const live = liveTable(node);
+      if (node.type === 'table' || node.type === 'list') {
+        const live = node.type === 'table' ? liveTable(node) : liveList(node);
         if (live) siblings[index] = live;
         return;
       }

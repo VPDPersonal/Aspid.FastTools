@@ -8,8 +8,10 @@ const light = {
   styles: [
     { types: ['comment', 'prolog', 'doctype', 'cdata'], style: { color: '#686d76' } },
     { types: ['punctuation'], style: { color: '#2a2c31' } },
+    // A namespace nested in a type name (`System.` of `System.Type`) overrides the type's colour.
+    { types: ['namespace'], style: { color: '#2a2c31' } },
     { types: ['keyword', 'operator', 'important'], style: { color: '#b24d05' } },
-    { types: ['builtin', 'class-name', 'namespace', 'maybe-class-name', 'return-type'], style: { color: '#1670b0' } },
+    { types: ['builtin', 'class-name', 'maybe-class-name', 'return-type'], style: { color: '#1670b0' } },
     { types: ['function'], style: { color: '#916204' } },
     { types: ['string', 'char', 'attr-value', 'inserted'], style: { color: '#3d7a00' } },
     { types: ['number', 'boolean', 'constant', 'symbol'], style: { color: '#8752bd' } },
@@ -25,8 +27,10 @@ const dark = {
   styles: [
     { types: ['comment', 'prolog', 'doctype', 'cdata'], style: { color: '#89919d' } },
     { types: ['punctuation'], style: { color: '#bfbdb6' } },
+    // A namespace nested in a type name (`System.` of `System.Type`) overrides the type's colour.
+    { types: ['namespace'], style: { color: '#bfbdb6' } },
     { types: ['keyword', 'operator', 'important'], style: { color: '#f29750' } },
-    { types: ['builtin', 'class-name', 'namespace', 'maybe-class-name', 'return-type'], style: { color: '#73c0f8' } },
+    { types: ['builtin', 'class-name', 'maybe-class-name', 'return-type'], style: { color: '#73c0f8' } },
     { types: ['function'], style: { color: '#ffb454' } },
     { types: ['string', 'char', 'attr-value', 'inserted'], style: { color: '#b0d860' } },
     { types: ['number', 'boolean', 'constant', 'symbol'], style: { color: '#d2a6ff' } },

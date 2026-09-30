@@ -59,14 +59,14 @@ The generator creates one static field per call site, so measuring allocates not
 ## Limitations
 
 - **The line number in the name** changes when the call moves: compare captures from before and after an edit by the name without it.
-- **Calls without a marker.** When a call gets no marker — on an object of another type (<code lang="csharp">other.Marker()</code>), in a static class, in a <code lang="csharp">private</code> or <code lang="csharp">protected</code> nested type — analyzer `AFT0010` warns about it.
+- **Calls without a marker** — on an object of another type (<code lang="csharp">other.Marker()</code>), in a static class, in a <code lang="csharp">private</code> or <code lang="csharp">protected</code> nested type: analyzer `AFT0010` warns about it.
 - **A discarded scope.** <code lang="csharp">this.Marker();</code> without <code lang="csharp">using</code> begins a sample that never ends — analyzer `AFT0011` warns about it.
 
 > [!WARNING]
 > Measurements land in someone else's Profiler row when:
 >
 > - <code lang="csharp">this.Marker()</code> calls in different <code lang="csharp">partial</code> files of one type sit on the same line — they share the first one's marker;
-> - a call without a marker has the line number of a call in a type declared in the caller's namespace or an enclosing one — <code lang="csharp">other.Marker()</code> opens that type's marker, and a call in a <code lang="csharp">private</code> or <code lang="csharp">protected</code> nested type opens its base type's marker unless the base type is in the global namespace.
+> - a call without a marker sits on the same line as a marked call in the type it binds to: for <code lang="csharp">other.Marker()</code> that is the type of <code lang="csharp">other</code> if it is declared in the caller's namespace or an enclosing one, for a call in a nested type — the base type unless it is in the global namespace.
 
 ## Package sample
 

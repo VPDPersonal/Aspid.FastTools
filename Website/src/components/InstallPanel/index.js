@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import CodeBlock from '@theme/CodeBlock';
-import {prefersReducedMotion, useInView} from '@site/src/components/FeaturePreview/effects';
+import {useWalkthrough} from '@site/src/components/FeaturePreview/effects';
 import styles from './styles.module.css';
 
 const RELEASES = 'https://github.com/VPDPersonal/Aspid.FastTools/releases';
@@ -42,35 +42,6 @@ const FIRST_FRAME_OF_STEP = [0, 1, 2];
 // How many times the walk-through plays on its own before it rests on the last frame.
 const PLAYS = 2;
 const MENU = ['Install package from disk…', 'Install package from tarball…', 'Install package from git URL…', 'Install package by name…'];
-
-/**
- * Plays the frames while visible, {@link PLAYS} times, then rests on the last one;
- * a click on a step or a version tab jumps to a frame and plays once more from there.
- */
-function useFrames(ref) {
-  const visible = useInView(ref);
-  const [frame, setFrame] = useState(0);
-  const [plays, setPlays] = useState(PLAYS);
-  // Bumped by a jump, so a jump to the frame already shown still restarts its timer.
-  const [jumps, setJumps] = useState(0);
-  const [still, setStill] = useState(false);
-  useEffect(() => setStill(prefersReducedMotion()), []);
-  useEffect(() => {
-    const last = frame === DURATIONS.length - 1;
-    if (still || !visible || (last && plays <= 1)) return undefined;
-    const timer = setTimeout(() => {
-      if (last) setPlays((value) => value - 1);
-      setFrame(last ? 0 : frame + 1);
-    }, DURATIONS[frame]);
-    return () => clearTimeout(timer);
-  }, [frame, plays, jumps, visible, still]);
-  const jump = (value) => {
-    setPlays(1);
-    setFrame(value);
-    setJumps((count) => count + 1);
-  };
-  return [still ? DURATIONS.length - 1 : frame, jump];
-}
 
 function PackageManager({frame, url, version, text}) {
   const done = frame === 4;
@@ -165,7 +136,7 @@ export default function InstallPanel({url}) {
   const {packageVersion, packageVersions} = siteConfig.customFields;
   const text = TEXT[i18n.currentLocale] ?? TEXT.en;
   const ref = useRef(null);
-  const [frame, setFrame] = useFrames(ref);
+  const [frame, setFrame] = useWalkthrough(ref, DURATIONS, PLAYS);
   // Pin from the branch the README's URL names (`...git#upm-preview`), not the working tree's.
   const branch = url.split('#')[1];
   const versions = packageVersions[branch] ?? [];

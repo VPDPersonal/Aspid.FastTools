@@ -1,6 +1,7 @@
 /*
  * The install section of the docs introduction, drawn like a feature card: a Package Manager mock-up beside the steps,
  * with the URL as a code block along the bottom. The mock-up stays dark in both themes, like the editor captures.
+ * ProjectReferencesPanel reuses the card, the top row, the preview column and the steps.
  */
 
 .install {

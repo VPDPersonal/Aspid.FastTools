@@ -1,274 +1,154 @@
 # SerializeReference Selector
 
-Choose an interface or base-class implementation directly in a `[SerializeReference]` field. The selector creates an instance, expands its fields, and carries compatible data over when switching types. This page covers individual Inspector fields; project audits, bulk repair, and CI are covered in [SerializeReference Tooling](04-serialize-reference-tooling.md).
+Pick an implementation right in the Inspector — from a searchable list, without a custom editor.
 
 <a id="inspector-type-dropdown"></a>
 
 ## Quick start
 
-Add `[TypeSelector]` next to `[SerializeReference]` to choose implementations in a searchable window without writing a custom editor.
-
-| Creation in code | Selection in the Inspector |
+| Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>[SerializeReference]&#10;private IWeapon _primary = new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]&#10;[SerializeReference]&#10;private IWeapon _primary;</code></pre> |
+| <pre lang="csharp"><code>[SerializeReference]&#10;private IWeapon _primary =&#10;    new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]&#10;[SerializeReference]&#10;private IWeapon _primary;</code></pre> |
 
-The selector stores an **instance with data**. To store only a class name and create the object later from code, use [Serializable Type System](02-serializable-types.md).
+## Which classes are offered
 
-![Switching from Pistol to Shotgun preserves Damage = 37 and adds Pellets](Images/aspid_fasttools_serialize_reference_selector.gif)
-
-Switching from Pistol to Shotgun preserves Damage = 37 and adds Pellets
-
-A ready-made scene with weapons, effects, and nested modifiers is included in the [SerializeReferences sample](../Samples~/SerializeReferences/Documentation/README.md).
-
-## Configuring selection
-
-The field type sets the base compatibility: `IWeapon` offers its implementations, while an abstract class offers concrete subclasses. In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders) are left out: a player build cannot create them. Apply `[Serializable]` to classes whose data Unity should persist.
-
-| Task | Configuration |
-|---|---|
-| Offer only melee weapons | `[TypeSelector(typeof(IMelee))]` on an `IWeapon` field: candidates must fit the field and implement `IMelee` |
-| Warn when a field is empty | `[TypeSelector(Required = true)]` |
-| Drive constraints from another field | `[TypeSelector(nameof(_category))]`; see [dynamic constraints](02-serializable-types.md#dynamic-base-types-via-member-references) |
-| Change the name, group, tooltip, or icon | `[TypeSelectorDisplay(...)]` on the class |
-| Hide an implementation from normal selection | `[TypeSelectorDisplay(Hidden = true)]` |
-
-`TypeSelector.Allow` is ignored on `[SerializeReference]`: the selector instantiates concrete classes. Interfaces, abstract classes, structs, `string`, delegates, and `UnityEngine.Object` subclasses cannot be the created value.
-
-### Display name and group
-
-Add the attribute to `Shotgun` from the example:
+The list follows the field type; the attribute can narrow it with extra types.
 
 ```csharp
-[Serializable]
-[TypeSelectorDisplay(
-    Name = "Shotgun",
-    Group = "Weapons/Ranged",
-    Tooltip = "A weapon that fires multiple pellets")]
-public sealed class Shotgun : IWeapon
-{
-    [SerializeField, Min(0)] private int _damage = 20;
-    [SerializeField, Min(1)] private int _pellets = 6;
+public interface IMelee : IWeapon { }
+public sealed class Sword : IMelee { }
 
-    public void Fire() => Debug.Log($"Shotgun: {_damage} dmg, {_pellets} pellets");
-}
+public abstract class StatusEffect { }
+
+public class Modifier<T> : IModifier { }
+public sealed class DamageModifier : Modifier<float> { }
 ```
 
-The class appears under **Weapons → Ranged → Shotgun**. Search still matches its real name, `Shotgun`. These labels do not rename the stored type.
+| Field type | What is listed |
+|---|---|
+| Interface <code lang="class-name">IWeapon</code> | Classes that implement it: <code lang="class-name">Crossbow</code>, <code lang="class-name">Pistol</code>, <code lang="class-name">Railgun</code>, <code lang="class-name">Shotgun</code>, <code lang="class-name">Sword</code> |
+| <code lang="class-name">IWeapon</code> and <code lang="csharp">typeof(IMelee)</code> in the attribute | Classes that fit both: <code lang="class-name">Sword</code> |
+| Abstract class <code lang="class-name">StatusEffect</code> | Its subclasses: <code lang="class-name">BurnEffect</code>, <code lang="class-name">FreezeEffect</code> |
+| <code lang="class-name">Modifier&lt;float&gt;</code> | The subclass <code lang="class-name">DamageModifier</code> and <code lang="class-name">Modifier&lt;Single&gt;</code> itself |
+| <code lang="class-name">List&lt;IModifier&gt;</code> | <code lang="class-name">AmmoModifier</code>, <code lang="class-name">DamageModifier</code>, <code lang="class-name">NameModifier</code> and <code lang="class-name">Modifier&lt;T&gt;</code> with a choice of <code lang="class-name">T</code> |
 
-`Hidden = true` hides a type from normal selection, but existing values keep rendering and assignment from code remains available. Subclasses do not inherit the setting. See [TypeSelectorDisplay](02-serializable-types.md#typeselectordisplay) for all parameters.
+- In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs, `Editor` folders) are left out: a player build cannot create them.
+- Generic arguments are inferred from the field type; when they cannot be, the window asks for each one and offers only types Unity can serialize.
+- A constraint can also come [from another field](02-serializable-types.md#constraint-from-another-field).
+- [`[TypeSelectorDisplay]`](02-serializable-types.md#typeselectordisplay) sets a class's row in the list or hides the class.
 
-### Required fields
+## Required field
 
 ```csharp
 [TypeSelector(Required = true)]
 [SerializeReference] private IWeapon _primary;
 ```
 
-An empty field shows **Required reference is not set**. The attribute does not create a value or prevent choosing `<None>`; it also does not replace runtime `null` checks. A missing type is diagnosed separately from an unset field.
+With <code lang="csharp">Required = true</code>, an empty field shows **Required reference is not set**; see [Required field](02-serializable-types.md#required-field).
 
-To check required fields in CI, enable [`-srGateRequired`](04-serialize-reference-tooling.md#running-in-ci). The normal pre-build check looks for missing types; the scope of `Required` checks is documented in [SerializeReference Tooling](04-serialize-reference-tooling.md#where-required-fields-are-checked).
+## Lists
 
-## Lists and nested references
+In a list with <code lang="csharp">[TypeSelector]</code>, “+” opens the class picker and adds a new instance, and `<None>` adds an empty element. With several objects selected, each gets its own instance, all in one Undo group.
 
-For arrays and lists, apply both attributes to the collection field. One list can contain different implementations and `null` entries.
+![“+” on Sidearms opens the class picker and adds a Shotgun](Images/aspid_fasttools_serialize_reference_list.gif)
 
-```csharp
-// Also import: using System.Collections.Generic;
+## Switching the class
 
-[TypeSelector]
-[SerializeReference] private List<IWeapon> _sidearms = new();
+The new instance receives the values of fields with the same names:
 
-[TypeSelector]
-[SerializeReference] private IWeapon[] _slots = new IWeapon[2];
-```
-
-In a UI Toolkit list, **+** opens the type picker and appends a new instance. Choosing `<None>` appends an empty entry. With multiple objects selected, each object gets its own instance in one Undo group. For the same behaviour in a custom IMGUI Inspector, use `SerializeReferenceIMGUIList.Draw` — see the [example below](#custom-imgui-inspectors).
-
-### Nested selectors without repeated attributes
-
-An inner `[SerializeReference]` field gets a selector automatically. For example, add a weapon that wraps another weapon:
-
-```csharp
-[Serializable]
-public sealed class DoubleShot : IWeapon
-{
-    [SerializeReference] public IWeapon Weapon;
-
-    public void Fire()
-    {
-        Weapon?.Fire();
-        Weapon?.Fire();
-    }
-}
-```
-
-Choose **DoubleShot** in `Primary`, then **Pistol** in its **Weapon** field. You do not need to repeat `[TypeSelector]` on `Weapon`. Nested arrays and lists of managed references work the same way.
-
-Automatic drawing covers eight nesting levels, after which Unity's standard drawing takes over. This is a drawing limit, not a restriction on storing deeper graphs. A child field is drawn by its own drawer instead of the automatic selector when it has:
-
-- `[TypeSelector]` or an attribute with a `[CustomPropertyDrawer]`;
-- a `[CustomPropertyDrawer]` for its declared type, a base class, an interface or an open generic type, for example `typeof(IWeapon)` for `Weapon`. In a list, the drawer draws each element, and **+** still opens the type picker.
-
-A drawer for the chosen type alone, such as `Pistol`, does not replace the selector.
-
-## Working with data
-
-### What happens when switching types
-
-The selector creates an instance of the selected class and attempts to carry data over from the previous value. For the quick-start example:
-
-| Field | Pistol before switching | Shotgun after switching |
+| Field | <code lang="class-name">Pistol</code> | → <code lang="class-name">Shotgun</code> |
 |---|---|---|
-| `_damage` | `37` | `37`: matching name and data shape |
-| `_pellets` | Not present | `6`: the new instance's initial value |
+| **Damage** | 37 | 37 |
+| **Magazine Size** | 12 | — |
+| **Pellets** | — | 8, the initial value |
 
-Transfer targets compatible serialized fields. Renamed fields and incompatible data structures need a separate migration. Fields absent from the new type are not retained for later: set **Pellets = 12**, switch to `Pistol`, then back to `Shotgun`, and **Pellets** becomes `6`.
-
-Nested `[SerializeReference]` fields with matching names and compatible types retain their existing instances. Switching the outer type does not make those references independent copies.
-
-<details>
-<summary>Initial values and constructors</summary>
-
-Creation calls the parameterless constructor, including a non-public one. If there is none, the instance is created without running a constructor, so field initializers cannot be relied on. Keep a parameterless constructor for predictable initial values.
-
-</details>
-
-### Copy / Paste and templates
-
-Right-click the **reference field's header** to open its context menu.
-
-| Action | Result |
-|---|---|
-| **Copy Serialize Reference** | Stores the current value's type and serializable data |
-| **Paste Serialize Reference** | Creates a new instance in a compatible field, respecting its type and additional constraints |
-| **Save as Template…** | Saves the current value under a name |
-| **Paste Template → name** | Creates an instance from a compatible saved template |
-| **Paste Template → Remove Missing (N)…** | Deletes saved templates whose type does not load, after confirmation; shown only when there are any |
-
-Copying an empty reference is meaningful: the next paste clears the destination. With multiple objects selected, Copy reads the first object's value; selection and Paste create an independent instance per object in one Undo group. A type switch carries data over from each object's own previous value. Check `Required`, `Missing type`, and `Shared reference` notices with a single object selected.
+![Switching from Pistol to Shotgun keeps Damage = 37](Images/aspid_fasttools_serialize_reference_selector.gif)
 
 > [!NOTE]
-> The clipboard and templates transfer data through `JsonUtility`; they do not copy an entire nested `[SerializeReference]` graph. To separate a shared reference together with its nested managed references, use **Make unique**.
+> A nested reference with the same name moves to the new class as the same instance, not a copy.
+>
+> A `.cs` script dragged from Project onto the field header switches the field to its class the same way.
 
-Templates are stored locally in `EditorPrefs` for the current project. They are personal presets and are not shared with the team through Git. Saving under an existing name asks for overwrite confirmation.
+## Header menu
 
-### Other header actions
+Right-click the field header:
 
-- **Drag a `.cs` file from Project** to assign an instance of its compatible script class. Data transfers follow the same rules as type selection.
-- **Find Usages of …** searches for uses of the current type in the project.
-- **Create New Script…** saves a serializable class stub compatible with the declared field type. After successful compilation, the selector assigns a new instance. Add your own logic to the stub: interface methods may contain `NotImplementedException`, and abstract base-class members need manual implementation.
+| Item | What it does |
+|---|---|
+| **Copy Serialize Reference** | Copies the field's class and data; the copy lasts until the next domain reload |
+| **Paste Serialize Reference** | Pastes the copy into a field of a compatible type; a copied empty field clears it |
+| **Make Unique Reference** | Gives the field its own copy of a [shared reference](#shared-references); not shown on an unshared one |
+| **Find Usages of Pistol** | Searches the project for the class through Unity Search |
+| **Link to Existing → …** | Points the field at the instance of another field on the same object |
+| **Create New Script…** | Creates a <code lang="csharp">[Serializable]</code> class for the field type and assigns it after compilation |
+| **Save as Template…** | Saves the value under a name; templates live in the editor settings on this machine, not in the project |
+| **Paste Template → …** | Creates an instance from a template; only templates that fit the field are listed |
+| **Paste Template → Remove Missing (N)…** | Deletes templates whose class does not load; shown only when there are any |
 
-## Shared references and Make unique
+> [!WARNING]
+> Copy/Paste and templates do not carry nested <code lang="csharp">[SerializeReference]</code> fields: a copied <code lang="class-name">Railgun</code> pastes without its <code lang="csharp">_chargeEffect</code>.
 
-Two fields on the same component or `ScriptableObject` can point to one instance. Editing its data through either field affects both; the selector labels this **Shared reference**. Sharing may be intentional.
+## Shared references
 
-To create a shared reference, open the destination field's context menu and choose **Link to Existing → type and path**. It offers references compatible with the field type within the same host object. This links an existing instance and replaces the destination's previous value.
+Two fields of an object can point at one instance: an edit through one shows in the other. Such fields are marked **Shared reference #N**, and **Make unique** gives the field its own copy, nested references included.
 
 ![Make unique creates an independent copy of a shared reference](Images/aspid_fasttools_serialize_reference_make_unique.png)
 
-Make unique creates an independent copy of a shared reference
-
-Click **Make unique** in the notice or **Make Unique Reference** in the context menu to edit the field independently. Nested managed references are copied too; repeated references within the copy retain their internal sharing.
-
-Automatic splitting after duplicating list entries is controlled by **Auto de-alias duplicated list elements** in [FastTools settings](04-serialize-reference-tooling.md#pre-build-checks). It is enabled by default.
-
-## Generic types
-
-The selector infers generic arguments from the field type where possible. If some arguments remain unknown, the window offers them on the next page.
-
-```csharp
-public interface IModifier { }
-
-[Serializable]
-public class Modifier<T> : IModifier
-{
-    public T Value;
-}
-
-// T is known: creates Modifier<float>.
-[TypeSelector]
-[SerializeReference] private Modifier<float> _damageModifier;
-
-// Modifier<T> asks you to choose T in the selector.
-[TypeSelector]
-[SerializeReference] private IModifier _modifier;
-```
-
-Declare the interface and class alongside the other types, and add the fields to `Loadout`. The first field fixes the argument to `float`; for the second, choose an argument such as `int` or `string` on the argument page.
-
-<details>
-<summary>Inference through interfaces and argument constraints</summary>
-
-Arguments are also inferred through implemented interfaces: an `IConverter<string, string>` field closes `Sequence<T> : IConverter<T, T>` as `Sequence<String>`.
-
-A candidate is excluded if it cannot be closed to fit the field. For example, `ToString<TFrom> : IConverter<TFrom, string>` does not fit `IConverter<float, float>`. If the output parameter of `IConverter` is covariant, it can fit `IConverter<float, object>`.
-
-An inferred argument must support by-value serialization only where the candidate stores it by value. A parameter behind `[SerializeReference]` follows managed-reference rules. The manual argument page offers serializable types.
-
-</details>
+A duplicated list element gets its own instance instead of a reference to the same one. The **Auto de-alias duplicated list elements** setting in the [shared settings](04-serialize-reference-tooling.md#shared-and-personal-settings) controls this and is on by default.
 
 <a id="repairing-broken-references"></a>
 
 ## Repairing missing types
 
-Renaming, moving, or deleting a class can leave its stored name unresolved. The field shows **Missing type**. While the reference's data remains in the asset, it can be reassigned to an existing implementation.
+After a class is renamed, moved or deleted, the field shows **Missing type**, while the data stays in the asset.
 
-![A missing reference with Fix and Smart Fix actions in the Inspector](Images/aspid_fasttools_serialize_reference_repair.png)
+![A missing reference with Fix and the → Pistol suggestion in the Inspector](Images/aspid_fasttools_serialize_reference_repair.png)
 
-A missing reference with Fix and Smart Fix actions in the Inspector
-
-| Action | When to use it |
+| Action | What it does |
 |---|---|
-| **Fix** | You know a suitable replacement: open the picker and select an existing type |
-| **Smart Fix** | You want to use the suggested replacement: check the type and reason in the tooltip, then click the suggestion |
+| **Fix** | Opens the class picker, including classes hidden with <code lang="csharp">Hidden</code> |
+| **→ Pistol** | Assigns the suggested class; the tooltip gives the reason: [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom), the same name, the same name in another case, or a similar name |
 
-Smart Fix considers `[MovedFrom]`, the name, namespace, assembly, and field similarity. It only applies when clicked. The **Fix** picker also permits `Hidden` types: recovering old data may require an implementation removed from normal selection.
+> [!WARNING]
+> On an asset, Fix rewrites the file, and Undo does not revert it.
+>
+> In a scene or Prefab Mode the repair stays in memory: Undo reverts it, and saving makes it final and clears the object's Undo history. Such a repair brings back only flat top-level fields: nested objects, arrays, lists, vectors, colours and object references get their default values.
 
-For an asset on disk, Fix rewrites the stored type and reimports the asset; that file write has no ordinary Undo. In an open saved scene or Prefab Mode, repair affects the object in memory — verify the result and save the scene or prefab. Until you save, Undo brings back the missing reference with its data, and Unity's missing-types notice on the object stays; saving (including Prefab Mode Auto Save) makes the repair final and clears that object's Undo history. Preserving data does not automatically convert incompatible fields; in-memory repair also does not guarantee recovery of the entire nested graph.
+### When there is no Fix
 
-If Fix is unavailable, select one object and ensure the scene or Prefab Mode is saved with no pending changes. A component inherited from a prefab (a variant, a nested prefab, an instance in a scene) shows **Missing type** without Fix. When the type is broken in a source prefab, open the prefab named in the tooltip and repair it there. When the instance itself sets the type through an override, the source prefab has nothing to repair: choose a new type on the instance or revert the override. If the problem is inside a missing parent and the field is inaccessible, use [Asset References](04-serialize-reference-tooling.md#asset-references-inspect-one-asset).
+| Case | What to do |
+|---|---|
+| Several objects selected | Select one: until then **Missing type** is not shown |
+| Unsaved changes in the scene or Prefab Mode | Save: until then the field shows `<None>` without **Missing type** |
+| Prefab instance, class stored in the source prefab | Repair the source prefab; the tooltip names it |
+| Prefab instance, class set through an override | Choose a new class on the instance or revert the override |
 
-If the asset has unsaved changes, Fix first offers to save it: the reimport would discard them. While a prefab is open in Prefab Mode, Fix on its asset in the Project window is refused; repair the field in Prefab Mode instead.
+[SerializeReference Tooling](04-serialize-reference-tooling.md) repairs everything else.
 
-Accompany planned renames with [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom). For auditing and repairing multiple assets, see [SerializeReference Tooling](04-serialize-reference-tooling.md).
+## Custom inspector
 
-## Custom IMGUI inspectors
+In your own editor, a regular <code lang="class-name">PropertyField</code> draws a <code lang="csharp">[TypeSelector]</code> field: the class picker and the list's “+” come by themselves, with no package call.
 
-The selector works in IMGUI and UI Toolkit. In a custom IMGUI editor, a regular `PropertyField` uses the field's drawer, but a list's **+** button needs `SerializeReferenceIMGUIList.Draw` to open a type picker.
+| UI Toolkit — CreateInspectorGUI | IMGUI — OnInspectorGUI |
+|---|---|
+| <pre lang="csharp"><code>new PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"))</code></pre> | <pre lang="csharp"><code>EditorGUILayout.PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"));</code></pre> |
 
-For `Loadout` with the `_sidearms` field above, put this editor in an `Editor` folder:
+If a <code lang="csharp">[SerializeReference]</code> field has no <code lang="csharp">[TypeSelector]</code> attribute, or a list element is drawn on its own through <code lang="function">GetArrayElementAtIndex</code>, <code lang="class-name">PropertyField</code> shows no class picker. Your own editor can draw it by calling one of these methods:
 
-```csharp
-using UnityEditor;
-using UnityEngine;
-using Aspid.FastTools.SerializeReferences.Editors;
+| Method | Draws |
+|---|---|
+| <code lang="csharp">SerializeReferenceEditorGUI.CreateField()</code> | A field in <code lang="function">CreateInspectorGUI</code> |
+| <code lang="csharp">SerializeReferenceEditorGUI.CreateList()</code> | A list in <code lang="function">CreateInspectorGUI</code> |
+| <code lang="csharp">SerializeReferenceEditorGUI.DrawFieldLayout()</code> | A field in <code lang="function">OnInspectorGUI</code> |
+| <code lang="csharp">SerializeReferenceIMGUIList.Draw()</code> | A list in <code lang="function">OnInspectorGUI</code> |
 
-[CustomEditor(typeof(Loadout))]
-public sealed class LoadoutEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        serializedObject.Update();
+Constraints on top of the field type go in the <code lang="csharp">baseTypes</code> argument, like the types in <code lang="csharp">[TypeSelector(...)]</code>.
 
-        EditorGUILayout.PropertyField(
-            serializedObject.FindProperty("_primary"), true);
+## Limitations
 
-        SerializeReferenceIMGUIList.Draw(
-            serializedObject.FindProperty("_sidearms"),
-            new GUIContent("Sidearms"),
-            typeof(IWeapon));
+- **Allow.** Has no effect on <code lang="csharp">[SerializeReference]</code> — analyzer `AFT0002` reports it.
+- **Incompatible constraints.** When no class fits both the field type and all the attribute's types, the class list is empty — for example, <code lang="csharp">[TypeSelector(typeof(Sword))]</code> on <code lang="csharp">StatusEffect _onHit;</code>. Analyzers `AFT0003`, `AFT0005` and `AFT0009` report it at compile time.
 
-        serializedObject.ApplyModifiedProperties();
-    }
-}
-```
+## Package sample
 
-Add any other fields to the editor as needed. To create controls without `[TypeSelector]`, use `SerializeReferenceEditorGUI.CreateField`, `CreateList`, or `DrawFieldLayout`; a complete editor is included in the [SerializeReferences sample](../Samples~/SerializeReferences/Documentation/README.md#the-imgui-path).
-
-## If a type is missing from the list
-
-Check that the class is concrete, compatible with the field and its additional constraints, does not inherit `UnityEngine.Object`, and is not marked `Hidden = true`. A generic candidate must have valid arguments. After compilation errors, wait for scripts to compile successfully.
-
-Analyzer `AFT0004` reports incompatibility with `UnityEngine.Object`; `AFT0003` and `AFT0009` report constraints no type can meet together; `AFT0005` warns about a potentially empty selector. `Allow` does not broaden the set of instantiable managed references.
-
-`[TypeSelector]` and `[TypeSelectorDisplay]` attributes apply only in the editor. Implementations and their serialized data remain part of the game.
+The <code lang="class-name">Loadout</code> fields from this page and assets with missing types to try **Fix** on are in the [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) sample.

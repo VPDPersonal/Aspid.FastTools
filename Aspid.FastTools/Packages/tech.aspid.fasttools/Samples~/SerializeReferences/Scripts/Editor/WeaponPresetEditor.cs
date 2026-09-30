@@ -1,14 +1,11 @@
 using UnityEditor;
-using UnityEngine;
-using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences.Editors
 {
     // An IMGUI inspector. Overriding OnInspectorGUI without CreateInspectorGUI routes every nested drawer,
-    // the [TypeSelector] ones included, through IMGUI. Single fields need nothing special. A list is
-    // different: Unity applies the drawer per element, so the list's + would clone the last element;
-    // SerializeReferenceIMGUIList.Draw restores the picker-backed add.
+    // the [TypeSelector] ones included, through IMGUI. A plain PropertyField is enough for the list too:
+    // [TypeSelector] reaches the whole list, so its + opens the picker.
     [CustomEditor(typeof(WeaponPreset))]
     internal sealed class WeaponPresetEditor : Editor
     {
@@ -17,9 +14,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences.Editors
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(serializedObject.FindProperty("_weapon"), includeChildren: true);
-
-            var alternates = serializedObject.FindProperty("_alternates");
-            SerializeReferenceIMGUIList.Draw(alternates, new GUIContent(alternates.displayName), typeof(IWeapon));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_alternates"), includeChildren: true);
 
             serializedObject.ApplyModifiedProperties();
         }
