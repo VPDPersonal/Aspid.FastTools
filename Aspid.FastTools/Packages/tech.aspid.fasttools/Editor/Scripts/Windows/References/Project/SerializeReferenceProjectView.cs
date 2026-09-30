@@ -79,6 +79,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public Action<StatusStyle.Type> OnCanvasStatus;
 
+        // The host window passes a list it keeps, so the summaries and their Undo outlive this view; Rescan empties it.
+        public List<RepairSummary> Summaries = new();
+
         public SerializeReferenceProjectView()
         {
             var root = this;
@@ -168,8 +171,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public void Initialize()
         {
-            if (SerializeReferenceTypeUsageIndex.IsWarm || _requiredIsWarm) RenderWarmGroups();
-            else ShowIdle();
+            if (!SerializeReferenceTypeUsageIndex.IsWarm && !_requiredIsWarm)
+            {
+                ShowIdle();
+                return;
+            }
+
+            foreach (var summary in Summaries)
+                ShowSummary(summary);
+
+            // A repair can leave nothing to list, which RenderGroups shows as the empty state with the summaries hidden.
+            if (Summaries.Count > 0) RerenderAfterBulkEdit();
+            else RenderWarmGroups();
         }
 
         public void ScanProject()
@@ -318,19 +331,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             OnCanvasStatus?.Invoke(status);
         }
 
-        private void ShowSummary(string title, string message, Action<VisualElement> onUndo)
+        private void AddSummary(RepairSummary summary)
         {
-            var summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
-                .AddClass(SummaryClass);
-            summary.Title = title;
-            summary.Message = message;
-
-            if (onUndo is not null)
-                summary.AddChild(new AspidGradientButton("Undo", _ => onUndo(summary)).AddClass(SummaryUndoClass));
-
-            _summaries.AddChild(summary);
+            Summaries.Add(summary);
+            ShowSummary(summary);
         }
 
-        private void ClearSummaries() => _summaries?.Clear();
+        private void ShowSummary(RepairSummary summary)
+        {
+            var box = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
+                .AddClass(SummaryClass);
+            box.Title = summary.Title;
+            box.Message = summary.Message;
+
+            if (summary.Receipt is not null)
+                box.AddChild(new AspidGradientButton("Undo", _ => UndoGroupFix(summary, box)).AddClass(SummaryUndoClass));
+
+            _summaries.AddChild(box);
+        }
+
+        private void ClearSummaries()
+        {
+            Summaries.Clear();
+            _summaries?.Clear();
+        }
     }
 }
