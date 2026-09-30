@@ -1,30 +1,62 @@
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Collections;
-using UnityEngine;
-using UnityEditor;
-using UnityEngine.UIElements;
-public static class CaptureCatalog {
- const BindingFlags Flags=BindingFlags.Instance|BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic;
- public static object Main() {
-  var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("Aspid.FastTools.Samples.EditorTools.Editors.AbilityCatalogWindow")).First(t=>t!=null);
-  SessionState.SetInt("CaptureCatalog.OldTheme",SessionState.GetInt("Aspid.FastTools.AbilityCatalog.Theme",0));
-  SessionState.SetInt("Aspid.FastTools.AbilityCatalog.Theme",2);
-  var window=(EditorWindow)ScriptableObject.CreateInstance(type);
-  window.titleContent=new GUIContent("Ability Catalog");
-  window.position=new Rect(100,70,1080,660);
-  window.ShowUtility();
-  SessionState.SetInt("CaptureCatalog.Window",window.GetInstanceID());
-  var all=(IList)type.GetField("_all",Flags).GetValue(window);
-  var filtered=(IList)type.GetField("_filtered",Flags).GetValue(window);
-  var original=(UnityEngine.Object)all.Cast<UnityEngine.Object>().First(a=>a.name=="Ward");
-  var copy=UnityEngine.Object.Instantiate(original);copy.name=original.name;copy.hideFlags=HideFlags.DontSave;
-  SessionState.SetInt("CaptureCatalog.Asset",copy.GetInstanceID());
-  var index=filtered.IndexOf(original);all[all.IndexOf(original)]=copy;filtered[index]=copy;
-  var list=(ListView)type.GetField("_list",Flags).GetValue(window);list.Rebuild();list.SetSelection(index);
-  type.GetMethod("ShowDetails",Flags).Invoke(window,new object[]{copy});
-  window.Repaint();
-  return new{window=window.GetInstanceID(),asset=copy.name,position=window.position};
- }
-}
+// Ability Catalog states for the EditorTools demo, grabbed from a hidden batch-mode Editor with the asp-unity-capture
+// skill: each block below is one `eval.sh <project> <block.cs> Aspid.FastTools.Samples.EditorTools.Editors.AbilityCatalogWindow`
+// step (the skill prepends win, root, priv, byText, pseudo, repaint, grab). Run it in a scratch worktree: the real button
+// writes Ward.asset and Undo restores it. Once per theme:
+//   1. step "theme" with the default window type, before the window exists, so CreateGUI starts in that theme;
+//   2. `editor.sh window <project> Aspid.FastTools.Samples.EditorTools.Editors.AbilityCatalogWindow`;
+//   3. steps "setup", "idle", "hover", "click", "after-hover", "after", "undo", "undone" into catalog/<theme>/.
+// The undone grab must equal idle.png byte for byte; the specs reuse idle.png for it.
+
+// --- head: prepended to every step from "setup" on
+var list = (UnityEngine.UIElements.ListView)priv(win, "_list");
+var halve = (UnityEngine.UIElements.Button)byText("Halve cooldown, +5 MP");
+var themeField = (UnityEngine.UIElements.EnumField)all(root).Find(e => e is UnityEngine.UIElements.EnumField);
+System.Func<string> values = () =>
+{
+    var so = new UnityEditor.SerializedObject((UnityEngine.Object)list.selectedItem);
+    return so.FindProperty("_manaCost").intValue + " MP / " + so.FindProperty("_cooldown").floatValue + " s; row '"
+        + ((UnityEngine.UIElements.Label)byName("abilityStats")).text + "'; theme " + themeField.value;
+};
+
+// --- theme (Dark = 1, Light = 2)
+UnityEditor.SessionState.SetInt("Aspid.FastTools.AbilityCatalog.Theme", 1);
+return UnityEditor.SessionState.GetInt("Aspid.FastTools.AbilityCatalog.Theme", -1);
+
+// --- setup: 1000 × 563 pt, the window's own Theme field ("Light" for the light states), Arcane Ward selected
+var p = win.position; win.position = new UnityEngine.Rect(p.x, p.y, 1000, 563);
+themeField.value = System.Enum.Parse(themeField.value.GetType(), "Dark") as System.Enum;
+var filtered = (System.Collections.IList)priv(win, "_filtered");
+var index = -1;
+for (var i = 0; i < filtered.Count; i++) if (((UnityEngine.Object)filtered[i]).name == "Ward") index = i;
+list.SetSelection(index);
+UnityEditor.Undo.ClearAll();
+repaint();
+return values();
+
+// --- idle
+pseudo(halve, "Hover", false); repaint();
+return grab("<out>/idle.png") + " | " + values();
+
+// --- hover
+pseudo(halve, "Hover", true); repaint();
+return grab("<out>/hover.png") + " | " + values();
+
+// --- click: the button's own handler (SetFloat + SetIntAndApply)
+((System.Delegate)priv(halve.clickable, "clicked")).DynamicInvoke();
+return values();
+
+// --- after-hover: 20 MP / 6 s, cursor still on the button
+pseudo(halve, "Hover", true); repaint(); repaint();
+return grab("<out>/after-hover.png") + " | " + values();
+
+// --- after
+pseudo(halve, "Hover", false); repaint();
+return grab("<out>/after.png") + " | " + values();
+
+// --- undo
+UnityEditor.Undo.PerformUndo();
+return values();
+
+// --- undone: 15 MP / 12 s again
+pseudo(halve, "Hover", false); repaint(); repaint();
+return grab("<out>/undo.png") + " | " + values();
