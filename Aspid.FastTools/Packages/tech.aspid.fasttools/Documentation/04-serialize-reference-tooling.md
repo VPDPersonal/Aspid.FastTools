@@ -11,25 +11,24 @@ References to renamed and deleted classes are found across the project and repai
 3. Click **Fix all** in a group, pick a class and confirm with **Rewrite**.
 
 > [!NOTE]
-> Scanning reads text YAML only: Project References silently skips binary files and Git LFS pointers, which the build check and the CI report list. So **Asset Serialization → Mode** must be **Force Text**.
+> Binary assets and Git LFS files that were not fetched are skipped silently: keep **Asset Serialization → Mode** on **Force Text** (the default) and fetch LFS files before the check.
 
 <a id="bulk-repair-tabs"></a>
 
 ## Project References: repair a group
 
-Project References and Asset References are tabs of one window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from **Excluded scan folders**, and not only the scenes in the build. A click on a group row opens the asset in **Asset References**.
+Project References and Asset References are tabs of one window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](#settings).
 
 ![Project References with Fix all, Smart Fix → Pistol and Migrate all groups](Images/aspid_fasttools_serialize_reference_project_references.png)
 
-### Choosing an action
+### Group actions
 
-| Action | What it does |
-|---|---|
-| **Fix all** | Opens the class picker and applies the pick to every writable entry of the group |
-| **Smart Fix → Pistol** | Applies a class found through <code lang="csharp">[MovedFrom]</code>, the same name, the same name in another case or a similar name; same confirmation |
-| **Migrate all** | Writes the class that <code lang="csharp">[MovedFrom]</code> names for the old one |
-| **Reassign all** | Picks a different class for a group recognized as a migration |
-| `<None>` in the class picker | Clears the group's references and deletes their data, fields sharing the same `rid` included; no Undo |
+| Group | Header button | Row under the header |
+|---|---|---|
+| Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Pistol** — apply a class matched by name or <code lang="csharp">[MovedFrom]</code>; the tooltip gives the reason |
+| Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
+
+Every action asks for **Rewrite** and skips open and locked files. `<None>` in the class picker clears the group's references and deletes their data, fields sharing the same `rid` included; it asks for **Clear** and has no Undo.
 
 ### What repair preserves
 
@@ -39,46 +38,54 @@ The summary after a rewrite has **Undo**: it restores the old class on entries t
 
 ### Prefab instance overrides
 
-A class set through a prefab instance override — in a variant, a nested prefab or an instance in a scene — is listed in a separate **Prefab instance overrides** card, and the build checks count it as missing. An old name listed in <code lang="csharp">[MovedFrom]</code> is shown there as a pending migration and passes the checks.
+A missing class set through a prefab instance override — in a variant, a nested prefab or an instance in a scene — is listed in a separate **Prefab instance overrides** card, and the build checks count it as missing. An old name listed in <code lang="csharp">[MovedFrom]</code> is shown there as a pending migration and passes the checks.
+
+![Prefab instance overrides card with a missing GhostRailgun in the EliteLoadout variant](Images/aspid_fasttools_serialize_reference_prefab_overrides.png)
+
+**Fix all**, **Smart Fix**, **Migrate all** and `<None>` do not rewrite these entries: pick a new class on the instance in the Inspector, or revert the override. Asset References does not show references that exist only in overrides.
 
 ## Asset References: inspect one asset
 
-Assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**, or click a row in Project References. References are grouped by host object, each with its field path and `rid`:
+Assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**, or click an entry row in Project References. References are grouped by host object, each with its field path and `rid`:
+
+![Asset References with a missing GhostCrossbow, a SHARED Pistol and an orphaned Railgun entry](Images/aspid_fasttools_serialize_reference_asset_references.png)
 
 | Label | Meaning |
 |---|---|
-| Band with **Fix Missing ▼** | The stored class is not found; the button opens the class picker |
+| Band with **Fix Missing ▼** (**Fix ▼** on a migration) | The stored class is not found; the button opens the class picker |
+| **Smart Fix → Pistol** row | A class picked as by **Smart Fix** in Project References; a click writes it into the file |
 | **Migrate → Crossbow** row | The class was renamed with <code lang="csharp">[MovedFrom]</code>; a click writes the new name into the file |
+| Band with **Change ▼**, **Assign ▼** or **Assign Required ▼** | Changes the class of a healthy reference, fills an empty or required field; the asset is saved at once |
 | **SHARED** | Several fields point at one instance; matching colours mark the connected fields |
 | **Orphaned** | An entry no field points at; **Clear** deletes it from the file, without Undo |
 
-![GhostWeapon is repaired as Pistol in Asset References](Images/aspid_fasttools_serialize_reference_tooling.gif)
+**Fix Missing**, **Smart Fix** and **Migrate** write the class to the file at once, without confirmation, and **Edit → Undo** does not revert it.
 
-> [!WARNING]
-> **Fix Missing**, **Smart Fix** and **Migrate** write the class to the file at once, without confirmation, and Undo cannot revert it.
+![GhostWeapon is repaired as Pistol in Asset References](Images/aspid_fasttools_serialize_reference_tooling.gif)
 
 ## Migrations with MovedFrom
 
-<code lang="csharp">[MovedFrom]</code> ties the old name to the renamed class, and Unity loads such references itself. **Migrate all** writes the new name into the files so the attribute can be removed:
+When <code lang="class-name">CrossbowLauncher</code> is renamed to <code lang="class-name">Crossbow</code> with <code lang="csharp">[MovedFrom]</code>, Unity loads the old references itself. **Migrate all** writes the new name into the files so the attribute can be removed:
 
-| Before — CrossbowLauncher | After — Crossbow |
+| In the file — before Migrate all | After |
 |---|---|
-| <pre lang="csharp"><code>[Serializable]&#10;public sealed class CrossbowLauncher&#10;&#123;&#10;    public int Damage = 14;&#10;&#125;</code></pre> | <pre lang="csharp"><code>[Serializable]&#10;[MovedFrom(false,&#10;    sourceClassName: "CrossbowLauncher")]&#10;public sealed class Crossbow&#10;&#123;&#10;    public int Damage = 14;&#10;&#125;</code></pre> |
+| `type: {class: CrossbowLauncher, …}` | `type: {class: Crossbow, …}` |
 
 A group becomes a pending migration when exactly one class in the project lists the old name in <code lang="csharp">[MovedFrom]</code> and it fits the field; the build checks do not count such a group as missing. When several classes list the name, or the stored class is a closed generic, the group stays a missing type.
 
 Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old name any more. **Migrate all** does not rewrite it:
 
 - in prefab instance overrides;
+- in open, unsaved and locked files, see [limitations](#limitations);
 - in **Excluded scan folders**;
-- in binary files and Git LFS pointers;
+- in binary assets and Git LFS files that were not fetched;
 - in files outside `Assets/`.
 
 <a id="project-settings--the-buildci-gate"></a>
 
 ## Pre-build checks
 
-Open **Project Settings → Aspid.FastTools → SerializeReference** and set **Build / CI gate**; the default is `Warn`:
+The [**Build / CI gate**](#settings) setting picks how strict the check is:
 
 | Mode | Player build | Standalone CI run |
 |---|---|---|
@@ -86,28 +93,21 @@ Open **Project Settings → Aspid.FastTools → SerializeReference** and set **B
 | `Warn` | Warns and keeps building | Report and violations in the log; exit code `0` |
 | `Fail` | Missing types stop the build | Report; exit code `1` on violations |
 
+The build checks every asset under `Assets/`, not only what goes into it: in `Fail` mode an unused prefab stops it too — exclude such folders with **Excluded scan folders**.
+
 ### What each run checks
 
 | Run | Missing types | Empty fields with <code lang="csharp">Required = true</code> |
 |---|---|---|
 | **Project References → Scan Project** | Yes, with pending migrations | Unless the mode is `Off`, as a **Required violations** group |
-| **Asset References** | Yes | Yes, in any mode |
+| **Asset References** | Yes | Yes, in any mode, except assets in **Excluded scan folders** |
 | Player build | Unless the mode is `Off` | No |
 | CI without `-srGateRequired` | Unless the mode is `Off` | No |
 | CI with `-srGateRequired` | Unless the mode is `Off` | Unless the mode is `Off` |
 
+![Required violations group: an empty _primary field in two prefabs](Images/aspid_fasttools_serialize_reference_required_violations.png)
+
 A field is made required with <code lang="csharp">[TypeSelector(Required = true)]</code>; see [Required field](02-serializable-types.md#required-field). In scenes the Required check has [limitations](#limitations).
-
-### Shared and personal settings
-
-| Setting | Storage | Purpose |
-|---|---|---|
-| **Build / CI gate** | Project | Validation severity |
-| **Excluded scan folders** | Project | Folders skipped by scans and checks |
-| **Auto de-alias duplicated list elements** | Project | Creates an independent copy when duplicating a list entry |
-| **Breakage detection** | Local `EditorPrefs` | A notification and a Console message about newly missing references after scripts or assets change |
-
-Shared settings are saved in `ProjectSettings/SerializeReferenceSharedSettings.asset`, personal ones in **Preferences → Aspid.FastTools → SerializeReference**.
 
 <a id="headless-ci"></a>
 
@@ -121,7 +121,7 @@ Unity -batchmode -projectPath . \
   -srGateRequired -srGateFail
 ```
 
-Exit code `2` means the check itself failed, for example when the report's folder does not exist.
+Exit code `2` means the check itself failed.
 
 ### Command-line flags
 
@@ -164,15 +164,29 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 | `fieldPath` | Required field path; for a `MissingType` override, the overridden field when the instance overrides it; otherwise empty |
 | `origin` | `override` for a type set by a prefab instance override; otherwise empty |
 
-The asset path, `fileId` and `rid` locate the entry in Asset References; an `override` row is in the **Prefab instance overrides** card of Project References instead.
+In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead.
+
+## Settings
+
+Every setting is in **Tools → Aspid 🐍 → FastTools → Settings**; the shared ones are also in **Project Settings → Aspid.FastTools → SerializeReference**, the personal one in **Preferences → Aspid.FastTools → SerializeReference**.
+
+![SerializeReference section of the Settings tab](Images/aspid_fasttools_serialize_reference_settings.png)
+
+| Setting | Default | What it does |
+|---|---|---|
+| **Build / CI gate** | `Warn` | Sets how strict the [pre-build check](#pre-build-checks) and CI are |
+| **Excluded scan folders** | No folders | Folders inside `Assets/` that Project References, the build and CI checks and breakage detection skip |
+| **Auto de-alias duplicated list elements** | On | Gives a duplicated list element its own instance instead of a shared `rid` |
+| **Breakage detection** | On | After scripts or assets change, reports newly missing references with a notification and in the Console |
+
+Breakage detection is personal and kept in `EditorPrefs` for this project. The others are shared: they are saved to `ProjectSettings/SerializeReferenceSharedSettings.asset` and apply to the whole team and CI.
 
 ## Limitations
 
-- **Open copies.** Rewrites skip open scenes, Prefab Mode and assets with unsaved changes. Asset References offers to save an unsaved asset; save and close the scene or Prefab Mode, or repair the field with [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types). `<None>` clears such references in memory, and the scan keeps listing them until they are saved.
-- **Prefab instance overrides.** **Fix all**, **Smart Fix**, **Migrate all** and `<None>` do not rewrite them: pick a new class on the instance in the Inspector, or revert the override. Asset References does not show references that exist only in overrides.
+- **Open and locked files.** Rewrites skip open scenes, Prefab Mode, assets with unsaved changes and read-only files version control could not check out (with an error in the Console). Asset References offers to save an unsaved asset; save and close the scene or Prefab Mode, or repair the field with [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types). In Project References, `<None>` clears references of open copies in memory, and the scan keeps listing them until the copies are saved.
 - **Scenes and missing parents.** In a scene or under a missing parent reference, Asset References repairs only missing types; change other fields in the Inspector.
 - **Required in scenes.** Scenes are read from YAML: fields of components and by-value containers are checked, <code lang="csharp">[SerializeReference]</code> fields themselves included; fields inside managed references, collections and prefab instance overrides are not. A field absent from the scene file is not a violation.
 
 ## Package sample
 
-Missing types, a <code lang="csharp">[MovedFrom]</code> rename and a shared reference for both windows are in the assets of the [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) sample.
+Missing types, a <code lang="csharp">[MovedFrom]</code> rename and a shared reference for both tabs are in the assets of the [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) sample.

@@ -1,6 +1,6 @@
 # SerializeReference Tooling
 
-Ссылки на переименованные и удалённые классы находятся по всему проекту и чинятся разом — раньше, чем в билде они станут null.
+Ссылки на переименованные и удалённые классы находятся по всему проекту и чинятся разом — раньше, чем в сборке они станут null.
 
 <a id="проверить-проект"></a>
 
@@ -11,25 +11,24 @@
 3. В группе нажмите **Fix all**, выберите класс и подтвердите **Rewrite**.
 
 > [!NOTE]
-> Поиск читает только текстовый YAML: двоичные файлы и указатели Git LFS Project References пропускает молча, их перечисляют проверка сборки и отчёт CI. Поэтому в **Asset Serialization → Mode** нужен **Force Text**.
+> Двоичные ассеты и нескачанные файлы Git LFS молча пропускаются: оставьте **Asset Serialization → Mode** в **Force Text** (стоит по умолчанию) и скачайте файлы LFS до проверки.
 
 <a id="bulk-repair-tabs"></a>
 
 ## Project References: восстановить группу
 
-Project References и Asset References — вкладки одного окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме **Excluded scan folders**, и не только сцены из сборки. Щелчок по строке группы открывает ассет в **Asset References**.
+Project References и Asset References — вкладки одного окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](#настройки).
 
 ![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../Images/aspid_fasttools_serialize_reference_project_references.png)
 
-### Какое действие выбрать
+### Действия с группой
 
-| Действие | Что делает |
-|---|---|
-| **Fix all** | Открывает выбор класса и применяет его ко всем доступным для записи ссылкам группы |
-| **Smart Fix → Pistol** | Применяет класс, найденный по <code lang="csharp">[MovedFrom]</code>, тому же имени, тому же имени в другом регистре или похожему имени; подтверждение то же |
-| **Migrate all** | Записывает класс, который <code lang="csharp">[MovedFrom]</code> указывает для старого |
-| **Reassign all** | Выбирает другой класс для группы, распознанной как миграция |
-| `<None>` в выборе класса | Очищает ссылки группы и удаляет их данные, включая поля с тем же `rid`; без Undo |
+| Группа | Кнопка в заголовке | Строка под заголовком |
+|---|---|---|
+| Потерянный тип | **Fix all ▼** — выбрать класс для всех записей | **Smart Fix → Pistol** — применить класс, подобранный по имени или <code lang="csharp">[MovedFrom]</code>; причина в подсказке |
+| Переименование с <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — выбрать другой класс вместо нового имени | **Migrate all → Crossbow** — записать новое имя, см. [Миграции](#миграции-с-movedfrom) |
+
+Каждое действие спрашивает подтверждение **Rewrite** и пропускает открытые и заблокированные файлы. `<None>` в выборе класса очищает ссылки группы и удаляет их данные, включая поля с тем же `rid`; он спрашивает **Clear** и Undo не имеет.
 
 ### Что сохраняется при восстановлении
 
@@ -39,46 +38,54 @@ Project References и Asset References — вкладки одного окна.
 
 ### Экземпляры префабов
 
-Класс, заданный через override экземпляра префаба — в варианте, вложенном префабе или экземпляре в сцене, — показывается в отдельной карточке **Prefab instance overrides**, и проверки сборки считают его потерянным. Старое имя, указанное в <code lang="csharp">[MovedFrom]</code>, показывается там как ожидающая миграция и проверки проходит.
+Потерянный класс, заданный через override экземпляра префаба, — в варианте, вложенном префабе или экземпляре в сцене, — показывается в отдельной карточке **Prefab instance overrides**, и проверки сборки считают его потерянным. Старое имя, указанное в <code lang="csharp">[MovedFrom]</code>, показывается там как ожидающая миграция и проверки проходит.
+
+![Карточка Prefab instance overrides с потерянным GhostRailgun в варианте EliteLoadout](../Images/aspid_fasttools_serialize_reference_prefab_overrides.png)
+
+**Fix all**, **Smart Fix**, **Migrate all** и `<None>` такие записи не переписывают: выберите новый класс на экземпляре в инспекторе или отмените override. В Asset References ссылки, которые есть только в override, не видны.
 
 ## Asset References: разобрать один ассет
 
-Укажите сохранённый префаб, ScriptableObject или сцену в поле рядом с **Rescan** либо щёлкните строку в Project References. Ссылки сгруппированы по объектам-владельцам, у каждой — путь поля и `rid`:
+Укажите сохранённый префаб, ScriptableObject или сцену в поле рядом с **Rescan** либо щёлкните строку записи в Project References. Ссылки сгруппированы по объектам-владельцам, у каждой — путь поля и `rid`:
+
+![Asset References: потерянный GhostCrossbow, общий Pistol с меткой SHARED и запись Railgun в Orphaned](../Images/aspid_fasttools_serialize_reference_asset_references.png)
 
 | Обозначение | Значение |
 |---|---|
-| Полоса с **Fix Missing ▼** | Сохранённый класс не найден; кнопка открывает выбор класса |
+| Полоса с **Fix Missing ▼** (у миграции — **Fix ▼**) | Сохранённый класс не найден; кнопка открывает выбор класса |
+| Строка **Smart Fix → Pistol** | Класс, подобранный как у **Smart Fix** в Project References; щелчок записывает его в файл |
 | Строка **Migrate → Crossbow** | Класс переименован с <code lang="csharp">[MovedFrom]</code>; щелчок записывает новое имя в файл |
+| Полоса с **Change ▼**, **Assign ▼** или **Assign Required ▼** | Меняет класс исправной ссылки, заполняет пустое или обязательное поле; ассет сохраняется сразу |
 | **SHARED** | Несколько полей указывают на один экземпляр; одинаковый цвет отмечает связанные поля |
 | **Orphaned** | Запись, на которую не указывает ни одно поле; **Clear** удаляет её из файла, без Undo |
 
-![GhostWeapon восстанавливается как Pistol в Asset References](../Images/aspid_fasttools_serialize_reference_tooling.gif)
+**Fix Missing**, **Smart Fix** и **Migrate** записывают класс в файл сразу, без подтверждения, и **Edit → Undo** его не отменяет.
 
-> [!WARNING]
-> **Fix Missing**, **Smart Fix** и **Migrate** записывают класс в файл сразу, без подтверждения, и Undo его не отменит.
+![GhostWeapon восстанавливается как Pistol в Asset References](../Images/aspid_fasttools_serialize_reference_tooling.gif)
 
 ## Миграции с MovedFrom
 
-<code lang="csharp">[MovedFrom]</code> связывает старое имя с переименованным классом, и Unity загружает такие ссылки сам. **Migrate all** записывает новое имя в файлы, чтобы атрибут можно было удалить:
+Если <code lang="class-name">CrossbowLauncher</code> переименован в <code lang="class-name">Crossbow</code> с <code lang="csharp">[MovedFrom]</code>, Unity загружает старые ссылки сам. **Migrate all** записывает новое имя в файлы, чтобы атрибут можно было удалить:
 
-| До — CrossbowLauncher | После — Crossbow |
+| В файле — до Migrate all | После |
 |---|---|
-| <pre lang="csharp"><code>[Serializable]&#10;public sealed class CrossbowLauncher&#10;&#123;&#10;    public int Damage = 14;&#10;&#125;</code></pre> | <pre lang="csharp"><code>[Serializable]&#10;[MovedFrom(false,&#10;    sourceClassName: "CrossbowLauncher")]&#10;public sealed class Crossbow&#10;&#123;&#10;    public int Damage = 14;&#10;&#125;</code></pre> |
+| `type: {class: CrossbowLauncher, …}` | `type: {class: Crossbow, …}` |
 
 Группа становится ожидающей миграцией, если старое имя указано в <code lang="csharp">[MovedFrom]</code> ровно у одного класса в проекте и он подходит полю; проверки сборки такую группу потерянной не считают. Если имя указано у нескольких классов или сохранён закрытый generic, группа остаётся потерянным типом.
 
 Удаляйте <code lang="csharp">[MovedFrom]</code>, только когда старое имя не осталось ни в одном файле. **Migrate all** не переписывает его:
 
 - в override экземпляров префабов;
+- в открытых, несохранённых и заблокированных файлах, см. [ограничения](#ограничения);
 - в папках из **Excluded scan folders**;
-- в двоичных файлах и указателях Git LFS;
+- в двоичных ассетах и нескачанных файлах Git LFS;
 - в файлах вне `Assets/`.
 
 <a id="project-settings--the-buildci-gate"></a>
 
 ## Проверка перед сборкой
 
-Откройте **Project Settings → Aspid.FastTools → SerializeReference** и задайте **Build / CI gate**; по умолчанию стоит `Warn`:
+Строгость проверки задаёт настройка [**Build / CI gate**](#настройки):
 
 | Режим | Сборка плеера | Отдельный CI-запуск |
 |---|---|---|
@@ -86,28 +93,21 @@ Project References и Asset References — вкладки одного окна.
 | `Warn` | Предупреждение, сборка продолжается | Отчёт и нарушения в журнале; код `0` |
 | `Fail` | Потерянные типы прерывают сборку | Отчёт; код `1` при нарушениях |
 
+Сборка проверяет все ассеты под `Assets/`, а не только попадающие в неё: в режиме `Fail` её остановит и неиспользуемый префаб — исключите такие папки в **Excluded scan folders**.
+
 ### Что проверяет каждый запуск
 
 | Запуск | Потерянные типы | Пустые поля с <code lang="csharp">Required = true</code> |
 |---|---|---|
 | **Project References → Scan Project** | Да, вместе с ожидающими миграциями | Если режим не `Off`, отдельной группой **Required violations** |
-| **Asset References** | Да | Да, в любом режиме |
+| **Asset References** | Да | Да, в любом режиме, кроме ассетов из **Excluded scan folders** |
 | Сборка плеера | Если режим не `Off` | Нет |
 | CI без `-srGateRequired` | Если режим не `Off` | Нет |
 | CI с `-srGateRequired` | Если режим не `Off` | Если режим не `Off` |
 
+![Группа Required violations: пустое поле _primary в двух префабах](../Images/aspid_fasttools_serialize_reference_required_violations.png)
+
 Обязательное поле задаёт <code lang="csharp">[TypeSelector(Required = true)]</code>, подробнее — в разделе [Обязательное поле](02-serializable-types.md#обязательное-поле). В сценах у проверки Required есть [ограничения](#ограничения).
-
-### Общие и личные настройки
-
-| Настройка | Где хранится | Назначение |
-|---|---|---|
-| **Build / CI gate** | В проекте | Строгость проверки |
-| **Excluded scan folders** | В проекте | Папки, которые пропускают поиск и проверки |
-| **Auto de-alias duplicated list elements** | В проекте | Независимая копия при дублировании элемента списка |
-| **Breakage detection** | Локально, `EditorPrefs` | Уведомление и сообщение в Console о новых потерянных ссылках после изменения скриптов или ассетов |
-
-Общие настройки хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, личные — в **Preferences → Aspid.FastTools → SerializeReference**.
 
 <a id="headless-ci"></a>
 
@@ -121,7 +121,7 @@ Unity -batchmode -projectPath . \
   -srGateRequired -srGateFail
 ```
 
-Код выхода `2` означает сбой самой проверки, например если папки для отчёта нет.
+Код выхода `2` означает сбой самой проверки.
 
 ### Флаги запуска
 
@@ -130,7 +130,7 @@ Unity -batchmode -projectPath . \
 | `-srGateReport <path>` | Путь отчёта от корня проекта, по умолчанию `SerializeReferenceGateReport.txt`; папка должна существовать, файл перезаписывается |
 | `-srGateRequired` | Дополнительно проверить незаполненные поля с <code lang="csharp">Required = true</code> |
 | `-srGateFail` | Использовать `Fail` вместо режима проекта, даже `Off` |
-| `-srGateWarnOnly` | Использовать `Warn` вместо режима проекта, даже `Off`; побеждает `-srGateFail`, если переданы оба |
+| `-srGateWarnOnly` | Использовать `Warn` вместо режима проекта, даже `Off`; важнее `-srGateFail`, если переданы оба |
 
 <a id="отчёт-и-коды-выхода"></a>
 
@@ -164,15 +164,29 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 | `fieldPath` | Путь обязательного поля; для `MissingType` из override — переопределённое поле, если экземпляр его переопределяет; иначе пусто |
 | `origin` | `override` для типа, заданного override экземпляра префаба; иначе пусто |
 
-Путь ассета, `fileId` и `rid` находят запись в Asset References; строка с origin `override` — вместо этого в карточке **Prefab instance overrides** в Project References.
+В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в карточке **Prefab instance overrides** в Project References.
+
+## Настройки
+
+Все настройки собраны в **Tools → Aspid 🐍 → FastTools → Settings**; общие есть и в **Project Settings → Aspid.FastTools → SerializeReference**, личные — в **Preferences → Aspid.FastTools → SerializeReference**.
+
+![Раздел SerializeReference во вкладке Settings](../Images/aspid_fasttools_serialize_reference_settings.png)
+
+| Настройка | По умолчанию | Что делает |
+|---|---|---|
+| **Build / CI gate** | `Warn` | Задаёт строгость [проверки перед сборкой](#проверка-перед-сборкой) и в CI |
+| **Excluded scan folders** | Нет папок | Папки внутри `Assets/`, которых не касаются Project References, проверки сборки и CI и Breakage detection |
+| **Auto de-alias duplicated list elements** | Включена | Даёт продублированному элементу списка собственный экземпляр вместо общего `rid` |
+| **Breakage detection** | Включена | После изменения скриптов или ассетов сообщает о новых потерянных ссылках уведомлением и в Console |
+
+Breakage detection — личная настройка, она хранится в `EditorPrefs` этого проекта. Остальные общие: они лежат в `ProjectSettings/SerializeReferenceSharedSettings.asset` и действуют для всей команды и CI.
 
 ## Ограничения
 
-- **Открытые копии.** Перезапись пропускает открытые сцены, Prefab Mode и ассеты с несохранёнными изменениями. Несохранённый ассет Asset References предложит сохранить; сцену и Prefab Mode сохраните и закройте либо исправьте поле через [Fix в инспекторе](03-serialize-reference-selector.md#восстановление-потерянного-типа). `<None>` очищает такие ссылки в памяти, и поиск показывает их, пока их не сохранят.
-- **Override экземпляров префабов.** **Fix all**, **Smart Fix**, **Migrate all** и `<None>` их не переписывают: выберите новый класс на экземпляре в инспекторе или отмените override. Asset References не показывает ссылки, которые есть только в override.
+- **Открытые и заблокированные файлы.** Перезапись пропускает открытые сцены, Prefab Mode, ассеты с несохранёнными изменениями и файлы только для чтения, которые система контроля версий не смогла извлечь (с ошибкой в Console). Asset References предложит сохранить несохранённый ассет; сцену и Prefab Mode сохраните и закройте либо исправьте поле через [Fix в инспекторе](03-serialize-reference-selector.md#восстановление-потерянного-типа). В Project References `<None>` очищает ссылки открытых копий в памяти, и поиск показывает их, пока копии не сохранят.
 - **Сцены и потерянные родители.** В сцене и под потерянной родительской ссылкой Asset References чинит только потерянные типы; остальные поля меняйте в инспекторе.
 - **Required в сценах.** Сцены читаются из YAML: проверяются поля компонентов и контейнеров, сериализуемых по значению, включая сами поля <code lang="csharp">[SerializeReference]</code>; поля внутри managed-ссылок, коллекции и override экземпляров префабов — нет. Поле, которого нет в файле сцены, нарушением не считается.
 
 ## Пример в пакете
 
-Потерянные типы, переименование через <code lang="csharp">[MovedFrom]</code> и общая ссылка для обоих окон есть в ассетах примера [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
+Потерянные типы, переименование через <code lang="csharp">[MovedFrom]</code> и общая ссылка для обеих вкладок есть в ассетах примера [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).

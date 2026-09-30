@@ -94,7 +94,7 @@ public sealed class DamageModifier : Modifier<float> { }
 
 ![Make unique создаёт независимую копию общей ссылки](../Images/aspid_fasttools_serialize_reference_make_unique.png)
 
-Продублированный элемент списка получает собственный экземпляр, а не ссылку на тот же. За это отвечает настройка **Auto de-alias duplicated list elements** в [общих настройках](04-serialize-reference-tooling.md#общие-и-личные-настройки), по умолчанию она включена.
+Продублированный элемент списка получает собственный экземпляр, а не ссылку на тот же. За это отвечает настройка **Auto de-alias duplicated list elements** в [общих настройках](04-serialize-reference-tooling.md#настройки), по умолчанию она включена.
 
 <a id="repairing-broken-references"></a>
 
