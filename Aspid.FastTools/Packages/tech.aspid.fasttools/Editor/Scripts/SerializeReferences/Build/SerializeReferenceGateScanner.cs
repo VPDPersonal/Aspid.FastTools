@@ -300,7 +300,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;
                     violations.Add(new GateViolation(assetPath, fileId, rid, default,
-                        GateViolationKind.RequiredUnset, iterator.propertyPath));
+                        GateViolationKind.RequiredUnset, TypeSelectorRequiredGate.GetFieldPath(iterator)));
                 }
                 while (iterator.Next(enterChildren));
             }

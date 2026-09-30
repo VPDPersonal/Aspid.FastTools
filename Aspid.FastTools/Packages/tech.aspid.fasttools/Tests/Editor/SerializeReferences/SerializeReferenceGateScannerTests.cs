@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 
@@ -368,6 +369,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsTrue(
                     violations.Any(v => v.FileId == fileId && v.FieldPath == normalizedGraphPath),
                     $"Normalized graph path '{normalizedGraphPath}' must match a ScanAssetRequiredFields violation's FieldPath.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        // A SerializableType field is reported by the path the Inspector shows, the one the scene scan's descriptor
+        // carries, not by the backing string the SerializedProperty iterator stops on; Assign Required still reaches
+        // that string through it.
+        [Test]
+        public void ScanAssetRequiredFields_UnsetSerializableType_ReportsSceneScanPath()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredWrapperTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(probe, out _, out long fileId);
+
+                var violations = SerializeReferenceGateScanner.ScanAssetRequiredFields(ProbeAssetPath)
+                    .Where(v => v.FileId == fileId)
+                    .ToList();
+                var scenePaths = TypeSelectorRequiredGate.GetRequiredFields(typeof(RequiredWrapperTestObject))
+                    .Select(field => field.Path)
+                    .ToArray();
+
+                CollectionAssert.AreEquivalent(new[] { "type", "weaponType", "script", "loadout.type" }, scenePaths);
+                CollectionAssert.AreEquivalent(scenePaths, violations.Select(v => v.FieldPath));
+
+                foreach (var violation in violations)
+                {
+                    Assert.IsTrue(SerializeReferenceGraphEditor.TryResolveRequiredStringProperty(
+                        violation, out var serializedObject, out var property), violation.FieldPath);
+
+                    using (serializedObject)
+                    {
+                        Assert.AreEqual($"{violation.FieldPath}.{SerializableTypeUtility.BackingFieldName}",
+                            property.propertyPath);
+                    }
+                }
             }
             finally
             {
