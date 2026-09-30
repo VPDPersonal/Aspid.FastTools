@@ -18,7 +18,8 @@ Only a key whose value differs from **Default Value** needs a row. **Populate Mi
 
 ![Populate Missing Enum Members in the Multipliers table](Images/enum-values-multipliers-populate.gif)
 
-A row added to an empty table shows `<None>` and is skipped with a Console error until you pick a member.
+> [!NOTE]
+> A row added to an empty table shows `<None>` and is skipped with a Console error until you pick a member.
 
 ## Choosing a variant
 
@@ -31,6 +32,17 @@ A row added to an empty table shows `<None>` and is skipped with a Console error
 
 Code only reads the table. <code lang="class-name">TValue</code> is any type Unity serializes.
 
+### EnumValues\<TEnum, TValue\>
+
+The enum type is set in code: this table accepts only <code lang="class-name">DamageType</code> keys, and its type cannot be changed in the Inspector.
+
+```csharp
+[SerializeField] private EnumValues<DamageType, float> _multipliers;
+
+public float GetMultiplier(DamageType type) =>
+    _multipliers.GetValue(type);
+```
+
 ### EnumValues\<TValue\>
 
 The same field, with the enum picked in the table header:
@@ -38,7 +50,8 @@ The same field, with the enum picked in the table header:
 ```csharp
 [SerializeField] private EnumValues<float> _multipliers;
 
-public float GetMultiplier(DamageType type) => _multipliers.GetValue(type);
+public float GetMultiplier(DamageType type) =>
+    _multipliers.GetValue(type);
 ```
 
 ![DamageType in the type selector of the Multipliers header](Images/enum-values-type-selector.png)

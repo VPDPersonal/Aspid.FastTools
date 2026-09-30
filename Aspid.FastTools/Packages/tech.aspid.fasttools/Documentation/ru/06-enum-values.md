@@ -18,7 +18,8 @@
 
 ![Populate Missing Enum Members в таблице Multipliers](../Images/enum-values-multipliers-populate.gif)
 
-Строка, добавленная в пустую таблицу, показывается как `<None>` и пропускается с ошибкой в Console, пока не выбран член.
+> [!NOTE]
+> Строка, добавленная в пустую таблицу, показывается как `<None>` и пропускается с ошибкой в Console, пока не выбран член.
 
 ## Какой вариант выбрать
 
@@ -31,6 +32,17 @@
 
 Из кода таблица только читается. <code lang="class-name">TValue</code> — любой тип, который сериализует Unity.
 
+### EnumValues\<TEnum, TValue\>
+
+Тип enum задаётся в коде: в этой таблице ключом служит только <code lang="class-name">DamageType</code>, а в инспекторе тип нельзя сменить.
+
+```csharp
+[SerializeField] private EnumValues<DamageType, float> _multipliers;
+
+public float GetMultiplier(DamageType type) =>
+    _multipliers.GetValue(type);
+```
+
 ### EnumValues\<TValue\>
 
 То же поле, но enum выбирается в заголовке таблицы:
@@ -38,7 +50,8 @@
 ```csharp
 [SerializeField] private EnumValues<float> _multipliers;
 
-public float GetMultiplier(DamageType type) => _multipliers.GetValue(type);
+public float GetMultiplier(DamageType type) =>
+    _multipliers.GetValue(type);
 ```
 
 ![DamageType в окне выбора типа в заголовке Multipliers](../Images/enum-values-type-selector.png)

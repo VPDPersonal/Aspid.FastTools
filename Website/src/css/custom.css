@@ -1298,7 +1298,8 @@ html[data-theme='light'] .theme-doc-markdown .feature-card__preview:has(img[src*
 @media (prefers-reduced-motion: reduce) {
   .theme-doc-markdown .feature-card, .markdown .feature-card__more a, .markdown .feature-card__more a::after { transition: none; }
 }
-.theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
+.theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem; }
+.theme-doc-markdown p:has(.doc-zoom-image):has(+ .doc-media-caption) { margin-bottom: 0.75rem; }
 .theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }
 .doc-image-dialog { position: fixed; inset: 0; margin: auto; width: fit-content; max-width: 94vw; max-height: 94dvh; padding: 3.25rem 1rem 1rem; color: var(--venom-fg); background: var(--venom-bg); border: 1px solid var(--venom-line-strong); border-radius: 10px; cursor: zoom-out; }
 .doc-image-dialog::backdrop { background: #030609dc; backdrop-filter: blur(5px); }
