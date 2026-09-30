@@ -528,8 +528,9 @@ public class ProfilerMarkersExecutionTests
         const string source = """
             public class Foo { public void Run() { using var _ = this.Marker(); /*foo*/ } }
             public class Box<T> { public void Run() { using var _ = this.Marker(); /*box*/ } }
+            public struct Job { public void Execute() { using var _ = this.Marker(); /*job*/ } }
 
-            public static class Probe { public static void Run() { new Foo().Run(); new Box<int>().Run(); } }
+            public static class Probe { public static void Run() { new Foo().Run(); new Box<int>().Run(); new Job().Execute(); } }
             """;
 
         var run = GeneratorTestHost.RunProfilerMarkers(source);
@@ -538,6 +539,7 @@ public class ProfilerMarkersExecutionTests
         {
             $"Foo.Run ({LineOf(source, "foo")})",
             $"Box<Int32>.Run ({LineOf(source, "box")})",
+            $"Job.Execute ({LineOf(source, "job")})",
         }, GeneratorTestHost.Execute(run, "Probe"));
     }
 

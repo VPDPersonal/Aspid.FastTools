@@ -140,6 +140,32 @@ class Foo
 }".Replace("(line: 5)", "(__line: 5)"),
         Unsupported(0, Argument));
 
+    // The generator takes a struct by in, so the call does not copy it.
+    [Fact]
+    public Task StructGeneratedOverload_IsRecognised() => Verify(@"
+[System.CodeDom.Compiler.GeneratedCode(""Aspid.FastTools.Generators.ProfilerMarkersGenerator"", ""1.0.0"")]
+static class __JobProfilerMarkerExtensions
+{
+    public static Unity.Profiling.ProfilerMarker.AutoScope Marker(this in Job __instance, [System.Runtime.CompilerServices.CallerLineNumber] int __line = -1) => default;
+}
+[System.CodeDom.Compiler.GeneratedCode(""Aspid.FastTools.Generators.ProfilerMarkersGenerator"", ""1.0.0"")]
+static class __SpanProfilerMarkerExtensions
+{
+    public static Unity.Profiling.ProfilerMarker.AutoScope Marker(this in Span __instance, [System.Runtime.CompilerServices.CallerLineNumber] int __line = -1) => default;
+}
+struct Job
+{
+    void Run() { using var _ = this.Marker(); }
+    void Statement() { this.{|#0:Marker|}(); }
+    void Other() { using var _ = this.{|#1:Marker|}(__line: 5); }
+}
+ref struct Span
+{
+    void Run() { using var _ = this.Marker(); }
+    void Statement() { this.{|#2:Marker|}(); }
+}",
+        Discarded(0), Unsupported(1, Argument), Discarded(2));
+
     [Fact]
     public Task MethodGroup_Reports() => Verify(@"
 class Foo
