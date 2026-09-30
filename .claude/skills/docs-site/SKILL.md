@@ -91,10 +91,12 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - Main docs use `Documentation/Images/`; each sample keeps its own in `Samples~/<Sample>/Documentation/Images/`
   and references them as `Images/x.png`. A main doc may point at a sample image by path
   (`../Samples~/EnumValues/Documentation/Images/demo.gif`); `sync-i18n.mjs` mirrors those folders for i18n.
-- **Scene footage and diagrams need a light-theme sibling**: `x.png` plus `x-light.png` in the same folder
-  (`demo`/`scene` captures, SVG diagrams, gallery previews). `src/remark/themedImages.js` swaps them per theme.
-  **Editor UI captures (Inspector, windows, pickers) do not** — they stay in the dark editor theme in both site
-  themes; never report a missing `-light` for them.
+- **Every image needs a light-theme sibling**: `x.png` plus `x-light.png` in the same folder, with the same
+  pixel size and, for a GIF, the same timeline. `src/remark/themedImages.js` swaps them per theme (it runs through
+  the webpack cache: after adding a sibling to an unchanged page, `npx docusaurus clear` before the build). Editor
+  UI captures (Inspector, windows, pickers) are re-shot in Unity's light editor skin with the same steps; the
+  Aspid windows (Project/Asset References) stay dark in both skins, so their twin differs only where Unity draws
+  its own controls. Status badges are links, not captures, and need none.
 - **Editor captures have no frame around them.** In `/docs` and `/tutorials` an image renders in a plain
   full-width wrapper (`doc-image-panel`, `src/theme/MDXComponents/Img`): no window, padding or shadow, the
   capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
@@ -191,7 +193,7 @@ to refresh the root `README.md`.
 ## Adding a sample
 
 1. `Samples~/<Name>/Documentation/README.md` (+ `README.ru.md`), with `.meta` files. Images go in that
-   sample's `Documentation/Images/`; `demo`/`scene` captures get a `-light` sibling.
+   sample's `Documentation/Images/`; every image gets a `-light` sibling.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
@@ -319,7 +321,7 @@ Both are encoded from the GIF — re-encode them when it changes (`ffmpeg -i <gi
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
-there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`.
+there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme.
 The Inspector GIFs of the first two cards are cropped in `custom.css` to hide the baked title bar and tab strip.
 
 The same plugin replaces the Installation section's instruction, URL block and version note with

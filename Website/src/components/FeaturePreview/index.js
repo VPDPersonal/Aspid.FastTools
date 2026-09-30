@@ -1,9 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
 import clsx from 'clsx';
 import {Highlight} from 'prism-react-renderer';
-import {usePrismTheme} from '@docusaurus/theme-common';
+import {useColorMode, usePrismTheme} from '@docusaurus/theme-common';
 import {prefersReducedMotion, useInView, useLoop} from './effects';
 import enumMedia from './media/enum.mp4';
+import enumMediaLight from './media/enum-light.mp4';
 import styles from './styles.module.css';
 
 /** Highlighted C# lines; `active` marks the line the neighbouring preview currently shows. */
@@ -198,6 +199,8 @@ const ENUM_STILL = 8.2;
 /** Loads near the viewport, plays only while visible. */
 function EnumPreview({ru}) {
   const ref = useRef(null);
+  // The light site theme shows the same clip recorded in Unity's light editor skin.
+  const media = useColorMode().colorMode === 'light' ? enumMediaLight : enumMedia;
   const near = useInView(ref, {rootMargin: '600px 0px', once: true});
   const visible = useInView(ref);
   const [still, setStill] = useState(false);
@@ -209,10 +212,10 @@ function EnumPreview({ru}) {
     video.muted = true;
     if (visible) video.play().catch(() => {});
     else video.pause();
-  }, [near, visible, still]);
+  }, [near, visible, still, media]);
   return (
     <div className={styles.enumPreview}>
-      <video ref={ref} src={near ? (still ? `${enumMedia}#t=${ENUM_STILL}` : enumMedia) : undefined} width={1576} height={1080}
+      <video ref={ref} src={near ? (still ? `${media}#t=${ENUM_STILL}` : media) : undefined} width={1576} height={1080}
         muted loop playsInline preload={still ? 'metadata' : 'auto'} role="img"
         aria-label={ru ? 'Populate Missing Enum Members добавляет строки, сохраняя Fire = 1.5' : 'Populate Missing Enum Members adds rows, preserving Fire = 1.5'} />
     </div>

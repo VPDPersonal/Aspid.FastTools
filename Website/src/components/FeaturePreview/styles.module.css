@@ -238,6 +238,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 
 /* The light site theme shows Unity's light editor skin; colours come from its DefaultCommonLight theme. */
 html[data-theme='light'] .inspector { color: #090909; background: #c8c8c8; }
+html[data-theme='light'] .enumPreview { background: #c8c8c8; }
 html[data-theme='light'] .inspectorHead { background: #cbcbcb; border-bottom-color: #7f7f7f; }
 html[data-theme='light'] .inspectorIcon { background: #f0f0f0; box-shadow: inset 0 0 0 1px #aaa; }
 html[data-theme='light'] .inspectorField { color: #090909; background: #f0f0f0; border-color: #b7b7b7; }
