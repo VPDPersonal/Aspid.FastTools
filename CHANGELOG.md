@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The `SHARED` badge in Asset References now fits its text; it used to shrink to the width of its colour dot, so the text ran out of it and the dot covered the letter "H".
 - Asset References shows unset required fields (the **Required type is not set** cards and REQUIRED badges) of an asset in an **Excluded scan folder**, as it already showed its missing types; the folder still keeps the asset out of Project References and the build / CI checks.
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
