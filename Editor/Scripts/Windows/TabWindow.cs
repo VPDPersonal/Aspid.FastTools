@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using Object = UnityEngine.Object;
 
@@ -33,6 +34,10 @@ namespace Aspid.FastTools.Editors
 
         [Tooltip("The asset the References tabs open when the window is rebuilt.")]
         [SerializeField] private Object _pendingTarget;
+
+        // Kept here because the Project References view is rebuilt on every tab switch, so a repair's Undo survives
+        // a visit to another tab; closing the window or a domain reload drops it.
+        private readonly List<RepairSummary> _projectSummaries = new();
 
         private AspidAnimatedDotsBackground _background;
         private VisualElement _container;
@@ -183,6 +188,7 @@ namespace Aspid.FastTools.Editors
                 {
                     OnInspectAsset = InspectAsset,
                     OnCanvasStatus = SetCanvasStatus,
+                    Summaries = _projectSummaries,
                 };
                 _container.AddChild(project);
                 project.Initialize();

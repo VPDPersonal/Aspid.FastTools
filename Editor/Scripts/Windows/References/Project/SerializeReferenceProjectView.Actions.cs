@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -90,13 +89,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (skipped > 0)
                 summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
 
-            var originalType = group.StoredType;
-            var missingName = group.DisplayName;
-            var appliedName = newType.FullName;
-            void Undo(VisualElement receipt) => UndoGroupFix(entries, originalType, managedType, missingName, appliedName, receipt);
+            var receipt = new RepairReceipt(entries, group.StoredType, managedType, group.DisplayName, newType.FullName);
 
             RerenderAfterBulkEdit();
-            ShowSummary(summaryTitle, summaryBody, Undo);
+            AddSummary(new RepairSummary(summaryTitle, summaryBody, receipt));
         }
 
         private void ClearGroupToNull(MissingReferenceGroup group)
@@ -157,16 +153,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             RerenderAfterBulkEdit();
 
-            ShowSummary(summaryTitle, summaryBody, onUndo: null);
+            AddSummary(new RepairSummary(summaryTitle, summaryBody, receipt: null));
         }
 
-        private void UndoGroupFix(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName originalType,
-            ManagedTypeName appliedType, string missingName, string appliedName, VisualElement receipt)
+        private void UndoGroupFix(RepairSummary summary, VisualElement box)
         {
-            var writable = SerializeReferenceBatchEditor.FilterWritable(entries, out var skipped);
+            var receipt = summary.Receipt;
+            var missingName = receipt.MissingName;
+            var appliedName = receipt.AppliedName;
+
+            var writable = SerializeReferenceBatchEditor.FilterWritable(receipt.Entries, out var skipped);
 
             // Do not undo references that have been reassigned since this receipt was created.
-            var revertible = SerializeReferenceBatchEditor.FilterStillHolding(writable, appliedType, out var diverged);
+            var revertible = SerializeReferenceBatchEditor.FilterStillHolding(writable, receipt.AppliedType, out var diverged);
 
             if (revertible.Count == 0)
             {
@@ -199,18 +198,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "Cancel"))
                 return;
 
-            var reverted = SerializeReferenceBatchEditor.Rewrite(revertible, originalType, "Undoing Repair");
+            var reverted = SerializeReferenceBatchEditor.Rewrite(revertible, receipt.OriginalType, "Undoing Repair");
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            receipt?.RemoveFromHierarchy();
+            Summaries.Remove(summary);
+            box.RemoveFromHierarchy();
             RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
 
             var undoTitle = reverted == 1 ? "Reverted 1 reference" : $"Reverted {reverted} references";
             var undoBody = $"Re-pointed back to the missing '{missingName}'.";
             if (diverged > 0) undoBody += $" Left {diverged} alone (no longer '{appliedName}').";
             if (reverted < revertible.Count) undoBody += $" {revertible.Count - reverted} could not be rewritten.";
-            ShowSummary(undoTitle, undoBody, null);
+            AddSummary(new RepairSummary(undoTitle, undoBody, receipt: null));
         }
     }
 }
