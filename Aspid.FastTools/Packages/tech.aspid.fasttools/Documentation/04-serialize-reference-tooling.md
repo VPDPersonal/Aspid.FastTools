@@ -100,7 +100,7 @@ The build checks every asset under `Assets/`, not only what goes into it: in `Fa
 | Run | Missing types | Empty fields with <code lang="csharp">Required = true</code> |
 |---|---|---|
 | **Project References → Scan Project** | Yes, with pending migrations | Unless the mode is `Off`, as a **Required violations** group |
-| **Asset References** | Yes | Yes, in any mode, except assets in **Excluded scan folders** |
+| **Asset References** | Yes | Yes, in any mode |
 | Player build | Unless the mode is `Off` | No |
 | CI without `-srGateRequired` | Unless the mode is `Off` | No |
 | CI with `-srGateRequired` | Unless the mode is `Off` | Unless the mode is `Off` |

@@ -100,7 +100,7 @@ Project References и Asset References — вкладки одного окна.
 | Запуск | Потерянные типы | Пустые поля с <code lang="csharp">Required = true</code> |
 |---|---|---|
 | **Project References → Scan Project** | Да, вместе с ожидающими миграциями | Если режим не `Off`, отдельной группой **Required violations** |
-| **Asset References** | Да | Да, в любом режиме, кроме ассетов из **Excluded scan folders** |
+| **Asset References** | Да | Да, в любом режиме |
 | Сборка плеера | Если режим не `Off` | Нет |
 | CI без `-srGateRequired` | Если режим не `Off` | Нет |
 | CI с `-srGateRequired` | Если режим не `Off` | Если режим не `Off` |
