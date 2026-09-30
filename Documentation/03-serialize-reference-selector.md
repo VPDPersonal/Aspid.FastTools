@@ -94,7 +94,7 @@ Two fields of an object can point at one instance: an edit through one shows in 
 
 ![Make unique creates an independent copy of a shared reference](Images/aspid_fasttools_serialize_reference_make_unique.png)
 
-A duplicated list element gets its own instance instead of a reference to the same one. The **Auto de-alias duplicated list elements** setting in the [shared settings](04-serialize-reference-tooling.md#shared-and-personal-settings) controls this and is on by default.
+A duplicated list element gets its own instance instead of a reference to the same one. The **Auto de-alias duplicated list elements** setting in the [shared settings](04-serialize-reference-tooling.md#settings) controls this and is on by default.
 
 <a id="repairing-broken-references"></a>
 
@@ -107,7 +107,7 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 | Action | What it does |
 |---|---|
 | **Fix** | Opens the class picker, including classes hidden with <code lang="csharp">Hidden</code> |
-| **→ Pistol** | Assigns the suggested class; the tooltip gives the reason: [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom), the same name, the same name in another case, or a similar name |
+| **→ Pistol** | Assigns the suggested class; the tooltip gives the reason: the same name, the same name in another case, or a similar name |
 
 > [!WARNING]
 > On an asset, Fix rewrites the file, and Undo does not revert it.
