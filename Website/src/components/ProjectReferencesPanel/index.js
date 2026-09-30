@@ -1,4 +1,4 @@
-import React, {Children, useRef} from 'react';
+import React, {Children, useEffect, useRef} from 'react';
 import {useWalkthrough} from '@site/src/components/FeaturePreview/effects';
 import panel from '@site/src/components/InstallPanel/styles.module.css';
 import styles from './styles.module.css';
@@ -20,6 +20,38 @@ const ENTRIES = [
   ['BrokenWeaponPreset.asset', 7000],
 ];
 
+// The space the Tools cascade keeps from the stage's edges.
+const MENU_GAP = 8;
+
+/**
+ * Fits the Tools cascade into a narrow stage: slides the menu bar left, no further than Tools reaching the edge, then
+ * overlaps the submenus by what is still missing. The stage clips, so the last menu would otherwise be cut off.
+ */
+function useMenuFit(stageRef, barRef, toolsRef) {
+  useEffect(() => {
+    const stage = stageRef.current;
+    const bar = barRef.current;
+    const tools = toolsRef.current;
+    if (!stage || !bar || !tools || typeof ResizeObserver === 'undefined') return undefined;
+    const menus = [...tools.querySelectorAll('ul')];
+    const fit = () => {
+      bar.style.removeProperty('--prp-menu-shift');
+      bar.style.removeProperty('--prp-submenu-pull');
+      const {left, width} = stage.getBoundingClientRect();
+      const toolsLeft = tools.getBoundingClientRect().left - left;
+      const right = Math.max(...menus.map((menu) => menu.getBoundingClientRect().right)) - left;
+      const shift = Math.max(Math.min(0, width - MENU_GAP - right), MENU_GAP - toolsLeft);
+      const pull = Math.ceil((right + shift - (width - MENU_GAP)) / (menus.length - 1));
+      bar.style.setProperty('--prp-menu-shift', `${shift}px`);
+      if (pull > 0) bar.style.setProperty('--prp-submenu-pull', `${pull}px`);
+    };
+    const observer = new ResizeObserver(fit);
+    observer.observe(stage);
+    menus.forEach((menu) => observer.observe(menu));
+    return () => observer.disconnect();
+  }, [stageRef, barRef, toolsRef]);
+}
+
 function Menu({className, open, children}) {
   return <ul className={`${styles.menu} ${className}`} data-open={open || undefined}>{children}</ul>;
 }
@@ -31,12 +63,6 @@ function FastToolsWindow({frame}) {
   const clean = frame === 5;
   return (
     <div className={styles.window} data-open={frame >= 1 || undefined}>
-      <div className={styles.tabs}>
-        <span className={styles.tabIcon}><i className={styles.iconHome} /></span>
-        <span className={styles.tab}>Asset References<em>⌥2</em></span>
-        <span className={styles.tab} data-active="true">Project References<em>⌥3</em></span>
-        <span className={styles.tabIcon}><i className={styles.iconSettings} /></span>
-      </div>
       <div className={styles.body}>
         <div className={styles.panel}>
           <strong>Find missing references</strong>
@@ -107,6 +133,10 @@ function FastToolsWindow({frame}) {
 
 function Stage({frame}) {
   const open = frame === 0;
+  const stageRef = useRef(null);
+  const barRef = useRef(null);
+  const toolsRef = useRef(null);
+  useMenuFit(stageRef, barRef, toolsRef);
   // Each submenu sits in the item that opens it, so the cascade follows the Tools label wherever it lands.
   const menus = (
     <Menu className={styles.menuTools} open={open}>
@@ -129,10 +159,12 @@ function Stage({frame}) {
     </Menu>
   );
   return (
-    <div className={styles.stage} data-frame={frame} aria-hidden="true">
-      <div className={styles.menubar}>
+    <div ref={stageRef} className={styles.stage} data-frame={frame} aria-hidden="true">
+      <div ref={barRef} className={styles.menubar}>
         {EDITOR_MENUS.map((item) => (
-          <span key={item} data-open={(item === 'Tools' && open) || undefined}>{item}{item === 'Tools' && menus}</span>
+          <span key={item} ref={item === 'Tools' ? toolsRef : undefined} data-open={(item === 'Tools' && open) || undefined}>
+            {item}{item === 'Tools' && menus}
+          </span>
         ))}
       </div>
       <FastToolsWindow frame={frame} />

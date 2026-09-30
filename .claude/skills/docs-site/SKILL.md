@@ -119,8 +119,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - An ordered list can have one too: `LISTS` in `liveDiagrams.js` maps the bold text of its first item to a component
   (`Tools → Aspid 🐍 → FastTools → Project References` → `ProjectReferencesPanel`, the SerializeReference Tooling quick
   start), which gets each item's text as a `<span>` child, so the steps and their translation stay in the page; changing
-  that bold text detaches it. The panel reuses the install panel's card and steps and draws the Aspid FastTools window,
-  which has only a dark theme, so its mock-up stays dark in both site themes.
+  that bold text detaches it. The panel reuses the install panel's card and steps and draws the Aspid FastTools window
+  without its tab strip; in the light site theme it takes Unity's light skin and the window's light palette
+  (`Aspid-FastTools-Default-Light.uss`), so update both when the package palette changes.
 
 ## Writing a feature page (docs/)
 
