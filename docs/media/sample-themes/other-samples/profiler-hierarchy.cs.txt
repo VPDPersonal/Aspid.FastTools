@@ -1,0 +1,54 @@
+// profiler-markers.png / profiler-markers-light.png: a step for the asp-unity-capture skill's eval.sh
+// (`eval.sh <project> profiler-hierarchy.cs <- copy of this file> UnityEditor.ProfilerWindow`, after
+// `editor.sh window <project> UnityEditor.ProfilerWindow`). Before it: ProfilerMarkers scene open, Play Mode for a few
+// seconds with the window recording, then `SetRecordingEnabled(false)` via reflection and Play Mode stopped. Run it once
+// per skin (the skill's Light skin section), without new frames in between, so both shots show the same frame.
+// Run it twice on the first skin: the first run resizes the window and the auto-resizing Overview column follows it.
+// Crop of the 2x grab, both skins: x 542..1644, y 384..626 (1102 x 242 px) = the column header and the six Flock rows.
+object cpu = null;
+foreach (var mod in (System.Collections.IEnumerable)winType.GetField("m_AllModules", flags).GetValue(win))
+    if (mod.GetType().Name == "CPUProfilerModule") cpu = mod;
+winType.GetProperty("selectedModule", flags).SetValue(win, cpu);
+var viewType = cpu.GetType().GetProperty("ViewType", flags);
+viewType.SetValue(cpu, System.Enum.Parse(viewType.PropertyType, "Hierarchy"));
+// 271 pt of Captures List on the left, then 552 pt of columns: Overview 348, Calls / GC Alloc / Time ms 68 each.
+win.position = new UnityEngine.Rect(win.position.x, win.position.y, 823, 520);
+winType.GetProperty("selectedFrameIndex", flags).SetValue(win, (long)(UnityEditorInternal.ProfilerDriver.lastFrameIndex - 50));
+var hierarchy = cpu.GetType().GetProperty("FrameDataHierarchyView", flags).GetValue(cpu);
+var header = (UnityEditor.IMGUI.Controls.MultiColumnHeaderState)priv(hierarchy, "m_MultiColumnHeaderState");
+header.visibleColumns = new[] { 0, 3, 4, 5 };
+header.columns[0].width = 348; header.columns[3].width = 68; header.columns[4].width = 68; header.columns[5].width = 68;
+header.sortedColumnIndex = 5; header.columns[5].sortedAscending = false;
+var treeView = (UnityEditor.IMGUI.Controls.TreeView<int>)priv(hierarchy, "m_TreeView");
+var data = (UnityEditor.Profiling.HierarchyFrameDataView)priv(treeView, "m_FrameDataView");
+treeView.ExpandAll(); treeView.Reload();
+UnityEditor.IMGUI.Controls.TreeViewItem<int> flock = null;
+foreach (var row in treeView.GetRows()) if (data.GetItemName(row.id) == "Flock.Update (74)") flock = row;
+if (flock == null) return "ERR no Flock.Update (74) in frame " + data.frameIndex;
+// Expand only the path to Flock.Update and its own subtree, then scroll its parents out above the first row.
+var expanded = new System.Collections.Generic.List<int>();
+for (var ancestor = flock.parent; ancestor != null && ancestor.depth >= 0; ancestor = ancestor.parent) expanded.Add(ancestor.id);
+var todo = new System.Collections.Generic.Stack<UnityEditor.IMGUI.Controls.TreeViewItem<int>>(); todo.Push(flock);
+while (todo.Count > 0)
+{
+    var item = todo.Pop();
+    if (!item.hasChildren || item.children == null) continue;
+    expanded.Add(item.id);
+    foreach (var child in item.children) if (child != null) todo.Push(child);
+}
+treeView.SetExpanded(expanded); treeView.Reload();
+var rows = treeView.GetRows(); var index = -1;
+for (var i = 0; i < rows.Count; i++) if (rows[i].id == flock.id) index = i;
+var state = priv(hierarchy, "m_TreeViewState");
+state.GetType().GetField("scrollPos").SetValue(state, new UnityEngine.Vector2(0, index * 16f));
+// No scrollbar in the shot: the treeView takes its width from the builtin skins (LightSkin = Inspector, DarkSkin = Scene).
+var skins = new[] { UnityEditor.EditorGUIUtility.GetBuiltinSkin(UnityEditor.EditorSkin.Inspector), UnityEditor.EditorGUIUtility.GetBuiltinSkin(UnityEditor.EditorSkin.Scene) };
+var widths = System.Array.ConvertAll(skins, skin => skin.verticalScrollbar.fixedWidth);
+foreach (var skin in skins) skin.verticalScrollbar.fixedWidth = 0;
+win.Repaint(); repaint(); repaint();
+var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(UnityEngine.Application.dataPath), "Temp", "SampleThemes",
+    UnityEditor.EditorGUIUtility.isProSkin ? "profiler-dark.png" : "profiler-light.png");
+System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
+var result = grab(path);
+for (var i = 0; i < skins.Length; i++) skins[i].verticalScrollbar.fixedWidth = widths[i];
+return result + " frame " + data.frameIndex + " Overview " + header.columns[0].width;

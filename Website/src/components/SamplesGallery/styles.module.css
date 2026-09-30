@@ -9,14 +9,8 @@
 .preview { position: relative; overflow: hidden; aspect-ratio: 16 / 9; background: var(--venom-panel); border-bottom: 1px solid var(--venom-line-strong); display: flex; align-items: center; justify-content: center; }
 /* The card clips the corners; undo the framed-media rule from custom.css. */
 .preview img { width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: 0; }
-/* A scene sits on the card itself: its image and clip carry the article surface as background. */
+/* Scene GIFs carry the article surface as their background. */
 .scene { background: transparent; }
-/* The clip covers the image once its first frame plays. Its background is black (dark) or white (light) and blends with
-   this layer into exactly the article surface, which 8-bit YUV cannot encode itself. */
-.clip { position: absolute; inset: 0; background: var(--venom-reading-surface); isolation: isolate; opacity: 0; transition: opacity .2s ease; }
-.clip.playing { opacity: 1; }
-.clip video { display: block; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: lighten; }
-:global(html[data-theme='light']) .clip video { mix-blend-mode: darken; }
 .content { display: flex; flex: 1; flex-direction: column; padding: 26px; }
 /* The title scales with its card, so the longest name ("SerializeReferences") fits on one line. */
 .content .feature { font: 500 clamp(1.05rem, 6.4cqi, 1.75rem)/1.2 var(--ifm-heading-font-family); letter-spacing: -.025em; color: var(--venom-fg-strong); margin-bottom: 14px; }
@@ -30,4 +24,4 @@
   .card:last-child:nth-child(odd) .content .feature { font-size: clamp(1.05rem, calc(3.2cqi - 1px), 1.75rem); }
 }
 @media (max-width: 700px) { .grid { grid-template-columns: 1fr; gap: 22px; } .header { margin-bottom: 30px; } .content { padding: 22px; } }
-@media (prefers-reduced-motion: reduce) { .card, .clip { transition: none; } .card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
