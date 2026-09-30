@@ -93,7 +93,7 @@ The [**Build / CI gate**](#settings) setting picks how strict the check is:
 | `Warn` | Warns and keeps building | Report and violations in the log; exit code `0` |
 | `Fail` | Missing types stop the build | Report; exit code `1` on violations |
 
-The build checks every asset under `Assets/`, not only what goes into it: in `Fail` mode an unused prefab stops it too — exclude such folders with **Excluded scan folders**.
+The build checks every asset under `Assets/`, not only what goes into it: in `Fail` mode an unused prefab stops it too — exclude such folders with [**Excluded scan folders**](#settings).
 
 ### What each run checks
 
@@ -183,9 +183,11 @@ Breakage detection is kept locally in `EditorPrefs`; the other settings live in 
 
 ## Limitations
 
-- **Open and locked files.** Rewrites skip open scenes, Prefab Mode, assets with unsaved changes and read-only files version control could not check out. Asset References offers to save an unsaved asset; save and close the scene or Prefab Mode, or repair the field with [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types). In Project References, `<None>` clears references of open copies in memory; save the copies to write the change to the files.
-- **Scenes and missing parents.** In a scene or under a missing parent reference, Asset References repairs only missing types; change other fields in the Inspector.
-- **Required in scenes.** Fields of components and by-value containers are checked, <code lang="csharp">[SerializeReference]</code> fields themselves included; fields inside managed references, collections and prefab instance overrides are not. A field absent from the scene file is not a violation.
+| Where | Limitation |
+|---|---|
+| Open scenes, Prefab Mode, unsaved and locked files | Rewrites skip them: save and close the file, or repair the field with [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types) |
+| Scenes and fields under a missing parent reference | Asset References changes only missing types |
+| Required in scenes | Fields inside managed references, collections and prefab overrides are not checked |
 
 ## Package sample
 
