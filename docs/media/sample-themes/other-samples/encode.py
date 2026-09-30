@@ -13,7 +13,6 @@ for sample,slug,crop in items:
  images=samples/sample/'Documentation/Images'
  for theme,gif in themes:
   ff('-i',root/f'{slug}-{theme}.mkv','-filter_complex',f'crop={crop},split[v][p];[p]palettegen=max_colors=256[pal];[v][pal]paletteuse=dither=sierra2_4a','-loop','0',images/gif)
- shutil.copy2(root/(slug+'-scene-light.png'),repo/'Website/static/img/samples'/(slug+'-light.png'))
 # The EditorTools GIFs are composed from catalog/<theme>/ with the asp-unity-capture skill (compose.py + encode.sh);
 # the gallery previews are the idle grab with the header, 16:9 at the gallery size.
 for theme,suffix in [('dark',''),('light','-light')]:

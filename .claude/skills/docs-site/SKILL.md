@@ -196,7 +196,8 @@ to refresh the root `README.md`.
    sample's `Documentation/Images/`; every image gets a `-light` sibling.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
-   description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
+   description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png` (one 16:9 size
+   for both, no scene titles; a scene may add a looping clip — `docs/media/samples-gallery/README.md`).
 4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its `Samples~/` folder name
    to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
 5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
