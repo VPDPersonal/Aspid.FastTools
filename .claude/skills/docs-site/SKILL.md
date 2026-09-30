@@ -95,8 +95,8 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   pixel size and, for a GIF, the same timeline. `src/remark/themedImages.js` swaps them per theme (it runs through
   the webpack cache: after adding a sibling to an unchanged page, `npx docusaurus clear` before the build). Editor
   UI captures (Inspector, windows, pickers) are re-shot in Unity's light editor skin with the same steps; the
-  Aspid windows (Project/Asset References) stay dark in both skins, so their twin differs only where Unity draws
-  its own controls. Status badges are links, not captures, and need none.
+  FastTools window (Project/Asset References) switches to its light palette there too. Status badges are links,
+  not captures, and need none.
 - **Editor captures have no frame around them.** In `/docs` and `/tutorials` an image renders in a plain
   full-width wrapper (`doc-image-panel`, `src/theme/MDXComponents/Img`): no window, padding or shadow, the
   capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
@@ -321,7 +321,9 @@ Both are encoded from the GIF — re-encode them when it changes (`ffmpeg -i <gi
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
-there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme.
+there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme. Both are the
+sample's `enum-values-multipliers-populate(-light).gif` padded on the right and bottom only, since the GIF's left margin is
+already 16px wider (`-preset veryslow -crf 24 -vf "fps=20,pad=1576:1080:0:188:color=0x333333"`, `0xC8C8C8` for light).
 The Inspector GIFs of the first two cards are cropped in `custom.css` to hide the baked title bar and tab strip.
 
 The same plugin replaces the Installation section's instruction, URL block and version note with

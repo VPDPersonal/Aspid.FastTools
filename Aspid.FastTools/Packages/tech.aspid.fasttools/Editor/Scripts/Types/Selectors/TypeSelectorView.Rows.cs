@@ -25,7 +25,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
         private const string ItemIconCollapsedModifier = ItemIconClass + "--collapsed";
 
-        // Plain names: IconContent picks the skin's variant, and SkinIcon asks for the dark one outside a dropdown.
+        // Plain names: IconContent picks the skin's variant, which the picker follows in a dropdown and in a window.
         private const string ContainerFallbackIcon = "Folder Icon";
         private const string ContainerOpenFallbackIcon = "FolderOpened Icon";
         private const string FavoritesCollapsedIcon = "Favorite";
@@ -175,7 +175,7 @@ namespace Aspid.FastTools.Types.Editors
             if (node.IsSectionTitle)
             {
                 sectionCollapsed = Nav.IsSectionCollapsed(node.SectionKey);
-                texture = TypeSelectorIconResolver.Resolve(SkinIcon(SectionIcon(node.SectionKey, sectionCollapsed)));
+                texture = TypeSelectorIconResolver.Resolve(SectionIcon(node.SectionKey, sectionCollapsed));
             }
             else
             {
@@ -192,7 +192,7 @@ namespace Aspid.FastTools.Types.Editors
                         var fallback = node.HasChildren
                             ? (isSelected ? ContainerOpenFallbackIcon : ContainerFallbackIcon)
                             : null;
-                        texture = TypeSelectorIconResolver.Resolve(SkinIcon(fallback));
+                        texture = TypeSelectorIconResolver.Resolve(fallback);
                     }
                 }
             }
@@ -202,10 +202,6 @@ namespace Aspid.FastTools.Types.Editors
                 .SetImage(texture)
                 .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
         }
-
-        // An Aspid window is dark on either skin, so the picker embedded in one keeps the dark variant.
-        private string SkinIcon(string icon) =>
-            icon is null || ClassListContains(DropdownModifier) ? icon : "d_" + icon;
 
         private static string SectionIcon(string sectionKey, bool collapsed)
         {
