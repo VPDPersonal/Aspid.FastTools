@@ -12,14 +12,17 @@ public sealed class SampleThemeRecorder : MonoBehaviour
  private Texture2D _image;
  private int _frame=-60;
  private int _previousRate;
- public static object Main() {
+ public static object Main(string theme) {
   if(!EditorApplication.isPlaying)throw new Exception("Play Mode required");
-  Output=Path.Combine(Path.GetDirectoryName(Application.dataPath),"Temp","SampleThemes","frames");
+  Output=Path.Combine(Path.GetDirectoryName(Application.dataPath),"Temp","SampleThemes","enum-" + theme.ToLowerInvariant());
   Directory.CreateDirectory(Output);
   var walker=GameObject.Find("Walker");
   walker.transform.position=new Vector3(-8,1,0);
   var behaviour=walker.GetComponent("Walker");
   behaviour.GetType().GetField("_direction",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(behaviour,1);
+  foreach (var trail in UnityEngine.Object.FindObjectsByType<Aspid.FastTools.Samples.EnumValues.SurfaceTrail>(FindObjectsSortMode.None)) UnityEngine.Object.DestroyImmediate(trail.gameObject);
+  foreach (var name in new[]{"_tile", "_trail"}) behaviour.GetType().GetField(name,BindingFlags.NonPublic|BindingFlags.Instance).SetValue(behaviour,null);
+  behaviour.GetType().GetField("_nextStep",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(behaviour,0f);
   new GameObject("Temporary sample recorder").AddComponent<SampleThemeRecorder>();
   return Output;
  }
@@ -35,6 +38,7 @@ public sealed class SampleThemeRecorder : MonoBehaviour
    _camera.targetTexture=_target;_camera.Render();RenderTexture.active=_target;
    _image.ReadPixels(new Rect(0,0,1440,810),0,0);_image.Apply();
    File.WriteAllBytes(Path.Combine(Output,$"frame-{_frame:000}.png"),_image.EncodeToPNG());
+   File.AppendAllText(Path.Combine(Output,"positions.txt"),GameObject.Find("Walker").transform.position.x.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"\n");
   } finally {_camera.targetTexture=target;RenderTexture.active=active;}
   if(_frame==100){File.WriteAllText(Path.Combine(Output,"done.txt"),"100 frames at 20 fps");Destroy(gameObject);}
  }

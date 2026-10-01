@@ -3,8 +3,7 @@
 Previews: Website/static/img/samples/<slug>(-light).png. Clips: Website/src/components/SamplesGallery/media/<slug>(-light).mp4.
 
 Sources are the lossless camera recordings of docs/media/sample-themes, one per theme, which replay frame for frame, so
-both themes show the same moment. EnumValues has no dark recording: its dark side is the sample's demo.gif, placed back
-where it was cut from the 1440x810 camera frame. The EnumValues light recording kept the scene titles; they sit on the
+both themes show the same moment. The EnumValues recordings keep the scene titles; they sit on the
 flat background and are painted over. One 16:9 box in camera space frames both themes, and each clip starts on its
 preview's frame.
 
@@ -12,7 +11,7 @@ The flat camera background is repainted, fringe included: in the previews to the
 (--venom-reading-surface in Website/src/css/custom.css), in the clips to black (dark) or white (light), which the card
 blends with a layer of that surface. 8-bit YUV cannot encode the surface itself; it misses by one level.
 """
-import subprocess, tempfile
+import subprocess, tempfile, sys
 from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
@@ -30,7 +29,7 @@ CLIP_SIZE = (1024, 576)
 # slug, crop box in camera space, preview frame, light source, dark source: a recording, or (sample, offset, frame) of
 # its demo.gif.
 ITEMS = [
-    ('enum-values', (120, 101, 1320, 776), 29, media / 'source-light.mkv', ('EnumValues', (169, 272), 304)),
+    ('enum-values', (120, 101, 1320, 776), 29, media / 'source-light.mkv', media / 'source-dark.mkv'),
     ('types', (77, 108, 1325, 810), 0, recordings / 'types-light.mkv', recordings / 'types-dark.mkv'),
     ('serialize-references', (208, 154, 1232, 730), 85,
      recordings / 'serialize-references-light.mkv', recordings / 'serialize-references-dark.mkv'),
@@ -95,6 +94,8 @@ def build(slug, theme, sequence, poster, box):
 
 clips.mkdir(exist_ok=True)
 for slug, box, poster, light, dark in ITEMS:
+    if len(sys.argv) > 1 and slug not in sys.argv[1:]:
+        continue
     light_frames = frames(light)
     if slug == 'enum-values':
         light_frames = [without_titles(frame) for frame in light_frames]
@@ -105,5 +106,7 @@ for slug, box, poster, light, dark in ITEMS:
         dark_frames = [placed(frame, offset, gif[0].getpixel((2, 2))) for frame in gif]
     else:
         dark_frames, dark_poster = frames(dark), poster
+        if slug == 'enum-values':
+            dark_frames = [without_titles(frame) for frame in dark_frames]
     counts.append(build(slug, 'dark', dark_frames, dark_poster, box))
     print(slug, box[2] - box[0], 'x', box[3] - box[1], 'light/dark frames', counts)
