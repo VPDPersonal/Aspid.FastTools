@@ -47,7 +47,7 @@ private EnumValues<float>
 
 ![DamageType в окне выбора типа в заголовке Multipliers](../Images/enum-values-type-selector.png)
 
-- Выбор enum обязателен: если поле пустое, инспектор показывает **Required type is not set**. Это поле также учитывает [проверка обязательных полей](04-serialize-reference-tooling.md#где-проверяются-обязательные-поля).
+- Выбор enum обязателен: если поле пустое, инспектор показывает **Required type is not set**. Это поле также учитывает [проверка обязательных полей](04-serialize-reference-tooling.md#что-проверяет-каждый-запуск).
 - При первом обращении к таблице с пустым полем enum в Console записывается **предупреждение (Warning)**. Вызовы <code lang="function">GetValue</code> возвращают **Default Value**.
 
 ## Правила поиска
