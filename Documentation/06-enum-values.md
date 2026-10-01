@@ -1,199 +1,155 @@
 # EnumValues
 
-An enum-keyed table configured in the Inspector: damage multipliers, colours, sounds, asset references. `GetValue` returns the matching row's value, or `Default Value` when no row matches.
+A table of values per enum member, filled in the Inspector instead of code.
 
 ## Quick start
 
-The examples use this enum:
-
-```csharp
-public enum DamageType
-{
-    Physical, Fire, Ice, Poison
-}
-```
-
-Add `using Aspid.FastTools.Enums;` to a script that imports `UnityEngine`. One table replaces a set of serialized fields and a `switch`:
-
-| Before — separate fields and switch | After — EnumValues |
+| Before — fields and switch | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>[SerializeField]&#10;private float _defaultMultiplier = 1f;&#10;[SerializeField]&#10;private float _fireMultiplier = 1.5f;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt; type switch&#10;&#123;&#10;    DamageType.Fire =&gt; _fireMultiplier,&#10;    _ =&gt; _defaultMultiplier&#10;&#125;;</code></pre> | <pre lang="csharp"><code>[SerializeField]&#10;private EnumValues&lt;DamageType, float&gt;&#10;    _multipliers;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt;&#10;    _multipliers.GetValue(type);</code></pre> |
+| <pre lang="csharp"><code>[SerializeField]&#10;private float _default = 1f;&#10;[SerializeField]&#10;private float _fire = 1.5f;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt; type switch&#10;&#123;&#10;    DamageType.Fire =&gt; _fire,&#10;    _ =&gt; _default&#10;&#125;;</code></pre> | <pre lang="csharp"><code>[SerializeField]&#10;private EnumValues&lt;DamageType, float&gt;&#10;    _multipliers;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt;&#10;    _multipliers.GetValue(type);</code></pre> |
 
-![Fire uses a multiplier of 1.5; other damage types use Default Value 1](Images/enum-values-multipliers-quick-start.png)
+<code lang="function">GetValue</code> returns the value from a matching table row, or **Default Value** if no row matches.
 
-Fire uses a multiplier of 1.5; other damage types use Default Value 1
+![The Multipliers table in the Inspector: a Fire row of 1.5 and Default Value 1](Images/enum-values-multipliers-quick-start.png)
 
-| Call | Result |
-|---|---|
-| `_multipliers.GetValue(DamageType.Fire)` | `1.5` — the `Fire` row's value |
-| `_multipliers.GetValue(DamageType.Ice)` | `1` — no `Ice` row, so `Default Value` is returned |
+## Filling in the Inspector
 
-## Inspector setup
+For an enum without <code lang="csharp">[Flags]</code>, set the shared value in **Default Value** and add rows for members that need a different value.
 
-1. Expand the table and set **Default Value** — keys without a row of their own receive it.
-2. Add rows by hand, or right-click the property and choose **Populate Missing Enum Members**.
-3. Pick the key of each row added by hand, and configure the values of the added rows.
+**Populate Missing Enum Members** in the table header's context menu appends rows for missing enum members and copies **Default Value** into them.
 
-Only keys whose value differs from `Default Value` need a row.
+For <code lang="csharp">[Flags]</code>, only declared enum members are added automatically. For example, if the enum declares <code lang="csharp">FireAndIce = Fire | Ice</code>, the command adds a separate row with the key <code lang="csharp">FireAndIce</code>. Combinations without a name can be added manually.
 
-### Populate Missing Enum Members
+![Populate Missing Enum Members in the Multipliers table](Images/enum-values-multipliers-populate.gif)
 
-Appends the missing enum members to the table with the current `Default Value` as their value.
-
-![Populate Missing Enum Members adds rows with a value of 1, preserving Fire = 1.5; Undo reverts the operation](Images/enum-values-multipliers-populate.gif)
-
-Populate Missing Enum Members adds rows with a value of 1, preserving Fire = 1.5; Undo reverts the operation
-
-For `[Flags]` it adds only declared members, including named combinations. It does not generate every possible bit combination.
+> [!NOTE]
+> A row added to an empty table shows `<None>` and is skipped with a Console error until you pick a member.
 
 ## Choosing a variant
 
-| Task | Field type | Enum choice in the Inspector | Key in `GetValue` |
-|---|---|---|---|
-| The enum is known in code | `EnumValues<TEnum, TValue>` | Fixed by the `TEnum` argument; the type field is read-only | `TEnum`: checked by the compiler, no boxing to `object` |
-| The asset author picks the enum | `EnumValues<TValue>` | Available in the table header | `System.Enum`: the key is boxed, and a foreign enum compiles and returns `Default Value` |
+| Difference | <code lang="class-name">EnumValues&lt;TEnum, TValue&gt;</code> | <code lang="class-name">EnumValues&lt;TValue&gt;</code> |
+|---|---|---|
+| Where the enum is picked | The <code lang="class-name">TEnum</code> argument | The table header in the Inspector |
+| Key in <code lang="function">GetValue</code> and <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
+| Boxing in <code lang="function">GetValue</code> | None | The key is boxed |
+| A key of another enum | Does not compile | Returns **Default Value** |
 
-Both variants support `Default Value`, `[Flags]` and row enumeration. `TValue` is any type Unity serializes: `float`, `Color`, `AudioClip`, your own `[Serializable]` class.
+- Table values are configured in the Inspector and are read-only from code.
+- <code lang="class-name">TValue</code> is any type Unity serializes.
 
-### EnumValues\<TEnum, TValue\>
-
-```csharp
-[SerializeField] private EnumValues<DamageType, float> _multipliers;
-```
-
-The enum is fixed in code and the compiler checks the key type. The full example is in the [quick start](#quick-start).
-
-### EnumValues\<TValue\>
-
-The same field without `DamageType` in the declaration; the enum is chosen in the Inspector:
+With <code lang="class-name">EnumValues&lt;TValue&gt;</code>, the multiplier field is declared as <code lang="class-name">EnumValues&lt;float&gt;</code>, and <code lang="class-name">DamageType</code> is selected in the table header:
 
 ```csharp
-[SerializeField] private EnumValues<float> _multipliers;
-
-public float GetMultiplier(DamageType type) => _multipliers.GetValue(type);
+[SerializeField]
+private EnumValues<float>
+    _multipliers;
 ```
 
-For this example, select **DamageType** in the table header. A key from another enum returns `Default Value` even when the numeric value happens to match.
+![DamageType in the type selector of the Multipliers header](Images/enum-values-type-selector.png)
 
-![Open the type selector in the Multipliers header and search for DamageType](Images/enum-values-type-selector.png)
-
-Open the type selector in the Multipliers header and search for DamageType
-
-> [!IMPORTANT]
-> When no enum is selected, the table returns `Default Value` and logs a warning to the Console on the first access. When the stored type is no longer found in the project, for example after a rename, it logs an error instead.
+- Selecting an enum is required: if the field is empty, the Inspector shows **Required type is not set**. The [required field check](04-serialize-reference-tooling.md#what-each-run-checks) also checks this field.
+- The first access to a table with an empty enum field logs a **Warning** to the Console. Calls to <code lang="function">GetValue</code> return **Default Value**.
 
 ## Lookup rules
 
-The table is scanned top to bottom. For a regular enum the first row with the same numeric key wins, otherwise the result is `Default Value`:
+A row's key is its selected enum member. If several rows have the same key, the topmost row is used. Enum members with the same numeric value also count as one key: for example, declaring <code lang="csharp">Frost = Ice</code> gives both names the same value.
 
-| Situation | Result |
-|---|---|
-| Key found | The row's value, including `0`, `false` or `null` |
-| Key missing or table empty | `Default Value` |
-| Several rows with the same numeric key | The first of them |
-| Different enum names with the same numeric value | One key for lookup purposes |
+| Inspector rows, top to bottom | <code lang="function">GetValue</code> argument | Returned value |
+|---|---|---|
+| <code lang="csharp">Fire</code> → <code lang="csharp">0.9</code><br/><code lang="csharp">Fire</code> → <code lang="csharp">0.5</code> | <code lang="csharp">DamageType.Fire</code> | <code lang="csharp">0.9</code> |
+| <code lang="csharp">Ice</code> → <code lang="csharp">0.5</code> | <code lang="csharp">DamageType.Frost</code> | <code lang="csharp">0.5</code> |
 
 ### Flags
 
-For `[Flags]`, lookup checks for an exact match before checking flag containment.
-
-Zero matches only zero; it is not an "empty mask" that matches the other flags. Example:
-
 ```csharp
 [Flags]
-public enum StatusEffect
+public enum DamageType
 {
     None = 0,
-    Burning = 1,
-    Slowed = 2,
-    Frozen = 4
+    Fire = 1,
+    Ice = 2,
+    Frost = Ice,
+    FireAndIce = Fire | Ice,
+    Poison = 4
 }
 
-[SerializeField] private EnumValues<StatusEffect, float> _speedMultipliers;
+[SerializeField]
+private EnumValues<DamageType, float>
+    _multipliers;
 ```
 
-`Default Value` is `1` and the rows are in this order:
+For <code lang="csharp">[Flags]</code>, lookup has two stages:
 
-| Key | Value |
-|---|---|
-| `Burning` | `0.9` |
-| `Slowed` | `0.5` |
-| `Burning \| Slowed` | `0.3` |
-| `None` | `1` |
+1. First, look for an **exact match**: a row whose key contains exactly the same flags as the argument.
+2. If there is no exact match, use the **topmost** row whose flags are all present in the supplied value.
 
-<ol className="enum-lookup-flow">
-  <li>
-    <strong>Exact match</strong>
-    <span>Look for the entire requested set of flags.</span>
-    <code>Burning | Slowed → 0.3</code>
-    <small>The exact row wins, even when it is farther down.</small>
-    <em>No exact row →</em>
-  </li>
-  <li>
-    <strong>First matching row</strong>
-    <span>All of its flags must be present in the request.</span>
-    <code>Burning | Frozen → 0.9</code>
-    <small>Burning wins; row order matters.</small>
-    <em>No matching row →</em>
-  </li>
-  <li>
-    <strong>Default Value</strong>
-    <span>Return the configured fallback.</span>
-    <code>Frozen → 1</code>
-    <small>There is no exact or matching row.</small>
-  </li>
-</ol>
+Suppose **Default Value** is <code lang="csharp">0</code> and the Inspector table is filled as follows:
+
+| Order | Key | Value |
+|---|---|---|
+| 1 | <code lang="csharp">Fire</code> | <code lang="csharp">0.9</code> |
+| 2 | <code lang="csharp">Ice</code> | <code lang="csharp">0.5</code> |
+| 3 | <code lang="csharp">FireAndIce</code> | <code lang="csharp">0.3</code> |
+| 4 | <code lang="csharp">None</code> | <code lang="csharp">1</code> |
+
+For this table, <code lang="function">GetValue</code> returns these results:
+
+| Argument | Value | Why |
+|---|---|---|
+| <code lang="csharp">Fire &#124; Ice</code> | <code lang="csharp">0.3</code> | Exact match with <code lang="csharp">FireAndIce</code> (row 3): both flags match |
+| <code lang="csharp">Fire &#124; Ice &#124; Poison</code> | <code lang="csharp">0.9</code> | The argument contains all the flags of rows 1, 2 and 3. With no exact match, row 1 is used |
+| <code lang="csharp">Ice &#124; Poison</code> | <code lang="csharp">0.5</code> | <code lang="csharp">Ice</code> (row 2) matches. Rows 1 and 3 also need <code lang="csharp">Fire</code>, which is absent from the argument |
+| <code lang="csharp">Poison</code> | <code lang="csharp">0</code> | No matching row — **Default Value** |
+| <code lang="csharp">None</code> | <code lang="csharp">1</code> | A zero key matches only a zero argument |
 
 > [!NOTE]
-> The second pass takes the first matching row, not the most complete one. For `Burning | Slowed | Frozen` both `Burning` and `Burning | Slowed` match, but `Burning` wins because it sits higher: the result is `0.9`. To let a combination win, place combined rows above single flags.
+> Moving the <code lang="csharp">FireAndIce</code> row above <code lang="csharp">Fire</code> makes a call for <code lang="csharp">Fire | Ice | Poison</code> return <code lang="csharp">0.3</code>. Row order determines priority when there is no exact match.
+>
+> A row whose value equals **Default Value** still participates in lookup. Adding a <code lang="csharp">Fire | Poison</code> row with value <code lang="csharp">0</code> makes a call for that combination return <code lang="csharp">0</code> by exact match, instead of <code lang="csharp">0.9</code> from the <code lang="csharp">Fire</code> row.
 
-## Checking keys with Equals
+## Equals()
 
-`Equals(first, second)` compares keys by the same rules without reading row values. For a regular enum this is numeric equality. For `[Flags]` it checks whether the **first argument contains all bits of the second**; zero equals only zero:
+The table method checks whether a key matches a request without reading values:
 
 ```csharp
-var combined = StatusEffect.Burning | StatusEffect.Slowed;
-
-_speedMultipliers.Equals(combined, StatusEffect.Burning);        // true
-_speedMultipliers.Equals(StatusEffect.Burning, combined);        // false
-_speedMultipliers.Equals(combined, StatusEffect.None);           // false
-_speedMultipliers.Equals(StatusEffect.None, StatusEffect.None);  // true
+var request =
+    DamageType.Fire | DamageType.Ice;
+var key = DamageType.Fire;
+_multipliers.Equals(request, key);
 ```
 
-Use `==` for strict enum equality. In `EnumValues<TValue>` both arguments must belong to the selected enum, otherwise the result is `false`.
+| Request | Key | Result |
+|---|---|---|
+| <code lang="csharp">DamageType.Fire &#124; DamageType.Ice</code> | <code lang="csharp">DamageType.Fire</code> | <code lang="csharp">true</code> |
+| <code lang="csharp">DamageType.Fire</code> | <code lang="csharp">DamageType.Fire &#124; DamageType.Ice</code> | <code lang="csharp">false</code> |
+| <code lang="csharp">DamageType.Fire &#124; DamageType.Ice</code> | <code lang="csharp">DamageType.None</code> | <code lang="csharp">false</code> |
+| <code lang="csharp">DamageType.None</code> | <code lang="csharp">DamageType.None</code> | <code lang="csharp">true</code> |
+
+In <code lang="class-name">EnumValues&lt;TValue&gt;</code>, <code lang="function">Equals</code> returns <code lang="csharp">false</code> if either argument has a different enum type from the one selected in the Inspector.
 
 ## Enumerating rows
 
-`foreach` yields the configured rows in list order. `Default Value` and rows with an unresolved key are not included:
-
 ```csharp
-foreach (var (type, multiplier) in _multipliers)
-{
-    Debug.Log($"{type}: {multiplier}");
-}
+var total = 0f;
+foreach (var entry in _multipliers)
+    total += entry.Value;
 ```
 
-The typed table yields `TEnum` keys, the generic one `System.Enum`. A direct `foreach` uses a struct enumerator and does not allocate; enumerating through the `IEnumerable` interface, for example in LINQ, boxes it.
+**Default Value** and rows with unresolved keys are not yielded. After the first access initializes the keys, a direct <code lang="csharp">foreach</code> over the table does not allocate. Iteration through <code lang="class-name">IEnumerable</code> boxes the enumerator.
 
-## Changing the table and enum
+## When the enum changes
 
-The public API only reads the table: there is no `Add`, `Remove` or writable indexer, and values are set through Unity serialization.
+Keys are stored by member name:
 
-Keys are stored by member **name**:
-
-| Enum change | Result |
+| Change | Result |
 |---|---|
-| Members reordered or their numeric values changed | The table works as before |
-| Member added | Returns `Default Value` until a row is added; **Populate Missing Enum Members** fills the gap |
-| Member renamed or deleted | Its row is no longer recognised: initialization logs an error to the Console, and lookup and enumeration skip it |
-
-> [!NOTE]
-> The Inspector shows such a row with its key, for example `<Missing Frozen>`, and keeps the key until you pick a member, so renaming the member back restores the row. The same applies when `EnumValues<TValue>` is switched to another enum: switching back restores every key. A row added to an empty table has no key: it shows `<None>` and, like a renamed member's row, is skipped with an error until you pick a member.
+| Members reordered or their numeric values changed | Rows remain bound to names. Changing aliases or flag bit patterns can change lookup results |
+| A member renamed or deleted | Its row shows `<Missing Ice>` and is skipped with a Console error; restore the name and the row works again |
+| The enum renamed or moved to another namespace or assembly | <code lang="class-name">EnumValues&lt;TEnum, TValue&gt;</code> works as before; <code lang="class-name">EnumValues&lt;TValue&gt;</code> returns **Default Value** and logs an error until the enum is picked again |
+| Another enum picked in <code lang="class-name">EnumValues&lt;TValue&gt;</code> | The keys are kept: pick the previous enum back and the rows work again |
 
 ## Package sample
 
-Tiles and footprints take their colour from `EnumValues<SurfaceType, Color>`, and the speed multiplier from an `EnumValues<float>` with a `[Flags]` enum selected in the Inspector: [EnumValues](../Samples~/EnumValues/Documentation/README.md).
+Tiles and footprints take their colour from <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, and the speed multiplier from an <code lang="class-name">EnumValues&lt;float&gt;</code> with a <code lang="csharp">[Flags]</code> enum picked in the Inspector: [EnumValues](../Samples~/EnumValues/Documentation/README.md).
 
-![The character walks across different surfaces and leaves a continuous coloured trail.](../Samples~/EnumValues/Documentation/Images/demo.gif)
-
-The character walks across different surfaces and leaves a continuous coloured trail.
+![The trail colour and walking speed change as the character crosses onto another surface.](../Samples~/EnumValues/Documentation/Images/demo.gif)
