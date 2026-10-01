@@ -29,7 +29,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetPaddingX(10)
                 .SetPaddingY(3)
                 .SetBorderRadius(10)
-                .SetBorderWidth(1);
+                .SetBorderWidth(1)
+                .AddClass("sample-metadata");
 
             var helpBox = new HelpBox("This ability costs no mana. Intentional?", HelpBoxMessageType.Warning)
                 .SetMarginTop(8);
@@ -40,7 +41,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetFontSize(14)
                 .AddBoldUnityFontStyleAndWeight()
                 .SetTooltip("Double-click to open the script")
-                .AddOpenScriptCommand(target);
+                .AddOpenScriptCommand(target)
+                .AddClass("sample-title");
 
             var header = new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
@@ -51,9 +53,6 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetBorderWidth(bottom: 1)
                 .AddChild(title)
                 .AddChild(badge);
-
-            title.AddToClassList("sample-title");
-            badge.AddToClassList("sample-metadata");
 
             var body = new VisualElement()
                 .SetPaddingX(12)
@@ -72,14 +71,14 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetBorderWidth(1)
                 .SetBorderRadius(8)
                 .AddChild(header)
-                .AddChild(body);
+                .AddChild(body)
+                .AddClass("ability-inspector");
 
-            root.AddToClassList("ability-inspector");
             var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
             var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 System.IO.Path.GetDirectoryName(scriptPath) + "/SampleFonts.uss");
             if (stylesheet != null)
-                root.styleSheets.Add(stylesheet);
+                root.AddStyleSheet(stylesheet);
             return root;
 
             void Refresh()

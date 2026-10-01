@@ -1,83 +1,61 @@
 # SerializeReferences Sample
 
-A turret that fires polymorphic weapons at a training dummy. Every weapon, effect and modifier is a `[SerializeReference]` field with a `[TypeSelector]` dropdown, and the sample ships assets that are broken on purpose so you can walk through the repair tools. The feature reference lives in [SerializeReference Selector](../../../Documentation/03-serialize-reference-selector.md) and [SerializeReference Tooling](../../../Documentation/04-serialize-reference-tooling.md).
-
-```csharp
-[TypeSelector]
-[SerializeReference] private IWeapon _primary;
-```
-
-![Weapons, a nested burn effect, and modifiers in the Loadout Inspector.](Images/weapon-fields.png)
-
-Weapons, a nested burn effect, and modifiers in the Loadout Inspector.
-
-## Open it
-
-1. Import the sample and open `Scenes/SerializeReferences.unity`.
-2. Select **Loadout**. Enter Play Mode: the primary weapon and the sidearms take turns hitting the dummy, once a second at first and then every 1.5 seconds, because `On Hit` freezes it and each hit renews the freeze; it shrinks, tints while burning or frozen, and resets when destroyed. The Console shows each hit.
-
-For recording, use **Light / Dark / Authored** in `Tools → Aspid 🐍 → FastTools → Sample Themes`.
+A turret whose weapons and their effects are picked in the Inspector, plus assets broken on purpose for you to repair.
 
 ![The dummy changes color and shrinks as the configured weapons and effects deal damage.](Images/demo.gif)
 
 The dummy changes color and shrinks as the configured weapons and effects deal damage.
 
-## Your first five minutes
+## Open it
 
-1. Before Play Mode, select **Loadout** and expand `Primary`: it is a `Railgun` with a nested `Charge Effect`. Enter Play Mode and watch the dummy take hits and the Console report them.
-2. In `Sidearms`, choose `Pistol`, set `Damage` to `37`, switch it to `Shotgun` and back. Check that `Damage` is still `37`.
-3. Press “+” on `Sidearms` and add another weapon through the picker. It joins the firing rotation.
-4. Set `Primary` to `<None>` to see the `Required` notice, then pick a weapon again.
-5. Exit Play Mode: component edits made during play reset. Open `Scripts/Loadout.cs` and match the Inspector fields to `[SerializeReference]` and `[TypeSelector]`.
+1. Import the sample: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** on **SerializeReferences**.
+2. Open `Scenes/SerializeReferences.unity` and enter Play Mode: the primary weapon and the sidearms take turns hitting the dummy, and the Console reports every hit.
 
-That completes the basic scenario. The sections below are independent exercises in authoring, generics, repair and IMGUI.
+## Try
 
-## What affects gameplay
+Exit Play Mode and select **Loadout**.
 
-- `Primary` and `Sidearms` fire in turn. `On Hit` applies after a hit; `Railgun.Charge Effect` applies after a railgun hit.
-- `DamageModifier` changes damage, including when placed in `Perks`.
-- `Melee Backup` and `Holster` demonstrate filtering and nested containers; they do not join the firing rotation.
-- `Modifier<T>`, `AmmoModifier` and `NameModifier` demonstrate generic type selection and data storage. They do not change damage, ammunition or weapon names. Inspect their values through **Loadout → Log Loadout** in the component context menu.
+![Weapons, a nested burn effect, and modifiers in the Loadout Inspector.](Images/weapon-fields.png)
 
-## Advanced exercises: authoring
+Weapons, a nested burn effect, and modifiers in the Loadout Inspector.
 
-1. **Pick an implementation.** Open the `Primary` dropdown: a searchable window lists every concrete `IWeapon`, grouped under **Weapons/Melee** and **Weapons/Ranged** by `[TypeSelectorDisplay]`. `DebugWeapon` is not there: it is `Hidden`, meant for code only. Pick `Shotgun`; its own fields appear inline.
-2. **Switching keeps shared data.** Set a `Pistol` in `Sidearms`, change its `Damage`, switch it to `Shotgun` and back: the value survives because both types declare `_damage`.
-3. **Lists.** Press “+” on `Sidearms`: the picker opens instead of duplicating the last element, so no two elements share one instance.
-4. **Narrowing.** `Melee Backup` is declared `IWeapon` but carries `[TypeSelector(typeof(IMelee))]`, so only `Sword` is offered. `Holster` does the same inside a plain `[Serializable]` container, one level down.
-5. **Nesting.** Choose `Railgun` in `Primary` and `BurnEffect` in its `Charge Effect`: the effect is a `[SerializeReference]` of its own with its own dropdown. The dummy catches fire when the railgun hits.
-6. **Abstract base.** `On Hit` is a `StatusEffect`; the picker offers `BurnEffect` and `FreezeEffect`, never the abstract base.
-7. **Generics.** `Damage Modifier` is a `Modifier<float>`: `T` is fixed, so `DamageModifier` and `Modifier<Single>` are offered and created directly. `Perks` is a `List<IModifier>`: it offers the closed subclasses **and** the open `Modifier<T>`, which asks for `T` on a second page.
-8. **Required.** Set `Primary` to `<None>`: a notice appears, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation. A player build does not check it; see [where required fields are checked](../../../Documentation/04-serialize-reference-tooling.md#where-required-fields-are-checked).
-9. **Right-click any dropdown** for Copy / Paste, Make Unique Reference, Save as Template, Find Usages and Create New Script.
+1. **Pick a class.** Open the **Primary** dropdown: a searchable picker lists every concrete <code lang="class-name">IWeapon</code>, grouped under **Weapons/Melee** and **Weapons/Ranged** by <code lang="csharp">[TypeSelectorDisplay]</code>. <code lang="class-name">DebugWeapon</code> is left out with `Hidden`. Pick <code lang="class-name">Shotgun</code>: its fields appear under the dropdown.
+2. **Shared data survives a switch.** In **Sidearms**, set the <code lang="class-name">Pistol</code>'s **Damage** to `37`, switch it to <code lang="class-name">Shotgun</code> and back: **Damage** is still `37`, because both classes declare `_damage`.
+3. **Lists.** Press **+** on **Sidearms**: the picker opens instead of copying the last element, and the new element gets its own instance. In Play Mode it joins the firing rotation.
+4. **Narrowing.** **Melee Backup** is declared <code lang="class-name">IWeapon</code>, but <code lang="csharp">[TypeSelector(typeof(IMelee))]</code> offers only <code lang="class-name">Sword</code>. The **Weapon** field of each **Holster** slot is narrowed the same way one level down, inside a plain <code lang="csharp">[Serializable]</code> class: <code lang="csharp">[TypeSelector(typeof(IRanged))]</code> offers only ranged weapons. Neither field joins the firing rotation.
+5. **Nested references.** The <code lang="class-name">Railgun</code> in **Primary** has a **Charge Effect**, a <code lang="csharp">[SerializeReference]</code> of its own with its own dropdown. It holds a <code lang="class-name">BurnEffect</code>, so the dummy catches fire when the railgun hits.
+6. **Abstract base.** **On Hit** is a <code lang="class-name">StatusEffect</code>: the picker offers <code lang="class-name">BurnEffect</code> and <code lang="class-name">FreezeEffect</code>, never the abstract class.
+7. **Generics.**
+   - **Damage Modifier** is a <code lang="class-name">Modifier&lt;float&gt;</code>: <code lang="class-name">DamageModifier</code> and <code lang="class-name">Modifier&lt;Single&gt;</code> are offered and created at once.
+   - **Perks** is a <code lang="class-name">List&lt;IModifier&gt;</code>: besides the closed subclasses it offers the open <code lang="class-name">Modifier&lt;T&gt;</code>, which asks for <code lang="class-name">T</code> on a second page.
+   - Only <code lang="class-name">DamageModifier</code> changes the damage; **Loadout → Log Loadout** in the component's context menu prints the values of the others.
+8. **Required field.** Set **Primary** to `<None>`: a notice appears under the field. Save the scene, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation; a player build does not check it ([what each run checks](../../../Documentation/04-serialize-reference-tooling.md#what-each-run-checks)).
+9. **Header menu.** Right-click a field header for copy and paste, templates, usages and a new script: [every item](../../../Documentation/03-serialize-reference-selector.md#header-menu).
 
-## Advanced exercises: repair
+## Repair
 
-The `Presets/` and `Prefabs/` folders hold assets whose stored type identities are stale or gone:
+The assets in `Presets/` and `Prefabs/` store types that are missing or out of date.
 
-| Asset | What is wrong | What to do |
-|---|---|---|
-| `Presets/BrokenWeaponPreset.asset` | `Weapon` stores a `GhostWeapon` that does not exist | Select it. The field shows `<Missing GhostWeapon>` and a **Fix** button; pick `Pistol`. Damage and magazine size are preserved. |
-| `Presets/BrokenArsenalPreset.asset` | The same `GhostWeapon`, three times | Open **Tools → Aspid 🐍 → FastTools → Project References**, **Scan Project**: both presets collapse into one `GhostWeapon` group. **Fix all** re-points every entry at once. |
-| `Presets/MovedWeaponPreset.asset` | `Pistol` stored under an old namespace | The notice ends with a one-click **Smart Fix** suggestion (`→ Pistol`). Smart Fix ranks a `[MovedFrom]` match, a same-named type, a casing change and a near-miss, and never applies itself. |
-| `Presets/RenamedWeaponPreset.asset` | Stores `CrossbowLauncher`; the class is now `Crossbow` with `[MovedFrom]` | The Inspector already shows a healthy `Crossbow`, only the file is stale. In **Project References** the group reads as a pending migration with **Migrate all**, which bakes the rename into the file. |
-| `Prefabs/BrokenLoadout.prefab` | `Sidearms[2]` is a missing `GhostCrossbow`; `Sidearms[0]` and `[1]` share one `Pistol` | Select it in the Project window. The missing element offers **Fix**; the shared pair carries a colored notice, and **Make Unique Reference** splits it. **Asset References** maps the whole graph of the prefab in one view. |
+1. **Fix one asset.** Select `Presets/BrokenWeaponPreset.asset`: **Weapon** stores a <code lang="class-name">GhostWeapon</code> that does not exist, and the **Missing type** notice under the field offers **Fix**. Press it and pick <code lang="class-name">Pistol</code>: **Damage** `25` and **Magazine Size** `8` are kept.
+2. **Fix a group.** Open **Tools → Aspid 🐍 → FastTools → Project References** and press **Scan Project**: the three <code lang="class-name">GhostWeapon</code> entries of `BrokenArsenalPreset.asset` form one group, and **Fix all** repairs them at once.
+3. **A suggested class.** `Presets/MovedWeaponPreset.asset` stores <code lang="class-name">Pistol</code> under an old namespace. Its notice offers **→ Pistol**, and its group in Project References offers **Smart Fix → Pistol**; neither applies itself.
+4. **A migration.** `Presets/RenamedWeaponPreset.asset` stores <code lang="class-name">CrossbowLauncher</code>, and the class is now <code lang="class-name">Crossbow</code> with <code lang="csharp">[MovedFrom]</code>: the Inspector already shows <code lang="class-name">Crossbow</code>, only the file is out of date. **Migrate all → Crossbow** in Project References writes the new name into the file.
+5. **A prefab.** Select `Prefabs/BrokenLoadout.prefab` in the Project window. `Sidearms[2]` is a missing <code lang="class-name">GhostCrossbow</code> with **Fix**; `Sidearms[0]` and `[1]` point at one <code lang="class-name">Pistol</code> and are marked **Shared reference #N**, and **Make unique** gives an element its own copy. The **Asset References** tab lists every reference of the prefab.
 
-For group repair, start with **Scan Project** before fixing individual presets. If `BrokenWeaponPreset` is already repaired, the `GhostWeapon` group contains only the remaining broken entries. To repeat the exercises, reimport the sample and overwrite its files; this also resets your changes to the imported sample.
+To repeat the repair, import the sample again and overwrite its files.
 
-Fix on a ScriptableObject or prefab selected in the Project rewrites its file, so it first offers to save unsaved changes. In Prefab Mode or a clean saved scene, Fix repairs the open copy in memory; save it afterwards.
+## IMGUI inspector
 
-## The IMGUI path
-
-`WeaponPreset` has an IMGUI inspector (`Scripts/Editor/WeaponPresetEditor.cs`). Overriding `OnInspectorGUI` alone routes every drawer, `[TypeSelector]` included, through IMGUI at feature parity: a plain `EditorGUILayout.PropertyField` draws the field and the list, and the list's “+” opens the picker. A `PropertyField` on a single list element shows no picker — draw the whole list. For a custom editor that draws managed references without `[TypeSelector]` on the field, `SerializeReferenceEditorGUI.CreateField` / `CreateList` / `DrawFieldLayout` and `SerializeReferenceIMGUIList.Draw` build the same controls.
+<code lang="class-name">WeaponPreset</code> has an IMGUI inspector, `Scripts/Editor/WeaponPresetEditor.cs`: plain <code lang="csharp">EditorGUILayout.PropertyField()</code> calls draw the field and the list, with the picker, **Fix** and the list's **+** working as in UI Toolkit. For fields without <code lang="csharp">[TypeSelector]</code>, see [Custom inspector](../../../Documentation/03-serialize-reference-selector.md#custom-inspector).
 
 ## Where to look
 
 | File | Shows |
 |---|---|
 | `Scripts/Loadout.cs` | Every field shape: single, list, narrowed, container, abstract base, closed and open generics, `Required` |
-| `Scripts/Weapons/` | The `IWeapon` hierarchy, `[TypeSelectorDisplay]` groups, a `Hidden` type, `[MovedFrom]` on `Crossbow`, a nested reference in `Railgun` |
-| `Scripts/Effects/`, `Scripts/Modifiers/` | An abstract base and a concrete open generic |
-| `Scripts/TrainingDummy.cs` | The target the weapons and effects act on |
-| `Scripts/WeaponPreset.cs` + `Presets/` | The repair scenarios |
-| `Scripts/Editor/WeaponPresetEditor.cs` | An IMGUI inspector built from plain `PropertyField` calls |
+| `Scripts/Weapons/` | The <code lang="class-name">IWeapon</code> hierarchy, <code lang="csharp">[TypeSelectorDisplay]</code> groups, a `Hidden` class, <code lang="csharp">[MovedFrom]</code> on <code lang="class-name">Crossbow</code>, a nested reference in <code lang="class-name">Railgun</code> |
+| `Scripts/Effects/`, `Scripts/Modifiers/` | An abstract base and an open generic class |
+| `Scripts/WeaponPreset.cs`, `Presets/`, `Prefabs/` | The repair scenarios |
+| `Scripts/Editor/WeaponPresetEditor.cs` | An IMGUI inspector of plain <code lang="class-name">PropertyField</code> calls |
+
+Reference: [SerializeReference Selector](../../../Documentation/03-serialize-reference-selector.md) and [SerializeReference Tooling](../../../Documentation/04-serialize-reference-tooling.md).

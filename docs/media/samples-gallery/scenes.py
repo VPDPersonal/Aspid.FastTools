@@ -1,35 +1,25 @@
-"""Rebuilds the scene previews of the /tutorials gallery and their looping clips.
+"""Rebuilds the scene GIFs of the /tutorials gallery from lossless camera recordings.
 
-Previews: Website/static/img/samples/<slug>(-light).png. Clips: Website/src/components/SamplesGallery/media/<slug>(-light).mp4.
-
-Sources are the lossless camera recordings of docs/media/sample-themes, one per theme, which replay frame for frame, so
-both themes show the same moment. The EnumValues recordings keep the scene titles; they sit on the
-flat background and are painted over. One 16:9 box in camera space frames both themes, and each clip starts on its
-preview's frame.
-
-The flat camera background is repainted, fringe included: in the previews to the article surface the card shows
-(--venom-reading-surface in Website/src/css/custom.css), in the clips to black (dark) or white (light), which the card
-blends with a layer of that surface. 8-bit YUV cannot encode the surface itself; it misses by one level.
+Output: Website/static/img/samples/<slug>(-light).gif. Both themes use the same camera crop and start frame.
+EnumValues recordings are cropped to (169, 270, 1101, 331) and placed back in the 1440x810 camera frame.
+The flat background is repainted to the article surface (--venom-reading-surface).
+Pass sample slugs to rebuild only those cards; without arguments, rebuild all scene cards.
 """
-import subprocess, tempfile, sys
+import argparse, subprocess, tempfile
 from pathlib import Path
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageFilter
 
 repo = Path(__file__).resolve().parents[3]
 media = repo / 'docs/media/sample-themes'
 recordings = media / 'other-samples'
-samples = repo / 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~'
 previews = repo / 'Website/static/img/samples'
-clips = repo / 'Website/src/components/SamplesGallery/media'
 CAMERA = (1440, 810)
 SURFACE = {'dark': (10, 11, 15), 'light': (255, 255, 255)}
-BLEND_BASE = {'dark': (0, 0, 0), 'light': (255, 255, 255)}
-CLIP_SIZE = (1024, 576)
+GIF_SIZE = (1024, 576)
 
-# slug, crop box in camera space, preview frame, light source, dark source: a recording, or (sample, offset, frame) of
-# its demo.gif.
+# slug, crop box in camera space, preview frame, light recording, dark recording.
 ITEMS = [
-    ('enum-values', (120, 101, 1320, 776), 29, media / 'source-light.mkv', media / 'source-dark.mkv'),
+    ('enum-values', (120, 101, 1320, 776), 29, media / 'enum-values-light.mkv', media / 'enum-values-dark.mkv'),
     ('types', (77, 108, 1325, 810), 0, recordings / 'types-light.mkv', recordings / 'types-dark.mkv'),
     ('serialize-references', (208, 154, 1232, 730), 85,
      recordings / 'serialize-references-light.mkv', recordings / 'serialize-references-dark.mkv'),
@@ -42,15 +32,6 @@ def frames(video):
     with tempfile.TemporaryDirectory() as folder:
         subprocess.run(['ffmpeg', '-loglevel', 'error', '-i', str(video), '-vsync', '0', f'{folder}/%04d.png'], check=True)
         return [Image.open(path).convert('RGB') for path in sorted(Path(folder).glob('*.png'))]
-
-
-def without_titles(frame):
-    frame = frame.copy()
-    background = frame.getpixel((2, 2))
-    draw = ImageDraw.Draw(frame)
-    draw.rectangle((0, 0, 1439, 301), fill=background)
-    draw.rectangle((0, 575, 1439, 809), fill=background)
-    return frame
 
 
 def placed(frame, offset, background):
@@ -73,40 +54,37 @@ def repaint(frame, background, color):
 def encode(sequence, path):
     with tempfile.TemporaryDirectory() as folder:
         for index, frame in enumerate(sequence):
-            frame.resize(CLIP_SIZE, Image.LANCZOS).save(f'{folder}/{index:04d}.png')
+            frame.resize(GIF_SIZE, Image.LANCZOS).save(f'{folder}/{index:04d}.png')
         subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-framerate', '20', '-i', f'{folder}/%04d.png',
-                        '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p',
-                        '-c:v', 'libx264', '-preset', 'veryslow', '-crf', '24', '-tune', 'animation',
-                        # Tagged as the intro's clips are: sRGB transfer, so browsers leave the dark tones alone.
-                        '-x264-params', 'colorprim=bt709:transfer=iec61966-2-1:colormatrix=bt709:range=tv',
-                        '-movflags', '+faststart', '-an', str(path)], check=True)
+                        '-filter_complex', '[0:v]split[a][b];[a]palettegen=max_colors=256[p];'
+                        '[b][p]paletteuse=dither=sierra2_4a', '-loop', '0', str(path)], check=True)
 
 
 def build(slug, theme, sequence, poster, box):
     background = sequence[0].getpixel((2, 2))
     sequence = [frame.crop(box) for frame in sequence]
     suffix = '-light' if theme == 'light' else ''
-    repaint(sequence[poster], background, SURFACE[theme]).save(previews / f'{slug}{suffix}.png', optimize=True)
-    encode([repaint(frame, background, BLEND_BASE[theme]) for frame in sequence[poster:] + sequence[:poster]],
-           clips / f'{slug}{suffix}.mp4')
+    encode([repaint(frame, background, SURFACE[theme]) for frame in sequence[poster:] + sequence[:poster]],
+           previews / f'{slug}{suffix}.gif')
     return len(sequence)
 
 
-clips.mkdir(exist_ok=True)
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('samples', nargs='*', help='Sample slugs to rebuild (default: all).')
+args = parser.parse_args()
+unknown = set(args.samples) - {item[0] for item in ITEMS}
+if unknown:
+    parser.error(f"Unknown samples: {', '.join(sorted(unknown))}")
+
+previews.mkdir(exist_ok=True)
 for slug, box, poster, light, dark in ITEMS:
-    if len(sys.argv) > 1 and slug not in sys.argv[1:]:
+    if args.samples and slug not in args.samples:
         continue
-    light_frames = frames(light)
-    if slug == 'enum-values':
-        light_frames = [without_titles(frame) for frame in light_frames]
-    counts = [build(slug, 'light', light_frames, poster, box)]
-    if isinstance(dark, tuple):
-        sample, offset, dark_poster = dark
-        gif = frames(samples / sample / 'Documentation/Images/demo.gif')
-        dark_frames = [placed(frame, offset, gif[0].getpixel((2, 2))) for frame in gif]
-    else:
-        dark_frames, dark_poster = frames(dark), poster
+    counts = []
+    for theme, source in [('light', light), ('dark', dark)]:
+        sequence = frames(source)
         if slug == 'enum-values':
-            dark_frames = [without_titles(frame) for frame in dark_frames]
-    counts.append(build(slug, 'dark', dark_frames, dark_poster, box))
+            background = sequence[0].getpixel((2, 2))
+            sequence = [placed(frame, (169, 270), background) for frame in sequence]
+        counts.append(build(slug, theme, sequence, poster, box))
     print(slug, box[2] - box[0], 'x', box[3] - box[1], 'light/dark frames', counts)

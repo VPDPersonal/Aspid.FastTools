@@ -111,7 +111,7 @@ To allow a set of classes, give them a common interface or base class and pass i
 
 With <code lang="csharp">Required = true</code>, `<None>` remains selectable. For strings and wrappers, the check tests for an empty stored name; a missing type with a nonempty name passes this check.
 
-For project-wide and CI validation, see [required-field checks](04-serialize-reference-tooling.md#where-required-fields-are-checked).
+For project-wide and CI validation, see [required-field checks](04-serialize-reference-tooling.md#what-each-run-checks).
 
 ### Constraint from another field
 

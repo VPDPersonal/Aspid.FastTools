@@ -1,7 +1,7 @@
 /*
  * The SerializeReference Tooling quick start. The card, the preview column and the steps are the install panel's
  * (InstallPanel/styles.module.css); this file draws the mock-up: Unity's Tools menu, then the Aspid FastTools window.
- * The window has only a dark theme (Aspid-FastTools-Default-Dark.uss), so the mock-up stays dark in both site themes.
+ * The window follows Unity's skin (Aspid-FastTools-Default-Dark.uss, -Light.uss), so the mock-up follows the site theme.
  */
 
 .section { --prp-ease: cubic-bezier(0.2, 0.7, 0.2, 1); }
@@ -24,7 +24,8 @@
 
 /* ---------- Unity's menu bar, cropped on the left so Tools sits near the edge ---------- */
 
-.menubar { display: flex; gap: 2px; margin-left: -128px; padding: 3px 6px; background: #191919; border-bottom: 1px solid #111; white-space: nowrap; }
+/* `useMenuFit` crops it further on a narrow stage (a margin, since a transform would put the menus under the window). */
+.menubar { display: flex; gap: 2px; margin-left: calc(-128px + var(--prp-menu-shift, 0px)); padding: 3px 6px; background: #191919; border-bottom: 1px solid #111; white-space: nowrap; }
 .menubar > span { position: relative; padding: 1px 7px; color: #c4c4c4; border-radius: 3px; }
 .menubar > span[data-open] { color: #fff; background: #3a79bb; }
 
@@ -51,7 +52,7 @@
 .separator { height: 1px; margin: 4px 0 !important; padding: 0 !important; background: #444; }
 .menuTools { top: calc(100% + 3px); left: 0; }
 /* A submenu opens beside its item, a moment after its parent, as the pointer walks the path. */
-.submenu { top: -5px; left: calc(100% - 2px); transition-delay: 0.35s; }
+.submenu { top: -5px; left: calc(100% - 2px - var(--prp-submenu-pull, 0px)); transition-delay: 0.35s; }
 .submenuLast { transition-delay: 0.7s; }
 
 /* ---------- The Aspid FastTools window ---------- */
@@ -68,18 +69,6 @@
   transition: opacity 0.35s ease, transform 0.45s var(--prp-ease);
 }
 .window[data-open] { opacity: 1; transform: none; }
-
-.tabs { display: flex; align-items: stretch; gap: 4px; padding: 0 4px; }
-.tabs > span { display: flex; align-items: center; justify-content: center; padding: 6px 8px 5px; color: rgb(150 150 150); border-bottom: 2px solid rgb(45 45 45); white-space: nowrap; }
-.tab { flex: 1; gap: 10px; }
-.tab em { color: rgb(110 110 110); font-style: normal; font-size: 9.5px; }
-.tab[data-active] { color: rgb(220 220 220); border-bottom-color: rgb(120 235 145) !important; }
-.tab[data-active] em { color: rgb(150 150 150); }
-.tabIcon { width: 26px; }
-/* The package's own tab icons (Editor/Resources/Icons), alpha masks that the window tints with its text colour. */
-.tabIcon i { display: block; flex: none; width: 14px; height: 14px; background: rgb(150 150 150); -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
-.iconHome { -webkit-mask-image: url('./icons/home.png'); mask-image: url('./icons/home.png'); }
-.iconSettings { -webkit-mask-image: url('./icons/settings.png'); mask-image: url('./icons/settings.png'); }
 
 .body {
   display: flex;
@@ -169,6 +158,57 @@
 .alertButtons span[data-default] { color: #fff; background: #0a64d8; }
 .dialog[data-open] .alertButtons span[data-default] { animation: prpPress 0.3s ease 1.2s; }
 @keyframes prpPress { 50% { background: #0a4fa8; } }
+
+/* ---------- Light theme: Unity's light skin, as in the install panel, and the window's light palette ---------- */
+
+/* Aspid-FastTools-Default-Light.uss tokens, by the same role as the dark values above. */
+html[data-theme='light'] .preview, html[data-theme='light'] .window { background: rgb(240 240 240); }
+html[data-theme='light'] .stage { color: #090909; background: #c8c8c8; }
+html[data-theme='light'] .menubar { background: #cbcbcb; border-bottom-color: #999; }
+html[data-theme='light'] .menubar > span { color: #090909; }
+html[data-theme='light'] .menubar > span[data-open] { color: #fff; background: #3a72b0; }
+html[data-theme='light'] .menu { background: #c1c1c1; border-color: #999; box-shadow: 0 6px 18px rgb(0 0 0 / 0.2); }
+html[data-theme='light'] .menu li { color: #090909; }
+html[data-theme='light'] .menu li i { color: #555; }
+html[data-theme='light'] .menu[data-open] > li[data-hover] { background: #3a72b0; }
+html[data-theme='light'] .separator { background: #999; }
+
+html[data-theme='light'] .panel, html[data-theme='light'] .card { background: rgb(251 251 251); border-color: rgb(220 220 220); }
+html[data-theme='light'] .panel strong, html[data-theme='light'] .empty strong { color: rgb(24 24 24); }
+html[data-theme='light'] .panel > span:not(.button), html[data-theme='light'] .empty span { color: rgb(92 92 92); }
+html[data-theme='light'] .button { color: rgb(24 24 24); background: rgb(0 0 0 / 0.05); }
+html[data-theme='light'] .button[data-press] { background: rgb(0 0 0 / 0.12); }
+
+html[data-theme='light'] .header { color: rgb(176 106 0); border-bottom-color: rgb(240 212 160); }
+html[data-theme='light'] .hint { color: rgb(52 52 52); }
+html[data-theme='light'] .card[data-picking] { border-color: rgb(230 190 120); }
+html[data-theme='light'] .cardHead { border-bottom-color: rgb(220 220 220); }
+html[data-theme='light'] .card[data-picking] .cardHead { background: linear-gradient(90deg, rgb(248 230 196 / 0.9), rgb(248 230 196 / 0.15)); border-bottom-color: rgb(240 212 160); }
+html[data-theme='light'] .cardHead b { color: rgb(176 106 0); }
+html[data-theme='light'] .cardHead > span { color: rgb(92 92 92); }
+html[data-theme='light'] .fixAll { color: rgb(24 24 24) !important; }
+html[data-theme='light'] .card[data-picking] .fixAll { color: rgb(176 106 0) !important; }
+
+html[data-theme='light'] .search { color: rgb(24 24 24); border-color: rgb(220 220 220); }
+html[data-theme='light'] .search::before { color: rgb(52 52 52); }
+html[data-theme='light'] .search i { color: rgb(92 92 92); }
+html[data-theme='light'] .pick { color: rgb(24 24 24); }
+html[data-theme='light'] .card[data-picking] .pick { background: rgb(248 230 196); }
+html[data-theme='light'] .entries li { color: rgb(52 52 52); }
+html[data-theme='light'] .entries li span:last-child { color: rgb(92 92 92); }
+
+html[data-theme='light'] .summary { background: rgb(252 243 226); border-color: rgb(240 212 160); }
+html[data-theme='light'] .warningIcon, html[data-theme='light'] .summaryHead strong { color: rgb(176 106 0); }
+html[data-theme='light'] .summaryHead { border-bottom-color: rgb(240 212 160); }
+html[data-theme='light'] .undo { color: rgb(24 24 24); border-color: rgb(240 212 160); }
+html[data-theme='light'] .summary > div > span { color: rgb(196 128 30); }
+
+/* The macOS alert in the light appearance. */
+html[data-theme='light'] .dialog { background: rgb(0 0 0 / 0.18); }
+html[data-theme='light'] .alert { color: #1d1d1f; background: rgb(242 242 242); border-color: rgb(0 0 0 / 0.12); box-shadow: 0 14px 36px rgb(0 0 0 / 0.25); }
+html[data-theme='light'] .alert strong { color: #000; }
+html[data-theme='light'] .alertButtons span { color: #1d1d1f; background: rgb(0 0 0 / 0.07); }
+html[data-theme='light'] .alertButtons span[data-default] { color: #fff; background: #0a64d8; }
 
 /* The install panel stacks the steps under the walk-through at this width; they take the full row then. */
 @container (max-width: 600px) {
