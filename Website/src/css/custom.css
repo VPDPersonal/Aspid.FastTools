@@ -1303,7 +1303,8 @@ html[data-theme='light'] .theme-doc-markdown .feature-card__preview:has(img[src*
 @media (prefers-reduced-motion: reduce) {
   .theme-doc-markdown .feature-card, .markdown .feature-card__more a, .markdown .feature-card__more a::after { transition: none; }
 }
-.theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
+.theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem; }
+.theme-doc-markdown p:has(.doc-zoom-image):has(+ .doc-media-caption) { margin-bottom: 0.75rem; }
 .theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }
 /* Image viewer: the picture lies straight on the dimmed page with only its article frame; the controls sit in the corner. */
 .doc-image-dialog {
@@ -1429,63 +1430,6 @@ html[data-theme='light'] .theme-doc-markdown .feature-card__preview:has(img[src*
 @keyframes doc-image-sink { to { transform: scale(0.98); } }
 @media (prefers-reduced-motion: reduce) { .doc-image-dialog, .doc-image-figure { animation: none !important; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
-/* Enum lookup: keep the three passes readable as a sequence on narrow screens. */
-.theme-doc-markdown .enum-lookup-flow {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  width: 100%;
-  max-width: none;
-  margin: 28px 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: lookup-step;
-}
-.theme-doc-markdown .enum-lookup-flow > li {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 0;
-  padding: 18px;
-  border: 2px solid var(--venom-line-strong);
-  border-radius: var(--ifm-pre-border-radius);
-  background: var(--venom-disclosure-surface);
-  color: var(--venom-fg);
-  counter-increment: lookup-step;
-}
-.enum-lookup-flow > li::before {
-  content: counter(lookup-step, decimal-leading-zero);
-  color: var(--ifm-color-primary);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.85rem;
-}
-.enum-lookup-flow strong { min-height: 2.8em; line-height: 1.4; }
-.enum-lookup-flow span, .enum-lookup-flow small {
-  font-size: 0.85rem;
-  line-height: 1.6;
-}
-.enum-lookup-flow code {
-  display: block;
-  padding: 9px 7px;
-  font-size: 0.75rem;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-.enum-lookup-flow small { color: var(--venom-muted); }
-.enum-lookup-flow em {
-  margin-top: auto;
-  padding-top: 8px;
-  color: var(--ifm-color-primary);
-  font-size: 0.75rem;
-  font-style: normal;
-}
-@media (max-width: 700px) {
-  .theme-doc-markdown .enum-lookup-flow { grid-template-columns: 1fr; }
-  .theme-doc-markdown .enum-lookup-flow > li { gap: 8px; }
-  .enum-lookup-flow strong { min-height: 0; }
-  .enum-lookup-flow em { padding-top: 4px; }
-}
-
 /* ---------- API reference ---------- */
 /* Generic signatures make long titles: a smaller H1 keeps "Class EnumValues<TEnum, TValue>" on one line more often. */
 .plugin-id-api article h1 { font-size: clamp(1.75rem, 3vw, 2.25rem); }
