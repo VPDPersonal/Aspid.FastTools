@@ -4,11 +4,19 @@
 
 ## Быстрый старт
 
-[Установите Aspid.FastTools](README.md#установка) в Unity-проект и выполните в корне проекта:
+[Установите Aspid.FastTools](README.md#установка) в Unity-проект и попросите агента:
+
+```text prompt
+Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект.
+```
+
+Или выполните в корне проекта:
 
 ```bash
 npx skills add VPDPersonal/Aspid.FastTools
 ```
+
+Для обновления повторите установку.
 
 ```text prompt
 Замерь Simulate и отдельно поиск соседей
@@ -17,33 +25,6 @@ npx skills add VPDPersonal/Aspid.FastTools
 | Без скиллов | Со скиллами |
 |---|---|
 | <pre lang="csharp"><code>private static readonly&#10;    ProfilerMarker _simulate =&#10;    new("Flock.Simulate");&#10;private static readonly&#10;    ProfilerMarker _neighbors =&#10;    new("Flock.FindNeighbors");&#10;&#10;public void Simulate()&#10;&#123;&#10;    using var _ = _simulate.Auto();&#10;    using (_neighbors.Auto())&#10;        FindNeighbors();&#10;    Integrate();&#10;&#125;</code></pre> | <pre lang="csharp"><code>public void Simulate()&#10;&#123;&#10;    using var _ = this.Marker();&#10;    using (this.Marker()&#10;        .WithName("Neighbors"))&#10;        FindNeighbors();&#10;    Integrate();&#10;&#125;</code></pre> |
-
-## Установка и обновление
-
-Одна команда ставит скиллы в Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI и другие агенты — в их папки внутри проекта (`.claude/skills`, `.agents/skills`). Закоммитьте эти папки, и скиллы получит вся команда.
-
-| Флаг | Что делает |
-|---|---|
-| `-a claude-code` | ставит только в одного агента |
-| `-s aspid-profiler-marker` | ставит один скилл |
-| `-y` | ставит без вопросов |
-| `--list` | показывает скиллы без установки |
-
-Чтобы обновить скиллы пакета, повторите установку:
-
-```bash
-npx skills add VPDPersonal/Aspid.FastTools -y
-```
-
-`npx skills update` обновит все скиллы проекта, не только эти.
-
-Без тега `add` берёт скиллы из ветки `main`, где они могут описывать API, которого ещё нет в вашей версии пакета. Чтобы скиллы совпадали с установленным пакетом, ставьте их с тега его релиза; `npx skills update` тогда остаётся на этом теге, а после обновления пакета снова выполните `add` с новым тегом:
-
-```bash
-npx skills add VPDPersonal/Aspid.FastTools#v<version>
-```
-
-Релизы до `1.0.0-rc.8` включительно не содержат этих скиллов; с ними ставьте скиллы из `main`, учитывая, что там может быть описан API, которого нет в вашей версии.
 
 ## Скиллы
 
