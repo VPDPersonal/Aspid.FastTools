@@ -109,9 +109,9 @@ caster
 
 ## Ресурсы
 
-- [Обзор примеров](../../Samples~/README.ru.md) — сцены и инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
-- [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — сигнатуры и описания всех публичных типов и членов.
-- [Журнал изменений](https://vpdpersonal.github.io/Aspid.FastTools/ru/changelog) — что добавлено, изменено и исправлено в каждой версии.
+- [Примеры](../../Samples~/README.ru.md) — сцены и инструменты с готовым кодом.
+- [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — типы, методы и свойства пакета.
+- [Журнал изменений](https://vpdpersonal.github.io/Aspid.FastTools/ru/changelog) — изменения и исправления по версиям.
 
 ## Помощь и поддержка
 

@@ -20,6 +20,11 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 /* The steps take the width their menu paths need on one line; the mock-up gets the rest. */
 .preview { position: relative; display: flex; flex: 1 1 56%; min-width: 0; min-height: 230px; background: #282828; border-right: 1px solid var(--venom-line-strong); }
 
+/* Match the introduction feature cards: instruction length must not move the 56% column boundary. */
+.installationTop { display: grid; grid-template-columns: 56% minmax(0, 1fr); }
+.installationTop > .steps { width: auto; min-width: 0; }
+.installationTop .steps b { white-space: normal; }
+
 /* ---------- Steps ---------- */
 
 .steps { display: flex; flex: none; width: min-content; flex-direction: column; justify-content: center; gap: 6px; margin: 0; padding: 18px; list-style: none; }
@@ -70,45 +75,49 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 .field :global(.theme-code-block) pre { padding-inline: 0; border-radius: 0; }
 .field :global(.theme-code-block) code { padding-inline: 18px; }
 /* The version tabs head the code block they switch, as a tab strip; the walk-through types the same URL. */
-/* The tab strip closes with a 2px rule like the site's table headers; the picked tab's underline replaces that stretch
-   of the rule, the same thickness and on the same line. */
-.meta { --meta-pad: 18px; display: flex; align-items: stretch; justify-content: space-between; gap: 14px; padding: 0 var(--meta-pad); border-bottom: 2px solid var(--venom-line-strong); }
+/* Both lines use the same bottom edge and CSS height. A negative margin against a border drifts at fractional zoom,
+   because browsers snap border widths to physical pixels but do not snap margins the same way. */
+.meta { --meta-pad: 18px; position: relative; display: flex; align-items: stretch; justify-content: space-between; gap: 14px; padding: 0 var(--meta-pad); }
+.meta::after { content: ''; position: absolute; inset-inline: 0; bottom: 0; height: 2px; background: var(--venom-line-strong); pointer-events: none; }
 /* Every tab's underline runs the strip's side padding past its label on both sides, so each label sits centred on its
    underline and the first one starts at the card's edge, where the rule does. The paddings keep the labels where they
    were, the negative margins keep the tabs in place, and the gap is exactly two overhangs, so the underlines meet. */
-.segmented > button:first-child,
 .segmented .versionTab > button {
+  position: relative;
   margin-inline: calc(-1 * var(--meta-pad));
   padding-inline: var(--meta-pad);
 }
 .segmented { display: flex; gap: calc(2 * var(--meta-pad)); }
 .segmented button {
-  margin-bottom: -2px;
-  padding: 13px 0 11px;
+  margin: 0;
+  padding: 13px 0;
   color: var(--venom-muted);
   background: none;
   border: 0;
-  border-bottom: 2px solid transparent;
-  font: 500 0.74rem/1.4 var(--ifm-font-family-monospace);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font: 400 0.82rem/1.4 var(--ifm-font-family-base);
+  letter-spacing: normal;
+  text-transform: none;
   white-space: nowrap;
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease;
 }
-.segmented button:hover { color: var(--venom-fg); }
-.segmented button[aria-checked='true'] { color: var(--venom-fg-strong); border-bottom-color: var(--venom-accent-mark); }
-/* The pinned tab opens its version list upwards: the card clips anything below the URL. */
+.segmented button:hover:not(:disabled) { color: var(--venom-fg); }
+.segmented .versionTab > button::after { content: ''; position: absolute; inset-inline: 0; bottom: 0; z-index: 1; height: 2px; background: transparent; pointer-events: none; transition: background-color 0.2s ease; }
+.segmented button[aria-pressed='true'] { color: var(--venom-fg); }
+.segmented .versionTab > button[aria-pressed='true']::after { background: var(--venom-accent-mark); }
+/* Channel menus open upwards because the card clips below the URL. */
+.segmented button:disabled { opacity: 0.4; cursor: not-allowed; }
 .versionTab { position: relative; display: flex; }
 .segmented .versionTab > button { display: inline-flex; align-items: center; gap: 7px; }
-/* The tab label is upper-case, the tag it names is not: `1.0.0-rc.8`, never `1.0.0-RC.8`. */
-.versionName { text-transform: none; }
+/* Prose uses the interface font; only concrete version numbers use monospace. */
+.versionName { color: var(--venom-muted); }
+.versionName[data-pinned], .versionMenu button[data-pinned] { font-family: var(--ifm-font-family-monospace); font-size: 0.74rem; }
 .caret { width: 0; height: 0; border-inline: 4px solid transparent; border-top: 5px solid currentcolor; opacity: 0.7; transition: transform 0.2s ease; }
 .versionTab > button[aria-expanded='true'] .caret { transform: rotate(180deg); }
 .versionMenu {
   position: absolute;
   bottom: calc(100% + 6px);
-  left: -10px;
+  left: calc(-1 * var(--meta-pad) + 4px);
   z-index: 2;
   min-width: calc(100% + 20px);
   max-height: 220px;
@@ -120,13 +129,7 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
   border-radius: 10px;
   box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
   list-style: none;
-  opacity: 0;
-  transform: translateY(4px);
-  transform-origin: bottom left;
-  pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.2s var(--install-ease);
 }
-.versionMenu[data-open] { opacity: 1; transform: none; pointer-events: auto; }
 .versionMenu li, .versionMenu li + li { margin: 0; }
 .segmented .versionMenu button {
   width: 100%;
@@ -136,20 +139,20 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
   border-radius: 6px;
   text-align: left;
   text-transform: none;
-  letter-spacing: 0.02em;
+  letter-spacing: normal;
 }
 .segmented .versionMenu button:hover, .segmented .versionMenu button:focus-visible { color: var(--venom-fg-strong); background: var(--install-accent-soft); }
-.versionMenu li[aria-selected='true'] button { color: var(--venom-accent); }
+.versionMenu button[aria-checked='true'] { color: var(--venom-accent); }
 /* The site's focus ring sits 4px out and the card clips it; the tab's own underline marks focus instead. */
 .segmented button:focus-visible { outline: none; color: var(--venom-fg-strong); }
-.segmented button:focus-visible:not([aria-checked='true']) { border-bottom-color: color-mix(in srgb, var(--venom-accent-mark) 50%, transparent); }
+.segmented .versionTab > button:focus-visible:not([aria-pressed='true'])::after { background: color-mix(in srgb, var(--venom-accent-mark) 50%, transparent); }
 /* Outranks the accent colour of the global `.markdown a:not(...)` rule, like the feature cards' links. */
 :global(.markdown) a.versions:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
   color: var(--venom-muted);
-  font: 500 0.74rem/1.4 var(--ifm-font-family-monospace);
-  letter-spacing: 0.08em;
+  font: 400 0.82rem/1.4 var(--ifm-font-family-base);
+  letter-spacing: normal;
   text-decoration: none;
-  text-transform: uppercase;
+  text-transform: none;
   transition: color 0.15s;
 }
 :global(.markdown) a.versions:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover { color: var(--venom-accent); }
@@ -235,15 +238,24 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 /* Stacks by the card's own width, so a narrow docs column does not squeeze the mock-up beside the steps. */
 @container (max-width: 600px) {
   .top { flex-direction: column; }
+  .installationTop { grid-template-columns: minmax(0, 1fr); }
   .preview { flex-basis: auto; border-right: 0; border-bottom: 1px solid var(--venom-line-strong); }
   .steps { padding: 12px; }
-  .segmented button { font-size: 0.68rem; }
+  .segmented button { font-size: 0.78rem; }
 }
-/* A phone-width card has no room for the tabs and the "all versions" link side by side: the link moves above the tabs,
+/* A narrow card has no room for the tabs and the "all versions" link side by side: the link moves above the tabs,
    right-aligned, so the tabs keep their underline on the strip's bottom rule. */
-@container (max-width: 420px) {
+@container (max-width: 680px) {
   .meta { --meta-pad: 14px; flex-wrap: wrap; row-gap: 0; }
   .versions { order: -1; flex-basis: 100%; padding-top: 10px; text-align: right; }
+}
+
+@container (max-width: 420px) {
+  .segmented { gap: 0; margin-inline: calc(-1 * var(--meta-pad)); width: calc(100% + 2 * var(--meta-pad)); }
+  .versionTab { flex: 1; min-width: 0; }
+  .segmented .versionTab > button { flex-wrap: wrap; column-gap: 6px; row-gap: 3px; width: 100%; margin-inline: 0; padding-inline: 8px; }
+  .segmented .versionTab > button > span:first-child { flex-basis: 100%; text-align: left; }
+  .versionMenu { left: 4px; min-width: calc(100% - 8px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

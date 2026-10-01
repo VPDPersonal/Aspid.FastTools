@@ -1286,12 +1286,13 @@ html[data-theme='light'] .theme-doc-markdown .feature-card__preview:has(img[src*
   gap: 10px;
   max-width: none;
   margin: 0;
-  font: 500 1.1rem/1.3 var(--ifm-heading-font-family);
+  font: 500 1rem/1.3 var(--ifm-heading-font-family);
   letter-spacing: -0.02em;
 }
 .theme-doc-markdown .resource-card__title::after { content: '→'; color: var(--venom-muted); font-family: var(--ifm-font-family-monospace); font-size: 0.9rem; transition: transform 0.15s, color 0.15s; }
 .theme-doc-markdown .resource-card:has(.resource-card__title a:hover) .resource-card__title::after { color: var(--venom-accent); transform: translateX(3px); }
-.markdown .resource-card__title a { text-decoration: none; }
+.markdown .resource-card__title a,
+.markdown .resource-card__title a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover { text-decoration: none; }
 .markdown .resource-card__title a::after { content: ''; position: absolute; inset: 0; border-radius: 10px; }
 .theme-doc-markdown .resource-card__text { max-width: none; margin: 0; color: var(--venom-muted); font-size: 0.9rem; line-height: 1.55; }
 @media (max-width: 700px) {

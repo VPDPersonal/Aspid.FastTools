@@ -111,9 +111,9 @@ Profile Simulate and the neighbor search
 
 ## Resources
 
-- [Samples overview](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
-- [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors) — signatures and descriptions of every public type and member.
-- [Changelog](https://vpdpersonal.github.io/Aspid.FastTools/changelog) — what was added, changed and fixed in each version.
+- [Samples](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md) — scenes and tools with ready-to-use code.
+- [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors) — package types, methods and properties.
+- [Changelog](https://vpdpersonal.github.io/Aspid.FastTools/changelog) — changes and fixes by version.
 
 ## Help and support
 

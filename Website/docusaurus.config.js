@@ -55,7 +55,10 @@ function readPackageVersions() {
   const tags = read(['ls-remote', '--tags', '--refs', `${REPO}.git`, ...patterns]) || read(['tag', '-l', ...patterns]);
   const refs = tags.split('\n').map((line) => line.trim().split(/\s/).pop().replace(/^refs\/tags\//, ''));
   return Object.fromEntries(branches.map((branch) => {
-    const versions = refs.filter((ref) => ref.startsWith(`${branch}/`)).map((ref) => ref.slice(branch.length + 1));
+    // Early release candidates were tagged on upm; they must not enable the Stable tab.
+    const versions = refs.filter((ref) => ref.startsWith(`${branch}/`))
+      .map((ref) => ref.slice(branch.length + 1))
+      .filter((version) => branch !== 'upm' || !version.split('+')[0].includes('-'));
     if (branch === UPM_BRANCH) versions.push(PACKAGE_VERSION);
     return [branch, [...new Set(versions)].sort(compareVersions).reverse()];
   }));

@@ -355,11 +355,11 @@ already 16px wider (`-preset veryslow -crf 24 -vf "fps=20,pad=1576:1080:0:188:co
 The Inspector GIFs of the first two cards are cropped in `custom.css` to hide the baked title bar and tab strip.
 
 The same plugin replaces the Installation section's instruction, URL block and version note with
-`src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with a toggle
-between the latest version and `<url>/<packageVersion>` (`customFields.packageVersion` from `package.json`). The
-README's URL carries the channel — `#upm-preview` for a prerelease, `#upm` for a stable version — and
-`scripts/set-version.sh` switches it together with the badge label. The panel pins from the branch its own URL names,
-out of `customFields.packageVersions` (the tags of both branches, per branch); `UPM_BRANCH` in `docusaurus.config.js`
+`src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with Stable
+and Preview dropdown tabs. Each offers Latest or a pinned version; a channel without versions is disabled.
+The README's URL carries the channel — `#upm-preview` for a prerelease, `#upm` for a stable version — and
+`scripts/set-version.sh` switches it together with the badge label. The README URL selects the initial channel;
+each tab pins from its own branch out of `customFields.packageVersions` (the tags of both branches, per branch); `UPM_BRANCH` in `docusaurus.config.js`
 follows the `package.json` version the same way and only decides where the working-tree version is offered.
 Its text is written in the component per locale, so update it when the README's install steps change.
 
