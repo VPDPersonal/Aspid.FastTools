@@ -1099,6 +1099,68 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 /* A capture sits straight on the article: no window, padding or shadow around it; its own 1px edge is the only frame. */
 .theme-doc-markdown .doc-image-panel { display: block; position: relative; }
 .theme-doc-markdown .doc-image-panel > img.doc-zoom-image { height: auto; }
+/* 1393px-wide originals: x=38..1385, y=6..124 (missing), 764 (picker), or 804 (member).
+   Warnings use x=34..1385, y=6..160 to retain the warning icon and text descenders.
+   GIF crops include the full picker in every frame. Add equal 8px insets and continue
+   Unity's backgrounds at the original header separator; source assets remain unchanged. */
+.theme-doc-markdown .doc-image-panel--missing-type { --doc-crop-height: 118; }
+.theme-doc-markdown .doc-image-panel--type-picker { --doc-crop-height: 758; }
+.theme-doc-markdown .doc-image-panel--type-member { --doc-crop-height: 798; }
+.theme-doc-markdown .doc-image-panel--type-warning { --doc-crop-height: 154; --doc-crop-width: 1351; --doc-crop-left: 34; }
+/* Other captures use their own source dimensions and content bounds (right/bottom exclusive). */
+.theme-doc-markdown .doc-image-panel--component-picker {
+  /* 1300×764 → (34, 6)–(1292, 724). */
+  --doc-source-width: 1300; --doc-crop-left: 34; --doc-crop-width: 1258; --doc-crop-height: 718;
+}
+.theme-doc-markdown :is(.doc-image-panel--reference-list, .doc-image-panel--reference-picker,
+  .doc-image-panel--reference-shared, .doc-image-panel--reference-repair) {
+  /* x=10..1332 retains foldouts and the coloured shared/missing-reference indicators. */
+  --doc-source-width: 1340; --doc-crop-left: 10; --doc-crop-width: 1322;
+}
+.theme-doc-markdown .doc-image-panel--reference-list { --doc-crop-height: 948; } /* y=6..954, source height 962 */
+.theme-doc-markdown .doc-image-panel--reference-picker { --doc-crop-height: 760; } /* y=6..766, source height 806 */
+.theme-doc-markdown .doc-image-panel--reference-shared { --doc-crop-height: 428; } /* y=6..434, source height 448 */
+.theme-doc-markdown .doc-image-panel--reference-repair { --doc-crop-height: 202; } /* y=6..208, source height 226 */
+.theme-doc-markdown .doc-image-panel--enum-populate {
+  /* 1560×726 → (28, 26)–(1548, 700), including the four-row state in both GIFs. */
+  --doc-source-width: 1560; --doc-crop-left: 28; --doc-crop-top: 26;
+  --doc-crop-width: 1520; --doc-crop-height: 674;
+  --doc-crop-background: #333; --doc-crop-light-background: #c8c8c8;
+}
+.theme-doc-markdown .doc-image-panel--enum-picker {
+  /* 1080×428 → (26, 26)–(1064, 404), including the popup's lower edge. */
+  --doc-source-width: 1080; --doc-crop-left: 26; --doc-crop-top: 26;
+  --doc-crop-width: 1038; --doc-crop-height: 378;
+  --doc-crop-background: #3c3c3c; --doc-crop-light-background: #c8c8c8;
+}
+
+.theme-doc-markdown .doc-image-panel--cropped {
+  padding: 8px;
+  overflow: hidden;
+  border-radius: var(--ifm-pre-border-radius);
+  background: var(--doc-crop-background, linear-gradient(#3e3e3e calc(8px + (100% - 16px) * 34 / var(--doc-crop-height)), #383838 0));
+}
+.theme-doc-markdown .doc-image-panel--cropped .doc-image-crop {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: var(--doc-crop-width, 1347) / var(--doc-crop-height);
+}
+html[data-theme='light'] .theme-doc-markdown .doc-image-panel--cropped {
+  background: var(--doc-crop-light-background, #cbcbcb);
+}
+.theme-doc-markdown .doc-image-panel--cropped img.doc-zoom-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% * var(--doc-source-width, 1393) / var(--doc-crop-width, 1347));
+  max-width: none;
+  max-height: none;
+  height: auto;
+  margin: calc(-100% * var(--doc-crop-top, 6) / var(--doc-crop-width, 1347)) 0 0 calc(-100% * var(--doc-crop-left, 38) / var(--doc-crop-width, 1347));
+  border: 0;
+  border-radius: 0;
+}
 /* SVG artwork supplies its own outline, including when Docusaurus inlines it as a data URL. */
 .theme-doc-markdown .doc-image-panel > img.doc-zoom-image:is([src^='data:image/svg+xml'], [src$='.svg']) {
   border: 0;

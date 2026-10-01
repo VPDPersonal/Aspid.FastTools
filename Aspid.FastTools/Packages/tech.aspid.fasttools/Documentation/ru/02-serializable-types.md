@@ -28,8 +28,6 @@ System.Type type = primary;
 var empty = new SerializableType<Weapon>(null);
 ```
 
-<code lang="csharp">ToString()</code> найденного типа возвращает <code lang="csharp">Type.Name</code>: у generic-типа это <code lang="string">Amplify`1</code>, а не подпись из окна выбора.
-
 ### Потерянный тип
 
 Сохранённое имя, которое перестало находиться после переименования класса, namespace или сборки. Инспектор показывает его как `<Missing …>`.

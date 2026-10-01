@@ -28,8 +28,6 @@ System.Type type = primary;
 var empty = new SerializableType<Weapon>(null);
 ```
 
-For a resolved type, <code lang="csharp">ToString()</code> returns <code lang="csharp">Type.Name</code>, so a generic type reads <code lang="string">Amplify`1</code>, not the picker's caption.
-
 ### Missing type
 
 A stored name that no longer resolves after a class, namespace, or assembly rename. The Inspector shows it as `<Missing …>`.
