@@ -1,33 +1,22 @@
 # SerializedProperty Extensions
 
-Write editor properties in one line — and reach the actual C# field the property shows in the Inspector.
+Write values and access C# fields through SerializedProperty.
 
 ## Quick start
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;serializedObject.Update();&#10;manaCost.intValue = 42;&#10;serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;manaCost&#10;    .Update()&#10;    .SetIntAndApply(42);</code></pre> |
+| <pre lang="csharp"><code>serializedObject.Update();&#10;manaCost.intValue = 42;&#10;serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>manaCost&#10;    .Update()&#10;    .SetIntAndApply(42);</code></pre> |
 
 ## Writing values
 
-| Before — Unity API | After — FastTools |
+| Call | What it does |
 |---|---|
-| <pre lang="csharp"><code>manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>manaCost.SetInt(42);</code></pre> |
-| <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>manaCost.SetIntAndApply(42);</code></pre> |
-| <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
+| <code lang="csharp">SetInt(42)</code> | Writes the value |
+| <code lang="csharp">SetIntAndApply(42)</code> | Writes the value and applies changes |
+| <code lang="csharp">SetIntAndApplyWithoutUndo(42)</code> | Writes the value and applies changes without Undo |
 
-### Supported types
-
-| Values | Setters |
-|---|---|
-| Numbers | <code lang="function">SetInt</code>, <code lang="function">SetUint</code>, <code lang="function">SetLong</code>, <code lang="function">SetUlong</code>, <code lang="function">SetFloat</code>, <code lang="function">SetDouble</code> |
-| Text, bool and hash | <code lang="function">SetString</code>, <code lang="function">SetBool</code>, <code lang="function">SetHash128</code> |
-| Vectors | <code lang="function">SetVector2</code>, <code lang="function">SetVector2Int</code>, <code lang="function">SetVector3</code>, <code lang="function">SetVector3Int</code>, <code lang="function">SetVector4</code>, <code lang="function">SetQuaternion</code> |
-| Areas | <code lang="function">SetRect</code>, <code lang="function">SetRectInt</code>, <code lang="function">SetBounds</code>, <code lang="function">SetBoundsInt</code> |
-| Unity types | <code lang="function">SetColor</code>, <code lang="function">SetGradient</code>, <code lang="function">SetAnimationCurve</code> |
-| Object IDs | <code lang="function">SetEntityId</code> |
-
-Each has a <code lang="function">SetValue</code> overload: <code lang="csharp">SetValue(42)</code> calls <code lang="function">SetInt</code>, so the argument type must match the field type.
+The <code lang="function">SetValue</code> overloads select a setter by argument type: <code lang="csharp">SetValue(42)</code> calls <code lang="function">SetInt</code>. The argument type must match the field type. See the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors.SerializePropertyExtensions) for the full list of setters.
 
 ### Enums, arrays and references
 
@@ -36,14 +25,16 @@ Each has a <code lang="function">SetValue</code> overload: <code lang="csharp">S
 | <code lang="csharp">enumValueIndex = 1</code> | <code lang="csharp">SetEnumIndex(1)</code> |
 | <code lang="csharp">enumValueFlag = flags</code> | <code lang="csharp">SetEnumFlag(flags)</code> |
 | <code lang="csharp">arraySize = 5</code> | <code lang="csharp">SetArraySize(5)</code> |
-| <code lang="csharp">arraySize += n</code> | <code lang="csharp">AddArraySize(n = 1)</code> |
-| <code lang="csharp">arraySize -= n</code> | <code lang="csharp">RemoveArraySize(n = 1)</code> |
+| <code lang="csharp">arraySize++</code> | <code lang="csharp">AddArraySize()</code> |
+| <code lang="csharp">arraySize--</code> | <code lang="csharp">RemoveArraySize()</code> |
 | <code lang="csharp">managedReferenceValue = value</code> | <code lang="csharp">SetManagedReference(value)</code> |
 | <code lang="csharp">objectReferenceValue = value</code> | <code lang="csharp">SetObjectReference(value)</code> |
 | <code lang="csharp">boxedValue = value</code> | <code lang="csharp">SetBoxed(value)</code> |
 | <code lang="csharp">exposedReferenceValue = value</code> | <code lang="csharp">SetExposedReference(value)</code> |
 
 ### Update() and Apply…()
+
+These methods are called on the property and, like setters, return it for chaining.
 
 | Unity | FastTools |
 |---|---|
@@ -52,11 +43,9 @@ Each has a <code lang="function">SetValue</code> overload: <code lang="csharp">S
 | <code lang="csharp">serializedObject.ApplyModifiedProperties()</code> | <code lang="csharp">ApplyModifiedProperties()</code> |
 | <code lang="csharp">serializedObject.ApplyModifiedPropertiesWithoutUndo()</code> | <code lang="csharp">ApplyModifiedPropertiesWithoutUndo()</code> |
 
-They are called on the property and, like every setter, return it.
+## Accessing the C# field
 
-## The C# field from the Inspector
-
-Three methods find the C# field the property shows in the Inspector: its type, the field itself and the object that holds it.
+The methods return the field type, its <code lang="class-name">FieldInfo</code> and the owning object.
 
 ```csharp
 public class AbilityBook : MonoBehaviour
@@ -75,7 +64,7 @@ public class Ability { public string Name = "Fireball"; }
 public class BurnEffect : IAbilityEffect { public float Damage = 5f; }
 ```
 
-| Property path | <code lang="csharp">GetPropertyType()</code> | <code lang="csharp">GetFieldInfo()</code> | <code lang="csharp">GetDeclaringInstance()</code> |
+| Field / element | <code lang="csharp">GetPropertyType()</code> | <code lang="csharp">GetFieldInfo()</code> | <code lang="csharp">GetDeclaringInstance()</code> |
 |---|---|---|---|
 | <code lang="csharp">_abilities</code> | <code lang="class-name">List&lt;Ability&gt;</code> | <code lang="csharp">AbilityBook._abilities</code> | the <code lang="class-name">AbilityBook</code> |
 | <code lang="csharp">_abilities[0]</code> | <code lang="class-name">Ability</code> | <code lang="csharp">AbilityBook._abilities</code> | the <code lang="class-name">AbilityBook</code> |
@@ -91,22 +80,18 @@ public class BurnEffect : IAbilityEffect { public float Damage = 5f; }
 
 ## Member name and drawing checks
 
-| Property path | <code lang="csharp">GetMemberName()</code> | <code lang="csharp">IsArrayElement()</code> | <code lang="csharp">HasFoldout()</code> |
+| Field / element | <code lang="csharp">GetMemberName()</code> | <code lang="csharp">IsArrayElement()</code> | <code lang="csharp">HasFoldout()</code> |
 |---|---|---|---|
 | <code lang="csharp">_abilities[0]</code> | <code lang="csharp">"_abilities"</code> | <code lang="csharp">true</code> | <code lang="csharp">true</code> |
 | <code lang="csharp">_abilities[0].Name</code> | <code lang="csharp">"Name"</code> | <code lang="csharp">false</code> | <code lang="csharp">false</code> |
 | <code lang="csharp">_effect</code> | <code lang="csharp">"_effect"</code> | <code lang="csharp">false</code> | <code lang="csharp">false</code> |
 
 > [!NOTE]
-> <code lang="csharp">HasFoldout()</code> returns <code lang="csharp">true</code> for a plain compound field with visible children, so it can differ from the Inspector: a <code lang="csharp">[SerializeReference]</code> field gets a foldout in the Inspector but <code lang="csharp">false</code> here, and custom <code lang="class-name">PropertyDrawer</code>s are not taken into account.
+> <code lang="csharp">HasFoldout()</code> checks ordinary compound fields with visible children. It does not account for <code lang="csharp">[SerializeReference]</code> or custom <code lang="class-name">PropertyDrawer</code>s.
 
 ## Persistent()
 
 <code lang="csharp">Persistent()</code> returns a copy of the property on its own <code lang="class-name">SerializedObject</code>, so it can be used later, for example in <code lang="csharp">EditorApplication.delayCall</code>.
-
-| Before — Unity API | After — FastTools |
-|---|---|
-| <pre lang="csharp"><code>var source = manaCost.serializedObject;&#10;var independentObject = new SerializedObject(&#10;    source.targetObjects, source.context);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
 
 - the copy belongs to the caller: dispose it together with its <code lang="csharp">serializedObject</code>;
 - unapplied writes of the source property do not reach the copy;
