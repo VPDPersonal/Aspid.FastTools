@@ -10,7 +10,7 @@
 
 ## Marker()
 
-Имя маркера собирается из типа, метода и номера строки вызова:
+Имя маркера включает тип, имя метода или свойства и номер строки вызова:
 
 | Где вызван <code lang="csharp">this.Marker()</code> | Имя маркера |
 |---|---|
@@ -19,14 +19,24 @@
 | <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (строка)</code> |
 | <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (строка)</code> |
 | <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (строка)</code> |
-| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (строка)</code> |
-| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (строка)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (строка)</code> |
-| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute (строка)</code> для любого <code lang="class-name">T</code> |
-| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (строка)</code> для любого <code lang="class-name">T</code> |
+
+Номер строки меняется при перемещении вызова в коде.
+
+<details>
+<summary>Вложенные и обобщённые типы</summary>
+
+| Место вызова | Имя маркера |
+|---|---|
+| Метод <code lang="csharp">Move()</code> во вложенном <code lang="class-name">FlockSimulation.Agent</code> | <code lang="string">Agent.Move (строка)</code> |
+| <code lang="csharp">Step()</code> в классе <code lang="class-name">FlockSimulation&lt;Int32&gt;</code> | <code lang="string">FlockSimulation&lt;Int32&gt;.Step (строка)</code> |
+| <code lang="csharp">Step()</code> в структуре <code lang="class-name">FlockSimulation&lt;T&gt;</code> | <code lang="string">FlockSimulation&lt;T&gt;.Step (строка)</code> для любого <code lang="class-name">T</code> |
+| Обобщённый метод <code lang="csharp">Step&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Step (строка)</code> для любого <code lang="class-name">T</code> |
+
+</details>
 
 ## WithName()
 
-<code lang="csharp">.WithName("Steering")</code> заменяет в имени маркера метод на свой текст: <code lang="string">FlockSimulation.Step (5)</code> → <code lang="string">FlockSimulation.Steering (5)</code>.
+<code lang="csharp">WithName("Steering")</code> заменяет имя метода, сохраняя тип и номер строки.
 
 ```csharp
 public void Step()
@@ -48,25 +58,21 @@ public void Step()
 ```
 
 > [!NOTE]
-> Работает только строковый литерал: имя генератор читает из исходника. С переменной, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> или <code lang="csharp">$"Agent &#123;index&#125;"</code> останется имя метода, а аргумент всё равно будет вычисляться при каждом вызове.
+> Задавайте имя строковым литералом прямо в <code lang="function">WithName</code>. Переменные, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> и строки с подстановками не меняют имя маркера; аргумент при этом вычисляется при каждом вызове.
 
 ## В Profiler
 
-На каждую точку вызова генератор создаёт одно статическое поле, поэтому замер не выделяет память.
+Маркеры создаются один раз. После инициализации повторные замеры не выделяют память.
 
 ![Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.](../Images/profiler-markers-hierarchy.svg)
 
 ## Ограничения
 
-- **Номер строки в имени** меняется, когда вызов переезжает: сравнивайте захваты до и после правки по имени без номера.
-- **Вызов без маркера** — на объекте другого типа (<code lang="csharp">other.Marker()</code>), в статическом классе, во вложенном <code lang="csharp">private</code> или <code lang="csharp">protected</code> типе: анализатор `AFT0010` предупредит об этом.
-- **Выброшенный замер.** <code lang="csharp">this.Marker();</code> без <code lang="csharp">using</code> начинает замер, который никогда не заканчивается, — анализатор `AFT0011` предупредит об этом.
+- Вызывайте <code lang="csharp">this.Marker()</code> внутри собственного типа. Вызовы на объекте другого типа, в статическом классе или вложенном <code lang="csharp">private</code>/<code lang="csharp">protected</code> типе отмечаются `AFT0010`: замер может отсутствовать или попасть в чужой маркер.
+- Используйте <code lang="csharp">using</code>. Отдельный вызов <code lang="csharp">this.Marker();</code> начинает замер и не завершает его — `AFT0011`.
 
 > [!WARNING]
-> Замеры попадут в чужую строку Profiler, когда:
->
-> - вызовы <code lang="csharp">this.Marker()</code> в разных файлах <code lang="csharp">partial</code> одного типа стоят на одной строке — они делят маркер первого из них;
-> - вызов без маркера стоит на той же строке, что и вызов с маркером в типе, к которому он привязался: у <code lang="csharp">other.Marker()</code> это тип <code lang="csharp">other</code>, если тот объявлен в пространстве имён вызова или во внешнем для него, у вызова во вложенном типе — базовый тип, если тот не в глобальном пространстве имён.
+> Вызовы внутри одного типа с одинаковым номером строки делят один маркер, даже если находятся в разных файлах <code lang="csharp">partial</code>. Давайте каждой точке замера свой номер строки, иначе замеры объединятся под именем первого вызова.
 
 ## Пример в пакете
 

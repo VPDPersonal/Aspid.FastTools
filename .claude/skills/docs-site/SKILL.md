@@ -63,7 +63,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   between plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.
   Never link by site URL.
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
-  on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`).
+  on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`). This conversion
+  requires every body cell to contain only a `<pre>` element; a plain-text or inline-code result row prevents it.
+  Use inline code throughout tables that pair short calls with their results.
 - **Highlighted inline code**: `<code lang="csharp">void Run&lt;T&gt;()</code>` is plain inline code on GitHub and is
   highlighted on the site (`introBanner.js` → `src/components/InlineCode`; sample pages get it from `remarkInlineCode`
   in the `tutorials` instance). Use it for every inline C# snippet, in prose
@@ -126,9 +128,7 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 
 ## Writing a feature page (docs/)
 
-Rules the user confirmed while reworking `05-profiler-markers.md`, `07-visual-element-extensions.md`,
-`08-serialized-property-extensions.md` and `09-editor-helpers.md`; apply them
-to every main doc page, always to the English file and its `ru/` twin together.
+Apply these rules to every main doc page, always to the English file and its `ru/` twin together.
 
 - **Lead = one short sentence that makes the reader interested**, not an explanation. No API names, code,
   `using`, name formats or mechanics — the quick start shows those right below. Plain wording a reader understands
@@ -139,17 +139,20 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - **One concrete example type per page**, reused by every section; extend that type rather than inventing a second
   one. Do not announce it with a sentence ("The examples on this page work with…") — the before/after table
   already shows it, and the link to the sample lives only in the closing `## Package sample`.
-- **Quick start is the before/after table**, plus at most one sentence on what the calls return. No `using` line, no
-  type declaration, no "in your custom `Editor`, add…". A declaration the results cannot be read without goes into the
-  section that needs it (SerializedProperty Extensions: `AbilityBook` sits above the reflection table).
+- **Quick start shows the shortest useful path.** For API features, use a before/after table with at most one
+  sentence on what the calls return. For installation or setup, give a copyable command or request to an agent;
+  keep optional flags and maintenance details out of the quick start. No boilerplate introductions or declarations;
+  put declarations needed to understand results in the section that uses them.
 - **A plain rename is a two-column `Unity | FastTools` table of inline code** (`AddToClassList` → `AddClass`). Keep
   `<pre>` before/after cells for calls where FastTools removes code (`AddChildIf`, a hex colour, `TryGetByEnum`).
 - **Verify every claim against the source** (`Editor/Scripts/...`) before writing it; drop anything the code does
-  not back (e.g. the "inherited attribute" note was removed from `GetDisplayName`).
+  not back. Choose the simplest method that demonstrates the stated benefit, and make its distinguishing
+  behaviour visible in the shown result.
 - **Results go in tables**: property × method result tables and Unity-API-vs-FastTools before/after tables replace
-  runs of small code blocks. Long method lists (setters) become a grouped table, not a comma list.
-- **Say each fact once.** No repeat between a table's cell comments and the paragraph under it, and no repeat
-  between quick start and a later section (`AndApply` is explained once).
+  runs of small code blocks. Show representative calls and meaningful differences; link to the API reference
+  for exhaustive method and overload lists.
+- **Say each fact once, in the section it belongs to.** Explain behaviour beside the methods or task it describes.
+  No repeat between a table's cell comments and the paragraph under it, or between quick start and a later section.
 - **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`",
   no Assembly Definition reference note), do not list what is *not* required ("no attributes or `partial`") — a
   requirement would be stated — and do not state expected behaviour ("keeps the order", "finds private fields too",

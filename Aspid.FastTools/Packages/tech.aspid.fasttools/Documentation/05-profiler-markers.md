@@ -10,7 +10,7 @@ Profiler markers in one line, with no fields or names to keep up by hand.
 
 ## Marker()
 
-The marker name is built from the type, the method and the call's line number:
+The marker name includes the type, the member name and the call’s line number:
 
 | Where <code lang="csharp">this.Marker()</code> is called | Marker name |
 |---|---|
@@ -19,14 +19,24 @@ The marker name is built from the type, the method and the call's line number:
 | <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (line)</code> |
 | <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (line)</code> |
 | <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (line)</code> |
-| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (line)</code> |
-| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (line)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (line)</code> |
-| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute (line)</code> for any <code lang="class-name">T</code> |
-| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (line)</code> for any <code lang="class-name">T</code> |
+
+The line number changes when the call moves in the source.
+
+<details>
+<summary>Nested and generic types</summary>
+
+| Call location | Marker name |
+|---|---|
+| Method <code lang="csharp">Move()</code> in nested <code lang="class-name">FlockSimulation.Agent</code> | <code lang="string">Agent.Move (line)</code> |
+| <code lang="csharp">Step()</code> in class <code lang="class-name">FlockSimulation&lt;Int32&gt;</code> | <code lang="string">FlockSimulation&lt;Int32&gt;.Step (line)</code> |
+| <code lang="csharp">Step()</code> in struct <code lang="class-name">FlockSimulation&lt;T&gt;</code> | <code lang="string">FlockSimulation&lt;T&gt;.Step (line)</code> for any <code lang="class-name">T</code> |
+| Generic method <code lang="csharp">Step&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Step (line)</code> for any <code lang="class-name">T</code> |
+
+</details>
 
 ## WithName()
 
-<code lang="csharp">.WithName("Steering")</code> replaces the method in the marker name with its own text: <code lang="string">FlockSimulation.Step (5)</code> → <code lang="string">FlockSimulation.Steering (5)</code>.
+<code lang="csharp">WithName("Steering")</code> replaces the member name, keeping the type and line number.
 
 ```csharp
 public void Step()
@@ -48,25 +58,21 @@ public void Step()
 ```
 
 > [!NOTE]
-> Only a string literal works: the generator reads the name from the source. With a variable, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> or <code lang="csharp">$"Agent &#123;index&#125;"</code> the method name stays, and the argument is still evaluated on every call.
+> Pass the name as a string literal directly to <code lang="function">WithName</code>. Variables, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> and strings with interpolation holes leave the marker name unchanged; the argument is still evaluated on every call.
 
 ## In the Profiler
 
-The generator creates one static field per call site, so measuring allocates nothing.
+Markers are created once. After initialization, repeated measurements allocate no memory.
 
 ![FlockSimulation marker diagram: Steering and Integrate nested under Step, Steering.Agent with 120 calls. Timings are illustrative.](Images/profiler-markers-hierarchy.svg)
 
 ## Limitations
 
-- **The line number in the name** changes when the call moves: compare captures from before and after an edit by the name without it.
-- **Calls without a marker** — on an object of another type (<code lang="csharp">other.Marker()</code>), in a static class, in a <code lang="csharp">private</code> or <code lang="csharp">protected</code> nested type: analyzer `AFT0010` warns about it.
-- **A discarded scope.** <code lang="csharp">this.Marker();</code> without <code lang="csharp">using</code> begins a sample that never ends — analyzer `AFT0011` warns about it.
+- Call <code lang="csharp">this.Marker()</code> inside its own type. Calls on another type’s instance, in a static class or in a <code lang="csharp">private</code>/<code lang="csharp">protected</code> nested type are reported as `AFT0010`: the measurement may be missing or use another call’s marker.
+- Use <code lang="csharp">using</code>. A standalone <code lang="csharp">this.Marker();</code> starts a measurement without ending it — `AFT0011`.
 
 > [!WARNING]
-> Measurements land in someone else's Profiler row when:
->
-> - <code lang="csharp">this.Marker()</code> calls in different <code lang="csharp">partial</code> files of one type sit on the same line — they share the first one's marker;
-> - a call without a marker sits on the same line as a marked call in the type it binds to: for <code lang="csharp">other.Marker()</code> that is the type of <code lang="csharp">other</code> if it is declared in the caller's namespace or an enclosing one, for a call in a nested type — the base type unless it is in the global namespace.
+> Calls within one type that share a line number share a marker, even across different <code lang="csharp">partial</code> files. Give each call site a distinct line number, or measurements will be combined under the first call’s name.
 
 ## Package sample
 
