@@ -136,8 +136,11 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 
 /* ---------- Editor Helpers ---------- */
 
-.namesBody { display: grid; flex: 1; grid-template-rows: auto auto 1fr; height: 100%; }
-.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: var(--preview-inset); list-style: none; }
+/* The code takes the spare height, so the rows keep the inset between them as well as around them. */
+.namesBody { display: grid; flex: 1; grid-template-rows: 1fr auto; height: 100%; }
+/* Its two lines sit in the middle of that height. */
+.namesBody > .snippet { display: flex; flex-direction: column; justify-content: center; }
+.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--preview-inset); margin: 0; padding: var(--preview-inset); list-style: none; }
 .names li {
   display: flex;
   align-items: center;
@@ -151,6 +154,8 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
   border-radius: 10px;
   transition: border-color 0.4s ease, background-color 0.4s ease;
 }
+/* The list's gap spaces the rows: `ul` outranks the article's `.markdown li + li` margin. */
+ul.names li + li { margin-top: 0; }
 /* The row whose call the snippet highlights; a resolved row keeps its label but not the highlight. */
 .names li[data-active] { background: color-mix(in srgb, var(--venom-accent-mark) 8%, transparent); border-color: color-mix(in srgb, var(--venom-accent-mark) 50%, var(--venom-line)); }
 .names code { display: inline-flex; flex: none; align-items: center; gap: 6px; max-width: 100%; overflow: hidden; padding: 0; color: var(--venom-muted); background: none; border: 0; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; vertical-align: baseline; transition: color 0.4s ease; }
@@ -164,9 +169,6 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 /* A narrow card wraps the label under its method rather than cutting it: the (2) is the point. */
 .names li { flex-wrap: wrap; row-gap: 4px; }
 .names li .namesLabel { flex: 1 0 auto; }
-/* Why the second call says (2): a code comment under the rows, shown once that row resolves. */
-.namesNote { margin: 0; padding: 0 var(--preview-inset) var(--preview-inset); color: var(--venom-muted); font: 0.78rem/1.4 var(--ifm-font-family-monospace); opacity: 0; transition: opacity 0.45s ease; }
-.namesNote[data-show] { opacity: 1; }
 
 /* ---------- Agent Skills ---------- */
 

@@ -165,13 +165,13 @@ function PropertyPreview({ru}) {
 const NAMES_CODE = `caster.GetDisplayName();
 caster.GetDisplayNameWithIndex();`;
 
-// `caster` is the second AbilityCaster on its GameObject, hence the (2); the note under the rows says so.
+// `caster` is the second AbilityCaster on its GameObject, hence the (2).
 const NAMES = [
   ['GetDisplayName()', 'Ability Caster'],
   ['GetDisplayNameWithIndex()', 'Ability Caster (2)'],
 ];
 
-function NamesPreview({ru}) {
+function NamesPreview() {
   const ref = useRef(null);
   // 0 nothing resolved, 1 the plain label, 2 the indexed one, 3–4 both hold.
   const step = useLoop(5, 950, useInView(ref));
@@ -187,9 +187,6 @@ function NamesPreview({ru}) {
           </li>
         ))}
       </ul>
-      <p className={styles.namesNote} data-show={step >= 2 || undefined}>
-        {ru ? '// (2): второй AbilityCaster на объекте' : '// (2): the second AbilityCaster on the GameObject'}
-      </p>
     </div>
   );
 }
