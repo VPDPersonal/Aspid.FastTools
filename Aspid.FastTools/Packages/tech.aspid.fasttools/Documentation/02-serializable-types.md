@@ -52,6 +52,7 @@ The same field, but the selection survives a class rename: the field remembers t
 Limitations:
 
 - only a top-level, non-generic class declared in a `.cs` file of the same name can be picked; from a DLL, only a <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code>;
+- a class from a DLL loses the link when you rename it or its namespace;
 - there is no public constructor, so the field cannot be created in code;
 - renaming the class without its file, or the file outside Unity without its `.meta`, breaks the link and the field shows a missing type.
 
