@@ -7,10 +7,7 @@
 .section { --prp-ease: cubic-bezier(0.2, 0.7, 0.2, 1); }
 /* No URL bar below, so the steps row closes the card itself. */
 .top { border-bottom: 0; }
-/* The menu path wraps, so the walk-through keeps most of the width. */
-.section ol { flex: none; width: 40%; }
-.section ol b { white-space: normal; }
-.preview { flex: 1 1 60%; min-height: 330px; background: #000; }
+.preview { background: #000; }
 
 .stage {
   position: relative;
@@ -89,7 +86,6 @@
 .panel, .card, .summary { background: rgb(12 12 12); border: 1px solid rgb(45 45 45); border-radius: 6px; }
 .panel { display: flex; flex-direction: column; gap: 2px; padding: 7px 10px 8px; }
 .panel strong { color: rgb(220 220 220); font-size: 12px; font-weight: 600; }
-.panel > span:not(.button) { color: rgb(150 150 150); font-size: 10px; }
 .button { align-self: stretch; margin-top: 5px; padding: 3px 8px; color: rgb(220 220 220); background: rgb(255 255 255 / 0.06); border-radius: 5px; font-weight: 600; transition: background-color 0.2s ease; }
 .button[data-press] { background: rgb(255 255 255 / 0.16); transition-delay: 0.45s; }
 
@@ -97,13 +93,13 @@
 .empty strong { color: rgb(220 220 220); font-size: 14px; font-weight: 600; }
 .empty span { color: rgb(150 150 150); font-size: 10px; }
 
-.results { display: flex; flex-direction: column; gap: 6px; animation: prpFade 0.35s ease; }
+.results { display: flex; flex: 1; flex-direction: column; gap: 6px; animation: prpFade 0.35s ease; }
 @keyframes prpFade { from { opacity: 0; transform: translateY(4px); } }
 /* Always the warning colour, as in the window: `SetLabelStatus(Warning)` on the results header. */
 .header { padding-bottom: 3px; color: rgb(245 185 85); border-bottom: 1px solid rgb(125 85 20); font-size: 13px; font-weight: 600; }
-.hint { margin: 0; color: rgb(190 190 190); font-size: 10px; line-height: 1.35; }
 
-.card { padding: 6px 10px 7px; transition: border-color 0.2s ease; }
+/* The group card runs down to the window's bottom inset, so the steps column's height leaves no gap below it. */
+.card { flex: 1; padding: 6px 10px 7px; transition: border-color 0.2s ease; }
 .card[data-picking] { border-color: rgb(165 115 30); }
 .cardHead { display: flex; align-items: baseline; gap: 8px; margin: -2px -4px 0; padding: 2px 4px 5px; border-bottom: 1px solid rgb(45 45 45); border-radius: 4px; }
 .card[data-picking] .cardHead { background: linear-gradient(90deg, rgb(85 55 10 / 0.9), rgb(85 55 10 / 0.15)); border-bottom-color: rgb(125 85 20); }
@@ -182,12 +178,11 @@ html[data-theme='light'] .separator { background: #999; }
 
 html[data-theme='light'] .panel, html[data-theme='light'] .card { background: rgb(251 251 251); border-color: rgb(220 220 220); }
 html[data-theme='light'] .panel strong, html[data-theme='light'] .empty strong { color: rgb(24 24 24); }
-html[data-theme='light'] .panel > span:not(.button), html[data-theme='light'] .empty span { color: rgb(92 92 92); }
+html[data-theme='light'] .empty span { color: rgb(92 92 92); }
 html[data-theme='light'] .button { color: rgb(24 24 24); background: rgb(0 0 0 / 0.05); }
 html[data-theme='light'] .button[data-press] { background: rgb(0 0 0 / 0.12); }
 
 html[data-theme='light'] .header { color: rgb(176 106 0); border-bottom-color: rgb(240 212 160); }
-html[data-theme='light'] .hint { color: rgb(52 52 52); }
 html[data-theme='light'] .card[data-picking] { border-color: rgb(230 190 120); }
 html[data-theme='light'] .cardHead { border-bottom-color: rgb(220 220 220); }
 html[data-theme='light'] .card[data-picking] .cardHead { background: linear-gradient(90deg, rgb(248 230 196 / 0.9), rgb(248 230 196 / 0.15)); border-bottom-color: rgb(240 212 160); }
@@ -217,9 +212,8 @@ html[data-theme='light'] .alert strong { color: #000; }
 html[data-theme='light'] .alertButtons span { color: #1d1d1f; background: rgb(0 0 0 / 0.07); }
 html[data-theme='light'] .alertButtons span[data-default] { color: #fff; background: #0a64d8; }
 
-/* The install panel stacks the steps under the walk-through at this width; they take the full row then. */
+/* The install panel stacks the steps under the walk-through at this width. */
 @container (max-width: 600px) {
-  .section ol { width: auto; }
   .preview { min-height: 360px; }
 }
 

@@ -17,8 +17,6 @@ const EDITOR_MENUS = ['File', 'Edit', 'Assets', 'GameObject', 'Component', 'Tool
 const FASTTOOLS_MENU = [['Welcome'], ['Asset References', 'Project References'], ['Settings']];
 const ENTRIES = [
   ['BrokenArsenalPreset.asset', 8000],
-  ['BrokenArsenalPreset.asset', 8001],
-  ['BrokenArsenalPreset.asset', 8003],
   ['BrokenWeaponPreset.asset', 7000],
 ];
 
@@ -68,7 +66,6 @@ function FastToolsWindow({frame, sizer = false}) {
       <div className={styles.body}>
         <div className={styles.panel}>
           <strong>Find missing references</strong>
-          <span>Sweep every asset under Assets/ for broken [SerializeReference] types and bulk-fix them by type.</span>
           <span className={styles.button} data-press={frame === 1 || undefined}>{scanned ? 'Rescan' : 'Scan Project'}</span>
         </div>
         {!scanned && (
@@ -80,18 +77,13 @@ function FastToolsWindow({frame, sizer = false}) {
         {scanned && (
           <div className={styles.results}>
             {/* The results header keeps its warning colour, clean project included. */}
-            <div className={styles.header}>{clean ? 'No missing references' : '4 missing references'}</div>
-            <p className={styles.hint}>
-              {clean
-                ? "Nothing left to repair. Rescan to sweep the project again and confirm it's clean."
-                : 'Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.'}
-            </p>
+            <div className={styles.header}>{clean ? 'No missing references' : '2 missing references'}</div>
             {clean ? (
               <div className={styles.summary}>
                 <span className={styles.warningIcon}>⚠</span>
                 <div>
                   <div className={styles.summaryHead}>
-                    <strong>Rewrote 4 references</strong>
+                    <strong>Rewrote 2 references</strong>
                     <span className={styles.undo}>Undo</span>
                   </div>
                   <span>Replaced missing 'Game.Weapons.GhostWeapon' with 'Game.Weapons.Pistol'.</span>
@@ -101,8 +93,8 @@ function FastToolsWindow({frame, sizer = false}) {
               <div className={styles.card} data-picking={picking || undefined}>
                 <div className={styles.cardHead}>
                   <b>GhostWeapon</b>
-                  <span>4 entries · 2 files</span>
-                  <span className={styles.fixAll}>Fix all (4)  {picking ? '▲' : '▼'}</span>
+                  <span>2 entries · 2 files</span>
+                  <span className={styles.fixAll}>Fix all (2)  {picking ? '▲' : '▼'}</span>
                 </div>
                 {picking && (
                   <div className={styles.picker}>
@@ -122,7 +114,7 @@ function FastToolsWindow({frame, sizer = false}) {
       <div className={styles.dialog} data-open={frame === 4 || undefined}>
         <div className={styles.alert}>
           <strong>Repair Missing References</strong>
-          <p>Rewrite 4 reference(s) in 2 file(s) to 'Game.Weapons.Pistol'?</p>
+          <p>Rewrite 2 reference(s) in 2 file(s) to 'Game.Weapons.Pistol'?</p>
           <div className={styles.alertButtons}>
             <span>Cancel</span>
             <span data-default="true">Rewrite</span>
@@ -188,7 +180,7 @@ export default function ProjectReferencesPanel({children}) {
 
   return (
     <section ref={ref} className={`${panel.install} ${styles.section}`}>
-      <div className={`${panel.top} ${styles.top}`}>
+      <div className={`${panel.top} ${panel.installationTop} ${styles.top}`}>
         <div className={`${panel.preview} ${styles.preview}`}><Stage frame={frame} /></div>
         <ol className={panel.steps}>
           {steps.map((step, index) => (
