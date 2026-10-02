@@ -14,7 +14,7 @@ Pick an implementation right in the Inspector — from a searchable list, withou
 
 An <code lang="class-name">IWeapon</code> field offers concrete implementations of that interface, such as <code lang="class-name">Pistol</code> and <code lang="class-name">Shotgun</code>. Selecting one creates an instance; `<None>` clears the field.
 
-For extra constraints, required fields and list appearance, see [TypeSelector](12-type-selector.md).
+For extra constraints, required fields and list appearance, see [TypeSelector](03-type-selector.md).
 
 - <code lang="csharp">Allow</code> has no effect here: the types must be instantiable. Analyzer `AFT0002` reports this redundant setting.
 - Generic arguments are inferred from the field type; when they cannot be, the picker asks for types Unity can serialize.
@@ -72,7 +72,7 @@ A duplicated list element gets its own instance instead of a reference to the sa
 
 ## Missing type
 
-If the field shows **Missing type**, see [SerializeReference repair](04-serialize-reference-tooling.md) for **Fix**, bulk repair and the differences in data preservation and Undo.
+If the field shows **Missing type**, see [SerializeReference repair](06-serialize-reference-tooling.md) for **Fix**, bulk repair and the differences in data preservation and Undo.
 
 ## Custom inspector
 

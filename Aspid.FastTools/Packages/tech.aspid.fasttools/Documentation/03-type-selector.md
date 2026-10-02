@@ -17,7 +17,7 @@ The field offers concrete weapon classes and stores the selected type's name.
 |---|---|
 | <code lang="csharp">string</code> | Stores the assembly-qualified name |
 | [Serializable Types](02-serializable-types.md) | Configures the wrapper's selection |
-| <code lang="csharp">[SerializeReference]</code> | Creates an instance of the selected implementation — see [SerializeReference Selector](03-serialize-reference-selector.md) |
+| <code lang="csharp">[SerializeReference]</code> | Creates an instance of the selected implementation — see [SerializeReference Selector](04-serialize-reference-selector.md) |
 
 ## Which types are offered
 
@@ -52,7 +52,7 @@ To allow several classes, use their common base class or interface. On an array 
 
 With <code lang="csharp">Required = true</code>, `<None>` remains selectable. For strings and wrappers, the check tests for an empty stored name; a missing type with a nonempty name passes this check.
 
-For project-wide and CI validation, see [required-field checks](13-serialize-reference-validation.md#what-each-run-checks).
+For project-wide and CI validation, see [required-field checks](07-serialize-reference-validation.md#what-each-run-checks).
 
 ## Constraint from another field
 

@@ -57,8 +57,8 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   in `docusaurus.config.js` recognises that page by the banner's file name and supplies the title,
   description and `hide_title` — do not rename `aspid_fasttools_readme_banner.gif`.
 - **Admonitions**: GitHub style only — `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`. Never `:::note`.
-- **Links** are relative paths to the `.md` file: `[EnumValues](06-enum-values.md)`, from a sample
-  `[Selector](../../../Documentation/03-serialize-reference-selector.md)`, from a doc
+- **Links** are relative paths to the `.md` file: `[EnumValues](08-enum-values.md)`, from a sample
+  `[Selector](../../../Documentation/04-serialize-reference-selector.md)`, from a doc
   `[Types sample](../Samples~/Types/Documentation/README.md)`. GitHub follows them as files; links that cross
   between plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.
   Never link by site URL.
@@ -80,7 +80,7 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   (`Type.GetType()`). Fields, properties and enum values stay plain, as in code blocks.
 - **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
   would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
-- The package is English. A translation is a sibling file: `Documentation/ru/06-enum-values.md`,
+- The package is English. A translation is a sibling file: `Documentation/ru/08-enum-values.md`,
   `README.ru.md` next to `README.md`. Missing pages fall back to English. A translated file links translated
   targets (`../../Samples~/Types/Documentation/README.ru.md`) so GitHub stays in the same language; the site
   drops the locale segment itself.

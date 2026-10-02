@@ -6,7 +6,7 @@
 
 Откройте **Tools → Aspid 🐍 → FastTools → Settings** и выберите **Build / CI gate → Fail**. Теперь потерянные типы прерывают сборку плеера. По умолчанию стоит **Warn** — он сообщает о проблемах и продолжает сборку.
 
-Проверка сообщает о нарушениях; исправление описано на странице [Восстановление SerializeReference](04-serialize-reference-tooling.md).
+Проверка сообщает о нарушениях; исправление описано на странице [Восстановление SerializeReference](06-serialize-reference-tooling.md).
 
 ## Проверка перед сборкой
 
@@ -32,11 +32,11 @@
 
 ![Группа Required violations: пустое поле _primary в двух префабах](../Images/aspid_fasttools_serialize_reference_required_violations.png)
 
-Обязательное поле задаёт <code lang="csharp">[TypeSelector(Required = true)]</code>, подробнее — в разделе [Обязательное поле](12-type-selector.md#обязательное-поле). В сценах не проверяются обязательные поля внутри managed-ссылок, в коллекциях и в override префабов.
+Обязательное поле задаёт <code lang="csharp">[TypeSelector(Required = true)]</code>, подробнее — в разделе [Обязательное поле](03-type-selector.md#обязательное-поле). В сценах не проверяются обязательные поля внутри managed-ссылок, в коллекциях и в override префабов.
 
 ## Область проверки
 
-Проверяются сохранённые `.prefab`, `.asset` и `.unity` внутри `Assets/`. Ожидающие [миграции с MovedFrom](04-serialize-reference-tooling.md#миграции-с-movedfrom) не считаются потерянными типами. Проверка потерянных типов относится к <code lang="csharp">[SerializeReference]</code>; она не ищет неразрешимые имена в <code lang="class-name">SerializableType</code> или строках.
+Проверяются сохранённые `.prefab`, `.asset` и `.unity` внутри `Assets/`. Ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) не считаются потерянными типами. Проверка потерянных типов относится к <code lang="csharp">[SerializeReference]</code>; она не ищет неразрешимые имена в <code lang="class-name">SerializableType</code> или строках.
 
 **Excluded scan folders** исключает папки из Project References, проверки сборки, CI и обнаружения новых поломок. По умолчанию исключений нет.
 

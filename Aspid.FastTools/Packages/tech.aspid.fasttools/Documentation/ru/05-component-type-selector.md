@@ -37,9 +37,9 @@ public abstract class EnemyBase : MonoBehaviour
 
 ## Связанные возможности
 
-Оформление классов, поиск и избранное описаны на странице [TypeSelector](12-type-selector.md#typeselectordisplay). Здесь список определяется классом, в котором объявлено поле; атрибут <code lang="csharp">[TypeSelector]</code> его не настраивает.
+Оформление классов, поиск и избранное описаны на странице [TypeSelector](03-type-selector.md#typeselectordisplay). Здесь список определяется классом, в котором объявлено поле; атрибут <code lang="csharp">[TypeSelector]</code> его не настраивает.
 
-Для выбора типа в отдельном поле см. [Serializable Types](02-serializable-types.md), для создания объекта в поле — [SerializeReference Selector](03-serialize-reference-selector.md).
+Для выбора типа в отдельном поле см. [Serializable Types](02-serializable-types.md), для создания объекта в поле — [SerializeReference Selector](04-serialize-reference-selector.md).
 
 ## Пример в пакете
 

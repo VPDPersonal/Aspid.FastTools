@@ -28,25 +28,25 @@ URL указывает на последнюю preview-версию; кнопк�
 
 <img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
-#### [ComponentTypeSelector](11-component-type-selector.md)
+#### [ComponentTypeSelector](05-component-type-selector.md)
 
 Меняет тип добавленного компонента/ScriptableObject на наследника, не теряя значения общих полей.
 
 <img src="../Images/component-type-selector.gif" alt="Смена типа компонента в инспекторе" width="640" />
 
-#### [SerializeReference Selector](03-serialize-reference-selector.md)
+#### [SerializeReference Selector](04-serialize-reference-selector.md)
 
 Даёт выбрать класс для поля <code lang="csharp">[SerializeReference]</code> в инспекторе и переносит совместимые данные при смене класса.
 
 <img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
-#### [SerializeReference Tooling](04-serialize-reference-tooling.md)
+#### [SerializeReference Tooling](06-serialize-reference-tooling.md)
 
 Находит потерянные <code lang="csharp">[SerializeReference]</code> по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами — вручную, перед сборкой или в CI.
 
 <img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
 
-#### [EnumValues](06-enum-values.md)
+#### [EnumValues](08-enum-values.md)
 
 Сопоставляет ключам enum значения (множители, цвета, ассеты) и редактируется в инспекторе, включая флаги.
 
@@ -54,7 +54,7 @@ URL указывает на последнюю preview-версию; кнопк�
 
 ### Редактор и инструменты
 
-#### [ProfilerMarkers](05-profiler-markers.md)
+#### [ProfilerMarkers](09-profiler-markers.md)
 
 Размечает участок одной строкой, а имя маркера генератор берёт из кода, своё для каждого места вызова.
 
@@ -65,7 +65,7 @@ using (this.Marker())
 }
 ```
 
-#### [VisualElement Extensions](07-visual-element-extensions.md)
+#### [VisualElement Extensions](10-visual-element-extensions.md)
 
 Задаёт свойства, стили и события элемента цепочкой, так что дерево UI Toolkit собирается одним выражением.
 
@@ -76,7 +76,7 @@ new VisualElement()
     new Label("Ability Config"));
 ```
 
-#### [SerializedProperty Extensions](08-serialized-property-extensions.md)
+#### [SerializedProperty Extensions](11-serialized-property-extensions.md)
 
 Записывает значение вместе с <code lang="function">Update</code> и <code lang="function">Apply</code> одной цепочкой, а ещё находит тип поля C# и объект, которому это поле принадлежит.
 
@@ -86,7 +86,7 @@ manaCost
   .SetIntAndApply(42);
 ```
 
-#### [Editor Helpers](09-editor-helpers.md)
+#### [Editor Helpers](12-editor-helpers.md)
 
 Решает мелкие задачи редакторских инструментов, например подписывает объекты и компоненты читаемыми именами.
 
@@ -99,7 +99,7 @@ caster
 // "Ability Caster (2)"
 ```
 
-#### [Agent Skills](10-agent-skills.md)
+#### [Agent Skills](13-agent-skills.md)
 
 Учит coding-агента API пакета; Claude Code, Codex, Cursor и другие получают скиллы одной командой.
 

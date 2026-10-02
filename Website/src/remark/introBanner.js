@@ -167,7 +167,7 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           }
           if (summary?.type !== 'paragraph' || !preview
             || !(preview.type === 'code' || (preview.type === 'paragraph' && preview.children[0]?.type === 'image'))) continue;
-          // `05-profiler-markers.md` → `profiler-markers`: the site component picks a live preview by page.
+          // `09-profiler-markers.md` → `profiler-markers`: the site component picks a live preview by page.
           const link = node.children.find((part) => part.type === 'link');
           const url = link?.url ?? '';
           const doc = url.replace(/^.*\//, '').replace(/^\d+-/, '').replace(/\.md$/, '');

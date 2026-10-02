@@ -50,7 +50,7 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 
 ## Project References: repair a group
 
-Project References and Asset References are tabs of one window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](13-serialize-reference-validation.md#scan-scope).
+Project References and Asset References are tabs of one window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope).
 
 ![Project References with Fix all, Smart Fix → Pistol and Migrate all groups](Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -118,7 +118,7 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 
 **Breakage detection** reports newly missing references after script or asset changes with a notification and in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is stored locally in `EditorPrefs`.
 
-For checks before a build, CI and folder exclusions, see [Build and CI checks](13-serialize-reference-validation.md).
+For checks before a build, CI and folder exclusions, see [Build and CI checks](07-serialize-reference-validation.md).
 
 ## Limitations
 

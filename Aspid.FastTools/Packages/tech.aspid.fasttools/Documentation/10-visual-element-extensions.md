@@ -160,7 +160,7 @@ var manaCost = new PropertyField(
     .AddValueChanged(_ => Refresh());
 ```
 
-To write a property from your own code, see [SerializedProperty Extensions](08-serialized-property-extensions.md).
+To write a property from your own code, see [SerializedProperty Extensions](11-serialized-property-extensions.md).
 
 ### Open the script on double-click
 

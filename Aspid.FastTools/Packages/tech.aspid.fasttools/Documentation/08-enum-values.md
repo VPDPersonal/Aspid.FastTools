@@ -47,7 +47,7 @@ private EnumValues<float>
 
 ![DamageType in the type selector of the Multipliers header](Images/enum-values-type-selector.png)
 
-- Selecting an enum is required: if the field is empty, the Inspector shows **Required type is not set**. The [required field check](13-serialize-reference-validation.md#what-each-run-checks) also checks this field.
+- Selecting an enum is required: if the field is empty, the Inspector shows **Required type is not set**. The [required field check](07-serialize-reference-validation.md#what-each-run-checks) also checks this field.
 - The first access to a table with an empty enum field logs a **Warning** to the Console. Calls to <code lang="function">GetValue</code> return **Default Value**.
 
 ## Lookup rules

@@ -17,9 +17,9 @@
 | Хранить тип, в том числе из DLL, вложенный или generic | <code lang="class-name">SerializableType</code> |
 | Сохранить выбор при переименовании собственного скрипта | <code lang="class-name">SerializableMonoScript</code> |
 
-Обе обёртки имеют вариант с <code lang="class-name">T</code>, ограничивающий выбор совместимыми типами. Атрибут <code lang="csharp">[TypeSelector]</code> добавляет [настройки выбора](12-type-selector.md); в примере <code lang="csharp">Allow = TypeAllow.None</code> оставляет только конкретные классы.
+Обе обёртки имеют вариант с <code lang="class-name">T</code>, ограничивающий выбор совместимыми типами. Атрибут <code lang="csharp">[TypeSelector]</code> добавляет [настройки выбора](03-type-selector.md); в примере <code lang="csharp">Allow = TypeAllow.None</code> оставляет только конкретные классы.
 
-Чтобы хранить экземпляр выбранного класса, используйте [SerializeReference Selector](03-serialize-reference-selector.md). Для смены класса существующего компонента — [ComponentTypeSelector](11-component-type-selector.md).
+Чтобы хранить экземпляр выбранного класса, используйте [SerializeReference Selector](04-serialize-reference-selector.md). Для смены класса существующего компонента — [ComponentTypeSelector](05-component-type-selector.md).
 
 ## SerializableType
 

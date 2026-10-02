@@ -32,24 +32,24 @@ Skills activate automatically for matching requests.
 
 ### aspid-profiler-marker
 
-Profile a method or a section with <code lang="csharp">this.Marker()</code>. Guide: [ProfilerMarkers](05-profiler-markers.md).
+Profile a method or a section with <code lang="csharp">this.Marker()</code>. Guide: [ProfilerMarkers](09-profiler-markers.md).
 
 ![The aspid-profiler-marker skill adds markers to Simulate](Images/agent-skills-profiler-marker.svg)
 
 ### aspid-visual-element-fluent
 
-Build and style UI Toolkit elements in C#. Guide: [VisualElement Extensions](07-visual-element-extensions.md).
+Build and style UI Toolkit elements in C#. Guide: [VisualElement Extensions](10-visual-element-extensions.md).
 
 ![The aspid-visual-element-fluent skill builds the inspector header in one chain](Images/agent-skills-visual-element-fluent.svg)
 
 ### aspid-serializable-type
 
-Store a <code lang="class-name">System.Type</code> and pick types in the Inspector. Guides: [Serializable Type System](02-serializable-types.md), [SerializeReference Selector](03-serialize-reference-selector.md), [ComponentTypeSelector](11-component-type-selector.md).
+Store a <code lang="class-name">System.Type</code> and pick types in the Inspector. Guides: [Serializable Type System](02-serializable-types.md), [SerializeReference Selector](04-serialize-reference-selector.md), [ComponentTypeSelector](05-component-type-selector.md).
 
 ![The aspid-serializable-type skill adds a weapon type picker field](Images/agent-skills-serializable-type.svg)
 
 ### aspid-enum-values
 
-Map enum members to values. Guide: [EnumValues](06-enum-values.md).
+Map enum members to values. Guide: [EnumValues](08-enum-values.md).
 
 ![The aspid-enum-values skill replaces the damage multipliers with an EnumValues table](Images/agent-skills-enum-values.svg)

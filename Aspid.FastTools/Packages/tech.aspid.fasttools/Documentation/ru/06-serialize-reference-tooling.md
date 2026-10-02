@@ -50,7 +50,7 @@
 
 ## Project References: восстановить группу
 
-Project References и Asset References — вкладки одного окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](13-serialize-reference-validation.md#область-проверки).
+Project References и Asset References — вкладки одного окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки).
 
 ![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -118,7 +118,7 @@ Project References и Asset References — вкладки одного окна.
 
 **Breakage detection** после изменения скриптов или ассетов сообщает о новых потерянных ссылках уведомлением и в Console. Настройка включена по умолчанию и находится в **Tools → Aspid 🐍 → FastTools → Settings**, а также в **Preferences → Aspid.FastTools → SerializeReference**. Она хранится локально в `EditorPrefs`.
 
-Проверки перед сборкой, CI и исключение папок описаны на странице [Проверка перед сборкой и CI](13-serialize-reference-validation.md).
+Проверки перед сборкой, CI и исключение папок описаны на странице [Проверка перед сборкой и CI](07-serialize-reference-validation.md).
 
 ## Ограничения
 

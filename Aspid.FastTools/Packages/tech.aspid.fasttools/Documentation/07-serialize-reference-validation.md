@@ -6,7 +6,7 @@ Find missing references and unset required fields before shipping the project.
 
 Open **Tools → Aspid 🐍 → FastTools → Settings** and set **Build / CI gate → Fail**. Missing types now stop a player build. The default, **Warn**, reports problems and continues the build.
 
-The check reports violations; for repair, see [SerializeReference repair](04-serialize-reference-tooling.md).
+The check reports violations; for repair, see [SerializeReference repair](06-serialize-reference-tooling.md).
 
 ## Pre-build checks
 
@@ -32,11 +32,11 @@ The build checks every asset under `Assets/`, not only what goes into it: in `Fa
 
 ![Required violations group: an empty _primary field in two prefabs](Images/aspid_fasttools_serialize_reference_required_violations.png)
 
-A field is made required with <code lang="csharp">[TypeSelector(Required = true)]</code>; see [Required field](12-type-selector.md#required-field). In scenes, required fields inside managed references, collections and prefab overrides are not checked.
+A field is made required with <code lang="csharp">[TypeSelector(Required = true)]</code>; see [Required field](03-type-selector.md#required-field). In scenes, required fields inside managed references, collections and prefab overrides are not checked.
 
 ## Scan scope
 
-The check reads saved `.prefab`, `.asset` and `.unity` files under `Assets/`. Pending [MovedFrom migrations](04-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing types. Missing-type checks cover <code lang="csharp">[SerializeReference]</code>; they do not find unresolved names in <code lang="class-name">SerializableType</code> or strings.
+The check reads saved `.prefab`, `.asset` and `.unity` files under `Assets/`. Pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing types. Missing-type checks cover <code lang="csharp">[SerializeReference]</code>; they do not find unresolved names in <code lang="class-name">SerializableType</code> or strings.
 
 **Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection. No folders are excluded by default.
 

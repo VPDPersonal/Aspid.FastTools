@@ -17,7 +17,7 @@
 |---|---|
 | <code lang="csharp">string</code> | Записывается assembly-qualified name |
 | [Serializable Types](02-serializable-types.md) | Настраивается выбор обёртки |
-| <code lang="csharp">[SerializeReference]</code> | Создаётся экземпляр выбранной реализации — см. [SerializeReference Selector](03-serialize-reference-selector.md) |
+| <code lang="csharp">[SerializeReference]</code> | Создаётся экземпляр выбранной реализации — см. [SerializeReference Selector](04-serialize-reference-selector.md) |
 
 ## Какие типы в списке
 
@@ -52,7 +52,7 @@
 
 С <code lang="csharp">Required = true</code> пункт `<None>` остаётся доступным. У строки или обёртки проверяется пустое сохранённое имя; потерянный тип с непустым именем эту проверку проходит.
 
-Настройка проверки по всему проекту и в CI описана в разделе [проверки обязательных полей](13-serialize-reference-validation.md#что-проверяет-каждый-запуск).
+Настройка проверки по всему проекту и в CI описана в разделе [проверки обязательных полей](07-serialize-reference-validation.md#что-проверяет-каждый-запуск).
 
 ## Ограничение из другого поля
 

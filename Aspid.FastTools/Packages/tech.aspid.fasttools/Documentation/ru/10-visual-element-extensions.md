@@ -160,7 +160,7 @@ var manaCost = new PropertyField(
     .AddValueChanged(_ => Refresh());
 ```
 
-Для записи в свойство из собственного кода используйте [SerializedProperty Extensions](08-serialized-property-extensions.md).
+Для записи в свойство из собственного кода используйте [SerializedProperty Extensions](11-serialized-property-extensions.md).
 
 ### Открыть скрипт по двойному клику
 

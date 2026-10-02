@@ -30,25 +30,25 @@ Stores a <code lang="class-name">System.Type</code> in a component/asset and let
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-quick-start.gif" alt="Select a serializable type in the Inspector" width="640" />
 
-#### [ComponentTypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/11-component-type-selector.md)
+#### [ComponentTypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-component-type-selector.md)
 
 Changes an added component/ScriptableObject to a derived type without losing shared field values.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector.gif" alt="Switch a component type in the Inspector" width="640" />
 
-#### [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-serialize-reference-selector.md)
+#### [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-selector.md)
 
 Lets you pick the class for a <code lang="csharp">\[SerializeReference]</code> field in the Inspector and carries compatible data over when the class changes.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
 
-#### [SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-tooling.md)
+#### [SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-serialize-reference-tooling.md)
 
 Finds lost <code lang="csharp">\[SerializeReference]</code> entries across the project (prefabs, scenes, assets) and repairs them in groups — by hand, before a build or in CI.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
 
-#### [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-enum-values.md)
+#### [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-enum-values.md)
 
 Maps enum keys to values (multipliers, colors, assets), edited in the Inspector, flags included.
 
@@ -56,7 +56,7 @@ Maps enum keys to values (multipliers, colors, assets), edited in the Inspector,
 
 ### Editor & tooling
 
-#### [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md)
+#### [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-profiler-markers.md)
 
 Marks a section with one line; the generator takes the marker name from the code, unique per call site.
 
@@ -67,7 +67,7 @@ using (this.Marker())
 }
 ```
 
-#### [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-visual-element-extensions.md)
+#### [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-visual-element-extensions.md)
 
 Sets element properties, styles and events in a chain, so a UI Toolkit tree is built in one expression.
 
@@ -78,7 +78,7 @@ new VisualElement()
     new Label("Ability Config"));
 ```
 
-#### [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-serialized-property-extensions.md)
+#### [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/11-serialized-property-extensions.md)
 
 Writes a value together with <code lang="function">Update</code> and <code lang="function">Apply</code> in one chain, and finds the field's C# type and the object the field belongs to.
 
@@ -88,7 +88,7 @@ manaCost
   .SetIntAndApply(42);
 ```
 
-#### [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-editor-helpers.md)
+#### [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/12-editor-helpers.md)
 
 Handles small editor-tooling tasks, such as labelling objects and components with readable names.
 
@@ -101,7 +101,7 @@ caster
 // "Ability Caster (2)"
 ```
 
-#### [Agent Skills](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-agent-skills.md)
+#### [Agent Skills](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/13-agent-skills.md)
 
 Teaches a coding agent the package API; Claude Code, Codex, Cursor and others get the skills with one command.
 

@@ -17,9 +17,9 @@ A class type as an ordinary field: Unity saves it, and the Inspector picks it fr
 | Store a type, including DLL, nested or generic types | <code lang="class-name">SerializableType</code> |
 | Keep the selection when your script is renamed | <code lang="class-name">SerializableMonoScript</code> |
 
-Both wrappers have a <code lang="class-name">T</code> variant that constrains the selection to compatible types. The <code lang="csharp">[TypeSelector]</code> attribute adds [selection settings](12-type-selector.md); the example uses <code lang="csharp">Allow = TypeAllow.None</code> to offer only concrete classes.
+Both wrappers have a <code lang="class-name">T</code> variant that constrains the selection to compatible types. The <code lang="csharp">[TypeSelector]</code> attribute adds [selection settings](03-type-selector.md); the example uses <code lang="csharp">Allow = TypeAllow.None</code> to offer only concrete classes.
 
-To store an instance of the selected class, use [SerializeReference Selector](03-serialize-reference-selector.md). To change an existing component's class, use [ComponentTypeSelector](11-component-type-selector.md).
+To store an instance of the selected class, use [SerializeReference Selector](04-serialize-reference-selector.md). To change an existing component's class, use [ComponentTypeSelector](05-component-type-selector.md).
 
 ## SerializableType
 
