@@ -96,5 +96,7 @@ aspid_fasttools_serialize_reference_repair       1340x226  10  6 1332  208 inspe
 # EnumValues: the four-row state of every frame, and the picker's lower edge.
 enum-values-multipliers-populate              1560x726  28 26 1548  700 flat:#333333:#c8c8c8
 enum-values-type-selector                     1080x428  26 26 1064  404 flat:#3c3c3c:#c8c8c8
+# The quick start's table, from its outer border.
+enum-values-multipliers-quick-start           1190x390  17 16 1175  377 flat:#3c3c3c:#c8c8c8
 EOF
 exit "$FAILED"
