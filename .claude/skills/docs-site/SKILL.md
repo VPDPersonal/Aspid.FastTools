@@ -371,7 +371,11 @@ there, so update it when the page's quick start changes. The EnumValues clip is 
 The Inspector captures of the Serialization cards are cropped and framed in the file (`scripts/frame-doc-captures.sh`), so each card
 takes the capture's own shape. The Serialization cards have their own captures (`*-card.gif`), shot in a 440 pt Inspector or
 FastTools window so their text reads at the card's width, with the picker's empty rows above its footer cut out of every
-frame; the doc pages keep the wider, uncut captures.
+frame; the doc pages keep the wider, uncut captures. A card stays about as tall as its text column, so cut a card
+capture's empty UI too (a hint line the card text repeats, a state that only adds empty rows); over the FastTools
+window's dot grid cut whole ~36.9 px steps so the seam does not show. Inside an animated preview the blocks keep the
+preview inset between them as well as around them, the spare height goes to the code, centred, and no note line
+explains the result (a preview list resets the article's `.markdown li + li` margin).
 
 The same plugin replaces the Installation section's instruction, URL block and version note with
 `src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with Stable
