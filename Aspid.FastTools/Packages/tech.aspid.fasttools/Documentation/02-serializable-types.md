@@ -34,6 +34,8 @@ System.Type type = primary;
 var empty = new SerializableType<Weapon>(null);
 ```
 
+For a resolved type, <code lang="csharp">ToString()</code> returns <code lang="csharp">Type.Name</code>, so a generic type reads <code lang="string">Enchanted`1</code>, not the picker's caption.
+
 ### Missing type
 
 A stored name that no longer resolves after a class, namespace, or assembly rename. The Inspector shows it as `<Missing …>`.
@@ -62,7 +64,7 @@ Limitations:
 ## Types in a player build
 
 > [!WARNING]
-> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, stripping may remove it and <code lang="csharp">.Type</code> returns <code lang="csharp">null</code>. Keep the class with <code lang="csharp">[Preserve]</code> or `link.xml`. This also applies to strings with <code lang="csharp">[TypeSelector]</code>.
+> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, from **Managed Stripping Level** Low up stripping may remove it and <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> while the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`. This also applies to strings with <code lang="csharp">[TypeSelector]</code>.
 
 ## Package sample
 

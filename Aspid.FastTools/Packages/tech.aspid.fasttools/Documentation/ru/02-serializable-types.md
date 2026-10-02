@@ -34,6 +34,8 @@ System.Type type = primary;
 var empty = new SerializableType<Weapon>(null);
 ```
 
+<code lang="csharp">ToString()</code> найденного типа возвращает <code lang="csharp">Type.Name</code>: у generic-типа это <code lang="string">Enchanted`1</code>, а не подпись из окна выбора.
+
 ### Потерянный тип
 
 Сохранённое имя, которое перестало находиться после переименования класса, namespace или сборки. Инспектор показывает его как `<Missing …>`.
@@ -62,7 +64,7 @@ var empty = new SerializableType<Weapon>(null);
 ## Типы в сборке
 
 > [!WARNING]
-> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, stripping может удалить его, и <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>. Сохраните класс через <code lang="csharp">[Preserve]</code> или `link.xml`. Это относится и к строкам с <code lang="csharp">[TypeSelector]</code>.
+> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, начиная с **Managed Stripping Level** Low stripping может удалить его, и <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>, хотя в редакторе тип находится. Сохраните класс через <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) или `link.xml`. Это относится и к строкам с <code lang="csharp">[TypeSelector]</code>.
 
 ## Пример в пакете
 

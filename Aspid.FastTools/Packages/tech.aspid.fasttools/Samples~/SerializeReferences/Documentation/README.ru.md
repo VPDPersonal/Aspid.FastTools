@@ -58,4 +58,4 @@
 | `Scripts/WeaponPreset.cs`, `Presets/`, `Prefabs/` | Сценарии ремонта |
 | `Scripts/Editor/WeaponPresetEditor.cs` | IMGUI-инспектор на обычных вызовах <code lang="class-name">PropertyField</code> |
 
-Справочник — [SerializeReference Selector](../../../Documentation/ru/04-serialize-reference-selector.md) и [SerializeReference Tooling](../../../Documentation/ru/06-serialize-reference-tooling.md).
+Справочник — [SerializeReference Selector](../../../Documentation/ru/04-serialize-reference-selector.md) и [восстановление SerializeReference](../../../Documentation/ru/06-serialize-reference-tooling.md).

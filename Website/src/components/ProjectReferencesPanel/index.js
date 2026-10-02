@@ -173,7 +173,7 @@ function Stage({frame}) {
 }
 
 /**
- * The SerializeReference Tooling quick start: a Project References walk-through beside the page's own steps,
+ * The SerializeReference repair quick start: a Project References walk-through beside the page's own steps,
  * drawn like the introduction's install panel. The steps come from the Markdown list, so they stay translated there.
  */
 export default function ProjectReferencesPanel({children}) {

@@ -13,12 +13,14 @@ TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 FAILED=0
 
-# A canvas the size of the framed image. `inspector`: Unity's Inspector header (a 2px separator 34px below the crop's top
-# edge, the row at source y=40) continued to both sides; `flat:<dark>:<light>`: a single background colour.
+# A canvas the size of the framed image. `inspector[:<dark body>]`: Unity's Inspector header (a 2px separator 34px below
+# the crop's top edge, the row at source y=40) continued to both sides, over the dark body #383838 unless the row names
+# its own; `flat:<dark>:<light>`: a single background colour.
 canvas() { # <out> <width> <height> <style> <light?>
   case "$4" in
-    inspector)
-      if [ "$5" = 1 ]; then HEADER='#cbcbcb' LINE='#bababa' BODY='#cbcbcb'; else HEADER='#3e3e3e' LINE='#303030' BODY='#383838'; fi
+    inspector|inspector:*)
+      if [ "$5" = 1 ]; then HEADER='#cbcbcb' LINE='#bababa' BODY='#cbcbcb'
+      else HEADER='#3e3e3e' LINE='#303030' BODY='#383838'; [ "$4" = inspector ] || BODY=${4#inspector:}; fi
       SEPARATOR=$((PAD + 34))
       convert -size "$2x$3" "xc:$BODY" -fill "$HEADER" -draw "rectangle 0,0 $(($2 - 1)),$((SEPARATOR - 1))" \
         -fill "$LINE" -draw "rectangle 0,$SEPARATOR $(($2 - 1)),$((SEPARATOR + 1))" "$1" ;;
@@ -26,6 +28,7 @@ canvas() { # <out> <width> <height> <style> <light?>
       COLORS=${4#flat:}
       if [ "$5" = 1 ]; then COLOR=${COLORS#*:}; else COLOR=${COLORS%%:*}; fi
       convert -size "$2x$3" "xc:$COLOR" "$1" ;;
+    *) echo "unknown style: $4" >&2; exit 1 ;;
   esac
 }
 
@@ -83,7 +86,7 @@ type-selector-required                        1393x176  34  6 1385  160 inspecto
 type-selector-constraint-warning              1393x176  34  6 1385  160 inspector
 component-type-selector                       1300x764  34  6 1292  724 inspector
 # x=10 keeps the foldouts and the coloured shared and missing-reference markers.
-aspid_fasttools_serialize_reference_list         1340x962  10  6 1332  954 inspector
+aspid_fasttools_serialize_reference_list         1340x962  10  6 1332  954 inspector:#3c3c3c
 aspid_fasttools_serialize_reference_selector     1340x806  10  6 1332  766 inspector
 aspid_fasttools_serialize_reference_make_unique  1340x448  10  6 1332  434 inspector
 aspid_fasttools_serialize_reference_repair       1340x226  10  6 1332  208 inspector

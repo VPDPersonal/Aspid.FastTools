@@ -23,6 +23,18 @@ The field offers concrete weapon classes and stores the selected type's name.
 
 The attribute's constraints apply **together**. A wrapper also constrains candidates by <code lang="class-name">T</code>; a <code lang="csharp">[SerializeReference]</code> field constrains them by its field type.
 
+```csharp
+public interface ITwoHanded { }
+
+public abstract class Weapon { }
+public abstract class MeleeWeapon : Weapon { }
+public abstract class RangedWeapon : Weapon { }
+
+public sealed class Sword : MeleeWeapon { }
+public sealed class Axe : MeleeWeapon, ITwoHanded { }
+public sealed class Bow : RangedWeapon, ITwoHanded { }
+```
+
 | Constraint | Result |
 |---|---|
 | <code lang="csharp">typeof(Weapon)</code> | Types assignable to <code lang="class-name">Weapon</code> |
@@ -134,7 +146,6 @@ Whether Favorites is shown and how long Recent is (0 hides it) are set in the Fa
 Picking an open generic type opens its argument pages and returns a constructed closed type:
 
 ```csharp
-public abstract class Weapon { }
 public abstract class Enchantment { }
 public sealed class Fire : Enchantment { }
 public sealed class Frost : Enchantment { }
@@ -170,6 +181,9 @@ button.clicked += () => TypeSelectorWindow.Show(
 ```
 
 The callback receives an assembly-qualified name, or <code lang="csharp">null</code> for `<None>`; dismissing the window without a choice does not invoke it.
+
+- <code lang="csharp">currentAqn</code> marks its type on opening and <code lang="csharp">""</code> marks `<None>`; <code lang="csharp">null</code> or a name missing from the list marks nothing, so Enter right after opening cannot erase the stored name.
+- <code lang="csharp">TypeSelectorFilter.Allow</code> defaults to <code lang="csharp">TypeAllow.None</code>, unlike <code lang="csharp">[TypeSelector]</code>: the window above offers only concrete weapons.
 
 For filter properties and window parameters, see the API reference: [TypeSelectorFilter](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Types.Editors.TypeSelectorFilter), [TypeSelectorWindow](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Types.Editors.TypeSelectorWindow).
 

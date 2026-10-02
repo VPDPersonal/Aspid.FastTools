@@ -124,14 +124,19 @@ function VersionTab({label, versions, value, active, text, onChoose}) {
       }
       const items = [...ref.current.querySelectorAll('[role="menuitemradio"]')];
       const index = items.indexOf(document.activeElement);
+      const step = event.key === 'ArrowDown' ? 1 : -1;
       const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1
-        : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        : index < 0 ? (step > 0 ? 0 : items.length - 1) : (index + step + items.length) % items.length;
       items[next]?.focus();
     }
   };
   return (
     <div ref={ref} className={styles.versionTab} onKeyDown={onKeyDown}
-      onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}>
+      onBlur={(event) => {
+        // Safari does not focus a clicked button, so a click inside blurs with no target: the pointerdown handler
+        // above closes on outside clicks, and this one only on focus moving elsewhere (Tab).
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}>
       <button
         ref={trigger}
         type="button"

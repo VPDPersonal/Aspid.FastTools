@@ -68,7 +68,7 @@ Two fields of an object can point at one instance: an edit through one shows in 
 
 ![Make unique creates an independent copy of a shared reference](Images/aspid_fasttools_serialize_reference_make_unique.png)
 
-A duplicated list element gets its own instance instead of a reference to the same one. The **Auto de-alias duplicated list elements** setting under **Tools → Aspid 🐍 → FastTools → Settings** controls this and is on by default.
+A duplicated list element gets its own instance instead of a reference to the same one. The **Auto de-alias duplicated list elements** setting under **Tools → Aspid 🐍 → FastTools → Settings** controls this and is on by default; it is [shared by the team](07-serialize-reference-validation.md#scan-scope).
 
 ## Missing type
 

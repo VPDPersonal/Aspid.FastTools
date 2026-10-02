@@ -42,7 +42,9 @@ The check reads saved `.prefab`, `.asset` and `.unity` files under `Assets/`. Pe
 
 Binary assets and unfetched Git LFS files are not scanned; CI lists them in its report. For a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files.
 
-**Build / CI gate** and **Excluded scan folders** are also available in **Project Settings → Aspid.FastTools → SerializeReference** and live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI.
+**Build / CI gate**, **Excluded scan folders** and **Auto de-alias duplicated list elements** are shared settings, marked by a green stripe: they are also available in **Project Settings → Aspid.FastTools → SerializeReference** and live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI.
+
+![SerializeReference section of the Settings tab: shared settings with a green stripe, per-user ones with a blue one](Images/aspid_fasttools_serialize_reference_settings.png)
 
 <a id="headless-ci"></a>
 

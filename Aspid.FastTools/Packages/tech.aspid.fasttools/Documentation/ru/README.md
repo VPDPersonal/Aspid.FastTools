@@ -22,17 +22,17 @@ URL указывает на последнюю preview-версию; кнопк�
 
 ### Сериализация
 
-#### [Serializable Type System](02-serializable-types.md)
+#### [Serializable Types](02-serializable-types.md)
 
 Сохраняет <code lang="class-name">System.Type</code> в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов.
 
 <img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
-#### [ComponentTypeSelector](05-component-type-selector.md)
+#### [TypeSelector](03-type-selector.md)
 
-Меняет тип добавленного компонента/ScriptableObject на наследника, не теряя значения общих полей.
+Настраивает, какие типы предлагает окно выбора в инспекторе и как они в нём выглядят.
 
-<img src="../Images/component-type-selector.gif" alt="Смена типа компонента в инспекторе" width="640" />
+<img src="../Images/type-selector-member-constraint.gif" alt="Выбор MeleeWeapon в Weapon Class оставляет в Weapon Name только Axe и Sword" width="640" />
 
 #### [SerializeReference Selector](04-serialize-reference-selector.md)
 
@@ -40,11 +40,23 @@ URL указывает на последнюю preview-версию; кнопк�
 
 <img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
-#### [SerializeReference Tooling](06-serialize-reference-tooling.md)
+#### [ComponentTypeSelector](05-component-type-selector.md)
 
-Находит потерянные <code lang="csharp">[SerializeReference]</code> по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами — вручную, перед сборкой или в CI.
+Меняет тип добавленного компонента/ScriptableObject на наследника, не теряя значения общих полей.
+
+<img src="../Images/component-type-selector.gif" alt="Смена типа компонента в инспекторе" width="640" />
+
+#### [Восстановление SerializeReference](06-serialize-reference-tooling.md)
+
+Находит потерянные <code lang="csharp">[SerializeReference]</code> по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами.
 
 <img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
+
+#### [Проверка перед сборкой и CI](07-serialize-reference-validation.md)
+
+Проверяет проект на потерянные типы <code lang="csharp">[SerializeReference]</code> и пустые обязательные поля перед сборкой плеера или в CI.
+
+<img src="../Images/aspid_fasttools_serialize_reference_required_violations.png" alt="Группа Required violations: пустое поле _primary в двух префабах" width="640" />
 
 #### [EnumValues](08-enum-values.md)
 

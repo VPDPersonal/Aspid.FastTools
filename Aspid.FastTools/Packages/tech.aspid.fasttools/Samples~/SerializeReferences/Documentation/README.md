@@ -58,4 +58,4 @@ To repeat the repair, import the sample again and overwrite its files.
 | `Scripts/WeaponPreset.cs`, `Presets/`, `Prefabs/` | The repair scenarios |
 | `Scripts/Editor/WeaponPresetEditor.cs` | An IMGUI inspector of plain <code lang="class-name">PropertyField</code> calls |
 
-Reference: [SerializeReference Selector](../../../Documentation/04-serialize-reference-selector.md) and [SerializeReference Tooling](../../../Documentation/06-serialize-reference-tooling.md).
+Reference: [SerializeReference Selector](../../../Documentation/04-serialize-reference-selector.md) and [SerializeReference repair](../../../Documentation/06-serialize-reference-tooling.md).

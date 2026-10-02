@@ -42,7 +42,9 @@
 
 Двоичные ассеты и нескачанные файлы Git LFS не проверяются; CI перечисляет их в отчёте. Для полного сканирования используйте **Asset Serialization → Mode → Force Text** и скачайте файлы LFS.
 
-**Build / CI gate** и **Excluded scan folders** доступны и в **Project Settings → Aspid.FastTools → SerializeReference** и хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, общем для команды и CI.
+**Build / CI gate**, **Excluded scan folders** и **Auto de-alias duplicated list elements** — общие настройки, они отмечены зелёной полосой: они доступны и в **Project Settings → Aspid.FastTools → SerializeReference** и хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, общем для команды и CI.
+
+![Раздел SerializeReference на вкладке Settings: общие настройки с зелёной полосой, личные — с синей](../Images/aspid_fasttools_serialize_reference_settings.png)
 
 <a id="headless-ci"></a>
 

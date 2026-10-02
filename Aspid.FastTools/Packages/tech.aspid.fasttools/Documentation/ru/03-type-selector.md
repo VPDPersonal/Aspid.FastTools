@@ -23,6 +23,18 @@
 
 Все ограничения атрибута действуют **одновременно**. У обёртки дополнительно учитывается <code lang="class-name">T</code>, у <code lang="csharp">[SerializeReference]</code> — тип поля.
 
+```csharp
+public interface ITwoHanded { }
+
+public abstract class Weapon { }
+public abstract class MeleeWeapon : Weapon { }
+public abstract class RangedWeapon : Weapon { }
+
+public sealed class Sword : MeleeWeapon { }
+public sealed class Axe : MeleeWeapon, ITwoHanded { }
+public sealed class Bow : RangedWeapon, ITwoHanded { }
+```
+
 | Ограничение | Результат |
 |---|---|
 | <code lang="csharp">typeof(Weapon)</code> | Типы, совместимые с <code lang="class-name">Weapon</code> |
@@ -134,7 +146,6 @@
 При выборе открытого generic-типа окно предлагает выбрать аргументы и возвращает сконструированный закрытый тип:
 
 ```csharp
-public abstract class Weapon { }
 public abstract class Enchantment { }
 public sealed class Fire : Enchantment { }
 public sealed class Frost : Enchantment { }
@@ -170,6 +181,9 @@ button.clicked += () => TypeSelectorWindow.Show(
 ```
 
 Обработчик получает assembly-qualified name или <code lang="csharp">null</code> при выборе `<None>`; закрытие окна без выбора его не вызывает.
+
+- <code lang="csharp">currentAqn</code> отмечает свой тип при открытии, а <code lang="csharp">""</code> — `<None>`; <code lang="csharp">null</code> или имя, которого нет в списке, не отмечают ничего, поэтому Enter сразу после открытия не сотрёт сохранённое имя.
+- <code lang="csharp">TypeSelectorFilter.Allow</code> по умолчанию <code lang="csharp">TypeAllow.None</code>, в отличие от <code lang="csharp">[TypeSelector]</code>: окно выше предлагает только конкретное оружие.
 
 Свойства фильтра и параметры окна — в справочнике API: [TypeSelectorFilter](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeSelectorFilter), [TypeSelectorWindow](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeSelectorWindow).
 

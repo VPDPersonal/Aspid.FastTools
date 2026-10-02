@@ -109,8 +109,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   listed capture (both themes) to its component and adds an 8px margin that continues Unity's background, the
   Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub, Unity and the site
   then show the same image. After re-shooting a listed capture, run the script; it skips framed files and fails on a
-  capture whose size no longer matches its row, which then needs new bounds. The `docs/media` recipes that write a
-  listed capture call it themselves.
+  capture whose size no longer matches its row, which then needs new bounds. Only `enum-values-multipliers/padding/pad.py`
+  and `native-selector/crop.sh` in `docs/media` still write a listed capture, and they call it themselves; the other
+  listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
 - Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
   `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
   and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
@@ -126,7 +127,7 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   `<StyleSidesRow call="…">` with the second cell as children. Markdown keeps the table, and the rows and their
   translations stay in the page; changing that first cell detaches the component.
 - An ordered list can have one too: `LISTS` in `liveDiagrams.js` maps the bold text of its first item to a component
-  (`Tools → Aspid 🐍 → FastTools → Project References` → `ProjectReferencesPanel`, the SerializeReference Tooling quick
+  (`Tools → Aspid 🐍 → FastTools → Project References` → `ProjectReferencesPanel`, the SerializeReference repair quick
   start), which gets each item's text as a `<span>` child, so the steps and their translation stay in the page; changing
   that bold text detaches it. The panel reuses the install panel's card and steps and draws the Aspid FastTools window
   without its tab strip; in the light site theme it takes Unity's light skin and the window's light palette
@@ -186,7 +187,7 @@ Apply these rules to every main doc page, always to the English file and its `ru
 - **Code blocks fit the article width** without horizontal scrolling. Site table columns are equal and fixed, so
   long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
 - **No caption under a capture on a feature page**: the section text already says what it shows, so the image keeps
-  only its alt text (Serializable Type System, ProfilerMarkers). The caption paragraph stays for live diagrams, tutorial
+  only its alt text (Serializable Types, ProfilerMarkers). The caption paragraph stays for live diagrams, tutorial
   pages and the `## Package sample` gif (see below).
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
   and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
