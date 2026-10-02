@@ -29,7 +29,7 @@ Weapons, a nested burn effect, and modifiers in the Loadout Inspector.
    - **Damage Modifier** is a <code lang="class-name">Modifier&lt;float&gt;</code>: <code lang="class-name">DamageModifier</code> and <code lang="class-name">Modifier&lt;Single&gt;</code> are offered and created at once.
    - **Perks** is a <code lang="class-name">List&lt;IModifier&gt;</code>: besides the closed subclasses it offers the open <code lang="class-name">Modifier&lt;T&gt;</code>, which asks for <code lang="class-name">T</code> on a second page.
    - Only <code lang="class-name">DamageModifier</code> changes the damage; **Loadout → Log Loadout** in the component's context menu prints the values of the others.
-8. **Required field.** Set **Primary** to `<None>`: a notice appears under the field. Save the scene, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation; a player build does not check it ([what each run checks](../../../Documentation/04-serialize-reference-tooling.md#what-each-run-checks)).
+8. **Required field.** Set **Primary** to `<None>`: a notice appears under the field. Save the scene, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation; a player build does not check it ([what each run checks](../../../Documentation/13-serialize-reference-validation.md#what-each-run-checks)).
 9. **Header menu.** Right-click a field header for copy and paste, templates, usages and a new script: [every item](../../../Documentation/03-serialize-reference-selector.md#header-menu).
 
 ## Repair

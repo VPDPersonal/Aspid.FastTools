@@ -1,6 +1,6 @@
-# SerializeReference Tooling
+# SerializeReference repair
 
-References to renamed and deleted classes are found across the project and repaired in one go — before they turn into null in a build.
+Restore missing references after classes are renamed, moved or deleted.
 
 <a id="check-the-project"></a>
 
@@ -10,14 +10,47 @@ References to renamed and deleted classes are found across the project and repai
 2. Click **Scan Project**: missing references are grouped by stored class.
 3. Click **Fix all** in a group, pick a class and confirm with **Rewrite**.
 
-> [!NOTE]
-> Binary assets and Git LFS files that were not fetched are skipped silently: keep **Asset Serialization → Mode** on **Force Text** (the default) and fetch LFS files before the check.
+## Choosing a repair method
+
+| Where to repair | Data preserved | Undo |
+|---|---|---|
+| **Fix** in an asset's Inspector | Entry data in the file | None |
+| **Fix** in a scene or Prefab Mode | Only flat top-level fields | Undo until saved |
+| **Asset References** | Entry data in the file | None |
+| **Project References** | Group entries' data in the files | Undo button in the rewrite summary |
+
+A file rewrite preserves entry data, but the selected class must fit the field and its data. These tools work with <code lang="csharp">[SerializeReference]</code>. For a wrapper's missing type name, see [Serializable Types](02-serializable-types.md#missing-type).
+
+## Fix in the Inspector
+
+After a class is renamed, moved or deleted, the field shows **Missing type**, while the data stays in the asset.
+
+![A missing reference with Fix and the → Pistol suggestion in the Inspector](Images/aspid_fasttools_serialize_reference_repair.png)
+
+| Action | What it does |
+|---|---|
+| **Fix** | Opens the class picker, including classes hidden with <code lang="csharp">Hidden</code> |
+| **→ Pistol** | Assigns the suggested class; the tooltip gives the reason: the same name, the same name in another case, or a similar name |
+
+> [!WARNING]
+> On an asset, Fix rewrites the file, and Undo does not revert it.
+>
+> In a scene or Prefab Mode the repair stays in memory: Undo reverts it, and saving makes it final and clears the object's Undo history. Such a repair brings back only flat top-level fields: nested objects, arrays, lists, vectors, colours and object references get their default values.
+
+### When there is no Fix
+
+| Case | What to do |
+|---|---|
+| Several objects selected | Select one: until then **Missing type** is not shown |
+| Unsaved changes in the scene or Prefab Mode | Save: until then the field shows `<None>` without **Missing type** |
+| Prefab instance, class stored in the source prefab | Repair the source prefab; the tooltip names it |
+| Prefab instance, class set through an override | Choose a new class on the instance or revert the override |
 
 <a id="bulk-repair-tabs"></a>
 
 ## Project References: repair a group
 
-Project References and Asset References are tabs of one window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](#settings).
+Project References and Asset References are tabs of one window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](13-serialize-reference-validation.md#scan-scope).
 
 ![Project References with Fix all, Smart Fix → Pistol and Migrate all groups](Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -81,113 +114,19 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 - in binary assets and Git LFS files that were not fetched;
 - in files outside `Assets/`.
 
-<a id="project-settings--the-buildci-gate"></a>
+## Detecting new breakages
 
-## Pre-build checks
+**Breakage detection** reports newly missing references after script or asset changes with a notification and in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is stored locally in `EditorPrefs`.
 
-The [**Build / CI gate**](#settings) setting picks how strict the check is:
-
-| Mode | Player build | Standalone CI run |
-|---|---|---|
-| `Off` | Skips the check | No scan and no report, an older report stays; exit code `0` |
-| `Warn` | Warns and keeps building | Report and violations in the log; exit code `0` |
-| `Fail` | Missing types stop the build | Report; exit code `1` on violations |
-
-The build checks every asset under `Assets/`, not only what goes into it: in `Fail` mode an unused prefab stops it too — exclude such folders with [**Excluded scan folders**](#settings).
-
-### What each run checks
-
-| Run | Missing types | Empty fields with <code lang="csharp">Required = true</code> |
-|---|---|---|
-| **Project References → Scan Project** | Yes, with pending migrations | Unless the mode is `Off`, as a **Required violations** group |
-| **Asset References** | Yes | Yes, in any mode |
-| Player build | Unless the mode is `Off` | No |
-| CI without `-srGateRequired` | Unless the mode is `Off` | No |
-| CI with `-srGateRequired` | Unless the mode is `Off` | Unless the mode is `Off` |
-
-![Required violations group: an empty _primary field in two prefabs](Images/aspid_fasttools_serialize_reference_required_violations.png)
-
-A field is made required with <code lang="csharp">[TypeSelector(Required = true)]</code>; see [Required field](02-serializable-types.md#required-field). In scenes the Required check has [limitations](#limitations).
-
-<a id="headless-ci"></a>
-
-## Running in CI
-
-```bash
-Unity -batchmode -projectPath . \
-  -executeMethod \
-  Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck \
-  -srGateReport SerializeReferenceGateReport.txt \
-  -srGateRequired -srGateFail
-```
-
-Exit code `2` means the check itself failed.
-
-### Command-line flags
-
-| Flag | Behaviour |
-|---|---|
-| `-srGateReport <path>` | Report path from the project root, `SerializeReferenceGateReport.txt` by default; the folder must exist, the file is overwritten |
-| `-srGateRequired` | Also checks unset fields with <code lang="csharp">Required = true</code> |
-| `-srGateFail` | Uses `Fail` instead of the project's mode, even `Off` |
-| `-srGateWarnOnly` | Uses `Warn` instead of the project's mode, even `Off`; takes precedence over `-srGateFail` if both are passed |
-
-<a id="report-and-exit-codes"></a>
-
-### Report
-
-The report starts with a header:
-
-```text
-# SerializeReference Gate Report
-# Violations: 2
-# Not scanned (not text YAML): 2
-#   Binary	Assets/Legacy/OldLoadout.prefab
-#   LfsPointer	Assets/Levels/Arena.unity
-```
-
-Skipped files do not change the exit code.
-
-Then one line per violation, tab-separated:
-
-```text
-KIND    assetPath    fileId    rid    className    fieldPath    origin
-```
-
-| Field | Contents |
-|---|---|
-| `KIND` | `MissingType` or `RequiredUnset` |
-| `assetPath` | File path |
-| `fileId` | Host object ID within the file; for a prefab instance override, the ID of the prefab instance |
-| `rid` | Managed-reference ID; in `RequiredUnset` rows, `-2` for an empty <code lang="csharp">[SerializeReference]</code> and `0` for a <code lang="csharp">string</code> or <code lang="class-name">SerializableType</code> |
-| `className` | Stored class name for `MissingType` |
-| `fieldPath` | Required field path; for a `MissingType` override, the overridden field; otherwise empty |
-| `origin` | `override` for a type set by a prefab instance override; otherwise empty |
-
-In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead.
-
-## Settings
-
-Every setting is in **Tools → Aspid 🐍 → FastTools → Settings**; the shared ones are also in **Project Settings → Aspid.FastTools → SerializeReference**, the personal one in **Preferences → Aspid.FastTools → SerializeReference**.
-
-![SerializeReference section of the Settings tab](Images/aspid_fasttools_serialize_reference_settings.png)
-
-| Setting | Default | What it does |
-|---|---|---|
-| **Build / CI gate** | `Warn` | Sets how strict the [pre-build check](#pre-build-checks) and CI are |
-| **Excluded scan folders** | No folders | Folders inside `Assets/` that Project References, the build and CI checks and breakage detection skip |
-| **Auto de-alias duplicated list elements** | On | Gives a duplicated list element its own instance instead of a shared `rid` |
-| **Breakage detection** | On | After scripts or assets change, reports newly missing references with a notification and in the Console |
-
-Breakage detection is kept locally in `EditorPrefs`; the other settings live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI.
+For checks before a build, CI and folder exclusions, see [Build and CI checks](13-serialize-reference-validation.md).
 
 ## Limitations
 
 | Where | Limitation |
 |---|---|
-| Open scenes, Prefab Mode, unsaved and locked files | Rewrites skip them: save and close the file, or repair the field with [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types) |
+| Open scenes, Prefab Mode, unsaved and locked files | Rewrites skip them: save and close the file, or use [Fix in the Inspector](#fix-in-the-inspector) with its data-transfer limitations |
 | Scenes and fields under a missing parent reference | Asset References changes only missing types |
-| Required in scenes | Fields inside managed references, collections and prefab overrides are not checked |
+| Binary assets and unfetched Git LFS files | Not scanned: use **Force Text** and fetch LFS files |
 
 ## Package sample
 

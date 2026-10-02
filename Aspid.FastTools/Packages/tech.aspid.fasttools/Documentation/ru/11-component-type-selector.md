@@ -35,6 +35,12 @@ public abstract class EnemyBase : MonoBehaviour
 - смена убрала бы класс, который нужен другому компоненту;
 - новому классу нужен компонент, который нельзя добавить, например абстрактный <code lang="class-name">Collider</code>.
 
+## Связанные возможности
+
+Оформление классов, поиск и избранное описаны на странице [TypeSelector](12-type-selector.md#typeselectordisplay). Здесь список определяется классом, в котором объявлено поле; атрибут <code lang="csharp">[TypeSelector]</code> его не настраивает.
+
+Для выбора типа в отдельном поле см. [Serializable Types](02-serializable-types.md), для создания объекта в поле — [SerializeReference Selector](03-serialize-reference-selector.md).
+
 ## Пример в пакете
 
 Переключение типа компонента показано в примере [Types](../../Samples~/Types/Documentation/README.ru.md).

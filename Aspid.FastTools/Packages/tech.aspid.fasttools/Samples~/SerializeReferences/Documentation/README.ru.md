@@ -29,7 +29,7 @@
    - **Damage Modifier** — <code lang="class-name">Modifier&lt;float&gt;</code>: предлагаются <code lang="class-name">DamageModifier</code> и <code lang="class-name">Modifier&lt;Single&gt;</code>, оба создаются сразу.
    - **Perks** — <code lang="class-name">List&lt;IModifier&gt;</code>: кроме закрытых наследников предлагается открытый <code lang="class-name">Modifier&lt;T&gt;</code>, тип <code lang="class-name">T</code> выбирается на второй странице.
    - Урон меняет только <code lang="class-name">DamageModifier</code>; значения остальных выводит **Loadout → Log Loadout** в контекстном меню компонента.
-8. **Обязательное поле.** Поставьте **Primary** в `<None>`: под полем появится предупреждение. Сохраните сцену — **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение; сборка плеера его не проверяет ([что проверяет каждый запуск](../../../Documentation/ru/04-serialize-reference-tooling.md#что-проверяет-каждый-запуск)).
+8. **Обязательное поле.** Поставьте **Primary** в `<None>`: под полем появится предупреждение. Сохраните сцену — **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение; сборка плеера его не проверяет ([что проверяет каждый запуск](../../../Documentation/ru/13-serialize-reference-validation.md#что-проверяет-каждый-запуск)).
 9. **Меню заголовка.** Правый клик по заголовку поля — копирование и вставка, шаблоны, поиск использований и новый скрипт: [все пункты](../../../Documentation/ru/03-serialize-reference-selector.md#меню-заголовка).
 
 ## Ремонт
