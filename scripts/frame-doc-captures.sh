@@ -85,10 +85,12 @@ type-selector-member-constraint               1393x812  38  6 1385  804 inspecto
 type-selector-required                        1393x176  34  6 1385  160 inspector
 type-selector-constraint-warning              1393x176  34  6 1385  160 inspector
 component-type-selector                       1300x764  34  6 1292  724 inspector
-# x=10 keeps the foldouts and the coloured shared and missing-reference markers; the selector has neither to show,
-# so it starts past the foldout arrows, at the labels, like the type picker captures.
+# x=10 keeps the foldouts and the coloured shared and missing-reference markers, the same on every capture of the page.
+# The introduction's card shows the selector on its own, so its copy (_card) starts past the foldout arrows, at the
+# labels, like the type picker captures: after re-shooting the selector, copy the raw file to _card before running this.
 aspid_fasttools_serialize_reference_list         1340x962  10  6 1332  954 inspector:#3c3c3c
-aspid_fasttools_serialize_reference_selector     1340x806  34  6 1332  766 inspector
+aspid_fasttools_serialize_reference_selector     1340x806  10  6 1332  766 inspector
+aspid_fasttools_serialize_reference_selector_card 1340x806  34  6 1332  766 inspector
 aspid_fasttools_serialize_reference_make_unique  1340x448  10  6 1332  434 inspector
 aspid_fasttools_serialize_reference_repair       1340x226  10  6 1332  208 inspector
 # EnumValues: the four-row state of every frame, and the picker's lower edge.

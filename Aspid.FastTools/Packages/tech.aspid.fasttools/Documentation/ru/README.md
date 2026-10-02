@@ -32,7 +32,7 @@ URL указывает на последнюю preview-версию; кнопк�
 
 Даёт выбрать класс для поля <code lang="csharp">[SerializeReference]</code> в инспекторе и переносит совместимые данные при смене класса.
 
-<img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
+<img src="../Images/aspid_fasttools_serialize_reference_selector_card.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
 #### [ComponentTypeSelector](05-component-type-selector.md)
 

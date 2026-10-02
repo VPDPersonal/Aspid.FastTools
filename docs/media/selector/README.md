@@ -2,7 +2,8 @@
 
 > Provenance only. The published `aspid_fasttools_serialize_reference_selector.gif` was re-shot in #264 from the
 > DocsMedia harness (`Aspid.FastTools/Assets/DevTests/SerializeReferences/Scripts/DocsMedia`) and framed by
-> `scripts/frame-doc-captures.sh`; `encode.sh` rebuilds this earlier 1520×1140 recording as `selector.gif` here.
+> `scripts/frame-doc-captures.sh`, together with its `_card` copy for the introduction, cropped past the foldout
+> arrows; `encode.sh` rebuilds this earlier 1520×1140 recording as `selector.gif` here.
 
 Recorded on 2026-09-13 in Unity 6000.4.0f1. The five weapon types use the default C# script icon: their misleading Transform icon overrides have been removed from both the package sample and its imported copy. These frames replace the previous native recording archived in `archive-transform-icons/`.
 

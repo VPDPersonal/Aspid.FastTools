@@ -34,7 +34,7 @@ Stores a <code lang="class-name">System.Type</code> in a component/asset and let
 
 Lets you pick the class for a <code lang="csharp">\[SerializeReference]</code> field in the Inspector and carries compatible data over when the class changes.
 
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
+<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
 
 #### [ComponentTypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-component-type-selector.md)
 
