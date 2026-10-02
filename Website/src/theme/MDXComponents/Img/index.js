@@ -9,25 +9,6 @@ const DRAG_THRESHOLD = 4;  // px a pressed mouse travels before the press pans i
 const MAX_ZOOM = 3;        // a raster opens at most this many times its fitted width, so phones pan a sane distance
 const VECTOR_ZOOM = 2;     // an SVG has no natural pixel size to stop at
 
-// Capture-specific framing, shared by dark/light siblings and their hashed build URLs.
-const CAPTURE_CROPS = {
-  'serializable-type-missing': 'missing-type',
-  'serializable-type-quick-start': 'type-picker',
-  'type-selector-required': 'type-warning',
-  'type-selector-constraint-warning': 'type-warning',
-  'type-selector-member-constraint': 'type-member',
-  'type-selector-display': 'type-picker',
-  'type-selector-window': 'type-picker',
-  'type-selector-generic': 'type-picker',
-  'component-type-selector': 'component-picker',
-  'aspid_fasttools_serialize_reference_list': 'reference-list',
-  'aspid_fasttools_serialize_reference_selector': 'reference-picker',
-  'aspid_fasttools_serialize_reference_make_unique': 'reference-shared',
-  'aspid_fasttools_serialize_reference_repair': 'reference-repair',
-  'enum-values-multipliers-populate': 'enum-populate',
-  'enum-values-type-selector': 'enum-picker',
-};
-
 const isVector = (src) => /^data:image\/svg\+xml|\.svg(?:[?#]|$)/i.test(src);
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -56,12 +37,7 @@ export default function DocImage(props) {
   const article = /\/(?:docs|tutorials)\/./.test(pathname);
   const sceneCapture = typeof props.src === 'string'
     && /\/(?:demo|scene)(?:-light)?(?:-[0-9a-f]{8,})?\.(?:gif|png)$/i.test(props.src);
-  const captureCrop = typeof props.src === 'string'
-    ? Object.entries(CAPTURE_CROPS).find(([name]) => props.src.includes(`/${name}`))?.[1]
-    : null;
-  const introduction = /\/docs\/?$/.test(pathname);
-  const framedCapture = (article && (!sceneCapture || /\/docs\//.test(pathname)))
-    || (introduction && !!captureCrop);
+  const framedCapture = article && (!sceneCapture || /\/docs\//.test(pathname));
   useEffect(() => {
     if (!preview) return undefined;
     const overflow = document.body.style.overflow;
@@ -164,9 +140,7 @@ export default function DocImage(props) {
     onLoad={() => !zoom && setZoomable(zoomWidth(picture.current, preview.src))} />;
   return <>
     {framedCapture
-      ? <span className={`doc-image-panel${captureCrop ? ` doc-image-panel--cropped doc-image-panel--${captureCrop}` : ''}`}>
-          {captureCrop ? <span className="doc-image-crop">{image}</span> : image}
-        </span>
+      ? <span className="doc-image-panel">{image}</span>
       : image}
     {preview && createPortal(<dialog ref={dialog} className="doc-image-dialog"
       aria-label={props.alt || (ru ? 'Просмотр изображения' : 'Image preview')}

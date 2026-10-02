@@ -105,6 +105,12 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
   which keeps the bare scene look. So name inspector captures anything but `demo`/`scene`, and name scene footage
   exactly that. A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (recoloured background).
+- **Inspector and picker captures are cropped in the file, not in CSS.** `scripts/frame-doc-captures.sh` crops each
+  listed capture (both themes) to its component and adds an 8px margin that continues Unity's background, the
+  Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub, Unity and the site
+  then show the same image. After re-shooting a listed capture, run the script; it skips framed files and fails on a
+  capture whose size no longer matches its row, which then needs new bounds. The `docs/media` recipes that write a
+  listed capture call it themselves.
 - Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
   `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
   and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
@@ -353,9 +359,10 @@ On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
 there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme. Both are the
-sample's `enum-values-multipliers-populate(-light).gif` padded on the right and bottom only, since the GIF's left margin is
-already 16px wider (`-preset veryslow -crf 24 -vf "fps=20,pad=1576:1080:0:188:color=0x333333"`, `0xC8C8C8` for light).
-The Inspector GIFs of the first two cards are cropped in `custom.css` to hide the baked title bar and tab strip.
+`enum-values-multipliers-populate(-light).gif` padded to 1576×1080 (`-preset veryslow -crf 24
+-vf "fps=20,pad=1576:1080:20:206:color=0x333333"`, `0xC8C8C8` for light).
+The Inspector captures of the Serialization cards are cropped and framed in the file (`scripts/frame-doc-captures.sh`), so each card
+takes the capture's own shape.
 
 The same plugin replaces the Installation section's instruction, URL block and version note with
 `src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with Stable
