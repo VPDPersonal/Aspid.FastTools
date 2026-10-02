@@ -16,6 +16,10 @@
   position: relative;
   flex: 1;
   min-width: 0;
+  /* The menu bar and the unseen tallest frame share one cell: the stage is as tall as that frame needs. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
   overflow: hidden;
   color: rgb(190 190 190);
   background: #282828;
@@ -69,6 +73,9 @@
   transition: opacity 0.35s ease, transform 0.45s var(--prp-ease);
 }
 .window[data-open] { opacity: 1; transform: none; }
+.stage > .menubar, .stage > .sizer { grid-area: 1 / 1; }
+.sizer { position: static; visibility: hidden; transition: none; }
+.sizer * { animation: none !important; }
 
 .body {
   display: flex;

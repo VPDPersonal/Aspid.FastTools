@@ -19,8 +19,18 @@ function zoomWidth(img, src) {
   return width > fitted * 1.15 ? Math.round(width) : 0;
 }
 
+// `…/Images/serializable-type-quick-start-light-<hash>.gif` → `serializable-type-quick-start`.
+const captureName = (src) => src.replace(/^.*\//, '').replace(/\.[a-z]+(?:[?#].*)?$/i, '').replace(/-[0-9a-f]{20,}$/, '')
+  .replace(/-light$/, '');
+
+// Captures of the whole Aspid FastTools window (the SerializeReferences DocsMedia harness) carry the window's own
+// margin around its cards; doc pages crop it to the same inset as the framed captures (custom.css).
+const WINDOW_CAPTURES = /^aspid_fasttools_serialize_reference_(?:asset_references|prefab_overrides|project_references|required_violations|settings|tooling)$/;
+const WINDOW_MARGIN = 24;
+
 export default function DocImage(props) {
-  const ru = useDocusaurusContext().i18n.currentLocale === 'ru';
+  const {i18n, siteConfig} = useDocusaurusContext();
+  const ru = i18n.currentLocale === 'ru';
   const {pathname} = useLocation();
   const [preview, setPreview] = useState(null);
   const [closing, setClosing] = useState(false);
@@ -38,6 +48,12 @@ export default function DocImage(props) {
   const sceneCapture = typeof props.src === 'string'
     && /\/(?:demo|scene)(?:-light)?(?:-[0-9a-f]{8,})?\.(?:gif|png)$/i.test(props.src);
   const framedCapture = article && (!sceneCapture || /\/docs\//.test(pathname));
+  // A capture framed in its file is drawn by its padding as a border image (custom.css, `.doc-image-capture`).
+  const {margin, names} = siteConfig.customFields.framedCaptures;
+  const marginCapture = framedCapture && typeof props.src === 'string' && Number(props.width) > 0
+    && names.includes(captureName(props.src));
+  const windowCapture = framedCapture && !marginCapture && typeof props.src === 'string' && Number(props.width) > 0
+    && WINDOW_CAPTURES.test(captureName(props.src));
   useEffect(() => {
     if (!preview) return undefined;
     const overflow = document.body.style.overflow;
@@ -139,9 +155,17 @@ export default function DocImage(props) {
     style={zoom ? {width: zoom.width} : undefined} onClick={onPictureClick}
     onLoad={() => !zoom && setZoomable(zoomWidth(picture.current, preview.src))} />;
   return <>
-    {framedCapture
-      ? <span className="doc-image-panel">{image}</span>
-      : image}
+    {marginCapture
+      ? <span className="doc-image-panel doc-image-panel--margin"
+        style={{'--capture-width': Number(props.width), '--capture-margin-x': margin, '--capture-margin-y': margin}}>
+        <span className="doc-image-capture" style={{borderImageSource: `url("${props.src}")`}}>{image}</span>
+      </span>
+      : windowCapture
+        ? <span className="doc-image-panel doc-image-panel--margin doc-image-panel--window"
+          style={{'--capture-width': Number(props.width), '--capture-margin': WINDOW_MARGIN}}>{image}</span>
+        : framedCapture
+          ? <span className="doc-image-panel">{image}</span>
+          : image}
     {preview && createPortal(<dialog ref={dialog} className="doc-image-dialog"
       aria-label={props.alt || (ru ? 'Просмотр изображения' : 'Image preview')}
       data-zoomed={zoom ? '' : undefined} data-closing={closing ? '' : undefined} data-panning={panning ? '' : undefined}

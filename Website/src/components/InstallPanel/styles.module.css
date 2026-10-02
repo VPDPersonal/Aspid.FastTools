@@ -162,7 +162,10 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 
 /* ---------- Package Manager mock-up ---------- */
 
-.pm { position: relative; display: flex; flex: 1; flex-direction: column; min-width: 0; color: #d2d2d2; background: #383838; font: 11.5px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+/* The Package Manager sits 8px inside the card, like the captures and previews of the feature cards, on the editor's
+   own background, framed by its window edge. */
+.preview:has(> .pm) { padding: 8px; }
+.pm { position: relative; display: flex; flex: 1; flex-direction: column; min-width: 0; border: 1px solid #1f1f1f; color: #d2d2d2; background: #383838; font: 11.5px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; }
 .pm[data-frame='0'] { animation: pmOpen 0.5s var(--install-ease); }
 @keyframes pmOpen { from { opacity: 0; transform: scale(0.97); } }
 .pmTitle { display: flex; background: #282828; border-bottom: 1px solid #1f1f1f; }
@@ -264,7 +267,7 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 
 /* The light site theme shows Unity's light editor skin; colours come from its DefaultCommonLight theme. */
 html[data-theme='light'] .preview { background: #a5a5a5; }
-html[data-theme='light'] .pm { color: #090909; background: #c8c8c8; }
+html[data-theme='light'] .pm { color: #090909; background: #c8c8c8; border-color: #999; }
 html[data-theme='light'] .pmTitle { background: #a5a5a5; border-bottom-color: #999; }
 html[data-theme='light'] .pmTitle span { background: #c8c8c8; }
 html[data-theme='light'] .pmToolbar { background: #cbcbcb; border-bottom-color: #999; }

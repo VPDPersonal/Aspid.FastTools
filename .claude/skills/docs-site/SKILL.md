@@ -112,6 +112,12 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   capture whose size no longer matches its row, which then needs new bounds. Only `enum-values-multipliers/padding/pad.py`
   and `native-selector/crop.sh` in `docs/media` still write a listed capture, and they call it themselves; the other
   listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
+  On doc pages the site pads every listed capture on to 8px from its rounded frame, drawing it as a border image so
+  the margin's bands meet the edge without a seam; `docusaurus.config.js` reads the list and `PAD` from the script
+  (`customFields.framedCaptures`), so a new row needs nothing else. The introduction's cards do the same in `custom.css`.
+  Whole-window captures (`aspid_fasttools_serialize_reference_*` from the SerializeReferences DocsMedia harness) keep
+  the window's 24px margin; doc pages crop it to the same 8px (`WINDOW_CAPTURES` in `MDXComponents/Img`), so a new
+  window capture is added to that pattern.
 - Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
   `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
   and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.

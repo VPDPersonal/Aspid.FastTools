@@ -23,6 +23,17 @@ const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json
  * The UPM branch the install URL points at; each release tags it `<branch>/<version>`. A prerelease publishes to
  * `upm-preview`, a stable version to `upm` (.github/workflows/release.yml).
  */
+// The captures scripts/frame-doc-captures.sh frames in the file, with the margin it adds: doc pages pad them on to the
+// same inset from their rounded frame as the introduction's cards (MDXComponents/Img).
+function readFramedCaptures() {
+  const script = readFileSync(new URL('../scripts/frame-doc-captures.sh', import.meta.url), 'utf8');
+  const margin = Number(script.match(/^PAD=(\d+)$/m)[1]);
+  const rows = script.slice(script.indexOf("done <<'EOF'\n")).split('\n').slice(1);
+  const names = rows.slice(0, rows.indexOf('EOF')).map((row) => row.trim()).filter((row) => row && !row.startsWith('#'))
+    .map((row) => row.split(/\s+/)[0]);
+  return {margin, names};
+}
+
 const UPM_BRANCH = PACKAGE_VERSION.includes('-') ? 'upm-preview' : 'upm';
 
 /** Orders `1.0.0-rc.10` after `1.0.0-rc.9`, and a release after its prereleases. */
@@ -100,7 +111,10 @@ const config = {
 
   url: 'https://vpdpersonal.github.io',
   baseUrl: '/Aspid.FastTools/',
-  customFields: { assetStore: ASSET_STORE, packageVersion: PACKAGE_VERSION, packageVersions: readPackageVersions() },
+  customFields: {
+    assetStore: ASSET_STORE, packageVersion: PACKAGE_VERSION, packageVersions: readPackageVersions(),
+    framedCaptures: readFramedCaptures(),
+  },
   organizationName: 'VPDPersonal',
   projectName: 'Aspid.FastTools',
   trailingSlash: false,

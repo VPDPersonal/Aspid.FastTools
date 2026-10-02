@@ -9,6 +9,8 @@ const DURATIONS = [1700, 1100, 1700, 1800, 1700, 2600];
 const STEP_OF_FRAME = [0, 1, 1, 2, 2, 3];
 const FIRST_FRAME_OF_STEP = [0, 1, 3];
 const PLAYS = 2;
+// Fix all with the picker open over the four entries.
+const TALLEST_FRAME = 3;
 
 const EDITOR_MENUS = ['File', 'Edit', 'Assets', 'GameObject', 'Component', 'Tools', 'Window', 'Help'];
 // The menu items of `TabWindow`, grouped as Unity groups them by priority.
@@ -57,12 +59,12 @@ function Menu({className, open, children}) {
 }
 
 /** The Aspid FastTools window, Project References tab, drawn from the package's dark theme and its real strings. */
-function FastToolsWindow({frame}) {
+function FastToolsWindow({frame, sizer = false}) {
   const scanned = frame >= 2;
   const picking = frame === 3;
   const clean = frame === 5;
   return (
-    <div className={styles.window} data-open={frame >= 1 || undefined}>
+    <div className={sizer ? `${styles.window} ${styles.sizer}` : styles.window} data-open={(!sizer && frame >= 1) || undefined}>
       <div className={styles.body}>
         <div className={styles.panel}>
           <strong>Find missing references</strong>
@@ -167,6 +169,8 @@ function Stage({frame}) {
           </span>
         ))}
       </div>
+      {/* The tallest frame, unseen, sizes the stage, so every frame keeps the window's inset below it in any font. */}
+      <FastToolsWindow frame={TALLEST_FRAME} sizer />
       <FastToolsWindow frame={frame} />
     </div>
   );
