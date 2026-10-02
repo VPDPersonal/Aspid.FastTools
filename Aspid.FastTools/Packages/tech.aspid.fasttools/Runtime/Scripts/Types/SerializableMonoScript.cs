@@ -22,8 +22,11 @@ namespace Aspid.FastTools.Types
     /// works in Play Mode; another thread gets <see langword="null"/> then.
     /// </para>
     /// <para>
-    /// Only types Unity maps to a script asset can be referenced this way — a top-level, non-generic class declared
-    /// in a file of the same name. Use <see cref="SerializableType"/> for nested and generic types.
+    /// Only types Unity maps to a script asset can be referenced this way: a top-level, non-generic class declared
+    /// in a file of the same name or compiled into a DLL. From a DLL, Unity maps only
+    /// <see cref="UnityEngine.MonoBehaviour"/> and <see cref="UnityEngine.ScriptableObject"/> classes, by namespace
+    /// and name, so renaming the class or its namespace breaks the reference. Use <see cref="SerializableType"/> for
+    /// nested and generic types and for other DLL classes.
     /// </para>
     /// </remarks>
     /// <example>
