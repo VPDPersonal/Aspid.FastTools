@@ -901,6 +901,18 @@ html[data-theme='light']:not([data-accent]).docs-doc-page { --venom-canvas-accen
   }
 }
 
+/* The introduction's title: its only <h1>, for screen readers and search engines; the banner shows the name. */
+.theme-doc-markdown .readme-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* The introduction starts with its banner; the compact TOC follows it. */
 @media (min-width: 997px) {
   .theme-doc-markdown > .readme-banner:first-child {
@@ -1223,10 +1235,10 @@ html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-backgr
   background: var(--capture-background);
 }
 .theme-doc-markdown .feature-card__preview img.doc-zoom-image[role='button'] { object-position: top; }
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_tooling']) {
-  --capture-width: 1720; --capture-margin-x: 24; --capture-margin-y: 24; --capture-background: #000;
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_repair_card']) {
+  --capture-width: 880; --capture-margin-x: 24; --capture-margin-y: 24; --capture-background: #000;
 }
-html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_tooling']) {
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_repair_card']) {
   --capture-background: #f0f0f0;
 }
 .theme-doc-markdown .feature-card__preview > p:has(img[src*='/surface-tables']) {
@@ -1239,24 +1251,24 @@ html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[
    rows. The image itself stays in place, invisible, for its size, alt text and zoom: an image is snapped to the pixel
    grid while a border image is not, and on a card at a fractional offset the two meet half a pixel apart. The
    paragraph keeps the capture's height, so nothing stretches; the Inspector body fills the preview below. */
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-quick-start']) { --capture-width: 1363; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-quick-start.gif'); }
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector']) { --capture-width: 1274; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector.gif'); }
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { --capture-width: 1314; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card.gif'); }
-html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-quick-start']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-quick-start-light.gif'); }
-html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-light.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { --capture-width: 850; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-card.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { --capture-width: 854; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-card.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { --capture-width: 854; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-card-light.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-card-light.gif'); }
 html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card-light.gif'); }
-.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-quick-start']), :has(img[src*='/component-type-selector']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) {
+.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) {
   --capture-margin-x: 8; --capture-margin-y: 8; --capture-background: none;
-  background: #383838;
+  background: #3c3c3c;
 }
-html[data-theme='light'] .theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-quick-start']), :has(img[src*='/component-type-selector']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) { background: #cbcbcb; }
-.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-quick-start']), :has(img[src*='/component-type-selector']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) > p {
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) { background: #cbcbcb; }
+.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) > p {
   flex: none;
   border-image-slice: 8 fill;
   border-image-width: calc(var(--capture-pad-y) + 8 * var(--capture-scale)) calc(var(--capture-pad-x) + 8 * var(--capture-scale));
   border-image-repeat: stretch;
 }
-.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-quick-start']), :has(img[src*='/component-type-selector']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) img.doc-zoom-image { opacity: 0; }
+.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) img.doc-zoom-image { opacity: 0; }
 /* A capture with a light twin sits in two theme spans; the shown one fills the preview as the bare image would. */
 .theme-doc-markdown .feature-card__preview > p > :is(.theme-image--dark, .theme-image--light) { flex: 1; min-width: 0; }
 .theme-doc-markdown .feature-card__preview > p > :is(.theme-image--dark, .theme-image--light) img { height: 100%; }

@@ -369,7 +369,9 @@ there, so update it when the page's quick start changes. The EnumValues clip is 
 `enum-values-multipliers-populate(-light).gif` padded to 1576×1080 (`-preset veryslow -crf 24
 -vf "fps=20,pad=1576:1080:20:206:color=0x333333"`, `0xC8C8C8` for light).
 The Inspector captures of the Serialization cards are cropped and framed in the file (`scripts/frame-doc-captures.sh`), so each card
-takes the capture's own shape.
+takes the capture's own shape. The Serialization cards have their own captures (`*-card.gif`), shot in a 440 pt Inspector or
+FastTools window so their text reads at the card's width, with the picker's empty rows above its footer cut out of every
+frame; the doc pages keep the wider, uncut captures.
 
 The same plugin replaces the Installation section's instruction, URL block and version note with
 `src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with Stable
