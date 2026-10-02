@@ -136,7 +136,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 
 /* ---------- Editor Helpers ---------- */
 
-.namesBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
+.namesBody { display: grid; flex: 1; grid-template-rows: auto auto 1fr; height: 100%; }
 .names { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: var(--preview-inset); list-style: none; }
 .names li {
   display: flex;
@@ -164,6 +164,9 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 /* A narrow card wraps the label under its method rather than cutting it: the (2) is the point. */
 .names li { flex-wrap: wrap; row-gap: 4px; }
 .names li .namesLabel { flex: 1 0 auto; }
+/* Why the second call says (2): a code comment under the rows, shown once that row resolves. */
+.namesNote { margin: 0; padding: 0 var(--preview-inset) var(--preview-inset); color: var(--venom-muted); font: 0.78rem/1.4 var(--ifm-font-family-monospace); opacity: 0; transition: opacity 0.45s ease; }
+.namesNote[data-show] { opacity: 1; }
 
 /* ---------- Agent Skills ---------- */
 

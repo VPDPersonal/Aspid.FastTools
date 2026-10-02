@@ -12,13 +12,13 @@ Aspid.FastTools is a Unity package that takes the routine out of serialization, 
 
 ## Installation
 
-In **Window → Package Manager**, choose **+ → Install package from git URL…** and paste:
+In **Window → Package Manager**, choose **+ → Install package from git URL…**, paste this URL and click **Install**:
 
 ```text
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-The URL points to the latest preview; **Update** in the Package Manager brings in the next one. To pin a version, add its tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases): `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/<version>`.
+The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), add its number without the `v`: `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8`.
 
 ## Features
 
@@ -26,9 +26,9 @@ The URL points to the latest preview; **Update** in the Package Manager brings i
 
 #### [Serializable Types](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/02-serializable-types.md)
 
-Stores a <code lang="class-name">System.Type</code> in a component/asset and lets you pick it in the Inspector from compatible types; [TypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-type-selector.md) narrows the list and sets how it looks.
+Stores a <code lang="class-name">System.Type</code> in a component or an asset and lets you pick it in the Inspector from compatible types. [TypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-type-selector.md) narrows the list.
 
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-quick-start.gif" alt="Select a serializable type in the Inspector" width="640" />
+<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-card.gif" alt="Select a serializable type in the Inspector" width="640" />
 
 #### [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-selector.md)
 
@@ -38,49 +38,51 @@ Lets you pick the class for a <code lang="csharp">\[SerializeReference]</code> f
 
 #### [ComponentTypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-component-type-selector.md)
 
-Changes an added component/ScriptableObject to a derived type without losing shared field values.
+Changes an added component to a derived class without losing shared field values.
 
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector.gif" alt="Switch a component type in the Inspector" width="640" />
+<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-card.gif" alt="Switch a component type in the Inspector" width="640" />
 
 #### [SerializeReference repair](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-serialize-reference-tooling.md)
 
-Finds lost <code lang="csharp">\[SerializeReference]</code> entries across the project (prefabs, scenes, assets) and repairs them in groups; [build and CI checks](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-serialize-reference-validation.md) catch new ones before shipping.
+Finds missing <code lang="csharp">\[SerializeReference]</code> references across the project and repairs them in groups. [Build and CI checks](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-serialize-reference-validation.md) catch new ones before release.
 
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
+<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_repair_card.gif" alt="Fix all repairs three missing Blaster references as Pistol" width="640" />
 
 #### [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-enum-values.md)
 
-Maps enum keys to values (multipliers, colors, assets), edited in the Inspector, flags included.
+Maps enum keys to values (multipliers, colors, assets) that you edit in the Inspector, flags included.
 
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Edit enum keys and their values in the Inspector" width="640" />
+<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/enum-values-multipliers-populate.gif" alt="Populate Missing Enum Members in the Multipliers table" width="640" />
 
 ### Editor & tooling
 
 #### [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-profiler-markers.md)
 
-Marks a section with one line; the generator takes the marker name from the code, unique per call site.
+Marks a section with one line; the generator builds the marker name from the type, the method and the line of the call.
 
 ```csharp
-using (this.Marker())
+public void Step()
 {
-    Simulate();
+    using var _ = this.Marker();
+    Integrate();
 }
 ```
 
 #### [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-visual-element-extensions.md)
 
-Sets element properties, styles and events in a chain, so a UI Toolkit tree is built in one expression.
+Sets element properties, styles and events in a chain, so you build a UI Toolkit tree in one expression.
 
 ```csharp
-new VisualElement()
-  .SetPaddingX(12)
-  .AddChild(
-    new Label("Ability Config"));
+var header = new VisualElement()
+    .SetPaddingX(12)
+    .SetPaddingY(10)
+    .AddChild(new Label("Ability Config")
+        .SetFontSize(14));
 ```
 
 #### [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/11-serialized-property-extensions.md)
 
-Writes a value together with <code lang="function">Update</code> and <code lang="function">Apply</code> in one chain, and finds the field's C# type and the object the field belongs to.
+Updates the object, writes a value and applies the change in one chain. It also finds the C# field behind the property and the object that owns it.
 
 ```csharp
 manaCost
@@ -90,20 +92,19 @@ manaCost
 
 #### [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/12-editor-helpers.md)
 
-Handles small editor-tooling tasks, such as labelling objects and components with readable names.
+Labels objects and components with readable names, and numbers components of the same type.
 
 ```csharp
 caster.GetDisplayName();
 // "Ability Caster"
 
-caster
-  .GetDisplayNameWithIndex();
-// "Ability Caster (2)"
+caster.GetDisplayNameWithIndex();
+// "Ability Caster (2)": the second AbilityCaster on the GameObject
 ```
 
 #### [Agent Skills](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/13-agent-skills.md)
 
-Teaches a coding agent the package API; Claude Code, Codex, Cursor and others get the skills with one command.
+Teaches a coding agent to write code with FastTools: profiler markers, type selection, EnumValues and VisualElement Extensions.
 
 ```text
 Profile Simulate and the neighbor search
