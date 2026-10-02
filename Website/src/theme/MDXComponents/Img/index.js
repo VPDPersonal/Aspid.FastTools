@@ -56,10 +56,12 @@ export default function DocImage(props) {
   const article = /\/(?:docs|tutorials)\/./.test(pathname);
   const sceneCapture = typeof props.src === 'string'
     && /\/(?:demo|scene)(?:-light)?(?:-[0-9a-f]{8,})?\.(?:gif|png)$/i.test(props.src);
-  const framedCapture = article && (!sceneCapture || /\/docs\//.test(pathname));
   const captureCrop = typeof props.src === 'string'
     ? Object.entries(CAPTURE_CROPS).find(([name]) => props.src.includes(`/${name}`))?.[1]
     : null;
+  const introduction = /\/docs\/?$/.test(pathname);
+  const framedCapture = (article && (!sceneCapture || /\/docs\//.test(pathname)))
+    || (introduction && !!captureCrop);
   useEffect(() => {
     if (!preview) return undefined;
     const overflow = document.body.style.overflow;
