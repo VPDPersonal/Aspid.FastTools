@@ -19,7 +19,7 @@ Restore missing references after classes are renamed, moved or deleted.
 | **Asset References** | Entry data in the file | None |
 | **Project References** | Group entries' data in the files | Undo button in the rewrite summary |
 
-A file rewrite preserves entry data, but the selected class must fit the field and its data. These tools work with <code lang="csharp">[SerializeReference]</code>. For a wrapper's missing type name, see [Serializable Types](02-serializable-types.md#missing-type).
+A file rewrite preserves entry data, but the selected class must fit the field and its data. These tools work with <code lang="csharp">[SerializeReference]</code>. For a wrapper's missing type name, see [Serializable Types](02-serializable-types.md#missing-type). To catch new breakages in the Editor, before a build or in CI, see [Build and CI checks](07-serialize-reference-validation.md).
 
 ## Fix in the Inspector
 
@@ -113,12 +113,6 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 - in **Excluded scan folders**;
 - in binary assets and Git LFS files that were not fetched;
 - in files outside `Assets/`.
-
-## Detecting new breakages
-
-**Breakage detection** reports newly missing references after script or asset changes with a notification and in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is stored locally in `EditorPrefs`.
-
-For checks before a build, CI and folder exclusions, see [Build and CI checks](07-serialize-reference-validation.md).
 
 ## Limitations
 

@@ -5,11 +5,11 @@
 ## Быстрый старт
 
 ```csharp
-[TypeSelector(typeof(Weapon), Allow = TypeAllow.None)]
-[SerializeField] private string _weaponName;
+[TypeSelector(typeof(ITwoHanded), Allow = TypeAllow.None)]
+[SerializeField] private SerializableType<Weapon> _weapon;
 ```
 
-Поле предлагает конкретные классы оружия и сохраняет имя выбранного типа.
+Поле предлагает только конкретное двуручное оружие: наследников <code lang="class-name">Weapon</code>, реализующих <code lang="class-name">ITwoHanded</code>.
 
 ## Где применяется
 

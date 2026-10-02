@@ -34,6 +34,10 @@ The build checks every asset under `Assets/`, not only what goes into it: in `Fa
 
 A field is made required with <code lang="csharp">[TypeSelector(Required = true)]</code>; see [Required field](03-type-selector.md#required-field). In scenes, required fields inside managed references, collections and prefab overrides are not checked.
 
+## Detecting new breakages
+
+**Breakage detection** reports newly missing references after script or asset changes with a notification and in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is stored locally in `EditorPrefs`.
+
 ## Scan scope
 
 The check reads saved `.prefab`, `.asset` and `.unity` files under `Assets/`. Pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing types. Missing-type checks cover <code lang="csharp">[SerializeReference]</code>; they do not find unresolved names in <code lang="class-name">SerializableType</code> or strings.

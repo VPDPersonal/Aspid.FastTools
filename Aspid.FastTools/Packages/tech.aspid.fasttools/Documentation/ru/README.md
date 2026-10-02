@@ -24,15 +24,9 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [Serializable Types](02-serializable-types.md)
 
-Сохраняет <code lang="class-name">System.Type</code> в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов.
+Сохраняет <code lang="class-name">System.Type</code> в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов; [TypeSelector](03-type-selector.md) сужает список и настраивает его вид.
 
 <img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
-
-#### [TypeSelector](03-type-selector.md)
-
-Настраивает, какие типы предлагает окно выбора в инспекторе и как они в нём выглядят.
-
-<img src="../Images/type-selector-member-constraint.gif" alt="Выбор MeleeWeapon в Weapon Class оставляет в Weapon Name только Axe и Sword" width="640" />
 
 #### [SerializeReference Selector](04-serialize-reference-selector.md)
 
@@ -48,15 +42,9 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [Восстановление SerializeReference](06-serialize-reference-tooling.md)
 
-Находит потерянные <code lang="csharp">[SerializeReference]</code> по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами.
+Находит потерянные <code lang="csharp">[SerializeReference]</code> по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами; [проверка перед сборкой и CI](07-serialize-reference-validation.md) ловит новые до выпуска.
 
 <img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
-
-#### [Проверка перед сборкой и CI](07-serialize-reference-validation.md)
-
-Проверяет проект на потерянные типы <code lang="csharp">[SerializeReference]</code> и пустые обязательные поля перед сборкой плеера или в CI.
-
-<img src="../Images/aspid_fasttools_serialize_reference_required_violations.png" alt="Группа Required violations: пустое поле _primary в двух префабах" width="640" />
 
 #### [EnumValues](08-enum-values.md)
 

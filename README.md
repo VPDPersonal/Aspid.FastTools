@@ -26,15 +26,9 @@ The URL points to the latest preview; **Update** in the Package Manager brings i
 
 #### [Serializable Types](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/02-serializable-types.md)
 
-Stores a <code lang="class-name">System.Type</code> in a component/asset and lets you pick it in the Inspector from compatible types.
+Stores a <code lang="class-name">System.Type</code> in a component/asset and lets you pick it in the Inspector from compatible types; [TypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-type-selector.md) narrows the list and sets how it looks.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-quick-start.gif" alt="Select a serializable type in the Inspector" width="640" />
-
-#### [TypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-type-selector.md)
-
-Controls which types the Inspector picker offers and how they appear in it.
-
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/type-selector-member-constraint.gif" alt="Choosing MeleeWeapon in Weapon Class leaves only Axe and Sword in Weapon Name" width="640" />
 
 #### [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-selector.md)
 
@@ -50,15 +44,9 @@ Changes an added component/ScriptableObject to a derived type without losing sha
 
 #### [SerializeReference repair](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-serialize-reference-tooling.md)
 
-Finds lost <code lang="csharp">\[SerializeReference]</code> entries across the project (prefabs, scenes, assets) and repairs them in groups.
+Finds lost <code lang="csharp">\[SerializeReference]</code> entries across the project (prefabs, scenes, assets) and repairs them in groups; [build and CI checks](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-serialize-reference-validation.md) catch new ones before shipping.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
-
-#### [Build and CI checks](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-serialize-reference-validation.md)
-
-Checks the project for missing <code lang="csharp">\[SerializeReference]</code> types and empty required fields before a player build or in CI.
-
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_required_violations.png" alt="Required violations group: an empty _primary field in two prefabs" width="640" />
 
 #### [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-enum-values.md)
 

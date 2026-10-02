@@ -5,11 +5,11 @@ Control which types are offered and how they appear in the picker.
 ## Quick start
 
 ```csharp
-[TypeSelector(typeof(Weapon), Allow = TypeAllow.None)]
-[SerializeField] private string _weaponName;
+[TypeSelector(typeof(ITwoHanded), Allow = TypeAllow.None)]
+[SerializeField] private SerializableType<Weapon> _weapon;
 ```
 
-The field offers concrete weapon classes and stores the selected type's name.
+The field offers only concrete two-handed weapons: classes derived from <code lang="class-name">Weapon</code> that implement <code lang="class-name">ITwoHanded</code>.
 
 ## Supported fields
 

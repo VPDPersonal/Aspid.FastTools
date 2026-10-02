@@ -34,6 +34,10 @@
 
 Обязательное поле задаёт <code lang="csharp">[TypeSelector(Required = true)]</code>, подробнее — в разделе [Обязательное поле](03-type-selector.md#обязательное-поле). В сценах не проверяются обязательные поля внутри managed-ссылок, в коллекциях и в override префабов.
 
+## Обнаружение новых поломок
+
+**Breakage detection** после изменения скриптов или ассетов сообщает о новых потерянных ссылках уведомлением и в Console. Настройка включена по умолчанию и находится в **Tools → Aspid 🐍 → FastTools → Settings**, а также в **Preferences → Aspid.FastTools → SerializeReference**. Она хранится локально в `EditorPrefs`.
+
 ## Область проверки
 
 Проверяются сохранённые `.prefab`, `.asset` и `.unity` внутри `Assets/`. Ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) не считаются потерянными типами. Проверка потерянных типов относится к <code lang="csharp">[SerializeReference]</code>; она не ищет неразрешимые имена в <code lang="class-name">SerializableType</code> или строках.
