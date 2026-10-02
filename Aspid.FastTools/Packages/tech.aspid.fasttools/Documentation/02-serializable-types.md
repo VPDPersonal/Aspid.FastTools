@@ -1,12 +1,12 @@
 # Serializable Types
 
-A class type as an ordinary field: Unity saves it, and the Inspector picks it from a list.
+A type as an ordinary field: Unity saves it, and you pick it from a list in the Inspector.
 
 ## Quick start
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>[SerializeField]&#10;private string _primaryWeaponName;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    string.IsNullOrEmpty(&#10;        _primaryWeaponName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _primaryWeaponName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Weapon&gt;&#10;    _primaryWeapon;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    _primaryWeapon;</code></pre> |
+| <pre lang="csharp"><code>[SerializeField]&#10;private string _primaryWeaponName;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    string.IsNullOrEmpty(&#10;        _primaryWeaponName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _primaryWeaponName);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Weapon&gt;&#10;    _primaryWeapon;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    _primaryWeapon;</code></pre> |
 
 ![Selecting a serializable type in the Inspector](Images/serializable-type-quick-start.gif)
 
@@ -25,25 +25,20 @@ To store an instance of the selected class, use [SerializeReference Selector](04
 
 <code lang="class-name">SerializableType</code> stores an assembly-qualified name: the type name together with its assembly.
 
-In code, the constructor creates a wrapper; a type incompatible with <code lang="class-name">T</code> throws <code lang="class-name">ArgumentException</code>:
+Set a default in code with <code lang="csharp">= new(typeof(Sword))</code>; a type not assignable to <code lang="class-name">T</code> throws <code lang="class-name">ArgumentException</code>.
 
-```csharp
-var primary = new SerializableType<Weapon>(typeof(Sword));
-System.Type type = primary;
-
-var empty = new SerializableType<Weapon>(null);
-```
-
-For a resolved type, <code lang="csharp">ToString()</code> returns <code lang="csharp">Type.Name</code>, so a generic type reads <code lang="string">Enchanted`1</code>, not the picker's caption.
+<code lang="csharp">ToString()</code> returns <code lang="csharp">Type.Name</code>: for <code lang="class-name">Enchanted&lt;Fire&gt;</code> it is <code lang="string">Enchanted`1</code>.
 
 ### Missing type
 
-A stored name that no longer resolves after a class, namespace, or assembly rename. The Inspector shows it as `<Missing …>`.
+After a class, namespace or assembly rename, the stored name no longer resolves, and the Inspector shows `<Missing …>`.
 
 ![The missing Game.Combat.Spear type in an Inspector field](Images/serializable-type-missing.png)
 
-- <code lang="csharp">Type</code> returns <code lang="csharp">null</code>.
-- <code lang="csharp">AssemblyQualifiedName</code> and <code lang="csharp">ToString()</code> keep the old name. Pick an available type again or restore the class under its old name.
+- <code lang="csharp">.Type</code> returns <code lang="csharp">null</code>.
+- <code lang="csharp">AssemblyQualifiedName</code> and <code lang="csharp">ToString()</code> keep the old name.
+
+To fix the field, pick a type again or restore the class under its old name.
 
 ## SerializableMonoScript
 
@@ -56,16 +51,17 @@ The same field, but the selection survives a class rename: the field remembers t
 
 Limitations:
 
-- only classes with their own `.cs` are listed: top-level, non-generic, named after the file;
-- generic types, nested classes and types from DLLs cannot be picked;
+- only a top-level, non-generic class declared in a `.cs` file of the same name can be picked; from a DLL, only a <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code>;
 - there is no public constructor, so the field cannot be created in code;
 - renaming the class without its file, or the file outside Unity without its `.meta`, breaks the link and the field shows a missing type.
 
 ## Types in a player build
 
 > [!WARNING]
-> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, from **Managed Stripping Level** Low up stripping may remove it and <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> while the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`. This also applies to strings with <code lang="csharp">[TypeSelector]</code>.
+> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, **Managed Stripping Level** Low or higher may strip it: <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> while the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`. This also applies to string fields with <code lang="csharp">[TypeSelector]</code>.
 
 ## Package sample
 
 For Inspector selection of enemy types and spawn patterns, see [Types](../Samples~/Types/Documentation/README.md).
+
+![A wave of regular and elite enemies in the Types scene](../Samples~/Types/Documentation/Images/demo.gif)
