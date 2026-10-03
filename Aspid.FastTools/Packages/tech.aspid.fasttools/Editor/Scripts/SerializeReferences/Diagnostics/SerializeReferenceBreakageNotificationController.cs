@@ -12,8 +12,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ShownPrefix = "Aspid.FastTools.SerializeReferences.Breakage.Shown.";
         private const double FadeOutSeconds = 5.0;
 
+        // Both detectors run on the same import, so their messages are collected and shown as one toast.
+        private static readonly List<(string Message, bool IsWarning)> _pending = new();
+        private static bool _flushScheduled;
+
         [InitializeOnLoadMethod]
-        private static void Hook() => SerializeReferenceBreakageDetector.BreakageDetected += OnBreakageDetected;
+        private static void Hook()
+        {
+            SerializeReferenceBreakageDetector.BreakageDetected += OnBreakageDetected;
+            TypeNameBreakageDetector.BreakageDetected += OnTypeNamesBroken;
+        }
+
+        private static void OnTypeNamesBroken(TypeNameBreakageReport report)
+        {
+            if (!report.HasAny || Application.isBatchMode) return;
+            if (!SerializeReferenceSettings.BreakageDetectionEnabled) return;
+
+            var shownKey = ShownPrefix + ProjectId() + ".names." + string.Join(";", report.TypeNames).GetHashCode().ToString("X8");
+            if (SessionState.GetBool(shownKey, false)) return;
+            SessionState.SetBool(shownKey, true);
+
+            var count = report.TypeNames.Count;
+            var files = report.FileCount == 1 ? "1 file" : $"{report.FileCount} files";
+            var message = count == 1
+                ? $"SerializableType name {report.TypeNames[0]} just became missing in {files} — open Project References"
+                : $"{count} SerializableType names just became missing in {files} — open Project References";
+
+            Enqueue(message, isWarning: true);
+        }
 
         private static void OnBreakageDetected(BreakageReport report)
         {
@@ -50,11 +76,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         : $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}) " +
                           "— open Project References";
 
-            ShowToast(message);
+            Enqueue(message, isWarning: migratable != count);
+        }
 
-            var console = $"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/FastTools/Project References.";
-            if (migratable == count) Debug.Log(console);
-            else Debug.LogWarning(console);
+        private static void Enqueue(string message, bool isWarning)
+        {
+            _pending.Add((message, isWarning));
+            if (_flushScheduled) return;
+
+            _flushScheduled = true;
+            EditorApplication.delayCall += Flush;
+        }
+
+        private static void Flush()
+        {
+            _flushScheduled = false;
+            if (_pending.Count == 0) return;
+
+            ShowToast(string.Join("\n", _pending.Select(entry => entry.Message)));
+
+            foreach (var (message, isWarning) in _pending)
+            {
+                var console = $"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/FastTools/Project References.";
+                if (isWarning) Debug.LogWarning(console);
+                else Debug.Log(console);
+            }
+
+            _pending.Clear();
         }
 
         private static void ShowToast(string message)

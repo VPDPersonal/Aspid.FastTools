@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -36,6 +37,134 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (type is not null) ApplyGroupFix(group, type);
                 },
                 onDismiss: _picker.Close));
+        }
+
+        private void ToggleTypeNamePicker(MissingTypeNameGroup group, TypeNameConstraint constraint, AspidGradientButton button)
+        {
+            if (_picker.ToggleClosed(button)) return;
+
+            _picker.Open(button, new TypeSelectorView(
+                filter: new TypeSelectorFilter
+                {
+                    Types = constraint.Types,
+                    Allow = constraint.Allow,
+                    Predicate = constraint.RequiresScript ? SerializableMonoScriptUtility.HasScript : null,
+                    ExcludeEditorOnly = constraint.ExcludeEditorOnly,
+                    HideNoneOption = true,
+                },
+                currentAqn: null,
+                onSelected: assemblyQualifiedName =>
+                {
+                    var type = TypeUtility.GetTypeOrNull(assemblyQualifiedName: assemblyQualifiedName);
+                    if (type is not null) ApplyTypeNameFix(group, type);
+                },
+                onDismiss: _picker.Close));
+        }
+
+        private void ApplyTypeNameFix(MissingTypeNameGroup group, Type newType)
+        {
+            if (newType is null) return;
+            _picker.Close();
+
+            var entries = MissingTypeNameRepair.FilterWritable(group.Entries, out var skipped);
+
+            if (entries.Count == 0)
+            {
+                EditorUtility.DisplayDialog(
+                    "Repair Missing Type Names",
+                    "All fields in this group live in open scene(s), Prefab Mode or assets with unsaved changes. " +
+                    "Save or close them and rescan, or repair the fields directly in the Inspector.",
+                    "OK");
+                return;
+            }
+
+            var files = MissingTypeNameRepair.CountFiles(entries);
+            var skippedNote = skipped > 0
+                ? $"\n\n{skipped} field(s) in open scene(s), Prefab Mode or assets with unsaved changes will be skipped."
+                : string.Empty;
+
+            group.ResolveConstraint(out var mixed);
+            var mixedNote = mixed
+                ? "\n\nThe fields in this group differ or could not be read — check that the chosen type fits each of them."
+                : string.Empty;
+
+            var newName = newType.AssemblyQualifiedName;
+
+            if (!EditorUtility.DisplayDialog(
+                    "Repair Missing Type Names",
+                    $"Rewrite {entries.Count} type name(s) in {files} file(s) to '{newType.FullName}'?\n\n" +
+                    SerializeReferenceProjectSummary.BuildTypeNameDiffPreview(entries, newName) +
+                    "This edits the asset files directly; an Undo button on the summary can revert it." + skippedNote + mixedNote,
+                    "Rewrite",
+                    "Cancel"))
+                return;
+
+            var rewritten = MissingTypeNameRepair.Rewrite(entries, newType, "Repairing Type Names");
+            RefreshTypeNames(entries.Select(entry => entry.AssetPath));
+
+            var summaryTitle = rewritten == 1 ? "Rewrote 1 type name" : $"Rewrote {rewritten} type names";
+            var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
+            if (skipped > 0)
+                summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
+            if (rewritten < entries.Count)
+                summaryBody += $" {entries.Count - rewritten} changed on disk since the scan and were left alone.";
+
+            var receipt = new TypeNameReceipt(entries, newName, group.DisplayName, newType.FullName);
+
+            RerenderAfterBulkEdit();
+            AddSummary(new RepairSummary(summaryTitle, summaryBody, receipt));
+        }
+
+        private void UndoTypeNameFix(RepairSummary summary, VisualElement box)
+        {
+            var receipt = summary.TypeNameReceipt;
+            var revertible = MissingTypeNameRepair.FilterWritable(receipt.Entries, out var skipped);
+
+            if (revertible.Count == 0)
+            {
+                EditorUtility.DisplayDialog(
+                    "Undo Repair",
+                    "These fields now live in open scene(s), Prefab Mode or assets with unsaved changes. " +
+                    "Save or close them and try the undo again.",
+                    "OK");
+                return;
+            }
+
+            var files = MissingTypeNameRepair.CountFiles(revertible);
+            var skippedNote = skipped > 0
+                ? $"\n\n{skipped} field(s) in open scene(s), Prefab Mode or assets with unsaved changes will be skipped."
+                : string.Empty;
+
+            if (!EditorUtility.DisplayDialog(
+                    "Undo Repair",
+                    $"Put the missing '{receipt.MissingName}' back into {revertible.Count} field(s) in {files} file(s)?\n\n" +
+                    $"This restores the broken state you had before replacing it with '{receipt.AppliedDisplayName}', and " +
+                    "edits the asset files directly. A field changed since the fix is left alone." + skippedNote,
+                    "Undo",
+                    "Cancel"))
+                return;
+
+            var reverted = MissingTypeNameRepair.Revert(revertible, receipt.AppliedName, "Undoing Repair");
+            RefreshTypeNames(revertible.Select(entry => entry.AssetPath));
+
+            Summaries.Remove(summary);
+            box.RemoveFromHierarchy();
+            RerenderAfterBulkEdit();
+
+            var undoTitle = reverted == 1 ? "Reverted 1 type name" : $"Reverted {reverted} type names";
+            var undoBody = $"Put the missing '{receipt.MissingName}' back.";
+            if (reverted < revertible.Count)
+                undoBody += $" Left {revertible.Count - reverted} alone (no longer '{receipt.AppliedDisplayName}').";
+            AddSummary(new RepairSummary(undoTitle, undoBody, receipt: null));
+        }
+
+        // Re-reads the files a type name edit touched, for both the type name list and a warm required audit.
+        private static void RefreshTypeNames(IEnumerable<string> editedPaths)
+        {
+            var paths = editedPaths.Distinct(StringComparer.Ordinal).ToArray();
+
+            if (_typeNamesIsWarm) _typeNamesCache = MissingTypeNames.Rescan(_typeNamesCache, paths);
+            RefreshRequiredViolations(paths);
         }
 
         private void ApplyGroupFix(MissingReferenceGroup group, Type newType)

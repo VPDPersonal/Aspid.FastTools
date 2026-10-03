@@ -41,6 +41,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _scriptRequiredFieldsCache.Clear();
             _constraintMapCache.Clear();
+            MissingTypeNames.ClearCache();
 
             var loadedSinceUnload = 0;
 
@@ -68,12 +69,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (options.ScanMissingTypes && isTextYaml)
                 {
-                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves, knownTextYaml: true))
+                    // One read for both passes: managed references, then the names stored by SerializableType wrappers.
+                    var lines = SerializeReferenceYaml.ReadLines(path, knownTextYaml: true);
+
+                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(lines, SerializeReferenceHelpers.StoredTypeResolves))
                     {
                         if (IsPendingMigration(path, entry)) continue;
                         violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType,
                             GateViolationKind.MissingType, entry.FieldPath, entry.IsOverride));
                     }
+
+                    foreach (var location in MissingTypeNames.Find(path, lines))
+                        violations.Add(GateViolation.ForTypeName(path, location.Entry));
                 }
 
                 if (options.ScanRequiredFields)

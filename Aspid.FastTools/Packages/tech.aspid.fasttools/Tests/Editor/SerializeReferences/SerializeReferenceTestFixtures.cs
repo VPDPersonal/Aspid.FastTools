@@ -72,6 +72,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TypeSelector(Required = true)] public SerializableType type;
     }
 
+    // Wrapper fields whose picker settings the project-wide type name repair reads from the declaring type.
+    [Serializable]
+    internal sealed class TypeNameConstraintHolder
+    {
+        public SerializableType<ITestWeapon> weapon;
+        [TypeSelector(Allow = TypeAllow.None)] public List<SerializableType> concrete = new();
+        public SerializableMonoScript script;
+    }
+
     // A plain [Serializable] by-value container holding required fields — the nesting shape the required gate must
     // recurse into (ASP-52): the fields appear in YAML as children of the container key, not at the document top level.
     [Serializable]

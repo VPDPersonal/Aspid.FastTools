@@ -65,8 +65,10 @@ public sealed class Armory : MonoBehaviour
   `null` = empty). `SerializableMonoScript` has no public constructor.
 - `SerializableMonoScript` accepts only top-level non-generic classes in a file of the same name; the user can drag
   the `.cs` file onto the field. Only it follows renames (in the editor it falls back to the script's class until the
-  asset is re-saved): for `SerializableType` and strings a renamed class or namespace makes `.Type` return `null`
-  silently.
+  asset is re-saved): for `SerializableType` and strings a renamed class or namespace makes `.Type` return `null`.
+  The Inspector then shows **Missing type** with **Fix**. **Project References → Scan Project**, the build / CI gate
+  (`MissingTypeName` rows) and breakage detection find such wrapper names project-wide; `[TypeSelector]` strings are
+  checked only in the Inspector.
 - Declare the generic variant on the field: Unity serializes by the declared type, so a `SerializableType` field
   loses `T`.
 
