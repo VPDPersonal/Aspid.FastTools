@@ -1,6 +1,6 @@
 # TypeSelector
 
-Настраивает доступные типы и их отображение в окне выбора.
+Атрибут для поля с типом: инспектор показывает список с поиском, где остаются только подходящие классы.
 
 ## Быстрый старт
 
@@ -11,6 +11,10 @@
 
 Поле предлагает только конкретное двуручное оружие: наследников <code lang="class-name">Weapon</code>, реализующих <code lang="class-name">ITwoHanded</code>.
 
+| Без атрибута | С <code lang="csharp">[TypeSelector]</code> |
+|---|---|
+| ![Все классы Weapon в окне выбора, включая абстрактные](../Images/type-selector-quick-start-before.png) | ![В окне выбора только Axe и Bow](../Images/type-selector-quick-start-after.png) |
+
 ## Где применяется
 
 | Поле | Результат выбора |
@@ -19,9 +23,10 @@
 | [Serializable Types](02-serializable-types.md) | Настраивается выбор обёртки |
 | <code lang="csharp">[SerializeReference]</code> | Создаётся экземпляр выбранной реализации — см. [SerializeReference Selector](04-serialize-reference-selector.md) |
 
-## Какие типы в списке
+> [!WARNING]
+> В плеере строковое поле находит тип по имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): класс, который используется только через такой выбор, может быть вырезан при **Managed Stripping Level** Low и выше.
 
-Все ограничения атрибута действуют **одновременно**. У обёртки дополнительно учитывается <code lang="class-name">T</code>, у <code lang="csharp">[SerializeReference]</code> — тип поля.
+## Какие типы в списке
 
 ```csharp
 public interface ITwoHanded { }
@@ -35,13 +40,42 @@ public sealed class Axe : MeleeWeapon, ITwoHanded { }
 public sealed class Bow : RangedWeapon, ITwoHanded { }
 ```
 
-| Ограничение | Результат |
-|---|---|
-| <code lang="csharp">typeof(Weapon)</code> | Типы, совместимые с <code lang="class-name">Weapon</code> |
-| <code lang="csharp">typeof(Weapon), typeof(ITwoHanded)</code> | Оружие, реализующее <code lang="class-name">ITwoHanded</code> |
-| <code lang="csharp">typeof(Sword), typeof(Axe)</code> | Пустой список: класс не может наследовать оба; анализатор `AFT0009` сообщает об этом |
+Типы в атрибуте сужают список: остаются только классы, совместимые со всеми сразу.
 
-Чтобы разрешить несколько классов, укажите их общий базовый класс или интерфейс. На массиве или списке ограничение применяется к каждому элементу.
+```csharp
+// Weapon, MeleeWeapon, RangedWeapon, Sword, Axe, Bow
+[TypeSelector(typeof(Weapon))]
+[SerializeField] private string _anyWeapon;
+
+// Axe, Bow
+[TypeSelector(typeof(Weapon), typeof(ITwoHanded))]
+[SerializeField] private string _twoHanded;
+
+// Пустой список, анализатор AFT0009
+[TypeSelector(typeof(Sword), typeof(Axe))]
+[SerializeField] private string _nothing;
+
+// Sword, Axe: через общий базовый класс
+[TypeSelector(typeof(MeleeWeapon), Allow = TypeAllow.None)]
+[SerializeField] private string _swordOrAxe;
+```
+
+<code lang="class-name">T</code> обёртки и тип поля <code lang="csharp">[SerializeReference]</code> работают как ещё один тип в атрибуте:
+
+```csharp
+// Axe, Bow
+[TypeSelector(typeof(ITwoHanded))]
+[SerializeField] private SerializableType<Weapon> _twoHandedType;
+
+// Axe, Bow
+[TypeSelector(typeof(ITwoHanded))]
+[SerializeReference] private Weapon _twoHandedWeapon;
+```
+
+На массиве или списке ограничение применяется к каждому элементу.
+
+> [!NOTE]
+> В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся. Правило определяется классом объекта, поэтому поле runtime-объекта под <code lang="csharp">#if UNITY_EDITOR</code> их тоже не предлагает.
 
 ## Свойства
 
@@ -49,9 +83,6 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 |---|---|---|
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Пускает в список абстрактные классы (<code lang="csharp">Abstract</code>), интерфейсы (<code lang="csharp">Interface</code>), оба вида или ни один. На <code lang="csharp">[SerializeReference]</code> игнорируется |
 | <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает о пустом имени типа или <code lang="csharp">null</code> в managed-ссылке |
-
-> [!NOTE]
-> В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся. Правило определяется классом объекта, поэтому поле runtime-объекта под <code lang="csharp">#if UNITY_EDITOR</code> их тоже не предлагает.
 
 ## Обязательное поле
 
@@ -62,7 +93,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 ![Пустое обязательное поле показывает предупреждение под селектором](../Images/type-selector-required.png)
 
-С <code lang="csharp">Required = true</code> пункт `<None>` остаётся доступным. У строки или обёртки проверяется пустое сохранённое имя; потерянный тип с непустым именем эту проверку проходит.
+С <code lang="csharp">Required = true</code> пункт `<None>` остаётся доступным. Потерянный тип с сохранённым именем проверку проходит.
 
 Настройка проверки по всему проекту и в CI описана в разделе [проверки обязательных полей](07-serialize-reference-validation.md#что-проверяет-каждый-запуск).
 
@@ -88,16 +119,11 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 | <code lang="class-name">SerializableType</code> / <code lang="class-name">SerializableMonoScript</code> | Разрешённое значение <code lang="csharp">.Type</code> |
 | Массив этих значений | Несколько ограничений одновременно; <code lang="class-name">List&lt;T&gt;</code> не поддерживается |
 
-- Строка сначала ищется среди нестатических полей и читаемых свойств класса, где объявлено поле, включая унаследованные, затем — как имя типа.
+- Строка в атрибуте сначала ищется среди нестатических полей и читаемых свойств класса, где объявлено поле, включая унаследованные, затем — как имя типа.
 - У поля внутри <code lang="csharp">[Serializable]</code>-класса или элемента списка источник читается из того же экземпляра.
-- Пока источник пуст или не разрешился, ограничения от него нет: строковый **Weapon Name** предложит все неабстрактные классы проекта. У обёртки остаётся её собственный <code lang="class-name">T</code>.
+- Пока источник пуст или не разрешился, ограничения от него нет: строковый **Weapon Name** предложит все конкретные типы. У обёртки остаётся её собственный <code lang="class-name">T</code>.
 
 ## Ошибки в строковых аргументах
-
-```csharp
-[TypeSelector("Spear, Assembly-CSharp")]
-[SerializeField] private string _weaponName;
-```
 
 Ошибки в строках находят анализаторы:
 
@@ -105,7 +131,12 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 - `AFT0007` — член не может задать базовые типы;
 - `AFT0008` — строка не похожа на имя типа.
 
-Если имя типа записано верно, но такой тип не загружен, как <code lang="class-name">Spear</code> выше, предупреждение показывает инспектор:
+Если имя типа записано верно, но такой тип не загружен, предупреждение показывает инспектор:
+
+```csharp
+[TypeSelector("Spear, Assembly-CSharp")]
+[SerializeField] private string _weaponName;
+```
 
 ![Ограничение не разрешилось — инспектор показывает предупреждение под полем](../Images/type-selector-constraint-warning.png)
 
@@ -189,4 +220,4 @@ button.clicked += () => TypeSelectorWindow.Show(
 
 ## Пример в пакете
 
-Окно выбора из редакторского кода показано в примере [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).
+Зависимый список, имена из <code lang="csharp">[TypeSelectorDisplay]</code> и обязательное поле показаны в примере [Types](../../Samples~/Types/Documentation/README.ru.md), а окно выбора из редакторского кода — в [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).

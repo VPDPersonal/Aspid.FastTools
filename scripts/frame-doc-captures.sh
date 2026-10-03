@@ -84,6 +84,9 @@ type-selector-generic                         1393x772  38  6 1385  764 inspecto
 type-selector-member-constraint               1393x812  38  6 1385  804 inspector
 type-selector-required                        1393x176  34  6 1385  160 inspector
 type-selector-constraint-warning              1393x176  34  6 1385  160 inspector
+# TypeSelector's quick start compares two pickers side by side, so they come from a 440 pt Inspector like the cards.
+type-selector-quick-start-before              880x1040  38 170  872  928 inspector:#3c3c3c
+type-selector-quick-start-after               880x1040  38 170  872  928 inspector:#3c3c3c
 component-type-selector                       1300x764  34  6 1292  724 inspector
 # The introduction's cards: the same pickers in a 440 pt Inspector, so their text reads at the card's width. The empty
 # rows between the picker's last item and its footer are cut out of every frame before encoding, for a shorter card.

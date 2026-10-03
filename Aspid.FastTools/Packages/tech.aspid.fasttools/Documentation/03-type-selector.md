@@ -1,6 +1,6 @@
 # TypeSelector
 
-Control which types are offered and how they appear in the picker.
+An attribute for a type field: the Inspector shows a searchable list with only the classes that fit.
 
 ## Quick start
 
@@ -11,6 +11,10 @@ Control which types are offered and how they appear in the picker.
 
 The field offers only concrete two-handed weapons: classes derived from <code lang="class-name">Weapon</code> that implement <code lang="class-name">ITwoHanded</code>.
 
+| Without the attribute | With <code lang="csharp">[TypeSelector]</code> |
+|---|---|
+| ![Every Weapon class in the picker, abstract ones included](Images/type-selector-quick-start-before.png) | ![Only Axe and Bow in the picker](Images/type-selector-quick-start-after.png) |
+
 ## Supported fields
 
 | Field | Selection result |
@@ -19,9 +23,10 @@ The field offers only concrete two-handed weapons: classes derived from <code la
 | [Serializable Types](02-serializable-types.md) | Configures the wrapper's selection |
 | <code lang="csharp">[SerializeReference]</code> | Creates an instance of the selected implementation — see [SerializeReference Selector](04-serialize-reference-selector.md) |
 
-## Which types are offered
+> [!WARNING]
+> In a player, a string field is resolved by name, like [Serializable Types](02-serializable-types.md#types-in-a-player-build): a class used only through this selection may be stripped at **Managed Stripping Level** Low or higher.
 
-The attribute's constraints apply **together**. A wrapper also constrains candidates by <code lang="class-name">T</code>; a <code lang="csharp">[SerializeReference]</code> field constrains them by its field type.
+## Which types are offered
 
 ```csharp
 public interface ITwoHanded { }
@@ -35,13 +40,42 @@ public sealed class Axe : MeleeWeapon, ITwoHanded { }
 public sealed class Bow : RangedWeapon, ITwoHanded { }
 ```
 
-| Constraint | Result |
-|---|---|
-| <code lang="csharp">typeof(Weapon)</code> | Types assignable to <code lang="class-name">Weapon</code> |
-| <code lang="csharp">typeof(Weapon), typeof(ITwoHanded)</code> | Weapons that implement <code lang="class-name">ITwoHanded</code> |
-| <code lang="csharp">typeof(Sword), typeof(Axe)</code> | Empty list: a class cannot inherit both; analyzer `AFT0009` reports it |
+The types in the attribute narrow the list: only classes compatible with all of them stay.
 
-To allow several classes, use their common base class or interface. On an array or list, the constraint applies to each element.
+```csharp
+// Weapon, MeleeWeapon, RangedWeapon, Sword, Axe, Bow
+[TypeSelector(typeof(Weapon))]
+[SerializeField] private string _anyWeapon;
+
+// Axe, Bow
+[TypeSelector(typeof(Weapon), typeof(ITwoHanded))]
+[SerializeField] private string _twoHanded;
+
+// Empty list, analyzer AFT0009
+[TypeSelector(typeof(Sword), typeof(Axe))]
+[SerializeField] private string _nothing;
+
+// Sword, Axe: through their common base class
+[TypeSelector(typeof(MeleeWeapon), Allow = TypeAllow.None)]
+[SerializeField] private string _swordOrAxe;
+```
+
+A wrapper's <code lang="class-name">T</code> and a <code lang="csharp">[SerializeReference]</code> field's type count as one more type in the attribute:
+
+```csharp
+// Axe, Bow
+[TypeSelector(typeof(ITwoHanded))]
+[SerializeField] private SerializableType<Weapon> _twoHandedType;
+
+// Axe, Bow
+[TypeSelector(typeof(ITwoHanded))]
+[SerializeReference] private Weapon _twoHandedWeapon;
+```
+
+On an array or list, the constraint applies to each element.
+
+> [!NOTE]
+> In the Inspector of a runtime object, the picker leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them. The rule follows the object's class, so a runtime object's field declared under <code lang="csharp">#if UNITY_EDITOR</code> leaves them out too.
 
 ## Properties
 
@@ -49,9 +83,6 @@ To allow several classes, use their common base class or interface. On an array 
 |---|---|---|
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Lets abstract classes (<code lang="csharp">Abstract</code>), interfaces (<code lang="csharp">Interface</code>), both or neither into the list. Ignored on <code lang="csharp">[SerializeReference]</code> |
 | <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Warns about an empty type name or a <code lang="csharp">null</code> managed reference |
-
-> [!NOTE]
-> In the Inspector of a runtime object, the picker leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them. The rule follows the object's class, so a runtime object's field declared under <code lang="csharp">#if UNITY_EDITOR</code> leaves them out too.
 
 ## Required field
 
@@ -62,7 +93,7 @@ To allow several classes, use their common base class or interface. On an array 
 
 ![An empty required field shows a warning below the picker](Images/type-selector-required.png)
 
-With <code lang="csharp">Required = true</code>, `<None>` remains selectable. For strings and wrappers, the check tests for an empty stored name; a missing type with a nonempty name passes this check.
+With <code lang="csharp">Required = true</code>, `<None>` stays selectable. A missing type with a stored name passes the check.
 
 For project-wide and CI validation, see [required-field checks](07-serialize-reference-validation.md#what-each-run-checks).
 
@@ -88,16 +119,11 @@ Choose <code lang="class-name">MeleeWeapon</code> in **Weapon Class**, and **Wea
 | <code lang="class-name">SerializableType</code> / <code lang="class-name">SerializableMonoScript</code> | The resolved <code lang="csharp">.Type</code> value |
 | An array of these values | Multiple simultaneous constraints; <code lang="class-name">List&lt;T&gt;</code> is not supported |
 
-- A string is first looked up among the instance fields and readable properties of the class that declares the field, inherited ones included, then as a type name.
+- The attribute's string is first looked up among the instance fields and readable properties of the class that declares the field, inherited ones included, then as a type name.
 - For a field inside a <code lang="csharp">[Serializable]</code> class or a list element, the source is read from that same instance.
-- While the source is empty or unresolved it adds no constraint: the string **Weapon Name** then offers every concrete class in the project. A wrapper keeps its own <code lang="class-name">T</code>.
+- While the source is empty or unresolved it adds no constraint: the string **Weapon Name** then offers every concrete type. A wrapper keeps its own <code lang="class-name">T</code>.
 
 ## Errors in string arguments
-
-```csharp
-[TypeSelector("Spear, Assembly-CSharp")]
-[SerializeField] private string _weaponName;
-```
 
 Analyzers catch mistakes in the strings:
 
@@ -105,7 +131,12 @@ Analyzers catch mistakes in the strings:
 - `AFT0007` — the member cannot supply base types;
 - `AFT0008` — the string is not a valid type name.
 
-If a well-formed type name refers to a type that is not loaded, like <code lang="class-name">Spear</code> above, the Inspector shows a warning:
+If a well-formed type name refers to a type that is not loaded, the Inspector shows a warning:
+
+```csharp
+[TypeSelector("Spear, Assembly-CSharp")]
+[SerializeField] private string _weaponName;
+```
 
 ![The constraint did not resolve, so the Inspector shows a warning below the field](Images/type-selector-constraint-warning.png)
 
@@ -189,4 +220,4 @@ For filter properties and window parameters, see the API reference: [TypeSelecto
 
 ## Package sample
 
-For a picker opened from editor code, see [EditorTools](../Samples~/EditorTools/Documentation/README.md).
+The [Types](../Samples~/Types/Documentation/README.md) sample shows a dependent picker, <code lang="csharp">[TypeSelectorDisplay]</code> names and a required field; [EditorTools](../Samples~/EditorTools/Documentation/README.md) opens the picker from editor code.
