@@ -20,7 +20,7 @@ public static class ProfilerMarkerExtensionsForGenerator
     /// overload resolution picks instead, holding one <see cref="ProfilerMarker"/> per line of that type.
     /// This overload runs only for calls the generator cannot support; analyzer <c>AFT0010</c> reports them.
     /// It takes the same parameters as the generated overload, so the generated one also wins for a type
-    /// in the global namespace.
+    /// in the global namespace; that overload takes a struct by <c>in</c>, so the call does not copy it.
     /// </remarks>
     public static ProfilerMarker.AutoScope Marker<T>(this T instance, [CallerLineNumber] int line = -1) => default;
 

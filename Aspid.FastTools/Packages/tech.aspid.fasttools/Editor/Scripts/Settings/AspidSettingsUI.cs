@@ -92,7 +92,9 @@ namespace Aspid.FastTools.Editors
 
         private static void BuildProviderHost(VisualElement root, Action<VisualElement> fill)
         {
-            root.AddAspidThemeStyleSheets();
+            // The page draws its own canvas like the FastTools window, so on the light skin it takes the light palette.
+            root.AddClass(AspidStyles.WindowClass)
+                .AddAspidThemeStyleSheets();
             root.style.flexGrow = 1;
 
             var host = new VisualElement()

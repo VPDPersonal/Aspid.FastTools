@@ -1,83 +1,61 @@
 # Пример SerializeReferences
 
-Турель, стреляющая полиморфным оружием по тренировочному манекену. Каждое оружие, эффект и модификатор — поле `[SerializeReference]` с выпадающим списком `[TypeSelector]`, а в комплекте идут намеренно сломанные ассеты, на которых можно пройти инструменты ремонта. Справочник — [SerializeReference Selector](../../../Documentation/ru/03-serialize-reference-selector.md) и [SerializeReference Tooling](../../../Documentation/ru/04-serialize-reference-tooling.md).
-
-```csharp
-[TypeSelector]
-[SerializeReference] private IWeapon _primary;
-```
-
-![Оружие, вложенный эффект горения и модификаторы в инспекторе Loadout.](Images/weapon-fields.png)
-
-Оружие, вложенный эффект горения и модификаторы в инспекторе Loadout.
-
-## Как открыть
-
-1. Импортируйте пример и откройте `Scenes/SerializeReferences.unity`.
-2. Выберите **Loadout**. Войдите в Play Mode: основное оружие и запасное по очереди бьют манекен: сначала раз в секунду, затем раз в полторы секунды, потому что `On Hit` замораживает его и каждый удар продлевает заморозку; он уменьшается, окрашивается при горении и заморозке и сбрасывается после уничтожения. Каждый удар виден в Console.
-
-Для записи переключайте **Light / Dark / Authored** в `Tools → Aspid 🐍 → FastTools → Sample Themes`.
+Турель, у которой оружие и его эффекты выбираются в инспекторе, и нарочно сломанные ассеты, чтобы их починить.
 
 ![Манекен меняет цвет и уменьшается от урона настроенного оружия и эффектов.](Images/demo.gif)
 
 Манекен меняет цвет и уменьшается от урона настроенного оружия и эффектов.
 
-## Первые пять минут
+## Как открыть
 
-1. До Play Mode выберите **Loadout** и разверните `Primary`: это `Railgun` с вложенным `Charge Effect`. Войдите в Play Mode и посмотрите на удары по манекену и сообщения в Console.
-2. В списке `Sidearms` выберите `Pistol`, задайте `Damage` равным `37`, переключите его на `Shotgun` и обратно. Убедитесь, что `Damage` остался `37`.
-3. Нажмите **+** у `Sidearms` и добавьте ещё одно оружие через пикер. Оно включится в очередь выстрелов.
-4. Поставьте `Primary` в `<None>` и посмотрите на предупреждение `Required`, затем снова выберите оружие.
-5. Выйдите из Play Mode: правки компонента, сделанные во время игры, сбросятся. Откройте `Scripts/Loadout.cs` и сопоставьте поля инспектора с `[SerializeReference]` и `[TypeSelector]`.
+1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **SerializeReferences**.
+2. Откройте `Scenes/SerializeReferences.unity` и войдите в Play Mode: основное и запасное оружие по очереди бьют манекен, а каждый удар виден в Console.
 
-На этом основной сценарий пройден. Ниже — отдельные упражнения по настройке, generics, ремонту и IMGUI; их можно выполнять независимо.
+## Попробуйте
 
-## Что влияет на игру
+Выйдите из Play Mode и выберите **Loadout**.
 
-- `Primary` и `Sidearms` стреляют по очереди. `On Hit` применяется после попадания; `Railgun.Charge Effect` — после попадания рейлгана.
-- `DamageModifier` меняет урон, в том числе в списке `Perks`.
-- `Melee Backup` и `Holster` демонстрируют фильтрацию и вложенные контейнеры; в очередь выстрелов они не входят.
-- `Modifier<T>`, `AmmoModifier` и `NameModifier` демонстрируют выбор generic-типов и хранение данных. Они не меняют урон, запас патронов или имя оружия. Посмотреть их значения можно через **Loadout → Log Loadout** в контекстном меню компонента.
+![Оружие, вложенный эффект горения и модификаторы в инспекторе Loadout.](Images/weapon-fields.png)
 
-## Продвинутые упражнения: настройка
+Оружие, вложенный эффект горения и модификаторы в инспекторе Loadout.
 
-1. **Выбор реализации.** Откройте список `Primary`: окно с поиском перечисляет все конкретные `IWeapon`, сгруппированные в **Weapons/Melee** и **Weapons/Ranged** через `[TypeSelectorDisplay]`. `DebugWeapon` там нет — он `Hidden` и предназначен только для кода. Выберите `Shotgun`; его поля появятся прямо под списком.
-2. **Смена типа сохраняет общие данные.** Поставьте в `Sidearms` `Pistol`, измените `Damage`, переключите на `Shotgun` и обратно: значение осталось, потому что оба типа объявляют `_damage`.
-3. **Списки.** Нажмите **+** на `Sidearms`: вместо дублирования последнего элемента открывается пикер, так что два элемента никогда не разделяют один экземпляр.
-4. **Сужение.** `Melee Backup` объявлено как `IWeapon`, но несёт `[TypeSelector(typeof(IMelee))]`, поэтому предлагается только `Sword`. `Holster` делает то же самое внутри обычного `[Serializable]`-контейнера, на уровень глубже.
-5. **Вложенность.** Выберите `Railgun` в `Primary` и `BurnEffect` в его `Charge Effect`: эффект — собственный `[SerializeReference]` со своим списком. При попадании рейлгана манекен загорается.
-6. **Абстрактная база.** `On Hit` — это `StatusEffect`; пикер предлагает `BurnEffect` и `FreezeEffect`, но никогда — абстрактную базу.
-7. **Generics.** `Damage Modifier` — `Modifier<float>`: `T` зафиксирован, поэтому предлагаются `DamageModifier` и `Modifier<float>`, и создаются сразу. `Perks` — `List<IModifier>`: предлагает закрытые подклассы **и** открытый `Modifier<T>`, который запрашивает `T` на второй странице.
-8. **Required.** Поставьте `Primary` в `<None>`: появится предупреждение, а **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение. Сборка плеера его не проверяет, см. [где проверяются обязательные поля](../../../Documentation/ru/04-serialize-reference-tooling.md#где-проверяются-обязательные-поля).
-9. **Правый клик по любому списку** — Copy / Paste, Make Unique Reference, Save as Template, Find Usages и Create New Script.
+1. **Выбор класса.** Откройте список **Primary**: окно выбора с поиском перечисляет все конкретные <code lang="class-name">IWeapon</code> в группах **Weapons/Melee** и **Weapons/Ranged** из <code lang="csharp">[TypeSelectorDisplay]</code>. <code lang="class-name">DebugWeapon</code> скрыт через `Hidden`. Выберите <code lang="class-name">Shotgun</code> — его поля появятся под списком.
+2. **Общие данные сохраняются.** В **Sidearms** поставьте у <code lang="class-name">Pistol</code> **Damage** = `37`, переключите его на <code lang="class-name">Shotgun</code> и обратно: **Damage** по-прежнему `37`, потому что `_damage` объявлено в обоих классах.
+3. **Списки.** Нажмите **+** у **Sidearms**: вместо копии последнего элемента открывается окно выбора, и новый элемент получает собственный экземпляр. В Play Mode он встанет в очередь выстрелов.
+4. **Сужение.** **Melee Backup** объявлено как <code lang="class-name">IWeapon</code>, но <code lang="csharp">[TypeSelector(typeof(IMelee))]</code> предлагает только <code lang="class-name">Sword</code>. Поле **Weapon** в слотах **Holster** сужено так же, уровнем глубже, внутри обычного <code lang="csharp">[Serializable]</code>-класса: <code lang="csharp">[TypeSelector(typeof(IRanged))]</code> предлагает только дальнобойное оружие. В очередь выстрелов оба поля не входят.
+5. **Вложенные ссылки.** У <code lang="class-name">Railgun</code> в **Primary** есть **Charge Effect** — собственный <code lang="csharp">[SerializeReference]</code> со своим списком. В нём <code lang="class-name">BurnEffect</code>, поэтому от попадания рейлгана манекен загорается.
+6. **Абстрактная база.** **On Hit** — <code lang="class-name">StatusEffect</code>: окно выбора предлагает <code lang="class-name">BurnEffect</code> и <code lang="class-name">FreezeEffect</code>, но не абстрактный класс.
+7. **Generics.**
+   - **Damage Modifier** — <code lang="class-name">Modifier&lt;float&gt;</code>: предлагаются <code lang="class-name">DamageModifier</code> и <code lang="class-name">Modifier&lt;Single&gt;</code>, оба создаются сразу.
+   - **Perks** — <code lang="class-name">List&lt;IModifier&gt;</code>: кроме закрытых наследников предлагается открытый <code lang="class-name">Modifier&lt;T&gt;</code>, тип <code lang="class-name">T</code> выбирается на второй странице.
+   - Урон меняет только <code lang="class-name">DamageModifier</code>; значения остальных выводит **Loadout → Log Loadout** в контекстном меню компонента.
+8. **Обязательное поле.** Поставьте **Primary** в `<None>`: под полем появится предупреждение. Сохраните сцену — **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение; сборка плеера его не проверяет ([что проверяет каждый запуск](../../../Documentation/ru/07-serialize-reference-validation.md#что-проверяет-каждый-запуск)).
+9. **Меню заголовка.** Правый клик по заголовку поля — копирование и вставка, шаблоны, поиск использований и новый скрипт: [все пункты](../../../Documentation/ru/04-serialize-reference-selector.md#меню-заголовка).
 
-## Продвинутые упражнения: ремонт
+## Ремонт
 
-В папках `Presets/` и `Prefabs/` лежат ассеты, чьи сохранённые типы устарели или исчезли:
+Ассеты в `Presets/` и `Prefabs/` хранят потерянные или устаревшие типы.
 
-| Ассет | Что не так | Что делать |
-|---|---|---|
-| `Presets/BrokenWeaponPreset.asset` | `Weapon` хранит несуществующий `GhostWeapon` | Выберите его. Поле показывает `<Missing GhostWeapon>` и кнопку **Fix**; выберите `Pistol`. Урон и размер магазина сохранятся. |
-| `Presets/BrokenArsenalPreset.asset` | Тот же `GhostWeapon`, трижды | Откройте **Tools → Aspid 🐍 → FastTools → Project References**, **Scan Project**: оба пресета схлопнутся в одну группу `GhostWeapon`. **Fix all** перенаправит все записи разом. |
-| `Presets/MovedWeaponPreset.asset` | `Pistol` под старым namespace | Предупреждение заканчивается подсказкой **Smart Fix** в один клик (`→ Pistol?`). Smart Fix ранжирует совпадение по `[MovedFrom]`, одноимённый тип, смену регистра и близкое имя и никогда не применяется сам. |
-| `Presets/RenamedWeaponPreset.asset` | Хранит `CrossbowLauncher`; класс теперь `Crossbow` с `[MovedFrom]` | Инспектор уже показывает здоровый `Crossbow`, устарел только файл. В **Project References** группа отображается как ожидающая миграция с кнопкой **Migrate all**, которая записывает переименование в файл. |
-| `Prefabs/BrokenLoadout.prefab` | `Sidearms[2]` — отсутствующий `GhostCrossbow`; `Sidearms[0]` и `[1]` делят один `Pistol` | Выберите его в Project. Отсутствующий элемент предлагает **Fix**; общая пара помечена цветным уведомлением, а **Make Unique Reference** её разделяет. **Asset References** показывает весь граф префаба на одном экране. |
+1. **Fix на одном ассете.** Выберите `Presets/BrokenWeaponPreset.asset`: **Weapon** хранит несуществующий <code lang="class-name">GhostWeapon</code>, а уведомление **Missing type** под полем предлагает **Fix**. Нажмите его и выберите <code lang="class-name">Pistol</code> — **Damage** `25` и **Magazine Size** `8` сохранятся.
+2. **Fix для группы.** Откройте **Tools → Aspid 🐍 → FastTools → Project References** и нажмите **Scan Project**: три записи <code lang="class-name">GhostWeapon</code> из `BrokenArsenalPreset.asset` собраны в одну группу, и **Fix all** исправляет их разом.
+3. **Подсказка класса.** `Presets/MovedWeaponPreset.asset` хранит <code lang="class-name">Pistol</code> под старым пространством имён. Уведомление предлагает **→ Pistol**, а группа в Project References — **Smart Fix → Pistol**; сами они не применяются.
+4. **Миграция.** `Presets/RenamedWeaponPreset.asset` хранит <code lang="class-name">CrossbowLauncher</code>, а класс теперь называется <code lang="class-name">Crossbow</code> и помечен <code lang="csharp">[MovedFrom]</code>: инспектор уже показывает <code lang="class-name">Crossbow</code>, устарел только файл. **Migrate all → Crossbow** в Project References записывает новое имя в файл.
+5. **Префаб.** Выберите `Prefabs/BrokenLoadout.prefab` в окне Project. `Sidearms[2]` — потерянный <code lang="class-name">GhostCrossbow</code> с **Fix**; `Sidearms[0]` и `[1]` указывают на один <code lang="class-name">Pistol</code> и помечены **Shared reference #N**, а **Make unique** даёт элементу собственную копию. Вкладка **Asset References** показывает все ссылки префаба.
 
-Для группового ремонта начните со **Scan Project** до починки отдельных пресетов. Если `BrokenWeaponPreset` уже исправлен, группа `GhostWeapon` содержит только оставшиеся сломанные записи. Для повторного прохождения заново импортируйте пример с перезаписью его файлов; это также сбросит ваши изменения в импортированном примере.
+Чтобы пройти ремонт заново, импортируйте пример повторно с перезаписью файлов.
 
-Fix у ScriptableObject или префаба, выбранного в Project, переписывает его файл, поэтому сначала предлагает сохранить несохранённые изменения. В Prefab Mode или чистой сохранённой сцене Fix восстанавливает открытую копию в памяти; после этого сохраните её.
+## IMGUI-инспектор
 
-## Путь IMGUI
-
-У `WeaponPreset` инспектор на IMGUI (`Scripts/Editor/WeaponPresetEditor.cs`). Одного переопределения `OnInspectorGUI` достаточно, чтобы все вложенные drawer'ы пошли через IMGUI с полным паритетом возможностей. Единственное отличие — список: Unity применяет drawer к каждому элементу, поэтому его **+** клонировал бы последний элемент; `SerializeReferenceIMGUIList.Draw` возвращает добавление через пикер. Для кастомного редактора, который рисует managed reference без `[TypeSelector]` на поле, те же контролы строят `SerializeReferenceEditorGUI.CreateField` / `CreateList` / `DrawFieldLayout`.
+У <code lang="class-name">WeaponPreset</code> инспектор на IMGUI — `Scripts/Editor/WeaponPresetEditor.cs`: поле и список рисуют обычные вызовы <code lang="csharp">EditorGUILayout.PropertyField()</code>, а окно выбора, **Fix** и **+** списка работают как в UI Toolkit. Поля без <code lang="csharp">[TypeSelector]</code> — в разделе [Собственный инспектор](../../../Documentation/ru/04-serialize-reference-selector.md#собственный-инспектор).
 
 ## Куда смотреть
 
 | Файл | Что показывает |
 |---|---|
 | `Scripts/Loadout.cs` | Все формы поля: одиночное, список, суженное, контейнер, абстрактная база, закрытый и открытый generic, `Required` |
-| `Scripts/Weapons/` | Иерархия `IWeapon`, группы `[TypeSelectorDisplay]`, `Hidden`-тип, `[MovedFrom]` на `Crossbow`, вложенная ссылка в `Railgun` |
-| `Scripts/Effects/`, `Scripts/Modifiers/` | Абстрактная база и конкретный открытый generic |
-| `Scripts/TrainingDummy.cs` | Цель, на которую действуют оружие и эффекты |
-| `Scripts/WeaponPreset.cs` + `Presets/` | Сценарии ремонта |
-| `Scripts/Editor/WeaponPresetEditor.cs` | IMGUI-инспектор с `SerializeReferenceIMGUIList` |
+| `Scripts/Weapons/` | Иерархия <code lang="class-name">IWeapon</code>, группы <code lang="csharp">[TypeSelectorDisplay]</code>, скрытый через `Hidden` класс, <code lang="csharp">[MovedFrom]</code> на <code lang="class-name">Crossbow</code>, вложенная ссылка в <code lang="class-name">Railgun</code> |
+| `Scripts/Effects/`, `Scripts/Modifiers/` | Абстрактная база и открытый generic-класс |
+| `Scripts/WeaponPreset.cs`, `Presets/`, `Prefabs/` | Сценарии ремонта |
+| `Scripts/Editor/WeaponPresetEditor.cs` | IMGUI-инспектор на обычных вызовах <code lang="class-name">PropertyField</code> |
+
+Справочник — [SerializeReference Selector](../../../Documentation/ru/04-serialize-reference-selector.md) и [восстановление SerializeReference](../../../Documentation/ru/06-serialize-reference-tooling.md).

@@ -1,7 +1,7 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useId, useRef, useState} from 'react';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import CodeBlock from '@theme/CodeBlock';
-import {prefersReducedMotion, useInView} from '@site/src/components/FeaturePreview/effects';
+import {useWalkthrough} from '@site/src/components/FeaturePreview/effects';
 import styles from './styles.module.css';
 
 const RELEASES = 'https://github.com/VPDPersonal/Aspid.FastTools/releases';
@@ -13,9 +13,9 @@ const TEXT = {
       <>Choose <b>+ → Install package from git URL…</b></>,
       <>Paste the URL and press <b>Install</b></>,
     ],
-    // The README's URL picks the channel: `#upm-preview` for a prerelease, `#upm` for a stable version.
-    latest: {preview: 'Latest preview', release: 'Latest release'},
-    pinned: 'Pin',
+    channels: {'upm': 'Stable', 'upm-preview': 'Preview'},
+    latest: 'Latest',
+    unavailable: 'No releases yet',
     pick: 'Choose a version',
     versions: 'All versions',
     installed: 'Installed from Git',
@@ -26,8 +26,9 @@ const TEXT = {
       <>Выберите <b>+ → Install package from git URL…</b></>,
       <>Вставьте URL и нажмите <b>Install</b></>,
     ],
-    latest: {preview: 'Последняя', release: 'Последняя'},
-    pinned: 'Версия',
+    channels: {'upm': 'Стабильная', 'upm-preview': 'Preview'},
+    latest: 'Последняя',
+    unavailable: 'Релизов пока нет',
     pick: 'Выберите версию',
     versions: 'Все версии',
     installed: 'Установлен из Git',
@@ -42,35 +43,6 @@ const FIRST_FRAME_OF_STEP = [0, 1, 2];
 // How many times the walk-through plays on its own before it rests on the last frame.
 const PLAYS = 2;
 const MENU = ['Install package from disk…', 'Install package from tarball…', 'Install package from git URL…', 'Install package by name…'];
-
-/**
- * Plays the frames while visible, {@link PLAYS} times, then rests on the last one;
- * a click on a step or a version tab jumps to a frame and plays once more from there.
- */
-function useFrames(ref) {
-  const visible = useInView(ref);
-  const [frame, setFrame] = useState(0);
-  const [plays, setPlays] = useState(PLAYS);
-  // Bumped by a jump, so a jump to the frame already shown still restarts its timer.
-  const [jumps, setJumps] = useState(0);
-  const [still, setStill] = useState(false);
-  useEffect(() => setStill(prefersReducedMotion()), []);
-  useEffect(() => {
-    const last = frame === DURATIONS.length - 1;
-    if (still || !visible || (last && plays <= 1)) return undefined;
-    const timer = setTimeout(() => {
-      if (last) setPlays((value) => value - 1);
-      setFrame(last ? 0 : frame + 1);
-    }, DURATIONS[frame]);
-    return () => clearTimeout(timer);
-  }, [frame, plays, jumps, visible, still]);
-  const jump = (value) => {
-    setPlays(1);
-    setFrame(value);
-    setJumps((count) => count + 1);
-  };
-  return [still ? DURATIONS.length - 1 : frame, jump];
-}
 
 function PackageManager({frame, url, version, text}) {
   const done = frame === 4;
@@ -115,46 +87,78 @@ function PackageManager({frame, url, version, text}) {
   );
 }
 
-/** The pinned-version tab: it opens a list of the versions, upwards over the walk-through, since the card clips below. */
-function VersionTab({versions, value, active, text, onChoose}) {
+/** Each channel opens its version menu upwards over the walk-through. */
+function VersionTab({label, versions, value, active, text, onChoose}) {
   const ref = useRef(null);
+  const trigger = useRef(null);
+  const menuId = useId();
   const [open, setOpen] = useState(false);
+  const disabled = versions.length === 0;
+  const options = [null, ...versions];
   useEffect(() => {
     if (!open) return undefined;
     const close = (event) => {
-      if (event.type === 'keydown' ? event.key === 'Escape' : !ref.current?.contains(event.target)) setOpen(false);
+      if (!ref.current?.contains(event.target)) setOpen(false);
     };
     document.addEventListener('pointerdown', close);
-    document.addEventListener('keydown', close);
-    return () => {
-      document.removeEventListener('pointerdown', close);
-      document.removeEventListener('keydown', close);
-    };
+    return () => document.removeEventListener('pointerdown', close);
+  }, [open]);
+  useEffect(() => {
+    if (open) ref.current?.querySelector('[aria-checked="true"]')?.focus();
   }, [open]);
   const choose = (version) => {
     setOpen(false);
     onChoose(version);
+    trigger.current?.focus();
+  };
+  const onKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      setOpen(false);
+      trigger.current?.focus();
+      event.stopPropagation();
+    } else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault();
+      if (!open) {
+        setOpen(true);
+        return;
+      }
+      const items = [...ref.current.querySelectorAll('[role="menuitemradio"]')];
+      const index = items.indexOf(document.activeElement);
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1
+        : index < 0 ? (step > 0 ? 0 : items.length - 1) : (index + step + items.length) % items.length;
+      items[next]?.focus();
+    }
   };
   return (
-    <div ref={ref} className={styles.versionTab}>
+    <div ref={ref} className={styles.versionTab} onKeyDown={onKeyDown}
+      onBlur={(event) => {
+        // Safari does not focus a clicked button, so a click inside blurs with no target: the pointerdown handler
+        // above closes on outside clicks, and this one only on focus moving elsewhere (Tab).
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}>
       <button
+        ref={trigger}
         type="button"
-        role="radio"
-        aria-checked={active}
-        aria-haspopup="listbox"
+        disabled={disabled}
+        title={disabled ? text.unavailable : undefined}
+        aria-pressed={active}
+        aria-haspopup="menu"
+        aria-controls={open ? menuId : undefined}
         aria-expanded={open}
-        onClick={() => (active ? setOpen(!open) : choose(value))}>
-        {text.pinned}
-        <span className={styles.versionName}>{value}</span>
+        onClick={() => { onChoose(value); setOpen(!open); }}>
+        <span>{label}</span>
+        <span className={styles.versionName} data-pinned={value !== null || undefined}>{disabled ? '—' : value ?? text.latest}</span>
         <span className={styles.caret} aria-hidden="true" />
       </button>
-      <ul className={styles.versionMenu} role="listbox" aria-label={text.pick} data-open={open || undefined}>
-        {versions.map((version) => (
-          <li key={version} role="option" aria-selected={version === value}>
-            <button type="button" tabIndex={open ? 0 : -1} onClick={() => choose(version)}>{version}</button>
+      {open && <ul id={menuId} className={styles.versionMenu} role="menu" aria-label={`${label}: ${text.pick}`}>
+        {options.map((version) => (
+          <li key={version ?? 'latest'} role="none">
+            <button type="button" role="menuitemradio" data-pinned={version !== null || undefined} aria-checked={version === value}
+              tabIndex={-1} onClick={() => choose(version)}>{version ?? text.latest}</button>
           </li>
         ))}
-      </ul>
+      </ul>}
     </div>
   );
 }
@@ -162,28 +166,29 @@ function VersionTab({versions, value, active, text, onChoose}) {
 /** The site's install section: a Package Manager walk-through beside the steps, and the URL as a code block to copy. */
 export default function InstallPanel({url}) {
   const {siteConfig, i18n} = useDocusaurusContext();
-  const {packageVersion, packageVersions} = siteConfig.customFields;
+  const {packageVersions} = siteConfig.customFields;
   const text = TEXT[i18n.currentLocale] ?? TEXT.en;
   const ref = useRef(null);
-  const [frame, setFrame] = useFrames(ref);
-  // Pin from the branch the README's URL names (`...git#upm-preview`), not the working tree's.
-  const branch = url.split('#')[1];
-  const versions = packageVersions[branch] ?? [];
-  const [pinned, setPinned] = useState(false);
-  const [version, setVersion] = useState(versions.includes(packageVersion) ? packageVersion : versions[0]);
-  const shown = pinned ? `${url}/${version}` : url;
+  const [frame, setFrame] = useWalkthrough(ref, DURATIONS, PLAYS);
+  const channels = Object.keys(text.channels);
+  const initialBranch = url.split('#')[1];
+  const [branch, setBranch] = useState(() => packageVersions[initialBranch]?.length
+    ? initialBranch : channels.find((channel) => packageVersions[channel]?.length) ?? initialBranch);
+  const [selected, setSelected] = useState({'upm': null, 'upm-preview': null});
+  const version = selected[branch] ?? packageVersions[branch]?.[0];
+  const shown = `${url.split('#')[0]}#${branch}${selected[branch] ? `/${selected[branch]}` : ''}`;
   // Another version types another URL, so the walk-through plays again from the start.
-  const choose = (nextPinned, nextVersion = version) => {
-    if (nextPinned === pinned && nextVersion === version) return;
-    setPinned(nextPinned);
-    setVersion(nextVersion);
+  const choose = (nextBranch, nextVersion) => {
+    if (nextBranch === branch && nextVersion === selected[branch]) return;
+    setBranch(nextBranch);
+    setSelected((previous) => ({...previous, [nextBranch]: nextVersion}));
     setFrame(0);
   };
   const current = STEP_OF_FRAME[frame];
 
   return (
     <section ref={ref} className={styles.install}>
-      <div className={styles.top}>
+      <div className={`${styles.top} ${styles.installationTop}`}>
         <div className={styles.preview}><PackageManager frame={frame} url={shown} version={version} text={text} /></div>
         <ol className={styles.steps}>
           {text.steps.map((step, index) => (
@@ -198,9 +203,10 @@ export default function InstallPanel({url}) {
       </div>
       <div className={styles.bar}>
         <div className={styles.meta}>
-          <div className={styles.segmented} role="radiogroup">
-            <button type="button" role="radio" aria-checked={!pinned} onClick={() => choose(false)}>{text.latest[branch === 'upm-preview' ? 'preview' : 'release']}</button>
-            {versions.length > 0 && <VersionTab versions={versions} value={version} active={pinned} text={text} onChoose={(value) => choose(true, value)} />}
+          <div className={styles.segmented} role="group" aria-label={text.pick}>
+            {channels.map((channel) => <VersionTab key={channel} label={text.channels[channel]}
+              versions={packageVersions[channel] ?? []} value={selected[channel]} active={branch === channel}
+              text={text} onChoose={(value) => choose(channel, value)} />)}
           </div>
           <a className={styles.versions} href={RELEASES} target="_blank" rel="noopener noreferrer">{text.versions}</a>
         </div>

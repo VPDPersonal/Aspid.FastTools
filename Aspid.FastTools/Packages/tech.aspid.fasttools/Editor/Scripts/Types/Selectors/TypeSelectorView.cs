@@ -19,6 +19,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string UxmlResourcePath = "UI/Types/Aspid-FastTools-TypeSelector-View";
 
         private const string BlockClass = "aspid-fasttools-type-selector";
+        private const string DropdownModifier = BlockClass + "--dropdown";
         private const string HeaderClass = BlockClass + "__header";
         private const string HeaderSearchFocusedModifier = HeaderClass + "--search-focused";
 
@@ -145,6 +146,11 @@ namespace Aspid.FastTools.Types.Editors
 
             Focus();
         }
+
+        // A dropdown sits on Unity's popup background, not in an Aspid window: on the light skin the stylesheet swaps
+        // in Unity's light colours.
+        internal void UseDropdownStyle() =>
+            this.AddClass(DropdownModifier);
 
         private void BuildUI()
         {

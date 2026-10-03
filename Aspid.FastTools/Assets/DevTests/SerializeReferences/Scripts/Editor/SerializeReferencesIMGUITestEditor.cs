@@ -8,9 +8,8 @@ namespace Aspid.FastTools.DevTests.SerializeReferences.Editors
     // Unity picks IMGUI vs UIToolkit at the Editor level: when CreateInspectorGUI is NOT overridden but
     // OnInspectorGUI is, the whole inspector — including every nested PropertyDrawer — falls back to
     // IMGUI. That routes the managed-reference fields through SerializeReferenceIMGUIPropertyDrawer.OnGUI
-    // instead of CreatePropertyGUI. The list is drawn as a plain PropertyField on purpose: its
-    // picker-backed + button belongs to SerializeReferenceIMGUIList, which the sample's WeaponPresetEditor
-    // already covers.
+    // instead of CreatePropertyGUI. The [TypeSelector] list needs no special call either: the attribute
+    // reaches the whole list, so a plain PropertyField gets the picker-backed + of SerializeReferenceIMGUIList.
     [CustomEditor(typeof(SerializeReferencesIMGUITest))]
     internal sealed class SerializeReferencesIMGUITestEditor : Editor
     {

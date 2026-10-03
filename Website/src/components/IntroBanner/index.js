@@ -6,7 +6,8 @@ import poster from './media/banner-poster.jpg';
 /**
  * The README banner on the introduction. GitHub needs the 6 MB GIF (`docs/images/aspid_fasttools_readme_banner.gif`);
  * the site plays the same clip as a small video, re-encoded from that GIF, only while it is on screen, and shows its first
- * frame under reduced motion.
+ * frame under reduced motion. The page hides its title, so the banner also carries the page's only `<h1>`, visible to
+ * screen readers and search engines only; it follows the video, which must stay the article's first child.
  */
 export default function IntroBanner({alt}) {
   const ref = useRef(null);
@@ -23,7 +24,10 @@ export default function IntroBanner({alt}) {
     else video.pause();
   }, [visible, still]);
   return (
-    <video ref={ref} className="readme-banner" src={banner} poster={poster} width={1280} height={384}
-      muted loop playsInline preload={still === false ? 'auto' : 'none'} role="img" aria-label={alt} />
+    <>
+      <video ref={ref} className="readme-banner" src={banner} poster={poster} width={1280} height={384}
+        muted loop playsInline preload={still === false ? 'auto' : 'none'} role="img" aria-label={alt} />
+      <h1 className="readme-title">{alt}</h1>
+    </>
   );
 }

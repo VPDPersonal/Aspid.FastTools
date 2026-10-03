@@ -25,12 +25,13 @@ namespace Aspid.FastTools.Types.Editors
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
         private const string ItemIconCollapsedModifier = ItemIconClass + "--collapsed";
 
-        private const string ContainerFallbackIcon = "d_Folder Icon";
-        private const string ContainerOpenFallbackIcon = "d_FolderOpened Icon";
-        private const string FavoritesCollapsedIcon = "d_Favorite";
-        private const string FavoritesExpandedIcon = "d_Favorite Icon";
-        private const string RecentCollapsedIcon = "d_UnityEditor.HistoryWindow";
-        private const string RecentExpandedIcon = "d_UnityEditor.HistoryWindow";
+        // Plain names: IconContent picks the skin's variant, which the picker follows in a dropdown and in a window.
+        private const string ContainerFallbackIcon = "Folder Icon";
+        private const string ContainerOpenFallbackIcon = "FolderOpened Icon";
+        private const string FavoritesCollapsedIcon = "Favorite";
+        private const string FavoritesExpandedIcon = "Favorite Icon";
+        private const string RecentCollapsedIcon = "UnityEditor.HistoryWindow";
+        private const string RecentExpandedIcon = "UnityEditor.HistoryWindow";
 
         private VisualElement CreateListItem()
         {

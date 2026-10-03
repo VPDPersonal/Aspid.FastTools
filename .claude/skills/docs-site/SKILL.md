@@ -57,23 +57,30 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   in `docusaurus.config.js` recognises that page by the banner's file name and supplies the title,
   description and `hide_title` — do not rename `aspid_fasttools_readme_banner.gif`.
 - **Admonitions**: GitHub style only — `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`. Never `:::note`.
-- **Links** are relative paths to the `.md` file: `[EnumValues](06-enum-values.md)`, from a sample
-  `[Selector](../../../Documentation/03-serialize-reference-selector.md)`, from a doc
+- **Links** are relative paths to the `.md` file: `[EnumValues](08-enum-values.md)`, from a sample
+  `[Selector](../../../Documentation/04-serialize-reference-selector.md)`, from a doc
   `[Types sample](../Samples~/Types/Documentation/README.md)`. GitHub follows them as files; links that cross
   between plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.
   Never link by site URL.
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
-  on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`).
+  on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`). This conversion
+  requires every body cell to contain only a `<pre>` element; a plain-text or inline-code result row prevents it.
+  Use inline code throughout tables that pair short calls with their results.
 - **Highlighted inline code**: `<code lang="csharp">void Run&lt;T&gt;()</code>` is plain inline code on GitHub and is
-  highlighted on the site (`introBanner.js` → `src/components/InlineCode`). Use it for every inline C# snippet, in prose
+  highlighted on the site (`introBanner.js` → `src/components/InlineCode`; sample pages get it from `remarkInlineCode`
+  in the `tutorials` instance). Use it for every inline C# snippet, in prose
   and in tables — never for paths, flags, diagnostic IDs (`AFT0010`) or Profiler column names (`Calls`) — and escape
   `<`, `>`, `{`, `}` as in `<pre>` cells.
-  `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the whole text in that token's
-  colour: Profiler marker names in a result column, a lone type (`T`; in `System.Type` only `Type`), a bare method
-  name (`Update`; in `styleSheets.Add` only `Add`).
+  `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the text in that token's
+  colour: Profiler marker names in a result column, a lone type (`T`; in `System.Type` only `Type`; in `List<Weapon>`
+  both names, brackets plain), a bare method name (`Update`; in `styleSheets.Add` only `Add`). A namespace stays in the
+  normal text colour, in code blocks too (`using Aspid.FastTools.Types;`, the `System.` of `System.Type`): write it as
+  `<code lang="csharp">UnityEngine.Scripting</code>`. Prism leaves a lone generic type or `System.Type` in `csharp`
+  uncoloured, so use `class-name` for them; a qualified method call reads best as `csharp` with its parentheses
+  (`Type.GetType()`). Fields, properties and enum values stay plain, as in code blocks.
 - **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
   would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
-- The package is English. A translation is a sibling file: `Documentation/ru/06-enum-values.md`,
+- The package is English. A translation is a sibling file: `Documentation/ru/08-enum-values.md`,
   `README.ru.md` next to `README.md`. Missing pages fall back to English. A translated file links translated
   targets (`../../Samples~/Types/Documentation/README.ru.md`) so GitHub stays in the same language; the site
   drops the locale segment itself.
@@ -87,15 +94,30 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - Main docs use `Documentation/Images/`; each sample keeps its own in `Samples~/<Sample>/Documentation/Images/`
   and references them as `Images/x.png`. A main doc may point at a sample image by path
   (`../Samples~/EnumValues/Documentation/Images/demo.gif`); `sync-i18n.mjs` mirrors those folders for i18n.
-- **Scene footage and diagrams need a light-theme sibling**: `x.png` plus `x-light.png` in the same folder
-  (`demo`/`scene` captures, SVG diagrams, gallery previews). `src/remark/themedImages.js` swaps them per theme.
-  **Editor UI captures (Inspector, windows, pickers) do not** — they stay in the dark editor theme in both site
-  themes; never report a missing `-light` for them.
+- **Every image needs a light-theme sibling**: `x.png` plus `x-light.png` in the same folder, with the same
+  pixel size and, for a GIF, the same timeline. `src/remark/themedImages.js` swaps them per theme (it runs through
+  the webpack cache: after adding a sibling to an unchanged page, `npx docusaurus clear` before the build). Editor
+  UI captures (Inspector, windows, pickers) are re-shot in Unity's light editor skin with the same steps; the
+  FastTools window (Project/Asset References) switches to its light palette there too. Status badges are links,
+  not captures, and need none.
 - **Editor captures have no frame around them.** In `/docs` and `/tutorials` an image renders in a plain
   full-width wrapper (`doc-image-panel`, `src/theme/MDXComponents/Img`): no window, padding or shadow, the
   capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
   which keeps the bare scene look. So name inspector captures anything but `demo`/`scene`, and name scene footage
   exactly that. A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (recoloured background).
+- **Inspector and picker captures are cropped in the file, not in CSS.** `scripts/frame-doc-captures.sh` crops each
+  listed capture (both themes) to its component and adds an 8px margin that continues Unity's background, the
+  Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub, Unity and the site
+  then show the same image. After re-shooting a listed capture, run the script; it skips framed files and fails on a
+  capture whose size no longer matches its row, which then needs new bounds. Only `enum-values-multipliers/padding/pad.py`
+  and `native-selector/crop.sh` in `docs/media` still write a listed capture, and they call it themselves; the other
+  listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
+  On doc pages the site pads every listed capture on to 8px from its rounded frame, drawing it as a border image so
+  the margin's bands meet the edge without a seam; `docusaurus.config.js` reads the list and `PAD` from the script
+  (`customFields.framedCaptures`), so a new row needs nothing else. The introduction's cards do the same in `custom.css`.
+  Whole-window captures (`aspid_fasttools_serialize_reference_*` from the SerializeReferences DocsMedia harness) keep
+  the window's 24px margin; doc pages crop it to the same 8px (`WINDOW_CAPTURES` in `MDXComponents/Img`), so a new
+  window capture is added to that pattern.
 - Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
   `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
   and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
@@ -110,12 +132,16 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   component (`SetPadding(8)` → `StyleSides`, the Styles table of VisualElement Extensions), which gets every row as
   `<StyleSidesRow call="…">` with the second cell as children. Markdown keeps the table, and the rows and their
   translations stay in the page; changing that first cell detaches the component.
+- An ordered list can have one too: `LISTS` in `liveDiagrams.js` maps the bold text of its first item to a component
+  (`Tools → Aspid 🐍 → FastTools → Project References` → `ProjectReferencesPanel`, the SerializeReference repair quick
+  start), which gets each item's text as a `<span>` child, so the steps and their translation stay in the page; changing
+  that bold text detaches it. The panel reuses the install panel's card and steps and draws the Aspid FastTools window
+  without its tab strip; in the light site theme it takes Unity's light skin and the window's light palette
+  (`Aspid-FastTools-Default-Light.uss`), so update both when the package palette changes.
 
 ## Writing a feature page (docs/)
 
-Rules the user confirmed while reworking `05-profiler-markers.md`, `07-visual-element-extensions.md`,
-`08-serialized-property-extensions.md` and `09-editor-helpers.md`; apply them
-to every main doc page, always to the English file and its `ru/` twin together.
+Apply these rules to every main doc page, always to the English file and its `ru/` twin together.
 
 - **Lead = one short sentence that makes the reader interested**, not an explanation. No API names, code,
   `using`, name formats or mechanics — the quick start shows those right below. Plain wording a reader understands
@@ -126,17 +152,20 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - **One concrete example type per page**, reused by every section; extend that type rather than inventing a second
   one. Do not announce it with a sentence ("The examples on this page work with…") — the before/after table
   already shows it, and the link to the sample lives only in the closing `## Package sample`.
-- **Quick start is the before/after table**, plus at most one sentence on what the calls return. No `using` line, no
-  type declaration, no "in your custom `Editor`, add…". A declaration the results cannot be read without goes into the
-  section that needs it (SerializedProperty Extensions: `AbilityBook` sits above the reflection table).
+- **Quick start shows the shortest useful path.** For API features, use a before/after table with at most one
+  sentence on what the calls return. For installation or setup, give a copyable command or request to an agent;
+  keep optional flags and maintenance details out of the quick start. No boilerplate introductions or declarations;
+  put declarations needed to understand results in the section that uses them.
 - **A plain rename is a two-column `Unity | FastTools` table of inline code** (`AddToClassList` → `AddClass`). Keep
   `<pre>` before/after cells for calls where FastTools removes code (`AddChildIf`, a hex colour, `TryGetByEnum`).
 - **Verify every claim against the source** (`Editor/Scripts/...`) before writing it; drop anything the code does
-  not back (e.g. the "inherited attribute" note was removed from `GetDisplayName`).
+  not back. Choose the simplest method that demonstrates the stated benefit, and make its distinguishing
+  behaviour visible in the shown result.
 - **Results go in tables**: property × method result tables and Unity-API-vs-FastTools before/after tables replace
-  runs of small code blocks. Long method lists (setters) become a grouped table, not a comma list.
-- **Say each fact once.** No repeat between a table's cell comments and the paragraph under it, and no repeat
-  between quick start and a later section (`AndApply` is explained once).
+  runs of small code blocks. Show representative calls and meaningful differences; link to the API reference
+  for exhaustive method and overload lists.
+- **Say each fact once, in the section it belongs to.** Explain behaviour beside the methods or task it describes.
+  No repeat between a table's cell comments and the paragraph under it, or between quick start and a later section.
 - **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`",
   no Assembly Definition reference note), do not list what is *not* required ("no attributes or `partial`") — a
   requirement would be stated — and do not state expected behaviour ("keeps the order", "finds private fields too",
@@ -144,11 +173,17 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - **Unity's own behaviour stays out**, even when it explains a FastTools detail: version limits of Unity types
   ("Unity 6.2+"), Unity applying a write with Undo itself, how long an inspector's `SerializedObject` lives, ordinary
   `SerializedObject` patterns (several writes before one apply).
+- **API contract details stay in the XML docs**: exceptions for invalid arguments (`ArgumentException` when a type
+  is not assignable to `T`), argument checks and failing calls. A feature page shows the correct use only.
 - **Admonitions:** `> [!NOTE]` for a non-obvious mismatch that loses nothing (`HasFoldout()` vs the Inspector);
   `> [!WARNING]` only when data or measurements are lost silently (boxed struct copy, `partial` calls on one line).
   A mistake an analyzer reports is a plain bullet with its ID (`AFT0010`, `AFT0011`), not a warning. Never stack two.
 - **Headings and labels name what the reader gets**: «Поле C# за свойством», not «Тип поля и объект-владелец»; a table
   row names the value type («Идентификаторы объектов»), never a constraint («Unity 6.2 и новее»).
+- **Link to another page only when it serves this feature**: a page that configures it (the `[TypeSelector]`
+  settings from Serializable Types) or explains one of its details in more depth. Do not point to neighbouring
+  features ("to store an instance, use SerializeReference Selector"): such links read as advertising, and the sidebar
+  and the Introduction already list every feature.
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
   link to the sample README and, when the sample's `demo.gif` shows this page's feature, that gif with the caption
   paragraph — no "how to open" steps or experiments, those live on the sample's own page. Footage of a sample
@@ -163,11 +198,39 @@ to every main doc page, always to the English file and its `ru/` twin together.
   `~/.dotnet/tools/ilspycmd -t UnityEditor.ObjectNames /Applications/Unity/Hub/Editor/6000.0.64f1/Unity.app/Contents/Managed/UnityEngine/UnityEditor.CoreModule.dll`.
 - **Code blocks fit the article width** without horizontal scrolling. Site table columns are equal and fixed, so
   long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
+- **No caption under a capture on a feature page**: the section text already says what it shows, so the image keeps
+  only its alt text (Serializable Types, ProfilerMarkers). The caption paragraph stays for live diagrams, tutorial
+  pages and the `## Package sample` gif (see below).
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
   and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
 - Text stays left-aligned (never justified) and fills the article width.
 - A bug found in package code while writing docs is not fixed on the docs branch: report it and offer a separate
   task in its own worktree.
+
+## Writing a sample page (tutorials/)
+
+Rules the user confirmed while reworking the five sample READMEs; the feature-page rules above apply too.
+
+- **Order:** `# <Name> Sample`, the lead, `demo.gif` with its caption, `## Open it`, `## Try`, optional sections for a
+  second scenario (SerializeReferences: Repair, IMGUI inspector), `## Where to look`, then one closing line
+  `Reference: [Feature](…)` (ru `Справочник — […](…)`). No code block or capture above the demo: an Inspector capture
+  goes into the step that uses it.
+- **Lead = the sample's card description** in `SamplesGallery/index.js`, word for word in both places; change them
+  together.
+- **Import step, same on every page:** «Import the sample: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** →
+  **Import** on **X**.» / «Импортируйте пример: … → **Import** у **X**.» The next step opens the scene and enters Play
+  Mode with one sentence on what the reader sees, no mechanics.
+- **No recording notes** (Sample Themes, the Ability Catalog Theme menu): they are for our captures, and the Light
+  preview swaps the EnumValues palette, so edits to the asset stop showing.
+- **Try steps run in Edit Mode** unless a step says «enter Play Mode»: open `## Try` with «Exit Play Mode and select
+  **X**.» A step must be visible in the sample as shipped (change a value first when the scene holds the default);
+  anything read from saved files (Scan Project, CI) says «Save the scene».
+- **Code is the sample's own**: quote real lines (comments may go), never an invented call attributed to a sample
+  file. A result that only a hypothetical call shows goes into a results table instead.
+- **Inspector labels are bold** (**Enemy Type**, **Mana Cost**), class names `class-name`, marker names `string`,
+  as on feature pages; picker in ru is «окно выбора».
+- **Say it once:** a fact documented on the feature page (the header menu, the custom-inspector API) is a link to that
+  section, not a copy. `## Where to look` lists only files that show FastTools.
 
 ## Adding a main doc page
 
@@ -179,10 +242,11 @@ to refresh the root `README.md`.
 ## Adding a sample
 
 1. `Samples~/<Name>/Documentation/README.md` (+ `README.ru.md`), with `.meta` files. Images go in that
-   sample's `Documentation/Images/`; `demo`/`scene` captures get a `-light` sibling.
+   sample's `Documentation/Images/`; every image gets a `-light` sibling.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
-   description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
+   description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png` (one 16:9 size
+   for both, no scene titles; a scene may add a looping clip — `docs/media/samples-gallery/README.md`).
 4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its `Samples~/` folder name
    to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
 5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
@@ -307,15 +371,24 @@ Both are encoded from the GIF — re-encode them when it changes (`ffmpeg -i <gi
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
-there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`.
-The Inspector GIFs of the first two cards are cropped in `custom.css` to hide the baked title bar and tab strip.
+there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme. Both are the
+`enum-values-multipliers-populate(-light).gif` padded to 1576×1080 (`-preset veryslow -crf 24
+-vf "fps=20,pad=1576:1080:20:206:color=0x333333"`, `0xC8C8C8` for light).
+The Inspector captures of the Serialization cards are cropped and framed in the file (`scripts/frame-doc-captures.sh`), so each card
+takes the capture's own shape. The Serialization cards have their own captures (`*-card.gif`), shot in a 440 pt Inspector or
+FastTools window so their text reads at the card's width, with the picker's empty rows above its footer cut out of every
+frame; the doc pages keep the wider, uncut captures. A card stays about as tall as its text column, so cut a card
+capture's empty UI too (a hint line the card text repeats, a state that only adds empty rows); over the FastTools
+window's dot grid cut whole ~36.9 px steps so the seam does not show. Inside an animated preview the blocks keep the
+preview inset between them as well as around them, the spare height goes to the code, centred, and no note line
+explains the result (a preview list resets the article's `.markdown li + li` margin).
 
 The same plugin replaces the Installation section's instruction, URL block and version note with
-`src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with a toggle
-between the latest version and `<url>/<packageVersion>` (`customFields.packageVersion` from `package.json`). The
-README's URL carries the channel — `#upm-preview` for a prerelease, `#upm` for a stable version — and
-`scripts/set-version.sh` switches it together with the badge label. The panel pins from the branch its own URL names,
-out of `customFields.packageVersions` (the tags of both branches, per branch); `UPM_BRANCH` in `docusaurus.config.js`
+`src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with Stable
+and Preview dropdown tabs. Each offers Latest or a pinned version; a channel without versions is disabled.
+The README's URL carries the channel — `#upm-preview` for a prerelease, `#upm` for a stable version — and
+`scripts/set-version.sh` switches it together with the badge label. The README URL selects the initial channel;
+each tab pins from its own branch out of `customFields.packageVersions` (the tags of both branches, per branch); `UPM_BRANCH` in `docusaurus.config.js`
 follows the `package.json` version the same way and only decides where the working-tree version is offered.
 Its text is written in the component per locale, so update it when the README's install steps change.
 

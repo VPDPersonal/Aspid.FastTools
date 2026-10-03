@@ -7,7 +7,7 @@ import remarkCrossInstanceLinks from './src/remark/crossInstanceLinks.js';
 import remarkThemedImages from './src/remark/themedImages.js';
 import remarkAgentPrompt from './src/remark/agentPrompt.js';
 import remarkLiveDiagrams from './src/remark/liveDiagrams.js';
-import remarkIntroBanner, {remarkStatusBadges} from './src/remark/introBanner.js';
+import remarkIntroBanner, {remarkInlineCode, remarkStatusBadges} from './src/remark/introBanner.js';
 import {ACCENT_BOOT_SCRIPT} from './src/accents.js';
 
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
@@ -23,6 +23,17 @@ const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json
  * The UPM branch the install URL points at; each release tags it `<branch>/<version>`. A prerelease publishes to
  * `upm-preview`, a stable version to `upm` (.github/workflows/release.yml).
  */
+// The captures scripts/frame-doc-captures.sh frames in the file, with the margin it adds: doc pages pad them on to the
+// same inset from their rounded frame as the introduction's cards (MDXComponents/Img).
+function readFramedCaptures() {
+  const script = readFileSync(new URL('../scripts/frame-doc-captures.sh', import.meta.url), 'utf8');
+  const margin = Number(script.match(/^PAD=(\d+)$/m)[1]);
+  const rows = script.slice(script.indexOf("done <<'EOF'\n")).split('\n').slice(1);
+  const names = rows.slice(0, rows.indexOf('EOF')).map((row) => row.trim()).filter((row) => row && !row.startsWith('#'))
+    .map((row) => row.split(/\s+/)[0]);
+  return {margin, names};
+}
+
 const UPM_BRANCH = PACKAGE_VERSION.includes('-') ? 'upm-preview' : 'upm';
 
 /** Orders `1.0.0-rc.10` after `1.0.0-rc.9`, and a release after its prereleases. */
@@ -55,7 +66,10 @@ function readPackageVersions() {
   const tags = read(['ls-remote', '--tags', '--refs', `${REPO}.git`, ...patterns]) || read(['tag', '-l', ...patterns]);
   const refs = tags.split('\n').map((line) => line.trim().split(/\s/).pop().replace(/^refs\/tags\//, ''));
   return Object.fromEntries(branches.map((branch) => {
-    const versions = refs.filter((ref) => ref.startsWith(`${branch}/`)).map((ref) => ref.slice(branch.length + 1));
+    // Early release candidates were tagged on upm; they must not enable the Stable tab.
+    const versions = refs.filter((ref) => ref.startsWith(`${branch}/`))
+      .map((ref) => ref.slice(branch.length + 1))
+      .filter((version) => branch !== 'upm' || !version.split('+')[0].includes('-'));
     if (branch === UPM_BRANCH) versions.push(PACKAGE_VERSION);
     return [branch, [...new Set(versions)].sort(compareVersions).reverse()];
   }));
@@ -97,7 +111,10 @@ const config = {
 
   url: 'https://vpdpersonal.github.io',
   baseUrl: '/Aspid.FastTools/',
-  customFields: { assetStore: ASSET_STORE, packageVersion: PACKAGE_VERSION, packageVersions: readPackageVersions() },
+  customFields: {
+    assetStore: ASSET_STORE, packageVersion: PACKAGE_VERSION, packageVersions: readPackageVersions(),
+    framedCaptures: readFramedCaptures(),
+  },
   organizationName: 'VPDPersonal',
   projectName: 'Aspid.FastTools',
   trailingSlash: false,
@@ -167,6 +184,7 @@ const config = {
         include: ['index.mdx', '*/README.md'],
         numberPrefixParser: samplePrefixParser,
         ...markdownOptions,
+        beforeDefaultRemarkPlugins: [remarkInlineCode, ...markdownOptions.beforeDefaultRemarkPlugins],
         // `<Sample>/README.md` → `Samples~/<Sample>/Documentation/README.md`, translations as `README.<locale>.md`;
         // the overview `index.mdx` → `Website/src/samples/index.mdx` (`index.<locale>.mdx`).
         editUrl: ({ docPath, locale }) =>

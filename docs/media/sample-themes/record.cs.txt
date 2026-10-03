@@ -36,7 +36,8 @@ public sealed class SampleThemeRecorder : MonoBehaviour
    _image.ReadPixels(new Rect(0,0,1440,810),0,0);_image.Apply();
    File.WriteAllBytes(Path.Combine(Output,$"frame-{_frame:000}.png"),_image.EncodeToPNG());
   } finally {_camera.targetTexture=target;RenderTexture.active=active;}
-  if(_frame==100){File.WriteAllText(Path.Combine(Output,"done.txt"),"100 frames at 20 fps");Destroy(gameObject);}
+  // 355 frames are one walker round trip: frame 356 equals frame 1 pixel for pixel, so the GIF loops seamlessly.
+  if(_frame==355){File.WriteAllText(Path.Combine(Output,"done.txt"),"355 frames at 20 fps");Destroy(gameObject);}
  }
  private void OnDestroy(){Time.captureFramerate=_previousRate;if(_target!=null){_target.Release();Destroy(_target);}if(_image!=null)Destroy(_image);}
 }

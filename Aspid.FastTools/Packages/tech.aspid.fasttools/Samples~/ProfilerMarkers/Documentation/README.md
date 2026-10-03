@@ -1,39 +1,45 @@
 # ProfilerMarkers Sample
 
-A flock of cubes steered by a plain C# simulation, with `this.Marker()` around each phase. The source generator turns every call site into a static `ProfilerMarker`, so the Profiler shows a named tree of the frame with no marker fields written by hand. The API reference lives in [ProfilerMarkers](../../../Documentation/05-profiler-markers.md).
+A flock of cubes whose every frame phase shows up in the Profiler under its own name.
 
-```csharp
-using var _ = this.Marker();                   // "FlockSimulation.Step (line)", the rest of the method
-using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (line)", the block
-    ComputeSteering(neighborRadius);
-```
+![The flock simulation whose phases the markers measure.](Images/demo.gif)
 
-![The Flock tree shows how generated markers nest. Steering.Agent has 120 calls for 120 agents; timings vary by machine.](Images/profiler-markers.png)
-
-The Flock tree shows how generated markers nest. Steering.Agent has 120 calls for 120 agents; timings vary by machine.
+The flock simulation whose phases the markers measure.
 
 ## Open it
 
-1. Import the sample and open `Scenes/ProfilerMarkers.unity`.
-2. Open **Window → Analysis → Profiler**, enter Play Mode and select a frame in the CPU module.
-3. In **Hierarchy** view, expand `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update (…)`.
+1. Import the sample: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** on **ProfilerMarkers**.
+2. Open `Scenes/ProfilerMarkers.unity` and **Window → Analysis → Profiler**, enter Play Mode and select a frame in the CPU module.
+3. In the **Hierarchy** view, expand `PlayerLoop` down to <code lang="string">Flock.Update (74)</code>, under Unity's own <code lang="string">Flock.Update() [Invoke]</code> row.
 
-The sample needs Unity's built-in **Physics** module, which is enabled by default; without it the sample scripts are not compiled and the scene shows missing scripts.
-
-For recording, use **Light / Dark / Authored** in `Tools → Aspid 🐍 → FastTools → Sample Themes`.
-
-![The flock simulation whose phases are measured by the markers above.](Images/demo.gif)
-
-The flock simulation whose phases are measured by the markers above.
+Needs Unity's built-in **Physics** module; without it the sample scripts do not compile.
 
 ## Try
 
-1. **The tree mirrors the `using` scopes.** Under `Flock.Update` you find `FlockSimulation.Step`, under it `FlockSimulation.Steering` and `FlockSimulation.Integrate`, then `Flock.ApplyTransforms` as a sibling. Nesting needs no wiring; it follows the code.
-2. **One marker, many samples.** `Steering.Agent` sits inside a loop. The Profiler shows one row with `Calls` equal to the agent count, not one row per agent: the name is fixed per call site.
-3. **Turn the knobs.** In Play Mode, raise `Count` on **Flock** to 400: the flock is recreated immediately. Compare `Steering` on subsequent frames, skipping the recreation frame. Lower `Neighbor Radius`: fewer neighbors need extra calculations, but every pair is still checked — the algorithm is O(N²). Lower `Count` to substantially reduce the number of checks. Actual timings depend on your machine.
-4. **Any class, any scope.** `FlockSimulation` is not a `MonoBehaviour`. The local function in `Flock.InitializeAgents` gets its marker named after `InitializeAgents`, the enclosing method. Find it in the startup frame or a frame where you change `Count`.
-5. **The line suffix.** Every name ends with `(line)`, so two markers in one method never collide, and a marker moved in the file changes its suffix. Search the Profiler for `FlockSimulation.` to list all of them.
-6. **Free in a release build.** The generated dispatcher is wrapped in `#if ENABLE_PROFILER`; without the profiler every call returns `default`.
+![The markers under Flock.Update nest like the code; FlockSimulation.Steering.Agent has 120 calls for 120 agents.](Images/profiler-markers.png)
+
+The markers under Flock.Update nest like the code; FlockSimulation.Steering.Agent has 120 calls for 120 agents.
+
+1. **The tree follows the <code lang="csharp">using</code> scopes.** Under <code lang="string">Flock.Update</code> sit <code lang="string">FlockSimulation.Step</code> and, next to it, <code lang="string">Flock.ApplyTransforms</code>; under <code lang="string">Step</code> sit <code lang="string">FlockSimulation.Steering</code> and <code lang="string">FlockSimulation.Integrate</code>. Nothing wires the nesting, the scopes in the code do:
+
+   ```csharp
+   public void Step(float deltaTime, float neighborRadius, float maxSpeed)
+   {
+       using var _ = this.Marker();
+
+       using (this.Marker().WithName("Steering"))
+           ComputeSteering(neighborRadius);
+
+       using (this.Marker().WithName("Integrate"))
+           Integrate(deltaTime, maxSpeed);
+   }
+   ```
+
+2. **One marker per loop.** <code lang="string">FlockSimulation.Steering.Agent</code> sits inside the loop over the agents: the Profiler shows one row with `Calls` equal to the agent count, not a row per agent.
+3. **More agents.** In Play Mode, raise **Count** on **Flock** to `400`: the next frame recreates the flock, `Calls` of <code lang="string">FlockSimulation.Steering.Agent</code> becomes `400`, and <code lang="string">FlockSimulation.Steering</code> takes longer.
+4. **Not only MonoBehaviour.** <code lang="class-name">FlockSimulation</code> is a plain C# class, and its markers work the same way. The marker in the local function <code lang="function">CreateAgent</code> is named after the enclosing method, <code lang="string">Flock.InitializeAgents (53)</code>: find it in the first frame or in the frame where **Count** changes, with `Calls` equal to the number of agents created.
+5. **The line number in the name.** Every name ends with the line of its call, <code lang="string">FlockSimulation.Steering (62)</code>, so markers on different lines of one method never share a name, and a moved call changes its number. Search the Profiler for <code lang="string">Flock</code> to list every marker of the sample.
+6. **Release builds.** The generated marker code is wrapped in <code lang="csharp">#if ENABLE_PROFILER</code>: in a player build without **Development Build** the calls measure nothing and return <code lang="csharp">default</code>.
 
 ## Where to look
 
@@ -41,3 +47,5 @@ The flock simulation whose phases are measured by the markers above.
 |---|---|
 | `Scripts/FlockSimulation.cs` | Method-wide, block and per-iteration markers in a plain class |
 | `Scripts/Flock.cs` | The frame entry point, a marker inside a local function |
+
+Reference: [ProfilerMarkers](../../../Documentation/09-profiler-markers.md).

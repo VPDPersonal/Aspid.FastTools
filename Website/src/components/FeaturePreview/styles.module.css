@@ -8,14 +8,18 @@
   --preview-surface: var(--venom-reading-surface);
   --preview-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --preview-accent-soft: color-mix(in srgb, var(--venom-accent-mark) 12%, transparent);
+  /* Every preview keeps its content 8px from the card's edges, like the captures beside it (custom.css). */
+  --preview-inset: 8px;
 }
 html[data-theme='light'] .featurePreview {
   --preview-accent-soft: color-mix(in srgb, var(--venom-accent-mark) 12%, transparent);
 }
 
 .snippet {
+  /* The text's own box, not its taller line, starts at the inset: half the line's leading sits above it. */
+  --snippet-pad-y: calc(var(--preview-inset) - 0.215em);
   margin: 0;
-  padding: 14px 0;
+  padding: var(--snippet-pad-y) 0;
   overflow-x: auto;
   background: var(--venom-block-surface);
   border: 0;
@@ -24,19 +28,20 @@ html[data-theme='light'] .featurePreview {
   font: 400 0.7rem/1.75 var(--ifm-font-family-monospace);
   white-space: pre;
 }
-.snippetLine { display: block; padding: 0 12px; border-left: 2px solid transparent; transition: background-color 0.35s ease, border-color 0.35s ease; }
+/* The 2px bar of a marked line counts toward the inset. */
+.snippetLine { display: block; padding: 0 var(--preview-inset) 0 calc(var(--preview-inset) - 2px); border-left: 2px solid transparent; transition: background-color 0.35s ease, border-color 0.35s ease; }
 .snippetLine[data-active] { background: var(--preview-accent-soft); border-left-color: var(--venom-accent-mark); }
 /* In a frame of its own (AgentSession), the snippet reaches 2px over the frame's left edge, so the marked lines' bars sit
    on the frame line rather than inside it; the extra padding keeps the code where it was. */
 .framed .snippet { margin-left: -2px; }
-.framed .snippetLine { padding-left: 14px; }
-.framed .diff[data-edited] .snippetLine[data-indented] { padding-left: calc(14px + 4ch); }
+.framed .snippetLine { padding-left: var(--preview-inset); }
+.framed .diff[data-edited] .snippetLine[data-indented] { padding-left: calc(var(--preview-inset) + 4ch); }
 /* In an introduction card the snippet keeps its place (its divider meets the frame cleanly) and only the lines reach over
    the frame; the card clips at its outer edge where the browser can (custom.css), so the snippet no longer scrolls. */
 @supports (overflow-clip-margin: border-box) {
   :global(.feature-card__live).featurePreview .snippet { overflow: visible; }
-  :global(.feature-card__live).featurePreview .snippetLine { margin-left: -2px; padding-left: 14px; }
-  :global(.feature-card__live).featurePreview .diff[data-edited] .snippetLine[data-indented] { padding-left: calc(14px + 4ch); }
+  :global(.feature-card__live).featurePreview .snippetLine { margin-left: -2px; padding-left: var(--preview-inset); }
+  :global(.feature-card__live).featurePreview .diff[data-edited] .snippetLine[data-indented] { padding-left: calc(var(--preview-inset) + 4ch); }
 }
 /* With the card clipping at its outer edge, a filled or gridded bottom row would reach over the frame's inner curve at the
    card's bottom-left corner (the preview is the card's left column only on wide layouts): it rounds that corner itself. */
@@ -52,10 +57,10 @@ html[data-theme='light'] .featurePreview {
 .profilerBody { display: grid; height: 100%; }
 .timeline { --timeline-grid: rgb(255 255 255 / 0.05); --timeline-ring: rgb(255 255 255 / 0.5); --timeline-glow: rgb(255 255 255 / 0.18); overflow: hidden; }
 html[data-theme='light'] .timeline { --timeline-grid: rgb(0 0 0 / 0.07); --timeline-ring: rgb(0 0 0 / 0.35); --timeline-glow: rgb(0 0 0 / 0.1); }
-.timelineBar { display: flex; justify-content: space-between; padding: 7px 12px; color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
+.timelineBar { display: flex; justify-content: space-between; padding: 7px var(--preview-inset); color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
 .timelineTrack {
   position: relative;
-  padding: 12px 0;
+  padding: var(--preview-inset) 0;
   overflow: hidden;
   background-image: repeating-linear-gradient(90deg, transparent 0 79px, var(--timeline-grid) 79px 80px);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
@@ -113,26 +118,29 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .uiLabel { display: block; color: var(--venom-fg-strong); font: 600 13px/1.25 var(--ifm-font-family-base); opacity: 0; transform: scale(0.8); transition: opacity 0.4s ease, transform 0.4s var(--preview-ease), font-size 0.5s var(--preview-ease); }
 .uiLabel[data-show] { opacity: 1; transform: none; }
 .uiLabel[data-big] { font-size: 22px; }
-.uiCaption { position: absolute; left: 10px; bottom: 8px; padding: 2px 7px; color: var(--venom-accent); background: var(--preview-surface); border: 1px solid var(--venom-line); border-radius: 6px; font: 500 0.68rem/1.4 var(--ifm-font-family-monospace); }
+.uiCaption { position: absolute; left: var(--preview-inset); bottom: var(--preview-inset); padding: 2px 7px; color: var(--venom-accent); background: var(--preview-surface); border: 1px solid var(--venom-line); border-radius: 6px; font: 500 0.68rem/1.4 var(--ifm-font-family-monospace); }
 
 /* ---------- SerializedProperty Extensions ---------- */
 
 .propertyBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
 .inspector { position: relative; overflow: hidden; padding-bottom: 46px; color: #d2d2d2; background: #383838; font: 12.5px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; }
-.inspectorHead { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #3e3e3e; border-bottom: 1px solid #242424; font-weight: 600; }
+.inspectorHead { display: flex; align-items: center; gap: 8px; padding: 7px var(--preview-inset); background: #3e3e3e; border-bottom: 1px solid #242424; font-weight: 600; }
 .inspectorIcon { display: inline-grid; place-items: center; width: 16px; height: 16px; color: #2d6b39; background: #e6e6e6; border-radius: 3px; font: 700 11px/1 var(--ifm-font-family-monospace); }
-.inspectorRow { display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: 8px; padding: 6px 10px; }
+.inspectorRow { display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: 8px; padding: 6px var(--preview-inset); }
 .inspectorField { padding: 2px 7px; color: #e6e6e6; background: #2a2a2a; border: 1px solid #202020; border-radius: 3px; font-variant-numeric: tabular-nums; }
 .inspectorField[data-flash] { animation: flash 1s ease; }
 @keyframes flash { 0% { background: color-mix(in srgb, var(--venom-accent) 60%, transparent); border-color: var(--venom-accent); } 100% { background: #2a2a2a; border-color: #202020; } }
-.toast { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #d6d6d6; background: #262626; border: 1px solid #1a1a1a; border-radius: 6px; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s var(--preview-ease); }
+.toast { position: absolute; left: var(--preview-inset); right: var(--preview-inset); bottom: var(--preview-inset); display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #d6d6d6; background: #262626; border: 1px solid #1a1a1a; border-radius: 6px; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s var(--preview-ease); }
 .toast[data-show] { opacity: 1; transform: none; }
 .toast kbd { padding: 0 5px; color: #eee; background: #3a3a3a; border: 1px solid #1a1a1a; border-radius: 4px; box-shadow: none; font: 600 11px/1.5 var(--ifm-font-family-monospace); }
 
 /* ---------- Editor Helpers ---------- */
 
-.namesBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
-.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: 12px; list-style: none; }
+/* The code takes the spare height, so the rows keep the inset between them as well as around them. */
+.namesBody { display: grid; flex: 1; grid-template-rows: 1fr auto; height: 100%; }
+/* Its two lines sit in the middle of that height. */
+.namesBody > .snippet { display: flex; flex-direction: column; justify-content: center; }
+.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--preview-inset); margin: 0; padding: var(--preview-inset); list-style: none; }
 .names li {
   display: flex;
   align-items: center;
@@ -146,6 +154,8 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
   border-radius: 10px;
   transition: border-color 0.4s ease, background-color 0.4s ease;
 }
+/* The list's gap spaces the rows: `ul` outranks the article's `.markdown li + li` margin. */
+ul.names li + li { margin-top: 0; }
 /* The row whose call the snippet highlights; a resolved row keeps its label but not the highlight. */
 .names li[data-active] { background: color-mix(in srgb, var(--venom-accent-mark) 8%, transparent); border-color: color-mix(in srgb, var(--venom-accent-mark) 50%, var(--venom-line)); }
 .names code { display: inline-flex; flex: none; align-items: center; gap: 6px; max-width: 100%; overflow: hidden; padding: 0; color: var(--venom-muted); background: none; border: 0; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; vertical-align: baseline; transition: color 0.4s ease; }
@@ -164,8 +174,9 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 
 .pluginBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
 .session { color: var(--venom-fg); border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
-.sessionBar { display: flex; justify-content: space-between; padding: 7px 12px; color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
-.sessionLog { display: grid; gap: 4px; padding: 10px 12px 12px; }
+/* The bar's text box is taller than its 1em line, so the top padding adds what sticks out above the line. */
+.sessionBar { display: flex; justify-content: space-between; padding: calc(var(--preview-inset) + 0.16em) var(--preview-inset) 7px; color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
+.sessionLog { display: grid; gap: 4px; padding: var(--preview-inset); }
 .prompt { display: flex; align-items: center; min-width: 0; padding: 4px 8px; border: 1px solid var(--venom-line-strong); border-radius: 6px; }
 .promptSign { flex: none; margin-right: 8px; color: #d97757; font-weight: 600; }
 /* The request types in: its width grows in character steps. */
@@ -218,18 +229,34 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .eventDiff { color: var(--venom-accent); }
 /* The edit: new lines open up in the diff colour and the body shifts into the new block. */
 /* Keeps the edited method's eight lines of room throughout, so the card does not grow when the edit lands. */
-.diff { min-height: calc(7 * 1.75em + 28px); border-bottom: 0; }
+.diff { min-height: calc(7 * 1.75em + 2 * var(--snippet-pad-y)); border-bottom: 0; }
 .diff .snippetLine[data-added] { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.45s var(--preview-ease), opacity 0.35s ease, background-color 0.35s ease; }
 .diff[data-edited] .snippetLine[data-added] { max-height: 2em; opacity: 1; background: var(--preview-accent-soft); border-left-color: var(--venom-accent-mark); }
 .diff .snippetLine[data-indented] { transition: padding 0.45s var(--preview-ease); }
-.diff[data-edited] .snippetLine[data-indented] { padding-left: calc(12px + 4ch); }
+.diff[data-edited] .snippetLine[data-indented] { padding-left: calc(var(--preview-inset) - 2px + 4ch); }
 
 /* ---------- EnumValues ---------- */
 
-/* The clip is cropped to rows 184–918 of 1080: every frame's content (216–886) plus the clip's own 32px side margin.
-   The crop's centre (row 551) sits at the box's centre, so a card taller than the crop only adds background around it. */
-.enumPreview { position: relative; flex: 1; aspect-ratio: 1576 / 734; overflow: hidden; background: #333; }
-.enumPreview video { position: absolute; top: 50%; left: 0; width: 100%; height: auto; transform: translateY(calc(-551 / 1080 * 100%)); }
+/* The clip (1576×1080) holds every frame's content in columns 28–1548 and rows 214–888. The video is scaled so that
+   content spans the box less the inset on each side, and the content's centre (row 551) sits at the box's centre, so a
+   card taller than the content only adds background around it. */
+.featurePreview:has(.enumPreview) { container-type: inline-size; }
+.enumPreview {
+  --enum-scale: calc((100cqw - 2 * var(--preview-inset)) / 1520);
+  position: relative;
+  flex: 1;
+  min-height: calc(674 * var(--enum-scale) + 2 * var(--preview-inset));
+  overflow: hidden;
+  background: #333;
+}
+.enumPreview video {
+  position: absolute;
+  top: calc(50% - 551 * var(--enum-scale));
+  left: calc(var(--preview-inset) - 28 * var(--enum-scale));
+  width: calc(1576 * var(--enum-scale));
+  max-width: none;
+  height: auto;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .featurePreview *, .featurePreview *::before, .featurePreview *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
@@ -238,6 +265,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 
 /* The light site theme shows Unity's light editor skin; colours come from its DefaultCommonLight theme. */
 html[data-theme='light'] .inspector { color: #090909; background: #c8c8c8; }
+html[data-theme='light'] .enumPreview { background: #c8c8c8; }
 html[data-theme='light'] .inspectorHead { background: #cbcbcb; border-bottom-color: #7f7f7f; }
 html[data-theme='light'] .inspectorIcon { background: #f0f0f0; box-shadow: inset 0 0 0 1px #aaa; }
 html[data-theme='light'] .inspectorField { color: #090909; background: #f0f0f0; border-color: #b7b7b7; }

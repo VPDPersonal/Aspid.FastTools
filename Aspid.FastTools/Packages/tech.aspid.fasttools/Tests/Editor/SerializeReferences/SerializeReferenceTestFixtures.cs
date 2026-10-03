@@ -56,6 +56,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TypeSelector(Required = true)] public string requiredString;
     }
 
+    // A required field of every ISerializableType wrapper, top-level and inside a by-value container: the object-load
+    // scan must report each by the wrapper's path, as the scene scan does, not by its backing string.
+    internal sealed class RequiredWrapperTestObject : ScriptableObject
+    {
+        [TypeSelector(Required = true)] public SerializableType type;
+        [TypeSelector(Required = true)] public SerializableType<ITestWeapon> weaponType;
+        [TypeSelector(Required = true)] public SerializableMonoScript script;
+        public RequiredWrapperLoadout loadout = new();
+    }
+
+    [Serializable]
+    internal sealed class RequiredWrapperLoadout
+    {
+        [TypeSelector(Required = true)] public SerializableType type;
+    }
+
     // A plain [Serializable] by-value container holding required fields — the nesting shape the required gate must
     // recurse into (ASP-52): the fields appear in YAML as children of the container key, not at the document top level.
     [Serializable]

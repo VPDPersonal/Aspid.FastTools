@@ -93,8 +93,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (result.HasAny) BreakageDetected?.Invoke(result);
         }
 
-        // Cold-index path: each baseline key is re-resolved directly, so the report is type-level only — the Repair
-        // window rebuilds the index to list the exact sites.
+        // Cold-index path: each baseline key is re-resolved directly, so the report is type-level only — the Project
+        // References tab rebuilds the index to list the exact sites.
         private static void RunDetectionCold(bool report, IReadOnlyCollection<string> changedAssets)
         {
             // No baseline yet: a text sweep spread over editor updates establishes it, since warming the index is a

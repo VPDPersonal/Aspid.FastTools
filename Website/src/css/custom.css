@@ -107,6 +107,9 @@
   --ifm-menu-color-background-active: var(--venom-glow-soft);
   --ifm-menu-color-background-hover: rgba(18, 19, 22, 0.05);
   --ifm-navbar-background-color: rgba(247, 247, 248, 0.85);
+  /* The image viewer's dimmed page and the lift of the picture above it. */
+  --venom-overlay: rgba(247, 247, 248, 0.88);
+  --venom-overlay-shadow: 0 18px 48px -16px rgba(18, 19, 22, 0.3);
   --ifm-navbar-shadow: 0 1px 0 var(--venom-line);
   --ifm-footer-background-color: var(--venom-panel);
   /* Inline code chips keep a fill; framed blocks (code, cards, panels) stay on the article surface, like the admonitions. */
@@ -204,6 +207,8 @@ html[data-theme='dark'] {
   --ifm-menu-color-background-active: var(--venom-glow-soft);
   --ifm-menu-color-background-hover: rgba(255, 255, 255, 0.04);
   --ifm-navbar-background-color: rgba(10, 11, 15, 0.85);
+  --venom-overlay: rgba(3, 6, 9, 0.88);
+  --venom-overlay-shadow: 0 18px 48px -16px rgba(0, 0, 0, 0.7);
   --ifm-navbar-shadow: 0 1px 0 var(--venom-line);
   --ifm-footer-background-color: var(--venom-panel);
   --ifm-code-background: #0e1015;
@@ -797,23 +802,6 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 @media (prefers-reduced-motion: reduce) {
   .floating-toc__panel, .floating-toc__bar, .floating-toc__button { transition: none; }
 }
-/* Docusaurus' back-to-top button in the site's control style, stacked above the floating TOC where both show.
-   `html` outranks the theme's own module class, which has the same single-class weight and loads later. */
-html .theme-back-to-top-button {
-  right: 1.5rem; bottom: 1.5rem; width: 2.5rem; height: 2.5rem;
-  background: var(--venom-reading-surface); border: 1px solid var(--venom-line-strong); border-radius: 10px;
-  box-shadow: 0 4px 14px #0004;
-}
-html .theme-back-to-top-button::after { background-color: var(--venom-muted); -webkit-mask-size: 1.5rem 1.5rem; mask-size: 1.5rem 1.5rem; }
-html .theme-back-to-top-button:hover { background: var(--venom-reading-surface); border-color: var(--venom-divider); }
-html .theme-back-to-top-button:hover::after { background-color: var(--venom-fg-strong); }
-@media (max-width: 996px) { html .theme-back-to-top-button { right: 1rem; bottom: 1rem; } }
-@media (max-width: 1399px) {
-  html:has(.floating-toc) .theme-back-to-top-button { bottom: calc(1.5rem + 2.5rem + 0.5rem); }
-}
-@media (max-width: 996px) {
-  html:has(.floating-toc) .theme-back-to-top-button { bottom: calc(1rem + 2.5rem + 0.5rem); }
-}
 .floating-toc__title { padding: 0 0.75rem 0.5rem; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--venom-line); margin-bottom: 0.4rem; }
 .floating-toc__panel .table-of-contents { padding: 0; border: 0; font-size: 0.875rem; }
 .floating-toc__panel .table-of-contents li { margin: 0.25rem 0; }
@@ -911,6 +899,18 @@ html[data-theme='light']:not([data-accent]).docs-doc-page { --venom-canvas-accen
     width: 100cqw;
     margin-inline: calc(50% - 50cqw);
   }
+}
+
+/* The introduction's title: its only <h1>, for screen readers and search engines; the banner shows the name. */
+.theme-doc-markdown .readme-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* The introduction starts with its banner; the compact TOC follows it. */
@@ -1119,6 +1119,54 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
   box-shadow: none;
 }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
+/* A capture framed in its file (scripts/frame-doc-captures.sh) sits 8px from its rounded frame, as in the introduction's
+   cards. The capture is drawn as the inner span's border image: its edges stretch over the padding and its centre
+   fills the rest at the capture's scale, so the margin's bands run on to the frame on the same pixel rows. The image
+   stays in place, invisible, for its size, alt text and zoom: an image is snapped to the pixel grid while a border
+   image is not, so the two would meet half a pixel apart. */
+.theme-doc-markdown .doc-image-panel--margin {
+  --capture-inset: 8px;
+  container-type: inline-size;
+  overflow: hidden;
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+}
+.theme-doc-markdown .doc-image-capture {
+  --capture-pad-x: round(max(0px, var(--capture-inset) - var(--capture-margin-x) * 100cqw / var(--capture-width)), 1px);
+  --capture-pad-y: round(max(0px, var(--capture-inset) - var(--capture-margin-y) * 100cqw / var(--capture-width)), 1px);
+  --capture-scale: calc((100cqw - 2 * var(--capture-pad-x)) / var(--capture-width));
+  display: block;
+  padding: var(--capture-pad-y) var(--capture-pad-x);
+  border-image-slice: calc(var(--capture-margin-y)) calc(var(--capture-margin-x)) fill;
+  border-image-width: calc(var(--capture-pad-y) + var(--capture-margin-y) * var(--capture-scale))
+    calc(var(--capture-pad-x) + var(--capture-margin-x) * var(--capture-scale));
+  border-image-repeat: stretch;
+}
+.theme-doc-markdown .doc-image-capture > img.doc-zoom-image[role='button'] {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  max-height: none;
+  opacity: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+/* A window capture keeps a wider margin of the window itself: the image is scaled and shifted so that only the inset's
+   worth of it shows, and the rounded frame clips the rest. The capture stays a single image, so nothing can seam. */
+.theme-doc-markdown .doc-image-panel--window > img.doc-zoom-image[role='button'] {
+  --capture-scale: calc((100cqw - 2 * var(--capture-inset)) / (var(--capture-width) - 2 * var(--capture-margin)));
+  width: calc(var(--capture-width) * var(--capture-scale));
+  max-width: none;
+  height: auto;
+  max-height: none;
+  margin: calc(var(--capture-inset) - var(--capture-margin) * var(--capture-scale));
+  border: 0;
+  border-radius: 0;
+}
+/* The invisible image keeps the focus; its frame shows it. */
+.theme-doc-markdown .doc-image-panel--margin:has(img:focus-visible),
+.theme-doc-markdown .feature-card__preview:has(img:focus-visible) { outline: 2px solid var(--venom-accent-mark); outline-offset: 2px; }
 /* Scene footage on a doc page: the background is recoloured to the article surface, so no window frame. */
 .scene-footage img { filter: url('#scene-footage-background-dark'); }
 html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-background-light'); }
@@ -1173,32 +1221,57 @@ html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-backgr
   border-radius: 0;
   background: transparent;
 }
-/* Continue each capture's background into the letterbox space. */
-.theme-doc-markdown .feature-card__preview:has(img[src*='/aspid_fasttools_serialize_reference_tooling']) { background: #000; }
-.theme-doc-markdown .feature-card__preview:has(img[src*='/surface-tables']) { background: #383838; }
-/* Crop the capture's 20px side gutters (808px wide), keeping both tables visible. */
-.theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/surface-tables'] {
-  transform: scale(1.0521);
+/* Every capture sits the same --capture-inset from the card's rounded edge: the wrapper pads it in the capture's own
+   background up to that inset, less the margin the file already has (--capture-margin-x/-y, in source pixels of a
+   --capture-width-wide file). The card takes the padded capture's shape. */
+.theme-doc-markdown .feature-card__preview:has(.doc-zoom-image) { aspect-ratio: auto; container-type: inline-size; }
+.theme-doc-markdown .feature-card__preview > p:has(.doc-zoom-image) {
+  --capture-inset: 8px;
+  /* Whole pixels keep the capture on the pixel grid, where its edges meet the padding without a half-pixel seam. */
+  --capture-pad-x: round(max(0px, var(--capture-inset) - var(--capture-margin-x) * 100cqw / var(--capture-width)), 1px);
+  --capture-pad-y: round(max(0px, var(--capture-inset) - var(--capture-margin-y) * 100cqw / var(--capture-width)), 1px);
+  --capture-scale: calc((100cqw - 2 * var(--capture-pad-x)) / var(--capture-width));
+  padding: var(--capture-pad-y) var(--capture-pad-x);
+  background: var(--capture-background);
 }
-/* Hide the thin window edges baked into the Selector capture. */
-.theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/aspid_fasttools_serialize_reference_selector'] {
-  transform: scaleX(1.0053);
+.theme-doc-markdown .feature-card__preview img.doc-zoom-image[role='button'] { object-position: top; }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_repair_card']) {
+  --capture-width: 880; --capture-margin-x: 24; --capture-margin-y: 24; --capture-background: #000;
 }
-/* The Inspector captures (1418×1058) bake a macOS title bar, the Inspector tab strip and a 4px window frame:
-   the card shows rows 110–1038 of columns 4–1414 only, so its box takes that 1410×928 shape. */
-.theme-doc-markdown .feature-card__preview:has(img:is([src*='/serializable-type-quick-start'], [src*='/component-type-selector'])) {
-  aspect-ratio: 1410 / 928;
-  background: #323232;
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_repair_card']) {
+  --capture-background: #f0f0f0;
 }
-.theme-doc-markdown .feature-card__preview > p:has(img:is([src*='/serializable-type-quick-start'], [src*='/component-type-selector'])) { position: relative; }
-.theme-doc-markdown .feature-card__preview img.doc-zoom-image:is([src*='/serializable-type-quick-start'], [src*='/component-type-selector']) {
-  position: absolute;
-  left: calc(-4 / 1410 * 100%);
-  top: calc(-110 / 928 * 100%);
-  width: calc(1418 / 1410 * 100%);
-  height: calc(1058 / 928 * 100%);
-  object-fit: fill;
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/surface-tables']) {
+  --capture-width: 808; --capture-margin-x: 20; --capture-margin-y: 12; --capture-background: #383838;
 }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/surface-tables']) { --capture-background: #cbcbcb; }
+/* The Inspector captures (scripts/frame-doc-captures.sh) have an 8px margin that continues the Inspector header, its
+   separator and body. The capture is drawn as the paragraph's border image: its edges stretch over the padding, its
+   centre fills the rest at the capture's scale, so header and separator run on to the card's edge on the same pixel
+   rows. The image itself stays in place, invisible, for its size, alt text and zoom: an image is snapped to the pixel
+   grid while a border image is not, and on a card at a fractional offset the two meet half a pixel apart. The
+   paragraph keeps the capture's height, so nothing stretches; the Inspector body fills the preview below. */
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { --capture-width: 850; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-card.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { --capture-width: 854; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-card.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { --capture-width: 854; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-card-light.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-card-light.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card-light.gif'); }
+.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) {
+  --capture-margin-x: 8; --capture-margin-y: 8; --capture-background: none;
+  background: #3c3c3c;
+}
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) { background: #cbcbcb; }
+.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) > p {
+  flex: none;
+  border-image-slice: 8 fill;
+  border-image-width: calc(var(--capture-pad-y) + 8 * var(--capture-scale)) calc(var(--capture-pad-x) + 8 * var(--capture-scale));
+  border-image-repeat: stretch;
+}
+.theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) img.doc-zoom-image { opacity: 0; }
+/* A capture with a light twin sits in two theme spans; the shown one fills the preview as the bare image would. */
+.theme-doc-markdown .feature-card__preview > p > :is(.theme-image--dark, .theme-image--light) { flex: 1; min-width: 0; }
+.theme-doc-markdown .feature-card__preview > p > :is(.theme-image--dark, .theme-image--light) img { height: 100%; }
 /* A card with an animated preview clips at its outer rounded edge instead of inside the frame, so the preview's marked
    code lines can draw their bar on the frame (FeaturePreview). Without overflow-clip-margin the card keeps the inner clip
    and the bars stay inside. */
@@ -1288,12 +1361,13 @@ html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-backgr
   gap: 10px;
   max-width: none;
   margin: 0;
-  font: 500 1.1rem/1.3 var(--ifm-heading-font-family);
+  font: 500 1rem/1.3 var(--ifm-heading-font-family);
   letter-spacing: -0.02em;
 }
 .theme-doc-markdown .resource-card__title::after { content: '→'; color: var(--venom-muted); font-family: var(--ifm-font-family-monospace); font-size: 0.9rem; transition: transform 0.15s, color 0.15s; }
 .theme-doc-markdown .resource-card:has(.resource-card__title a:hover) .resource-card__title::after { color: var(--venom-accent); transform: translateX(3px); }
-.markdown .resource-card__title a { text-decoration: none; }
+.markdown .resource-card__title a,
+.markdown .resource-card__title a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover { text-decoration: none; }
 .markdown .resource-card__title a::after { content: ''; position: absolute; inset: 0; border-radius: 10px; }
 .theme-doc-markdown .resource-card__text { max-width: none; margin: 0; color: var(--venom-muted); font-size: 0.9rem; line-height: 1.55; }
 @media (max-width: 700px) {
@@ -1305,72 +1379,133 @@ html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-backgr
 @media (prefers-reduced-motion: reduce) {
   .theme-doc-markdown .feature-card, .markdown .feature-card__more a, .markdown .feature-card__more a::after { transition: none; }
 }
-.theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
+.theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem; }
+.theme-doc-markdown p:has(.doc-zoom-image):has(+ .doc-media-caption) { margin-bottom: 0.75rem; }
 .theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }
-.doc-image-dialog { position: fixed; inset: 0; margin: auto; width: fit-content; max-width: 94vw; max-height: 94dvh; padding: 3.25rem 1rem 1rem; color: var(--venom-fg); background: var(--venom-bg); border: 1px solid var(--venom-line-strong); border-radius: 10px; cursor: zoom-out; }
-.doc-image-dialog::backdrop { background: #030609dc; backdrop-filter: blur(5px); }
-.doc-image-dialog img { display: block; max-width: 100%; max-height: 76dvh; width: auto; height: auto; object-fit: contain; margin: auto; border-radius: 4px; }
-.doc-image-dialog p { font-size: 0.8125rem; color: var(--venom-muted); margin: 0.8rem 0 0; text-align: center; }
-.doc-image-close { position: absolute; top: 0.7rem; right: 1rem; padding: 4px 8px; background: var(--venom-reading-surface); color: var(--venom-fg); border: 1px solid var(--venom-line-strong); border-radius: 6px; font: 0.8125rem var(--ifm-font-family-base); cursor: pointer; }
-.doc-image-close kbd { margin-left: 6px; box-shadow: none; font-size: 0.75rem; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
-/* Enum lookup: keep the three passes readable as a sequence on narrow screens. */
-.theme-doc-markdown .enum-lookup-flow {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+/* Image viewer: the picture lies straight on the dimmed page with only its article frame; the controls sit in the corner. */
+.doc-image-dialog {
+  --doc-image-top: 1.5rem;
+  --doc-image-side: 4.5rem;
+  --doc-image-bottom: 1.5rem;
+  --doc-image-caption: 0px;
+  position: fixed;
+  inset: 0;
   width: 100%;
+  height: 100%;
   max-width: none;
-  margin: 28px 0;
+  max-height: none;
+  margin: 0;
   padding: 0;
-  list-style: none;
-  counter-reset: lookup-step;
+  overflow: hidden;
+  color: var(--venom-fg);
+  background: var(--venom-overlay);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 0;
+  outline: none;
+  animation: doc-image-fade-in 160ms ease-out;
 }
-.theme-doc-markdown .enum-lookup-flow > li {
+.doc-image-dialog::backdrop { background: transparent; }
+.doc-image-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  padding: var(--doc-image-top) var(--doc-image-side) var(--doc-image-bottom);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  outline: none;
+}
+.doc-image-dialog[data-zoomed] .doc-image-view { padding: 0; overflow: auto; }
+.doc-image-dialog[data-panning],
+.doc-image-dialog[data-panning] .doc-image-picture { cursor: grabbing; user-select: none; }
+.doc-image-dialog[data-closing] { pointer-events: none; animation: doc-image-fade-out 140ms ease-in forwards; }
+.doc-image-figure {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 0;
-  padding: 18px;
-  border: 2px solid var(--venom-line-strong);
-  border-radius: var(--ifm-pre-border-radius);
-  background: var(--venom-disclosure-surface);
-  color: var(--venom-fg);
-  counter-increment: lookup-step;
+  align-items: center;
+  gap: 0.75rem;
+  margin: auto;
+  animation: doc-image-rise 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.enum-lookup-flow > li::before {
-  content: counter(lookup-step, decimal-leading-zero);
-  color: var(--ifm-color-primary);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.85rem;
-}
-.enum-lookup-flow strong { min-height: 2.8em; line-height: 1.4; }
-.enum-lookup-flow span, .enum-lookup-flow small {
-  font-size: 0.85rem;
-  line-height: 1.6;
-}
-.enum-lookup-flow code {
+.doc-image-dialog[data-closing] .doc-image-figure { animation: doc-image-sink 140ms ease-in forwards; }
+.doc-image-figure--captioned { --doc-image-caption: 2.25rem; }
+.doc-image-picture {
   display: block;
-  padding: 9px 7px;
+  width: auto;
+  height: auto;
+  max-width: calc(100vw - 2 * var(--doc-image-side));
+  max-height: calc(100dvh - var(--doc-image-top) - var(--doc-image-bottom) - var(--doc-image-caption));
+  object-fit: contain;
+  background: var(--ifm-code-background);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+  box-shadow: var(--venom-overlay-shadow);
+  cursor: zoom-out;
+}
+.doc-image-picture--zoomable { cursor: zoom-in; }
+/* SVG artwork supplies its own outline, as in the article. */
+.doc-image-picture--vector { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+.doc-image-dialog[data-zoomed] .doc-image-picture { max-width: none; max-height: none; border-radius: 0; }
+.doc-image-dialog[data-zoomed] figcaption { display: none; }
+.doc-image-figure figcaption {
+  max-width: min(72ch, calc(100vw - 2 * var(--doc-image-side)));
+  margin: 0;
+  color: var(--venom-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+  cursor: text;
+}
+.doc-image-controls { position: absolute; top: 1rem; right: 1rem; z-index: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.doc-image-control {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  color: var(--venom-fg);
+  background: color-mix(in srgb, var(--venom-panel) 80%, transparent);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, transform 0.12s ease;
+}
+.doc-image-control:hover { color: var(--venom-fg-strong); border-color: var(--venom-divider); }
+.doc-image-control:active { transform: scale(0.94); }
+.doc-image-control svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+/* The key hint shows beside the button on hover, like a tooltip, so the corner stays two plain buttons. */
+.doc-image-control kbd {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 0.5rem);
+  translate: 0 -50%;
+  padding: 1px 6px;
+  color: var(--venom-muted);
+  background: var(--venom-panel);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 4px;
+  box-shadow: none;
   font-size: 0.75rem;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  line-height: 1.5;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms;
 }
-.enum-lookup-flow small { color: var(--venom-muted); }
-.enum-lookup-flow em {
-  margin-top: auto;
-  padding-top: 8px;
-  color: var(--ifm-color-primary);
-  font-size: 0.75rem;
-  font-style: normal;
+.doc-image-control:is(:hover, :focus-visible) kbd { opacity: 1; }
+@media (hover: none) { .doc-image-control kbd { display: none; } }
+@media (max-width: 640px) {
+  .doc-image-dialog { --doc-image-top: 4rem; --doc-image-side: 0.75rem; --doc-image-bottom: 1rem; }
+  .doc-image-figure--captioned { --doc-image-caption: 4.5rem; }
+  .doc-image-controls { top: 0.75rem; right: 0.75rem; flex-direction: row-reverse; }
 }
-@media (max-width: 700px) {
-  .theme-doc-markdown .enum-lookup-flow { grid-template-columns: 1fr; }
-  .theme-doc-markdown .enum-lookup-flow > li { gap: 8px; }
-  .enum-lookup-flow strong { min-height: 0; }
-  .enum-lookup-flow em { padding-top: 4px; }
-}
-
+@keyframes doc-image-fade-in { from { opacity: 0; } }
+@keyframes doc-image-fade-out { to { opacity: 0; } }
+@keyframes doc-image-rise { from { opacity: 0; transform: scale(0.96); } }
+@keyframes doc-image-sink { to { transform: scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .doc-image-dialog, .doc-image-figure { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
 /* ---------- API reference ---------- */
 /* Generic signatures make long titles: a smaller H1 keeps "Class EnumValues<TEnum, TValue>" on one line more often. */
 .plugin-id-api article h1 { font-size: clamp(1.75rem, 3vw, 2.25rem); }

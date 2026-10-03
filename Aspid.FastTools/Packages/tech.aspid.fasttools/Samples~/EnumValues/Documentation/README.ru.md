@@ -1,39 +1,27 @@
 # Пример EnumValues
 
-Персонаж ходит по ряду плиток. Цвет плитки, цвет следа, интервал обновления цвета и скорость — всё это `EnumValues`-поиски по enum поверхности или `[Flags]`-enum рельефа, настроенные в инспекторе со значением по умолчанию. Справочник — [EnumValues](../../../Documentation/ru/06-enum-values.md).
-
-Например, в `SurfacePalette.cs` объявлены две таблицы цветов с типом `SurfaceType`, заданным в коде:
-
-```csharp
-[SerializeField] private EnumValues<SurfaceType, Color> _tileColors;
-[SerializeField] private EnumValues<SurfaceType, Color> _footprintColors;
-```
-
-![Цвета поверхностей и следов; у каждой таблицы есть Default Value.](Images/surface-tables.png)
-
-Те же поля в инспекторе `Data/SurfacePalette.asset`: `_tileColors` отображается как **Tile Colors**, а `_footprintColors` — как **Footprint Colors**. У каждой таблицы своё значение **Default Value**.
-
-## Как открыть
-
-1. Откройте **Welcome Window** через меню `Tools → Aspid 🐍 → FastTools → Welcome` и нажмите **Import** у примера **EnumValues**. Если вместо **Import** отображается **Remove**, пример уже импортирован — переходите к следующему шагу.
-2. В папке импортированного примера откройте `Scenes/EnumValues.unity`.
-3. Войдите в Play Mode: **Walker** проходит семь плиток, оставляя непрерывную цветную линию. Её старый конец сокращается через две секунды. На горячем металле персонаж движется быстрее, на мокрой траве — медленнее. Мягкий песок даёт множитель скорости `0.4`: ниже, чем у сухого камня (`1`) и мокрого скользкого камня (`0.5`).
-
-Примеру нужен встроенный модуль Unity **Physics**, он включён по умолчанию; без него скрипты примера не компилируются, а в сцене остаются пропавшие скрипты.
-
-Для записи переключайте **Light / Dark / Authored** в `Tools → Aspid 🐍 → FastTools → Sample Themes`.
+Персонаж идёт по плиткам, а цвет, след и скорость на каждой поверхности берутся из таблиц в инспекторе.
 
 ![Персонаж проходит по разным поверхностям и оставляет непрерывную цветную линию.](Images/demo.gif)
 
 Персонаж проходит по разным поверхностям и оставляет непрерывную цветную линию.
 
+## Как открыть
+
+1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **EnumValues**.
+2. Откройте `Scenes/EnumValues.unity` и войдите в Play Mode: на горячем металле персонаж ускоряется, на мокрых и мягких плитках замедляется, а след окрашивается в цвет поверхности.
+
+Нужен встроенный модуль Unity **Physics** — без него скрипты примера не компилируются.
+
 ## Попробуйте
 
-### 1. Типизированный вариант
+### 1. Enum задан в коде
 
-Выберите `Data/SurfacePalette.asset`. Обе таблицы — `EnumValues<SurfaceType, Color>`: строка с типом enum только для чтения, потому что тип задан полем. Поменяйте цвет `Grass` — плитки перекрасятся сразу, без Play Mode.
+Выберите `Data/SurfacePalette.asset` и поменяйте цвет `Grass` в **Tile Colors** — плитки перекрасятся сразу, без Play Mode. Тип enum в шапке таблицы только для чтения: его задаёт поле.
 
-Так `SurfacePalette.cs` читает цвет плитки из таблицы, показанной выше:
+![Tile Colors и Footprint Colors, у каждой таблицы своё Default Value.](Images/surface-tables.png)
+
+Tile Colors и Footprint Colors, у каждой таблицы своё Default Value.
 
 ```csharp
 [SerializeField] private EnumValues<SurfaceType, Color> _tileColors;
@@ -42,83 +30,58 @@ public Color GetTileColor(SurfaceType surface) =>
     _tileColors.GetValue(surface);
 ```
 
-Аргумент `surface` определяет строку таблицы, а `GetValue` возвращает её цвет.
-
 ### 2. Значение по умолчанию
 
-В `Footprint Colors` у каждой поверхности свой цвет следа: зелёный у травы, фиолетовый у камня, красный у металла, голубой у воды и оранжевый у песка. Чтобы проверить fallback, удалите строку `Stone`: камень начнёт использовать `Default Value`. Правый клик по полю → **Populate Missing Enum Members** восстановит строку с этим значением; через Undo верните исходную палитру.
-
-Внутри `SurfacePalette` вызов остаётся тем же, даже если строка удалена:
+Удалите строку `Stone` из **Footprint Colors** и войдите в Play Mode: след на камне примет **Default Value** таблицы. Код не меняется и ключ не проверяет:
 
 ```csharp
-var color = _footprintColors.GetValue(SurfaceType.Stone);
+public Color GetFootprintColor(SurfaceType surface) =>
+    _footprintColors.GetValue(surface);
 ```
 
-При наличии строки `Stone` вы получите её цвет, после удаления — **Default Value**. Отдельная проверка наличия ключа не нужна.
+Правый клик по таблице → **Populate Missing Enum Members** вернёт строку `Stone` в конец списка со значением по умолчанию; Undo восстановит исходную палитру.
 
-### 3. Выбор enum в инспекторе
+### 3. Enum выбран в инспекторе
 
-Выберите объект **Walker** в Hierarchy и найдите таблицу **Speed By Terrain** в инспекторе. В коде она объявлена как `EnumValues<float>`: задан только тип значений — `float`, а тип enum выбирается в инспекторе над списком строк. В этом примере уже выбран `TerrainFlags`. Каждая строка связывает флаг или сочетание флагов с множителем скорости. Например, `Wet, Slippery` означает, что в одной строке выбраны оба флага — `Wet` и `Slippery`; для этого сочетания задан множитель `0.5`.
-
-Поле из `Walker.cs` и пример чтения множителя внутри этого компонента:
+Выберите **Walker**. У таблицы **Speed By Terrain** в коде задан только тип значения, а enum <code lang="class-name">TerrainFlags</code> выбран в шапке таблицы. Строка может хранить несколько флагов: строка `Wet` + `Slippery` даёт `0.5`.
 
 ```csharp
 [SerializeField] private EnumValues<float> _speedByTerrain;
 
-private float GetSpeedMultiplier(TerrainFlags terrain) =>
-    _speedByTerrain.GetValue(terrain);
+var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags));
 ```
 
-`EnumValues` находится в пространстве имён `Aspid.FastTools.Enums`. Значения таблицы настраиваются в инспекторе.
+### 4. Поиск по `[Flags]`
 
-### 4. Правила поиска для `[Flags]`
+<code lang="function">GetValue</code> выбирает одну строку; **Speed By Terrain** настроена как в сцене:
 
-`GetValue` выбирает значение в таком порядке:
+| Ключ | Строка | Множитель |
+|---|---|---|
+| `Wet, Slippery` (плитка Water) | точная строка `Wet` + `Slippery`, хотя есть строки `Wet` и `Slippery` | `0.5` |
+| `Wet, Hot` | первая строка, все флаги которой есть в ключе: `Wet`, она выше `Hot` | `0.8` |
+| `None` | нет, **Default Value** таблицы | `1` |
 
-- сначала выигрывает **точный** ключ: плитка `Water (Wet, Slippery)` даёт строку `Wet, Slippery` (`0.5`), хотя строки `Wet` и `Slippery` тоже есть;
-- иначе выигрывает **первая строка, все флаги которой содержатся** в значении: для `Wet | Hot` отдельной строки нет, поэтому результат — `0.8` из строки `Wet`, которая стоит раньше `Hot`;
-- ничего не совпало, включая `None` — **Default Value** (`1`).
-
-Эти вызовы внутри `Walker` показывают все три случая при исходных настройках **Speed By Terrain**:
-
-```csharp
-// Точная строка Wet, Slippery → 0.5
-var exact = _speedByTerrain.GetValue(
-    TerrainFlags.Wet | TerrainFlags.Slippery);
-
-// Строки Wet, Hot нет; первая подходящая — Wet → 0.8
-var partial = _speedByTerrain.GetValue(
-    TerrainFlags.Wet | TerrainFlags.Hot);
-
-// Подходящей строки нет → Default Value (1)
-var fallback = _speedByTerrain.GetValue(TerrainFlags.None);
-```
-
-Оператор `|` объединяет флаги в одно значение. Множители не складываются и не перемножаются: поиск выбирает одну строку.
+Множители нескольких подходящих строк не складываются и не перемножаются.
 
 ### 5. Перебор
 
-Правый клик **Walker → Log Tables**. `foreach` выдаёт настроенные строки в порядке списка; значение по умолчанию в перебор не входит.
-
-Фрагмент метода `LogTables` в `Walker.cs`:
+Правый клик **Walker → Log Tables**: <code lang="csharp">foreach</code> выдаёт настроенные строки в порядке списка, без значения по умолчанию.
 
 ```csharp
 foreach (var (flags, multiplier) in _speedByTerrain)
-{
     Debug.Log($"Speed x{multiplier:0.00} on [{flags}]", this);
-}
 ```
 
-### 6. Измените enum
+### 6. Новый член enum
 
-Добавьте член в `SurfaceType` в коде: ничего не ломается, новая поверхность просто берёт значение по умолчанию, пока вы не добавите строку. Ключи хранятся по имени, так что и переставлять члены безопасно.
+Добавьте `Ice` в конец <code lang="class-name">SurfaceType</code> и поставьте одной плитке **Surface** = `Ice`: плитка и её след берут значения по умолчанию, пока вы не добавите строки `Ice`.
 
 ## Куда смотреть
 
 | Файл | Что показывает |
 |---|---|
-| `Scripts/SurfacePalette.cs` | `EnumValues<TEnum, TValue>` на ScriptableObject |
-| `Scripts/Walker.cs` | Оба варианта в компоненте, `GetValue` по обычному и `[Flags]`-ключу, `foreach` |
-| `Scripts/SurfaceTrail.cs` | Рисует непрерывную линию и убирает старые точки |
-| `Scripts/SurfaceTile.cs` | Следит за цветом из палитры через editor update; применяет изменения и Undo без Play Mode |
-| `Scripts/TerrainFlags.cs` | `[Flags]`-enum с комбинируемыми членами |
+| `Scripts/SurfacePalette.cs` | <code lang="class-name">EnumValues&lt;TEnum, TValue&gt;</code> на ScriptableObject |
+| `Scripts/Walker.cs` | Оба варианта в компоненте, <code lang="function">GetValue</code> по обычному и <code lang="csharp">[Flags]</code>-ключу, <code lang="csharp">foreach</code> |
+| `Scripts/TerrainFlags.cs` | <code lang="csharp">[Flags]</code>-enum с комбинируемыми членами |
+
+Справочник — [EnumValues](../../../Documentation/ru/08-enum-values.md).

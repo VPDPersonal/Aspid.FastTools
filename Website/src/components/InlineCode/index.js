@@ -7,6 +7,8 @@ import {usePrismTheme} from '@docusaurus/theme-common';
  * `string`, `class-name` and `function` are token types, not languages: the text takes that token's colour
  * (a Profiler marker name, a lone type such as `T`, a bare method name such as `Update`). A qualified type or method keeps
  * its qualifier plain, as the code blocks do: in `System.Type` only `Type` is coloured, in `styleSheets.Add` only `Add`.
+ * Punctuation stays plain too, so a generic type reads like a code block: in `List<Weapon>` both names are coloured and
+ * the brackets are not.
  */
 const TOKEN_TYPES = ['string', 'class-name', 'function'];
 
@@ -14,10 +16,16 @@ export default function InlineCode({code, language}) {
   const theme = usePrismTheme();
   if (TOKEN_TYPES.includes(language)) {
     const color = theme.styles.find((style) => style.types.includes(language))?.style.color;
-    const split = language === 'string' ? 0 : code.lastIndexOf('.') + 1;
+    if (language === 'string') {
+      return <code style={{color: theme.plain.color}}><span style={{color}}>{code}</span></code>;
+    }
+    const generic = code.indexOf('<');
+    const split = code.lastIndexOf('.', generic < 0 ? code.length : generic) + 1;
     return (
       <code style={{color: theme.plain.color}}>
-        {code.slice(0, split)}<span style={{color}}>{code.slice(split)}</span>
+        {code.slice(0, split)}
+        {code.slice(split).split(/(\W+)/).map((part, index) =>
+          index % 2 === 0 && part ? <span key={index} style={{color}}>{part}</span> : part)}
       </code>
     );
   }

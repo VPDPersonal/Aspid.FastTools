@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 
@@ -20,6 +21,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         private const string ProbeAssetPath = "Assets/__AspidGateScannerRequiredProbe__.asset";
         private const string EngineAssetPath = "Assets/__AspidGateScannerEngineProbe__.asset";
+        private const string ExcludedFolderPath = "Assets/__AspidGateScannerExcluded__";
+        private const string ExcludedProbePath = ExcludedFolderPath + "/Probe.asset";
+        private const string SharedSettingsPath = "ProjectSettings/SerializeReferenceSharedSettings.asset";
 
         // Scan(RequiredOnly) is the exact call the Project References "Required violations" group makes; this proves
         // it surfaces both an unset managed reference and an unset [TypeSelector(Required = true)] string field on a
@@ -345,6 +349,67 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(0, SerializeReferenceGateScanner.ScanAssetRequiredFields("Assets/Fake.txt").Count);
         }
 
+        // Asset References inspects the one asset the user picked, so an excluded folder, which keeps the asset out
+        // of the project audit, must not hide its required fields there, just as it does not hide its missing types.
+        [Test]
+        public void ScanAssetRequiredFields_AssetInExcludedFolder_StillReportsUnsetFields()
+        {
+            WithExcludedProbe(() =>
+            {
+                var violations = SerializeReferenceGateScanner.ScanAssetRequiredFields(ExcludedProbePath);
+
+                Assert.IsTrue(violations.Any(v => v.FieldPath == nameof(RequiredTestObject.requiredRef)),
+                    "A picked asset in an excluded folder must still report its unset required reference.");
+                Assert.IsTrue(violations.Any(v => v.FieldPath == nameof(RequiredTestObject.requiredString)),
+                    "A picked asset in an excluded folder must still report its unset required string field.");
+            });
+        }
+
+        // The Project References audit skips excluded folders, so re-auditing an edited file there adds nothing to it.
+        [Test]
+        public void RescanRequiredFields_AssetInExcludedFolder_AddsNothing()
+        {
+            WithExcludedProbe(() =>
+            {
+                var refreshed = SerializeReferenceGateScanner.RescanRequiredFields(
+                    Array.Empty<GateViolation>(), new[] { ExcludedProbePath });
+
+                Assert.IsFalse(refreshed.Any(v => v.AssetPath == ExcludedProbePath),
+                    "The project audit must keep skipping a file in an excluded folder after a rescan.");
+            });
+        }
+
+        // Saves an unset RequiredTestObject into a folder the shared settings exclude, then removes the folder and
+        // puts the settings file back byte for byte.
+        private static void WithExcludedProbe(Action body)
+        {
+            var excludedFolders = SerializeReferenceSettings.ExcludedFolders;
+            var settingsFile = File.Exists(SharedSettingsPath) ? File.ReadAllBytes(SharedSettingsPath) : null;
+            try
+            {
+                AssetDatabase.CreateFolder(parentFolder: "Assets", newFolderName: Path.GetFileName(ExcludedFolderPath));
+                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<RequiredTestObject>(), ExcludedProbePath);
+                SerializeReferenceSettings.ExcludedFolders = excludedFolders.Append(ExcludedFolderPath).ToArray();
+                Assume.That(SerializeReferenceHelpers.IsScanCandidate(ExcludedProbePath), Is.False);
+
+                body();
+            }
+            finally
+            {
+                try
+                {
+                    SerializeReferenceSettings.ExcludedFolders = excludedFolders;
+                }
+                finally
+                {
+                    if (settingsFile is null) File.Delete(SharedSettingsPath);
+                    else File.WriteAllBytes(SharedSettingsPath, settingsFile);
+
+                    AssetDatabase.DeleteAsset(ExcludedFolderPath);
+                }
+            }
+        }
+
         // The Inspect Asset graph (SerializeReferenceGraphView) badges an empty [SerializeReference] slot as REQUIRED
         // by matching its graph field path — built independently by SerializeReferenceGraphScanner straight from
         // YAML — against this scan's GateViolation.FieldPath (a live SerializedProperty.propertyPath), after the same
@@ -368,6 +433,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsTrue(
                     violations.Any(v => v.FileId == fileId && v.FieldPath == normalizedGraphPath),
                     $"Normalized graph path '{normalizedGraphPath}' must match a ScanAssetRequiredFields violation's FieldPath.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        // A SerializableType field is reported by the path the Inspector shows, the one the scene scan's descriptor
+        // carries, not by the backing string the SerializedProperty iterator stops on; Assign Required still reaches
+        // that string through it.
+        [Test]
+        public void ScanAssetRequiredFields_UnsetSerializableType_ReportsSceneScanPath()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredWrapperTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(probe, out _, out long fileId);
+
+                var violations = SerializeReferenceGateScanner.ScanAssetRequiredFields(ProbeAssetPath)
+                    .Where(v => v.FileId == fileId)
+                    .ToList();
+                var scenePaths = TypeSelectorRequiredGate.GetRequiredFields(typeof(RequiredWrapperTestObject))
+                    .Select(field => field.Path)
+                    .ToArray();
+
+                CollectionAssert.AreEquivalent(new[] { "type", "weaponType", "script", "loadout.type" }, scenePaths);
+                CollectionAssert.AreEquivalent(scenePaths, violations.Select(v => v.FieldPath));
+
+                foreach (var violation in violations)
+                {
+                    Assert.IsTrue(SerializeReferenceGraphEditor.TryResolveRequiredStringProperty(
+                        violation, out var serializedObject, out var property), violation.FieldPath);
+
+                    using (serializedObject)
+                    {
+                        Assert.AreEqual($"{violation.FieldPath}.{SerializableTypeUtility.BackingFieldName}",
+                            property.propertyPath);
+                    }
+                }
             }
             finally
             {

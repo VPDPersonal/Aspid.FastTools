@@ -41,11 +41,11 @@ export default function Root({children}) {
     <>
       <svg aria-hidden="true" width="0" height="0" style={{position: 'absolute', pointerEvents: 'none'}}>
         <defs>
-          <SceneBackgroundFilter id="sample-scene-background-light" color={[246, 241, 232]} />
-          <SceneBackgroundFilter id="sample-scene-background-dark" color={[6, 10, 15]} />
+          <SceneBackgroundFilter id="sample-scene-background-light" color={[238, 240, 243]} />
+          <SceneBackgroundFilter id="sample-scene-background-dark" color={[14, 16, 21]} />
           {/* Scene footage on a doc page sits on the article itself, without a frame. */}
           <SceneBackgroundFilter id="scene-footage-background-light" color={[238, 240, 243]} surface="var(--venom-reading-surface)" />
-          <SceneBackgroundFilter id="scene-footage-background-dark" color={[6, 10, 15]} surface="var(--venom-reading-surface)" />
+          <SceneBackgroundFilter id="scene-footage-background-dark" color={[14, 16, 21]} surface="var(--venom-reading-surface)" />
         </defs>
       </svg>
       <DotAmbient />

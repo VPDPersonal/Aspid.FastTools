@@ -5,6 +5,8 @@
 // ReSharper disable once CheckNamespace
 namespace Game.Combat
 {
+    public interface ITwoHanded { }
+
     public abstract class Weapon { }
 
     public abstract class MeleeWeapon : Weapon { }
@@ -13,13 +15,7 @@ namespace Game.Combat
 
     public sealed class Sword : MeleeWeapon { }
 
-    public sealed class Axe : MeleeWeapon { }
+    public sealed class Axe : MeleeWeapon, ITwoHanded { }
 
-    public sealed class Spear : MeleeWeapon { }
-
-    public sealed class Bow : RangedWeapon { }
-
-    public sealed class Crossbow : RangedWeapon { }
-
-    public sealed class Pistol : RangedWeapon { }
+    public sealed class Bow : RangedWeapon, ITwoHanded { }
 }

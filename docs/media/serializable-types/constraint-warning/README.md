@@ -1,5 +1,9 @@
 # TypeSelector constraint warning
 
+> Provenance only. The published `type-selector-constraint-warning.png` (and its `-light` twin) was re-shot in #264 from the DocsMedia harness
+> (`Aspid.FastTools/Assets/DevTests/Types/Scripts/DocsMedia`) at 1393×176 and is framed by
+> `scripts/frame-doc-captures.sh`; the crop below does not reproduce it.
+
 Captured from the ordinary Unity 6000.4.0f1 Inspector using the current Editor theme. One screenshot is used in both website themes, as requested. No custom window styling or imitation Inspector controls.
 
 Import `TypeSelectionExample.cs.txt` temporarily as `Assets/__DocsConstraintCapture/TypeSelectionExample.cs`. The deliberate `_categroy` typo makes the package drawer show its real warning. Compile the project, save the previous selection in `Docs.NativeConstraint.PreviousSelection`, then run `capture.cs.txt` through Unity Pipeline `run_script`, entry `NativeConstraintInspector.Main`. It creates a temporary preview scene and a separate native Inspector window; the user's scene and layout are preserved.
