@@ -93,7 +93,7 @@ public sealed class Armory : MonoBehaviour
   (`UnityEngine.Scripting.APIUpdating`; pass only what changed), then **Tools → Aspid 🐍 → FastTools → Project
   References → Scan Project → Migrate all**; keep the attribute until every asset is migrated. Already missing types:
   **Fix all** in that window, or **Fix** / **Smart Fix** in the Inspector. See
-  [SerializeReference Tooling](https://vpdpersonal.github.io/Aspid.FastTools/docs/serialize-reference-tooling#migrations-with-movedfrom).
+  [SerializeReference repair](https://vpdpersonal.github.io/Aspid.FastTools/docs/serialize-reference-tooling#migrations-with-movedfrom).
 
 ## [TypeSelectorDisplay]
 
