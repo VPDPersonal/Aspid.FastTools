@@ -153,9 +153,11 @@ title.AddOpenScriptCommand(target);
 
 ### Окно элемента
 
+<code lang="function">GetOwnerWindow</code> возвращает <code lang="csharp">null</code>, если элемент равен <code lang="csharp">null</code>, не подключён к панели или окно-владелец не найдено.
+
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var panel = title.panel;&#10;var window = Resources&#10;    .FindObjectsOfTypeAll&lt;EditorWindow&gt;()&#10;    .FirstOrDefault(w =&gt; panel ==&#10;        w.rootVisualElement.panel);&#10;if (!window)&#10;    window = EditorWindow.focusedWindow;&#10;if (!window)&#10;    window = EditorWindow.mouseOverWindow;</code></pre> | <pre lang="csharp"><code>var window = title.GetOwnerWindow();</code></pre> |
+| <pre lang="csharp"><code>var panel = title?.panel;&#10;var window = panel is null&#10;    ? null&#10;    : Resources&#10;        .FindObjectsOfTypeAll&lt;EditorWindow&gt;()&#10;        .FirstOrDefault(w =&gt;&#10;            w &amp;&amp; w.rootVisualElement.panel == panel);</code></pre> | <pre lang="csharp"><code>var window = title.GetOwnerWindow();</code></pre> |
 
 ## Собственные свойства USS
 

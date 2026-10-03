@@ -245,4 +245,4 @@ string property and parses it as an enum ignoring case; returns `bool`.
 | `AddValueChanged` / `RemoveValueChanged` | `PropertyField` | `EventCallback<SerializedPropertyChangeEvent>` |
 | `Initialize(Enum, bool includeObsoleteValues = false)` | `EnumFlagsField` | |
 | `AddOpenScriptCommand(Object)` | `VisualElement` | left double-click opens the script of a `MonoBehaviour` / `ScriptableObject`; other objects add nothing |
-| `GetOwnerWindow()` | `VisualElement` | returns `EditorWindow`: the window owning the element's panel, else the focused window, else the one under the mouse, or `null` |
+| `GetOwnerWindow()` | `VisualElement` | returns the `EditorWindow` owning the element's panel, or `null` if the element is null, detached, or no hosting window is found |

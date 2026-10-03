@@ -1,13 +1,20 @@
 ﻿<Solution>
   <Project Path="Aspid.FastTools.csproj" />
+  <Project Path="Aspid.FastTools.Samples.SerializeReferences.csproj" />
   <Project Path="asset-store-tools-editor.csproj" />
   <Project Path="Aspid.FastTools.Editor.csproj" />
   <Project Path="Aspid.FastTools.Editor.SerializeReferences.Tests.csproj" />
+  <Project Path="Aspid.FastTools.Samples.EnumValues.csproj" />
   <Project Path="Aspid.FastTools.Editor.Tests.csproj" />
   <Project Path="Aspid.FastTools.Editor.SerializeReferences.Yaml.csproj" />
+  <Project Path="Aspid.FastTools.Samples.Types.csproj" />
   <Project Path="Aspid.FastTools.Tests.Fixtures.csproj" />
+  <Project Path="Aspid.FastTools.Samples.EditorTools.csproj" />
+  <Project Path="Aspid.FastTools.Samples.SerializeReferences.Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Aspid.FastTools.VisualElements.Math.csproj" />
+  <Project Path="Aspid.FastTools.Samples.EditorTools.Editor.csproj" />
+  <Project Path="Aspid.FastTools.Samples.ProfilerMarkers.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Aspid.FastTools.DevTests.CliCommands.Editor.csproj" />
 </Solution>

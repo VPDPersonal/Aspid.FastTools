@@ -26,14 +26,18 @@ namespace Aspid.FastTools.UIElements.Editors
             {
                 foreach (var window in Resources.FindObjectsOfTypeAll<EditorWindow>())
                 {
-                    if (window && window.rootVisualElement?.panel == panel)
+                    if (window != null && window.rootVisualElement?.panel == panel)
                         return window;
                 }
             }
 
-            return EditorWindow.focusedWindow != null
-                ? EditorWindow.focusedWindow
-                : EditorWindow.mouseOverWindow;
+            if (EditorWindow.focusedWindow != null)
+                return EditorWindow.focusedWindow;
+
+            if (EditorWindow.mouseOverWindow != null)
+                return EditorWindow.mouseOverWindow;
+
+            return null;
         }
     }
 }

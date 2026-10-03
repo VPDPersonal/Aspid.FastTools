@@ -17,8 +17,11 @@ namespace Aspid.FastTools.Types.Editors
     [UxmlElement]
     public partial class TypeField : BaseField<Type>
     {
-        private const string StyleSheetPath = "UI/Types/Aspid-FastTools-SerializableType";
+        private const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeField";
+
+        private const string OpenIconClass = "aspid-fasttools-type-field__open-icon";
         private const string OpenButtonClass = "aspid-fasttools-type-field__open-button";
+        private const string MissingTextClass = "aspid-fasttools-type-field__text--missing";
 
         private readonly Button _openButton;
         private readonly TextElement _textElement;
@@ -56,9 +59,31 @@ namespace Aspid.FastTools.Types.Editors
         [UxmlAttribute]
         public bool HideNoneOption { get; set; }
 
-        // Whether the picker leaves out types from editor-only assemblies; a field bound to a runtime object's
-        // property turns it on, since a player cannot resolve such a type.
         internal bool ExcludeEditorOnlyTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected type, clearing any unresolved name and notifying listeners when it is cleared.
+        /// </summary>
+        public sealed override Type value
+        {
+            get => base.value;
+            set
+            {
+                if (value is not null || rawValue is not null || _missingAssemblyQualifiedName is null || showMixedValue)
+                {
+                    base.value = value;
+                    return;
+                }
+
+                // Missing and None both resolve to null, but clearing the stored name is still a change.
+                SetValueWithoutNotify(newValue: null);
+                if (panel is null) return;
+
+                using var evt = ChangeEvent<Type>.GetPooled(previousValue: null, newValue: null);
+                evt.target = this;
+                SendEvent(evt);
+            }
+        }
 
         /// <summary>
         /// Creates an unbound field without a label.
@@ -84,10 +109,13 @@ namespace Aspid.FastTools.Types.Editors
         {
             _property = property.Persistent();
             ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(_property);
-            SetValueFromAssemblyQualifiedNameWithoutNotify(_property.stringValue);
+            RefreshProperty(property: _property);
 
-            this.TrackPropertyValue(_property, current =>
-                SetValueFromAssemblyQualifiedNameWithoutNotify(current.stringValue));
+            this.TrackPropertyValue(_property, RefreshProperty);
+
+            // Unity's trackers can miss edits to later targets when the first target's value stays the same.
+            if (_property.serializedObject.isEditingMultipleObjects)
+                schedule.Execute(() => RefreshProperty(property: _property)).Every(intervalMs: 100);
         }
 
         /// <summary>
@@ -104,9 +132,9 @@ namespace Aspid.FastTools.Types.Editors
             this.AddClass(EnumField.ussClassName)
                 .AddStyleSheetFromResources(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
-            
+
             _visualInput = visualInput;
-            
+
             _textElement = new TextElement()
                 .AddClass(EnumField.textUssClassName)
                 .SetPickingMode(PickingMode.Ignore);
@@ -118,12 +146,15 @@ namespace Aspid.FastTools.Types.Editors
                     .AddClass(EnumField.arrowUssClassName)
                     .SetPickingMode(PickingMode.Ignore)
                 );
-            
+
             visualInput.RegisterCallback<PointerDownEvent>(OnDropdownClicked);
-            
+            visualInput.RegisterCallback<NavigationSubmitEvent>(OnDropdownSubmitted);
+
             _openButton = new Button()
                 .AddClass(OpenButtonClass)
-                .AddChild(new VisualElement())
+                .AddChild(new VisualElement()
+                    .AddClass(OpenIconClass)
+                    .SetPickingMode(PickingMode.Ignore))
                 .AddClicked(() => value.OpenInScriptEditor());
 
             this.AddChild(_openButton);
@@ -176,36 +207,70 @@ namespace Aspid.FastTools.Types.Editors
             base.SetValueWithoutNotify(resolved);
             UpdateDisplay();
         }
-        
+
+        /// <summary>
+        /// Called when the mixed-value state changes to refresh the caption and script button.
+        /// </summary>
+        protected sealed override void UpdateMixedValueContent() => UpdateDisplay();
+
+        private void RefreshProperty(SerializedProperty property)
+        {
+            property.serializedObject.SetIsDifferentCacheDirty();
+            property.serializedObject.Update();
+            SetValueFromAssemblyQualifiedNameWithoutNotify(assemblyQualifiedName: property.stringValue);
+            showMixedValue = property.hasMultipleDifferentValues;
+        }
+
         private void UpdateDisplay()
         {
-            _textElement.SetText(TypeSelectorHelpers.GetTypeSelectorTitle(value, _missingAssemblyQualifiedName));
-            _openButton.SetDisplay(value is not null ? DisplayStyle.Flex : DisplayStyle.None);
+            _textElement
+                .EnableClass(className: MissingTextClass, enable: _missingAssemblyQualifiedName is not null && !showMixedValue)
+                .EnableClass(className: mixedValueLabelUssClassName, enable: showMixedValue)
+                .SetText(value: showMixedValue
+                    ? mixedValueString
+                    : TypeSelectorHelpers.GetTypeSelectorTitle(value, _missingAssemblyQualifiedName));
+
+            _openButton.SetDisplay(value is not null && !showMixedValue ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
         private void OnDropdownClicked(PointerDownEvent evt)
         {
             if (_isReadOnly || evt.button is not 0) return;
 
+            ShowSelector();
+            evt.StopPropagation();
+        }
+
+        private void OnDropdownSubmitted(NavigationSubmitEvent evt)
+        {
+            if (_isReadOnly || !enabledInHierarchy) return;
+
+            ShowSelector();
+            evt.StopPropagation();
+        }
+
+        internal void ShowSelector(bool repair = false)
+        {
+            if (_isReadOnly || !enabledInHierarchy) return;
+
             var window = _visualInput.GetOwnerWindow();
-            if (!window) return;
+            if (window == null) return;
 
             var filter = new TypeSelectorFilter
             {
                 Types = Types,
                 Allow = Allow,
                 Predicate = Predicate,
-                HideNoneOption = HideNoneOption,
+                HideNoneOption = repair || HideNoneOption,
                 ExcludeEditorOnly = ExcludeEditorOnlyTypes,
             };
 
             TypeSelectorWindow.Show(
                 screenRect: GetScreenRect(),
                 filter: filter,
-                currentAqn: value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
+                currentAqn: repair || showMixedValue ? null : value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
                 onSelected: ApplyPicked);
 
-            evt.StopPropagation();
             return;
 
             Rect GetScreenRect() => new(
@@ -217,23 +282,7 @@ namespace Aspid.FastTools.Types.Editors
 
         internal void ApplyPicked(string assemblyQualifiedName)
         {
-            var picked = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
-
-            // Clearing a missing type keeps the value null, so the base setter would see no change and stay silent;
-            // an unbound owner such as the SerializableMonoScript drawer still needs the event to drop the stored name.
-            if (picked is null && _missingAssemblyQualifiedName is not null)
-            {
-                SetValueWithoutNotify(null);
-
-                using var evt = ChangeEvent<Type>.GetPooled(null, null);
-                evt.target = this;
-                SendEvent(evt);
-            }
-            else
-            {
-                this.SetValue(picked);
-            }
-
+            value = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
             _property?.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
         }
     }

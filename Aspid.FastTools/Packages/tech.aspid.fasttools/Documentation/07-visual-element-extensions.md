@@ -153,9 +153,11 @@ title.AddOpenScriptCommand(target);
 
 ### The element's window
 
+<code lang="function">GetOwnerWindow</code> returns <code lang="csharp">null</code> if the element is null, detached from a panel, or no hosting window is found.
+
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var panel = title.panel;&#10;var window = Resources&#10;    .FindObjectsOfTypeAll&lt;EditorWindow&gt;()&#10;    .FirstOrDefault(w =&gt; panel ==&#10;        w.rootVisualElement.panel);&#10;if (!window)&#10;    window = EditorWindow.focusedWindow;&#10;if (!window)&#10;    window = EditorWindow.mouseOverWindow;</code></pre> | <pre lang="csharp"><code>var window = title.GetOwnerWindow();</code></pre> |
+| <pre lang="csharp"><code>var panel = title?.panel;&#10;var window = panel is null&#10;    ? null&#10;    : Resources&#10;        .FindObjectsOfTypeAll&lt;EditorWindow&gt;()&#10;        .FirstOrDefault(w =&gt;&#10;            w &amp;&amp; w.rootVisualElement.panel == panel);</code></pre> | <pre lang="csharp"><code>var window = title.GetOwnerWindow();</code></pre> |
 
 ## Custom USS properties
 
