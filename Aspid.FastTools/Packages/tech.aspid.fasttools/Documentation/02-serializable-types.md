@@ -17,17 +17,16 @@ A type as an ordinary field: Unity saves it, and you pick it from a list in the 
 | Store a type, including DLL, nested or generic types | <code lang="class-name">SerializableType</code> |
 | Keep the selection when your script is renamed | <code lang="class-name">SerializableMonoScript</code> |
 
-Both wrappers have a <code lang="class-name">T</code> variant that constrains the selection to compatible types. The <code lang="csharp">[TypeSelector]</code> attribute adds [selection settings](03-type-selector.md); the example uses <code lang="csharp">Allow = TypeAllow.None</code> to offer only concrete classes.
-
-To store an instance of the selected class, use [SerializeReference Selector](04-serialize-reference-selector.md). To change an existing component's class, use [ComponentTypeSelector](05-component-type-selector.md).
+Both wrappers have a <code lang="class-name">T</code> variant that constrains the selection to compatible types. The <code lang="csharp">[TypeSelector]</code> attribute adds [selection settings](03-type-selector.md); the [quick start](#quick-start) uses <code lang="csharp">Allow = TypeAllow.None</code> to offer only concrete types.
 
 ## SerializableType
 
 <code lang="class-name">SerializableType</code> stores an assembly-qualified name: the type name together with its assembly.
 
-Set a default in code with <code lang="csharp">= new(typeof(Sword))</code>; a type not assignable to <code lang="class-name">T</code> throws <code lang="class-name">ArgumentException</code>.
-
-<code lang="csharp">ToString()</code> returns <code lang="csharp">Type.Name</code>: for <code lang="class-name">Enchanted&lt;Fire&gt;</code> it is <code lang="string">Enchanted`1</code>.
+```csharp
+[SerializeField]
+private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
+```
 
 ### Missing type
 
@@ -42,24 +41,28 @@ To fix the field, pick a type again or restore the class under its old name.
 
 ## SerializableMonoScript
 
-The same field, but the selection survives a class rename: the field remembers the script asset itself. Pick the type in the Inspector or drag a `.cs` file from **Project** onto the field.
+<code lang="class-name">SerializableMonoScript</code> remembers the script asset itself, so the selection survives a class rename. Pick the type in the Inspector or drag a `.cs` file from **Project** onto the field.
 
 | After renaming `Sword.cs` → `Blade.cs` | <code lang="class-name">SerializableType</code> | <code lang="class-name">SerializableMonoScript</code> |
 |---|---|---|
 | <code lang="csharp">.Type</code> | <code lang="csharp">null</code>, a [missing type](#missing-type) | <code lang="class-name">Blade</code>, in Play Mode too |
-| Stored name | <code lang="class-name">Sword</code> | <code lang="class-name">Blade</code> once the asset is saved again |
+| Stored name | <code lang="string">Sword</code> | <code lang="string">Blade</code> once the asset is saved again |
 
 Limitations:
 
 - only a top-level, non-generic class declared in a `.cs` file of the same name can be picked; from a DLL, only a <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code>;
-- a class from a DLL loses the link when you rename it or its namespace;
-- there is no public constructor, so the field cannot be created in code;
-- renaming the class without its file, or the file outside Unity without its `.meta`, breaks the link and the field shows a missing type.
+- there is no public constructor, so the field cannot be created in code.
+
+The link breaks, and the field shows a [missing type](#missing-type), when:
+
+- the class is renamed without its file;
+- the file is renamed outside Unity without its `.meta`;
+- a class from a DLL is renamed or moved to another namespace.
 
 ## Types in a player build
 
 > [!WARNING]
-> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, **Managed Stripping Level** Low or higher may strip it: <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> while the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`. This also applies to string fields with <code lang="csharp">[TypeSelector]</code>.
+> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, **Managed Stripping Level** Low or higher may strip it: <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> while the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`.
 
 ## Package sample
 

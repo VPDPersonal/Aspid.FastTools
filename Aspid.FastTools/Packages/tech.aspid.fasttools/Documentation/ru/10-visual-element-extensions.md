@@ -160,8 +160,6 @@ var manaCost = new PropertyField(
     .AddValueChanged(_ => Refresh());
 ```
 
-Для записи в свойство из собственного кода используйте [SerializedProperty Extensions](11-serialized-property-extensions.md).
-
 ### Открыть скрипт по двойному клику
 
 <code lang="function">AddOpenScriptCommand</code> открывает в IDE скрипт <code lang="class-name">MonoBehaviour</code> или <code lang="class-name">ScriptableObject</code> по двойному клику левой кнопкой; для других объектов ничего не добавляет:

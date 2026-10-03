@@ -173,11 +173,17 @@ Apply these rules to every main doc page, always to the English file and its `ru
 - **Unity's own behaviour stays out**, even when it explains a FastTools detail: version limits of Unity types
   ("Unity 6.2+"), Unity applying a write with Undo itself, how long an inspector's `SerializedObject` lives, ordinary
   `SerializedObject` patterns (several writes before one apply).
+- **API contract details stay in the XML docs**: exceptions for invalid arguments (`ArgumentException` when a type
+  is not assignable to `T`), argument checks and failing calls. A feature page shows the correct use only.
 - **Admonitions:** `> [!NOTE]` for a non-obvious mismatch that loses nothing (`HasFoldout()` vs the Inspector);
   `> [!WARNING]` only when data or measurements are lost silently (boxed struct copy, `partial` calls on one line).
   A mistake an analyzer reports is a plain bullet with its ID (`AFT0010`, `AFT0011`), not a warning. Never stack two.
 - **Headings and labels name what the reader gets**: «Поле C# за свойством», not «Тип поля и объект-владелец»; a table
   row names the value type («Идентификаторы объектов»), never a constraint («Unity 6.2 и новее»).
+- **Link to another page only when it serves this feature**: a page that configures it (the `[TypeSelector]`
+  settings from Serializable Types) or explains one of its details in more depth. Do not point to neighbouring
+  features ("to store an instance, use SerializeReference Selector"): such links read as advertising, and the sidebar
+  and the Introduction already list every feature.
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
   link to the sample README and, when the sample's `demo.gif` shows this page's feature, that gif with the caption
   paragraph — no "how to open" steps or experiments, those live on the sample's own page. Footage of a sample

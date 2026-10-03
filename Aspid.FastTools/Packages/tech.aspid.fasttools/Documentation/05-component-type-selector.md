@@ -39,8 +39,6 @@ The switch follows the rules of **Add Component**: it first adds the components 
 
 For class display settings, search and favorites, see [TypeSelector](03-type-selector.md#typeselectordisplay). Here the class declaring the field determines the candidates; the <code lang="csharp">[TypeSelector]</code> attribute does not configure them.
 
-To select a type in a separate field, see [Serializable Types](02-serializable-types.md); to create an object in a field, see [SerializeReference Selector](04-serialize-reference-selector.md).
-
 ## Package sample
 
 The [Types](../Samples~/Types/Documentation/README.md) sample shows component type switching.

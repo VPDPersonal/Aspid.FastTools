@@ -17,17 +17,16 @@
 | Хранить тип, в том числе из DLL, вложенный или generic | <code lang="class-name">SerializableType</code> |
 | Сохранить выбор при переименовании собственного скрипта | <code lang="class-name">SerializableMonoScript</code> |
 
-Обе обёртки имеют вариант с <code lang="class-name">T</code>, ограничивающий выбор совместимыми типами. Атрибут <code lang="csharp">[TypeSelector]</code> добавляет [настройки выбора](03-type-selector.md); в примере <code lang="csharp">Allow = TypeAllow.None</code> оставляет только конкретные классы.
-
-Чтобы хранить экземпляр выбранного класса, используйте [SerializeReference Selector](04-serialize-reference-selector.md). Для смены класса существующего компонента — [ComponentTypeSelector](05-component-type-selector.md).
+Обе обёртки имеют вариант с <code lang="class-name">T</code>, ограничивающий выбор совместимыми типами. Атрибут <code lang="csharp">[TypeSelector]</code> добавляет [настройки выбора](03-type-selector.md); в [быстром старте](#быстрый-старт) <code lang="csharp">Allow = TypeAllow.None</code> оставляет только конкретные типы.
 
 ## SerializableType
 
 <code lang="class-name">SerializableType</code> хранит assembly-qualified name — имя типа вместе со сборкой.
 
-Значение по умолчанию задаётся в коде: <code lang="csharp">= new(typeof(Sword))</code>; тип, несовместимый с <code lang="class-name">T</code>, вызывает <code lang="class-name">ArgumentException</code>.
-
-<code lang="csharp">ToString()</code> возвращает <code lang="csharp">Type.Name</code>: для <code lang="class-name">Enchanted&lt;Fire&gt;</code> это <code lang="string">Enchanted`1</code>.
+```csharp
+[SerializeField]
+private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
+```
 
 ### Потерянный тип
 
@@ -42,24 +41,28 @@
 
 ## SerializableMonoScript
 
-То же поле, но выбор переживает переименование класса: поле помнит сам ассет скрипта. Тип выбирают в инспекторе или перетаскивают на поле `.cs` из **Project**.
+<code lang="class-name">SerializableMonoScript</code> помнит сам ассет скрипта, поэтому выбор переживает переименование класса. Тип выбирают в инспекторе или перетаскивают на поле `.cs` из **Project**.
 
 | После переименования `Sword.cs` → `Blade.cs` | <code lang="class-name">SerializableType</code> | <code lang="class-name">SerializableMonoScript</code> |
 |---|---|---|
 | <code lang="csharp">.Type</code> | <code lang="csharp">null</code> — [потерянный тип](#потерянный-тип) | <code lang="class-name">Blade</code>, в Play Mode тоже |
-| Сохранённое имя | <code lang="class-name">Sword</code> | <code lang="class-name">Blade</code>, как только ассет пересохранят |
+| Сохранённое имя | <code lang="string">Sword</code> | <code lang="string">Blade</code>, как только ассет пересохранят |
 
 Ограничения:
 
 - выбрать можно только класс верхнего уровня, не generic, объявленный в `.cs` с тем же именем, а из DLL — только <code lang="class-name">MonoBehaviour</code> и <code lang="class-name">ScriptableObject</code>;
-- у класса из DLL связь теряется при переименовании класса или его namespace;
-- публичного конструктора нет, из кода поле не создать;
-- если переименовать класс без файла или файл вне Unity без `.meta`, связь теряется и поле показывает потерянный тип.
+- публичного конструктора нет, из кода поле не создать.
+
+Связь с классом теряется, а поле показывает [потерянный тип](#потерянный-тип), если:
+
+- класс переименовали без файла;
+- файл переименовали вне Unity без `.meta`;
+- у класса из DLL сменилось имя или namespace.
 
 ## Типы в плеере
 
 > [!WARNING]
-> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, при **Managed Stripping Level** Low и выше Unity может вырезать его из билда: <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>, хотя в редакторе тип находится. Сохраните класс через <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) или `link.xml`. Это относится и к строковым полям с <code lang="csharp">[TypeSelector]</code>.
+> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, при **Managed Stripping Level** Low и выше Unity может вырезать его из билда: <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>, хотя в редакторе тип находится. Сохраните класс через <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) или `link.xml`.
 
 ## Пример в пакете
 
