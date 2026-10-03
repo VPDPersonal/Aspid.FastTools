@@ -93,12 +93,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var violation in violations)
             {
                 // Machine-readable line: KIND<TAB>assetPath<TAB>fileId<TAB>rid<TAB>StoredType<TAB>fieldPath<TAB>origin.
-                // "override" marks a type set by a prefab instance override, whose fileId is the PrefabInstance.
+                // "override" marks a type set by a prefab instance override, whose fileId is the PrefabInstance. A
+                // MissingTypeName row stores the whole type name, and its rid is the managed reference that holds the
+                // field, or 0.
                 builder.Append(violation.Kind).Append('\t')
                     .Append(violation.AssetPath).Append('\t')
                     .Append(violation.FileId).Append('\t')
                     .Append(violation.Rid).Append('\t')
-                    .Append(violation.StoredType.Class ?? string.Empty).Append('\t')
+                    .Append(violation.StoredName).Append('\t')
                     .Append(violation.FieldPath ?? string.Empty).Append('\t')
                     .Append(violation.IsOverride ? "override" : string.Empty)
                     .AppendLine();

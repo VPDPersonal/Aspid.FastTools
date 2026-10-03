@@ -223,12 +223,18 @@ namespace Aspid.FastTools.Types.Editors
 
         private void UpdateDisplay()
         {
+            var isMissing = _missingAssemblyQualifiedName is not null && !showMixedValue;
+
+            // The tooltip lives on the dropdown, not the caption: the caption ignores picking, so it can never anchor one.
+            _visualInput.tooltip = isMissing ? $"Missing type: {_missingAssemblyQualifiedName}" : null;
+
             _textElement
-                .EnableClass(className: MissingTextClass, enable: _missingAssemblyQualifiedName is not null && !showMixedValue)
+                .EnableClass(className: MissingTextClass, enable: isMissing)
                 .EnableClass(className: mixedValueLabelUssClassName, enable: showMixedValue)
                 .SetText(value: showMixedValue
                     ? mixedValueString
-                    : TypeSelectorHelpers.GetTypeSelectorTitle(value, _missingAssemblyQualifiedName));
+                    : TypeSelectorHelpers.GetTypeSelectorTitle(value,
+                        assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(_missingAssemblyQualifiedName)));
 
             _openButton.SetDisplay(value is not null && !showMixedValue ? DisplayStyle.Flex : DisplayStyle.None);
         }

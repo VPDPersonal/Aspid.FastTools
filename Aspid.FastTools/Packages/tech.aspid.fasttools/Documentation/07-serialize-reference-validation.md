@@ -36,11 +36,11 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 
 ## Detecting new breakages
 
-**Breakage detection** reports newly missing references after script or asset changes with a notification and in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is stored locally in `EditorPrefs`.
+**Breakage detection** reports newly missing references and type names after script or asset changes with a notification and in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is stored locally in `EditorPrefs`.
 
 ## Scan scope
 
-The check reads saved `.prefab`, `.asset` and `.unity` files under `Assets/`. Pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing types. Missing-type checks cover <code lang="csharp">[SerializeReference]</code>; they do not find unresolved names in <code lang="class-name">SerializableType</code> or strings.
+The check reads saved `.prefab`, `.asset` and `.unity` files under `Assets/`. Pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing types. Missing-type checks cover <code lang="csharp">[SerializeReference]</code> and the names that <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields store. They do not check <code lang="csharp">[TypeSelector]</code> strings.
 
 **Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection. No folders are excluded by default.
 
@@ -100,14 +100,14 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 
 | Field | Contents |
 |---|---|
-| `KIND` | `MissingType` or `RequiredUnset` |
+| `KIND` | `MissingType`, `MissingTypeName` or `RequiredUnset` |
 | `assetPath` | File path |
 | `fileId` | Host object ID within the file; for a prefab instance override, the ID of the prefab instance |
-| `rid` | Managed-reference ID; in `RequiredUnset` rows, `-2` for an empty <code lang="csharp">[SerializeReference]</code> and `0` for a <code lang="csharp">string</code> or <code lang="class-name">SerializableType</code> |
-| `className` | Stored class name for `MissingType` |
-| `fieldPath` | Required field path; for a `MissingType` override, the overridden field; otherwise empty |
+| `rid` | Managed-reference ID; in `RequiredUnset` rows, `-2` for an empty <code lang="csharp">[SerializeReference]</code> and `0` for a <code lang="csharp">string</code> or <code lang="class-name">SerializableType</code>; in `MissingTypeName` rows, the managed reference that holds the field, or `0` |
+| `className` | Stored class name for `MissingType`; the whole stored type name for `MissingTypeName` |
+| `fieldPath` | Required field path; the wrapper field for `MissingTypeName`; for a `MissingType` override, the overridden field; otherwise empty |
 | `origin` | `override` for a type set by a prefab instance override; otherwise empty |
 
-In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead.
+In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead. A `MissingTypeName` row is in its **type name** group of Project References.
 
 </details>
