@@ -1,5 +1,9 @@
 # Required type warning crop
 
+> Provenance only. The published `type-selector-required.png` (and its `-light` twin) was re-shot in #264 from the DocsMedia harness
+> (`Aspid.FastTools/Assets/DevTests/Types/Scripts/DocsMedia`) at 1393×176 and is framed by
+> `scripts/frame-doc-captures.sh`; the crop below does not reproduce it.
+
 `source-inspector.png` preserves the original documentation Inspector capture (1418 × 858, 2× pixel density).
 
 Keep the Weapon Mount component header, Script reference, both selector fields, and Required warning. Remove the window chrome, GameObject header, Transform, and Add Component button. Add 8 source pixels of matching Inspector background above the header, equivalent to 4 px at the capture's logical scale.

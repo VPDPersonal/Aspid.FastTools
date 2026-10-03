@@ -39,4 +39,4 @@ The Halve cooldown, +5 MP button changes the cost and the cooldown, and Undo res
 | `Scripts/AbilityConfig.cs` | The data; <code lang="csharp">[TypeSelector]</code> on the effect string gives the asset's Inspector the same picker |
 | `Scripts/Effects/` | The effect classes the picker offers |
 
-Reference: [VisualElement Extensions](../../../Documentation/07-visual-element-extensions.md), [SerializedProperty Extensions](../../../Documentation/08-serialized-property-extensions.md), [Editor Helpers](../../../Documentation/09-editor-helpers.md) and [TypeSelectorWindow](../../../Documentation/02-serializable-types.md#typeselectorwindow).
+Reference: [VisualElement Extensions](../../../Documentation/10-visual-element-extensions.md), [SerializedProperty Extensions](../../../Documentation/11-serialized-property-extensions.md), [Editor Helpers](../../../Documentation/12-editor-helpers.md) and [TypeSelectorWindow](../../../Documentation/03-type-selector.md#typeselectorwindow).

@@ -39,4 +39,4 @@
 | `Scripts/AbilityConfig.cs` | Данные; <code lang="csharp">[TypeSelector]</code> на строке эффекта даёт инспектору ассета то же окно выбора |
 | `Scripts/Effects/` | Классы эффектов, которые предлагает окно выбора |
 
-Справочник — [VisualElement Extensions](../../../Documentation/ru/07-visual-element-extensions.md), [SerializedProperty Extensions](../../../Documentation/ru/08-serialized-property-extensions.md), [Editor Helpers](../../../Documentation/ru/09-editor-helpers.md) и [TypeSelectorWindow](../../../Documentation/ru/02-serializable-types.md#typeselectorwindow).
+Справочник — [VisualElement Extensions](../../../Documentation/ru/10-visual-element-extensions.md), [SerializedProperty Extensions](../../../Documentation/ru/11-serialized-property-extensions.md), [Editor Helpers](../../../Documentation/ru/12-editor-helpers.md) и [TypeSelectorWindow](../../../Documentation/ru/03-type-selector.md#typeselectorwindow).

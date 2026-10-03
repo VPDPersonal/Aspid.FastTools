@@ -9,14 +9,14 @@ const DURATIONS = [1700, 1100, 1700, 1800, 1700, 2600];
 const STEP_OF_FRAME = [0, 1, 1, 2, 2, 3];
 const FIRST_FRAME_OF_STEP = [0, 1, 3];
 const PLAYS = 2;
+// Fix all with the picker open over the four entries.
+const TALLEST_FRAME = 3;
 
 const EDITOR_MENUS = ['File', 'Edit', 'Assets', 'GameObject', 'Component', 'Tools', 'Window', 'Help'];
 // The menu items of `TabWindow`, grouped as Unity groups them by priority.
 const FASTTOOLS_MENU = [['Welcome'], ['Asset References', 'Project References'], ['Settings']];
 const ENTRIES = [
   ['BrokenArsenalPreset.asset', 8000],
-  ['BrokenArsenalPreset.asset', 8001],
-  ['BrokenArsenalPreset.asset', 8003],
   ['BrokenWeaponPreset.asset', 7000],
 ];
 
@@ -57,16 +57,15 @@ function Menu({className, open, children}) {
 }
 
 /** The Aspid FastTools window, Project References tab, drawn from the package's dark theme and its real strings. */
-function FastToolsWindow({frame}) {
+function FastToolsWindow({frame, sizer = false}) {
   const scanned = frame >= 2;
   const picking = frame === 3;
   const clean = frame === 5;
   return (
-    <div className={styles.window} data-open={frame >= 1 || undefined}>
+    <div className={sizer ? `${styles.window} ${styles.sizer}` : styles.window} data-open={(!sizer && frame >= 1) || undefined}>
       <div className={styles.body}>
         <div className={styles.panel}>
           <strong>Find missing references</strong>
-          <span>Sweep every asset under Assets/ for broken [SerializeReference] types and bulk-fix them by type.</span>
           <span className={styles.button} data-press={frame === 1 || undefined}>{scanned ? 'Rescan' : 'Scan Project'}</span>
         </div>
         {!scanned && (
@@ -78,18 +77,13 @@ function FastToolsWindow({frame}) {
         {scanned && (
           <div className={styles.results}>
             {/* The results header keeps its warning colour, clean project included. */}
-            <div className={styles.header}>{clean ? 'No missing references' : '4 missing references'}</div>
-            <p className={styles.hint}>
-              {clean
-                ? "Nothing left to repair. Rescan to sweep the project again and confirm it's clean."
-                : 'Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.'}
-            </p>
+            <div className={styles.header}>{clean ? 'No missing references' : '2 missing references'}</div>
             {clean ? (
               <div className={styles.summary}>
                 <span className={styles.warningIcon}>⚠</span>
                 <div>
                   <div className={styles.summaryHead}>
-                    <strong>Rewrote 4 references</strong>
+                    <strong>Rewrote 2 references</strong>
                     <span className={styles.undo}>Undo</span>
                   </div>
                   <span>Replaced missing 'Game.Weapons.GhostWeapon' with 'Game.Weapons.Pistol'.</span>
@@ -99,8 +93,8 @@ function FastToolsWindow({frame}) {
               <div className={styles.card} data-picking={picking || undefined}>
                 <div className={styles.cardHead}>
                   <b>GhostWeapon</b>
-                  <span>4 entries · 2 files</span>
-                  <span className={styles.fixAll}>Fix all (4)  {picking ? '▲' : '▼'}</span>
+                  <span>2 entries · 2 files</span>
+                  <span className={styles.fixAll}>Fix all (2)  {picking ? '▲' : '▼'}</span>
                 </div>
                 {picking && (
                   <div className={styles.picker}>
@@ -120,7 +114,7 @@ function FastToolsWindow({frame}) {
       <div className={styles.dialog} data-open={frame === 4 || undefined}>
         <div className={styles.alert}>
           <strong>Repair Missing References</strong>
-          <p>Rewrite 4 reference(s) in 2 file(s) to 'Game.Weapons.Pistol'?</p>
+          <p>Rewrite 2 reference(s) in 2 file(s) to 'Game.Weapons.Pistol'?</p>
           <div className={styles.alertButtons}>
             <span>Cancel</span>
             <span data-default="true">Rewrite</span>
@@ -167,13 +161,15 @@ function Stage({frame}) {
           </span>
         ))}
       </div>
+      {/* The tallest frame, unseen, sizes the stage, so every frame keeps the window's inset below it in any font. */}
+      <FastToolsWindow frame={TALLEST_FRAME} sizer />
       <FastToolsWindow frame={frame} />
     </div>
   );
 }
 
 /**
- * The SerializeReference Tooling quick start: a Project References walk-through beside the page's own steps,
+ * The SerializeReference repair quick start: a Project References walk-through beside the page's own steps,
  * drawn like the introduction's install panel. The steps come from the Markdown list, so they stay translated there.
  */
 export default function ProjectReferencesPanel({children}) {
@@ -184,7 +180,7 @@ export default function ProjectReferencesPanel({children}) {
 
   return (
     <section ref={ref} className={`${panel.install} ${styles.section}`}>
-      <div className={`${panel.top} ${styles.top}`}>
+      <div className={`${panel.top} ${panel.installationTop} ${styles.top}`}>
         <div className={`${panel.preview} ${styles.preview}`}><Stage frame={frame} /></div>
         <ol className={panel.steps}>
           {steps.map((step, index) => (

@@ -354,7 +354,7 @@ export function PluginPreview({ru, scene = AGENT_SCENES[0], lines, manual = fals
       </div>
       <Highlight theme={theme} code={scene.code} language="csharp">
         {({tokens, getTokenProps}) => (
-          <pre className={clsx(styles.snippet, styles.diff)} style={{color: theme.plain.color, ...(lines && {minHeight: `calc(${lines} * 1.75em + 28px)`})}}
+          <pre className={clsx(styles.snippet, styles.diff)} style={{color: theme.plain.color, ...(lines && {minHeight: `calc(${lines} * 1.75em + 2 * var(--snippet-pad-y))`})}}
             data-edited={edited || undefined}>
             {tokens.map((line, index) => (
               <span

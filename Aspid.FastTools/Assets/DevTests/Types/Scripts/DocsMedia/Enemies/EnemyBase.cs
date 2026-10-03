@@ -1,7 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// Docs-media harness for Documentation/11-component-type-selector.md: Images/component-type-selector.gif switches a
+// Docs-media harness for Documentation/05-component-type-selector.md: Images/component-type-selector.gif switches a
 // FastEnemy with Health 75 and Speed 40 to ArmoredEnemy through _enemyType. Each class sits in a file named after it
 // because the switch writes the class's own MonoScript.
 

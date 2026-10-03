@@ -65,3 +65,6 @@ for suffix in ('', '-light'):
         strip = result.convert('RGB').crop((0, 704, 1560, 726))
         assert ImageChops.difference(strip, Image.new('RGB', strip.size, original.getpixel((0, 0)))).getbbox() is None
     print(output.name, result.size, result.n_frames, duration, 'ms; original pixels and timing unchanged')
+# Crop both GIFs to the four-row state and add the 8px margin the site shows (see the script).
+import subprocess
+subprocess.run([repo / 'scripts/frame-doc-captures.sh'], check=True)

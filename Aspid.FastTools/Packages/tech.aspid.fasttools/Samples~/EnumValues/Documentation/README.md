@@ -84,4 +84,4 @@ Add `Ice` at the end of <code lang="class-name">SurfaceType</code> and set one t
 | `Scripts/Walker.cs` | Both variants in a component, <code lang="function">GetValue</code> on a plain and a <code lang="csharp">[Flags]</code> key, <code lang="csharp">foreach</code> |
 | `Scripts/TerrainFlags.cs` | The <code lang="csharp">[Flags]</code> enum with combinable members |
 
-Reference: [EnumValues](../../../Documentation/06-enum-values.md).
+Reference: [EnumValues](../../../Documentation/08-enum-values.md).
