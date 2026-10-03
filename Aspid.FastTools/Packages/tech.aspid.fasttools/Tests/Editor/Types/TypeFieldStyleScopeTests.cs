@@ -11,6 +11,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
     [TestFixture]
     internal sealed class TypeFieldStyleScopeTests
     {
+        private const string OpenIconClass = "aspid-fasttools-type-field__open-icon";
         private const string OpenButtonClass = "aspid-fasttools-type-field__open-button";
 
         private EditorWindow _window;
@@ -35,13 +36,20 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [UnityTest]
         public IEnumerator OpenButton_KeepsItsCompactIconStyle()
         {
-            yield return null;
-
             var openButton = _field.Q<Button>(className: OpenButtonClass);
             Assert.IsNotNull(openButton, "The field's open-in-script-editor button must carry its own class.");
+            var decoration = new VisualElement();
+            openButton.Add(decoration);
+
+            yield return null;
+
             Assert.AreEqual(18f, openButton.resolvedStyle.maxWidth.value);
             Assert.AreEqual(18f, openButton.resolvedStyle.maxHeight.value);
-            Assert.IsNotNull(openButton[0].resolvedStyle.backgroundImage.texture, "The open button must keep its folder icon.");
+            var icon = openButton.Q<VisualElement>(className: OpenIconClass);
+            Assert.IsNotNull(icon, "The folder icon must carry its own class.");
+            Assert.IsNotNull(icon.resolvedStyle.backgroundImage.texture, "The open button must keep its folder icon.");
+            Assert.IsNull(decoration.resolvedStyle.backgroundImage.texture,
+                "Other children of the open button must not get the folder icon.");
         }
 
         [UnityTest]

@@ -8,3 +8,4 @@
 # Override global `*~` ignore.
 !Samples~/
 !Samples~/**
+/Aspid.FastTools/.codex/
