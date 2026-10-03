@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Provides extension methods for [`VisualElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.html).
+Provides extension methods for [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html).
 
 ```csharp
 public static class VisualElementExtensions
@@ -53,11 +53,11 @@ The object whose script is opened.
 
 `T` 
 
-A [`VisualElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.html) element to configure.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 
 #### Remarks
 
-Supports [`MonoBehaviour`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/MonoBehaviour.html) and [`ScriptableObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/ScriptableObject.html); a resolved script is required,
+Supports [`MonoBehaviour`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html) and [`ScriptableObject`](https://docs.unity3d.com/ScriptReference/ScriptableObject.html); a resolved script is required,
 so it has no effect otherwise.
 
 ### BindTo\<T\>\(T, SerializedObject\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_BindTo__1___0_UnityEditor_SerializedObject_}
@@ -88,11 +88,11 @@ The serialized object to bind to.
 
 `T` 
 
-A [`VisualElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.html) element to configure.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 
 ### GetOwnerWindow\(VisualElement\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_GetOwnerWindow_UnityEngine_UIElements_VisualElement_}
 
-Returns the window hosting <code class="paramref">element</code>.
+Returns the window hosting <code class="paramref">element</code> or the current focus or hover fallback.
 
 ```csharp
 public static EditorWindow GetOwnerWindow(this VisualElement element)
@@ -102,17 +102,17 @@ public static EditorWindow GetOwnerWindow(this VisualElement element)
 
 `element` VisualElement
 
-The element to locate, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+The element to locate, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to use the fallback windows.
 
 #### Returns
 
  EditorWindow
 
-The hosting window if found; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+The hosting window, then the focused or hovered window; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
 #### Remarks
 
-The element must be attached to the hosting window's panel.
+A pointer event can arrive in a floating window before focus moves, so the panel is checked first.
 
 ### UnbindFrom\<T\>\(T\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_}
 
@@ -138,5 +138,5 @@ The element to unbind.
 
 `T` 
 
-A [`VisualElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.html) element to configure.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 
