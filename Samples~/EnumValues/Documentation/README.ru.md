@@ -84,4 +84,4 @@ foreach (var (flags, multiplier) in _speedByTerrain)
 | `Scripts/Walker.cs` | Оба варианта в компоненте, <code lang="function">GetValue</code> по обычному и <code lang="csharp">[Flags]</code>-ключу, <code lang="csharp">foreach</code> |
 | `Scripts/TerrainFlags.cs` | <code lang="csharp">[Flags]</code>-enum с комбинируемыми членами |
 
-Справочник — [EnumValues](../../../Documentation/ru/06-enum-values.md).
+Справочник — [EnumValues](../../../Documentation/ru/08-enum-values.md).

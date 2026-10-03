@@ -48,4 +48,4 @@
 | `Scripts/FlockSimulation.cs` | Маркеры на весь метод, на блок и на итерацию в обычном классе |
 | `Scripts/Flock.cs` | Точка входа кадра, маркер внутри локальной функции |
 
-Справочник — [ProfilerMarkers](../../../Documentation/ru/05-profiler-markers.md).
+Справочник — [ProfilerMarkers](../../../Documentation/ru/09-profiler-markers.md).

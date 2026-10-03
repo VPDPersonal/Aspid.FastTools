@@ -35,6 +35,10 @@ The switch follows the rules of **Add Component**: it first adds the components 
 - the switch would remove a class another component requires;
 - the new class requires a component that cannot be added, such as the abstract <code lang="class-name">Collider</code>.
 
+## Related features
+
+For class display settings, search and favorites, see [TypeSelector](03-type-selector.md#typeselectordisplay). Here the class declaring the field determines the candidates; the <code lang="csharp">[TypeSelector]</code> attribute does not configure them.
+
 ## Package sample
 
 The [Types](../Samples~/Types/Documentation/README.md) sample shows component type switching.
