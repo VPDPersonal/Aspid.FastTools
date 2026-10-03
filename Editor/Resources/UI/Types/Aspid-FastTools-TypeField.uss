@@ -1,3 +1,7 @@
+.aspid-fasttools-type-field__text--missing {
+    color: var(--unity-colors-warning-text);
+}
+
 Button.aspid-fasttools-type-field__open-button {
     padding:                0;
     min-width:              18px;
@@ -7,20 +11,20 @@ Button.aspid-fasttools-type-field__open-button {
     margin:                 0 0 0 1px;
 }
 
-.aspid-fasttools-type-field__open-button > VisualElement {
+.aspid-fasttools-type-field__open-icon {
     width:                  100%;
     height:                 100%;
     background-image:       resource("d_Folder Icon");
 }
 
-.aspid-fasttools-type-field__open-button > VisualElement:enabled:hover {
+.aspid-fasttools-type-field__open-button:enabled:hover > .aspid-fasttools-type-field__open-icon {
     background-image:       resource("d_FolderOpened Icon");
 }
 
-.aspid-fasttools-skin--light .aspid-fasttools-type-field__open-button > VisualElement {
+.aspid-fasttools-skin--light .aspid-fasttools-type-field__open-icon {
     background-image:       resource("Folder Icon");
 }
 
-.aspid-fasttools-skin--light .aspid-fasttools-type-field__open-button > VisualElement:enabled:hover {
+.aspid-fasttools-skin--light .aspid-fasttools-type-field__open-button:enabled:hover > .aspid-fasttools-type-field__open-icon {
     background-image:       resource("FolderOpened Icon");
 }

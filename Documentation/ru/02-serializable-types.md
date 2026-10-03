@@ -30,14 +30,14 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 ### Потерянный тип
 
-После переименования класса, namespace или сборки сохранённое имя больше не находится, и инспектор показывает `<Missing …>`.
+После переименования класса, namespace или сборки сохранённое имя больше не находится: поле показывает `<Missing …>`, а под ним появляется **Missing type**.
 
-![Потерянный тип Game.Combat.Spear в поле инспектора](../Images/serializable-type-missing.png)
+![Потерянный тип Game.Combat.Spear с кнопками Fix и → Spear](../Images/serializable-type-missing.png)
 
 - <code lang="csharp">.Type</code> возвращает <code lang="csharp">null</code>.
 - <code lang="csharp">AssemblyQualifiedName</code> и <code lang="csharp">ToString()</code> сохраняют прежнее имя.
 
-Чтобы исправить поле, выберите тип заново или верните классу прежнее имя.
+**Fix** открывает окно выбора, и выбранный тип заменяет сохранённое имя. Если класс только перенесли в другой namespace или сборку и подходящий тип с таким именем один, уведомление предлагает его сразу, например **→ Spear**.
 
 ## SerializableMonoScript
 

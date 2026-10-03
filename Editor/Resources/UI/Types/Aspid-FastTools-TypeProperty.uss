@@ -1,0 +1,12 @@
+.aspid-fasttools-type-property__stripe {
+    left: 0;
+    top: 2px;
+    width: 2px;
+    bottom: 2px;
+    position: absolute;
+    background-color: var(--unity-colors-warning-text);
+}
+
+.aspid-fasttools-type-property--missing {
+    padding-left: 5px;
+}

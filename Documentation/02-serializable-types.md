@@ -30,14 +30,14 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 ### Missing type
 
-After a class, namespace or assembly rename, the stored name no longer resolves, and the Inspector shows `<Missing …>`.
+After a class, namespace or assembly rename, the stored name no longer resolves: the field shows `<Missing …>` with a **Missing type** notice under it.
 
-![The missing Game.Combat.Spear type in an Inspector field](Images/serializable-type-missing.png)
+![The missing Game.Combat.Spear type with the Fix and → Spear buttons](Images/serializable-type-missing.png)
 
 - <code lang="csharp">.Type</code> returns <code lang="csharp">null</code>.
 - <code lang="csharp">AssemblyQualifiedName</code> and <code lang="csharp">ToString()</code> keep the old name.
 
-To fix the field, pick a type again or restore the class under its old name.
+**Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**.
 
 ## SerializableMonoScript
 
