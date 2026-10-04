@@ -77,7 +77,7 @@ while read -r NAME SIZE LEFT TOP RIGHT BOTTOM STYLE; do
 done <<'EOF'
 # Type picker captures: labels start at x=38; warnings keep their icon from x=34; the missing-type stripe from x=30.
 serializable-type-missing                     1384x176  30  6 1377  159 inspector:#3c3c3c
-serializable-type-quick-start                 1393x772  38  6 1385  764 inspector
+serializable-type-quick-start                 1393x400  38  6 1385  392 inspector
 type-selector-display                         1393x772  38  6 1385  764 inspector
 type-selector-window                          1393x772  38  6 1385  764 inspector
 type-selector-generic                         1393x772  38  6 1385  764 inspector
