@@ -1,6 +1,6 @@
 # Serializable Types
 
-A type as an ordinary field: Unity saves it, and you pick it from a list in the Inspector.
+A type as an ordinary field: Unity saves it, and the Inspector lets you pick it from a list.
 
 ## Quick start
 
@@ -8,20 +8,22 @@ A type as an ordinary field: Unity saves it, and you pick it from a list in the 
 |---|---|
 | <pre lang="csharp"><code>[SerializeField]&#10;private string _primaryWeaponName;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    string.IsNullOrEmpty(&#10;        _primaryWeaponName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _primaryWeaponName);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Weapon&gt;&#10;    _primaryWeapon;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    _primaryWeapon;</code></pre> |
 
+<code lang="csharp">[TypeSelector]</code> sets the [selection settings](03-type-selector.md): <code lang="csharp">Allow = TypeAllow.None</code> leaves only concrete types in the list.
+
 ![Selecting a serializable type in the Inspector](Images/serializable-type-quick-start.gif)
 
 ## Which wrapper to use
 
 | Task | Field |
 |---|---|
-| Store a type, including DLL, nested or generic types | <code lang="class-name">SerializableType</code> |
-| Keep the selection when your script is renamed | <code lang="class-name">SerializableMonoScript</code> |
+| Store a type, including DLL, nested or generic types | <code lang="class-name">SerializableType</code>, <code lang="class-name">SerializableType&lt;T&gt;</code> |
+| Keep the selection when your script is renamed | <code lang="class-name">SerializableMonoScript</code>, <code lang="class-name">SerializableMonoScript&lt;T&gt;</code> |
 
-Both wrappers have a <code lang="class-name">T</code> variant that constrains the selection to compatible types. The <code lang="csharp">[TypeSelector]</code> attribute adds [selection settings](03-type-selector.md); the [quick start](#quick-start) uses <code lang="csharp">Allow = TypeAllow.None</code> to offer only concrete types.
+The <code lang="class-name">T</code> variant offers only types compatible with <code lang="class-name">T</code> in the picker.
 
 ## SerializableType
 
-<code lang="class-name">SerializableType</code> stores an assembly-qualified name: the type name together with its assembly.
+<code lang="class-name">SerializableType</code> stores an assembly-qualified name: the type name together with its assembly. Set a default in code:
 
 ```csharp
 [SerializeField]
@@ -32,18 +34,18 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 After a class, namespace or assembly rename, the stored name no longer resolves: the field shows `<Missing …>` with a **Missing type** notice under it. The caption gives the type name without its assembly; the tooltip gives the whole stored name.
 
-![The missing Game.Combat.Spear type with the Fix and → Spear buttons](Images/serializable-type-missing.png)
-
 - <code lang="csharp">.Type</code> returns <code lang="csharp">null</code>.
 - <code lang="csharp">AssemblyQualifiedName</code> and <code lang="csharp">ToString()</code> keep the old name.
 
+![The missing Game.Combat.Spear type with the Fix and → Spear buttons](Images/serializable-type-missing.png)
+
 **Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**.
 
-To find every missing name in the project, open **Project References** and click **Scan Project**. The fields are grouped by stored name, and **Fix all** repairs a group in one step, see [Type names](06-serialize-reference-tooling.md#type-names). [Build and CI checks](07-serialize-reference-validation.md) and breakage detection report missing names too. A <code lang="csharp">[TypeSelector]</code> string shows the notice only in the Inspector.
+[Project References](06-serialize-reference-tooling.md#type-names) finds every missing name in the project and repairs them in groups. The [build check](07-serialize-reference-validation.md) and [breakage detection](07-serialize-reference-validation.md#detecting-new-breakages) report new ones.
 
 ## SerializableMonoScript
 
-<code lang="class-name">SerializableMonoScript</code> remembers the script asset itself, so the selection survives a class rename. Pick the type in the Inspector or drag a `.cs` file from **Project** onto the field.
+<code lang="class-name">SerializableMonoScript</code> remembers the script asset itself, so the selection survives a script rename. Pick the type in the Inspector or drag a `.cs` file from **Project** onto the field.
 
 | After renaming `Sword.cs` → `Blade.cs` | <code lang="class-name">SerializableType</code> | <code lang="class-name">SerializableMonoScript</code> |
 |---|---|---|
@@ -52,14 +54,13 @@ To find every missing name in the project, open **Project References** and click
 
 Limitations:
 
-- only a top-level, non-generic class declared in a `.cs` file of the same name can be picked; from a DLL, only a <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code>;
+- only a top-level, non-generic class declared in a `.cs` file of the same name can be picked;
 - there is no public constructor, so the field cannot be created in code.
 
 The link breaks, and the field shows a [missing type](#missing-type) with the same notice, when:
 
 - the class is renamed without its file;
-- the file is renamed outside Unity without its `.meta`;
-- a class from a DLL is renamed or moved to another namespace.
+- the file is renamed outside Unity without its `.meta`.
 
 ## Types in a player build
 
@@ -69,5 +70,3 @@ The link breaks, and the field shows a [missing type](#missing-type) with the sa
 ## Package sample
 
 For Inspector selection of enemy types and spawn patterns, see [Types](../Samples~/Types/Documentation/README.md).
-
-![A wave of regular and elite enemies in the Types scene](../Samples~/Types/Documentation/Images/demo.gif)
