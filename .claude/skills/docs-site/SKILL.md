@@ -194,10 +194,9 @@ Apply these rules to every main doc page, always to the English file and its `ru
   is not assignable to `T`), argument checks and failing calls. A feature page shows the correct use only.
 - **Admonitions:** `> [!NOTE]` for a non-obvious mismatch that loses nothing (`HasFoldout()` vs the Inspector);
   `> [!WARNING]` only when data or measurements are lost silently (boxed struct copy, `partial` calls on one line).
-  A mistake an analyzer reports is a plain bullet with its ID (`AFT0010`, `AFT0011`), not a warning. Never stack two.
-- **Do not list analyzer diagnostics**: the reader sees them in the IDE. An ID may stay next to the usage rule it
-  enforces (ProfilerMarkers limitations) or as a short result in a table cell (`AFT0009` in TypeSelector), never as a
-  list of IDs with their meanings.
+  A mistake an analyzer reports is a plain bullet with the usage rule, not a warning. Never stack two.
+- **No analyzer IDs on pages**: the reader sees the diagnostics in the IDE. State the usage rule only
+  («Используйте `using`»), never an ID (`AFT0010`) or a list of IDs with their meanings.
 - **Headings and labels name what the reader gets**: «Поле C# за свойством», not «Тип поля и объект-владелец»; a table
   row names the value type («Идентификаторы объектов»), never a constraint («Unity 6.2 и новее»).
 - **Link to another page only when it serves this feature**: a page that configures it (the `[TypeSelector]`

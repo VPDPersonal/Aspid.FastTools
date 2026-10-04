@@ -46,7 +46,7 @@ The types in the attribute narrow the list: only classes compatible with all of 
 |---|---|
 | <code lang="csharp">typeof(Weapon)</code> | <code lang="class-name">Weapon</code>, <code lang="class-name">MeleeWeapon</code>, <code lang="class-name">RangedWeapon</code>, <code lang="class-name">Sword</code>, <code lang="class-name">Axe</code>, <code lang="class-name">Bow</code> |
 | <code lang="csharp">typeof(Weapon), typeof(ITwoHanded)</code> | <code lang="class-name">Axe</code>, <code lang="class-name">Bow</code> |
-| <code lang="csharp">typeof(Sword), typeof(Axe)</code> | Nothing, analyzer `AFT0009` |
+| <code lang="csharp">typeof(Sword), typeof(Axe)</code> | Nothing |
 | <code lang="csharp">typeof(MeleeWeapon), Allow = TypeAllow.None</code> | <code lang="class-name">Sword</code>, <code lang="class-name">Axe</code> |
 
 A wrapper's <code lang="class-name">T</code> and a <code lang="csharp">[SerializeReference]</code> field's type count as one more type in the attribute:

@@ -46,7 +46,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 |---|---|
 | <code lang="csharp">typeof(Weapon)</code> | <code lang="class-name">Weapon</code>, <code lang="class-name">MeleeWeapon</code>, <code lang="class-name">RangedWeapon</code>, <code lang="class-name">Sword</code>, <code lang="class-name">Axe</code>, <code lang="class-name">Bow</code> |
 | <code lang="csharp">typeof(Weapon), typeof(ITwoHanded)</code> | <code lang="class-name">Axe</code>, <code lang="class-name">Bow</code> |
-| <code lang="csharp">typeof(Sword), typeof(Axe)</code> | Пусто, анализатор `AFT0009` |
+| <code lang="csharp">typeof(Sword), typeof(Axe)</code> | Пусто |
 | <code lang="csharp">typeof(MeleeWeapon), Allow = TypeAllow.None</code> | <code lang="class-name">Sword</code>, <code lang="class-name">Axe</code> |
 
 <code lang="class-name">T</code> обёртки и тип поля <code lang="csharp">[SerializeReference]</code> работают как ещё один тип в атрибуте:
