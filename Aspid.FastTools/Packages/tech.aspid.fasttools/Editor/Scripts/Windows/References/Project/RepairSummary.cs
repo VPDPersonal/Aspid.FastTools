@@ -12,11 +12,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Null when the edit cannot be undone.
         public readonly RepairReceipt Receipt;
 
+        // Set instead of Receipt for a rewrite of stored type names.
+        public readonly TypeNameReceipt TypeNameReceipt;
+
         public RepairSummary(string title, string message, RepairReceipt receipt)
         {
             Title = title;
             Message = message;
             Receipt = receipt;
+        }
+
+        public RepairSummary(string title, string message, TypeNameReceipt typeNameReceipt)
+        {
+            Title = title;
+            Message = message;
+            TypeNameReceipt = typeNameReceipt;
+        }
+    }
+
+    // What Undo needs to put the missing names back: the entries as they were read before the rewrite.
+    internal sealed class TypeNameReceipt
+    {
+        public readonly IReadOnlyList<MissingTypeNameLocation> Entries;
+        public readonly string AppliedName;
+        public readonly string MissingName;
+        public readonly string AppliedDisplayName;
+
+        public TypeNameReceipt(IReadOnlyList<MissingTypeNameLocation> entries, string appliedName, string missingName,
+            string appliedDisplayName)
+        {
+            Entries = entries;
+            AppliedName = appliedName;
+            MissingName = missingName;
+            AppliedDisplayName = appliedDisplayName;
         }
     }
 

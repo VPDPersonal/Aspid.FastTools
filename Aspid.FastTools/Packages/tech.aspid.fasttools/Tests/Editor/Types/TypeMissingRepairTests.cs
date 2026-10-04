@@ -52,6 +52,36 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 types: new[] { typeof(IRepairProbe) }, allow: TypeAllow.All, excludeEditorOnly: true));
         }
 
+        [Test]
+        public void Suggestion_Predicate_NarrowsCandidatesAndIsPartOfTheCacheKey()
+        {
+            Assert.AreEqual(typeof(UniqueRepairProbe), Suggest(nameof(UniqueRepairProbe)));
+            Assert.IsNull(Suggest(nameof(UniqueRepairProbe), predicate: RejectAll));
+            Assert.AreEqual(typeof(UniqueRepairProbe), Suggest(nameof(UniqueRepairProbe)),
+                "A filtered lookup must not leak into an unfiltered one.");
+            Assert.AreEqual(typeof(UniqueRepairProbe), Suggest(nameof(UniqueRepairProbe), predicate: AcceptAll));
+            Assert.IsNull(Suggest(nameof(UniqueRepairProbe), predicate: RejectAll),
+                "A cached filtered result stays rejected.");
+        }
+
+        [Test]
+        public void Suggestion_Predicate_ResolvesAnAmbiguousName()
+        {
+            Assert.IsNull(Suggest(nameof(DuplicateRepairProbe)));
+            Assert.AreEqual(typeof(OtherScope.DuplicateRepairProbe),
+                Suggest(nameof(DuplicateRepairProbe), predicate: IsInOtherScope));
+        }
+
+        [Test]
+        public void Suggestion_ScriptPredicate_OffersOnlyTypesWithAScript()
+        {
+            // A nested type owns no script asset; a top-level class of the runtime assembly does.
+            Assert.IsNull(Suggest(nameof(UniqueRepairProbe), predicate: SerializableMonoScriptUtility.HasScript));
+            Assert.AreEqual(typeof(SerializableMonoScript), TypeMissingRepair.GetSuggestion(
+                storedName: Missing(nameof(SerializableMonoScript)), types: new[] { typeof(SerializableTypeBase) },
+                allow: TypeAllow.None, excludeEditorOnly: false, predicate: SerializableMonoScriptUtility.HasScript));
+        }
+
         [TestCase("UniqueRepairProbe[]")]
         [TestCase("UniqueRepairProbe`1[[System.Int32, mscorlib]]")]
         [TestCase("UnrelatedName")]
@@ -94,12 +124,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 var caption = field.Q<TextElement>(className: EnumField.textUssClassName);
                 var deadline = EditorApplication.timeSinceStartup + 2;
                 while ((!root.ClassListContains("aspid-fasttools-type-property--missing") ||
-                        !caption.text.Contains(Missing(nameof(UniqueRepairProbe)))) &&
+                        caption.text != MissingCaption(nameof(UniqueRepairProbe))) &&
                        EditorApplication.timeSinceStartup < deadline)
                     yield return null;
                 Assert.AreEqual(Missing(nameof(UniqueRepairProbe)), target.typeName);
                 Assert.IsTrue(root.ClassListContains("aspid-fasttools-type-property--missing"));
-                Assert.IsTrue(caption.text.Contains(Missing(nameof(UniqueRepairProbe))));
+                Assert.AreEqual(MissingCaption(nameof(UniqueRepairProbe)), caption.text);
 
                 field.ApplyPicked(assemblyQualifiedName: null);
                 deadline = EditorApplication.timeSinceStartup + 2;
@@ -141,8 +171,16 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
         private static string Missing(string name) => $"Old.Namespace.{name}, Missing.Assembly";
 
-        private static Type Suggest(string name, TypeAllow allow = TypeAllow.None) =>
+        private static string MissingCaption(string name) => $"<Missing Old.Namespace.{name}>";
+
+        private static bool AcceptAll(Type _) => true;
+
+        private static bool RejectAll(Type _) => false;
+
+        private static bool IsInOtherScope(Type type) => type.DeclaringType == typeof(OtherScope);
+
+        private static Type Suggest(string name, TypeAllow allow = TypeAllow.None, Func<Type, bool> predicate = null) =>
             TypeMissingRepair.GetSuggestion(storedName: Missing(name), types: new[] { typeof(IRepairProbe) },
-                allow: allow, excludeEditorOnly: false);
+                allow: allow, excludeEditorOnly: false, predicate: predicate);
     }
 }

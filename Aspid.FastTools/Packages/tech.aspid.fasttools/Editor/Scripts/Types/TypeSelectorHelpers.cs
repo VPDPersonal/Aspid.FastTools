@@ -64,6 +64,33 @@ namespace Aspid.FastTools.Types.Editors
                 : $"<Missing {assemblyQualifiedName}>";
         }
 
+        // The stored name without its assembly part, for a caption: the full name stays in the tooltip. It splits at the
+        // first comma outside brackets, so a constructed generic keeps its bracketed arguments with their assemblies.
+        internal static string GetMissingDisplayName(string assemblyQualifiedName)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) return assemblyQualifiedName;
+
+            var depth = 0;
+            for (var i = 0; i < assemblyQualifiedName.Length; i++)
+            {
+                switch (assemblyQualifiedName[i])
+                {
+                    case '[':
+                        depth++;
+                        break;
+
+                    case ']':
+                        if (depth > 0) depth--;
+                        break;
+
+                    case ',' when depth == 0:
+                        return assemblyQualifiedName.Substring(startIndex: 0, length: i).Trim();
+                }
+            }
+
+            return assemblyQualifiedName.Trim();
+        }
+
         internal static string GetTypeSelectorTooltip(Type value)
         {
             if (value is null) return null;

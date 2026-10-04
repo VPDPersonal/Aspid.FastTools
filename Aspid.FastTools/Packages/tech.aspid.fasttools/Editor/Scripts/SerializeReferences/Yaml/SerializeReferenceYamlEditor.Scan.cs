@@ -18,15 +18,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
 
-        // `knownTextYaml` skips the format sniff for a caller that has already sniffed the file (the gate's Scan).
+        // `knownTextYaml` skips the format sniff for a caller that has already sniffed the file.
         public static List<MissingReferenceEntry> FindMissingReferences(
-            string assetPath, Func<ManagedTypeName, bool> resolves, bool knownTextYaml = false)
+            string assetPath, Func<ManagedTypeName, bool> resolves, bool knownTextYaml = false) =>
+            FindMissingReferences(SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml), resolves);
+
+        // For a sweep that reads the file once for several passes (the gate's Scan); lines is null for an unreadable file.
+        public static List<MissingReferenceEntry> FindMissingReferences(string[] lines, Func<ManagedTypeName, bool> resolves)
         {
             var result = new List<MissingReferenceEntry>();
 
             try
             {
-                var lines = SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml);
                 if (lines is null) return result;
 
                 var headers = new List<(long fileId, int start)>();
