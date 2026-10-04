@@ -73,7 +73,7 @@ After a class is renamed, moved or deleted, the field shows `<Missing …>` with
 
 ![The missing Game.Gear.Pistoll reference with the Fix and → Pistol buttons](Images/aspid_fasttools_serialize_reference_repair.png)
 
-**Fix** opens the class picker, and the class you pick replaces the missing one. When a class with the same or a similar name fits, the notice also offers it, for example **→ Pistol**. What Fix keeps on an asset and in a scene is described in [Fix in the Inspector](06-serialize-reference-tooling.md#fix-in-the-inspector).
+**Fix** opens the class picker, and the class you pick replaces the missing one. The notice may also offer a matching class, for example **→ Pistol**; the tooltip gives the reason. What Fix keeps on an asset and in a scene is described in [Fix in the Inspector](06-serialize-reference-tooling.md#fix-in-the-inspector).
 
 [Project References](06-serialize-reference-tooling.md#project-references-repair-a-group) finds every missing reference in the project and repairs them in groups. The [build check](07-serialize-reference-validation.md) and [breakage detection](07-serialize-reference-validation.md#detecting-new-breakages) report new ones.
 
