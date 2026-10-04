@@ -23,9 +23,9 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Resolves the backing field on the runtime type of the declaring instance or its base classes.
         /// </summary>
+        /// <remarks>For an array or list element, returns the collection field.</remarks>
         /// <param name="property">The property whose backing field to locate.</param>
         /// <returns>The backing field; otherwise, <see langword="null"/> if it cannot be resolved.</returns>
-        /// <remarks>For an array or list element, returns the collection field.</remarks>
         public static FieldInfo GetFieldInfo(this SerializedProperty property)
         {
             var owner = property.GetDeclaringInstance();
@@ -35,9 +35,9 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Returns the instance declaring the backing field, including the collection owner for array or list elements.
         /// </summary>
+        /// <remarks>A struct instance is a boxed copy; modifying it does not update the serialized object.</remarks>
         /// <param name="property">The property whose declaring instance to resolve.</param>
         /// <returns>The declaring instance; otherwise, <see langword="null"/> if the path cannot be resolved.</returns>
-        /// <remarks>A struct instance is a boxed copy; modifying it does not update the serialized object.</remarks>
         public static object GetDeclaringInstance(this SerializedProperty property)
         {
             object current = property.serializedObject.targetObject;

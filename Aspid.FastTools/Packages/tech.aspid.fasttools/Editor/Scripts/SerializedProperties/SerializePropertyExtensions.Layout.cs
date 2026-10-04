@@ -8,9 +8,9 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Determines whether a generic serialized value has visible children.
         /// </summary>
+        /// <remarks>Managed references and custom drawer layouts are not covered by this check.</remarks>
         /// <param name="property">The property to inspect.</param>
         /// <returns><see langword="true"/> for a generic value with visible children; otherwise, <see langword="false"/>.</returns>
-        /// <remarks>Managed references and custom drawer layouts are not covered by this check.</remarks>
         public static bool HasFoldout(this SerializedProperty property) =>
             property.propertyType is SerializedPropertyType.Generic && property.hasVisibleChildren;
     }

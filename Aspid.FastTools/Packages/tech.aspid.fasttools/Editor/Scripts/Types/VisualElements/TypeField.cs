@@ -12,7 +12,7 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// <see cref="BaseField{Type}"/> for selecting a type and optionally storing its assembly-qualified name.
+    /// <see cref="BaseField{TValueType}"/> of <see cref="Type"/> for selecting a type and optionally storing its assembly-qualified name.
     /// </summary>
     [UxmlElement]
     public partial class TypeField : BaseField<Type>

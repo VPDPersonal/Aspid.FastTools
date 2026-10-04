@@ -11,17 +11,17 @@ public static class ProfilerMarkerExtensionsForGenerator
     /// <summary>
     /// Opens the <see cref="ProfilerMarker"/> of this call site, named <c>Type.Member (line)</c>.
     /// </summary>
-    /// <param name="instance">The instance the scope is opened on; its value is never read.</param>
-    /// <param name="line">The line of the call, filled in by the compiler; the value is never read.</param>
-    /// <typeparam name="T">The type of <paramref name="instance"/>; generic, so a struct is not boxed.</typeparam>
-    /// <returns>An empty scope: this overload runs only when the call gets no marker.</returns>
     /// <remarks>
     /// For every type that calls this method on its own instance the generator emits a closer overload that
     /// overload resolution picks instead, holding one <see cref="ProfilerMarker"/> per line of that type.
     /// This overload runs only for calls the generator cannot support; analyzer <c>AFT0010</c> reports them.
     /// It takes the same parameters as the generated overload, so the generated one also wins for a type
-    /// in the global namespace; that overload takes a struct by <c>in</c>, so the call does not copy it.
+    /// in the global namespace; that overload takes a struct by <see langword="in"/>, so the call does not copy it.
     /// </remarks>
+    /// <typeparam name="T">The type of <paramref name="instance"/>; generic, so a struct is not boxed.</typeparam>
+    /// <param name="instance">The instance the scope is opened on; its value is never read.</param>
+    /// <param name="line">The line of the call, filled in by the compiler; the value is never read.</param>
+    /// <returns>An empty scope: this overload runs only when the call gets no marker.</returns>
     public static ProfilerMarker.AutoScope Marker<T>(this T instance, [CallerLineNumber] int line = -1) => default;
 
     /// <summary>
