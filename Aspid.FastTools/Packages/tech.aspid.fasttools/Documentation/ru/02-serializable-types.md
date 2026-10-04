@@ -70,3 +70,5 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 ## Пример в пакете
 
 Выбор типов врагов и паттерна расстановки показан в примере [Types](../../Samples~/Types/Documentation/README.ru.md).
+
+![Волна обычных и элитных врагов в сцене Types](../../Samples~/Types/Documentation/Images/demo.gif)

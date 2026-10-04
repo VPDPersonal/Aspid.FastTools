@@ -70,3 +70,5 @@ The link breaks, and the field shows a [missing type](#missing-type) with the sa
 ## Package sample
 
 For Inspector selection of enemy types and spawn patterns, see [Types](../Samples~/Types/Documentation/README.md).
+
+![A wave of regular and elite enemies in the Types scene](../Samples~/Types/Documentation/Images/demo.gif)
