@@ -4,7 +4,7 @@ Find missing references and unset required fields before shipping the project.
 
 ## Quick start
 
-Open **Tools → Aspid 🐍 → FastTools → Settings** and set **Build / CI gate → Fail**. Missing types now stop a player build. The default, **Warn**, reports problems and continues the build.
+Open **Tools → Aspid 🐍 → FastTools → Settings** and set **Build / CI gate → Fail**. Missing types now stop a player build. The default is **Warn**.
 
 The check reports violations; for repair, see [SerializeReference repair](06-serialize-reference-tooling.md).
 
@@ -36,21 +36,20 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 
 ## Detecting new breakages
 
-**Breakage detection** reports newly missing references and type names after script or asset changes with a notification and in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is stored locally in `EditorPrefs`.
+**Breakage detection** reports newly missing references and type names right after script or asset changes, with a notification as well as in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is a per-user setting: every team member has their own.
 
 ## Scan scope
 
-The check reads saved `.prefab`, `.asset` and `.unity` files under `Assets/`. Pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing types. Missing-type checks cover <code lang="csharp">[SerializeReference]</code> and the names that <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields store. They do not check <code lang="csharp">[TypeSelector]</code> strings.
+- saved `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from **Excluded scan folders**;
+- <code lang="csharp">[SerializeReference]</code> and the names in <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields; <code lang="csharp">[TypeSelector]</code> strings are not checked;
+- pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing;
+- binary assets and unfetched Git LFS files are not scanned, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files.
 
-**Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection. No folders are excluded by default.
+**Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection.
 
-Binary assets and unfetched Git LFS files are not scanned; CI lists them in its report. For a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files.
-
-**Build / CI gate**, **Excluded scan folders** and **Auto de-alias duplicated list elements** are shared settings, marked by a green stripe: they are also available in **Project Settings → Aspid.FastTools → SerializeReference** and live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI.
+**Build / CI gate**, **Excluded scan folders** and **Auto de-alias duplicated list elements** are shared settings with a green stripe. They live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI, and also open in **Project Settings → Aspid.FastTools → SerializeReference**.
 
 ![SerializeReference section of the Settings tab: shared settings with a green stripe, per-user ones with a blue one](Images/aspid_fasttools_serialize_reference_settings.png)
-
-<a id="headless-ci"></a>
 
 ## Running in CI
 
@@ -72,8 +71,6 @@ Exit code `2` means the check itself failed.
 | `-srGateRequired` | Also checks unset fields with <code lang="csharp">Required = true</code> |
 | `-srGateFail` | Uses `Fail` instead of the project's mode, even `Off` |
 | `-srGateWarnOnly` | Uses `Warn` instead of the project's mode, even `Off`; takes precedence over `-srGateFail` if both are passed |
-
-<a id="report-and-exit-codes"></a>
 
 ## Report
 
@@ -111,3 +108,9 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead. A `MissingTypeName` row is in its **type name** group of Project References.
 
 </details>
+
+## Package sample
+
+The [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) sample has a required field and missing types to check.
+
+![The dummy takes damage in the SerializeReferences scene](../Samples~/SerializeReferences/Documentation/Images/demo.gif)
