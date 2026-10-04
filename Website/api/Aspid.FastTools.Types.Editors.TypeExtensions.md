@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Provides extension methods for locating and opening the [`MonoScript`](https://docs.unity3d.com/ScriptReference/MonoScript.html) defining a
+Provides extension methods for locating and opening the [`MonoScript`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/MonoScript.html) defining a
 [`Type`](https://learn.microsoft.com/dotnet/api/system.type).
 
 ```csharp
@@ -49,7 +49,7 @@ The matching script asset; otherwise, <a href="https://learn.microsoft.com/dotne
 #### Remarks
 
 Text matching is limited to assets matching the type name and, for nested types, the declaring type's script.
-Check [`GetClass`](https://docs.unity3d.com/ScriptReference/MonoScript-GetClass.html) before assigning the result to a component's <code>m_Script</code> property.
+Check [`GetClass`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/MonoScript.GetClass.html) before assigning the result to a component's <code>m_Script</code> property.
 
 ### OpenInScriptEditor\(Type\) {#Aspid_FastTools_Types_Editors_TypeExtensions_OpenInScriptEditor_System_Type_}
 

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldVector3Extensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldVector3Extensions.md#Aspid_FastTools_UIElements_BaseFieldVector3Extensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Vector3`](https://docs.unity3d.com/ScriptReference/Vector3.html).
+Provides [`BaseFieldVector3Extensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldVector3Extensions.md#Aspid_FastTools_UIElements_BaseFieldVector3Extensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`Vector3`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Vector3.html).
 
 ```csharp
 public static class BaseFieldVector3Extensions
@@ -27,7 +27,7 @@ public static class BaseFieldVector3Extensions
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldVector3Extensions_SetLabel__1___0_System_String_}
 
-Sets the label of the field via [`label`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-label.html).
+Sets the label of the field via [`label`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1-label.html).
 
 ```csharp
 public static T SetLabel<T>(this T element, string value) where T : BaseField<Vector3>

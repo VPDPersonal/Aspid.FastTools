@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`Focusable`](https://docs.unity3d.com/ScriptReference/UIElements-Focusable.html).
+Provides extension methods for [`Focusable`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Focusable.html).
 
 ```csharp
 public static class FocusableExtensions
@@ -27,7 +27,7 @@ public static class FocusableExtensions
 
 ### BlurSelf\<T\>\(T\) {#Aspid_FastTools_UIElements_FocusableExtensions_BlurSelf__1___0_}
 
-Removes focus from the element via [`Blur`](https://docs.unity3d.com/ScriptReference/UIElements-Focusable-Blur.html).
+Removes focus from the element via [`Blur`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Focusable.Blur.html).
 
 ```csharp
 public static T BlurSelf<T>(this T element) where T : Focusable
@@ -53,7 +53,7 @@ The element type.
 
 ### FocusSelf\<T\>\(T\) {#Aspid_FastTools_UIElements_FocusableExtensions_FocusSelf__1___0_}
 
-Gives focus to the element via [`Focus`](https://docs.unity3d.com/ScriptReference/UIElements-Focusable-Focus.html).
+Gives focus to the element via [`Focus`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Focusable.Focus.html).
 
 ```csharp
 public static T FocusSelf<T>(this T element) where T : Focusable
@@ -79,7 +79,7 @@ The element type.
 
 ### IsFocused\(Focusable\) {#Aspid_FastTools_UIElements_FocusableExtensions_IsFocused_UnityEngine_UIElements_Focusable_}
 
-Returns whether the element currently has keyboard focus.
+Returns whether the element is the [`focusedElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.FocusController-focusedElement.html) of its panel.
 
 ```csharp
 public static bool IsFocused(this Focusable element)
@@ -95,11 +95,18 @@ The element to check.
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the element holds keyboard focus; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the element is the panel's focused element; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+
+#### Remarks
+
+[`focusedElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.FocusController-focusedElement.html) reports the outermost composite element, so a field inside another
+field (a [`FloatField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.FloatField.html) of a [`Vector3Field`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Vector3Field.html)) or inside a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html),
+[`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html) or [`MultiColumnListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnListView.html) row returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> while it has focus.
+Track such a field with [`FocusInEvent`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.FocusInEvent.html) and [`FocusOutEvent`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.FocusOutEvent.html) instead.
 
 ### SetDelegatesFocus\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_FocusableExtensions_SetDelegatesFocus__1___0_System_Boolean_}
 
-Sets [`delegatesFocus`](https://docs.unity3d.com/ScriptReference/UIElements-Focusable-delegatesFocus.html).
+Sets [`delegatesFocus`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Focusable-delegatesFocus.html).
 
 ```csharp
 public static T SetDelegatesFocus<T>(this T element, bool value) where T : Focusable
@@ -129,7 +136,7 @@ The element type.
 
 ### SetFocusable\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_FocusableExtensions_SetFocusable__1___0_System_Boolean_}
 
-Sets [`focusable`](https://docs.unity3d.com/ScriptReference/UIElements-Focusable-focusable.html).
+Sets [`focusable`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Focusable-focusable.html).
 
 ```csharp
 public static T SetFocusable<T>(this T element, bool value) where T : Focusable
@@ -159,7 +166,7 @@ The element type.
 
 ### SetTabIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_FocusableExtensions_SetTabIndex__1___0_System_Int32_}
 
-Sets [`tabIndex`](https://docs.unity3d.com/ScriptReference/UIElements-Focusable-tabIndex.html).
+Sets [`tabIndex`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Focusable-tabIndex.html).
 
 ```csharp
 public static T SetTabIndex<T>(this T element, int value) where T : Focusable

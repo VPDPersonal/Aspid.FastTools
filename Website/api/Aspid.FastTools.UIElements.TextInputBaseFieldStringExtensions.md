@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`TextInputBaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField.html) of [`String`](https://learn.microsoft.com/dotnet/api/system.string).
+Provides extension methods for [`TextInputBaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1.html) of [`String`](https://learn.microsoft.com/dotnet/api/system.string).
 
 ```csharp
 public static class TextInputBaseFieldStringExtensions
@@ -27,7 +27,7 @@ public static class TextInputBaseFieldStringExtensions
 
 ### SetAutoCorrection\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetAutoCorrection__1___0_System_Boolean_}
 
-Sets [`autoCorrection`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-autoCorrection.html).
+Sets [`autoCorrection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-autoCorrection.html).
 
 ```csharp
 public static T SetAutoCorrection<T>(this T element, bool value) where T : TextInputBaseField<string>
@@ -57,7 +57,7 @@ The field type.
 
 ### SetDelayed\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetDelayed__1___0_System_Boolean_}
 
-Sets [`isDelayed`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-isDelayed.html).
+Sets [`isDelayed`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-isDelayed.html).
 
 ```csharp
 public static T SetDelayed<T>(this T element, bool value) where T : TextInputBaseField<string>
@@ -87,7 +87,7 @@ The field type.
 
 ### SetHideMobileInput\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetHideMobileInput__1___0_System_Boolean_}
 
-Sets [`hideMobileInput`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-hideMobileInput.html).
+Sets [`hideMobileInput`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-hideMobileInput.html).
 
 ```csharp
 public static T SetHideMobileInput<T>(this T element, bool value) where T : TextInputBaseField<string>
@@ -117,7 +117,7 @@ The field type.
 
 ### SetHidePlaceholderOnFocus\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetHidePlaceholderOnFocus__1___0_System_Boolean_}
 
-Sets [`hidePlaceholderOnFocus`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-hidePlaceholderOnFocus.html) of [`textEdition`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-textEdition.html).
+Sets [`hidePlaceholderOnFocus`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-hidePlaceholderOnFocus.html) of [`textEdition`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-textEdition.html).
 
 ```csharp
 public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : TextInputBaseField<string>
@@ -147,7 +147,7 @@ The field type.
 
 ### SetHideSoftKeyboard\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetHideSoftKeyboard__1___0_System_Boolean_}
 
-Sets [`hideSoftKeyboard`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-hideSoftKeyboard.html).
+Sets [`hideSoftKeyboard`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-hideSoftKeyboard.html).
 
 ```csharp
 public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : TextInputBaseField<string>
@@ -177,7 +177,7 @@ The field type.
 
 ### SetKeyboardType\<T\>\(T, TouchScreenKeyboardType\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetKeyboardType__1___0_UnityEngine_TouchScreenKeyboardType_}
 
-Sets [`keyboardType`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-keyboardType.html).
+Sets [`keyboardType`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-keyboardType.html).
 
 ```csharp
 public static T SetKeyboardType<T>(this T element, TouchScreenKeyboardType value) where T : TextInputBaseField<string>
@@ -207,7 +207,7 @@ The field type.
 
 ### SetMaskChar\<T\>\(T, char\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetMaskChar__1___0_System_Char_}
 
-Sets [`maskChar`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-maskChar.html).
+Sets [`maskChar`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-maskChar.html).
 
 ```csharp
 public static T SetMaskChar<T>(this T element, char value) where T : TextInputBaseField<string>
@@ -237,7 +237,7 @@ The field type.
 
 ### SetMaxLength\<T\>\(T, int\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetMaxLength__1___0_System_Int32_}
 
-Sets [`maxLength`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-maxLength.html).
+Sets [`maxLength`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-maxLength.html).
 
 ```csharp
 public static T SetMaxLength<T>(this T element, int value) where T : TextInputBaseField<string>
@@ -267,7 +267,7 @@ The field type.
 
 ### SetPassword\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetPassword__1___0_System_Boolean_}
 
-Sets [`isPasswordField`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-isPasswordField.html).
+Sets [`isPasswordField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-isPasswordField.html).
 
 ```csharp
 public static T SetPassword<T>(this T element, bool value) where T : TextInputBaseField<string>
@@ -297,7 +297,7 @@ The field type.
 
 ### SetPlaceholder\<T\>\(T, string\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetPlaceholder__1___0_System_String_}
 
-Sets [`placeholder`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-placeholder.html) of [`textEdition`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-textEdition.html).
+Sets [`placeholder`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-placeholder.html) of [`textEdition`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-textEdition.html).
 
 ```csharp
 public static T SetPlaceholder<T>(this T element, string value) where T : TextInputBaseField<string>
@@ -327,7 +327,7 @@ The field type.
 
 ### SetReadOnly\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldStringExtensions_SetReadOnly__1___0_System_Boolean_}
 
-Sets [`isReadOnly`](https://docs.unity3d.com/ScriptReference/UIElements-TextInputBaseField-isReadOnly.html).
+Sets [`isReadOnly`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-isReadOnly.html).
 
 ```csharp
 public static T SetReadOnly<T>(this T element, bool value) where T : TextInputBaseField<string>

@@ -1,0 +1,57 @@
+---
+title: "Class BaseFieldRectIntExtensions"
+sidebar_label: "BaseFieldRectIntExtensions"
+description: "Class BaseFieldRectIntExtensions — Aspid.FastTools API reference"
+hide_title: true
+pagination_prev: null
+pagination_next: null
+---
+# Class BaseFieldRectIntExtensions {#Aspid_FastTools_UIElements_BaseFieldRectIntExtensions}
+
+Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
+Assembly: Aspid.FastTools.dll  
+
+Provides [`BaseFieldRectIntExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldRectIntExtensions.md#Aspid_FastTools_UIElements_BaseFieldRectIntExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`RectInt`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/RectInt.html).
+
+```csharp
+public static class BaseFieldRectIntExtensions
+```
+
+#### Inheritance
+
+[object](https://learn.microsoft.com/dotnet/api/system.object) ← 
+[BaseFieldRectIntExtensions](Aspid.FastTools.UIElements.BaseFieldRectIntExtensions.md)
+
+
+## Methods
+
+### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldRectIntExtensions_SetLabel__1___0_System_String_}
+
+Sets the label of the field via [`label`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1-label.html).
+
+```csharp
+public static T SetLabel<T>(this T element, string value) where T : BaseField<RectInt>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The label text to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The field type.
+

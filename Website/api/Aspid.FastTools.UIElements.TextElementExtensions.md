@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`TextElement`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement.html).
+Provides extension methods for [`TextElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement.html).
 
 ```csharp
 public static class TextElementExtensions
@@ -27,7 +27,7 @@ public static class TextElementExtensions
 
 ### SetDisplayTooltipWhenElided\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetDisplayTooltipWhenElided__1___0_System_Boolean_}
 
-Sets [`displayTooltipWhenElided`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-displayTooltipWhenElided.html).
+Sets [`displayTooltipWhenElided`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement-displayTooltipWhenElided.html).
 
 ```csharp
 public static T SetDisplayTooltipWhenElided<T>(this T element, bool value) where T : TextElement
@@ -57,7 +57,7 @@ The element type.
 
 ### SetEmojiFallbackSupport\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetEmojiFallbackSupport__1___0_System_Boolean_}
 
-Sets [`emojiFallbackSupport`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-emojiFallbackSupport.html).
+Sets [`emojiFallbackSupport`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement-emojiFallbackSupport.html).
 
 ```csharp
 public static T SetEmojiFallbackSupport<T>(this T element, bool value) where T : TextElement
@@ -87,7 +87,7 @@ The element type.
 
 ### SetEnableRichText\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetEnableRichText__1___0_System_Boolean_}
 
-Sets [`enableRichText`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-enableRichText.html).
+Sets [`enableRichText`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement-enableRichText.html).
 
 ```csharp
 public static T SetEnableRichText<T>(this T element, bool value) where T : TextElement
@@ -117,7 +117,7 @@ The element type.
 
 ### SetParseEscapeSequences\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetParseEscapeSequences__1___0_System_Boolean_}
 
-Sets [`parseEscapeSequences`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-parseEscapeSequences.html).
+Sets [`parseEscapeSequences`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement-parseEscapeSequences.html).
 
 ```csharp
 public static T SetParseEscapeSequences<T>(this T element, bool value) where T : TextElement
@@ -147,7 +147,7 @@ The element type.
 
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetText__1___0_System_String_}
 
-Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-text.html).
+Sets [`text`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement-text.html).
 
 ```csharp
 public static T SetText<T>(this T element, string value) where T : TextElement

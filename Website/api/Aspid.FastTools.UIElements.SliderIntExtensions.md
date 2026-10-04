@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).
+Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).
 
 ```csharp
 public static class SliderIntExtensions
@@ -32,7 +32,7 @@ cannot share one class.
 
 ### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderIntExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}
 
-Sets [`direction`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-direction.html) controlling the orientation of the element.
+Sets [`direction`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-direction.html) controlling the orientation of the element.
 
 ```csharp
 public static T SetDirection<T>(this T element, SliderDirection value) where T : BaseSlider<int>
@@ -62,7 +62,7 @@ The element type.
 
 ### SetFill\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderIntExtensions_SetFill__1___0_System_Boolean_}
 
-Sets [`fill`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-fill.html) controlling whether the track is filled up to the current value.
+Sets [`fill`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-fill.html) controlling whether the track is filled up to the current value.
 
 ```csharp
 public static T SetFill<T>(this T element, bool value) where T : BaseSlider<int>
@@ -92,7 +92,7 @@ The element type.
 
 ### SetInverted\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderIntExtensions_SetInverted__1___0_System_Boolean_}
 
-Sets [`inverted`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-inverted.html) reversing the direction of the element.
+Sets [`inverted`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-inverted.html) reversing the direction of the element.
 
 ```csharp
 public static T SetInverted<T>(this T element, bool value) where T : BaseSlider<int>
@@ -122,7 +122,7 @@ The element type.
 
 ### SetPageSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderIntExtensions_SetPageSize__1___0_System_Single_}
 
-Sets [`pageSize`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-pageSize.html) controlling how much the value changes per page step.
+Sets [`pageSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-pageSize.html) controlling how much the value changes per page step.
 
 ```csharp
 public static T SetPageSize<T>(this T element, float value) where T : BaseSlider<int>
@@ -152,7 +152,7 @@ The element type.
 
 ### SetShowInputField\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderIntExtensions_SetShowInputField__1___0_System_Boolean_}
 
-Sets [`showInputField`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-showInputField.html) controlling whether a numeric input field is shown alongside the element.
+Sets [`showInputField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-showInputField.html) controlling whether a numeric input field is shown alongside the element.
 
 ```csharp
 public static T SetShowInputField<T>(this T element, bool value) where T : BaseSlider<int>

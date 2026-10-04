@@ -86,7 +86,7 @@ namespace Aspid.FastTools.Types
         /// Creates a wrapper holding <paramref name="type"/>.
         /// </summary>
         /// <param name="type">The type to store, or <see langword="null"/> for an empty wrapper.</param>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="type"/> is not assignable to <typeparamref name="T"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="type"/> is not assignable to <typeparamref name="T"/>.</exception>
         public SerializableType(Type? type)
             : base(type)
         {

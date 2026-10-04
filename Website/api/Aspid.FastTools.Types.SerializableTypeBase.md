@@ -40,7 +40,7 @@ ISerializationCallbackReceiver
 [TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<SerializableTypeBase, TValue\>\(SerializableTypeBase, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<SerializableTypeBase, TValue\>\(SerializableTypeBase, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<SerializableTypeBase, TValue\>\(SerializableTypeBase, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableTypeBase\>\(SerializableTypeBase\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableTypeBase\>\(SerializableTypeBase, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<SerializableTypeBase, TValue\>\(SerializableTypeBase, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<SerializableTypeBase, TValue\>\(SerializableTypeBase, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<SerializableTypeBase, TValue\>\(SerializableTypeBase, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
@@ -69,9 +69,20 @@ ISerializationCallbackReceiver
 
 ## Remarks
 
+<p>
 Not meant to be derived from outside the package — use [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) or
 [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md). Unity serializes the name under the same field for all of them,
 so every wrapper shares one serialized layout.
+</p>
+<p>
+A player resolves the type by the stored name only, which managed code stripping does not see: from
+Managed Stripping Level Low up, a class referenced only by this name can be removed from the build and
+[`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Keep such classes with <code>[Preserve]</code> or <code>link.xml</code>.
+</p>
+<p>
+A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
+loaded later is not picked up before that.
+</p>
 
 ## Properties
 
@@ -93,7 +104,7 @@ Kept even when it no longer resolves, so the Inspector can show what the field u
 
 ### BaseType {#Aspid_FastTools_Types_SerializableTypeBase_BaseType}
 
-Gets the constraint the stored type must satisfy; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
+Gets the base type that types offered by the picker are assignable to; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
 
 ```csharp
 public abstract Type BaseType { get; }
@@ -102,6 +113,10 @@ public abstract Type BaseType { get; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)
+
+#### Remarks
+
+A loaded type is not checked against it: a name stored before the constraint changed resolves as is.
 
 ### Type {#Aspid_FastTools_Types_SerializableTypeBase_Type}
 

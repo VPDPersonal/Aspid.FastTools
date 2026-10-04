@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`AbstractProgressBar`](https://docs.unity3d.com/ScriptReference/UIElements-AbstractProgressBar.html).
+Provides extension methods for [`AbstractProgressBar`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.AbstractProgressBar.html).
 
 ```csharp
 public static class AbstractProgressBarExtensions
@@ -117,7 +117,7 @@ The element type.
 
 ### SetValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_AbstractProgressBarExtensions_SetValue__1___0_System_Single_}
 
-Sets the current value of the progress bar via [`value`](https://docs.unity3d.com/ScriptReference/UIElements-AbstractProgressBar-value.html).
+Sets the current value of the progress bar via [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.AbstractProgressBar-value.html).
 
 ```csharp
 public static T SetValue<T>(this T element, float value) where T : AbstractProgressBar

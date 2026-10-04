@@ -1690,14 +1690,14 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.exposedReferenceValue"/> and returns the property for chaining.
         /// </summary>
-        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
-        /// <param name="property">Target property.</param>
-        /// <param name="value"><see cref="UnityEngine.Object"/> exposed reference to assign.</param>
-        /// <returns>The same <paramref name="property"/> instance.</returns>
         /// <remarks>
         /// Without an <see cref="IExposedPropertyTable"/> context, Unity's setter applies the write itself and records Undo,
         /// so there are no <c>AndApply</c> or <c>AndApplyWithoutUndo</c> variants.
         /// </remarks>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value"><see cref="UnityEngine.Object"/> exposed reference to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetExposedReference<T>(this T property, Object value)
             where T : SerializedProperty
         {

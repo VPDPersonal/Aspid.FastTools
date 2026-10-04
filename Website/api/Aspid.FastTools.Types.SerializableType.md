@@ -40,7 +40,7 @@ ISerializationCallbackReceiver
 [TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<SerializableType, TValue\>\(SerializableType, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<SerializableType, TValue\>\(SerializableType, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<SerializableType, TValue\>\(SerializableType, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableType\>\(SerializableType\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableType\>\(SerializableType, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<SerializableType, TValue\>\(SerializableType, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<SerializableType, TValue\>\(SerializableType, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<SerializableType, TValue\>\(SerializableType, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
@@ -105,7 +105,7 @@ The type to store, or <a href="https://learn.microsoft.com/dotnet/csharp/languag
 
 ### BaseType {#Aspid_FastTools_Types_SerializableType_BaseType}
 
-Gets the constraint the stored type must satisfy; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
+Gets the base type that types offered by the picker are assignable to; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
 
 ```csharp
 public override Type BaseType { get; }
@@ -114,6 +114,10 @@ public override Type BaseType { get; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)
+
+#### Remarks
+
+A loaded type is not checked against it: a name stored before the constraint changed resolves as is.
 
 ## Operators
 

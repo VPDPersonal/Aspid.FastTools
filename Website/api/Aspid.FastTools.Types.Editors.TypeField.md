@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-[`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) for selecting a type and optionally storing its assembly-qualified name.
+[`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`Type`](https://learn.microsoft.com/dotnet/api/system.type) for selecting a type and optionally storing its assembly-qualified name.
 
 ```csharp
 [UxmlElement]
@@ -102,12 +102,22 @@ IMixedValueSupport
 [VisualElementExtensions.InsertChildrenIf\<TypeField\>\(TypeField, bool, int, IEnumerable\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__),
 [VisualElementExtensions.InsertChildrenIf\<TypeField\>\(TypeField, bool, int, ReadOnlySpan\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__),
 [FocusableExtensions.IsFocused\(Focusable\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_IsFocused_UnityEngine_UIElements_Focusable_),
-[ProfilerMarkerExtensionsForGenerator.Marker\<TypeField\>\(TypeField\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<TypeField\>\(TypeField, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [VisualElementExtensions.RemoveBoldUnityFontStyleAndWeight\<TypeField\>\(TypeField\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveBoldUnityFontStyleAndWeight__1___0_),
 [VisualElementExtensions.RemoveChild\<TypeField\>\(TypeField, VisualElement\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChild__1___0_UnityEngine_UIElements_VisualElement_),
 [VisualElementExtensions.RemoveChildAt\<TypeField\>\(TypeField, int\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildAt__1___0_System_Int32_),
 [VisualElementExtensions.RemoveChildAtIf\<TypeField\>\(TypeField, bool, int\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildAtIf__1___0_System_Boolean_System_Int32_),
 [VisualElementExtensions.RemoveChildIf\<TypeField\>\(TypeField, bool, VisualElement\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_),
+[VisualElementExtensions.RemoveChildren\<TypeField\>\(TypeField, Span\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Span_UnityEngine_UIElements_VisualElement__),
+[VisualElementExtensions.RemoveChildren\<TypeField\>\(TypeField, List\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__),
+[VisualElementExtensions.RemoveChildren\<TypeField\>\(TypeField, params VisualElement\[\]\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_UnityEngine_UIElements_VisualElement___),
+[VisualElementExtensions.RemoveChildren\<TypeField\>\(TypeField, IEnumerable\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__),
+[VisualElementExtensions.RemoveChildren\<TypeField\>\(TypeField, ReadOnlySpan\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__),
+[VisualElementExtensions.RemoveChildrenIf\<TypeField\>\(TypeField, bool, Span\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Span_UnityEngine_UIElements_VisualElement__),
+[VisualElementExtensions.RemoveChildrenIf\<TypeField\>\(TypeField, bool, List\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__),
+[VisualElementExtensions.RemoveChildrenIf\<TypeField\>\(TypeField, bool, params VisualElement\[\]\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___),
+[VisualElementExtensions.RemoveChildrenIf\<TypeField\>\(TypeField, bool, IEnumerable\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__),
+[VisualElementExtensions.RemoveChildrenIf\<TypeField\>\(TypeField, bool, ReadOnlySpan\<VisualElement\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__),
 [VisualElementExtensions.RemoveClass\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClass__1___0_System_String_),
 [VisualElementExtensions.RemoveItalicUnityFontStyleAndWeight\<TypeField\>\(TypeField\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveItalicUnityFontStyleAndWeight__1___0_),
 [ManipulatorExtensions.RemoveManipulatorSelf\<TypeField\>\(TypeField, IManipulator\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_RemoveManipulatorSelf__1___0_UnityEngine_UIElements_IManipulator_),
@@ -393,6 +403,11 @@ public TypeAllow Allow { get; set; }
 
  TypeAllow
 
+#### Remarks
+
+[`TypeAllow.None`](Aspid.FastTools.Types.TypeAllow.md) by default, so only concrete types are offered, unlike
+[`TypeSelectorAttribute.Allow`](Aspid.FastTools.Types.TypeSelectorAttribute.md#Aspid_FastTools_Types_TypeSelectorAttribute_Allow), which defaults to [`TypeAllow.All`](Aspid.FastTools.Types.TypeAllow.md).
+
 ### HideNoneOption {#Aspid_FastTools_Types_Editors_TypeField_HideNoneOption}
 
 Gets or sets a value indicating whether the <code>&lt;None&gt;</code> row is left out, for a field whose value
@@ -450,6 +465,18 @@ public Type[] Types { get; set; }
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
+### value {#Aspid_FastTools_Types_Editors_TypeField_value}
+
+Gets or sets the selected type, clearing any unresolved name and notifying listeners when it is cleared.
+
+```csharp
+public override sealed Type value { get; set; }
+```
+
+#### Property Value
+
+ [Type](https://learn.microsoft.com/dotnet/api/system.type)
+
 ## Methods
 
 ### SetValueFromAssemblyQualifiedNameWithoutNotify\(string\) {#Aspid_FastTools_Types_Editors_TypeField_SetValueFromAssemblyQualifiedNameWithoutNotify_System_String_}
@@ -484,4 +511,12 @@ public override sealed void SetValueWithoutNotify(Type newValue)
 `newValue` [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
 The type to show, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for an empty selection.
+
+### UpdateMixedValueContent\(\) {#Aspid_FastTools_Types_Editors_TypeField_UpdateMixedValueContent}
+
+Called when the mixed-value state changes to refresh the caption and script button.
+
+```csharp
+protected override sealed void UpdateMixedValueContent()
+```
 

@@ -40,7 +40,7 @@ ISerializationCallbackReceiver
 [TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<SerializableMonoScript, TValue\>\(SerializableMonoScript, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<SerializableMonoScript, TValue\>\(SerializableMonoScript, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<SerializableMonoScript, TValue\>\(SerializableMonoScript, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableMonoScript\>\(SerializableMonoScript\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableMonoScript\>\(SerializableMonoScript, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<SerializableMonoScript, TValue\>\(SerializableMonoScript, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<SerializableMonoScript, TValue\>\(SerializableMonoScript, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<SerializableMonoScript, TValue\>\(SerializableMonoScript, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
@@ -90,18 +90,23 @@ public class Spawner : MonoBehaviour
 <p>
 In the editor the script asset is the source of truth: on every serialization the stored assembly-qualified
 name is re-read from the script's class. The script reference is editor-only, so a player build carries just
-the name and resolves it exactly as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) does.
+the name and resolves it exactly as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) does. When that name no longer resolves in
+the editor, a main-thread read takes the type from the script, so an asset not saved since a class rename still
+works in Play Mode; another thread gets <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> then.
 </p>
 <p>
-Only types Unity maps to a script asset can be referenced this way — a top-level, non-generic class declared
-in a file of the same name. Use [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) for nested and generic types.
+Only types Unity maps to a script asset can be referenced this way: a top-level, non-generic class declared
+in a file of the same name or compiled into a DLL. From a DLL, Unity maps only
+[`MonoBehaviour`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/MonoBehaviour.html) and [`ScriptableObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/ScriptableObject.html) classes, by namespace
+and name, so renaming the class or its namespace breaks the reference. Use [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) for
+nested and generic types and for other DLL classes.
 </p>
 
 ## Properties
 
 ### BaseType {#Aspid_FastTools_Types_SerializableMonoScript_BaseType}
 
-Gets the constraint the stored type must satisfy; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
+Gets the base type that types offered by the picker are assignable to; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
 
 ```csharp
 public override Type BaseType { get; }
@@ -110,6 +115,10 @@ public override Type BaseType { get; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)
+
+#### Remarks
+
+A loaded type is not checked against it: a name stored before the constraint changed resolves as is.
 
 ## Operators
 

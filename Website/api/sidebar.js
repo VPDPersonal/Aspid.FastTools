@@ -396,6 +396,11 @@ export default { api: [
           },
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldRectIntExtensions",
+            "label": "BaseFieldRectIntExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.BaseFieldSbyteExtensions",
             "label": "BaseFieldSbyteExtensions"
           },
@@ -408,6 +413,11 @@ export default { api: [
             "type": "doc",
             "id": "Aspid.FastTools.UIElements.BaseFieldStringExtensions",
             "label": "BaseFieldStringExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldToggleButtonGroupStateExtensions",
+            "label": "BaseFieldToggleButtonGroupStateExtensions"
           },
           {
             "type": "doc",

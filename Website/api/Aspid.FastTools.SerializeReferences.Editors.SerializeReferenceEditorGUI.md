@@ -25,8 +25,8 @@ public static class SerializeReferenceEditorGUI
 
 ## Remarks
 
-Use [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) and [`SerializeReferenceEditorGUI.CreateList`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) in [`CreateInspectorGUI`](https://docs.unity3d.com/ScriptReference/Editor-CreateInspectorGUI.html),
-and [`SerializeReferenceEditorGUI.DrawFieldLayout`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) in [`OnInspectorGUI`](https://docs.unity3d.com/ScriptReference/Editor-OnInspectorGUI.html).
+Use [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) and [`SerializeReferenceEditorGUI.CreateList`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) in [`CreateInspectorGUI`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Editor.CreateInspectorGUI.html),
+and [`SerializeReferenceEditorGUI.DrawFieldLayout`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) in [`OnInspectorGUI`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Editor.OnInspectorGUI.html).
 
 ## Methods
 
@@ -42,7 +42,7 @@ public static VisualElement CreateField(SerializedProperty property, string labe
 
 `property` SerializedProperty
 
-A managed-reference property of the editor's [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html).
+A managed-reference property of the editor's [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html).
 
 `label` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
@@ -88,7 +88,7 @@ An array/list property whose elements are managed references.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Extra base types every element type must be assignable to besides the declared one; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
+Extra base types every element type must be assignable to besides the declared one and a <code>[TypeSelector]</code> on the field; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
 
 #### Returns
 
@@ -118,7 +118,7 @@ public static void DrawFieldLayout(SerializedProperty property, GUIContent label
 
 `property` SerializedProperty
 
-A managed-reference property of the editor's [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html).
+A managed-reference property of the editor's [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html).
 
 `label` GUIContent
 

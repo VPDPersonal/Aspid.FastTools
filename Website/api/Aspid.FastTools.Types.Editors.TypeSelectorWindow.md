@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-[`EditorWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow.html) for selecting a type from a filtered hierarchy.
+[`EditorWindow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/EditorWindow.html) for selecting a type from a filtered hierarchy.
 
 ```csharp
 public sealed class TypeSelectorWindow : EditorWindow
@@ -32,7 +32,7 @@ EditorWindow ←
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<TypeSelectorWindow, TValue\>\(TypeSelectorWindow, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<TypeSelectorWindow, TValue\>\(TypeSelectorWindow, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
 [EditorExtensions.GetDisplayName\(Object\)](Aspid.FastTools.Editors.EditorExtensions.md#Aspid_FastTools_Editors_EditorExtensions_GetDisplayName_UnityEngine_Object_),
-[ProfilerMarkerExtensionsForGenerator.Marker\<TypeSelectorWindow\>\(TypeSelectorWindow\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<TypeSelectorWindow\>\(TypeSelectorWindow, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<TypeSelectorWindow, TValue\>\(TypeSelectorWindow, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<TypeSelectorWindow, TValue\>\(TypeSelectorWindow, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<TypeSelectorWindow, TValue\>\(TypeSelectorWindow, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),

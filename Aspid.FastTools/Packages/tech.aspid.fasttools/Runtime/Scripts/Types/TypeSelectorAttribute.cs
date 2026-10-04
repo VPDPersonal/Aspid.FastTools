@@ -56,7 +56,7 @@ namespace Aspid.FastTools.Types
         /// <remarks>
         /// <para>
         /// "Unset" means <see langword="null"/> for a <c>[SerializeReference]</c> field and an empty name for a
-        /// <c>string</c> or <see cref="SerializableType"/> field. A reference that is set but whose type no longer
+        /// <see cref="string"/> or <see cref="SerializableType"/> field. A reference that is set but whose type no longer
         /// resolves is not a violation of this flag — the separate missing-type check covers that.
         /// </para>
         /// <para>
@@ -105,7 +105,7 @@ namespace Aspid.FastTools.Types
         /// <remarks>
         /// Resolved member-first: an identifier matching an instance field or property on the target object supplies
         /// the constraint from its current value, so it can be driven live by another field; anything else is treated
-        /// as an assembly-qualified type name. A member may be a <see cref="System.Type"/>, a <c>string</c>, a
+        /// as an assembly-qualified type name. A member may be a <see cref="System.Type"/>, a <see cref="string"/>, a
         /// <see cref="SerializableType"/>, or an array of these. Prefer <c>nameof(...)</c> so a rename keeps the
         /// reference intact. A name that resolves to nothing is surfaced as an inline inspector notice.
         /// </remarks>

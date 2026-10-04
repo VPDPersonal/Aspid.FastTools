@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html).
+Provides extension methods for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html).
 
 ```csharp
 public static class BaseFieldExtensions
@@ -27,7 +27,7 @@ public static class BaseFieldExtensions
 
 ### SetLabel\<TField, TValue\>\(TField, string\) {#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_}
 
-Sets [`label`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-label.html) displayed next to the field.
+Sets [`label`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1-label.html) displayed next to the field.
 
 ```csharp
 public static TField SetLabel<TField, TValue>(this TField element, string value) where TField : BaseField<TValue>
