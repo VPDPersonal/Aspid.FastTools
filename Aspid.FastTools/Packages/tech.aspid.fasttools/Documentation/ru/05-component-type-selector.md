@@ -16,11 +16,11 @@ public abstract class EnemyBase : MonoBehaviour
 |---|---|
 | <pre lang="csharp"><code>public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private float _speed = 25f;&#10;&#125;</code></pre> | <pre lang="csharp"><code>public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private int _armor = 10;&#10;&#125;</code></pre> |
 
-Список предлагает конкретных наследников класса, где объявлено поле; пункта `<None>` нет.
+Список предлагает конкретных наследников класса, где объявлено поле; пункта `<None>` нет. Оформление из [<code lang="csharp">[TypeSelectorDisplay]</code>](03-type-selector.md#typeselectordisplay) здесь действует, а <code lang="csharp">[TypeSelector]</code> список не настраивает.
 
 ![Выбор ArmoredEnemy вместо FastEnemy сохраняет Health = 75](../Images/component-type-selector.gif)
 
-| Поле | FastEnemy | Выбран ArmoredEnemy | Снова FastEnemy |
+| Поле | <code lang="class-name">FastEnemy</code> | Выбран <code lang="class-name">ArmoredEnemy</code> | Снова <code lang="class-name">FastEnemy</code> |
 |---|---|---|---|
 | **Health** | 75 | 75 | 75 |
 | **Speed** | 40 | — | 25 |
@@ -28,16 +28,7 @@ public abstract class EnemyBase : MonoBehaviour
 
 ## Когда тип не меняется
 
-Смена следует правилам **Add Component**: сначала добавляет компоненты из <code lang="csharp">[RequireComponent]</code> нового класса, и один Undo откатывает её вместе с ними. Класс остаётся прежним, а Console показывает предупреждение, если:
-
-- у класса нет своего файла скрипта с тем же именем — например, вложенный класс или второй класс в файле;
-- новый класс помечен <code lang="csharp">[DisallowMultipleComponent]</code>, а такой компонент на GameObject уже есть;
-- смена убрала бы класс, который нужен другому компоненту;
-- новому классу нужен компонент, который нельзя добавить, например абстрактный <code lang="class-name">Collider</code>.
-
-## Связанные возможности
-
-Оформление классов, поиск и избранное описаны на странице [TypeSelector](03-type-selector.md#typeselectordisplay). Здесь список определяется классом, в котором объявлено поле; атрибут <code lang="csharp">[TypeSelector]</code> его не настраивает.
+Смена следует правилам **Add Component**: компоненты из <code lang="csharp">[RequireComponent]</code> нового класса добавляются вместе с ней. Если Unity не дала бы добавить новый класс или убрать старый, класс остаётся прежним, а Console показывает причину. То же происходит, если у класса нет своего файла скрипта с тем же именем, например у вложенного класса.
 
 ## Пример в пакете
 
