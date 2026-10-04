@@ -1,6 +1,6 @@
 # TypeSelector
 
-Атрибут для поля с типом: инспектор показывает список с поиском, где остаются только подходящие классы.
+Окно выбора типа, которое вы настраиваете под каждое поле.
 
 ## Быстрый старт
 
@@ -42,23 +42,12 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 Типы в атрибуте сужают список: остаются только классы, совместимые со всеми сразу.
 
-```csharp
-// Weapon, MeleeWeapon, RangedWeapon, Sword, Axe, Bow
-[TypeSelector(typeof(Weapon))]
-[SerializeField] private string _anyWeapon;
-
-// Axe, Bow
-[TypeSelector(typeof(Weapon), typeof(ITwoHanded))]
-[SerializeField] private string _twoHanded;
-
-// Пустой список, анализатор AFT0009
-[TypeSelector(typeof(Sword), typeof(Axe))]
-[SerializeField] private string _nothing;
-
-// Sword, Axe: через общий базовый класс
-[TypeSelector(typeof(MeleeWeapon), Allow = TypeAllow.None)]
-[SerializeField] private string _swordOrAxe;
-```
+| Аргументы <code lang="csharp">[TypeSelector]</code> на поле <code lang="csharp">string</code> | В списке |
+|---|---|
+| <code lang="csharp">typeof(Weapon)</code> | <code lang="class-name">Weapon</code>, <code lang="class-name">MeleeWeapon</code>, <code lang="class-name">RangedWeapon</code>, <code lang="class-name">Sword</code>, <code lang="class-name">Axe</code>, <code lang="class-name">Bow</code> |
+| <code lang="csharp">typeof(Weapon), typeof(ITwoHanded)</code> | <code lang="class-name">Axe</code>, <code lang="class-name">Bow</code> |
+| <code lang="csharp">typeof(Sword), typeof(Axe)</code> | Пусто, анализатор `AFT0009` |
+| <code lang="csharp">typeof(MeleeWeapon), Allow = TypeAllow.None</code> | <code lang="class-name">Sword</code>, <code lang="class-name">Axe</code> |
 
 <code lang="class-name">T</code> обёртки и тип поля <code lang="csharp">[SerializeReference]</code> работают как ещё один тип в атрибуте:
 
@@ -72,10 +61,8 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 [SerializeReference] private Weapon _twoHandedWeapon;
 ```
 
-На массиве или списке ограничение применяется к каждому элементу.
-
 > [!NOTE]
-> В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся. Правило определяется классом объекта, поэтому поле runtime-объекта под <code lang="csharp">#if UNITY_EDITOR</code> их тоже не предлагает.
+> В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся.
 
 ## Свойства
 
@@ -112,26 +99,19 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 ![Выбор MeleeWeapon в Weapon Class оставляет в Weapon Name только Axe и Sword](../Images/type-selector-member-constraint.gif)
 
-| Источник ограничения | Что ограничивает |
+| Источник ограничения | Базовый тип |
 |---|---|
-| <code lang="class-name">System.Type</code> | Один тип |
-| <code lang="csharp">string</code> | Имя типа, разрешаемое через <code lang="csharp">Type.GetType()</code> |
-| <code lang="class-name">SerializableType</code> / <code lang="class-name">SerializableMonoScript</code> | Разрешённое значение <code lang="csharp">.Type</code> |
-| Массив этих значений | Несколько ограничений одновременно; <code lang="class-name">List&lt;T&gt;</code> не поддерживается |
+| <code lang="class-name">System.Type</code> | Значение поля |
+| <code lang="csharp">string</code> | Тип по имени через <code lang="csharp">Type.GetType()</code> |
+| <code lang="class-name">SerializableType</code> / <code lang="class-name">SerializableMonoScript</code> | Значение <code lang="csharp">.Type</code> |
+| Массив этих значений | Каждый элемент; <code lang="class-name">List&lt;T&gt;</code> не поддерживается |
 
-- Строка в атрибуте сначала ищется среди нестатических полей и читаемых свойств класса, где объявлено поле, включая унаследованные, затем — как имя типа.
 - У поля внутри <code lang="csharp">[Serializable]</code>-класса или элемента списка источник читается из того же экземпляра.
 - Пока источник пуст или не разрешился, ограничения от него нет: строковый **Weapon Name** предложит все конкретные типы. У обёртки остаётся её собственный <code lang="class-name">T</code>.
 
 ## Ошибки в строковых аргументах
 
-Ошибки в строках находят анализаторы:
-
-- `AFT0006` — строка из одного слова, но такого члена у класса нет;
-- `AFT0007` — член не может задать базовые типы;
-- `AFT0008` — строка не похожа на имя типа.
-
-Если имя типа записано верно, но такой тип не загружен, предупреждение показывает инспектор:
+Если имя типа записано верно, но такой тип не загружен, инспектор показывает предупреждение:
 
 ```csharp
 [TypeSelector("Spear, Assembly-CSharp")]
@@ -211,13 +191,15 @@ button.clicked += () => TypeSelectorWindow.Show(
     onSelected: aqn => selectedTypeName = aqn);
 ```
 
-Обработчик получает assembly-qualified name или <code lang="csharp">null</code> при выборе `<None>`; закрытие окна без выбора его не вызывает.
+Обработчик получает assembly-qualified name или <code lang="csharp">null</code> при выборе `<None>`.
 
-- <code lang="csharp">currentAqn</code> отмечает свой тип при открытии, а <code lang="csharp">""</code> — `<None>`; <code lang="csharp">null</code> или имя, которого нет в списке, не отмечают ничего, поэтому Enter сразу после открытия не сотрёт сохранённое имя.
-- <code lang="csharp">TypeSelectorFilter.Allow</code> по умолчанию <code lang="csharp">TypeAllow.None</code>, в отличие от <code lang="csharp">[TypeSelector]</code>: окно выше предлагает только конкретное оружие.
+> [!NOTE]
+> У <code lang="class-name">TypeSelectorFilter</code> <code lang="csharp">Allow</code> по умолчанию <code lang="csharp">TypeAllow.None</code>, а у <code lang="csharp">[TypeSelector]</code> — <code lang="csharp">TypeAllow.All</code>: окно выше предлагает только конкретное оружие.
 
 Свойства фильтра и параметры окна — в справочнике API: [TypeSelectorFilter](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeSelectorFilter), [TypeSelectorWindow](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeSelectorWindow).
 
 ## Пример в пакете
 
 Зависимый список, имена из <code lang="csharp">[TypeSelectorDisplay]</code> и обязательное поле показаны в примере [Types](../../Samples~/Types/Documentation/README.ru.md), а окно выбора из редакторского кода — в [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).
+
+![Волна обычных и элитных врагов в сцене Types](../../Samples~/Types/Documentation/Images/demo.gif)

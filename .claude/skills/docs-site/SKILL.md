@@ -195,6 +195,9 @@ Apply these rules to every main doc page, always to the English file and its `ru
 - **Admonitions:** `> [!NOTE]` for a non-obvious mismatch that loses nothing (`HasFoldout()` vs the Inspector);
   `> [!WARNING]` only when data or measurements are lost silently (boxed struct copy, `partial` calls on one line).
   A mistake an analyzer reports is a plain bullet with its ID (`AFT0010`, `AFT0011`), not a warning. Never stack two.
+- **Do not list analyzer diagnostics**: the reader sees them in the IDE. An ID may stay next to the usage rule it
+  enforces (ProfilerMarkers limitations) or as a short result in a table cell (`AFT0009` in TypeSelector), never as a
+  list of IDs with their meanings.
 - **Headings and labels name what the reader gets**: «Поле C# за свойством», not «Тип поля и объект-владелец»; a table
   row names the value type («Идентификаторы объектов»), never a constraint («Unity 6.2 и новее»).
 - **Link to another page only when it serves this feature**: a page that configures it (the `[TypeSelector]`
@@ -202,13 +205,12 @@ Apply these rules to every main doc page, always to the English file and its `ru
   features ("to store an instance, use SerializeReference Selector"): such links read as advertising, and the sidebar
   and the Introduction already list every feature.
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
-  link to the sample README and, when the sample's `demo.gif` shows this page's feature, that gif with the caption
-  paragraph — no "how to open" steps or experiments, those live on the sample's own page. Footage of a sample
-  several pages share (EditorTools) stays on the sample's page unless it shows what the text cannot (it does
-  for VisualElement Extensions, not for SerializedProperty Extensions or Editor Helpers). The sentence must match what the
+  link to the sample README and the sample's `demo.gif`, also when several pages share the sample (Types, EditorTools)
+  — no "how to open" steps or experiments, those live on the sample's own page. The sentence must match what the
   sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees; never promise
-  more than the scene has («Все маркеры с этой страницы…» was wrong). A caption must be about this page's feature —
-  otherwise drop it and keep a neutral alt text (the shared EditorTools gif on VisualElement Extensions).
+  more than the scene has («Все маркеры с этой страницы…» was wrong). Add the caption paragraph only when the gif shows
+  this page's feature (the EditorTools gif on SerializedProperty Extensions); otherwise keep a neutral alt text and no
+  caption (the Types gif on Serializable Types, the EditorTools gif on VisualElement Extensions).
 - **The Introduction (`Documentation/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
   Editor Helpers were reworked from it. Only FastTools-specific behaviour: never explain Unity or UI Toolkit.
 - **Check Unity's behaviour by decompiling, not from memory**:
