@@ -12,6 +12,7 @@ on:
       - 'README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
       - 'CHANGELOG*.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
       - '.github/workflows/docs.yml'
@@ -21,6 +22,7 @@ on:
       - 'README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
       - 'CHANGELOG*.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
       - '.github/workflows/docs.yml'
@@ -52,6 +54,8 @@ jobs:
       - run: npm ci
         working-directory: Website
       - run: npm run check-readme
+        working-directory: Website
+      - run: npm run check-translations
         working-directory: Website
       - run: node --test scripts/*.test.mjs
         working-directory: Website
