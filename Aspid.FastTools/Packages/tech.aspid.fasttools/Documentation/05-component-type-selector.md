@@ -42,3 +42,5 @@ For class display settings, search and favorites, see [TypeSelector](03-type-sel
 ## Package sample
 
 The [Types](../Samples~/Types/Documentation/README.md) sample shows component type switching.
+
+![A wave of regular and elite enemies in the Types scene](../Samples~/Types/Documentation/Images/demo.gif)
