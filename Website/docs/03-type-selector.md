@@ -200,6 +200,6 @@ For filter properties and window parameters, see the API reference: [TypeSelecto
 
 ## Package sample
 
-The [Types](../Samples~/Types/Documentation/README.md) sample shows a dependent picker, <code lang="csharp">[TypeSelectorDisplay]</code> names and a required field; [EditorTools](../Samples~/EditorTools/Documentation/README.md) opens the picker from editor code.
+The [Types](../tutorials/Types/README.md) sample shows a dependent picker, <code lang="csharp">[TypeSelectorDisplay]</code> names and a required field; [EditorTools](../tutorials/EditorTools/README.md) opens the picker from editor code.
 
-![A wave of regular and elite enemies in the Types scene](../Samples~/Types/Documentation/Images/demo.gif)
+![A wave of regular and elite enemies in the Types scene](../tutorials/Types/Images/demo.gif)

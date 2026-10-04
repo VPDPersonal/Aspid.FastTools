@@ -64,7 +64,7 @@ public void Step()
 
 Маркеры создаются один раз. После инициализации повторные замеры не выделяют память.
 
-![Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.](../Images/profiler-markers-hierarchy.svg)
+![Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.](../../../../docs/Images/profiler-markers-hierarchy.svg)
 
 ## Ограничения
 
@@ -76,6 +76,6 @@ public void Step()
 
 ## Пример в пакете
 
-Маркеры из [WithName()](#withname) работают в сцене [ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/README.ru.md).
+Маркеры из [WithName()](#withname) работают в сцене [ProfilerMarkers](../../docusaurus-plugin-content-docs-tutorials/current/ProfilerMarkers/README.md).
 
-![Стая агентов в сцене ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/Images/demo.gif)
+![Стая агентов в сцене ProfilerMarkers](../../../../tutorials/ProfilerMarkers/Images/demo.gif)

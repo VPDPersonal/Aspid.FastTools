@@ -21,7 +21,7 @@
 
 В списке с <code lang="csharp">[TypeSelector]</code> кнопка «+» открывает выбор класса и добавляет новый экземпляр, а `<None>` — пустой элемент. При нескольких выбранных объектах каждый получает свой экземпляр.
 
-![«+» у Sidearms открывает выбор класса и добавляет Shotgun](../Images/aspid_fasttools_serialize_reference_list.gif)
+![«+» у Sidearms открывает выбор класса и добавляет Shotgun](../../../../docs/Images/aspid_fasttools_serialize_reference_list.gif)
 
 ## Смена класса
 
@@ -33,7 +33,7 @@
 | **Magazine Size** | 12 | — |
 | **Pellets** | — | 8, начальное значение |
 
-![Смена Pistol на Shotgun сохраняет Damage = 37](../Images/aspid_fasttools_serialize_reference_selector.gif)
+![Смена Pistol на Shotgun сохраняет Damage = 37](../../../../docs/Images/aspid_fasttools_serialize_reference_selector.gif)
 
 Вложенная ссылка переносится тем же экземпляром, если имя и тип поля совместимы.
 
@@ -63,7 +63,7 @@
 
 Поля, которые указывают на один экземпляр, помечены **Shared reference #N**, а **Make unique** под полем или **Make Unique Reference** в меню заголовка даёт полю собственную копию вместе с вложенными ссылками.
 
-![Make unique создаёт независимую копию общей ссылки](../Images/aspid_fasttools_serialize_reference_make_unique.png)
+![Make unique создаёт независимую копию общей ссылки](../../../../docs/Images/aspid_fasttools_serialize_reference_make_unique.png)
 
 Продублированный элемент списка получает собственный экземпляр, а не ссылку на тот же. За это отвечает настройка **Auto de-alias duplicated list elements** в **Tools → Aspid 🐍 → FastTools → Settings**, по умолчанию она включена и [общая для команды](07-serialize-reference-validation.md#область-проверки).
 
@@ -71,7 +71,7 @@
 
 После переименования, переноса или удаления класса поле показывает `<Missing …>`, а под ним появляется **Missing type**. Данные поля при этом остаются в ассете.
 
-![Потерянная ссылка Game.Gear.Pistoll с кнопками Fix и → Pistol](../Images/aspid_fasttools_serialize_reference_repair.png)
+![Потерянная ссылка Game.Gear.Pistoll с кнопками Fix и → Pistol](../../../../docs/Images/aspid_fasttools_serialize_reference_repair.png)
 
 **Fix** открывает выбор класса, и выбранный класс заменяет потерянный. Уведомление может сразу предложить подходящий класс, например **→ Pistol**; причину показывает подсказка. Что Fix сохраняет на ассете и в сцене, описано в разделе [Fix в инспекторе](06-serialize-reference-tooling.md#fix-в-инспекторе).
 
@@ -83,6 +83,6 @@
 
 ## Пример в пакете
 
-Выбор оружия, списки и общие ссылки показаны в примере [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
+Выбор оружия, списки и общие ссылки показаны в примере [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md).
 
-![Манекен получает урон в сцене SerializeReferences](../../Samples~/SerializeReferences/Documentation/Images/demo.gif)
+![Манекен получает урон в сцене SerializeReferences](../../../../tutorials/SerializeReferences/Images/demo.gif)

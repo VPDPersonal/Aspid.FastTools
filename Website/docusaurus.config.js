@@ -11,10 +11,7 @@ import remarkIntroBanner, {remarkInlineCode, remarkStatusBadges} from './src/rem
 import {ACCENT_BOOT_SCRIPT} from './src/accents.js';
 
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
-const PACKAGE_DIR = PACKAGE.replace(/^\.\.\//, ''); // repository-relative, for "Edit this page" links
 const LOCALES = ['en', 'ru'];
-// Translations live in `Documentation/<locale>/`; they must not be picked up as English pages.
-const TRANSLATION_FOLDERS = LOCALES.filter((locale) => locale !== 'en').map((locale) => `${locale}/**`);
 const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const ASSET_STORE = 'https://assetstore.unity.com/packages/slug/365584';
 /** The docs in the working tree describe the package version in the working tree. */
@@ -32,6 +29,14 @@ function readFramedCaptures() {
   const names = rows.slice(0, rows.indexOf('EOF')).map((row) => row.trim()).filter((row) => row && !row.startsWith('#'))
     .map((row) => row.split(/\s+/)[0]);
   return {margin, names};
+}
+
+/** The translated sidebar label of the introduction, for a page under `i18n/<locale>/`. */
+function introductionLabel(filePath) {
+  const locale = filePath.match(/[\\/]i18n[\\/]([^\\/]+)[\\/]/)?.[1];
+  if (!locale) return undefined;
+  const file = new URL(`./i18n/${locale}/docusaurus-plugin-content-docs/current.json`, import.meta.url);
+  return JSON.parse(readFileSync(file, 'utf8'))['sidebar.docs.doc.Introduction']?.message;
 }
 
 const UPM_BRANCH = PACKAGE_VERSION.includes('-') ? 'upm-preview' : 'upm';
@@ -95,9 +100,9 @@ function samplePrefixParser(filename) {
 const markdownOptions = {
   beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkCrossInstanceLinks, remarkAgentPrompt, remarkLiveDiagrams, remarkThemedImages],
   showLastUpdateTime: true,
-  // Translations live next to the English sources: `Documentation/<locale>/<file>`.
-  editUrl: ({ docPath, locale }) =>
-    `${REPO}/edit/main/${PACKAGE_DIR}/Documentation/${locale === 'en' ? '' : `${locale}/`}${docPath}`,
+  // English pages under `Website/<instance>/`, translations under `Website/i18n/<locale>/<plugin>/current/`.
+  editUrl: `${REPO}/edit/main/Website/`,
+  editLocalizedFiles: true,
 };
 
 /** @type {import('@docusaurus/types').Config} */
@@ -127,6 +132,8 @@ const config = {
       const result = await defaultParseFrontMatter({filePath, fileContent});
       if (fileContent.includes('/aspid_fasttools_readme_banner.gif')) {
         result.frontMatter.title ??= 'Aspid.FastTools';
+        // Pagination reuses the untranslated sidebar label of a page without a title; give it the translated one.
+        result.frontMatter.pagination_label ??= introductionLabel(filePath);
         result.frontMatter.hide_title = true;
         result.frontMatter.description ??= fileContent.match(/^Aspid\.FastTools (is|—) .*$/m)?.[0];
       }
@@ -149,14 +156,12 @@ const config = {
       'classic',
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
-        // Main documentation lives inside the UPM package so it ships to Unity users as-is.
-        // Translations sit next to it in `Documentation/<locale>/` and are wired in by scripts/sync-i18n.mjs.
+        // English pages in `docs/`, translations in `i18n/<locale>/docusaurus-plugin-content-docs/current/`.
         docs: {
-          path: `${PACKAGE}/Documentation`,
+          path: 'docs',
           routeBasePath: 'docs',
           breadcrumbs: false,
           sidebarPath: './sidebars.js',
-          exclude: ['**/*.meta', ...TRANSLATION_FOLDERS],
           versions: { current: { label: PACKAGE_VERSION } },
           ...markdownOptions,
           beforeDefaultRemarkPlugins: [[remarkIntroBanner, {baseUrl: '/Aspid.FastTools/', siteUrl: 'https://vpdpersonal.github.io'}], ...markdownOptions.beforeDefaultRemarkPlugins],
@@ -171,8 +176,8 @@ const config = {
   plugins: [
     './src/plugins/search/index.js',
     [
-      // Tutorials are generated from each sample's Documentation folder by scripts/sync-i18n.mjs.
-      // The generated tree keeps the public routes flat while the package keeps docs and images out of sample roots.
+      // One page per sample in `tutorials/<Sample>/README.md`, translations in
+      // `i18n/<locale>/docusaurus-plugin-content-docs-tutorials/current/<Sample>/README.md`.
       '@docusaurus/plugin-content-docs',
       /** @type {import('@docusaurus/plugin-content-docs').Options} */
       ({
@@ -185,19 +190,10 @@ const config = {
         numberPrefixParser: samplePrefixParser,
         ...markdownOptions,
         beforeDefaultRemarkPlugins: [remarkInlineCode, ...markdownOptions.beforeDefaultRemarkPlugins],
-        // `<Sample>/README.md` → `Samples~/<Sample>/Documentation/README.md`, translations as `README.<locale>.md`;
-        // the overview `index.mdx` → `Website/src/samples/index.mdx` (`index.<locale>.mdx`).
-        editUrl: ({ docPath, locale }) =>
-          docPath === 'index.mdx'
-            ? `${REPO}/edit/main/Website/src/samples/index${locale === 'en' ? '' : `.${locale}`}.mdx`
-            : `${REPO}/edit/main/${PACKAGE_DIR}/Samples~/${docPath.replace(
-                /\/README\.md$/,
-                locale === 'en' ? '/Documentation/README.md' : `/Documentation/README.${locale}.md`,
-              )}`,
       }),
     ],
     [
-      // The root CHANGELOG.md (and CHANGELOG.<locale>.md), copied in by scripts/sync-i18n.mjs.
+      // The root CHANGELOG.md (and CHANGELOG.<locale>.md), copied in by scripts/sync-changelog.mjs.
       '@docusaurus/plugin-content-docs',
       /** @type {import('@docusaurus/plugin-content-docs').Options} */
       ({

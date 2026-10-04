@@ -10,7 +10,7 @@
 
 <code lang="csharp">[TypeSelector]</code> задаёт [настройки выбора](03-type-selector.md): <code lang="csharp">Allow = TypeAllow.None</code> оставляет в списке только конкретные типы.
 
-![Выбор сериализуемого типа в инспекторе](../Images/serializable-type-quick-start.gif)
+![Выбор сериализуемого типа в инспекторе](../../../../docs/Images/serializable-type-quick-start.gif)
 
 ## Что выбрать
 
@@ -37,7 +37,7 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 - <code lang="csharp">.Type</code> возвращает <code lang="csharp">null</code>.
 - <code lang="csharp">AssemblyQualifiedName</code> и <code lang="csharp">ToString()</code> сохраняют прежнее имя.
 
-![Потерянный тип Game.Combat.Spear с кнопками Fix и → Spear](../Images/serializable-type-missing.png)
+![Потерянный тип Game.Combat.Spear с кнопками Fix и → Spear](../../../../docs/Images/serializable-type-missing.png)
 
 **Fix** открывает окно выбора, и выбранный тип заменяет сохранённое имя. Если класс только перенесли в другой namespace или сборку и подходящий тип с таким именем один, уведомление предлагает его сразу, например **→ Spear**.
 
@@ -69,6 +69,6 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 ## Пример в пакете
 
-Выбор типов врагов и паттерна расстановки показан в примере [Types](../../Samples~/Types/Documentation/README.ru.md).
+Выбор типов врагов и паттерна расстановки показан в примере [Types](../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md).
 
-![Волна обычных и элитных врагов в сцене Types](../../Samples~/Types/Documentation/Images/demo.gif)
+![Волна обычных и элитных врагов в сцене Types](../../../../tutorials/Types/Images/demo.gif)

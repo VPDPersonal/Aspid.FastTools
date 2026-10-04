@@ -2,7 +2,7 @@
 
 Окно редактора и инспектор, собранные в коде на хелперах пакета.
 
-![Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.](Images/demo.gif)
+![Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.](../../../../../tutorials/EditorTools/Images/demo.gif)
 
 Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.
 
@@ -39,4 +39,4 @@
 | `Scripts/AbilityConfig.cs` | Данные; <code lang="csharp">[TypeSelector]</code> на строке эффекта даёт инспектору ассета то же окно выбора |
 | `Scripts/Effects/` | Классы эффектов, которые предлагает окно выбора |
 
-Справочник — [VisualElement Extensions](../../../Documentation/ru/10-visual-element-extensions.md), [SerializedProperty Extensions](../../../Documentation/ru/11-serialized-property-extensions.md), [Editor Helpers](../../../Documentation/ru/12-editor-helpers.md) и [TypeSelectorWindow](../../../Documentation/ru/03-type-selector.md#typeselectorwindow).
+Справочник — [VisualElement Extensions](../../../docusaurus-plugin-content-docs/current/10-visual-element-extensions.md), [SerializedProperty Extensions](../../../docusaurus-plugin-content-docs/current/11-serialized-property-extensions.md), [Editor Helpers](../../../docusaurus-plugin-content-docs/current/12-editor-helpers.md) и [TypeSelectorWindow](../../../docusaurus-plugin-content-docs/current/03-type-selector.md#typeselectorwindow).

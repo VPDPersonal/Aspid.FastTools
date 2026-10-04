@@ -76,6 +76,6 @@ Markers are created once. After initialization, repeated measurements allocate n
 
 ## Package sample
 
-The markers from [WithName()](#withname) run in the [ProfilerMarkers](../Samples~/ProfilerMarkers/Documentation/README.md) scene.
+The markers from [WithName()](#withname) run in the [ProfilerMarkers](../tutorials/ProfilerMarkers/README.md) scene.
 
-![A flock of agents in the ProfilerMarkers scene](../Samples~/ProfilerMarkers/Documentation/Images/demo.gif)
+![A flock of agents in the ProfilerMarkers scene](../tutorials/ProfilerMarkers/Images/demo.gif)

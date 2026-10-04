@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game.Gear
 {
     // _damage is declared with the same name and type as on Pistol so that switching between the two
-    // carries the value over, which is the behavior Documentation/04-serialize-reference-selector.md describes.
+    // carries the value over, which is the behavior Website/docs/04-serialize-reference-selector.md describes.
     [Serializable]
     public sealed class Shotgun : IWeapon
     {

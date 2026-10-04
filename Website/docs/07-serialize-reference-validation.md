@@ -111,6 +111,6 @@ In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with 
 
 ## Package sample
 
-The [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) sample has a required field and missing types to check.
+The [SerializeReferences](../tutorials/SerializeReferences/README.md) sample has a required field and missing types to check.
 
-![The dummy takes damage in the SerializeReferences scene](../Samples~/SerializeReferences/Documentation/Images/demo.gif)
+![The dummy takes damage in the SerializeReferences scene](../tutorials/SerializeReferences/Images/demo.gif)

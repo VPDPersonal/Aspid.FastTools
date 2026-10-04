@@ -147,6 +147,6 @@ Keys are stored by member name:
 
 ## Package sample
 
-In the [EnumValues](../Samples~/EnumValues/Documentation/README.md) sample, tiles and footprints take their colour from <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, and the speed multiplier from an <code lang="class-name">EnumValues&lt;float&gt;</code> with a <code lang="csharp">[Flags]</code> enum picked in the Inspector.
+In the [EnumValues](../tutorials/EnumValues/README.md) sample, tiles and footprints take their colour from <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, and the speed multiplier from an <code lang="class-name">EnumValues&lt;float&gt;</code> with a <code lang="csharp">[Flags]</code> enum picked in the Inspector.
 
-![The trail colour and walking speed change as the character crosses onto another surface.](../Samples~/EnumValues/Documentation/Images/demo.gif)
+![The trail colour and walking speed change as the character crosses onto another surface.](../tutorials/EnumValues/Images/demo.gif)

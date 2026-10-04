@@ -2,7 +2,7 @@
 
 Стая кубов, у которой каждая фаза кадра видна в Profiler под своим именем.
 
-![Симуляция стаи, фазы которой измеряют маркеры.](Images/demo.gif)
+![Симуляция стаи, фазы которой измеряют маркеры.](../../../../../tutorials/ProfilerMarkers/Images/demo.gif)
 
 Симуляция стаи, фазы которой измеряют маркеры.
 
@@ -16,7 +16,7 @@
 
 ## Попробуйте
 
-![Маркеры под Flock.Update вложены как в коде; у FlockSimulation.Steering.Agent — 120 вызовов на 120 агентов.](Images/profiler-markers.png)
+![Маркеры под Flock.Update вложены как в коде; у FlockSimulation.Steering.Agent — 120 вызовов на 120 агентов.](../../../../../tutorials/ProfilerMarkers/Images/profiler-markers.png)
 
 Маркеры под Flock.Update вложены как в коде; у FlockSimulation.Steering.Agent — 120 вызовов на 120 агентов.
 
@@ -48,4 +48,4 @@
 | `Scripts/FlockSimulation.cs` | Маркеры на весь метод, на блок и на итерацию в обычном классе |
 | `Scripts/Flock.cs` | Точка входа кадра, маркер внутри локальной функции |
 
-Справочник — [ProfilerMarkers](../../../Documentation/ru/09-profiler-markers.md).
+Справочник — [ProfilerMarkers](../../../docusaurus-plugin-content-docs/current/09-profiler-markers.md).

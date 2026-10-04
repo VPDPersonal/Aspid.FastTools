@@ -1,6 +1,6 @@
 ---
 name: docs-site
-description: How Aspid.FastTools documentation is authored and published — Markdown inside the UPM package (`Documentation/`, `Documentation/ru/`, each sample's `Documentation/`) plus the root `CHANGELOG*.md`, read by GitHub, Unity and the Docusaurus site in `Website/`, deployed to GitHub Pages. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
+description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins in `i18n/ru/`) plus the root `CHANGELOG*.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README and short sample READMEs that link the site. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
 user-invocable: false
 metadata:
   internal: true
@@ -8,26 +8,31 @@ metadata:
 
 # Documentation site
 
-One source of truth: Markdown inside the UPM package. The same file is read by GitHub, by Unity (as a
-`TextAsset` in the Inspector) and by the Docusaurus site in `Website/`. Nothing is copied by hand — the root
-`README.md`, the tutorials tree, the i18n tree, the changelog page and the API reference are all generated.
+One source of truth: Markdown in `Website/`. The same file is read by GitHub and by the Docusaurus site. Nothing is
+copied by hand — the root `README.md`, the changelog page and the API reference are generated.
 Write GitHub Flavored Markdown; the site adapts to it, never the other way round.
 
-Package-relative paths below are rooted at `Aspid.FastTools/Packages/tech.aspid.fasttools/`.
+The UPM package (`Aspid.FastTools/Packages/tech.aspid.fasttools/`) ships no documentation pages or images: everything in
+that folder reaches every consumer project through `git subtree split` in `release.yml`. It keeps only `README.md`
+(a description, the install URL and the site link) and a short text-only `Samples~/<Sample>/Documentation/README.md`
+(+ `README.ru.md`) per sample: what it shows, how to open it, and a link to its tutorial on the site. Never add an
+image or a full page there.
 
 ## Layout
 
 | What | Source | Site route |
 |---|---|---|
-| Introduction | `Documentation/README.md` | `/docs` |
-| Main docs | `Documentation/NN-*.md` | `/docs/<name>` (`02-serializable-types.md` → `/docs/serializable-types`) |
-| Samples | `Samples~/<Sample>/Documentation/README.md` | `/tutorials/<slug>` (`SerializeReferences` → `serialize-references`; an optional `NN. ` folder prefix orders and is stripped) |
-| Samples overview | `Website/src/samples/index.mdx`, `index.ru.mdx` → `<SamplesGallery/>` | `/tutorials` |
+| Introduction | `Website/docs/README.md` | `/docs` |
+| Main docs | `Website/docs/NN-*.md` | `/docs/<name>` (`02-serializable-types.md` → `/docs/serializable-types`) |
+| Samples | `Website/tutorials/<Sample>/README.md` | `/tutorials/<slug>` (`SerializeReferences` → `serialize-references`; an optional `NN. ` folder prefix orders and is stripped) |
+| Samples overview | `Website/tutorials/index.mdx` → `<SamplesGallery/>` | `/tutorials` |
 | Changelog | root `CHANGELOG.md`, `CHANGELOG.ru.md` | `/changelog` |
 | API reference | generated into `Website/api/` by DocFX (committed) | `/api` |
-| Translations | `Documentation/ru/**` (same names), `Samples~/<Sample>/Documentation/README.ru.md` | `/ru/...` |
-| Images | `Documentation/Images/`, `Samples~/<Sample>/Documentation/Images/` | referenced relatively |
-| Root README | generated from `Documentation/README.md` (committed) | — |
+| Translations | `Website/i18n/ru/docusaurus-plugin-content-docs/current/**`, `…-docs-tutorials/current/**` (same names) | `/ru/...` |
+| Interface strings | `Website/i18n/ru/**/*.json` (`code.json`, `navbar.json`, each plugin's `current.json`) | |
+| Images | `Website/docs/Images/`, `Website/tutorials/<Sample>/Images/` | referenced relatively |
+| Root README | generated from `Website/docs/README.md` (committed) | — |
+| Package README, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
 | Package changelog | generated from the root `CHANGELOG.md` (committed; Unity's Package Manager reads it) | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
@@ -38,31 +43,34 @@ macOS treats the two names as one directory.
 
 **Four docs plugin instances**, all in `docusaurus.config.js`:
 
-- `docs` — reads the package `Documentation/` in place; locale folders are excluded through `LOCALES`.
-- `tutorials` — reads the generated `Website/tutorials/` tree (`include: ['index.mdx', '*/README.md']`).
-  One page per sample; the overview page comes from `src/samples/index.mdx`.
+- `docs` — reads `Website/docs/`.
+- `tutorials` — reads `Website/tutorials/` (`include: ['index.mdx', '*/README.md']`). One page per sample, plus the
+  overview `index.mdx`.
 - `changelog` — reads the generated `Website/changelog/`, whose sidebar is built from the `## [version]`
   headings (each gets a `{#v…}` anchor).
 - `api` — reads the committed `Website/api/`.
 
-Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/changelog/`, `Website/build/`,
-`Website/docfx/projects/`. Never edit them by hand. Generated **and committed**: the root `README.md`, the
+Translations sit where Docusaurus looks for them, so they are read in place too. Edit links point to the real file of
+each locale (`editLocalizedFiles`).
+
+Generated and gitignored: `Website/changelog/`, `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/`,
+`Website/build/`, `Website/docfx/projects/`. Never edit them by hand. Generated **and committed**: the root `README.md`, the
 package `CHANGELOG.md` and `Website/api/`.
 
-## Writing rules (so all three renderers agree)
+## Writing rules (so GitHub and the site agree)
 
-- **No front matter.** Unity and GitHub would show it as text. Title comes from the first `# H1`, slug and
+- **No front matter.** GitHub would show it as a table. Title comes from the first `# H1`, slug and
   order from the file name (`NN-` prefix orders, is stripped from the route).
-- **One `# H1` per file.** Use `##` in the body. Exception: the introduction (`Documentation/README.md` and
+- **One `# H1` per file.** Use `##` in the body. Exception: the introduction (`Website/docs/README.md` and
   its translations) starts with the banner `<img>` and the status badges, without an H1. `parseFrontMatter`
   in `docusaurus.config.js` recognises that page by the banner's file name and supplies the title,
-  description and `hide_title` — do not rename `aspid_fasttools_readme_banner.gif`.
+  description, `hide_title` and the translated `pagination_label` — do not rename `aspid_fasttools_readme_banner.gif`.
 - **Admonitions**: GitHub style only — `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`. Never `:::note`.
 - **Links** are relative paths to the `.md` file: `[EnumValues](08-enum-values.md)`, from a sample
-  `[Selector](../../../Documentation/04-serialize-reference-selector.md)`, from a doc
-  `[Types sample](../Samples~/Types/Documentation/README.md)`. GitHub follows them as files; links that cross
-  between plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.
-  Never link by site URL.
+  `[Selector](../../docs/04-serialize-reference-selector.md)`, from a doc `[Types sample](../tutorials/Types/README.md)`.
+  GitHub follows them as files; `Website/src/remark/crossInstanceLinks.js` resolves each link against the page's file
+  and rewrites a target in the other plugin instance to its site route. Never link by site URL — except from the
+  package READMEs, which ship without the site sources and link `https://vpdpersonal.github.io/Aspid.FastTools/…`.
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
   on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`). This conversion
   requires every body cell to contain only a `<pre>` element; a plain-text or inline-code result row prevents it.
@@ -82,22 +90,24 @@ package `CHANGELOG.md` and `Website/api/`.
   `<code lang="csharp">UnityEngine.Scripting</code>`. Prism leaves a lone generic type or `System.Type` in `csharp`
   uncoloured, so use `class-name` for them; a qualified method call reads best as `csharp` with its parentheses
   (`Type.GetType()`). Fields, properties and enum values stay plain, as in code blocks.
-- **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
-  would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
-- The package is English. A translation is a sibling file: `Documentation/ru/08-enum-values.md`,
-  `README.ru.md` next to `README.md`. Missing pages fall back to English. A translated file links translated
-  targets (`../../Samples~/Types/Documentation/README.ru.md`) so GitHub stays in the same language; the site
-  drops the locale segment itself.
-- Adding a language: create `Documentation/<locale>/` and `*.<locale>.md` files, add `Website/translations/<locale>/`
-  for the interface strings, and add the locale to `LOCALES` in `docusaurus.config.js`. Nothing else:
-  `sync-i18n.mjs` discovers locale folders by name, and `LOCALES` is what keeps them out of the English
-  `docs` instance.
+- **Every `.md` in the package needs a `.meta`** (`TextScriptImporter`) — Unity would otherwise generate one in the
+  consumer's project. Copy an existing one and give it a fresh GUID. Site pages and images have none.
+- English is the source. A translation has the same file name under `Website/i18n/ru/docusaurus-plugin-content-docs/current/`
+  (docs) or `…/docusaurus-plugin-content-docs-tutorials/current/` (tutorials); missing pages fall back to English.
+  A translated file links translated targets so GitHub stays in the same language
+  (`../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md` from a doc,
+  `../../../docusaurus-plugin-content-docs/current/03-type-selector.md` from a tutorial, `../EnumValues/README.md`
+  between tutorials) and the English images (`../../../../docs/Images/x.png`,
+  `../../../../../tutorials/Types/Images/demo.gif`); images are never copied. The site drops the locale itself.
+- Adding a language: create `Website/i18n/<locale>/` with the pages and the interface strings
+  (`npm --prefix Website run write-translations -- --locale <locale>`), add `CHANGELOG.<locale>.md`, and add the locale
+  to `LOCALES` in `docusaurus.config.js` and to `check-translations.mjs`.
 
 ### Images
 
-- Main docs use `Documentation/Images/`; each sample keeps its own in `Samples~/<Sample>/Documentation/Images/`
-  and references them as `Images/x.png`. A main doc may point at a sample image by path
-  (`../Samples~/EnumValues/Documentation/Images/demo.gif`); `sync-i18n.mjs` mirrors those folders for i18n.
+- Main docs use `Website/docs/Images/`; each sample keeps its own in `Website/tutorials/<Sample>/Images/` and
+  references them as `Images/x.png`. A main doc may point at a sample image by path
+  (`../tutorials/EnumValues/Images/demo.gif`).
 - **Every image needs a light-theme sibling**: `x.png` plus `x-light.png` in the same folder, with the same
   pixel size and, for a GIF, the same timeline. `src/remark/themedImages.js` swaps them per theme (it runs through
   the webpack cache: after adding a sibling to an unchanged page, `npx docusaurus clear` before the build). Editor
@@ -111,7 +121,7 @@ package `CHANGELOG.md` and `Website/api/`.
   exactly that. A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (recoloured background).
 - **Inspector and picker captures are cropped in the file, not in CSS.** `scripts/frame-doc-captures.sh` crops each
   listed capture (both themes) to its component and adds an 8px margin that continues Unity's background, the
-  Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub, Unity and the site
+  Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub and the site
   then show the same image. After re-shooting a listed capture, run the script; it skips framed files and fails on a
   capture whose size no longer matches its row, which then needs new bounds. Only `enum-values-multipliers/padding/pad.py`
   and `native-selector/crop.sh` in `docs/media` still write a listed capture, and they call it themselves; the other
@@ -123,7 +133,7 @@ package `CHANGELOG.md` and `Website/api/`.
   the window's 24px margin; doc pages crop it to the same 8px (`WINDOW_CAPTURES` in `MDXComponents/Img`), so a new
   window capture is added to that pattern.
 - Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
-  `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
+  `Website/tutorials/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
   and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
 - Click or Enter opens the image in a modal (Esc closes). Bare images are capped at 640×520;
@@ -131,7 +141,7 @@ package `CHANGELOG.md` and `Website/api/`.
 - Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
 - A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
   (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
-  keeps the picture for GitHub and Unity; the caption paragraph must still repeat the alt text as plain text.
+  keeps the picture for GitHub; the caption paragraph must still repeat the alt text as plain text.
 - A table can have a live site version the same way: `TABLES` in `liveDiagrams.js` maps its first body cell to a
   component (`SetPadding(8)` → `StyleSides`, the Styles table of VisualElement Extensions), which gets every row as
   `<StyleSidesRow call="…">` with the second cell as children. Markdown keeps the table, and the rows and their
@@ -209,7 +219,7 @@ Apply these rules to every main doc page, always to the English file and its `ru
   sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees; never promise
   more than the scene has («Все маркеры с этой страницы…» was wrong). The gif never has a caption paragraph, only its alt
   text, even when it shows this page's feature (EnumValues, SerializedProperty Extensions).
-- **The Introduction (`Documentation/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
+- **The Introduction (`Website/docs/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
   Editor Helpers were reworked from it. Only FastTools-specific behaviour: never explain Unity or UI Toolkit.
 - **Check Unity's behaviour by decompiling, not from memory**:
   `~/.dotnet/tools/ilspycmd -t UnityEditor.ObjectNames /Applications/Unity/Hub/Editor/6000.0.64f1/Unity.app/Contents/Managed/UnityEngine/UnityEditor.CoreModule.dll`.
@@ -253,20 +263,24 @@ Rules the user confirmed while reworking the five sample READMEs; the feature-pa
 
 ## Adding a main doc page
 
-Drop `NN-name.md` into `Documentation/`, add its section to `Documentation/README.md` (and `ru/README.md`),
-add the `.meta`, optionally the translation at `Documentation/ru/NN-name.md`, and add its id to the right
+Drop `NN-name.md` into `Website/docs/`, add its section to `Website/docs/README.md` (and the Russian `README.md`),
+add the translation under `Website/i18n/ru/docusaurus-plugin-content-docs/current/NN-name.md`, and add its id to the right
 group in `Website/sidebars.js` (Serialization / Editor & tooling). Run `npm --prefix Website run sync-readme`
 to refresh the root `README.md`.
 
 ## Adding a sample
 
-1. `Samples~/<Name>/Documentation/README.md` (+ `README.ru.md`), with `.meta` files. Images go in that
-   sample's `Documentation/Images/`; every image gets a `-light` sibling.
+1. The tutorial: `Website/tutorials/<Name>/README.md` and its twin in
+   `Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/<Name>/README.md`. Images go in
+   `Website/tutorials/<Name>/Images/`; every image gets a `-light` sibling.
+   In the package, a short text-only `Samples~/<Name>/Documentation/README.md` (+ `README.ru.md`, both with `.meta`):
+   the title, the lead, `## Open it` and one line linking `https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>`
+   (`/ru/tutorials/<slug>`).
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png` (one 16:9 size
    for both, no scene titles; a scene may add a looping clip — `docs/media/samples-gallery/README.md`).
-4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its `Samples~/` folder name
+4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its folder name
    to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
 5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
    `package.json` → `samples`.
@@ -303,17 +317,16 @@ Dev servers serve one locale at a time and are only for quick hot-reload iterati
 don't reload config or remark plugins, and the user does not look at them: `website-dev` / `website-dev-ru` in
 `.claude/launch.json`, started with `preview_start`. They use `autoPort`, so dev servers of different worktrees get
 different ports. There is no launch entry for the production build on purpose: only `serve-all.sh` starts it.
-Both run `npm run start` / `start:ru`, so `prestart` runs `sync-i18n` first: it creates `Website/tutorials/`,
-`changelog/` and `i18n/`, without which a fresh worktree's `docusaurus start` fails. `Documentation/ru/**`, sample
-READMEs and the changelogs reach the site as copies: after editing them run `npm --prefix Website run sync-i18n`
-for a running dev server to see the change.
+Both run `npm run start` / `start:ru`, so `prestart` runs `sync-changelog` first: it creates the changelog pages, without
+which a fresh worktree's `docusaurus start` fails. The changelogs reach the site as copies: after editing them run
+`npm --prefix Website run sync-changelog` for a running dev server to see the change.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
 
 ## Generated content
 
-- `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Documentation/README.md`,
+- `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Website/docs/README.md`,
   rebasing file links to the repository root, and the package `CHANGELOG.md` from the root one, turning links that
   leave the package into GitHub URLs. Never edit either copy by hand. `prestart`/`prebuild` refresh them
   automatically and CI runs `check-readme` before building to reject a stale copy. The script only updates existing
@@ -321,12 +334,10 @@ for a running dev server to see the change.
 - `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
   blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
   may differ, so make every structural change in both languages.
-- `Website/scripts/sync-i18n.mjs` (also run by `prestart`/`prebuild`) builds `Website/tutorials/`,
-  `Website/changelog/` and `Website/i18n/` from the package: English sample READMEs and their images,
-  `Documentation/<locale>/`, every sample-local `*.<locale>.md`, the root changelogs and
-  `Website/translations/<locale>/`. Scripts, scenes and `.meta` files are never copied. Because the copies are
-  untracked, each page's "Last updated" date is stamped from the **source file's last commit** — an
-  uncommitted page shows no date.
+- `Website/scripts/sync-changelog.mjs` (also run by `prestart`/`prebuild`) builds `Website/changelog/` and
+  `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/` from the root `CHANGELOG*.md`. Because the
+  copies are untracked, their "Last updated" date is stamped from the **source file's last commit**. Docs and tutorial
+  pages are tracked, so Docusaurus reads their dates from git itself; an uncommitted page shows no date.
 
 ## Versioning
 
@@ -362,6 +373,6 @@ The cards on the Introduction page (layout, captures, previews, clip recipes) ha
 
 ## Deploy
 
-`.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package `Documentation/`,
-a sample's `Documentation/`, the root `README.md` or `CHANGELOG*.md`, and on PRs (build only); it runs
-`check-readme` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
+`.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package README, `package.json`
+or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md` or `CHANGELOG*.md`, and on PRs (build only); it runs
+`check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.

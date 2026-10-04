@@ -2,7 +2,7 @@
 
 Персонаж идёт по плиткам, а цвет, след и скорость на каждой поверхности берутся из таблиц в инспекторе.
 
-![Персонаж проходит по разным поверхностям и оставляет непрерывную цветную линию.](Images/demo.gif)
+![Персонаж проходит по разным поверхностям и оставляет непрерывную цветную линию.](../../../../../tutorials/EnumValues/Images/demo.gif)
 
 Персонаж проходит по разным поверхностям и оставляет непрерывную цветную линию.
 
@@ -19,7 +19,7 @@
 
 Выберите `Data/SurfacePalette.asset` и поменяйте цвет `Grass` в **Tile Colors** — плитки перекрасятся сразу, без Play Mode. Тип enum в шапке таблицы только для чтения: его задаёт поле.
 
-![Tile Colors и Footprint Colors, у каждой таблицы своё Default Value.](Images/surface-tables.png)
+![Tile Colors и Footprint Colors, у каждой таблицы своё Default Value.](../../../../../tutorials/EnumValues/Images/surface-tables.png)
 
 Tile Colors и Footprint Colors, у каждой таблицы своё Default Value.
 
@@ -84,4 +84,4 @@ foreach (var (flags, multiplier) in _speedByTerrain)
 | `Scripts/Walker.cs` | Оба варианта в компоненте, <code lang="function">GetValue</code> по обычному и <code lang="csharp">[Flags]</code>-ключу, <code lang="csharp">foreach</code> |
 | `Scripts/TerrainFlags.cs` | <code lang="csharp">[Flags]</code>-enum с комбинируемыми членами |
 
-Справочник — [EnumValues](../../../Documentation/ru/08-enum-values.md).
+Справочник — [EnumValues](../../../docusaurus-plugin-content-docs/current/08-enum-values.md).

@@ -10,10 +10,12 @@ process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 const PKG = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const FILES = [
   'README.md',
-  `${PKG}/Documentation/README.md`,
-  `${PKG}/Documentation/ru/README.md`,
-  `${PKG}/Documentation/Images/status-badge-preview.svg`,
+  'Website/docs/README.md',
+  'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
+  'Website/docs/Images/status-badge-preview.svg',
 ];
+// Files with an install URL and no badge.
+const INSTALL_FILES = [`${PKG}/README.md`];
 
 const version = JSON.parse(readFileSync(`${PKG}/package.json`, 'utf8')).version ?? '';
 const [branch, label] = version.includes('-') ? ['upm-preview', 'Preview'] : ['upm', 'Release'];
@@ -26,6 +28,13 @@ const fail = (file, message) => {
   errors++;
 };
 
+const checkInstallUrls = (file, text) => {
+  const urls = [...text.matchAll(/\.git#(upm(?:-preview)?)\b/g)].map((match) => match[1]);
+  if (!urls.length || urls.some((url) => url !== branch)) fail(file, `the install URLs must use #${branch} for ${version}; ${fix}`);
+};
+
+for (const file of INSTALL_FILES) checkInstallUrls(file, readFileSync(file, 'utf8'));
+
 for (const file of FILES) {
   const text = readFileSync(file, 'utf8');
   if (!whole(`${label} ${version}`).test(text)) fail(file, `has no "${label} ${version}" badge; ${fix}`);
@@ -34,8 +43,7 @@ for (const file of FILES) {
     continue;
   }
   if (!text.includes(`/releases/tag/v${version})`)) fail(file, `the badge does not link the v${version} release; ${fix}`);
-  const urls = [...text.matchAll(/\.git#(upm(?:-preview)?)\b/g)].map((match) => match[1]);
-  if (!urls.length || urls.some((url) => url !== branch)) fail(file, `the install URLs must use #${branch} for ${version}; ${fix}`);
+  checkInstallUrls(file, text);
 }
 
 if (errors) process.exit(1);

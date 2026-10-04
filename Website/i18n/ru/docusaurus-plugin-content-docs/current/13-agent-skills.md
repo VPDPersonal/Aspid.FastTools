@@ -44,22 +44,22 @@ npx skills add VPDPersonal/Aspid.FastTools#v<version>
 
 Замер метода или участка через <code lang="csharp">this.Marker()</code>. Руководство: [ProfilerMarkers](09-profiler-markers.md).
 
-![Скилл aspid-profiler-marker добавляет маркеры в Simulate](../Images/agent-skills-profiler-marker.svg)
+![Скилл aspid-profiler-marker добавляет маркеры в Simulate](../../../../docs/Images/agent-skills-profiler-marker.svg)
 
 ### aspid-visual-element-fluent
 
 Построение и оформление элементов UI Toolkit в C#. Руководство: [VisualElement Extensions](10-visual-element-extensions.md).
 
-![Скилл aspid-visual-element-fluent собирает шапку инспектора одной цепочкой](../Images/agent-skills-visual-element-fluent.svg)
+![Скилл aspid-visual-element-fluent собирает шапку инспектора одной цепочкой](../../../../docs/Images/agent-skills-visual-element-fluent.svg)
 
 ### aspid-serializable-type
 
 Хранение <code lang="class-name">System.Type</code> и выбор типов в инспекторе. Руководства: [Serializable Types](02-serializable-types.md), [TypeSelector](03-type-selector.md), [SerializeReference Selector](04-serialize-reference-selector.md), [ComponentTypeSelector](05-component-type-selector.md).
 
-![Скилл aspid-serializable-type добавляет поле выбора типа оружия](../Images/agent-skills-serializable-type.svg)
+![Скилл aspid-serializable-type добавляет поле выбора типа оружия](../../../../docs/Images/agent-skills-serializable-type.svg)
 
 ### aspid-enum-values
 
 Сопоставление значений членам enum. Руководство: [EnumValues](08-enum-values.md).
 
-![Скилл aspid-enum-values заменяет множители урона таблицей EnumValues](../Images/agent-skills-enum-values.svg)
+![Скилл aspid-enum-values заменяет множители урона таблицей EnumValues](../../../../docs/Images/agent-skills-enum-values.svg)

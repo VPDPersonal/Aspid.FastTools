@@ -18,7 +18,7 @@ public abstract class EnemyBase : MonoBehaviour
 
 Список предлагает конкретных наследников класса, где объявлено поле; пункта `<None>` нет. Оформление из [<code lang="csharp">[TypeSelectorDisplay]</code>](03-type-selector.md#typeselectordisplay) здесь действует, а <code lang="csharp">[TypeSelector]</code> список не настраивает.
 
-![Выбор ArmoredEnemy вместо FastEnemy сохраняет Health = 75](../Images/component-type-selector.gif)
+![Выбор ArmoredEnemy вместо FastEnemy сохраняет Health = 75](../../../../docs/Images/component-type-selector.gif)
 
 | Поле | <code lang="class-name">FastEnemy</code> | Выбран <code lang="class-name">ArmoredEnemy</code> | Снова <code lang="class-name">FastEnemy</code> |
 |---|---|---|---|
@@ -32,6 +32,6 @@ public abstract class EnemyBase : MonoBehaviour
 
 ## Пример в пакете
 
-Переключение типа компонента показано в примере [Types](../../Samples~/Types/Documentation/README.ru.md).
+Переключение типа компонента показано в примере [Types](../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md).
 
-![Волна обычных и элитных врагов в сцене Types](../../Samples~/Types/Documentation/Images/demo.gif)
+![Волна обычных и элитных врагов в сцене Types](../../../../tutorials/Types/Images/demo.gif)

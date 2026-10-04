@@ -2,7 +2,7 @@
 
 Турель, у которой оружие и его эффекты выбираются в инспекторе, и нарочно сломанные ассеты, чтобы их починить.
 
-![Манекен меняет цвет и уменьшается от урона настроенного оружия и эффектов.](Images/demo.gif)
+![Манекен меняет цвет и уменьшается от урона настроенного оружия и эффектов.](../../../../../tutorials/SerializeReferences/Images/demo.gif)
 
 Манекен меняет цвет и уменьшается от урона настроенного оружия и эффектов.
 
@@ -15,7 +15,7 @@
 
 Выйдите из Play Mode и выберите **Loadout**.
 
-![Оружие, вложенный эффект горения и модификаторы в инспекторе Loadout.](Images/weapon-fields.png)
+![Оружие, вложенный эффект горения и модификаторы в инспекторе Loadout.](../../../../../tutorials/SerializeReferences/Images/weapon-fields.png)
 
 Оружие, вложенный эффект горения и модификаторы в инспекторе Loadout.
 
@@ -29,8 +29,8 @@
    - **Damage Modifier** — <code lang="class-name">Modifier&lt;float&gt;</code>: предлагаются <code lang="class-name">DamageModifier</code> и <code lang="class-name">Modifier&lt;Single&gt;</code>, оба создаются сразу.
    - **Perks** — <code lang="class-name">List&lt;IModifier&gt;</code>: кроме закрытых наследников предлагается открытый <code lang="class-name">Modifier&lt;T&gt;</code>, тип <code lang="class-name">T</code> выбирается на второй странице.
    - Урон меняет только <code lang="class-name">DamageModifier</code>; значения остальных выводит **Loadout → Log Loadout** в контекстном меню компонента.
-8. **Обязательное поле.** Поставьте **Primary** в `<None>`: под полем появится предупреждение. Сохраните сцену — **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение; сборка плеера его не проверяет ([что проверяет каждый запуск](../../../Documentation/ru/07-serialize-reference-validation.md#что-проверяет-каждый-запуск)).
-9. **Меню заголовка.** Правый клик по заголовку поля — копирование и вставка, шаблоны, поиск использований и новый скрипт: [все пункты](../../../Documentation/ru/04-serialize-reference-selector.md#меню-заголовка).
+8. **Обязательное поле.** Поставьте **Primary** в `<None>`: под полем появится предупреждение. Сохраните сцену — **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение; сборка плеера его не проверяет ([что проверяет каждый запуск](../../../docusaurus-plugin-content-docs/current/07-serialize-reference-validation.md#что-проверяет-каждый-запуск)).
+9. **Меню заголовка.** Правый клик по заголовку поля — копирование и вставка, шаблоны, поиск использований и новый скрипт: [все пункты](../../../docusaurus-plugin-content-docs/current/04-serialize-reference-selector.md#меню-заголовка).
 
 ## Ремонт
 
@@ -46,7 +46,7 @@
 
 ## IMGUI-инспектор
 
-У <code lang="class-name">WeaponPreset</code> инспектор на IMGUI — `Scripts/Editor/WeaponPresetEditor.cs`: поле и список рисуют обычные вызовы <code lang="csharp">EditorGUILayout.PropertyField()</code>, а окно выбора, **Fix** и **+** списка работают как в UI Toolkit. Поля без <code lang="csharp">[TypeSelector]</code> — в разделе [Собственный инспектор](../../../Documentation/ru/04-serialize-reference-selector.md#собственный-инспектор).
+У <code lang="class-name">WeaponPreset</code> инспектор на IMGUI — `Scripts/Editor/WeaponPresetEditor.cs`: поле и список рисуют обычные вызовы <code lang="csharp">EditorGUILayout.PropertyField()</code>, а окно выбора, **Fix** и **+** списка работают как в UI Toolkit. Поля без <code lang="csharp">[TypeSelector]</code> — в разделе [Собственный инспектор](../../../docusaurus-plugin-content-docs/current/04-serialize-reference-selector.md#собственный-инспектор).
 
 ## Куда смотреть
 
@@ -58,4 +58,4 @@
 | `Scripts/WeaponPreset.cs`, `Presets/`, `Prefabs/` | Сценарии ремонта |
 | `Scripts/Editor/WeaponPresetEditor.cs` | IMGUI-инспектор на обычных вызовах <code lang="class-name">PropertyField</code> |
 
-Справочник — [SerializeReference Selector](../../../Documentation/ru/04-serialize-reference-selector.md) и [восстановление SerializeReference](../../../Documentation/ru/06-serialize-reference-tooling.md).
+Справочник — [SerializeReference Selector](../../../docusaurus-plugin-content-docs/current/04-serialize-reference-selector.md) и [восстановление SerializeReference](../../../docusaurus-plugin-content-docs/current/06-serialize-reference-tooling.md).

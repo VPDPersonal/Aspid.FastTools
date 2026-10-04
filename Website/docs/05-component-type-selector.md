@@ -32,6 +32,6 @@ The switch follows the rules of **Add Component**: the components the new class 
 
 ## Package sample
 
-The [Types](../Samples~/Types/Documentation/README.md) sample shows component type switching.
+The [Types](../tutorials/Types/README.md) sample shows component type switching.
 
-![A wave of regular and elite enemies in the Types scene](../Samples~/Types/Documentation/Images/demo.gif)
+![A wave of regular and elite enemies in the Types scene](../tutorials/Types/Images/demo.gif)

@@ -1,8 +1,8 @@
 <img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-[![Unity 6.0+](../Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/slug/365584)
-[![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
-[![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
+[![Unity 6.0+](../../../../docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/slug/365584)
+[![Preview 1.0.0-rc.8](../../../../docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
+[![MIT License](../../../../docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации, профилирования и редакторского кода.
 
@@ -26,31 +26,31 @@ URL указывает на последнюю preview-версию; кнопк�
 
 Сохраняет <code lang="class-name">System.Type</code> в компоненте или ассете и даёт выбрать его в инспекторе из совместимых типов. [TypeSelector](03-type-selector.md) сужает этот список.
 
-<img src="../Images/serializable-type-card.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
+<img src="../../../../docs/Images/serializable-type-card.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
 #### [SerializeReference Selector](04-serialize-reference-selector.md)
 
 Даёт выбрать класс для поля <code lang="csharp">[SerializeReference]</code> в инспекторе и переносит совместимые данные при смене класса.
 
-<img src="../Images/aspid_fasttools_serialize_reference_selector_card.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
+<img src="../../../../docs/Images/aspid_fasttools_serialize_reference_selector_card.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
 #### [ComponentTypeSelector](05-component-type-selector.md)
 
 Меняет класс добавленного компонента на наследника, не теряя значения общих полей.
 
-<img src="../Images/component-type-selector-card.gif" alt="Смена типа компонента в инспекторе" width="640" />
+<img src="../../../../docs/Images/component-type-selector-card.gif" alt="Смена типа компонента в инспекторе" width="640" />
 
 #### [Восстановление SerializeReference](06-serialize-reference-tooling.md)
 
 Находит потерянные ссылки <code lang="csharp">[SerializeReference]</code> и имена <code lang="class-name">SerializableType</code> по всему проекту и восстанавливает их группами. [Проверка перед сборкой и CI](07-serialize-reference-validation.md) ловит новые до выпуска.
 
-<img src="../Images/aspid_fasttools_serialize_reference_repair_card.gif" alt="Fix all восстанавливает три потерянные ссылки Blaster как Pistol" width="640" />
+<img src="../../../../docs/Images/aspid_fasttools_serialize_reference_repair_card.gif" alt="Fix all восстанавливает три потерянные ссылки Blaster как Pistol" width="640" />
 
 #### [EnumValues](08-enum-values.md)
 
 Сопоставляет ключам enum значения — множители, цвета, ассеты — и даёт редактировать их в инспекторе, включая флаги.
 
-<img src="../Images/enum-values-multipliers-populate.gif" alt="Populate Missing Enum Members в таблице Multipliers" width="640" />
+<img src="../../../../docs/Images/enum-values-multipliers-populate.gif" alt="Populate Missing Enum Members в таблице Multipliers" width="640" />
 
 ### Редактор и инструменты
 
@@ -110,7 +110,7 @@ caster.GetDisplayNameWithIndex();
 
 ## Ресурсы
 
-- [Обзор примеров](../../Samples~/README.ru.md) — сцены и редакторские инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
+- [Обзор примеров](../../docusaurus-plugin-content-docs-tutorials/current/index.mdx) — сцены и редакторские инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
 - [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — типы, методы и свойства пакета, на английском.
 - [Журнал изменений](https://vpdpersonal.github.io/Aspid.FastTools/ru/changelog) — изменения и исправления по версиям.
 

@@ -10,7 +10,7 @@
 
 <code lang="function">GetValue</code> возвращает значение из подходящей строки таблицы, а если такой строки нет — **Default Value**.
 
-![Таблица Multipliers в инспекторе: строка Fire со значением 1.5 и Default Value 1](../Images/enum-values-multipliers-quick-start.png)
+![Таблица Multipliers в инспекторе: строка Fire со значением 1.5 и Default Value 1](../../../../docs/Images/enum-values-multipliers-quick-start.png)
 
 ## Заполнение в инспекторе
 
@@ -20,7 +20,7 @@
 
 Для <code lang="csharp">[Flags]</code> автоматически добавляются только объявленные члены enum. Например, если в enum объявлено <code lang="csharp">FireAndIce = Fire | Ice</code>, команда добавит отдельную строку с ключом <code lang="csharp">FireAndIce</code>. Комбинации без отдельного имени можно добавить вручную.
 
-![Populate Missing Enum Members в таблице Multipliers](../Images/enum-values-multipliers-populate.gif)
+![Populate Missing Enum Members в таблице Multipliers](../../../../docs/Images/enum-values-multipliers-populate.gif)
 
 > [!NOTE]
 > Строка, добавленная в пустую таблицу, показывается как `<None>`: пока член не выбран, поиск её пропускает, а при обращении к таблице в Console появляется ошибка.
@@ -44,7 +44,7 @@ private EnumValues<float>
     _multipliers;
 ```
 
-![DamageType в окне выбора типа в заголовке Multipliers](../Images/enum-values-type-selector.png)
+![DamageType в окне выбора типа в заголовке Multipliers](../../../../docs/Images/enum-values-type-selector.png)
 
 - Выбор enum обязателен: если поле пустое, инспектор показывает **Required type is not set**. Это поле также учитывает [проверка обязательных полей](07-serialize-reference-validation.md#что-проверяет-каждый-запуск).
 - При первом обращении к таблице с пустым полем enum в Console появляется предупреждение, а <code lang="function">GetValue</code> возвращает **Default Value**.
@@ -147,6 +147,6 @@ foreach (var entry in _multipliers)
 
 ## Пример в пакете
 
-В примере [EnumValues](../../Samples~/EnumValues/Documentation/README.ru.md) плитки и следы получают цвет из <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, а множитель скорости — из <code lang="class-name">EnumValues&lt;float&gt;</code> с <code lang="csharp">[Flags]</code>-enum, выбранным в инспекторе.
+В примере [EnumValues](../../docusaurus-plugin-content-docs-tutorials/current/EnumValues/README.md) плитки и следы получают цвет из <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, а множитель скорости — из <code lang="class-name">EnumValues&lt;float&gt;</code> с <code lang="csharp">[Flags]</code>-enum, выбранным в инспекторе.
 
-![При переходе на другую поверхность меняются цвет следа и скорость персонажа.](../../Samples~/EnumValues/Documentation/Images/demo.gif)
+![При переходе на другую поверхность меняются цвет следа и скорость персонажа.](../../../../tutorials/EnumValues/Images/demo.gif)

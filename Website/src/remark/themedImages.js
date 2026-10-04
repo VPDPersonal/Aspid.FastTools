@@ -1,13 +1,13 @@
 import {existsSync} from 'node:fs';
 import path from 'node:path';
 
-/** Samples whose `demo`/`scene` captures show a scene rather than an editor window (`Samples~/<Name>/`). */
+/** Samples whose `demo`/`scene` captures show a scene rather than an editor window (`tutorials/<Name>/`). */
 const SCENE_SAMPLES = ['EnumValues', 'Types', 'SerializeReferences', 'ProfilerMarkers'];
-// On a tutorials page the file lives in `tutorials/<Name>/` (a kebab-case spelling also matches).
+// A tutorial page lives in `tutorials/<Name>/` or its i18n twin (a kebab-case spelling also matches).
 const sceneSampleFolder = new RegExp(
   `[/\\\\](?:${SCENE_SAMPLES.map((name) => name.replace(/(?<=[a-z])(?=[A-Z])/g, '-?')).join('|')})[/\\\\]`, 'i');
-// A doc page links the sample's own `Documentation/Images/`.
-const sceneSampleUrl = new RegExp(`Samples~/(?:${SCENE_SAMPLES.join('|')})/`);
+// A doc page links the sample's own `tutorials/<Name>/Images/`.
+const sceneSampleUrl = new RegExp(`tutorials/(?:${SCENE_SAMPLES.join('|')})/`);
 
 /** A sibling `image-light.png` supplies the light theme; Markdown stays usable outside the site. */
 export default function remarkThemedImages() {

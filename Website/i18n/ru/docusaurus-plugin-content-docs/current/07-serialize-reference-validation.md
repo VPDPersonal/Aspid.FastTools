@@ -30,7 +30,7 @@
 | CI без `-srGateRequired` | Если режим не `Off` | Нет |
 | CI с `-srGateRequired` | Если режим не `Off` | Если режим не `Off` |
 
-![Группа Required violations: пустое поле _primary в двух префабах](../Images/aspid_fasttools_serialize_reference_required_violations.png)
+![Группа Required violations: пустое поле _primary в двух префабах](../../../../docs/Images/aspid_fasttools_serialize_reference_required_violations.png)
 
 Обязательное поле задаёт <code lang="csharp">[TypeSelector(Required = true)]</code>, подробнее — в разделе [Обязательное поле](03-type-selector.md#обязательное-поле). В сценах не проверяются обязательные поля внутри managed-ссылок, в коллекциях и в override префабов.
 
@@ -49,7 +49,7 @@
 
 **Build / CI gate**, **Excluded scan folders** и **Auto de-alias duplicated list elements** — общие настройки с зелёной полосой. Они хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, общем для команды и CI, а ещё открываются в **Project Settings → Aspid.FastTools → SerializeReference**.
 
-![Раздел SerializeReference на вкладке Settings: общие настройки с зелёной полосой, личные — с синей](../Images/aspid_fasttools_serialize_reference_settings.png)
+![Раздел SerializeReference на вкладке Settings: общие настройки с зелёной полосой, личные — с синей](../../../../docs/Images/aspid_fasttools_serialize_reference_settings.png)
 
 ## Запуск в CI
 
@@ -111,6 +111,6 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 
 ## Пример в пакете
 
-Обязательное поле и потерянные типы для проверки есть в примере [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
+Обязательное поле и потерянные типы для проверки есть в примере [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md).
 
-![Манекен получает урон в сцене SerializeReferences](../../Samples~/SerializeReferences/Documentation/Images/demo.gif)
+![Манекен получает урон в сцене SerializeReferences](../../../../tutorials/SerializeReferences/Images/demo.gif)

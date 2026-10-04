@@ -23,7 +23,7 @@ Project References также восстанавливает имена, кот�
 
 После переименования, переноса или удаления класса у поля появляется **Missing type**, а данные остаются в ассете.
 
-![Потерянная ссылка с Fix и подсказкой → Pistol в инспекторе](../Images/aspid_fasttools_serialize_reference_repair.png)
+![Потерянная ссылка с Fix и подсказкой → Pistol в инспекторе](../../../../docs/Images/aspid_fasttools_serialize_reference_repair.png)
 
 | Действие | Что делает |
 |---|---|
@@ -46,7 +46,7 @@ Project References также восстанавливает имена, кот�
 
 Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки).
 
-![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../Images/aspid_fasttools_serialize_reference_project_references.png)
+![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
 
 ### Действия с группой
 
@@ -70,7 +70,7 @@ Project References также восстанавливает имена, кот�
 
 Потерянный класс, заданный через override экземпляра префаба, — в варианте, вложенном префабе или экземпляре в сцене, — показывается в отдельной карточке **Prefab instance overrides**.
 
-![Карточка Prefab instance overrides с потерянным GhostRailgun в варианте EliteLoadout](../Images/aspid_fasttools_serialize_reference_prefab_overrides.png)
+![Карточка Prefab instance overrides с потерянным GhostRailgun в варианте EliteLoadout](../../../../docs/Images/aspid_fasttools_serialize_reference_prefab_overrides.png)
 
 **Fix all**, **Smart Fix**, **Migrate all** и `<None>` такие записи не переписывают: выберите новый класс на экземпляре в инспекторе или отмените override. В Asset References ссылки, которые есть только в override, не видны.
 
@@ -91,7 +91,7 @@ Project References также восстанавливает имена, кот�
 
 Откройте **Tools → Aspid 🐍 → FastTools → Asset References** и укажите сохранённый префаб, ScriptableObject или сцену в поле рядом с **Rescan**. Щелчок по строке записи в Project References открывает её ассет здесь же.
 
-![Asset References: потерянный GhostCrossbow, общий Pistol с меткой SHARED и запись Railgun в Orphaned](../Images/aspid_fasttools_serialize_reference_asset_references.png)
+![Asset References: потерянный GhostCrossbow, общий Pistol с меткой SHARED и запись Railgun в Orphaned](../../../../docs/Images/aspid_fasttools_serialize_reference_asset_references.png)
 
 | Обозначение | Значение |
 |---|---|
@@ -104,7 +104,7 @@ Project References также восстанавливает имена, кот�
 
 **Fix Missing**, **Smart Fix** и **Migrate** записывают класс в файл сразу, и **Edit → Undo** его не отменяет.
 
-![GhostWeapon восстанавливается как Pistol в Asset References](../Images/aspid_fasttools_serialize_reference_tooling.gif)
+![GhostWeapon восстанавливается как Pistol в Asset References](../../../../docs/Images/aspid_fasttools_serialize_reference_tooling.gif)
 
 ## Миграции с MovedFrom
 
@@ -132,6 +132,6 @@ Project References также восстанавливает имена, кот�
 
 ## Пример в пакете
 
-Потерянные типы, переименование через <code lang="csharp">[MovedFrom]</code> и общая ссылка для обеих вкладок есть в ассетах примера [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
+Потерянные типы, переименование через <code lang="csharp">[MovedFrom]</code> и общая ссылка для обеих вкладок есть в ассетах примера [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md).
 
-![Манекен получает урон в сцене SerializeReferences](../../Samples~/SerializeReferences/Documentation/Images/demo.gif)
+![Манекен получает урон в сцене SerializeReferences](../../../../tutorials/SerializeReferences/Images/demo.gif)

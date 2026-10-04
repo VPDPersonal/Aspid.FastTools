@@ -178,6 +178,6 @@ Returns the element’s window. If none is found, falls back to the focused wind
 
 ## Package sample
 
-The catalog window and the <code lang="class-name">AbilityConfig</code> inspector in the [EditorTools](../Samples~/EditorTools/Documentation/README.md) sample are built with these extensions.
+The catalog window and the <code lang="class-name">AbilityConfig</code> inspector in the [EditorTools](../tutorials/EditorTools/README.md) sample are built with these extensions.
 
-![The Ability Catalog window from the EditorTools sample](../Samples~/EditorTools/Documentation/Images/demo.gif)
+![The Ability Catalog window from the EditorTools sample](../tutorials/EditorTools/Images/demo.gif)

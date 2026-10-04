@@ -178,6 +178,6 @@ var window = title.GetOwnerWindow();
 
 ## Пример в пакете
 
-Окно каталога и инспектор <code lang="class-name">AbilityConfig</code> в примере [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) собраны на этих расширениях.
+Окно каталога и инспектор <code lang="class-name">AbilityConfig</code> в примере [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) собраны на этих расширениях.
 
-![Окно Ability Catalog из примера EditorTools](../../Samples~/EditorTools/Documentation/Images/demo.gif)
+![Окно Ability Catalog из примера EditorTools](../../../../tutorials/EditorTools/Images/demo.gif)

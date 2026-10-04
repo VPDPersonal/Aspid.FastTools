@@ -1,4 +1,4 @@
-// Docs-media harness: the weapon hierarchy shown in the Documentation/02-serializable-types.md pickers.
+// Docs-media harness: the weapon hierarchy shown in the Website/docs/02-serializable-types.md pickers.
 // Lives in DevTests, but uses a neutral game-like namespace because the picker
 // breadcrumbs (and thus the namespace) are visible in the recorded media.
 

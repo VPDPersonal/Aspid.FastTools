@@ -13,7 +13,7 @@
 
 | Без атрибута | С <code lang="csharp">[TypeSelector]</code> |
 |---|---|
-| ![Все классы Weapon в окне выбора, включая абстрактные](../Images/type-selector-quick-start-before.png) | ![В окне выбора только Axe и Bow](../Images/type-selector-quick-start-after.png) |
+| ![Все классы Weapon в окне выбора, включая абстрактные](../../../../docs/Images/type-selector-quick-start-before.png) | ![В окне выбора только Axe и Bow](../../../../docs/Images/type-selector-quick-start-after.png) |
 
 ## Где применяется
 
@@ -78,7 +78,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 [SerializeField] private string _secondaryWeapon;
 ```
 
-![Пустое обязательное поле показывает предупреждение под селектором](../Images/type-selector-required.png)
+![Пустое обязательное поле показывает предупреждение под селектором](../../../../docs/Images/type-selector-required.png)
 
 С <code lang="csharp">Required = true</code> пункт `<None>` остаётся доступным. Потерянный тип с сохранённым именем проверку проходит.
 
@@ -97,7 +97,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 Выберите <code lang="class-name">MeleeWeapon</code> в **Weapon Class** — **Weapon Name** предложит его конкретных наследников. Смена ограничения не очищает ранее выбранное имя.
 
-![Выбор MeleeWeapon в Weapon Class оставляет в Weapon Name только Axe и Sword](../Images/type-selector-member-constraint.gif)
+![Выбор MeleeWeapon в Weapon Class оставляет в Weapon Name только Axe и Sword](../../../../docs/Images/type-selector-member-constraint.gif)
 
 | Источник ограничения | Базовый тип |
 |---|---|
@@ -118,7 +118,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 [SerializeField] private string _weaponName;
 ```
 
-![Ограничение не разрешилось — инспектор показывает предупреждение под полем](../Images/type-selector-constraint-warning.png)
+![Ограничение не разрешилось — инспектор показывает предупреждение под полем](../../../../docs/Images/type-selector-constraint-warning.png)
 
 ## TypeSelectorDisplay
 
@@ -134,7 +134,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 Подклассы настроек не наследуют.
 
-![Имя Longsword, иконка и группа Weapons/Melee в окне выбора](../Images/type-selector-display.png)
+![Имя Longsword, иконка и группа Weapons/Melee в окне выбора](../../../../docs/Images/type-selector-display.png)
 
 > [!NOTE]
 > <code lang="csharp">[TypeSelector]</code> и <code lang="csharp">[TypeSelectorDisplay]</code> помечены <code lang="csharp">[Conditional("UNITY_EDITOR")]</code>. В классах из внешней DLL, собранной без этого символа, их настроек нет, включая <code lang="csharp">Hidden</code>.
@@ -143,7 +143,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 Окно группирует типы по namespace или <code lang="csharp">Group</code> и различает одинаковые имена по сборкам.
 
-![Избранные и недавние типы на корневой странице окна выбора](../Images/type-selector-window.png)
+![Избранные и недавние типы на корневой странице окна выбора](../../../../docs/Images/type-selector-window.png)
 
 На корневой странице окно держит типы, которые нужны чаще других:
 
@@ -167,7 +167,7 @@ public sealed class Enchanted<T> : Weapon
 
 Выберите <code lang="class-name">Enchanted&lt;T&gt;</code> в поле <code lang="class-name">SerializableType&lt;Weapon&gt;</code> — окно предложит наследников <code lang="class-name">Enchantment</code>, а после выбора <code lang="class-name">Fire</code> запишет <code lang="class-name">Enchanted&lt;Fire&gt;</code>.
 
-![Выбор аргумента generic-типа в окне выбора](../Images/type-selector-generic.gif)
+![Выбор аргумента generic-типа в окне выбора](../../../../docs/Images/type-selector-generic.gif)
 
 - Generic-аргумент может сам быть generic-типом: окно сначала спросит его аргументы.
 - Если все аргументы выводятся из типа поля, закрытый тип возвращается сразу.
@@ -200,6 +200,6 @@ button.clicked += () => TypeSelectorWindow.Show(
 
 ## Пример в пакете
 
-Зависимый список, имена из <code lang="csharp">[TypeSelectorDisplay]</code> и обязательное поле показаны в примере [Types](../../Samples~/Types/Documentation/README.ru.md), а окно выбора из редакторского кода — в [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).
+Зависимый список, имена из <code lang="csharp">[TypeSelectorDisplay]</code> и обязательное поле показаны в примере [Types](../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md), а окно выбора из редакторского кода — в [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md).
 
-![Волна обычных и элитных врагов в сцене Types](../../Samples~/Types/Documentation/Images/demo.gif)
+![Волна обычных и элитных врагов в сцене Types](../../../../tutorials/Types/Images/demo.gif)

@@ -38,7 +38,7 @@ test('empty queries suggest documentation and samples', () => {
 });
 test('index URLs follow trailingSlash: false except the locale root', async () => {
   const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-  const doc = (permalink) => ({permalink, title: 'Samples', source: '@site/src/samples/index.mdx'});
+  const doc = (permalink) => ({permalink, title: 'Samples', source: '@site/tutorials/index.mdx'});
   const allContent = {'docusaurus-plugin-content-docs': {tutorials: {loadedVersions: [{docs: [
     doc('/Aspid.FastTools/ru/'), doc('/Aspid.FastTools/ru/tutorials/'), doc('/Aspid.FastTools/ru/tutorials/types/'),
     doc('/Aspid.FastTools/ru/docs/enum-values'),

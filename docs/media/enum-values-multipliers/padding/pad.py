@@ -26,7 +26,7 @@ def first_image(data):
 
 here = Path(__file__).resolve().parent
 repo = here.parents[3]
-target = repo / 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images'
+target = repo / 'Website/docs/Images'
 for suffix in ('', '-light'):
     source_path = here / f'source{suffix}.gif'
     source = Image.open(source_path)

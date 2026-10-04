@@ -132,6 +132,6 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 
 ## Package sample
 
-Missing types, a <code lang="csharp">[MovedFrom]</code> rename and a shared reference for both tabs are in the assets of the [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) sample.
+Missing types, a <code lang="csharp">[MovedFrom]</code> rename and a shared reference for both tabs are in the assets of the [SerializeReferences](../tutorials/SerializeReferences/README.md) sample.
 
-![The dummy takes damage in the SerializeReferences scene](../Samples~/SerializeReferences/Documentation/Images/demo.gif)
+![The dummy takes damage in the SerializeReferences scene](../tutorials/SerializeReferences/Images/demo.gif)
