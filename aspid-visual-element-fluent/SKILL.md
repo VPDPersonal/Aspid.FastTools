@@ -9,8 +9,16 @@ description: "Aspid.FastTools chainable UI Toolkit extensions (namespace Aspid.F
 scripts have an `.asmdef`, reference `Aspid.FastTools` (editor code: also `Aspid.FastTools.Editor`; `Unity.Mathematics`
 overloads: `Aspid.FastTools.VisualElements.Math`, enabled automatically when `com.unity.mathematics` is installed).
 
-Before using a method you have not seen in this file, confirm its exact name and parameters in
-[references/catalog.md](references/catalog.md). Do not guess.
+Before using a method you have not seen in this file, confirm its exact name, parameters and receiver constraint in
+the installed package source. Do not guess. The package is `Packages/tech.aspid.fasttools` (embedded or local) or
+`Library/PackageCache/tech.aspid.fasttools@*` (git or registry); its extensions live in
+`Runtime/Scripts/VisualElements/Extensions` and, for editor helpers, `Editor/Scripts/VisualElements/Extensions`:
+
+```sh
+grep -rnE -A2 'public static [^=]*\bSetPlaceholder\b' Library/PackageCache/tech.aspid.fasttools@*/*/Scripts/VisualElements/Extensions
+```
+
+No match means the method does not exist in the installed version.
 
 ```csharp
 rootVisualElement.AddChild(new VisualElement()
