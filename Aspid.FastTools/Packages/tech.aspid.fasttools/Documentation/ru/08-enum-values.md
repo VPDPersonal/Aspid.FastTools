@@ -23,7 +23,7 @@
 ![Populate Missing Enum Members в таблице Multipliers](../Images/enum-values-multipliers-populate.gif)
 
 > [!NOTE]
-> Строка, добавленная в пустую таблицу, показывается как `<None>` и пропускается с ошибкой в Console, пока не выбран член.
+> Строка, добавленная в пустую таблицу, показывается как `<None>`: пока член не выбран, поиск её пропускает, а при обращении к таблице в Console появляется ошибка.
 
 ## Какой вариант выбрать
 
@@ -34,8 +34,7 @@
 | Упаковка в <code lang="function">GetValue</code> | Нет | Ключ упаковывается |
 | Ключ другого enum | Не компилируется | Возвращает **Default Value** |
 
-- Значения таблицы задаются в инспекторе; из кода их можно только читать.
-- <code lang="class-name">TValue</code> — любой тип, который сериализует Unity.
+Значения таблицы задаются в инспекторе; из кода их можно только читать.
 
 В варианте <code lang="class-name">EnumValues&lt;TValue&gt;</code> поле множителей объявляется как <code lang="class-name">EnumValues&lt;float&gt;</code>, а <code lang="class-name">DamageType</code> выбирается в заголовке таблицы:
 
@@ -48,7 +47,7 @@ private EnumValues<float>
 ![DamageType в окне выбора типа в заголовке Multipliers](../Images/enum-values-type-selector.png)
 
 - Выбор enum обязателен: если поле пустое, инспектор показывает **Required type is not set**. Это поле также учитывает [проверка обязательных полей](07-serialize-reference-validation.md#что-проверяет-каждый-запуск).
-- При первом обращении к таблице с пустым полем enum в Console записывается **предупреждение (Warning)**. Вызовы <code lang="function">GetValue</code> возвращают **Default Value**.
+- При первом обращении к таблице с пустым полем enum в Console появляется предупреждение, а <code lang="function">GetValue</code> возвращает **Default Value**.
 
 ## Правила поиска
 
@@ -125,8 +124,6 @@ _multipliers.Equals(request, key);
 | <code lang="csharp">DamageType.Fire &#124; DamageType.Ice</code> | <code lang="csharp">DamageType.None</code> | <code lang="csharp">false</code> |
 | <code lang="csharp">DamageType.None</code> | <code lang="csharp">DamageType.None</code> | <code lang="csharp">true</code> |
 
-В <code lang="class-name">EnumValues&lt;TValue&gt;</code> метод <code lang="function">Equals</code> возвращает <code lang="csharp">false</code>, если тип любого аргумента отличается от enum, выбранного в инспекторе.
-
 ## Перебор строк
 
 ```csharp
@@ -135,7 +132,7 @@ foreach (var entry in _multipliers)
     total += entry.Value;
 ```
 
-**Default Value** и строки с неразрешёнными ключами в перебор не входят. После первого обращения, которое инициализирует ключи, прямой <code lang="csharp">foreach</code> по таблице не выделяет память. Перебор через <code lang="class-name">IEnumerable</code> упаковывает перечислитель.
+**Default Value** и строки с неразрешёнными ключами в перебор не входят. После первого обращения, которое инициализирует ключи, прямой <code lang="csharp">foreach</code> по таблице не выделяет память.
 
 ## Если enum изменился
 
@@ -150,6 +147,6 @@ foreach (var entry in _multipliers)
 
 ## Пример в пакете
 
-Плитки и следы получают цвет из <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, а множитель скорости — из <code lang="class-name">EnumValues&lt;float&gt;</code> с выбранным в инспекторе <code lang="csharp">[Flags]</code>-enum: [EnumValues](../../Samples~/EnumValues/Documentation/README.ru.md).
+В примере [EnumValues](../../Samples~/EnumValues/Documentation/README.ru.md) плитки и следы получают цвет из <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, а множитель скорости — из <code lang="class-name">EnumValues&lt;float&gt;</code> с <code lang="csharp">[Flags]</code>-enum, выбранным в инспекторе.
 
 ![При переходе на другую поверхность меняются цвет следа и скорость персонажа.](../../Samples~/EnumValues/Documentation/Images/demo.gif)
