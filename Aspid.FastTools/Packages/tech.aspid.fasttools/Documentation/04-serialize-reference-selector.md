@@ -1,8 +1,6 @@
 # SerializeReference Selector
 
-Pick an implementation right in the Inspector — from a searchable list, without a custom editor.
-
-<a id="inspector-type-dropdown"></a>
+Pick the field's class in the Inspector, and keep its data when the class changes.
 
 ## Quick start
 
@@ -16,13 +14,12 @@ An <code lang="class-name">IWeapon</code> field offers concrete implementations 
 
 For extra constraints, required fields and list appearance, see [TypeSelector](03-type-selector.md).
 
-- <code lang="csharp">Allow</code> has no effect here: the types must be instantiable. Analyzer `AFT0002` reports this redundant setting.
+- <code lang="csharp">Allow</code> has no effect here: the types must be instantiable.
 - Generic arguments are inferred from the field type; when they cannot be, the picker asks for types Unity can serialize.
-- Incompatible constraints leave the list empty; analyzers `AFT0003`, `AFT0005` and `AFT0009` report them at compile time.
 
 ## Lists
 
-In a list with <code lang="csharp">[TypeSelector]</code>, “+” opens the class picker and adds a new instance, and `<None>` adds an empty element. With several objects selected, each gets its own instance, all in one Undo group.
+In a list with <code lang="csharp">[TypeSelector]</code>, “+” opens the class picker and adds a new instance, and `<None>` adds an empty element. With several objects selected, each gets its own instance.
 
 ![“+” on Sidearms opens the class picker and adds a Shotgun](Images/aspid_fasttools_serialize_reference_list.gif)
 
@@ -40,7 +37,8 @@ When switching classes, FastTools tries to carry compatible values of fields wit
 
 A nested reference carries over as the same instance when the field name and type are compatible.
 
-Dragging a `.cs` file from **Project** onto the field header is another way to select a class.
+> [!TIP]
+> You can also pick the class by dragging a `.cs` file from **Project** onto the field header.
 
 ## Header menu
 
@@ -54,17 +52,16 @@ Right-click the field header:
 | **Create New Script…** | Creates a <code lang="csharp">[Serializable]</code> class for the field type and assigns it after compilation |
 | **Save as Template…** | Saves the value under a name; templates live in the editor settings on this machine, not in the project |
 | **Paste Template → …** | Creates an instance from a template; only templates that fit the field are listed |
+| **Paste Template → Remove Missing (N)…** | Deletes templates whose class no longer loads; shown only when such templates exist |
 
 > [!WARNING]
 > Copy/Paste and templates do not carry nested <code lang="csharp">[SerializeReference]</code> fields: the pasted object loses those references.
-
-**Paste Template → Remove Missing (N)…** deletes templates whose class no longer loads. The item appears when such templates exist.
 
 ## Shared references
 
 **Link to Existing → …** in the header menu links the field to an instance from another field on the same object.
 
-Two fields of an object can point at one instance: an edit through one shows in the other. Such fields are marked **Shared reference #N**, and **Make unique** gives the field its own copy, nested references included.
+Fields that point at one instance are marked **Shared reference #N**; **Make unique** under the field or **Make Unique Reference** in the header menu gives the field its own copy, nested references included.
 
 ![Make unique creates an independent copy of a shared reference](Images/aspid_fasttools_serialize_reference_make_unique.png)
 
@@ -72,18 +69,20 @@ A duplicated list element gets its own instance instead of a reference to the sa
 
 ## Missing type
 
-If the field shows **Missing type**, see [SerializeReference repair](06-serialize-reference-tooling.md) for **Fix**, bulk repair and the differences in data preservation and Undo.
+After a class is renamed, moved or deleted, the field shows `<Missing …>` with a **Missing type** notice under it. The field's data stays in the asset.
+
+![The missing Game.Gear.Pistoll reference with the Fix and → Pistol buttons](Images/aspid_fasttools_serialize_reference_repair.png)
+
+**Fix** opens the class picker, and the class you pick replaces the missing one. When a class with the same or a similar name fits, the notice also offers it, for example **→ Pistol**. What Fix keeps on an asset and in a scene is described in [Fix in the Inspector](06-serialize-reference-tooling.md#fix-in-the-inspector).
+
+[Project References](06-serialize-reference-tooling.md#project-references-repair-a-group) finds every missing reference in the project and repairs them in groups. The [build check](07-serialize-reference-validation.md) and [breakage detection](07-serialize-reference-validation.md#detecting-new-breakages) report new ones.
 
 ## Custom inspector
 
-In your own editor, a regular <code lang="class-name">PropertyField</code> draws a <code lang="csharp">[TypeSelector]</code> field: the class picker and the list's “+” come by themselves, with no package call.
-
-| UI Toolkit — CreateInspectorGUI | IMGUI — OnInspectorGUI |
-|---|---|
-| <pre lang="csharp"><code>new PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"))</code></pre> | <pre lang="csharp"><code>EditorGUILayout.PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"));</code></pre> |
-
-For fields without the attribute or list elements drawn separately, use [SerializeReferenceEditorGUI](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI) or [SerializeReferenceIMGUIList](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList).
+In your own editor, a regular <code lang="class-name">PropertyField</code> draws a <code lang="csharp">[TypeSelector]</code> field, in UI Toolkit and in IMGUI: the class picker and the list's “+” come by themselves. For list elements drawn separately, use [SerializeReferenceEditorGUI](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI) or [SerializeReferenceIMGUIList](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList).
 
 ## Package sample
 
 For weapon selection, lists and shared references, see the [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) sample.
+
+![The dummy takes damage in the SerializeReferences scene](../Samples~/SerializeReferences/Documentation/Images/demo.gif)
