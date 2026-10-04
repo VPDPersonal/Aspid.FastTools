@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 namespace Aspid.FastTools.UIElements
 {
     /// <summary>
-    /// Extension methods for <see cref="ICustomStyle"/> that bridge USS string-typed custom
+    /// Provides extension methods for <see cref="ICustomStyle"/> that bridge USS string-typed custom
     /// properties to strongly-typed C# values.
     /// </summary>
     public static class ICustomStyleExtensions

@@ -16,12 +16,12 @@ namespace Aspid.FastTools.Types.Editors
         /// <summary>
         /// Searches script assets for a declaration of <paramref name="type"/>.
         /// </summary>
-        /// <param name="type">The type to locate, or <see langword="null"/> for no match.</param>
-        /// <returns>The matching script asset; otherwise, <see langword="null"/> if no declaration is found.</returns>
         /// <remarks>
         /// Text matching is limited to assets matching the type name and, for nested types, the declaring type's script.
         /// Check <see cref="MonoScript.GetClass"/> before assigning the result to a component's <c>m_Script</c> property.
         /// </remarks>
+        /// <param name="type">The type to locate, or <see langword="null"/> for no match.</param>
+        /// <returns>The matching script asset; otherwise, <see langword="null"/> if no declaration is found.</returns>
         public static MonoScript FindMonoScript(this Type type)
         {
             if (type is null) return null;

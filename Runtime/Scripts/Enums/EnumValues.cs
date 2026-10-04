@@ -9,10 +9,9 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Enums
 {
     /// <summary>
-    /// A serializable dictionary that maps each member of a chosen enum to a value of type
+    /// Serializable dictionary that maps each member of a chosen enum to a value of type
     /// <typeparamref name="TValue"/>. Supports both regular and <c>[Flags]</c> enums.
     /// </summary>
-    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
     /// <remarks>
     /// <para>
     /// The enum type is selected in the Inspector via a <see cref="TypeSelectorAttribute"/>
@@ -41,6 +40,7 @@ namespace Aspid.FastTools.Enums
     /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
     /// </para>
     /// </remarks>
+    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
     /// <example>
     /// Map a damage type to a color:
     /// <code>
@@ -192,7 +192,7 @@ namespace Aspid.FastTools.Enums
 
         /// <summary>
         /// Returns a struct enumerator over the explicitly configured (key, value) pairs in
-        /// serialized order — <c>foreach</c> binds to it directly and does not allocate.
+        /// serialized order — <see langword="foreach"/> binds to it directly and does not allocate.
         /// Does <b>not</b> include the default value or entries with an unresolved key.
         /// </summary>
         public EnumValuesEnumerator<Enum, TValue> GetEnumerator()
@@ -215,18 +215,16 @@ namespace Aspid.FastTools.Enums
     }
 
     /// <summary>
-    /// A serializable dictionary that maps members of <typeparamref name="TEnum"/> to values of
+    /// Serializable dictionary that maps members of <typeparamref name="TEnum"/> to values of
     /// type <typeparamref name="TValue"/>. The typed counterpart of <see cref="EnumValues{TValue}"/>
     /// for the common case where the enum type is known at compile time — the Inspector type-picker
     /// is read-only, and lookups are compile-time safe.
     /// </summary>
-    /// <typeparam name="TEnum">The enum type the entries are keyed by.</typeparam>
-    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
     /// <remarks>
     /// <para>
     /// Lookup semantics (including <c>[Flags]</c> handling) are identical to
     /// <see cref="EnumValues{TValue}"/> — see its remarks for details. Steady-state
-    /// <see cref="GetValue"/>, <see cref="Equals(TEnum,TEnum)"/> and <c>foreach</c> (which binds to the struct
+    /// <see cref="GetValue"/>, <see cref="Equals(TEnum,TEnum)"/> and <see langword="foreach"/> (which binds to the struct
     /// <see cref="EnumValuesEnumerator{TKey,TValue}"/>) never allocate.
     /// </para>
     /// <para>
@@ -242,6 +240,8 @@ namespace Aspid.FastTools.Enums
     /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
     /// </para>
     /// </remarks>
+    /// <typeparam name="TEnum">The enum type the entries are keyed by.</typeparam>
+    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
     /// <example>
     /// Map a damage type to a color, with the enum fixed at compile time:
     /// <code>
