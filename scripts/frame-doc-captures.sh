@@ -87,7 +87,7 @@ type-selector-constraint-warning              1393x176  34  6 1385  160 inspecto
 # TypeSelector's quick start compares two pickers side by side, so they come from a 440 pt Inspector like the cards.
 type-selector-quick-start-before              880x793   38 170  872  681 inspector:#3c3c3c
 type-selector-quick-start-after               880x793   38 170  872  681 inspector:#3c3c3c
-component-type-selector                       1300x764  34  6 1292  724 inspector
+component-type-selector                       1300x465  34  6 1292  425 inspector
 # The introduction's cards: the same pickers in a 440 pt Inspector, so their text reads at the card's width. The empty
 # rows between the picker's last item and its footer are cut out of every frame before encoding, for a shorter card.
 serializable-type-card                        880x546   38 170  872  534 inspector:#3c3c3c
