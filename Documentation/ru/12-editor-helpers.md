@@ -33,3 +33,5 @@
 ## Пример в пакете
 
 В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) <code lang="csharp">GetDisplayName()</code> задаёт заголовок кастомного инспектора ассета <code lang="class-name">AbilityConfig</code>.
+
+![Окно Ability Catalog из примера EditorTools](../../Samples~/EditorTools/Documentation/Images/demo.gif)
