@@ -35,6 +35,23 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 TypeSelectorHelpers.GetTypeSelectorTitle(null, "Gone.Type, Gone"));
         }
 
+        [TestCase("Gone.Type, Gone", "Gone.Type")]
+        [TestCase("Gone.Type, Gone, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "Gone.Type")]
+        [TestCase("Gone.Type", "Gone.Type")]
+        [TestCase("Gone.Outer+Inner, Gone", "Gone.Outer+Inner")]
+        [TestCase("Gone.Box`1[[Gone.Item, Gone, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], Gone, Version=1.0.0.0",
+            "Gone.Box`1[[Gone.Item, Gone, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]")]
+        [TestCase("Gone.Item[], Gone", "Gone.Item[]")]
+        public void MissingDisplayName_DropsTheAssemblyPartOutsideBrackets(string stored, string expected) =>
+            Assert.AreEqual(expected, TypeSelectorHelpers.GetMissingDisplayName(stored));
+
+        [Test]
+        public void MissingDisplayName_EmptyName_IsReturnedAsIs()
+        {
+            Assert.IsNull(TypeSelectorHelpers.GetMissingDisplayName(null));
+            Assert.AreEqual("   ", TypeSelectorHelpers.GetMissingDisplayName("   "));
+        }
+
         [Test]
         public void Title_ResolvedGeneric_SpellsTheArguments() =>
             Assert.AreEqual("List<Int32>", TypeSelectorHelpers.GetTypeSelectorTitle(typeof(List<int>)));

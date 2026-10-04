@@ -37,15 +37,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var files = new HashSet<string>();
             var types = new HashSet<string>();
+            var references = 0;
 
             foreach (var violation in violations)
             {
                 files.Add(violation.AssetPath);
+
+                if (violation.Kind == GateViolationKind.MissingTypeName)
+                {
+                    types.Add("name|" + MissingTypeNames.GroupKey(violation.TypeName));
+                    continue;
+                }
+
+                references++;
                 types.Add(SerializeReferenceHelpers.StoredTypeKey(violation.StoredType));
             }
 
+            var names = violations.Count - references;
+            var counts = names == 0
+                ? $"{references} missing managed reference(s)"
+                : references == 0
+                    ? $"{names} missing type name(s)"
+                    : $"{references} missing managed reference(s) and {names} missing type name(s)";
+
             var builder = new StringBuilder();
-            builder.AppendLine($"[Aspid FastTools] {violations.Count} missing managed reference(s) across {files.Count} file(s), {types.Count} broken type(s):");
+            builder.AppendLine($"[Aspid FastTools] {counts} across {files.Count} file(s), {types.Count} broken type(s):");
 
             foreach (var violation in violations)
                 builder.AppendLine($"  {violation}");

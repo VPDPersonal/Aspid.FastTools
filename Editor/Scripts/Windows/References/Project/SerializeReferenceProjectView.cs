@@ -71,6 +71,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static IReadOnlyList<GateViolation> RequiredViolationsForRender =>
             _requiredIsWarm ? _requiredViolationsCache : Array.Empty<GateViolation>();
 
+        // Stored type names have no incremental index either: Scan Project reads them, a type name fix re-reads its files.
+        private static bool _typeNamesIsWarm;
+        private static List<MissingTypeNameLocation> _typeNamesCache = new();
+
+        private static IReadOnlyList<MissingTypeNameLocation> TypeNamesForRender =>
+            _typeNamesIsWarm ? _typeNamesCache : Array.Empty<MissingTypeNameLocation>();
+
         private static RequiredAuditState RequiredAudit =>
             SerializeReferenceProjectSummary.GetRequiredAuditState(
                 _requiredIsWarm, _requiredCheckDisabled, SerializeReferenceSettings.BuildSeverity == GateSeverity.Off);
@@ -97,7 +104,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(PanelTitleClass);
 
             var panelDescription = new Label(
-                    "Sweep every asset under Assets/ for broken [SerializeReference] types and bulk-fix them by type.")
+                    "Sweep every asset under Assets/ for broken [SerializeReference] types and SerializableType names, " +
+                    "and bulk-fix them by type.")
                 .AddClass(PanelDescriptionClass);
 
             _scanButton = new AspidGradientButton(ScanLabel, _ => ScanProject())
@@ -171,7 +179,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public void Initialize()
         {
-            if (!SerializeReferenceTypeUsageIndex.IsWarm && !_requiredIsWarm)
+            if (!SerializeReferenceTypeUsageIndex.IsWarm && !_requiredIsWarm && !_typeNamesIsWarm)
             {
                 ShowIdle();
                 return;
@@ -195,6 +203,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _requiredCheckDisabled = SerializeReferenceSettings.BuildSeverity == GateSeverity.Off;
             _requiredViolationsCache = CollectRequiredViolations();
             _requiredIsWarm = true;
+
+            _typeNamesCache = MissingTypeNames.ScanProject();
+            _typeNamesIsWarm = true;
 
             RenderWarmGroups();
         }
@@ -227,7 +238,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var overrides = MissingReferenceGroup.CollectOverridesFromIndex();
             var pendingOverrides = overrides.Count(entry => MissingReferenceGroup.OverrideMigrationTarget(entry) is not null);
-            var missingCount = groups.Sum(group => group.Entries.Count) + overrides.Count;
+            var typeNameGroups = MissingTypeNameGroup.Build(TypeNamesForRender);
+            var missingCount = groups.Sum(group => group.Entries.Count) + overrides.Count + TypeNamesForRender.Count;
             var requiredCount = requiredViolations.Count;
 
             if (missingCount == 0 && requiredCount == 0)
@@ -247,13 +259,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 else _list.AddChild(BuildGroupCard(group, migration));
             }
 
+            foreach (var group in typeNameGroups)
+                _list.AddChild(BuildTypeNameGroupCard(group));
+
             var migrationCount = migrations.Sum(entry => entry.Group.Entries.Count) + pendingOverrides;
             ShowResults(
-                SerializeReferenceProjectSummary.BuildResultsHeaderText(missingCount - migrationCount, migrationCount, requiredCount),
+                SerializeReferenceProjectSummary.BuildResultsHeaderText(
+                    missingCount - migrationCount - TypeNamesForRender.Count, migrationCount, requiredCount, TypeNamesForRender.Count),
                 StatusStyle.Type.Warning);
             _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0, RequiredAudit, overrides.Count > 0);
 
-            var hasAmber = groups.Count > migrations.Count || requiredCount > 0 || overrides.Count > pendingOverrides;
+            var hasAmber = groups.Count > migrations.Count || requiredCount > 0 || overrides.Count > pendingOverrides ||
+                           typeNameGroups.Count > 0;
             _legend.EnableInClassList(LegendHiddenClass, migrationCount == 0 || !hasAmber);
 
             if (overrides.Count > 0)
@@ -271,7 +288,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
 
             var groups = MissingReferenceGroup.CollectFromIndex();
-            if (groups.Count == 0 && MissingReferenceGroup.CollectOverridesFromIndex().Count == 0) ShowMissingReferencesClean();
+            if (groups.Count == 0 && MissingReferenceGroup.CollectOverridesFromIndex().Count == 0 && TypeNamesForRender.Count == 0)
+                ShowMissingReferencesClean();
             else RenderGroups(groups, RequiredViolationsForRender);
         }
 
@@ -321,7 +339,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void ShowIdle() => ShowEmptyState(
             success: false,
             title: "Project not scanned",
-            message: "Run Scan Project to map every broken [SerializeReference] type across your assets — then repair each missing type in bulk.");
+            message: "Run Scan Project to map every broken [SerializeReference] type and SerializableType name across your " +
+                     "assets — then repair each missing type in bulk.");
 
         private void ShowResults(string headerText, StatusStyle.Type status)
         {
@@ -346,6 +365,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (summary.Receipt is not null)
                 box.AddChild(new AspidGradientButton("Undo", _ => UndoGroupFix(summary, box)).AddClass(SummaryUndoClass));
+            else if (summary.TypeNameReceipt is not null)
+                box.AddChild(new AspidGradientButton("Undo", _ => UndoTypeNameFix(summary, box)).AddClass(SummaryUndoClass));
 
             _summaries.AddChild(box);
         }

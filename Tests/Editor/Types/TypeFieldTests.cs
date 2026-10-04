@@ -17,6 +17,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
     internal sealed class TypeFieldTests
     {
         private const string MissingName = "Missing.Namespace.GoneType, Missing.Assembly";
+        private const string MissingCaption = "<Missing Missing.Namespace.GoneType>";
         private const string MissingTextClass = "aspid-fasttools-type-field__text--missing";
         private const string OpenButtonClass = "aspid-fasttools-type-field__open-button";
 
@@ -103,8 +104,28 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual("—", Caption(field).text);
             field.showMixedValue = false;
 
-            Assert.IsTrue(Caption(field).text.Contains(MissingName));
+            Assert.AreEqual(MissingCaption, Caption(field).text);
             Assert.IsTrue(Caption(field).ClassListContains(MissingTextClass));
+        }
+
+        [Test]
+        public void Missing_ShowsTheStoredNameAsTheDropdownTooltip_AndClearsItOtherwise()
+        {
+            var field = AddField();
+            var input = field.Q<VisualElement>(className: EnumField.inputUssClassName);
+            Assert.IsTrue(string.IsNullOrEmpty(input.tooltip));
+
+            field.SetValueFromAssemblyQualifiedNameWithoutNotify(assemblyQualifiedName: MissingName);
+            Assert.AreEqual($"Missing type: {MissingName}", input.tooltip);
+            Assert.AreEqual(MissingCaption, Caption(field).text, "The caption drops the assembly; the tooltip keeps it.");
+
+            field.showMixedValue = true;
+            Assert.IsTrue(string.IsNullOrEmpty(input.tooltip));
+            field.showMixedValue = false;
+            Assert.AreEqual($"Missing type: {MissingName}", input.tooltip);
+
+            field.SetValueWithoutNotify(newValue: typeof(string));
+            Assert.IsTrue(string.IsNullOrEmpty(input.tooltip));
         }
 
         [Test]

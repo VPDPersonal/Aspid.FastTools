@@ -11,9 +11,9 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeUIToolkitPropertyDrawer
     {
-        private const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeProperty";
-        private const string MissingClass = "aspid-fasttools-type-property--missing";
-        private const string StripeClass = "aspid-fasttools-type-property__stripe";
+        internal const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeProperty";
+        internal const string MissingClass = "aspid-fasttools-type-property--missing";
+        internal const string StripeClass = "aspid-fasttools-type-property__stripe";
 
         internal static VisualElement Draw(
             string label,
@@ -60,27 +60,13 @@ namespace Aspid.FastTools.Types.Editors
 
                 if (missing)
                 {
-                    if (stripe.parent is null) container.AddChild(stripe);
                     notice ??= new InspectorNotice();
-                    notice.Set(message: "Missing type", actionText: "Fix",
-                        detail: TypeMissingRepair.GetDetail(storedName: current.stringValue),
-                        onAction: () => typeField.ShowSelector(repair: true));
-
-                    var suggestion = TypeMissingRepair.GetSuggestion(storedName: current.stringValue,
-                        types: typeField.Types, allow: typeField.Allow,
-                        excludeEditorOnly: typeField.ExcludeEditorOnlyTypes);
-                    if (suggestion is not null)
-                        notice.SetSuggestion(
-                            suggestionText: $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion)}",
-                            detail: $"Replace the stored type name with {suggestion.AssemblyQualifiedName}.",
-                            onSuggestion: () =>
-                            {
-                                if (typeField.IsReadOnly || !typeField.enabledInHierarchy) return;
-                                typeField.ApplyPicked(assemblyQualifiedName: suggestion.AssemblyQualifiedName);
-                                Refresh(property.Persistent());
-                            });
-
-                    if (notice.parent is null) container.AddChild(notice);
+                    ShowMissing(container: container, stripe: stripe, notice: notice, field: typeField,
+                        storedName: current.stringValue,
+                        suggestion: TypeMissingRepair.GetSuggestion(storedName: current.stringValue,
+                            types: typeField.Types, allow: typeField.Allow,
+                            excludeEditorOnly: typeField.ExcludeEditorOnlyTypes),
+                        onSuggestionApplied: () => Refresh(property.Persistent()));
                     return;
                 }
 
@@ -100,6 +86,37 @@ namespace Aspid.FastTools.Types.Editors
 
                 if (notice.parent is null) container.AddChild(notice);
             }
+        }
+
+        // Fix and the suggestion both repair through the field: a bound field writes its property, and a wrapper
+        // field leaves the write to its change handler.
+        internal static void ShowMissing(
+            VisualElement container,
+            VisualElement stripe,
+            InspectorNotice notice,
+            InspectorTypeField field,
+            string storedName,
+            Type suggestion,
+            Action onSuggestionApplied)
+        {
+            if (stripe.parent is null) container.AddChild(stripe);
+
+            notice.Set(message: "Missing type", actionText: "Fix",
+                detail: TypeMissingRepair.GetDetail(storedName: storedName),
+                onAction: () => field.ShowSelector(repair: true));
+
+            if (suggestion is not null)
+                notice.SetSuggestion(
+                    suggestionText: $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion)}",
+                    detail: $"Replace the stored type name with {suggestion.AssemblyQualifiedName}.",
+                    onSuggestion: () =>
+                    {
+                        if (field.IsReadOnly || !field.enabledInHierarchy) return;
+                        field.ApplyPicked(assemblyQualifiedName: suggestion.AssemblyQualifiedName);
+                        onSuggestionApplied();
+                    });
+
+            if (notice.parent is null) container.AddChild(notice);
         }
     }
 }

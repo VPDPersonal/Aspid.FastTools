@@ -8,8 +8,17 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class MonoScriptIMGUIPropertyDrawer
     {
-        internal static float GetHeight(SerializedProperty wrapperProperty) =>
-            TypeIMGUIPropertyDrawer.GetHeight(SerializableTypeUtility.GetBackingProperty(wrapperProperty));
+        internal static float GetHeight(SerializedProperty wrapperProperty)
+        {
+            var nameProperty = SerializableTypeUtility.GetBackingProperty(wrapperProperty);
+            var height = EditorGUIUtility.singleLineHeight;
+
+            if (TypeMissingRepair.IsMissingMonoScript(wrapperProperty: wrapperProperty) ||
+                (!nameProperty.hasMultipleDifferentValues && TypeSelectorRequiredGate.IsViolation(nameProperty)))
+                height += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+
+            return height;
+        }
 
         internal static void Draw(
             Rect position,
@@ -18,8 +27,14 @@ namespace Aspid.FastTools.Types.Editors
             TypeAllow allow = TypeAllow.All,
             params Type[] types)
         {
+            var isMissing = TypeMissingRepair.IsMissingMonoScript(wrapperProperty: wrapperProperty);
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;
+            if (isMissing)
+            {
+                rowRect.xMin += 5f;
+                TypeIMGUIPropertyDrawer.DrawMissingStripe(position: position);
+            }
 
             var isArrayElement = wrapperProperty.propertyPath.EndsWith("]");
             var openButtonSize = isArrayElement ? rowRect.height - 2 : rowRect.height;
@@ -37,17 +52,22 @@ namespace Aspid.FastTools.Types.Editors
 
             HandleDrop(dropdownRect, wrapperProperty, allow, types);
 
-            var caption = TypeSelectorHelpers.GetTypeSelectorTitle(currentType, assemblyQualifiedName);
-            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
+            var caption = TypeSelectorHelpers.GetTypeSelectorTitle(currentType,
+                assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(assemblyQualifiedName));
+            var captionStyle = EditorStyles.miniPullDown;
+            if (isMissing)
             {
-                var persistent = wrapperProperty.Persistent();
-
-                TypeSelectorWindow.Show(
-                    screenRect: GUIUtility.GUIToScreenRect(dropdownRect),
-                    filter: CreateFilter(allow, types, TypeSelectorHelpers.IsStoredInRuntimeObject(persistent)),
-                    currentAqn: currentType?.AssemblyQualifiedName ?? assemblyQualifiedName,
-                    onSelected: picked => SerializableMonoScriptUtility.Assign(persistent, TypeUtility.GetTypeOrNull(picked)));
+                captionStyle = TypeIMGUIPropertyDrawer.GetMissingCaptionStyle();
+                caption = TypeIMGUIPropertyDrawer.FitCaptionFromLeft(style: captionStyle, text: caption, width: dropdownRect.width);
             }
+
+            var captionContent = new GUIContent(text: caption,
+                tooltip: isMissing ? TypeIMGUIPropertyDrawer.GetMissingTooltip(storedName: assemblyQualifiedName) : null);
+
+            if (EditorGUI.DropdownButton(position: dropdownRect, content: captionContent,
+                    focusType: FocusType.Passive, style: captionStyle))
+                ShowSelector(wrapperProperty: wrapperProperty, rect: dropdownRect, allow: allow, types: types,
+                    currentAqn: currentType?.AssemblyQualifiedName ?? assemblyQualifiedName);
 
             if (hasValidType)
             {
@@ -55,21 +75,54 @@ namespace Aspid.FastTools.Types.Editors
                 TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openButtonRect, currentType);
             }
 
-            var nameProperty = SerializableTypeUtility.GetBackingProperty(wrapperProperty);
-            if (!TypeSelectorRequiredGate.IsViolation(nameProperty)) return;
+            var noticeRect = EditorGUI.IndentedRect(source: new Rect(rowRect.x,
+                rowRect.yMax + EditorGUIUtility.standardVerticalSpacing, rowRect.width, EditorGUIUtility.singleLineHeight));
 
-            var noticeRect = new Rect(position.x, rowRect.yMax + EditorGUIUtility.standardVerticalSpacing,
-                position.width, EditorGUIUtility.singleLineHeight);
+            if (isMissing)
+            {
+                var suggestion = TypeMissingRepair.GetSuggestion(storedName: assemblyQualifiedName, types: types, allow: allow,
+                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(wrapperProperty),
+                    predicate: SerializableMonoScriptUtility.HasScript);
+
+                TypeIMGUIPropertyDrawer.DrawMissingNotice(rect: noticeRect, storedName: assemblyQualifiedName,
+                    suggestion: suggestion,
+                    onFix: () => ShowSelector(wrapperProperty: wrapperProperty, rect: noticeRect, allow: allow,
+                        types: types, currentAqn: null, repair: true),
+                    onSuggestion: picked => SerializableMonoScriptUtility.Assign(
+                        wrapperProperty: wrapperProperty.Persistent(), type: picked));
+                return;
+            }
+
+            var nameProperty = SerializableTypeUtility.GetBackingProperty(wrapperProperty);
+            if (nameProperty.hasMultipleDifferentValues || !TypeSelectorRequiredGate.IsViolation(nameProperty)) return;
 
             InspectorNoticeGUI.DrawRequiredNotice(noticeRect, "Required type is not set",
                 "This [TypeSelector] field is marked required but has no type.");
         }
 
-        internal static TypeSelectorFilter CreateFilter(TypeAllow allow, Type[] types, bool excludeEditorOnly) => new()
+        private static void ShowSelector(SerializedProperty wrapperProperty, Rect rect, TypeAllow allow, Type[] types,
+            string currentAqn, bool repair = false)
+        {
+            var persistent = wrapperProperty.Persistent();
+
+            TypeSelectorWindow.Show(
+                screenRect: GUIUtility.GUIToScreenRect(rect),
+                filter: CreateFilter(allow: allow, types: types,
+                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(persistent), hideNoneOption: repair),
+                currentAqn: repair ? null : currentAqn,
+                onSelected: picked => SerializableMonoScriptUtility.Assign(persistent, TypeUtility.GetTypeOrNull(picked)));
+        }
+
+        internal static TypeSelectorFilter CreateFilter(
+            TypeAllow allow,
+            Type[] types,
+            bool excludeEditorOnly,
+            bool hideNoneOption = false) => new()
         {
             Types = types,
             Allow = allow,
             Predicate = SerializableMonoScriptUtility.HasScript,
+            HideNoneOption = hideNoneOption,
             ExcludeEditorOnly = excludeEditorOnly,
         };
 

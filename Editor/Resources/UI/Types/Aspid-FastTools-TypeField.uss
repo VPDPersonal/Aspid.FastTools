@@ -1,4 +1,10 @@
+/* The bare TextElement does not inherit popup-field ellipsis rules, so all overflow properties are required here.
+   The ellipsis starts the text, so the class name at its end stays visible. */
 .aspid-fasttools-type-field__text--missing {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -unity-text-overflow-position: start;
     color: var(--unity-colors-warning-text);
 }
 

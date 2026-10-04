@@ -37,6 +37,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _changedAssets.Clear();
 
                 SerializeReferenceBreakageDetector.Scan(changedAssets);
+                TypeNameBreakageDetector.Scan(changedAssets);
             };
         }
 

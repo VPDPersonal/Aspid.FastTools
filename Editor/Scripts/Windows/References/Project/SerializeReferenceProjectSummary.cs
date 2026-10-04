@@ -27,9 +27,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static (bool Success, string Title, string Message) BuildNothingFoundState(RequiredAuditState state) =>
             state == RequiredAuditState.Checked
-                ? (true, "Project clean", "No missing managed references or unset required fields found anywhere under Assets/.")
+                ? (true, "Project clean", "No missing managed references, type names or unset required fields found anywhere under Assets/.")
                 : (false, "No missing references",
-                    "No missing managed references found anywhere under Assets/. " + BuildRequiredNotCheckedText(state));
+                    "No missing managed references or type names found anywhere under Assets/. " + BuildRequiredNotCheckedText(state));
 
         public static StatusStyle.Type GetMissingReferencesCleanStatus(RequiredAuditState state, bool hasRequiredViolations) =>
             hasRequiredViolations ? StatusStyle.Type.Warning
@@ -41,10 +41,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             : hasRequiredViolations ? "Click a required-violation row to jump to its asset."
             : "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
 
-        public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount)
+        public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount, int typeNameCount = 0)
         {
-            var parts = new List<string>(3);
+            var parts = new List<string>(4);
             if (brokenCount > 0) parts.Add(BuildCountText(brokenCount, "missing reference"));
+            if (typeNameCount > 0) parts.Add(BuildCountText(typeNameCount, "missing type name"));
             if (migrationCount > 0) parts.Add(BuildCountText(migrationCount, "pending migration"));
             if (requiredCount > 0) parts.Add(BuildCountText(requiredCount, "required violation"));
 
@@ -72,6 +73,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var entryText = entries == 1 ? "1 entry" : $"{entries} entries";
             var fileText = files == 1 ? "1 file" : $"{files} files";
             return $"{entryText} · {fileText}";
+        }
+
+        public static string BuildTypeNameCountText(MissingTypeNameGroup group)
+        {
+            var entries = group.Entries.Count;
+            var files = group.FileCount;
+            var entryText = entries == 1 ? "1 entry" : $"{entries} entries";
+            var fileText = files == 1 ? "1 file" : $"{files} files";
+            return $"{entryText} · {fileText} · type name";
+        }
+
+        public static string BuildTypeNameDiffPreview(IReadOnlyList<MissingTypeNameLocation> entries, string newName)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine("Changes:");
+
+            for (var i = 0; i < entries.Count && i < MaxPreviewedEntries; i++)
+            {
+                var entry = entries[i];
+                builder.AppendLine($"  {System.IO.Path.GetFileName(entry.AssetPath)} ({DescribeTypeNameField(entry.Entry)}):");
+                builder.AppendLine($"    - {entry.Entry.TypeName}");
+                builder.AppendLine($"    + {newName}");
+            }
+
+            if (entries.Count > MaxPreviewedEntries)
+                builder.AppendLine($"  …and {entries.Count - MaxPreviewedEntries} more");
+
+            builder.AppendLine();
+            return builder.ToString();
+        }
+
+        // "_weapon", "rid 1001 · _arrow", "_weapon · override".
+        public static string DescribeTypeNameField(StoredTypeNameEntry entry)
+        {
+            var field = string.IsNullOrEmpty(entry.FieldPath) ? SerializeReferenceYamlEditor.TypeNameKey : entry.FieldPath;
+            if (entry.Rid != 0) field = $"rid {entry.Rid} · {field}";
+            return entry.IsOverride ? field + " · override" : field;
         }
 
         public static string BuildFixAllLabel(MissingReferenceGroup group, bool isMigration) =>

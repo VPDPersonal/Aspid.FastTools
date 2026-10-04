@@ -36,11 +36,11 @@
 
 ## Обнаружение новых поломок
 
-**Breakage detection** после изменения скриптов или ассетов сообщает о новых потерянных ссылках уведомлением и в Console. Настройка включена по умолчанию и находится в **Tools → Aspid 🐍 → FastTools → Settings**, а также в **Preferences → Aspid.FastTools → SerializeReference**. Она хранится локально в `EditorPrefs`.
+**Breakage detection** после изменения скриптов или ассетов сообщает о новых потерянных ссылках и именах типов уведомлением и в Console. Настройка включена по умолчанию и находится в **Tools → Aspid 🐍 → FastTools → Settings**, а также в **Preferences → Aspid.FastTools → SerializeReference**. Она хранится локально в `EditorPrefs`.
 
 ## Область проверки
 
-Проверяются сохранённые `.prefab`, `.asset` и `.unity` внутри `Assets/`. Ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) не считаются потерянными типами. Проверка потерянных типов относится к <code lang="csharp">[SerializeReference]</code>; она не ищет неразрешимые имена в <code lang="class-name">SerializableType</code> или строках.
+Проверяются сохранённые `.prefab`, `.asset` и `.unity` внутри `Assets/`. Ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) не считаются потерянными типами. Проверка потерянных типов охватывает <code lang="csharp">[SerializeReference]</code> и имена, которые хранят поля <code lang="class-name">SerializableType</code> и <code lang="class-name">SerializableMonoScript</code>. Строки с <code lang="csharp">[TypeSelector]</code> она не проверяет.
 
 **Excluded scan folders** исключает папки из Project References, проверки сборки, CI и обнаружения новых поломок. По умолчанию исключений нет.
 
@@ -100,14 +100,14 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 
 | Поле | Содержимое |
 |---|---|
-| `KIND` | `MissingType` или `RequiredUnset` |
+| `KIND` | `MissingType`, `MissingTypeName` или `RequiredUnset` |
 | `assetPath` | Путь файла |
 | `fileId` | Идентификатор объекта-владельца внутри файла; для override экземпляра префаба — идентификатор экземпляра |
-| `rid` | Идентификатор managed-ссылки; в строках `RequiredUnset` — `-2` для пустого <code lang="csharp">[SerializeReference]</code> и `0` для <code lang="csharp">string</code> и <code lang="class-name">SerializableType</code> |
-| `className` | Сохранённое имя класса для `MissingType` |
-| `fieldPath` | Путь обязательного поля; для `MissingType` из override — переопределённое поле; иначе пусто |
+| `rid` | Идентификатор managed-ссылки; в строках `RequiredUnset` — `-2` для пустого <code lang="csharp">[SerializeReference]</code> и `0` для <code lang="csharp">string</code> и <code lang="class-name">SerializableType</code>; в строках `MissingTypeName` — managed-ссылка, в которой лежит поле, или `0` |
+| `className` | Сохранённое имя класса для `MissingType`; сохранённое имя типа целиком для `MissingTypeName` |
+| `fieldPath` | Путь обязательного поля; поле обёртки для `MissingTypeName`; для `MissingType` из override — переопределённое поле; иначе пусто |
 | `origin` | `override` для типа, заданного override экземпляра префаба; иначе пусто |
 
-В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в карточке **Prefab instance overrides** в Project References.
+В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в карточке **Prefab instance overrides** в Project References. Строка `MissingTypeName` находится в своей группе **type name** в Project References.
 
 </details>

@@ -42,6 +42,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void BuildResultsHeaderText_CountsTypeNamesApart() =>
+            Assert.AreEqual("2 missing references, 1 missing type name, 3 required violations",
+                SerializeReferenceProjectSummary.BuildResultsHeaderText(2, 0, 3, typeNameCount: 1));
+
+        [Test]
         public void BuildMissingReferencesCleanHintText_Checked_SaysNothingLeft() =>
             StringAssert.StartsWith("Nothing left to repair",
                 SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, false));

@@ -42,7 +42,7 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [Восстановление SerializeReference](06-serialize-reference-tooling.md)
 
-Находит потерянные ссылки <code lang="csharp">[SerializeReference]</code> по всему проекту и восстанавливает их группами. [Проверка перед сборкой и CI](07-serialize-reference-validation.md) ловит новые до выпуска.
+Находит потерянные ссылки <code lang="csharp">[SerializeReference]</code> и имена <code lang="class-name">SerializableType</code> по всему проекту и восстанавливает их группами. [Проверка перед сборкой и CI](07-serialize-reference-validation.md) ловит новые до выпуска.
 
 <img src="../Images/aspid_fasttools_serialize_reference_repair_card.gif" alt="Fix all восстанавливает три потерянные ссылки Blaster как Pistol" width="640" />
 

@@ -30,7 +30,7 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 ### Missing type
 
-After a class, namespace or assembly rename, the stored name no longer resolves: the field shows `<Missing …>` with a **Missing type** notice under it.
+After a class, namespace or assembly rename, the stored name no longer resolves: the field shows `<Missing …>` with a **Missing type** notice under it. The caption gives the type name without its assembly; the tooltip gives the whole stored name.
 
 ![The missing Game.Combat.Spear type with the Fix and → Spear buttons](Images/serializable-type-missing.png)
 
@@ -38,6 +38,8 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 - <code lang="csharp">AssemblyQualifiedName</code> and <code lang="csharp">ToString()</code> keep the old name.
 
 **Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**.
+
+To find every missing name in the project, open **Project References** and click **Scan Project**. The fields are grouped by stored name, and **Fix all** repairs a group in one step, see [Type names](06-serialize-reference-tooling.md#type-names). [Build and CI checks](07-serialize-reference-validation.md) and breakage detection report missing names too. A <code lang="csharp">[TypeSelector]</code> string shows the notice only in the Inspector.
 
 ## SerializableMonoScript
 
@@ -53,7 +55,7 @@ Limitations:
 - only a top-level, non-generic class declared in a `.cs` file of the same name can be picked; from a DLL, only a <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code>;
 - there is no public constructor, so the field cannot be created in code.
 
-The link breaks, and the field shows a [missing type](#missing-type), when:
+The link breaks, and the field shows a [missing type](#missing-type) with the same notice, when:
 
 - the class is renamed without its file;
 - the file is renamed outside Unity without its `.meta`;

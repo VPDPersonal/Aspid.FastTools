@@ -12,6 +12,9 @@ namespace Aspid.FastTools.Types.Editors
         internal const string FolderClosedIconPath = "Folder Icon";
         internal const string FolderOpenedIconPath = "FolderOpened Icon";
 
+        private static readonly GUIContent _measureContent = new();
+
+        // Re-tinted on every use so the cached style survives editor-theme changes.
         private static GUIStyle _missingCaptionStyle;
 
         internal static void DrawOpenScriptButton(Rect rect, Type type)
@@ -52,9 +55,7 @@ namespace Aspid.FastTools.Types.Editors
             if (isMissing)
             {
                 rowRect.xMin += 5f;
-                var stripeRect = EditorGUI.IndentedRect(source: position);
-                EditorGUI.DrawRect(rect: new Rect(stripeRect.x, position.y + 2f, 2f, position.height - 4f),
-                    color: InspectorNoticeGUI.NoticeColor);
+                DrawMissingStripe(position: position);
             }
 
             var isArrayElement = property.propertyPath.EndsWith("]");
@@ -73,10 +74,19 @@ namespace Aspid.FastTools.Types.Editors
 
             var caption = property.hasMultipleDifferentValues
                 ? "—"
-                : TypeSelectorHelpers.GetTypeSelectorTitle(currentType, property.stringValue);
-            var captionStyle = isMissing ? GetMissingCaptionStyle() : EditorStyles.miniPullDown;
+                : TypeSelectorHelpers.GetTypeSelectorTitle(currentType,
+                    assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(property.stringValue));
+            var captionStyle = EditorStyles.miniPullDown;
+            if (isMissing)
+            {
+                captionStyle = GetMissingCaptionStyle();
+                caption = FitCaptionFromLeft(style: captionStyle, text: caption, width: dropdownRect.width);
+            }
 
-            if (EditorGUI.DropdownButton(position: dropdownRect, content: new GUIContent(caption),
+            var captionContent = new GUIContent(text: caption,
+                tooltip: isMissing ? GetMissingTooltip(storedName: property.stringValue) : null);
+
+            if (EditorGUI.DropdownButton(position: dropdownRect, content: captionContent,
                     focusType: FocusType.Passive, style: captionStyle))
                 ShowSelector(property: property, rect: dropdownRect, allow: allow, types: types);
 
@@ -93,12 +103,9 @@ namespace Aspid.FastTools.Types.Editors
             {
                 var suggestion = TypeMissingRepair.GetSuggestion(storedName: property.stringValue, types: types,
                     allow: allow, excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(property));
-                InspectorNoticeGUI.DrawNotice(rect: noticeRect, message: "Missing type", actionText: "Fix",
-                    detail: TypeMissingRepair.GetDetail(storedName: property.stringValue),
-                    onClick: () => ShowSelector(property: property, rect: noticeRect, allow: allow, types: types, repair: true),
-                    suggestionText: suggestion is null ? null : $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion)}",
-                    suggestionDetail: suggestion is null ? null : $"Replace the stored type name with {suggestion.AssemblyQualifiedName}.",
-                    onSuggestion: suggestion is null ? null : () => property.Persistent().SetStringAndApply(value: suggestion.AssemblyQualifiedName));
+                DrawMissingNotice(rect: noticeRect, storedName: property.stringValue, suggestion: suggestion,
+                    onFix: () => ShowSelector(property: property, rect: noticeRect, allow: allow, types: types, repair: true),
+                    onSuggestion: picked => property.Persistent().SetStringAndApply(value: picked.AssemblyQualifiedName));
                 return;
             }
 
@@ -124,7 +131,28 @@ namespace Aspid.FastTools.Types.Editors
                 onSelected: assemblyQualifiedName => persistent.SetStringAndApply(value: assemblyQualifiedName ?? string.Empty));
         }
 
-        private static GUIStyle GetMissingCaptionStyle()
+        // The warning stripe on the left edge of a field whose stored type is missing.
+        internal static void DrawMissingStripe(Rect position)
+        {
+            var stripeRect = EditorGUI.IndentedRect(source: position);
+            EditorGUI.DrawRect(rect: new Rect(stripeRect.x, position.y + 2f, 2f, position.height - 4f),
+                color: InspectorNoticeGUI.NoticeColor);
+        }
+
+        // Fix and the suggestion repair through the caller, which knows how its field stores a type.
+        internal static void DrawMissingNotice(Rect rect, string storedName, Type suggestion, Action onFix,
+            Action<Type> onSuggestion)
+        {
+            InspectorNoticeGUI.DrawNotice(rect: rect, message: "Missing type", actionText: "Fix",
+                detail: TypeMissingRepair.GetDetail(storedName: storedName), onClick: onFix,
+                suggestionText: suggestion is null ? null : $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion)}",
+                suggestionDetail: suggestion is null ? null : $"Replace the stored type name with {suggestion.AssemblyQualifiedName}.",
+                onSuggestion: suggestion is null ? null : () => onSuggestion(suggestion));
+        }
+
+        internal static string GetMissingTooltip(string storedName) => $"Missing type: {storedName}";
+
+        internal static GUIStyle GetMissingCaptionStyle()
         {
             _missingCaptionStyle ??= new GUIStyle(other: EditorStyles.miniPullDown);
             _missingCaptionStyle.normal.textColor = InspectorNoticeGUI.NoticeColor;
@@ -132,6 +160,26 @@ namespace Aspid.FastTools.Types.Editors
             _missingCaptionStyle.active.textColor = InspectorNoticeGUI.NoticeColor;
             _missingCaptionStyle.focused.textColor = InspectorNoticeGUI.NoticeColor;
             return _missingCaptionStyle;
+        }
+
+        // IMGUI clips at the right edge, cutting the end of the name, so drop leading characters behind an ellipsis
+        // instead: binary-searched for the smallest count that fits.
+        internal static string FitCaptionFromLeft(GUIStyle style, string text, float width)
+        {
+            _measureContent.text = text;
+            if (style.CalcSize(_measureContent).x <= width) return text;
+
+            int low = 1, high = text.Length;
+            while (low < high)
+            {
+                var mid = (low + high) / 2;
+                _measureContent.text = "…" + text.Substring(mid);
+
+                if (style.CalcSize(_measureContent).x <= width) high = mid;
+                else low = mid + 1;
+            }
+
+            return "…" + text.Substring(low);
         }
     }
 }

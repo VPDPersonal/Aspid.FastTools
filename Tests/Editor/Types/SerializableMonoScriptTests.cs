@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using UnityEngine.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
 
 namespace Aspid.FastTools.Types.Editors.Tests
@@ -60,6 +61,24 @@ namespace Aspid.FastTools.Types.Editors.Tests
             EditorJsonUtility.FromJsonOverwrite(json, holder);
 
             Assert.AreEqual(staleName, holder.wrapper.AssemblyQualifiedName, "Precondition: the stored name is stale.");
+        }
+
+        // Writes the two serialized fields directly, so a test can reach states Assign never produces.
+        private static void Store(Holder holder, string assemblyQualifiedName, MonoScript script)
+        {
+            using var serialized = new SerializedObject(holder);
+            var wrapper = serialized.FindProperty(nameof(Holder.wrapper));
+
+            wrapper.FindPropertyRelative(SerializableMonoScriptUtility.ScriptFieldName).objectReferenceValue = script;
+            wrapper.FindPropertyRelative(SerializableTypeUtility.BackingFieldName).stringValue = assemblyQualifiedName;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // A fresh SerializedObject per call, as the drawers read a wrapper after Unity re-serialized its target.
+        private static bool IsMissing(params Holder[] holders)
+        {
+            using var serialized = new SerializedObject(holders);
+            return TypeMissingRepair.IsMissingMonoScript(serialized.FindProperty(nameof(Holder.wrapper)));
         }
 
         [Test]
@@ -236,6 +255,153 @@ namespace Aspid.FastTools.Types.Editors.Tests
                     serialized.FindProperty($"{nameof(Holder.required)}.{SerializableTypeUtility.BackingFieldName}")));
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void MissingPredicate_EmptyWrapper_IsNotMissing()
+        {
+            var holder = CreateHolder();
+            try { Assert.IsFalse(IsMissing(holder)); }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void MissingPredicate_UnresolvedNameWithoutScript_IsMissing()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                Store(holder, "Old.Name, Old", script: null);
+
+                Assert.IsTrue(IsMissing(holder));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void MissingPredicate_NameResolvesWithoutScript_IsNotMissing()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                Store(holder, typeof(string).AssemblyQualifiedName, script: null);
+
+                Assert.IsFalse(SerializableMonoScriptUtility.HasScript(typeof(string)), "Precondition: no script owns the type.");
+                Assert.IsFalse(IsMissing(holder));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void MissingPredicate_ScriptResolvesWhileTheNameIsStale_IsNotMissing()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                LoadWithStaleName(holder);
+
+                Assert.IsFalse(IsMissing(holder), "The script's class keeps the field resolved.");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void MissingPredicate_RepairedByAssign_IsNoLongerMissing()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                Store(holder, "Old.Name, Old", script: null);
+                Assert.IsTrue(IsMissing(holder), "Precondition: the stored name is unresolved.");
+
+                using (var serialized = new SerializedObject(holder))
+                    SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.wrapper)), ScriptedType);
+
+                Assert.IsFalse(IsMissing(holder));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void MissingPredicate_DifferentValuesAcrossTargets_IsNotMissing()
+        {
+            var first = CreateHolder();
+            var second = CreateHolder();
+            try
+            {
+                Store(first, "Old.First, Old", script: null);
+                Store(second, "Old.Second, Old", script: null);
+
+                Assert.IsTrue(IsMissing(first));
+                Assert.IsFalse(IsMissing(first, second), "A mixed selection shows no notice.");
+
+                Store(second, "Old.First, Old", script: null);
+                Assert.IsTrue(IsMissing(first, second), "Equal missing values across targets are still missing.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(first);
+                UnityEngine.Object.DestroyImmediate(second);
+            }
+        }
+
+        [Test]
+        public void MissingWrapper_ReservesTheNoticeRowInTheImguiHeight()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                using (var empty = new SerializedObject(holder))
+                    Assert.AreEqual(EditorGUIUtility.singleLineHeight,
+                        MonoScriptIMGUIPropertyDrawer.GetHeight(empty.FindProperty(nameof(Holder.wrapper))));
+
+                Store(holder, "Old.Name, Old", script: null);
+
+                using var missing = new SerializedObject(holder);
+                Assert.Greater(MonoScriptIMGUIPropertyDrawer.GetHeight(missing.FindProperty(nameof(Holder.wrapper))),
+                    EditorGUIUtility.singleLineHeight);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void MissingField_ShowsStripeNoticeAndTooltip_AndRepairWritesTheScript()
+        {
+            const string storedName = "Old.Name, Old";
+            var holder = CreateHolder();
+            var window = ScriptableObject.CreateInstance<EditorWindow>();
+            try
+            {
+                Store(holder, storedName, script: null);
+                window.ShowUtility();
+
+                using var serialized = new SerializedObject(holder);
+                var root = MonoScriptUIToolkitPropertyDrawer.Draw(label: "Type",
+                    wrapperProperty: serialized.FindProperty(nameof(Holder.wrapper)),
+                    allow: TypeAllow.All, types: new[] { typeof(object) }, out var field);
+                window.rootVisualElement.Add(root);
+
+                Assert.IsTrue(root.ClassListContains("aspid-fasttools-type-property--missing"));
+                Assert.IsNotNull(root.Q(className: "aspid-fasttools-type-property__stripe"));
+                Assert.IsNotNull(root.Q(className: "aspid-fasttools-inspector-notice"));
+                Assert.AreEqual($"Missing type: {storedName}",
+                    field.Q<VisualElement>(className: EnumField.inputUssClassName).tooltip);
+                Assert.AreEqual("<Missing Old.Name>", field.Q<TextElement>(className: EnumField.textUssClassName).text);
+
+                // The picker's repair path: the field reports the pick and the drawer writes name and script.
+                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+
+                using var repaired = new SerializedObject(holder);
+                var wrapper = repaired.FindProperty(nameof(Holder.wrapper));
+                Assert.AreEqual(ScriptedType, ScriptOf(wrapper)?.GetClass());
+                Assert.IsFalse(IsMissing(holder));
+            }
+            finally
+            {
+                window.rootVisualElement.Clear();
+                UnityEngine.Object.DestroyImmediate(window);
+                UnityEngine.Object.DestroyImmediate(holder);
+            }
         }
 
         // The Asset References "Assign Required" picker must offer a script-backed wrapper the same types as its

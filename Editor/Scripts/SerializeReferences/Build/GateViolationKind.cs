@@ -5,5 +5,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         MissingType,
         RequiredUnset,
+
+        // A SerializableType or SerializableMonoScript field whose stored name no longer resolves.
+        MissingTypeName,
     }
 }

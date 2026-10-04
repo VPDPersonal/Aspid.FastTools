@@ -13,6 +13,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // A missing type set by a prefab instance override; FileId is then the PrefabInstance document.
         public readonly bool IsOverride;
 
+        // The stored assembly-qualified name of a MissingTypeName violation; empty otherwise.
+        public readonly string TypeName;
+
         public GateViolation(
             string assetPath,
             long fileId,
@@ -20,7 +23,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ManagedTypeName storedType,
             GateViolationKind kind,
             string fieldPath,
-            bool isOverride = false)
+            bool isOverride = false,
+            string typeName = null)
         {
             Rid = rid;
             Kind = kind;
@@ -29,12 +33,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             StoredType = storedType;
             FieldPath = fieldPath;
             IsOverride = isOverride;
+            TypeName = typeName ?? string.Empty;
         }
+
+        public static GateViolation ForTypeName(string assetPath, StoredTypeNameEntry entry) =>
+            new(assetPath, entry.FileId, entry.Rid, default, GateViolationKind.MissingTypeName, entry.FieldPath,
+                entry.IsOverride, entry.TypeName);
+
+        // The report's stored-name column: the class of a managed reference, or the whole stored type name.
+        public string StoredName => Kind == GateViolationKind.MissingTypeName ? TypeName : StoredType.Class ?? string.Empty;
 
         public override string ToString()
         {
             var where = string.IsNullOrEmpty(FieldPath) ? $"rid {Rid}" : FieldPath;
-            var what = Kind == GateViolationKind.MissingType ? $"missing type {StoredType.Class}" : "required value not set";
+            if (Kind == GateViolationKind.MissingTypeName && Rid != 0) where = $"rid {Rid} {where}";
+
+            var what = Kind switch
+            {
+                GateViolationKind.MissingType => $"missing type {StoredType.Class}",
+                GateViolationKind.MissingTypeName => $"missing type name {MissingTypeNames.FullName(TypeName)}",
+                _ => "required value not set",
+            };
             if (IsOverride) what += " (prefab instance override)";
 
             return $"{AssetPath} : {where} -> {what}";

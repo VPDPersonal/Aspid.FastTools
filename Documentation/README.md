@@ -42,7 +42,7 @@ Changes an added component to a derived class without losing shared field values
 
 #### [SerializeReference repair](06-serialize-reference-tooling.md)
 
-Finds missing <code lang="csharp">[SerializeReference]</code> references across the project and repairs them in groups. [Build and CI checks](07-serialize-reference-validation.md) catch new ones before release.
+Finds missing <code lang="csharp">[SerializeReference]</code> references and <code lang="class-name">SerializableType</code> names across the project and repairs them in groups. [Build and CI checks](07-serialize-reference-validation.md) catch new ones before release.
 
 <img src="Images/aspid_fasttools_serialize_reference_repair_card.gif" alt="Fix all repairs three missing Blaster references as Pistol" width="640" />
 

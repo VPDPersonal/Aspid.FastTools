@@ -1,6 +1,6 @@
 # SerializeReference repair
 
-Restore missing references after classes are renamed, moved or deleted.
+Restore missing references and type names after classes are renamed, moved or deleted.
 
 <a id="check-the-project"></a>
 
@@ -19,7 +19,7 @@ Restore missing references after classes are renamed, moved or deleted.
 | **Asset References** | Entry data in the file | None |
 | **Project References** | Group entries' data in the files | Undo button in the rewrite summary |
 
-A file rewrite preserves entry data, but the selected class must fit the field and its data. These tools work with <code lang="csharp">[SerializeReference]</code>. For a wrapper's missing type name, see [Serializable Types](02-serializable-types.md#missing-type). To catch new breakages in the Editor, before a build or in CI, see [Build and CI checks](07-serialize-reference-validation.md).
+A file rewrite preserves entry data, but the selected class must fit the field and its data. Project References also repairs the names that <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields store, see [Type names](#type-names). To catch new breakages in the Editor, before a build or in CI, see [Build and CI checks](07-serialize-reference-validation.md).
 
 ## Fix in the Inspector
 
@@ -76,6 +76,19 @@ A missing class set through a prefab instance override — in a variant, a neste
 ![Prefab instance overrides card with a missing GhostRailgun in the EliteLoadout variant](Images/aspid_fasttools_serialize_reference_prefab_overrides.png)
 
 **Fix all**, **Smart Fix**, **Migrate all** and `<None>` do not rewrite these entries: pick a new class on the instance in the Inspector, or revert the override. Asset References does not show references that exist only in overrides.
+
+### Type names
+
+A <code lang="class-name">SerializableType</code> or <code lang="class-name">SerializableMonoScript</code> field whose stored name no longer resolves goes to a group marked **type name**. A group holds one stored name and lists its fields by asset and field path. Fields in managed references and prefab instance overrides are listed too.
+
+| Action | What it does |
+|---|---|
+| **Fix all ▼** | Opens the type picker with the constraint of the fields and writes the picked type to every field of the group |
+| **Smart Fix → Spear** | Writes the only compatible type with the same class name |
+
+Every action asks for **Rewrite**, and the summary has **Undo**. A <code lang="class-name">SerializableMonoScript</code> field also gets the script of the picked type. A prefab instance override is rewritten as well, because it stores the name as a plain value.
+
+The scan finds a field by its `_assemblyQualifiedName` key. A <code lang="csharp">[TypeSelector]</code> string has no such key: repair it in the Inspector. Asset References does not list type names.
 
 ## Asset References: inspect one asset
 

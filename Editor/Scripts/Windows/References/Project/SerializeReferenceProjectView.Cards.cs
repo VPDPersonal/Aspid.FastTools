@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
 using UnityEditor.SceneManagement;
+using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
 
@@ -66,6 +67,57 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in group.Entries)
                 card.AddChild(BuildGroupEntryRow(entry));
+
+            return card;
+        }
+
+        // A missing SerializableType or SerializableMonoScript name: Fix all and Smart Fix rewrite the stored name in
+        // every listed file, prefab instance overrides included.
+        private VisualElement BuildTypeNameGroupCard(MissingTypeNameGroup group)
+        {
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(GroupClass);
+
+            var constraint = group.ResolveConstraint(out var mixed);
+
+            AspidGradientButton fixAll = null;
+            fixAll = new AspidGradientButton($"Fix all ({group.Entries.Count})  ▼", _ => ToggleTypeNamePicker(group, constraint, fixAll))
+                .AddClass(GroupFixAllClass);
+            _ring.RegisterHeader(fixAll, card, GroupHeaderHoverClass, () => ToggleTypeNamePicker(group, constraint, fixAll));
+            fixAll.tooltip = mixed
+                ? $"{group.DisplayName}\nStored type name. Field types differ or cannot be read — the picker is unconstrained."
+                : $"{group.DisplayName}\nStored type name. Constrained to {string.Join(", ", constraint.Types.Select(type => type.FullName))}.";
+
+            fixAll.AddLeadingContent(BuildGroupHeaderRow(
+                group.ShortName,
+                SerializeReferenceProjectSummary.BuildTypeNameCountText(group),
+                StatusStyle.Type.Warning,
+                isStatic: false));
+            card.AddChild(fixAll);
+
+            AddGroupDivider(card, withSweep: true);
+
+            if (group.TryGetSuggestion(constraint, out var suggestion))
+            {
+                card.AddChild(BuildGroupActionRow(
+                    $"Smart Fix → {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion)}",
+                    $"The only compatible type named {suggestion.Name}: replace the stored type name with " +
+                    $"{suggestion.AssemblyQualifiedName}.",
+                    info: false,
+                    () => ApplyTypeNameFix(group, suggestion)));
+            }
+
+            foreach (var entry in group.Entries)
+            {
+                var path = MakeSelectable(new Label(entry.AssetPath).AddClass(GroupEntryPathClass));
+                path.tooltip = entry.AssetPath;
+
+                var field = MakeSelectable(new Label(SerializeReferenceProjectSummary.DescribeTypeNameField(entry.Entry))
+                    .AddClass(GroupEntryFieldClass));
+                field.tooltip = entry.Entry.TypeName;
+
+                card.AddChild(BuildEntryRow(entry.AssetPath, path, field));
+            }
 
             return card;
         }

@@ -37,23 +37,34 @@ namespace Aspid.FastTools.Types.Editors
             };
 
             field = typeField;
+
+            var container = new VisualElement()
+                .AddStyleSheetFromResources(TypeUIToolkitPropertyDrawer.StyleSheetPath)
+                .AddChild(typeField);
+            var stripe = new VisualElement()
+                .AddClass(TypeUIToolkitPropertyDrawer.StripeClass)
+                .SetPickingMode(PickingMode.Ignore);
+            InspectorNotice notice = null;
+
             Refresh(persistent);
 
             typeField.TrackPropertyValue(persistent, Refresh);
+            container.TrackSerializedObjectValue(wrapperProperty.serializedObject,
+                _ => container.schedule.Execute(RefreshFromObject));
             typeField.RegisterValueChangedCallback(evt => SerializableMonoScriptUtility.Assign(persistent, evt.newValue));
             RegisterDragAndDrop(typeField, persistent);
 
-            var nameProperty = SerializableTypeUtility.GetBackingProperty(persistent);
-            if (!TypeSelectorRequiredGate.TryGetRequired(nameProperty, out _))
-                return typeField;
-
-            var container = new VisualElement().AddChild(typeField);
-            var notice = new InspectorNotice();
-
-            container.TrackPropertyValue(nameProperty, RefreshNotice);
-            RefreshNotice(nameProperty);
-
             return container;
+
+            // As in the SerializableType drawer: a fresh SerializedObject sees values the tracked one has not re-read.
+            void RefreshFromObject()
+            {
+                var current = persistent.Persistent();
+                if (current is null) return;
+
+                using var owner = current.serializedObject;
+                Refresh(current);
+            }
 
             void Refresh(SerializedProperty current)
             {
@@ -61,16 +72,38 @@ namespace Aspid.FastTools.Types.Editors
 
                 if (type is not null) typeField.SetValueWithoutNotify(type);
                 else typeField.SetValueFromAssemblyQualifiedNameWithoutNotify(assemblyQualifiedName);
+
+                RefreshNotice(current);
             }
 
+            // A missing type takes the notice slot, so the required notice shows only while the name is empty.
             void RefreshNotice(SerializedProperty current)
             {
-                if (!TypeSelectorRequiredGate.IsViolation(current))
+                var missing = TypeMissingRepair.IsMissingMonoScript(wrapperProperty: current);
+                container.EnableInClassList(className: TypeUIToolkitPropertyDrawer.MissingClass, enable: missing);
+
+                var nameProperty = SerializableTypeUtility.GetBackingProperty(current);
+                if (missing)
                 {
-                    notice.RemoveFromHierarchy();
+                    notice ??= new InspectorNotice();
+                    TypeUIToolkitPropertyDrawer.ShowMissing(container: container, stripe: stripe, notice: notice,
+                        field: typeField, storedName: nameProperty.stringValue,
+                        suggestion: TypeMissingRepair.GetSuggestion(storedName: nameProperty.stringValue,
+                            types: typeField.Types, allow: typeField.Allow,
+                            excludeEditorOnly: typeField.ExcludeEditorOnlyTypes,
+                            predicate: SerializableMonoScriptUtility.HasScript),
+                        onSuggestionApplied: () => Refresh(persistent));
                     return;
                 }
 
+                stripe.RemoveFromHierarchy();
+                if (current.hasMultipleDifferentValues || !TypeSelectorRequiredGate.IsViolation(nameProperty))
+                {
+                    notice?.RemoveFromHierarchy();
+                    return;
+                }
+
+                notice ??= new InspectorNotice();
                 notice.Set(
                     message: "Required type is not set",
                     actionText: string.Empty,

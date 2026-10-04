@@ -30,7 +30,7 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 ### Потерянный тип
 
-После переименования класса, namespace или сборки сохранённое имя больше не находится: поле показывает `<Missing …>`, а под ним появляется **Missing type**.
+После переименования класса, namespace или сборки сохранённое имя больше не находится: поле показывает `<Missing …>`, а под ним появляется **Missing type**. В подписи указано имя типа без сборки, во всплывающей подсказке — сохранённое имя целиком.
 
 ![Потерянный тип Game.Combat.Spear с кнопками Fix и → Spear](../Images/serializable-type-missing.png)
 
@@ -38,6 +38,8 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 - <code lang="csharp">AssemblyQualifiedName</code> и <code lang="csharp">ToString()</code> сохраняют прежнее имя.
 
 **Fix** открывает окно выбора, и выбранный тип заменяет сохранённое имя. Если класс только перенесли в другой namespace или сборку и подходящий тип с таким именем один, уведомление предлагает его сразу, например **→ Spear**.
+
+Чтобы найти все потерянные имена в проекте, откройте **Project References** и нажмите **Scan Project**. Поля сгруппируются по сохранённому имени, и **Fix all** восстановит группу за один шаг, см. [Имена типов](06-serialize-reference-tooling.md#имена-типов). [Проверка перед сборкой и CI](07-serialize-reference-validation.md) и обнаружение новых поломок тоже сообщают о потерянных именах. Строка с <code lang="csharp">[TypeSelector]</code> показывает уведомление только в инспекторе.
 
 ## SerializableMonoScript
 
@@ -53,7 +55,7 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 - выбрать можно только класс верхнего уровня, не generic, объявленный в `.cs` с тем же именем, а из DLL — только <code lang="class-name">MonoBehaviour</code> и <code lang="class-name">ScriptableObject</code>;
 - публичного конструктора нет, из кода поле не создать.
 
-Связь с классом теряется, а поле показывает [потерянный тип](#потерянный-тип), если:
+Связь с классом теряется, а поле показывает [потерянный тип](#потерянный-тип) с тем же уведомлением, если:
 
 - класс переименовали без файла;
 - файл переименовали вне Unity без `.meta`;

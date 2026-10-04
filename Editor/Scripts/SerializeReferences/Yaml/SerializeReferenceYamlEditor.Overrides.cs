@@ -20,7 +20,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             new(@"^\s*-\s+target:\s*(?<body>\{.*)$", RegexOptions.Compiled);
 
         private static readonly Regex _modificationField =
-            new(@"^(?<indent>\s*)(?<key>propertyPath|value):\s?(?<value>.*)$", RegexOptions.Compiled);
+            new(@"^(?<indent>\s*)(?<key>propertyPath|value|objectReference):\s?(?<value>.*)$", RegexOptions.Compiled);
 
         private static readonly Regex _targetFileId = new(@"\bfileID:\s*(?<id>-?\d+)", RegexOptions.Compiled);
         private static readonly Regex _targetGuid = new(@"\bguid:\s*(?<guid>[0-9a-fA-F]+)", RegexOptions.Compiled);
@@ -188,10 +188,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!field.Success) continue;
 
                 var fieldIndent = field.Groups["indent"].Length;
+                var key = field.Groups["key"].Value;
+                var first = i;
                 var scalar = ReadScalar(lines, field.Groups["value"].Value, fieldIndent, ref i, end);
 
-                if (field.Groups["key"].Value == "propertyPath") current.PropertyPath = scalar;
-                else current.Value = scalar;
+                switch (key)
+                {
+                    case "propertyPath":
+                        current.PropertyPath = scalar;
+                        break;
+
+                    case "value":
+                        current.Value = scalar;
+                        current.ValueLines = new ScalarLines(first, i + 1, line[..(fieldIndent + key.Length)]);
+                        break;
+
+                    default:
+                        current.ObjectReference = scalar;
+                        current.ObjectReferenceLines = new ScalarLines(first, i + 1, line[..(fieldIndent + key.Length)]);
+                        break;
+                }
             }
 
             return result;
@@ -264,6 +280,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             public string PropertyPath = string.Empty;
             public string Value = string.Empty;
+            public string ObjectReference = string.Empty;
+
+            // Where the value and objectReference scalars are, for the type name rewrite.
+            public ScalarLines ValueLines = ScalarLines.None;
+            public ScalarLines ObjectReferenceLines = ScalarLines.None;
 
             public Modification(long targetFileId, string targetGuid)
             {
