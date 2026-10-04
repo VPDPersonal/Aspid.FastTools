@@ -194,7 +194,9 @@ Apply these rules to every main doc page, always to the English file and its `ru
   is not assignable to `T`), argument checks and failing calls. A feature page shows the correct use only.
 - **Admonitions:** `> [!NOTE]` for a non-obvious mismatch that loses nothing (`HasFoldout()` vs the Inspector);
   `> [!WARNING]` only when data or measurements are lost silently (boxed struct copy, `partial` calls on one line).
-  A mistake an analyzer reports is a plain bullet with its ID (`AFT0010`, `AFT0011`), not a warning. Never stack two.
+  A mistake an analyzer reports is a plain bullet with the usage rule, not a warning. Never stack two.
+- **No analyzer IDs on pages**: the reader sees the diagnostics in the IDE. State the usage rule only
+  («Используйте `using`»), never an ID (`AFT0010`) or a list of IDs with their meanings.
 - **Headings and labels name what the reader gets**: «Поле C# за свойством», not «Тип поля и объект-владелец»; a table
   row names the value type («Идентификаторы объектов»), never a constraint («Unity 6.2 и новее»).
 - **Link to another page only when it serves this feature**: a page that configures it (the `[TypeSelector]`
@@ -202,13 +204,11 @@ Apply these rules to every main doc page, always to the English file and its `ru
   features ("to store an instance, use SerializeReference Selector"): such links read as advertising, and the sidebar
   and the Introduction already list every feature.
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
-  link to the sample README and, when the sample's `demo.gif` shows this page's feature, that gif with the caption
-  paragraph — no "how to open" steps or experiments, those live on the sample's own page. Footage of a sample
-  several pages share (EditorTools) stays on the sample's page unless it shows what the text cannot (it does
-  for VisualElement Extensions, not for SerializedProperty Extensions or Editor Helpers). The sentence must match what the
+  link to the sample README and the sample's `demo.gif`, also when several pages share the sample (Types, EditorTools)
+  — no "how to open" steps or experiments, those live on the sample's own page. The sentence must match what the
   sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees; never promise
-  more than the scene has («Все маркеры с этой страницы…» was wrong). A caption must be about this page's feature —
-  otherwise drop it and keep a neutral alt text (the shared EditorTools gif on VisualElement Extensions).
+  more than the scene has («Все маркеры с этой страницы…» was wrong). The gif never has a caption paragraph, only its alt
+  text, even when it shows this page's feature (EnumValues, SerializedProperty Extensions).
 - **The Introduction (`Documentation/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
   Editor Helpers were reworked from it. Only FastTools-specific behaviour: never explain Unity or UI Toolkit.
 - **Check Unity's behaviour by decompiling, not from memory**:
@@ -216,8 +216,8 @@ Apply these rules to every main doc page, always to the English file and its `ru
 - **Code blocks fit the article width** without horizontal scrolling. Site table columns are equal and fixed, so
   long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
 - **No caption under a capture on a feature page**: the section text already says what it shows, so the image keeps
-  only its alt text (Serializable Types, ProfilerMarkers). The caption paragraph stays for live diagrams, tutorial
-  pages and the `## Package sample` gif (see below).
+  only its alt text (Serializable Types, ProfilerMarkers). The caption paragraph stays for live diagrams and tutorial
+  pages; the `## Package sample` gif has none either.
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
   and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
   Cut empty UI out of every frame of a capture: the picker's empty rows above its footer go, as in the Serializable

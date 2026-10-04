@@ -42,3 +42,5 @@ public abstract class EnemyBase : MonoBehaviour
 ## Пример в пакете
 
 Переключение типа компонента показано в примере [Types](../../Samples~/Types/Documentation/README.ru.md).
+
+![Волна обычных и элитных врагов в сцене Types](../../Samples~/Types/Documentation/Images/demo.gif)
