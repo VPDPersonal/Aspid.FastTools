@@ -1,8 +1,6 @@
 # SerializeReference Selector
 
-Реализацию выбирают прямо в инспекторе — из списка с поиском, без своего редактора.
-
-<a id="inspector-type-dropdown"></a>
+Класс поля выбирают в инспекторе, а данные не теряются при его смене.
 
 ## Быстрый старт
 
@@ -16,13 +14,12 @@
 
 Дополнительные ограничения, обязательные поля и оформление списка — на странице [TypeSelector](03-type-selector.md).
 
-- <code lang="csharp">Allow</code> здесь не действует: нужны типы, экземпляры которых можно создать. Анализатор `AFT0002` сообщает о лишней настройке.
+- <code lang="csharp">Allow</code> здесь не действует: нужны типы, экземпляры которых можно создать.
 - Аргументы generic-класса выводятся из типа поля; если вывести их нельзя, окно предлагает выбрать типы, которые Unity умеет сериализовать.
-- Несовместимые ограничения оставляют список пустым; анализаторы `AFT0003`, `AFT0005` и `AFT0009` сообщают о них при компиляции.
 
 ## Списки
 
-В списке с <code lang="csharp">[TypeSelector]</code> кнопка «+» открывает выбор класса и добавляет новый экземпляр, а `<None>` — пустой элемент. При нескольких выбранных объектах каждый получает свой экземпляр, всё в одной группе Undo.
+В списке с <code lang="csharp">[TypeSelector]</code> кнопка «+» открывает выбор класса и добавляет новый экземпляр, а `<None>` — пустой элемент. При нескольких выбранных объектах каждый получает свой экземпляр.
 
 ![«+» у Sidearms открывает выбор класса и добавляет Shotgun](../Images/aspid_fasttools_serialize_reference_list.gif)
 
@@ -40,7 +37,8 @@
 
 Вложенная ссылка переносится тем же экземпляром, если имя и тип поля совместимы.
 
-Перетащить `.cs` из **Project** на заголовок поля — ещё один способ выбрать класс.
+> [!TIP]
+> Класс можно выбрать, перетащив `.cs` из **Project** на заголовок поля.
 
 ## Меню заголовка
 
@@ -54,17 +52,16 @@
 | **Create New Script…** | Создаёт <code lang="csharp">[Serializable]</code> класс под тип поля и назначает его после компиляции |
 | **Save as Template…** | Сохраняет значение под именем; шаблоны хранятся в настройках редактора на этом компьютере, не в проекте |
 | **Paste Template → …** | Создаёт экземпляр из шаблона; в списке только подходящие полю |
+| **Paste Template → Remove Missing (N)…** | Удаляет шаблоны, класс которых больше не загружается; появляется, только если такие есть |
 
 > [!WARNING]
 > Copy/Paste и шаблоны не переносят вложенные поля <code lang="csharp">[SerializeReference]</code>: вставленный объект потеряет такие ссылки.
-
-**Paste Template → Remove Missing (N)…** удаляет шаблоны, класс которых больше не загружается. Пункт появляется, если такие шаблоны есть.
 
 ## Общие ссылки
 
 **Link to Existing → …** в меню заголовка связывает поле с экземпляром из другого поля того же объекта.
 
-Два поля объекта могут указывать на один экземпляр: правка через одно видна в другом. Такие поля помечены **Shared reference #N**, а **Make unique** даёт полю собственную копию вместе с вложенными ссылками.
+Поля, которые указывают на один экземпляр, помечены **Shared reference #N**, а **Make unique** под полем или **Make Unique Reference** в меню заголовка даёт полю собственную копию вместе с вложенными ссылками.
 
 ![Make unique создаёт независимую копию общей ссылки](../Images/aspid_fasttools_serialize_reference_make_unique.png)
 
@@ -72,18 +69,20 @@
 
 ## Потерянный тип
 
-Если поле показывает **Missing type**, перейдите к [восстановлению SerializeReference](06-serialize-reference-tooling.md). Там описаны **Fix**, групповой ремонт и различия в сохранении данных и Undo.
+После переименования, переноса или удаления класса поле показывает `<Missing …>`, а под ним появляется **Missing type**. Данные поля при этом остаются в ассете.
+
+![Потерянная ссылка Game.Gear.Pistoll с кнопками Fix и → Pistol](../Images/aspid_fasttools_serialize_reference_repair.png)
+
+**Fix** открывает выбор класса, и выбранный класс заменяет потерянный. Уведомление может сразу предложить подходящий класс, например **→ Pistol**; причину показывает подсказка. Что Fix сохраняет на ассете и в сцене, описано в разделе [Fix в инспекторе](06-serialize-reference-tooling.md#fix-в-инспекторе).
+
+Все потерянные ссылки в проекте находит [Project References](06-serialize-reference-tooling.md#project-references-восстановить-группу) и восстанавливает их группами. О новых потерях сообщают [проверка перед сборкой](07-serialize-reference-validation.md) и [обнаружение новых поломок](07-serialize-reference-validation.md#обнаружение-новых-поломок).
 
 ## Собственный инспектор
 
-Поле с <code lang="csharp">[TypeSelector]</code> в своём редакторе рисует обычный <code lang="class-name">PropertyField</code>: выбор класса и «+» списка появляются сами, вызывать пакет не нужно.
-
-| UI Toolkit — CreateInspectorGUI | IMGUI — OnInspectorGUI |
-|---|---|
-| <pre lang="csharp"><code>new PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"))</code></pre> | <pre lang="csharp"><code>EditorGUILayout.PropertyField(&#10;    serializedObject&#10;        .FindProperty("_sidearms"));</code></pre> |
-
-Если атрибута нет или элемент списка рисуется отдельно, используйте [SerializeReferenceEditorGUI](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI) или [SerializeReferenceIMGUIList](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList).
+Поле с <code lang="csharp">[TypeSelector]</code> в своём редакторе рисует обычный <code lang="class-name">PropertyField</code> — в UI Toolkit и в IMGUI: выбор класса и «+» списка появляются сами. Если элемент списка рисуется отдельно, используйте [SerializeReferenceEditorGUI](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI) или [SerializeReferenceIMGUIList](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList).
 
 ## Пример в пакете
 
 Выбор оружия, списки и общие ссылки показаны в примере [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
+
+![Манекен получает урон в сцене SerializeReferences](../../Samples~/SerializeReferences/Documentation/Images/demo.gif)
