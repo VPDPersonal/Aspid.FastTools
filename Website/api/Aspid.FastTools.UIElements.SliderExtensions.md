@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider.html).
+Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1.html).
 
 ```csharp
 public static class SliderExtensions
@@ -27,7 +27,7 @@ public static class SliderExtensions
 
 ### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}
 
-Sets [`direction`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-direction.html) controlling the orientation of the element.
+Sets [`direction`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-direction.html) controlling the orientation of the element.
 
 ```csharp
 public static T SetDirection<T>(this T element, SliderDirection value) where T : BaseSlider<float>
@@ -57,7 +57,7 @@ The element type.
 
 ### SetFill\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetFill__1___0_System_Boolean_}
 
-Sets [`fill`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-fill.html) controlling whether the track is filled up to the current value.
+Sets [`fill`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-fill.html) controlling whether the track is filled up to the current value.
 
 ```csharp
 public static T SetFill<T>(this T element, bool value) where T : BaseSlider<float>
@@ -87,7 +87,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, byte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Byte_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, byte value) where T : BaseSlider<byte>
@@ -117,7 +117,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, sbyte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_SByte_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, sbyte value) where T : BaseSlider<sbyte>
@@ -147,7 +147,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, double\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Double_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, double value) where T : BaseSlider<double>
@@ -177,7 +177,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Single_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, float value) where T : BaseSlider<float>
@@ -207,7 +207,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int32_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, int value) where T : BaseSlider<int>
@@ -237,7 +237,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt32_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, uint value) where T : BaseSlider<uint>
@@ -267,7 +267,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int64_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, long value) where T : BaseSlider<long>
@@ -297,7 +297,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt64_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, ulong value) where T : BaseSlider<ulong>
@@ -327,7 +327,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int16_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, short value) where T : BaseSlider<short>
@@ -357,7 +357,7 @@ The element type.
 
 ### SetHighValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt16_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, ushort value) where T : BaseSlider<ushort>
@@ -387,7 +387,7 @@ The element type.
 
 ### SetHighValue\<T, TValue\>\(T, TValue\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_}
 
-Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
 
 ```csharp
 public static T SetHighValue<T, TValue>(this T element, TValue value) where T : BaseSlider<TValue> where TValue : IComparable<TValue>
@@ -421,7 +421,7 @@ The value type of the element.
 
 ### SetInverted\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetInverted__1___0_System_Boolean_}
 
-Sets [`inverted`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-inverted.html) reversing the direction of the element.
+Sets [`inverted`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-inverted.html) reversing the direction of the element.
 
 ```csharp
 public static T SetInverted<T>(this T element, bool value) where T : BaseSlider<float>
@@ -451,7 +451,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, byte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Byte_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, byte value) where T : BaseSlider<byte>
@@ -481,7 +481,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, sbyte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_SByte_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, sbyte value) where T : BaseSlider<sbyte>
@@ -511,7 +511,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, double\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Double_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, double value) where T : BaseSlider<double>
@@ -541,7 +541,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Single_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, float value) where T : BaseSlider<float>
@@ -571,7 +571,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int32_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, int value) where T : BaseSlider<int>
@@ -601,7 +601,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt32_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, uint value) where T : BaseSlider<uint>
@@ -631,7 +631,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int64_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, long value) where T : BaseSlider<long>
@@ -661,7 +661,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt64_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, ulong value) where T : BaseSlider<ulong>
@@ -691,7 +691,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int16_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, short value) where T : BaseSlider<short>
@@ -721,7 +721,7 @@ The element type.
 
 ### SetLowValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt16_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, ushort value) where T : BaseSlider<ushort>
@@ -751,7 +751,7 @@ The element type.
 
 ### SetLowValue\<T, TValue\>\(T, TValue\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_}
 
-Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T, TValue>(this T element, TValue value) where T : BaseSlider<TValue> where TValue : IComparable<TValue>
@@ -785,7 +785,7 @@ The value type of the element.
 
 ### SetPageSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetPageSize__1___0_System_Single_}
 
-Sets [`pageSize`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-pageSize.html) controlling how much the value changes per page step.
+Sets [`pageSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-pageSize.html) controlling how much the value changes per page step.
 
 ```csharp
 public static T SetPageSize<T>(this T element, float value) where T : BaseSlider<float>
@@ -815,7 +815,7 @@ The element type.
 
 ### SetShowInputField\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetShowInputField__1___0_System_Boolean_}
 
-Sets [`showInputField`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-showInputField.html) controlling whether a numeric input field is shown alongside the element.
+Sets [`showInputField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-showInputField.html) controlling whether a numeric input field is shown alongside the element.
 
 ```csharp
 public static T SetShowInputField<T>(this T element, bool value) where T : BaseSlider<float>

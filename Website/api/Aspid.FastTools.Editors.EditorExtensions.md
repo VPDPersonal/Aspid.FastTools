@@ -27,7 +27,7 @@ public static class EditorExtensions
 
 ### GetDisplayName\(Object\) {#Aspid_FastTools_Editors_EditorExtensions_GetDisplayName_UnityEngine_Object_}
 
-Returns the last segment of the [`AddComponentMenu`](https://docs.unity3d.com/ScriptReference/AddComponentMenu.html) path declared on the object's own type, or the nicified type name.
+Returns the last segment of the [`AddComponentMenu`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/AddComponentMenu.html) path declared on the object's own type, or the nicified type name.
 
 ```csharp
 public static string GetDisplayName(this Object obj)
@@ -48,7 +48,7 @@ The display name; otherwise, [`Empty`](https://learn.microsoft.com/dotnet/api/sy
 #### Remarks
 
 An attribute inherited from a base class, an empty path or a path ending with <code>/</code> falls back to the type name.
-Unlike [`GetInspectorTitle`](https://docs.unity3d.com/ScriptReference/ObjectNames-GetInspectorTitle.html), the result never carries the <code>(Script)</code> or <code>(Deprecated)</code> suffix.
+Unlike [`GetInspectorTitle`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/ObjectNames.GetInspectorTitle.html), the result never carries the <code>(Script)</code> or <code>(Deprecated)</code> suffix.
 
 ### GetDisplayNameWithIndex\(Component\) {#Aspid_FastTools_Editors_EditorExtensions_GetDisplayNameWithIndex_UnityEngine_Component_}
 

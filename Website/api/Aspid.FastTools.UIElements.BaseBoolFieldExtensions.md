@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`BaseBoolField`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField.html).
+Provides extension methods for [`BaseBoolField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseBoolField.html).
 
 ```csharp
 public static class BaseBoolFieldExtensions
@@ -27,7 +27,7 @@ public static class BaseBoolFieldExtensions
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseBoolFieldExtensions_SetLabel__1___0_System_String_}
 
-Sets [`label`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-label.html).
+Sets [`label`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1-label.html).
 
 ```csharp
 public static T SetLabel<T>(this T element, string value) where T : BaseBoolField
@@ -57,7 +57,7 @@ The element type.
 
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseBoolFieldExtensions_SetText__1___0_System_String_}
 
-Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField-text.html).
+Sets [`text`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseBoolField-text.html).
 
 ```csharp
 public static T SetText<T>(this T element, string value) where T : BaseBoolField
@@ -87,7 +87,7 @@ The element type.
 
 ### SetToggleOnLabelClick\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseBoolFieldExtensions_SetToggleOnLabelClick__1___0_System_Boolean_}
 
-Sets [`toggleOnLabelClick`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField-toggleOnLabelClick.html).
+Sets [`toggleOnLabelClick`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseBoolField-toggleOnLabelClick.html).
 
 ```csharp
 public static T SetToggleOnLabelClick<T>(this T element, bool value) where T : BaseBoolField

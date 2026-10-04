@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`IMixedValueSupport`](https://docs.unity3d.com/ScriptReference/UIElements-IMixedValueSupport.html).
+Provides extension methods for [`IMixedValueSupport`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IMixedValueSupport.html).
 
 ```csharp
 public static class IMixedValueSupportExtensions
@@ -27,7 +27,7 @@ public static class IMixedValueSupportExtensions
 
 ### SetShowMixedValue\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_IMixedValueSupportExtensions_SetShowMixedValue__1___0_System_Boolean_}
 
-Sets [`showMixedValue`](https://docs.unity3d.com/ScriptReference/UIElements-IMixedValueSupport-showMixedValue.html).
+Sets [`showMixedValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IMixedValueSupport-showMixedValue.html).
 
 ```csharp
 public static T SetShowMixedValue<T>(this T element, bool value) where T : IMixedValueSupport

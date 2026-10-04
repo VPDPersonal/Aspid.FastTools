@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`Foldout`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout.html).
+Provides extension methods for [`Foldout`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Foldout.html).
 
 ```csharp
 public static class FoldoutExtensions
@@ -27,7 +27,7 @@ public static class FoldoutExtensions
 
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_FoldoutExtensions_SetText__1___0_System_String_}
 
-Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout-text.html).
+Sets [`text`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Foldout-text.html).
 
 ```csharp
 public static T SetText<T>(this T element, string value) where T : Foldout
@@ -57,7 +57,7 @@ The element type.
 
 ### SetToggleOnLabelClick\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_FoldoutExtensions_SetToggleOnLabelClick__1___0_System_Boolean_}
 
-Sets [`toggleOnLabelClick`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout-toggleOnLabelClick.html).
+Sets [`toggleOnLabelClick`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Foldout-toggleOnLabelClick.html).
 
 ```csharp
 public static T SetToggleOnLabelClick<T>(this T element, bool value) where T : Foldout

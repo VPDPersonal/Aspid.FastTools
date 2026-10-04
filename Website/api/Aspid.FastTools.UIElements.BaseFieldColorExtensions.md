@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldColorExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldColorExtensions.md#Aspid_FastTools_UIElements_BaseFieldColorExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Color`](https://docs.unity3d.com/ScriptReference/Color.html).
+Provides [`BaseFieldColorExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldColorExtensions.md#Aspid_FastTools_UIElements_BaseFieldColorExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`Color`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Color.html).
 
 ```csharp
 public static class BaseFieldColorExtensions
@@ -27,7 +27,7 @@ public static class BaseFieldColorExtensions
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldColorExtensions_SetLabel__1___0_System_String_}
 
-Sets the label of the field via [`label`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-label.html).
+Sets the label of the field via [`label`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1-label.html).
 
 ```csharp
 public static T SetLabel<T>(this T element, string value) where T : BaseField<Color>

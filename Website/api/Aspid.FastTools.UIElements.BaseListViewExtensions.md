@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`BaseListView`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView.html).
+Provides extension methods for [`BaseListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView.html).
 
 ```csharp
 public static class BaseListViewExtensions
@@ -27,7 +27,7 @@ public static class BaseListViewExtensions
 
 ### AddItemsAdded\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddItemsAdded__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}
 
-Subscribes to the [`itemsAdded`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-itemsAdded.html) event.
+Subscribes to the [`itemsAdded`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-itemsAdded.html) event.
 
 ```csharp
 public static T AddItemsAdded<T>(this T element, Action<IEnumerable<int>> value) where T : BaseListView
@@ -57,7 +57,7 @@ The element type.
 
 ### AddItemsRemoved\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddItemsRemoved__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}
 
-Subscribes to the [`itemsRemoved`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-itemsRemoved.html) event.
+Subscribes to the [`itemsRemoved`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-itemsRemoved.html) event.
 
 ```csharp
 public static T AddItemsRemoved<T>(this T element, Action<IEnumerable<int>> value) where T : BaseListView
@@ -87,7 +87,7 @@ The element type.
 
 ### AddOnAdd\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddOnAdd__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Subscribes to the [`onAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onAdd.html) callback.
+Subscribes to the [`onAdd`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-onAdd.html) callback.
 
 ```csharp
 public static T AddOnAdd<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -117,7 +117,7 @@ The element type.
 
 ### AddOnRemove\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddOnRemove__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Subscribes to the [`onRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onRemove.html) callback.
+Subscribes to the [`onRemove`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-onRemove.html) callback.
 
 ```csharp
 public static T AddOnRemove<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -147,7 +147,7 @@ The element type.
 
 ### AddOverridingAddButtonBehavior\<T\>\(T, Action\<BaseListView, Button\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddOverridingAddButtonBehavior__1___0_System_Action_UnityEngine_UIElements_BaseListView_UnityEngine_UIElements_Button__}
 
-Subscribes to the [`overridingAddButtonBehavior`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-overridingAddButtonBehavior.html) callback.
+Subscribes to the [`overridingAddButtonBehavior`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-overridingAddButtonBehavior.html) callback.
 
 ```csharp
 public static T AddOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value) where T : BaseListView
@@ -177,7 +177,7 @@ The element type.
 
 ### RemoveItemsAdded\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveItemsAdded__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}
 
-Unsubscribes from the [`itemsAdded`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-itemsAdded.html) event.
+Unsubscribes from the [`itemsAdded`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-itemsAdded.html) event.
 
 ```csharp
 public static T RemoveItemsAdded<T>(this T element, Action<IEnumerable<int>> value) where T : BaseListView
@@ -207,7 +207,7 @@ The element type.
 
 ### RemoveItemsRemoved\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveItemsRemoved__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}
 
-Unsubscribes from the [`itemsRemoved`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-itemsRemoved.html) event.
+Unsubscribes from the [`itemsRemoved`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-itemsRemoved.html) event.
 
 ```csharp
 public static T RemoveItemsRemoved<T>(this T element, Action<IEnumerable<int>> value) where T : BaseListView
@@ -237,7 +237,7 @@ The element type.
 
 ### RemoveOnAdd\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveOnAdd__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Unsubscribes from the [`onAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onAdd.html) callback.
+Unsubscribes from the [`onAdd`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-onAdd.html) callback.
 
 ```csharp
 public static T RemoveOnAdd<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -267,7 +267,7 @@ The element type.
 
 ### RemoveOnRemove\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveOnRemove__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Unsubscribes from the [`onRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onRemove.html) callback.
+Unsubscribes from the [`onRemove`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-onRemove.html) callback.
 
 ```csharp
 public static T RemoveOnRemove<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -297,7 +297,7 @@ The element type.
 
 ### RemoveOverridingAddButtonBehavior\<T\>\(T, Action\<BaseListView, Button\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveOverridingAddButtonBehavior__1___0_System_Action_UnityEngine_UIElements_BaseListView_UnityEngine_UIElements_Button__}
 
-Unsubscribes from the [`overridingAddButtonBehavior`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-overridingAddButtonBehavior.html) callback.
+Unsubscribes from the [`overridingAddButtonBehavior`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-overridingAddButtonBehavior.html) callback.
 
 ```csharp
 public static T RemoveOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value) where T : BaseListView
@@ -327,7 +327,7 @@ The element type.
 
 ### SetAllowAdd\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetAllowAdd__1___0_System_Boolean_}
 
-Sets [`allowAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-allowAdd.html).
+Sets [`allowAdd`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-allowAdd.html).
 
 ```csharp
 public static T SetAllowAdd<T>(this T element, bool value) where T : BaseListView
@@ -357,7 +357,7 @@ The element type.
 
 ### SetAllowRemove\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetAllowRemove__1___0_System_Boolean_}
 
-Sets [`allowRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-allowRemove.html).
+Sets [`allowRemove`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-allowRemove.html).
 
 ```csharp
 public static T SetAllowRemove<T>(this T element, bool value) where T : BaseListView
@@ -387,7 +387,7 @@ The element type.
 
 ### SetBindingSourceSelectionMode\<T\>\(T, BindingSourceSelectionMode\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetBindingSourceSelectionMode__1___0_UnityEngine_UIElements_BindingSourceSelectionMode_}
 
-Sets [`bindingSourceSelectionMode`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-bindingSourceSelectionMode.html).
+Sets [`bindingSourceSelectionMode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-bindingSourceSelectionMode.html).
 
 ```csharp
 public static T SetBindingSourceSelectionMode<T>(this T element, BindingSourceSelectionMode value) where T : BaseListView
@@ -417,7 +417,7 @@ The element type.
 
 ### SetHeaderTitle\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetHeaderTitle__1___0_System_String_}
 
-Sets [`headerTitle`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-headerTitle.html).
+Sets [`headerTitle`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-headerTitle.html).
 
 ```csharp
 public static T SetHeaderTitle<T>(this T element, string value) where T : BaseListView
@@ -447,7 +447,7 @@ The element type.
 
 ### SetMakeFooter\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetMakeFooter__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
 
-Sets [`makeFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeFooter.html), replacing any existing callback.
+Sets [`makeFooter`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-makeFooter.html), replacing any existing callback.
 
 ```csharp
 public static T SetMakeFooter<T>(this T element, Func<VisualElement> value) where T : BaseListView
@@ -477,7 +477,7 @@ The element type.
 
 ### SetMakeHeader\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetMakeHeader__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
 
-Sets [`makeHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeHeader.html), replacing any existing callback.
+Sets [`makeHeader`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-makeHeader.html), replacing any existing callback.
 
 ```csharp
 public static T SetMakeHeader<T>(this T element, Func<VisualElement> value) where T : BaseListView
@@ -507,7 +507,7 @@ The element type.
 
 ### SetMakeNoneElement\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetMakeNoneElement__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
 
-Sets [`makeNoneElement`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeNoneElement.html), replacing any existing callback.
+Sets [`makeNoneElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-makeNoneElement.html), replacing any existing callback.
 
 ```csharp
 public static T SetMakeNoneElement<T>(this T element, Func<VisualElement> value) where T : BaseListView
@@ -537,7 +537,7 @@ The element type.
 
 ### SetOnAdd\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetOnAdd__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Sets [`onAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onAdd.html), replacing any existing callback.
+Sets [`onAdd`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-onAdd.html), replacing any existing callback.
 
 ```csharp
 public static T SetOnAdd<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -567,7 +567,7 @@ The element type.
 
 ### SetOnRemove\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetOnRemove__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Sets [`onRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onRemove.html), replacing any existing callback.
+Sets [`onRemove`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-onRemove.html), replacing any existing callback.
 
 ```csharp
 public static T SetOnRemove<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -597,7 +597,7 @@ The element type.
 
 ### SetOverridingAddButtonBehavior\<T\>\(T, Action\<BaseListView, Button\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetOverridingAddButtonBehavior__1___0_System_Action_UnityEngine_UIElements_BaseListView_UnityEngine_UIElements_Button__}
 
-Sets [`overridingAddButtonBehavior`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-overridingAddButtonBehavior.html), replacing any existing callback.
+Sets [`overridingAddButtonBehavior`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-overridingAddButtonBehavior.html), replacing any existing callback.
 
 ```csharp
 public static T SetOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value) where T : BaseListView
@@ -627,7 +627,7 @@ The element type.
 
 ### SetReorderMode\<T\>\(T, ListViewReorderMode\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetReorderMode__1___0_UnityEngine_UIElements_ListViewReorderMode_}
 
-Sets [`reorderMode`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-reorderMode.html).
+Sets [`reorderMode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-reorderMode.html).
 
 ```csharp
 public static T SetReorderMode<T>(this T element, ListViewReorderMode value) where T : BaseListView
@@ -657,7 +657,7 @@ The element type.
 
 ### SetShowAddRemoveFooter\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetShowAddRemoveFooter__1___0_System_Boolean_}
 
-Sets [`showAddRemoveFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showAddRemoveFooter.html).
+Sets [`showAddRemoveFooter`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-showAddRemoveFooter.html).
 
 ```csharp
 public static T SetShowAddRemoveFooter<T>(this T element, bool value) where T : BaseListView
@@ -687,7 +687,7 @@ The element type.
 
 ### SetShowBoundCollectionSize\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetShowBoundCollectionSize__1___0_System_Boolean_}
 
-Sets [`showBoundCollectionSize`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showBoundCollectionSize.html).
+Sets [`showBoundCollectionSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-showBoundCollectionSize.html).
 
 ```csharp
 public static T SetShowBoundCollectionSize<T>(this T element, bool value) where T : BaseListView
@@ -717,7 +717,7 @@ The element type.
 
 ### SetShowFoldoutHeader\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetShowFoldoutHeader__1___0_System_Boolean_}
 
-Sets [`showFoldoutHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showFoldoutHeader.html).
+Sets [`showFoldoutHeader`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseListView-showFoldoutHeader.html).
 
 ```csharp
 public static T SetShowFoldoutHeader<T>(this T element, bool value) where T : BaseListView

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`MultiColumnTreeView`](https://docs.unity3d.com/ScriptReference/UIElements-MultiColumnTreeView.html).
+Provides extension methods for [`MultiColumnTreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnTreeView.html).
 
 ```csharp
 public static class MultiColumnTreeViewExtensions
@@ -27,7 +27,7 @@ public static class MultiColumnTreeViewExtensions
 
 ### AddColumnSortingChanged\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_MultiColumnTreeViewExtensions_AddColumnSortingChanged__1___0_System_Action_}
 
-Subscribes to the [`columnSortingChanged`](https://docs.unity3d.com/ScriptReference/UIElements-MultiColumnTreeView-columnSortingChanged.html) event.
+Subscribes to the [`columnSortingChanged`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnTreeView-columnSortingChanged.html) event.
 
 ```csharp
 public static T AddColumnSortingChanged<T>(this T element, Action callback) where T : MultiColumnTreeView
@@ -57,7 +57,7 @@ The element type.
 
 ### RemoveColumnSortingChanged\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_MultiColumnTreeViewExtensions_RemoveColumnSortingChanged__1___0_System_Action_}
 
-Unsubscribes from the [`columnSortingChanged`](https://docs.unity3d.com/ScriptReference/UIElements-MultiColumnTreeView-columnSortingChanged.html) event.
+Unsubscribes from the [`columnSortingChanged`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnTreeView-columnSortingChanged.html) event.
 
 ```csharp
 public static T RemoveColumnSortingChanged<T>(this T element, Action callback) where T : MultiColumnTreeView
@@ -87,7 +87,7 @@ The element type.
 
 ### SetSortingMode\<T\>\(T, ColumnSortingMode\) {#Aspid_FastTools_UIElements_MultiColumnTreeViewExtensions_SetSortingMode__1___0_UnityEngine_UIElements_ColumnSortingMode_}
 
-Sets [`sortingMode`](https://docs.unity3d.com/ScriptReference/UIElements-MultiColumnTreeView-sortingMode.html).
+Sets [`sortingMode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnTreeView-sortingMode.html).
 
 ```csharp
 public static T SetSortingMode<T>(this T element, ColumnSortingMode value) where T : MultiColumnTreeView

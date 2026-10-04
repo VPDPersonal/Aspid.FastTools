@@ -42,7 +42,7 @@ ISerializationCallbackReceiver
 [TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<SerializableType\<T\>, TValue\>\(SerializableType\<T\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<SerializableType\<T\>, TValue\>\(SerializableType\<T\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<SerializableType\<T\>, TValue\>\(SerializableType\<T\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableType\<T\>\>\(SerializableType\<T\>\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<SerializableType\<T\>\>\(SerializableType\<T\>, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<SerializableType\<T\>, TValue\>\(SerializableType\<T\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<SerializableType\<T\>, TValue\>\(SerializableType\<T\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<SerializableType\<T\>, TValue\>\(SerializableType\<T\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
@@ -75,11 +75,11 @@ ISerializationCallbackReceiver
 ```csharp
 public class MyComponent : MonoBehaviour
 {
-    [SerializeField] private SerializableType<MonoBehaviour>; _behaviorType;
+    [SerializeField] private SerializableType<MonoBehaviour> _behaviorType;
 
     private void Start()
     {
-        Type type = _behaviorType;  // always a MonoBehaviour subtype or null
+        Type type = _behaviorType;
         if (type != null)
             gameObject.AddComponent(type);
     }
@@ -91,7 +91,8 @@ public class MyComponent : MonoBehaviour
 
 Unity serializes a field by its declared type, so a [`SerializableType<T>`](Aspid.FastTools.Types.SerializableType-1.md) assigned from code to a
 field declared as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) is reloaded unconstrained: the type survives, the constraint
-does not.
+does not. Only the picker and the constructor check <code class="typeparamref">T</code>: a loaded name is not re-checked,
+so after <code class="typeparamref">T</code> or the stored class's base changes, the type may no longer be assignable to it.
 
 ## Constructors
 
@@ -113,13 +114,13 @@ The type to store, or <a href="https://learn.microsoft.com/dotnet/csharp/languag
 
  [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
 
-Thrown when <code class="paramref">type</code> is not assignable to <code class="typeparamref">T</code>.
+<code class="paramref">type</code> is not assignable to <code class="typeparamref">T</code>.
 
 ## Properties
 
 ### BaseType {#Aspid_FastTools_Types_SerializableType_1_BaseType}
 
-Gets the constraint the stored type must satisfy; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
+Gets the base type that types offered by the picker are assignable to; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
 
 ```csharp
 public override Type BaseType { get; }
@@ -128,4 +129,8 @@ public override Type BaseType { get; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)
+
+#### Remarks
+
+A loaded type is not checked against it: a name stored before the constraint changed resolves as is.
 

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Extension methods for [`ICustomStyle`](https://docs.unity3d.com/ScriptReference/UIElements-ICustomStyle.html) that bridge USS string-typed custom
+Provides extension methods for [`ICustomStyle`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ICustomStyle.html) that bridge USS string-typed custom
 properties to strongly-typed C# values.
 
 ```csharp
@@ -28,7 +28,7 @@ public static class ICustomStyleExtensions
 
 ### TryGetByEnum\<T\>\(ICustomStyle, CustomStyleProperty\<string\>, out T\) {#Aspid_FastTools_UIElements_ICustomStyleExtensions_TryGetByEnum__1_UnityEngine_UIElements_ICustomStyle_UnityEngine_UIElements_CustomStyleProperty_System_String____0__}
 
-Resolves a [`CustomStyleProperty<T>`](https://docs.unity3d.com/ScriptReference/UIElements-CustomStyleProperty.html) whose USS value is a string and parses
+Resolves a [`CustomStyleProperty<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.CustomStyleProperty_1.html) whose USS value is a string and parses
 it as the enum <code class="typeparamref">T</code>. Parsing is case-insensitive.
 
 ```csharp
@@ -40,7 +40,7 @@ public static bool TryGetByEnum<T>(this ICustomStyle style, CustomStyleProperty<
 `style` ICustomStyle
 
 The resolved custom-style container, typically obtained from
-    [`customStyle`](https://docs.unity3d.com/ScriptReference/UIElements-CustomStyleResolvedEvent-customStyle.html).
+    [`customStyle`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.CustomStyleResolvedEvent-customStyle.html).
 
 `property` CustomStyleProperty\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
 

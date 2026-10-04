@@ -25,7 +25,8 @@ public static class SerializeReferenceIMGUIList
 
 ## Remarks
 
-The add button creates an independent instance; element fields retain their registered property drawers.
+The add button creates an independent instance in every selected object; element fields retain their registered property drawers.
+A <code>[TypeSelector]</code> on the list field adds its constraints to <code>baseTypes</code>.
 
 ## Methods
 
@@ -41,11 +42,11 @@ public static void Draw(SerializedProperty listProperty, GUIContent label, Type 
 
 `listProperty` SerializedProperty
 
-The array or list of managed references; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or a non-array property draws nothing.
+An array/list property whose elements are managed references.
 
 `label` GUIContent
 
-The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> displays no label.
+The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses the display name of <code class="paramref">listProperty</code>, [`none`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/GUIContent-none.html) displays no label.
 
 `elementType` [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
@@ -54,4 +55,14 @@ The declared element type constraining the picker, supplied even when the list i
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
 Additional constraints below <code class="paramref">elementType</code>; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">listProperty</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">listProperty</code> is not a managed-reference array.
 

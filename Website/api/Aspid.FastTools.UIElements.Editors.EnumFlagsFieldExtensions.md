@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Provides extension methods for [`EnumFlagsField`](https://docs.unity3d.com/ScriptReference/UIElements-EnumFlagsField.html).
+Provides extension methods for [`EnumFlagsField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.EnumFlagsField.html).
 
 ```csharp
 public static class EnumFlagsFieldExtensions
@@ -58,5 +58,5 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
 `T` 
 
-A [`EnumFlagsField`](https://docs.unity3d.com/ScriptReference/UIElements-EnumFlagsField.html) element to configure.
+A [`EnumFlagsField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.EnumFlagsField.html) element to configure.
 

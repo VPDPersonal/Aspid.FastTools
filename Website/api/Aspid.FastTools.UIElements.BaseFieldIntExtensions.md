@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldIntExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldIntExtensions.md#Aspid_FastTools_UIElements_BaseFieldIntExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).
+Provides [`BaseFieldIntExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldIntExtensions.md#Aspid_FastTools_UIElements_BaseFieldIntExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).
 
 ```csharp
 public static class BaseFieldIntExtensions
@@ -27,7 +27,7 @@ public static class BaseFieldIntExtensions
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldIntExtensions_SetLabel__1___0_System_String_}
 
-Sets the label of the field via [`label`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-label.html).
+Sets the label of the field via [`label`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1-label.html).
 
 ```csharp
 public static T SetLabel<T>(this T element, string value) where T : BaseField<int>

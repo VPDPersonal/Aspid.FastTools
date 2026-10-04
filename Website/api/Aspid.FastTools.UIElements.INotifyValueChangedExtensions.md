@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`INotifyValueChanged<T>`](https://docs.unity3d.com/ScriptReference/UIElements-INotifyValueChanged.html).
+Provides extension methods for [`INotifyValueChanged<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.html).
 
 ```csharp
 public static class INotifyValueChangedExtensions
@@ -1060,6 +1060,36 @@ public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Ani
 The element to modify.
 
 `callback` EventCallback\<ChangeEvent\<AnimationCurve\>\>
+
+The callback to subscribe.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<ToggleButtonGroupState\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_UIElements_ToggleButtonGroupState___}
+
+Subscribes to the value-changed event of the element.
+
+```csharp
+public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<ToggleButtonGroupState>> callback) where T : INotifyValueChanged<ToggleButtonGroupState>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`callback` EventCallback\<ChangeEvent\<ToggleButtonGroupState\>\>
 
 The callback to subscribe.
 
@@ -2174,6 +2204,36 @@ public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<
 The element to modify.
 
 `callback` EventCallback\<ChangeEvent\<AnimationCurve\>\>
+
+The callback to remove.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<ToggleButtonGroupState\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_UIElements_ToggleButtonGroupState___}
+
+Unsubscribes from the value-changed event of the element.
+
+```csharp
+public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<ToggleButtonGroupState>> callback) where T : INotifyValueChanged<ToggleButtonGroupState>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`callback` EventCallback\<ChangeEvent\<ToggleButtonGroupState\>\>
 
 The callback to remove.
 
@@ -3424,6 +3484,40 @@ public static T SetValue<T>(this T element, AnimationCurve value, bool notify = 
 The element to modify.
 
 `value` AnimationCurve
+
+The value to set.
+
+`notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetValue\<T\>\(T, ToggleButtonGroupState, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_UIElements_ToggleButtonGroupState_System_Boolean_}
+
+Sets the value of the element.
+
+```csharp
+public static T SetValue<T>(this T element, ToggleButtonGroupState value, bool notify = true) where T : INotifyValueChanged<ToggleButtonGroupState>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` ToggleButtonGroupState
 
 The value to set.
 

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Enums](Aspid.FastTools.Enums.md)  
 Assembly: Aspid.FastTools.dll  
 
-A serializable dictionary that maps members of <code class="typeparamref">TEnum</code> to values of
+Serializable dictionary that maps members of <code class="typeparamref">TEnum</code> to values of
 type <code class="typeparamref">TValue</code>. The typed counterpart of [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md)
 for the common case where the enum type is known at compile time — the Inspector type-picker
 is read-only, and lookups are compile-time safe.
@@ -48,7 +48,7 @@ ISerializationCallbackReceiver
 [TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<EnumValues\<TEnum, TValue\>\>\(EnumValues\<TEnum, TValue\>\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<EnumValues\<TEnum, TValue\>\>\(EnumValues\<TEnum, TValue\>, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
@@ -96,7 +96,7 @@ public class HitEffect : MonoBehaviour
 <p>
 Lookup semantics (including <code>[Flags]</code> handling) are identical to
 [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) — see its remarks for details. Steady-state
-[`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_Equals__0__0_) and <code>foreach</code> (which binds to the struct
+[`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_Equals__0__0_) and <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">foreach</a> (which binds to the struct
 [`EnumValuesEnumerator<T1, T2>`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md)) never allocate.
 </p>
 <p>
@@ -145,7 +145,7 @@ the zero (<code>None</code>) value is only equal to another zero value.
 ### GetEnumerator\(\) {#Aspid_FastTools_Enums_EnumValues_2_GetEnumerator}
 
 Returns a struct enumerator over the explicitly configured (key, value) pairs in
-serialized order — <code>foreach</code> binds to it directly and does not allocate.
+serialized order — <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">foreach</a> binds to it directly and does not allocate.
 Does <b>not</b> include the default value or entries with an unresolved key.
 
 ```csharp

@@ -31,7 +31,7 @@ PropertyAttribute ←
 [TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<TypeSelectorAttribute\>\(TypeSelectorAttribute\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<TypeSelectorAttribute\>\(TypeSelectorAttribute, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
@@ -81,7 +81,11 @@ PropertyAttribute ←
 
 ## Remarks
 
-With several base types the picker shows only types assignable to all of them.
+<p>With several base types the picker shows only types assignable to all of them.</p>
+<p>
+On an array or [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1) field it applies to the collection itself: each
+element gets a picker, and the add button of a <code>[SerializeReference]</code> list opens one, even when empty.
+</p>
 
 ## Constructors
 
@@ -151,7 +155,7 @@ constraint — see the remarks.
 
 Resolved member-first: an identifier matching an instance field or property on the target object supplies
 the constraint from its current value, so it can be driven live by another field; anything else is treated
-as an assembly-qualified type name. A member may be a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), a <code>string</code>, a
+as an assembly-qualified type name. A member may be a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), a [`String`](https://learn.microsoft.com/dotnet/api/system.string), a
 [`SerializableType`](Aspid.FastTools.Types.SerializableType.md), or an array of these. Prefer <code>nameof(...)</code> so a rename keeps the
 reference intact. A name that resolves to nothing is surfaced as an inline inspector notice.
 
@@ -203,8 +207,8 @@ public string[] AssemblyQualifiedNames { get; }
 
 ### Required {#Aspid_FastTools_Types_TypeSelectorAttribute_Required}
 
-Gets or sets a value indicating whether an unset field shows an inline "required" warning and counts as a
-violation for the build/CI gate.
+Gets or sets a value indicating whether an unset field shows an inline "required" warning and is reported
+as a required violation.
 
 ```csharp
 public bool Required { get; set; }
@@ -225,7 +229,13 @@ public bool Required { get; set; }
 
 #### Remarks
 
+<p>
 "Unset" means <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a <code>[SerializeReference]</code> field and an empty name for a
-<code>string</code> or [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) field. A reference that is set but whose type no longer
-resolves is not a violation of this flag — the separate missing-type gate covers that.
+[`String`](https://learn.microsoft.com/dotnet/api/system.string) or [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) field. A reference that is set but whose type no longer
+resolves is not a violation of this flag — the separate missing-type check covers that.
+</p>
+<p>
+Asset References marks the field in any gate mode, Project References → Scan Project reports it when the
+gate is Warn or Fail, and the CI gate only with <code>-srGateRequired</code>. The player build never checks it.
+</p>
 

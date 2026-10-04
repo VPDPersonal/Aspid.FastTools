@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`ListView`](https://docs.unity3d.com/ScriptReference/UIElements-ListView.html).
+Provides extension methods for [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html).
 
 ```csharp
 public static class ListViewExtensions
@@ -27,7 +27,7 @@ public static class ListViewExtensions
 
 ### AddBindItem\<T\>\(T, Action\<VisualElement, int\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_AddBindItem__1___0_System_Action_UnityEngine_UIElements_VisualElement_System_Int32__}
 
-Subscribes to the [`bindItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-bindItem.html) callback.
+Subscribes to the [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html) callback.
 
 ```csharp
 public static T AddBindItem<T>(this T element, Action<VisualElement, int> value) where T : ListView
@@ -57,7 +57,7 @@ The element type.
 
 ### AddDestroyItem\<T\>\(T, Action\<VisualElement\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_AddDestroyItem__1___0_System_Action_UnityEngine_UIElements_VisualElement__}
 
-Subscribes to the [`destroyItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-destroyItem.html) callback.
+Subscribes to the [`destroyItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-destroyItem.html) callback.
 
 ```csharp
 public static T AddDestroyItem<T>(this T element, Action<VisualElement> value) where T : ListView
@@ -87,7 +87,7 @@ The element type.
 
 ### AddUnbindItem\<T\>\(T, Action\<VisualElement, int\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_AddUnbindItem__1___0_System_Action_UnityEngine_UIElements_VisualElement_System_Int32__}
 
-Subscribes to the [`unbindItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-unbindItem.html) callback.
+Subscribes to the [`unbindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-unbindItem.html) callback.
 
 ```csharp
 public static T AddUnbindItem<T>(this T element, Action<VisualElement, int> value) where T : ListView
@@ -117,7 +117,7 @@ The element type.
 
 ### RemoveBindItem\<T\>\(T, Action\<VisualElement, int\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_RemoveBindItem__1___0_System_Action_UnityEngine_UIElements_VisualElement_System_Int32__}
 
-Unsubscribes from the [`bindItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-bindItem.html) callback.
+Unsubscribes from the [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html) callback.
 
 ```csharp
 public static T RemoveBindItem<T>(this T element, Action<VisualElement, int> value) where T : ListView
@@ -147,7 +147,7 @@ The element type.
 
 ### RemoveDestroyItem\<T\>\(T, Action\<VisualElement\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_RemoveDestroyItem__1___0_System_Action_UnityEngine_UIElements_VisualElement__}
 
-Unsubscribes from the [`destroyItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-destroyItem.html) callback.
+Unsubscribes from the [`destroyItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-destroyItem.html) callback.
 
 ```csharp
 public static T RemoveDestroyItem<T>(this T element, Action<VisualElement> value) where T : ListView
@@ -177,7 +177,7 @@ The element type.
 
 ### RemoveUnbindItem\<T\>\(T, Action\<VisualElement, int\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_RemoveUnbindItem__1___0_System_Action_UnityEngine_UIElements_VisualElement_System_Int32__}
 
-Unsubscribes from the [`unbindItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-unbindItem.html) callback.
+Unsubscribes from the [`unbindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-unbindItem.html) callback.
 
 ```csharp
 public static T RemoveUnbindItem<T>(this T element, Action<VisualElement, int> value) where T : ListView
@@ -207,7 +207,7 @@ The element type.
 
 ### SetBindItem\<T\>\(T, Action\<VisualElement, int\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_SetBindItem__1___0_System_Action_UnityEngine_UIElements_VisualElement_System_Int32__}
 
-Sets [`bindItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-bindItem.html), replacing any existing callback.
+Sets [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), replacing any existing callback.
 
 ```csharp
 public static T SetBindItem<T>(this T element, Action<VisualElement, int> value) where T : ListView
@@ -237,7 +237,7 @@ The element type.
 
 ### SetDestroyItem\<T\>\(T, Action\<VisualElement\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_SetDestroyItem__1___0_System_Action_UnityEngine_UIElements_VisualElement__}
 
-Sets [`destroyItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-destroyItem.html), replacing any existing callback.
+Sets [`destroyItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-destroyItem.html), replacing any existing callback.
 
 ```csharp
 public static T SetDestroyItem<T>(this T element, Action<VisualElement> value) where T : ListView
@@ -267,7 +267,7 @@ The element type.
 
 ### SetItemTemplate\<T\>\(T, VisualTreeAsset\) {#Aspid_FastTools_UIElements_ListViewExtensions_SetItemTemplate__1___0_UnityEngine_UIElements_VisualTreeAsset_}
 
-Sets [`itemTemplate`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-itemTemplate.html).
+Sets [`itemTemplate`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-itemTemplate.html).
 
 ```csharp
 public static T SetItemTemplate<T>(this T element, VisualTreeAsset value) where T : ListView
@@ -297,7 +297,7 @@ The element type.
 
 ### SetMakeItem\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_SetMakeItem__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
 
-Sets [`makeItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-makeItem.html), replacing any existing callback.
+Sets [`makeItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-makeItem.html), replacing any existing callback.
 
 ```csharp
 public static T SetMakeItem<T>(this T element, Func<VisualElement> value) where T : ListView
@@ -327,7 +327,7 @@ The element type.
 
 ### SetUnbindItem\<T\>\(T, Action\<VisualElement, int\>\) {#Aspid_FastTools_UIElements_ListViewExtensions_SetUnbindItem__1___0_System_Action_UnityEngine_UIElements_VisualElement_System_Int32__}
 
-Sets [`unbindItem`](https://docs.unity3d.com/ScriptReference/UIElements-ListView-unbindItem.html), replacing any existing callback.
+Sets [`unbindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-unbindItem.html), replacing any existing callback.
 
 ```csharp
 public static T SetUnbindItem<T>(this T element, Action<VisualElement, int> value) where T : ListView

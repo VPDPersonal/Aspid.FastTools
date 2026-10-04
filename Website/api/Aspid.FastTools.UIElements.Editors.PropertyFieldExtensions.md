@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Provides extension methods for [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html).
+Provides extension methods for [`PropertyField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PropertyField.html).
 
 ```csharp
 public static class PropertyFieldExtensions
@@ -53,7 +53,7 @@ The callback to subscribe.
 
 `T` 
 
-A [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html) element to configure.
+A [`PropertyField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PropertyField.html) element to configure.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<SerializedPropertyChangeEvent\>\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEditor_UIElements_SerializedPropertyChangeEvent__}
 
@@ -83,7 +83,7 @@ The callback to remove.
 
 `T` 
 
-A [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html) element to configure.
+A [`PropertyField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PropertyField.html) element to configure.
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_SetLabel__1___0_System_String_}
 
@@ -113,5 +113,5 @@ The label text to set.
 
 `T` 
 
-A [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html) element to configure.
+A [`PropertyField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PropertyField.html) element to configure.
 

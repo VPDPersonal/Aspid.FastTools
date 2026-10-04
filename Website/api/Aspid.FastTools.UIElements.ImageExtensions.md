@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`Image`](https://docs.unity3d.com/ScriptReference/UIElements-Image.html).
+Provides extension methods for [`Image`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image.html).
 
 ```csharp
 public static class ImageExtensions
@@ -27,7 +27,7 @@ public static class ImageExtensions
 
 ### SetImage\<T\>\(T, Texture\) {#Aspid_FastTools_UIElements_ImageExtensions_SetImage__1___0_UnityEngine_Texture_}
 
-Sets [`image`](https://docs.unity3d.com/ScriptReference/UIElements-Image-image.html).
+Sets [`image`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-image.html).
 
 ```csharp
 public static T SetImage<T>(this T element, Texture value) where T : Image
@@ -57,7 +57,7 @@ The element type.
 
 ### SetImageFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetImageFromResources__1___0_System_String_}
 
-Loads a [`Texture`](https://docs.unity3d.com/ScriptReference/Texture.html) from Resources and sets the [`image`](https://docs.unity3d.com/ScriptReference/UIElements-Image-image.html) property.
+Loads a [`Texture`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Texture.html) from Resources and sets the [`image`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-image.html) property.
 
 ```csharp
 public static T SetImageFromResources<T>(this T element, string path) where T : Image
@@ -91,7 +91,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### SetScaleMode\<T\>\(T, ScaleMode\) {#Aspid_FastTools_UIElements_ImageExtensions_SetScaleMode__1___0_UnityEngine_ScaleMode_}
 
-Sets [`scaleMode`](https://docs.unity3d.com/ScriptReference/UIElements-Image-scaleMode.html).
+Sets [`scaleMode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-scaleMode.html).
 
 ```csharp
 public static T SetScaleMode<T>(this T element, ScaleMode value) where T : Image
@@ -121,7 +121,7 @@ The element type.
 
 ### SetSourceRect\<T\>\(T, Rect\) {#Aspid_FastTools_UIElements_ImageExtensions_SetSourceRect__1___0_UnityEngine_Rect_}
 
-Sets [`sourceRect`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sourceRect.html).
+Sets [`sourceRect`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-sourceRect.html).
 
 ```csharp
 public static T SetSourceRect<T>(this T element, Rect value) where T : Image
@@ -151,7 +151,7 @@ The element type.
 
 ### SetSprite\<T\>\(T, Sprite\) {#Aspid_FastTools_UIElements_ImageExtensions_SetSprite__1___0_UnityEngine_Sprite_}
 
-Sets [`sprite`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sprite.html).
+Sets [`sprite`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-sprite.html).
 
 ```csharp
 public static T SetSprite<T>(this T element, Sprite value) where T : Image
@@ -181,7 +181,7 @@ The element type.
 
 ### SetSpriteFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetSpriteFromResources__1___0_System_String_}
 
-Loads a [`Sprite`](https://docs.unity3d.com/ScriptReference/Sprite.html) from Resources and sets the [`sprite`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sprite.html) property.
+Loads a [`Sprite`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Sprite.html) from Resources and sets the [`sprite`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-sprite.html) property.
 
 ```csharp
 public static T SetSpriteFromResources<T>(this T element, string path) where T : Image
@@ -215,7 +215,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### SetTintColor\<T\>\(T, Color\) {#Aspid_FastTools_UIElements_ImageExtensions_SetTintColor__1___0_UnityEngine_Color_}
 
-Sets [`tintColor`](https://docs.unity3d.com/ScriptReference/UIElements-Image-tintColor.html).
+Sets [`tintColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-tintColor.html).
 
 ```csharp
 public static T SetTintColor<T>(this T element, Color value) where T : Image
@@ -245,7 +245,7 @@ The element type.
 
 ### SetUv\<T\>\(T, Rect\) {#Aspid_FastTools_UIElements_ImageExtensions_SetUv__1___0_UnityEngine_Rect_}
 
-Sets [`uv`](https://docs.unity3d.com/ScriptReference/UIElements-Image-uv.html).
+Sets [`uv`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-uv.html).
 
 ```csharp
 public static T SetUv<T>(this T element, Rect value) where T : Image
@@ -275,7 +275,7 @@ The element type.
 
 ### SetVectorImage\<T\>\(T, VectorImage\) {#Aspid_FastTools_UIElements_ImageExtensions_SetVectorImage__1___0_UnityEngine_UIElements_VectorImage_}
 
-Sets [`vectorImage`](https://docs.unity3d.com/ScriptReference/UIElements-Image-vectorImage.html).
+Sets [`vectorImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-vectorImage.html).
 
 ```csharp
 public static T SetVectorImage<T>(this T element, VectorImage value) where T : Image
@@ -305,7 +305,7 @@ The element type.
 
 ### SetVectorImageFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetVectorImageFromResources__1___0_System_String_}
 
-Loads a [`VectorImage`](https://docs.unity3d.com/ScriptReference/UIElements-VectorImage.html) from Resources and sets the [`vectorImage`](https://docs.unity3d.com/ScriptReference/UIElements-Image-vectorImage.html) property.
+Loads a [`VectorImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VectorImage.html) from Resources and sets the [`vectorImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Image-vectorImage.html) property.
 
 ```csharp
 public static T SetVectorImageFromResources<T>(this T element, string path) where T : Image
