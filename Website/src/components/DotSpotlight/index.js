@@ -11,6 +11,11 @@ const JITTER = 2;         // px, how far each of its dots jumps about on top of 
 const DARK = 200;         // ms the light stays out after a burst
 const RELIGHT = 600;      // ms it then takes to come back
 const FADE = 400;         // ms, must match the opacity transition of .dot-spotlight in custom.css
+const TAIL = 300;         // ms, time constant with which a dot the light has left goes dark, so a moving light trails a tail
+const TAIL_LIFT = 0.75;   // power below 1 that keeps the tail brighter than the light it left
+const TAIL_SPREAD = 0.6;  // how much TAIL varies from dot to dot, so the tail breaks up into embers
+const TAIL_TWINKLE = 0.35; // how much a dot of the tail flickers as it cools
+const TAIL_DIM = 0.4;     // brightness of most of the tail; only a few dots stay near full
 // Waves running round the edge of the light: [lobes, angular speed per ms, relative amplitude]. Their different lobe
 // counts and speeds keep the outline from ever closing into a circle or repeating visibly.
 const WOBBLE = [[2, 0.00031, 0.07], [3, -0.00047, 0.09], [5, 0.00083, 0.05]];
@@ -96,6 +101,9 @@ export default function DotSpotlight() {
     // The pale light canvas shows the light green faintly: its dots light up half again as strongly.
     let boost = document.documentElement.dataset.theme === 'light' ? 1.5 : 1;
     let colorAt = 0;
+    // How lit each dot is, keyed by grid cell; it decays after the light moves on.
+    const heat = new Map();
+    let heatAt = 0;
 
     const render = (now) => {
       ctx.clearRect(0, 0, innerWidth, innerHeight);
@@ -122,7 +130,17 @@ export default function DotSpotlight() {
       const centerY = lightY + SHAKE * jump();
       // After a burst the light is out for a moment, then comes back.
       const relit = Math.min(Math.max((now - burstAt() - DARK) / RELIGHT, 0), 1);
-      if (relit === 0) return;
+      const elapsed = now - heatAt;
+      heatAt = now;
+      if (relit === 0) {
+        heat.clear();
+        return;
+      }
+      for (const [key, value] of heat) {
+        const cooled = value * Math.exp(-elapsed / (TAIL * (1 + TAIL_SPREAD * (2 * hash(key) - 1))));
+        if (cooled <= 0.02) heat.delete(key);
+        else heat.set(key, cooled);
+      }
       // Position of the glint band across the light, or null between glints; a charge puts it out.
       const sweep = (now % GLINT_PERIOD) / GLINT_SWEEP;
       const glint = sweep < 1 && shrink === 0 ? -REACH + 2 * REACH * sweep : null;
@@ -133,34 +151,48 @@ export default function DotSpotlight() {
       const heading = hash(seed + 0.89) * Math.PI * 2;
       const headingX = Math.cos(heading);
       const headingY = Math.sin(heading);
-      ctx.fillStyle = color;
       const gx0 = Math.max(0, Math.floor((lightX - REACH) / GRID));
       const gx1 = Math.min(Math.ceil(innerWidth / GRID), Math.ceil((lightX + REACH) / GRID));
       const gy0 = Math.max(0, Math.floor((lightY - REACH) / GRID));
       const gy1 = Math.min(Math.ceil(innerHeight / GRID), Math.ceil((lightY + REACH) / GRID));
+      const current = new Map();
       for (let gy = gy0; gy <= gy1; gy++) {
-        const cy = gy * GRID + GRID / 2;
         for (let gx = gx0; gx <= gx1; gx++) {
-          const cx = gx * GRID + GRID / 2;
-          const dx = cx - centerX;
-          const dy = cy - centerY;
+          const dx = gx * GRID + GRID / 2 - centerX;
+          const dy = gy * GRID + GRID / 2 - centerY;
           const light = 1 - Math.hypot(dx, dy) / edgeAt(Math.atan2(dy, dx), now, edge);
           if (light <= 0.02) continue;
-          const flicker = 1 - 0.4 * tremble * Math.random();
-          let shine = 0;
-          if (glint !== null) {
-            const across = dx * headingX + dy * headingY;
-            const along = dy * headingX - dx * headingY;
-            const bend = GLINT_BEND * (0.6 * Math.sin(along / 37 + phases[0]) + 0.4 * Math.sin(along / 17 + phases[1]));
-            const width = GLINT_WIDTH * (1 + GLINT_SWELL * Math.sin(along / 29 + phases[2]));
-            const speckle = 1 - GLINT_SPECKLE * hash(gx * 12.9898 + gy * 78.233 + seed);
-            shine = Math.exp(-(((across - glint - bend) / width) ** 2)) * speckle;
-          }
-          ctx.globalAlpha = Math.min(light * boost * (1 + 0.5 * shrink + GLINT_BRIGHT * shine), 1) * flicker * relit;
-          ctx.beginPath();
-          ctx.arc(cx + JITTER * jump(), cy + JITTER * jump(), dot * (1 + 0.3 * tremble * Math.random() + GLINT_GROW * shine), 0, Math.PI * 2);
-          ctx.fill();
+          const key = gy * 100000 + gx;
+          current.set(key, light);
+          if (light > (heat.get(key) ?? 0)) heat.set(key, light);
         }
+      }
+      ctx.fillStyle = color;
+      for (const [key, warmth] of heat) {
+        const twinkle = 1 - TAIL_TWINKLE * (0.5 + 0.5 * Math.sin(now / 70 + hash(key + 0.5) * Math.PI * 2));
+        const ember = TAIL_DIM + (1 - TAIL_DIM) * hash(key + 0.25) ** 4;
+        const light = Math.max(current.get(key) ?? 0, warmth ** TAIL_LIFT * twinkle * ember);
+        const gy = Math.floor(key / 100000);
+        const gx = key - gy * 100000;
+        const cx = gx * GRID + GRID / 2;
+        const cy = gy * GRID + GRID / 2;
+        const dx = cx - centerX;
+        const dy = cy - centerY;
+        const flicker = 1 - 0.4 * tremble * Math.random();
+        let shine = 0;
+        // The glint runs only across the light itself, not its tail.
+        if (glint !== null && current.has(key)) {
+          const across = dx * headingX + dy * headingY;
+          const along = dy * headingX - dx * headingY;
+          const bend = GLINT_BEND * (0.6 * Math.sin(along / 37 + phases[0]) + 0.4 * Math.sin(along / 17 + phases[1]));
+          const width = GLINT_WIDTH * (1 + GLINT_SWELL * Math.sin(along / 29 + phases[2]));
+          const speckle = 1 - GLINT_SPECKLE * hash(gx * 12.9898 + gy * 78.233 + seed);
+          shine = Math.exp(-(((across - glint - bend) / width) ** 2)) * speckle * current.get(key) / light;
+        }
+        ctx.globalAlpha = Math.min(light * boost * (1 + 0.5 * shrink + GLINT_BRIGHT * shine), 1) * flicker * relit;
+        ctx.beginPath();
+        ctx.arc(cx + JITTER * jump(), cy + JITTER * jump(), dot * (1 + 0.3 * tremble * Math.random() + GLINT_GROW * shine), 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.globalAlpha = 1;
     };
