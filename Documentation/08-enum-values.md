@@ -23,7 +23,7 @@ For <code lang="csharp">[Flags]</code>, only declared enum members are added aut
 ![Populate Missing Enum Members in the Multipliers table](Images/enum-values-multipliers-populate.gif)
 
 > [!NOTE]
-> A row added to an empty table shows `<None>` and is skipped with a Console error until you pick a member.
+> A row added to an empty table shows `<None>`: until you pick a member, lookup skips it, and accessing the table logs an error to the Console.
 
 ## Choosing a variant
 
@@ -34,8 +34,7 @@ For <code lang="csharp">[Flags]</code>, only declared enum members are added aut
 | Boxing in <code lang="function">GetValue</code> | None | The key is boxed |
 | A key of another enum | Does not compile | Returns **Default Value** |
 
-- Table values are configured in the Inspector and are read-only from code.
-- <code lang="class-name">TValue</code> is any type Unity serializes.
+Table values are configured in the Inspector and are read-only from code.
 
 With <code lang="class-name">EnumValues&lt;TValue&gt;</code>, the multiplier field is declared as <code lang="class-name">EnumValues&lt;float&gt;</code>, and <code lang="class-name">DamageType</code> is selected in the table header:
 
@@ -48,7 +47,7 @@ private EnumValues<float>
 ![DamageType in the type selector of the Multipliers header](Images/enum-values-type-selector.png)
 
 - Selecting an enum is required: if the field is empty, the Inspector shows **Required type is not set**. The [required field check](07-serialize-reference-validation.md#what-each-run-checks) also checks this field.
-- The first access to a table with an empty enum field logs a **Warning** to the Console. Calls to <code lang="function">GetValue</code> return **Default Value**.
+- The first access to a table with an empty enum field logs a warning to the Console, and <code lang="function">GetValue</code> returns **Default Value**.
 
 ## Lookup rules
 
@@ -125,8 +124,6 @@ _multipliers.Equals(request, key);
 | <code lang="csharp">DamageType.Fire &#124; DamageType.Ice</code> | <code lang="csharp">DamageType.None</code> | <code lang="csharp">false</code> |
 | <code lang="csharp">DamageType.None</code> | <code lang="csharp">DamageType.None</code> | <code lang="csharp">true</code> |
 
-In <code lang="class-name">EnumValues&lt;TValue&gt;</code>, <code lang="function">Equals</code> returns <code lang="csharp">false</code> if either argument has a different enum type from the one selected in the Inspector.
-
 ## Enumerating rows
 
 ```csharp
@@ -135,7 +132,7 @@ foreach (var entry in _multipliers)
     total += entry.Value;
 ```
 
-**Default Value** and rows with unresolved keys are not yielded. After the first access initializes the keys, a direct <code lang="csharp">foreach</code> over the table does not allocate. Iteration through <code lang="class-name">IEnumerable</code> boxes the enumerator.
+**Default Value** and rows with unresolved keys are not yielded. After the first access initializes the keys, a direct <code lang="csharp">foreach</code> over the table does not allocate.
 
 ## When the enum changes
 
@@ -150,6 +147,6 @@ Keys are stored by member name:
 
 ## Package sample
 
-Tiles and footprints take their colour from <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, and the speed multiplier from an <code lang="class-name">EnumValues&lt;float&gt;</code> with a <code lang="csharp">[Flags]</code> enum picked in the Inspector: [EnumValues](../Samples~/EnumValues/Documentation/README.md).
+In the [EnumValues](../Samples~/EnumValues/Documentation/README.md) sample, tiles and footprints take their colour from <code lang="class-name">EnumValues&lt;SurfaceType, Color&gt;</code>, and the speed multiplier from an <code lang="class-name">EnumValues&lt;float&gt;</code> with a <code lang="csharp">[Flags]</code> enum picked in the Inspector.
 
 ![The trail colour and walking speed change as the character crosses onto another surface.](../Samples~/EnumValues/Documentation/Images/demo.gif)
