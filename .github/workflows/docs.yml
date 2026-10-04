@@ -13,6 +13,7 @@ on:
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
       - '.github/workflows/docs.yml'
   pull_request:
     paths:
@@ -21,6 +22,7 @@ on:
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
