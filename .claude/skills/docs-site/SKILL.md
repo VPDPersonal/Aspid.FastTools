@@ -297,6 +297,9 @@ for a running dev server to see the change.
 - `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Documentation/README.md`,
   rebasing file links to the repository root. Never edit the root README by hand. `prestart`/`prebuild` refresh
   it automatically and CI runs `check-readme` before building to reject a stale copy.
+- `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
+  blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
+  may differ, so make every structural change in both languages.
 - `Website/scripts/sync-i18n.mjs` (also run by `prestart`/`prebuild`) builds `Website/tutorials/`,
   `Website/changelog/` and `Website/i18n/` from the package: English sample READMEs and their images,
   `Documentation/<locale>/`, every sample-local `*.<locale>.md`, the root changelogs and
