@@ -114,5 +114,3 @@ EditorApplication.delayCall += () =>
 В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) кнопка **Halve cooldown, +5 MP** записывает два свойства через <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>.
 
 ![Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.](../../Samples~/EditorTools/Documentation/Images/demo.gif)
-
-Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.

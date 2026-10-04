@@ -114,5 +114,3 @@ EditorApplication.delayCall += () =>
 In [EditorTools](../Samples~/EditorTools/Documentation/README.md), the **Halve cooldown, +5 MP** button writes two properties with <code lang="function">SetFloat</code> and <code lang="function">SetIntAndApply</code>.
 
 ![The Halve cooldown, +5 MP button changes the cost and the cooldown, and Undo restores them.](../Samples~/EditorTools/Documentation/Images/demo.gif)
-
-The Halve cooldown, +5 MP button changes the cost and the cooldown, and Undo restores them.
