@@ -15,6 +15,21 @@ const FADE = 400;         // ms, must match the opacity transition of .dot-spotl
 // counts and speeds keep the outline from ever closing into a circle or repeating visibly.
 const WOBBLE = [[2, 0.00031, 0.07], [3, -0.00047, 0.09], [5, 0.00083, 0.05]];
 const REACH = EDGE * (1 + WOBBLE.reduce((sum, [, , amplitude]) => sum + amplitude, 0));
+// Now and then a glint runs across the light from a random side, as over a polished surface.
+const GLINT_PERIOD = 4000; // ms from one glint to the next
+const GLINT_SWEEP = 900;   // ms a glint takes to cross the light
+const GLINT_WIDTH = 28;    // px, half-width of the glint band
+const GLINT_BRIGHT = 1.2;  // extra brightness of a dot at the centre of the band
+const GLINT_GROW = 0.6;    // extra radius of that dot, relative to DOT
+const GLINT_BEND = 22;     // px, how far the band bends away from a straight line
+const GLINT_SWELL = 0.45;  // how much the band widens and narrows along its length, relative to GLINT_WIDTH
+const GLINT_SPECKLE = 0.6; // how much the shine of single dots varies, so the band looks broken up
+
+// A stable pseudo-random number in [0, 1) for `n`.
+const hash = (n) => {
+  const s = Math.sin(n) * 43758.5453;
+  return s - Math.floor(s);
+};
 const ARTICLE = '[class*="docMainContainer_"] > .container > .row > .col:first-child';
 
 const inViewport = (x, y) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight;
@@ -108,6 +123,16 @@ export default function DotSpotlight() {
       // After a burst the light is out for a moment, then comes back.
       const relit = Math.min(Math.max((now - burstAt() - DARK) / RELIGHT, 0), 1);
       if (relit === 0) return;
+      // Position of the glint band across the light, or null between glints; a charge puts it out.
+      const sweep = (now % GLINT_PERIOD) / GLINT_SWEEP;
+      const glint = sweep < 1 && shrink === 0 ? -REACH + 2 * REACH * sweep : null;
+      // Each glint gets its own bends and swells, so no two look the same.
+      const seed = Math.floor(now / GLINT_PERIOD);
+      const phases = [hash(seed), hash(seed + 0.31), hash(seed + 0.67)].map((value) => value * Math.PI * 2);
+      // It also starts from its own side of the light.
+      const heading = hash(seed + 0.89) * Math.PI * 2;
+      const headingX = Math.cos(heading);
+      const headingY = Math.sin(heading);
       ctx.fillStyle = color;
       const gx0 = Math.max(0, Math.floor((lightX - REACH) / GRID));
       const gx1 = Math.min(Math.ceil(innerWidth / GRID), Math.ceil((lightX + REACH) / GRID));
@@ -122,9 +147,18 @@ export default function DotSpotlight() {
           const light = 1 - Math.hypot(dx, dy) / edgeAt(Math.atan2(dy, dx), now, edge);
           if (light <= 0.02) continue;
           const flicker = 1 - 0.4 * tremble * Math.random();
-          ctx.globalAlpha = Math.min(light * boost * (1 + 0.5 * shrink), 1) * flicker * relit;
+          let shine = 0;
+          if (glint !== null) {
+            const across = dx * headingX + dy * headingY;
+            const along = dy * headingX - dx * headingY;
+            const bend = GLINT_BEND * (0.6 * Math.sin(along / 37 + phases[0]) + 0.4 * Math.sin(along / 17 + phases[1]));
+            const width = GLINT_WIDTH * (1 + GLINT_SWELL * Math.sin(along / 29 + phases[2]));
+            const speckle = 1 - GLINT_SPECKLE * hash(gx * 12.9898 + gy * 78.233 + seed);
+            shine = Math.exp(-(((across - glint - bend) / width) ** 2)) * speckle;
+          }
+          ctx.globalAlpha = Math.min(light * boost * (1 + 0.5 * shrink + GLINT_BRIGHT * shine), 1) * flicker * relit;
           ctx.beginPath();
-          ctx.arc(cx + JITTER * jump(), cy + JITTER * jump(), dot * (1 + 0.3 * tremble * Math.random()), 0, Math.PI * 2);
+          ctx.arc(cx + JITTER * jump(), cy + JITTER * jump(), dot * (1 + 0.3 * tremble * Math.random() + GLINT_GROW * shine), 0, Math.PI * 2);
           ctx.fill();
         }
       }
