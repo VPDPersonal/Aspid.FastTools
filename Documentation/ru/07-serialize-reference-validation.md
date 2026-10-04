@@ -4,7 +4,7 @@
 
 ## Быстрый старт
 
-Откройте **Tools → Aspid 🐍 → FastTools → Settings** и выберите **Build / CI gate → Fail**. Теперь потерянные типы прерывают сборку плеера. По умолчанию стоит **Warn** — он сообщает о проблемах и продолжает сборку.
+Откройте **Tools → Aspid 🐍 → FastTools → Settings** и выберите **Build / CI gate → Fail**. Теперь потерянные типы прерывают сборку плеера. По умолчанию стоит **Warn**.
 
 Проверка сообщает о нарушениях; исправление описано на странице [Восстановление SerializeReference](06-serialize-reference-tooling.md).
 
@@ -36,21 +36,20 @@
 
 ## Обнаружение новых поломок
 
-**Breakage detection** после изменения скриптов или ассетов сообщает о новых потерянных ссылках и именах типов уведомлением и в Console. Настройка включена по умолчанию и находится в **Tools → Aspid 🐍 → FastTools → Settings**, а также в **Preferences → Aspid.FastTools → SerializeReference**. Она хранится локально в `EditorPrefs`.
+**Breakage detection** сообщает о новых потерянных ссылках и именах типов сразу после изменения скриптов или ассетов — уведомлением, а также в Console. Настройка включена по умолчанию и находится в **Tools → Aspid 🐍 → FastTools → Settings**, а также в **Preferences → Aspid.FastTools → SerializeReference**. Это личная настройка: у каждого участника своя.
 
 ## Область проверки
 
-Проверяются сохранённые `.prefab`, `.asset` и `.unity` внутри `Assets/`. Ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) не считаются потерянными типами. Проверка потерянных типов охватывает <code lang="csharp">[SerializeReference]</code> и имена, которые хранят поля <code lang="class-name">SerializableType</code> и <code lang="class-name">SerializableMonoScript</code>. Строки с <code lang="csharp">[TypeSelector]</code> она не проверяет.
+- сохранённые `.prefab`, `.asset` и `.unity` под `Assets/`, кроме **Excluded scan folders**;
+- <code lang="csharp">[SerializeReference]</code> и имена в полях <code lang="class-name">SerializableType</code> и <code lang="class-name">SerializableMonoScript</code>; строки с <code lang="csharp">[TypeSelector]</code> не проверяются;
+- ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) потерянными не считаются;
+- двоичные ассеты и нескачанные файлы Git LFS не проверяются, CI перечисляет их в отчёте; для полного сканирования включите **Asset Serialization → Mode → Force Text** и скачайте файлы LFS.
 
-**Excluded scan folders** исключает папки из Project References, проверки сборки, CI и обнаружения новых поломок. По умолчанию исключений нет.
+**Excluded scan folders** исключает папки из Project References, проверки сборки, CI и обнаружения новых поломок.
 
-Двоичные ассеты и нескачанные файлы Git LFS не проверяются; CI перечисляет их в отчёте. Для полного сканирования используйте **Asset Serialization → Mode → Force Text** и скачайте файлы LFS.
-
-**Build / CI gate**, **Excluded scan folders** и **Auto de-alias duplicated list elements** — общие настройки, они отмечены зелёной полосой: они доступны и в **Project Settings → Aspid.FastTools → SerializeReference** и хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, общем для команды и CI.
+**Build / CI gate**, **Excluded scan folders** и **Auto de-alias duplicated list elements** — общие настройки с зелёной полосой. Они хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, общем для команды и CI, а ещё открываются в **Project Settings → Aspid.FastTools → SerializeReference**.
 
 ![Раздел SerializeReference на вкладке Settings: общие настройки с зелёной полосой, личные — с синей](../Images/aspid_fasttools_serialize_reference_settings.png)
-
-<a id="headless-ci"></a>
 
 ## Запуск в CI
 
@@ -72,8 +71,6 @@ Unity -batchmode -projectPath . \
 | `-srGateRequired` | Дополнительно проверить незаполненные поля с <code lang="csharp">Required = true</code> |
 | `-srGateFail` | Использовать `Fail` вместо режима проекта, даже `Off` |
 | `-srGateWarnOnly` | Использовать `Warn` вместо режима проекта, даже `Off`; важнее `-srGateFail`, если переданы оба |
-
-<a id="отчёт-и-коды-выхода"></a>
 
 ## Отчёт
 
@@ -111,3 +108,9 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в карточке **Prefab instance overrides** в Project References. Строка `MissingTypeName` находится в своей группе **type name** в Project References.
 
 </details>
+
+## Пример в пакете
+
+Обязательное поле и потерянные типы для проверки есть в примере [SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
+
+![Манекен получает урон в сцене SerializeReferences](../../Samples~/SerializeReferences/Documentation/Images/demo.gif)
