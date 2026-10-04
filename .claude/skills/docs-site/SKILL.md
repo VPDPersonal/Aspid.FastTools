@@ -67,6 +67,9 @@ package `CHANGELOG.md` and `Website/api/`.
   on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`). This conversion
   requires every body cell to contain only a `<pre>` element; a plain-text or inline-code result row prevents it.
   Use inline code throughout tables that pair short calls with their results.
+  Header cells stay plain text: one `<code>` in a header silently leaves the cells unhighlighted and unindented. Write
+  `UI Toolkit — CreateInspectorGUI`, as in `До — Unity API`. In a cell, write `{` and `}` as `&#123;` and `&#125;`:
+  MDX reads a raw brace as a JS expression, and the build fails with `ReferenceError` on that page.
 - **Highlighted inline code**: `<code lang="csharp">void Run&lt;T&gt;()</code>` is plain inline code on GitHub and is
   highlighted on the site (`introBanner.js` → `src/components/InlineCode`; sample pages get it from `remarkInlineCode`
   in the `tutorials` instance). Use it for every inline C# snippet, in prose
@@ -165,6 +168,19 @@ Apply these rules to every main doc page, always to the English file and its `ru
 - **Results go in tables**: property × method result tables and Unity-API-vs-FastTools before/after tables replace
   runs of small code blocks. Show representative calls and meaningful differences; link to the API reference
   for exhaustive method and overload lists.
+- **Before/after tables stand alone.** The reader knows the Unity API; the difference between the columns is the
+  message. No scenario sentence before a table («Для поля поиска, уже подключённого к panel:»), no comment in a code
+  cell that explains what a Unity call does. Put each table in its own `<details>`, never intro lines inside one.
+- **No chip walls.** A paragraph of three lines or more full of inline-code chips reads badly on the site. Split it
+  into a list with one fact per item, or into a table of concrete calls (`SetPadding(8)`), not abstract ones
+  (`SetX(value)`).
+- **Show `[TypeSelector]` on every `[SerializeReference]` field**, nested ones too. Do not describe the selector that
+  nested fields get without the attribute, nor what depends on it (nested drawer precedence, the 8-level limit).
+- **Russian: no «и» chains.** Two «и» in one sentence blur which words go together. Drop the enumeration, use
+  «а затем», or split the sentence: «…по всему проекту и восстанавливает их группами», not «…в префабах, сценах и
+  ScriptableObject и восстанавливает…».
+- **The ASD-STE100 style does not apply to site pages**, in English or Russian. Do not shorten sentences or remove
+  phrasal verbs for STE; the Introduction sets the tone.
 - **Say each fact once, in the section it belongs to.** Explain behaviour beside the methods or task it describes.
   No repeat between a table's cell comments and the paragraph under it, or between quick start and a later section.
 - **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`",
@@ -204,6 +220,8 @@ Apply these rules to every main doc page, always to the English file and its `ru
   pages and the `## Package sample` gif (see below).
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
   and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
+  Cut empty UI out of every frame of a capture: the picker's empty rows above its footer go, as in the Serializable
+  Types quick start.
 - Text stays left-aligned (never justified) and fills the article width.
 - A bug found in package code while writing docs is not fixed on the docs branch: report it and offer a separate
   task in its own worktree.
@@ -320,6 +338,8 @@ from `package.json`.
 
 The **API** tab is generated from XML doc comments by DocFX (`npm run api`); `Website/api/` is committed and never
 edited by hand. Read `references/api-reference.md` before you regenerate it or fix a DocFX or sidebar problem.
+The user regenerates it manually: never run `npm run api` or commit `Website/api/` in a feature or docs PR, even when a
+task asks for it. Say in the PR that the reference is updated separately.
 
 ## Design
 
@@ -331,6 +351,9 @@ sidebar footer appearance menu, next to the theme (`NavigationPanel/AppearanceSw
 Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) from Google Fonts; iA Writer Quattro, the
 samples' editor font, is self-hosted in `src/fonts/` (OFL, keep the licence file) for navigation labels only — sidebar
 and TOC, `--venom-font-family-nav`. Prism themes are Ayu-based, in `src/prism/venom.js`, with a transparent background.
+Keep the admonition style (`.theme-admonition` in `custom.css`): a 2px outline in the block colour, 12px radius, no fill,
+the heading and icon in the block colour, the body in the text colour. The user likes it; reuse it first when another
+block (table, details, card) needs a cleaner look.
 
 ### Introduction feature cards
 
