@@ -28,6 +28,7 @@ Package-relative paths below are rooted at `Aspid.FastTools/Packages/tech.aspid.
 | Translations | `Documentation/ru/**` (same names), `Samples~/<Sample>/Documentation/README.ru.md` | `/ru/...` |
 | Images | `Documentation/Images/`, `Samples~/<Sample>/Documentation/Images/` | referenced relatively |
 | Root README | generated from `Documentation/README.md` (committed) | — |
+| Package changelog | generated from the root `CHANGELOG.md` (committed; Unity's Package Manager reads it) | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
 
@@ -45,8 +46,8 @@ macOS treats the two names as one directory.
 - `api` — reads the committed `Website/api/`.
 
 Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/changelog/`, `Website/build/`,
-`Website/docfx/projects/`. Never edit them by hand. Generated **and committed**: the root `README.md` and
-`Website/api/`.
+`Website/docfx/projects/`. Never edit them by hand. Generated **and committed**: the root `README.md`, the
+package `CHANGELOG.md` and `Website/api/`.
 
 ## Writing rules (so all three renderers agree)
 
@@ -295,8 +296,10 @@ for a running dev server to see the change.
 ## Generated content
 
 - `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Documentation/README.md`,
-  rebasing file links to the repository root. Never edit the root README by hand. `prestart`/`prebuild` refresh
-  it automatically and CI runs `check-readme` before building to reject a stale copy.
+  rebasing file links to the repository root, and the package `CHANGELOG.md` from the root one, turning links that
+  leave the package into GitHub URLs. Never edit either copy by hand. `prestart`/`prebuild` refresh them
+  automatically and CI runs `check-readme` before building to reject a stale copy. The script only updates existing
+  files: recreating the package copy would give its `.meta` a new GUID.
 - `Website/scripts/sync-i18n.mjs` (also run by `prestart`/`prebuild`) builds `Website/tutorials/`,
   `Website/changelog/` and `Website/i18n/` from the package: English sample READMEs and their images,
   `Documentation/<locale>/`, every sample-local `*.<locale>.md`, the root changelogs and
