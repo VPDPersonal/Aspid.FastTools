@@ -94,8 +94,8 @@ serializable-type-card                        880x546   38 170  872  534 inspect
 component-type-selector-card                  880x520   34 170  872  468 inspector:#3c3c3c
 aspid_fasttools_serialize_reference_selector_card 880x734 34 170 872  624 inspector:#3c3c3c
 # x=10 keeps the foldouts and the coloured shared and missing-reference markers, the same on every capture of the page.
-aspid_fasttools_serialize_reference_list         1340x962  10  6 1332  954 inspector:#3c3c3c
-aspid_fasttools_serialize_reference_selector     1340x806  10  6 1332  766 inspector
+aspid_fasttools_serialize_reference_list         1340x670  10  6 1332  662 inspector:#3c3c3c
+aspid_fasttools_serialize_reference_selector     1340x520  10  6 1332  480 inspector
 aspid_fasttools_serialize_reference_make_unique  1340x448  10  6 1332  434 inspector
 aspid_fasttools_serialize_reference_repair       1340x226  10  6 1332  208 inspector
 # EnumValues: the four-row state of every frame, and the picker's lower edge.
