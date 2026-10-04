@@ -54,6 +54,8 @@ const BURST_REACH = 50;   // px, the lit dots within this distance of the pointe
 const SPARKS = 18;        // loose sparks added on top of those dots
 const SPARK_LIFE = 750;   // ms, mean lifetime of a spark
 const SPARK_DRAG = 0.004; // per ms, how fast a spark slows down
+const SHAKE = 7;          // px, how far the page jumps at the burst
+const SHAKE_TIME = 500;   // ms for the shake to die out
 
 // Points per wave: a plain click scores one, a fully charged release and a burst score more and show it on the counter,
 // the bigger the score the louder: the number counts up, jumps and a "+N" rises from it. `count` is the count-up in ms.
@@ -170,6 +172,7 @@ export default function DotRipple() {
     let sparks = [];
     let burstTimer = 0;
     let frame = 0;
+    let shakeFrame = 0;
     let colors = readColors();
 
     const resize = () => {
@@ -373,8 +376,34 @@ export default function DotRipple() {
       if (!frame) frame = requestAnimationFrame(render);
     };
 
-    // The gathered light bursts: its dots fly apart with loose sparks between them, and a wave stronger than any
-    // release runs out. The button is still down, so the coming release sends nothing.
+    // The page swings on two unrelated frequencies, so the shake has no clear direction, and settles down.
+    const root = document.documentElement.style;
+    const stopShake = () => {
+      cancelAnimationFrame(shakeFrame);
+      shakeFrame = 0;
+      root.removeProperty('--dot-shake-x');
+      root.removeProperty('--dot-shake-y');
+    };
+    const shake = (start) => {
+      const phase = Math.random() * Math.PI * 2;
+      const step = (now) => {
+        const p = (now - start) / SHAKE_TIME;
+        if (p >= 1) {
+          stopShake();
+          return;
+        }
+        // Whole pixels keep the text sharp.
+        const amplitude = SHAKE * (1 - p) ** 2;
+        root.setProperty('--dot-shake-x', `${Math.round(amplitude * Math.sin(now / 16 + phase))}px`);
+        root.setProperty('--dot-shake-y', `${Math.round(amplitude * Math.sin(now / 19 + 2 * phase))}px`);
+        shakeFrame = requestAnimationFrame(step);
+      };
+      cancelAnimationFrame(shakeFrame);
+      shakeFrame = requestAnimationFrame(step);
+    };
+
+    // The gathered light bursts: its dots fly apart with loose sparks between them, a wave stronger than any
+    // release runs out, and the page shakes. The button is still down, so the coming release sends nothing.
     const burst = () => {
       const now = performance.now();
       const {x, y} = charge;
@@ -395,6 +424,7 @@ export default function DotRipple() {
       }
       for (let i = 0; i < SPARKS; i++) spark(x, y, Math.random() * Math.PI * 2, 0.3 + 0.8 * Math.random());
       release(x, y, now, BURST_POWER, 'burst');
+      shake(now);
     };
 
     const onPointerDown = (event) => {
@@ -439,6 +469,7 @@ export default function DotRipple() {
       clearTimeout(burstTimer);
       removeEventListener('resize', resize);
       if (frame) cancelAnimationFrame(frame);
+      stopShake();
       clearTimeout(counterTimer);
       cancelAnimationFrame(countFrame);
       tocButton?.removeAttribute('data-counting');
