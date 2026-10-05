@@ -9,7 +9,7 @@ wide screens the article panel paints its surface only below the banner (`custom
 through it, `DotAmbient` raises a glow from its bottom edge, and `DotRipple`'s `isCanvas` and `DotSpotlight` treat the
 banner as canvas. Once per tab session the banner makes an entrance: `src/intro.js` sets `html[data-intro]` before the
 first paint (never under reduced motion), `styles.css` draws the ring from the snake's head and wipes the name in, and
-`IntroBanner` sends a `DotRipple` wave (`sendWave`) from the logo when the ring closes and lets the glow rise; below
+`IntroBanner` sends a `DotRipple` wave with the burst's shake (`sendWave`) from the logo when the ring closes and lets the glow rise; below
 997 px the banner paints
 the dots itself. A new accent in `src/accents.js` needs its logo WebP.
 On the introduction, `src/remark/introBanner.js` also turns the README's

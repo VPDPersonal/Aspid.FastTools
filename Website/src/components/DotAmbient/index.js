@@ -9,9 +9,14 @@ const ARTICLE = '[class*="docMainContainer_"] > .container > .row > .col:first-c
 // The introduction's banner lies open over the canvas (custom.css), and a lower glow rises from its bottom edge too.
 const BANNER = '.readme-banner';
 const BANNER_DEPTH = 0.35; // share of the banner height that glow reaches at its highest
-const BANNER_SLOPE = 0.15; // share of the banner width over which it slopes down to the banner's sides
+const BANNER_SLOPE = 0.25; // share of the banner width over which it slopes down and dims out to the banner's sides
 // During the entrance (src/intro.js) that glow waits until IntroBanner stamps `data-glow-at`, then grows in.
 const GLOW_IN = 700;      // ms
+// Sparks rise from the article's top edge into that glow and burn out on the way. While they fly, every frame is drawn.
+const SPARKS = 4;                // sparks per second across the banner, fewer towards its sides
+const SPARK_LIFE = [1600, 2800]; // ms, of the shortest and the longest spark
+const SPARK_RISE = [0.3, 0.6];   // share of the banner height a spark climbs, least and most
+const SPARK_SWAY = 8;            // px a spark drifts from side to side as it climbs
 // Waves that roughen the top edge of the glow: [wavelength px, drift px per ms, amplitude]. Different lengths and speeds,
 // some drifting left and some right, so the edge keeps changing without ever moving as a whole.
 const EDGE = [[1100, 0.006, 0.5], [530, -0.011, 0.3], [260, 0.017, 0.2]];
@@ -20,6 +25,12 @@ const EDGE = [[1100, 0.006, 0.5], [530, -0.011, 0.3], [260, 0.017, 0.2]];
 const hash = (x, y) => {
   const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
   return h - Math.floor(h);
+};
+
+const between = ([low, high]) => low + (high - low) * Math.random();
+const smooth = (p) => {
+  const q = Math.min(Math.max(p, 0), 1);
+  return q * q * (3 - 2 * q);
 };
 
 // Sum of drifting sines at `x`, mapped to [0, 1].
@@ -36,7 +47,7 @@ function readColors() {
 
 /** Keeps an uneven glow along the bottom of a docs page's dot background: highest next to the article, sloping down to
  *  the edges of the screen, its top edge slowly changing shape. On the introduction a lower glow rises from the banner's
- *  bottom edge as well. */
+ *  bottom edge as well, and sparks fly up from that edge into it. */
 export default function DotAmbient() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -61,10 +72,17 @@ export default function DotAmbient() {
     let colorsAt = 0;
     let article = null;
     let banner = null;
+    // Each spark: its place across the banner (0–1), birth, lifetime, climb (share of the banner height), sway phase
+    // and radius. Kept relative to the banner, so the sparks scroll with it.
+    let sparks = [];
+    let sparkDue = 0;
+    let sparkAt = 0;
+    let fast = false;
 
-    // Lights the dot (gx, gy) centred at (cx, cy), `u` reach lengths away from the edge its glow rises from.
-    const light = (cx, cy, u, gx, gy, now) => {
-      const i = Math.exp(-u * u * 1.8) * (0.6 + 0.4 * Math.sin(now * 0.0015 + hash(gx, gy) * 2 * Math.PI));
+    // Lights the dot (gx, gy) centred at (cx, cy), `u` reach lengths away from the edge its glow rises from, `dim` times
+    // its full brightness.
+    const light = (cx, cy, u, gx, gy, now, dim = 1) => {
+      const i = dim * Math.exp(-u * u * 1.8) * (0.6 + 0.4 * Math.sin(now * 0.0015 + hash(gx, gy) * 2 * Math.PI));
       if (i < 0.05) return;
       // The light canvas is pale grey, where the light ripple green shows faintly: it needs about twice the opacity.
       ctx.globalAlpha = colors.dark ? Math.min(0.06 + i * 0.6, 0.7) : Math.min(0.1 + i * 0.8, 0.9);
@@ -75,8 +93,12 @@ export default function DotAmbient() {
 
     const render = (now) => {
       frame = requestAnimationFrame(render);
-      if (now - last < FRAME) return;
+      if (now - last < (fast ? 0 : FRAME)) return;
       last = now;
+      // A hidden tab or a long frame must not release a burst of sparks at once.
+      const elapsed = Math.min(now - sparkAt, 200);
+      sparkAt = now;
+      fast = false;
 
       const width = innerWidth;
       const height = innerHeight;
@@ -125,13 +147,40 @@ export default function DotAmbient() {
           const slope = Math.min(cx - box.left, box.right - cx) / (box.width * BANNER_SLOPE);
           // Shifted along the waves, so this edge does not copy the shape of the bottom glow's.
           const reach = bannerReach * (SIDE + (1 - SIDE) * Math.min(slope, 1)) * (0.5 + 0.5 * wave(EDGE, cx + 3700, now));
+          // Towards the banner's sides it also dims out, so it does not end at a hard line beside the canvas's plain dots.
+          const dim = smooth(slope);
           for (let gy = Math.floor((box.bottom - GRID / 2) / GRID); gy * GRID + GRID / 2 >= box.top; gy--) {
             const cy = gy * GRID + GRID / 2;
             const u = (box.bottom - cy) / reach;
             if (u > 1.6) break;
-            light(cx, cy, u, gx, gy, now);
+            light(cx, cy, u, gx, gy, now, dim);
           }
         }
+
+        // New sparks: as many as are due, fewer where the glow slopes down to the sides, none before it has grown in.
+        sparkDue += elapsed / 1000 * SPARKS * grown;
+        for (; sparkDue >= 1; sparkDue--) {
+          const x = 0.04 + 0.92 * Math.random();
+          if (Math.random() > SIDE + (1 - SIDE) * Math.min(Math.min(x, 1 - x) / BANNER_SLOPE, 1)) continue;
+          sparks.push({x, born: now, life: between(SPARK_LIFE), rise: between(SPARK_RISE), phase: Math.random() * 2 * Math.PI, r: 1 + 0.8 * Math.random()});
+        }
+        sparks = sparks.filter((spark) => now - spark.born < spark.life);
+        for (const spark of sparks) {
+          const t = (now - spark.born) / spark.life;
+          // It climbs fast at first and slows down, sways more the higher it gets, flares up and burns out.
+          const x = box.left + spark.x * box.width + SPARK_SWAY * t * Math.sin(2 * Math.PI * t + spark.phase);
+          const y = box.bottom - spark.rise * box.height * (1 - (1 - t) ** 2);
+          const i = smooth(t / 0.1) * (1 - smooth((t - 0.4) / 0.6));
+          ctx.globalAlpha = (colors.dark ? 0.18 : 0.22) * i;
+          ctx.beginPath();
+          ctx.arc(x, y, spark.r * 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = (colors.dark ? 0.9 : 0.95) * i;
+          ctx.beginPath();
+          ctx.arc(x, y, spark.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        fast = sparks.length > 0;
       }
       ctx.globalAlpha = 1;
     };

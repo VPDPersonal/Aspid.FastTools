@@ -109,10 +109,10 @@ export const burstAt = () => charge.burstAt;
 // Set while the dot background runs.
 let launch = null;
 
-/** Sends a wave of strength `power` (1 is a click) from (`x`, `y`) in the viewport, without scoring it: the
- *  introduction's entrance (IntroBanner). Does nothing while the dot background is off. */
-export function sendWave(x, y, power) {
-  launch?.(x, y, power);
+/** Sends a wave of strength `power` (1 is a click) from (`x`, `y`) in the viewport, without scoring it, and with `shake`
+ *  shakes the page as a burst does: the introduction's entrance (IntroBanner). Does nothing while the dot background is off. */
+export function sendWave(x, y, power, {shake = false} = {}) {
+  launch?.(x, y, power, shake);
 }
 
 const gauss = (u) => Math.exp(-u * u);
@@ -384,8 +384,6 @@ export default function DotRipple() {
       waves.push({x, y, start: now, power});
       if (!frame) frame = requestAnimationFrame(render);
     };
-    launch = (x, y, power) => spawn(x, y, performance.now(), power);
-
     const release = (x, y, now, power, score) => {
       spawn(x, y, now, power);
       clicks += SCORES[score].points;
@@ -417,6 +415,12 @@ export default function DotRipple() {
       };
       cancelAnimationFrame(shakeFrame);
       shakeFrame = requestAnimationFrame(step);
+    };
+
+    launch = (x, y, power, shakes) => {
+      const now = performance.now();
+      spawn(x, y, now, power);
+      if (shakes) shake(now);
     };
 
     // The gathered light bursts: its dots fly apart with loose sparks between them, a wave stronger than any

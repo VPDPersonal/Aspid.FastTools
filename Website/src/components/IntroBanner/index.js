@@ -12,7 +12,8 @@ const WAVE_POWER = 2; // the wave the closed ring sends out: as strong as a full
  * name is the page's only `<h1>`; the banner must stay the article's first child.
  *
  * Once per tab session it makes an entrance (`src/intro.js` arms it before the first paint, `styles.css` animates it):
- * the snake's ring draws itself from the head and closes, a wave runs from it through the dots, the name follows the
+ * the snake's ring draws itself from the head and closes, a wave runs from it through the dots and shakes the page as a
+ * burst does, the name follows the
  * wave and the banner's glow rises.
  */
 export default function IntroBanner({alt}) {
@@ -38,7 +39,7 @@ export default function IntroBanner({alt}) {
       // Below 997px the page has no dot canvas for the wave to run through.
       if (!matchMedia('(min-width: 997px)').matches) return;
       const box = logo.getBoundingClientRect();
-      sendWave(box.left + box.width / 2, box.top + box.height / 2, WAVE_POWER);
+      sendWave(box.left + box.width / 2, box.top + box.height / 2, WAVE_POWER, {shake: true});
     };
     let timer = 0;
     if (ring && ring.playState !== 'finished') timer = setTimeout(close, ring.effect.getComputedTiming().endTime - (ring.currentTime ?? 0));
