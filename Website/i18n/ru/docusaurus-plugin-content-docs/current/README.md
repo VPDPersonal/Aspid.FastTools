@@ -110,7 +110,7 @@ caster.GetDisplayNameWithIndex();
 
 ## Ресурсы
 
-- [Обзор примеров](../../docusaurus-plugin-content-docs-tutorials/current/index.mdx) — сцены и редакторские инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
+- [Обзор примеров](../../../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.ru.md) — сцены и редакторские инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
 - [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — типы, методы и свойства пакета, на английском.
 - [Журнал изменений](https://vpdpersonal.github.io/Aspid.FastTools/ru/changelog) — изменения и исправления по версиям.
 

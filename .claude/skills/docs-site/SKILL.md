@@ -69,7 +69,9 @@ package `CHANGELOG.md` and `Website/api/`.
 - **Links** are relative paths to the `.md` file: `[EnumValues](08-enum-values.md)`, from a sample
   `[Selector](../../docs/04-serialize-reference-selector.md)`, from a doc `[Types sample](../tutorials/Types/README.md)`.
   GitHub follows them as files; `Website/src/remark/crossInstanceLinks.js` resolves each link against the page's file
-  and rewrites a target in the other plugin instance to its site route. Never link by site URL — except from the
+  and rewrites a target in the other plugin instance to its site route. The samples overview is linked as the
+  package `Samples~/README.md` (`README.ru.md`), which lists the samples on GitHub; the site sends it to `/tutorials`.
+  Never link by site URL — except from the
   package READMEs, which ship without the site sources and link `https://vpdpersonal.github.io/Aspid.FastTools/…`.
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
   on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`). This conversion
