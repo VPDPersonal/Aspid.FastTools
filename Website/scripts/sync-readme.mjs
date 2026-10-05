@@ -39,7 +39,7 @@ function generate({source, destination, verbatim}) {
   function visit(node) {
     if (['link', 'image', 'definition'].includes(node.type)) node.url = rebase(node.url);
     if (node.type === 'html') {
-      node.value = node.value.replace(/\b(src|href)=(['"])(.*?)\2/g,
+      node.value = node.value.replace(/\b(src|srcset|href)=(['"])(.*?)\2/g,
         (_, attribute, quote, url) => `${attribute}=${quote}${rebase(url)}${quote}`);
     }
     node.children?.forEach(visit);

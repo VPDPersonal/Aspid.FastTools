@@ -87,13 +87,18 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
       }));
     }
     highlightInlineCode(tree);
-    // Translated copies can start with generated front matter.
-    const banner = tree.children.find((node) => node.type === 'mdxJsxFlowElement' && node.name === 'img');
-    if (banner?.type === 'mdxJsxFlowElement' && banner.name === 'img'
-      && banner.attributes.some((attribute) => attribute.name === 'src'
+    // Translated copies can start with generated front matter. The banner is the README's `<img>`, alone or inside the
+    // `<picture>` that gives GitHub an animated source per theme; the site renders its own.
+    const isBannerImage = (node) => node?.type === 'mdxJsxFlowElement' && node.name === 'img'
+      && node.attributes.some((attribute) => attribute.name === 'src'
         && typeof attribute.value === 'string'
-        && attribute.value.endsWith('/aspid_fasttools_readme_banner.png'))) {
+        && attribute.value.endsWith('/aspid_fasttools_readme_banner.png'));
+    const banner = tree.children.find((node) => node.type === 'mdxJsxFlowElement' && ['img', 'picture'].includes(node.name));
+    const image = banner?.name === 'picture' ? banner.children.find(isBannerImage) : banner;
+    if (isBannerImage(image)) {
       banner.name = 'IntroBanner';
+      banner.attributes = image.attributes;
+      banner.children = [];
       // The paragraph after the badges is the project lede; the next one is the link row.
       const badges = tree.children.findIndex((node) => node.type === 'paragraph'
         && node.children.some((part) => part.type === 'link'

@@ -42,7 +42,7 @@ export function outline(markdown, file) {
     if (node.type === 'link' || node.type === 'definition') parts.links.push(resolve(node.url));
     if (node.type === 'html') {
       for (const [, body] of node.value.matchAll(/<pre>([\s\S]*?)<\/pre>/g)) parts.code.push(code(body, 'csharp'));
-      for (const [, url] of node.value.matchAll(/\bsrc=(['"])(.*?)\1/g).map(m => [m[1], m[2]])) parts.images.push(resolve(url));
+      for (const [, url] of node.value.matchAll(/\bsrc(?:set)?=(['"])(.*?)\1/g).map(m => [m[1], m[2]])) parts.images.push(resolve(url));
     }
     node.children?.forEach(visit);
   })(parser.parse(markdown));
