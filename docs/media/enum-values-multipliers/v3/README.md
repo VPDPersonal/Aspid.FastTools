@@ -1,6 +1,6 @@
 # Native macOS populate recording — revision 3
 
-Supersedes the v2 Populate GIF only. The selector PNG remains from v2.
+Supersedes the v2 Populate GIF. The selector image comes from [native-selector](../native-selector/README.md).
 
 Real macOS context menu opened by right-clicking the genuine EnumValues PropertyField. Computer-use selected Populate Missing Enum Members and sent Cmd+Z. macOS screencapture recorded the screen region and actual cursor, including the native menu. No UI Toolkit replacement menu, painted menu or composited cursor.
 

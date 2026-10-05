@@ -8,7 +8,7 @@ Real Aspid.FastTools UI Toolkit PropertyField in a temporary Unity 6000.4 Editor
 
 Capture.cs creates the in-memory subject; no project asset or scene is saved. Render scale 2.5, property width 464, window 1200 × 700. Source window screenshots are 1200 × 728 JPEGs returned by computer-use; the final PNG is a lossless encoding of the cropped source, not a claim of lossless capture. Capture at enlarged UI scale preserves legibility at article width. Cursor stays in title bar, outside crop.
 
-Native menu was observed through accessibility, but computer-use could not capture it or reliably activate its item. The actual package EnumValuesPropertyDrawerHelper.PopulateMissing handler was invoked via Unity CLI, followed by actual Undo.PerformUndo. Serialized data verified Fire=1.5, appended Physical/Ice/Poison=1, then one Fire row after Undo. GIF shows genuine before / populated / Undo states, not a recording of menu navigation.
+The superseded populate GIF was made as follows. The native menu was observed through accessibility, but computer-use could not capture it or reliably activate its item. The actual package EnumValuesPropertyDrawerHelper.PopulateMissing handler was invoked via Unity CLI, followed by actual Undo.PerformUndo. Serialized data verified Fire=1.5, appended Physical/Ice/Poison=1, then one Fire row after Undo. The GIF showed genuine before / populated / Undo states, not a recording of menu navigation; its frames are removed.
 
 encode.sh crops x=10 y=30 width=1190, height=390. No recolouring, compositing, resizing or field edits.
 
