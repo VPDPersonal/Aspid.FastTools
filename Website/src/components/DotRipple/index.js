@@ -14,6 +14,9 @@ const CONTENT = [
   'dialog', '[role="dialog"]', '[role="menu"]',
 ].join(', ');
 
+// The introduction's banner lies on the article, but the panel leaves it open over the canvas (custom.css).
+const OPEN = '.readme-banner';
+
 // Below 997px the page is painted with the reading surface instead of the dots (custom.css), so there is no canvas.
 let narrow = null;
 
@@ -23,7 +26,7 @@ export function isCanvas(target) {
   narrow ??= matchMedia('(max-width: 996px)');
   if (narrow.matches) return false;
   if (!(target instanceof Element)) return false;
-  return !target.closest(CONTENT);
+  return target.closest(OPEN) !== null || !target.closest(CONTENT);
 }
 
 const GRID = 20;          // px, must match the CSS dot texture (background-size)
@@ -102,6 +105,15 @@ export function overload(now) {
 
 /** Time of the last burst, so the spotlight can go dark for a moment after it. */
 export const burstAt = () => charge.burstAt;
+
+// Set while the dot background runs.
+let launch = null;
+
+/** Sends a wave of strength `power` (1 is a click) from (`x`, `y`) in the viewport, without scoring it: the
+ *  introduction's entrance (IntroBanner). Does nothing while the dot background is off. */
+export function sendWave(x, y, power) {
+  launch?.(x, y, power);
+}
 
 const gauss = (u) => Math.exp(-u * u);
 const radiusAt = (elapsed) => elapsed * (SPEED + ACCEL * elapsed);
@@ -367,13 +379,18 @@ export default function DotRipple() {
       charge.pressAt = -1;
     };
 
-    const release = (x, y, now, power, score) => {
+    const spawn = (x, y, now, power) => {
       colors = readColors();
       waves.push({x, y, start: now, power});
+      if (!frame) frame = requestAnimationFrame(render);
+    };
+    launch = (x, y, power) => spawn(x, y, performance.now(), power);
+
+    const release = (x, y, now, power, score) => {
+      spawn(x, y, now, power);
       clicks += SCORES[score].points;
       saveClicks(clicks);
       showCount(score);
-      if (!frame) frame = requestAnimationFrame(render);
     };
 
     // The page swings on two unrelated frequencies, so the shake has no clear direction, and settles down.
@@ -465,6 +482,7 @@ export default function DotRipple() {
       document.removeEventListener('pointerup', onPointerUp);
       document.removeEventListener('pointercancel', onCancel);
       removeEventListener('blur', onCancel);
+      launch = null;
       charge.pressAt = -1;
       clearTimeout(burstTimer);
       removeEventListener('resize', resize);

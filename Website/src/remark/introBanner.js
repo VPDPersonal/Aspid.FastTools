@@ -92,7 +92,7 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
     if (banner?.type === 'mdxJsxFlowElement' && banner.name === 'img'
       && banner.attributes.some((attribute) => attribute.name === 'src'
         && typeof attribute.value === 'string'
-        && attribute.value.endsWith('/aspid_fasttools_readme_banner.gif'))) {
+        && attribute.value.endsWith('/aspid_fasttools_readme_banner.png'))) {
       banner.name = 'IntroBanner';
       // The paragraph after the badges is the project lede; the next one is the link row.
       const badges = tree.children.findIndex((node) => node.type === 'paragraph'

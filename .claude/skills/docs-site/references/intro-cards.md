@@ -1,9 +1,17 @@
 # Introduction feature cards
 
-There is no landing page: `/` redirects to `/docs`. The README banner GIF (6 MB) stays for GitHub only: the plugin
-renders it as `src/components/IntroBanner`, which plays `media/banner.mp4` with the poster `media/banner-poster.jpg`.
-Both are encoded from the GIF — re-encode them when it changes (`ffmpeg -i <gif> -movflags +faststart -c:v libx264
--pix_fmt yuv420p -preset veryslow -crf 22 -tune animation -an -vf fps=25 banner.mp4`, poster: `-frames:v 1 -q:v 4`).
+There is no landing page: `/` redirects to `/docs`. The README banner is a static 2560×768 PNG
+(`docs/images/aspid_fasttools_readme_banner.png`, the green dark variant), designed on the «README banner» page of the
+«FastTools Asset Store» Design canvas: one board per accent and theme. The plugin renders it as
+`src/components/IntroBanner`: that layout rebuilt in HTML, the logo (`media/logo-<accent>.webp`, 640 px, picked from
+`html[data-accent]`) and the live title and tagline, sized in `cqi` so it scales like the PNG. It has no background: on
+wide screens the article panel paints its surface only below the banner (`custom.css`), so the dot canvas shows
+through it, `DotAmbient` raises a glow from its bottom edge, and `DotRipple`'s `isCanvas` and `DotSpotlight` treat the
+banner as canvas. Once per tab session the banner makes an entrance: `src/intro.js` sets `html[data-intro]` before the
+first paint (never under reduced motion), `styles.css` draws the ring from the snake's head and wipes the name in, and
+`IntroBanner` sends a `DotRipple` wave (`sendWave`) from the logo when the ring closes and lets the glow rise; below
+997 px the banner paints
+the dots itself. A new accent in `src/accents.js` needs its logo WebP.
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written

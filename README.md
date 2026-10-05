@@ -1,6 +1,6 @@
 <!-- Generated from Website/docs/README.md. Edit that file, then run npm --prefix Website run sync-readme. -->
 
-<img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
+<img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 
 [![Unity 6.0+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/slug/365584)
 [![Preview 1.0.0-rc.8](Website/docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)

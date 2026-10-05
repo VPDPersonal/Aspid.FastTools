@@ -890,50 +890,44 @@ html[data-theme='light']:not([data-accent]).docs-doc-page { --venom-canvas-accen
   font-size: 0.8em;
   vertical-align: 0.05em;
 }
-/* The introduction banner spans the reading panel without a media frame. */
+/* The introduction banner spans the reading panel. Below 997px the page has no dot canvas, so the banner paints its own. */
 .theme-doc-markdown .readme-banner {
-  display: block;
   width: calc(100% + 2.5rem);
-  max-width: none;
-  height: auto;
   aspect-ratio: 1280 / 384;
   margin-inline: -1.25rem;
   margin-bottom: 0.75rem;
-  border: 0;
-  border-radius: 0;
+  background: var(--venom-canvas) var(--venom-dot-pattern);
+  background-size: 20px 20px;
 }
 
 @media (min-width: 997px) {
   .theme-doc-markdown .readme-banner {
     width: 100cqw;
     margin-inline: calc(50% - 50cqw);
+    margin-bottom: 1.5rem;
+    background: none;
   }
-}
 
-/* The introduction's title: its only <h1>, for screen readers and search engines; the banner shows the name. */
-.theme-doc-markdown .readme-title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  /* The introduction's panel leaves its banner open over the dot canvas: the surface starts below the banner, which is
+     30cqw tall (1280×384) and sits at the top of the panel. */
+  [class*='docMainContainer_'] > .container > .row > .col:first-child:has(.readme-banner) {
+    position: relative;
+    isolation: isolate;
+    background: none;
+  }
+  [class*='docMainContainer_'] > .container > .row > .col:first-child:has(.readme-banner)::before {
+    content: '';
+    position: absolute;
+    inset: 30cqw 0 0;
+    z-index: -1;
+    background: var(--venom-reading-surface);
+    border-radius: 12px;
+  }
 }
 
 /* The introduction starts with its banner; the compact TOC follows it. */
-@media (min-width: 997px) {
-  .theme-doc-markdown > .readme-banner:first-child {
-    margin-top: -1.5rem;
-    border-radius: 12px 12px 0 0;
-  }
-}
-
-@media (max-width: 996px) {
-  .theme-doc-markdown > .readme-banner:first-child {
-    margin-top: -1.5rem;
-  }
+.theme-doc-markdown > .readme-banner:first-child {
+  margin-top: -1.5rem;
 }
 
 /* Center standalone documentation images while preserving their natural size. */

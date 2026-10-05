@@ -6,6 +6,12 @@ const FRAME = 50;         // ms between redraws: the glow changes slowly, 20 fps
 const DEPTH = 0.2;        // share of the viewport height the glow reaches at its highest, next to the article
 const SIDE = 0.3;         // share of that height left at the outer edges of the screen: the glow slopes down to them
 const ARTICLE = '[class*="docMainContainer_"] > .container > .row > .col:first-child';
+// The introduction's banner lies open over the canvas (custom.css), and a lower glow rises from its bottom edge too.
+const BANNER = '.readme-banner';
+const BANNER_DEPTH = 0.35; // share of the banner height that glow reaches at its highest
+const BANNER_SLOPE = 0.15; // share of the banner width over which it slopes down to the banner's sides
+// During the entrance (src/intro.js) that glow waits until IntroBanner stamps `data-glow-at`, then grows in.
+const GLOW_IN = 700;      // ms
 // Waves that roughen the top edge of the glow: [wavelength px, drift px per ms, amplitude]. Different lengths and speeds,
 // some drifting left and some right, so the edge keeps changing without ever moving as a whole.
 const EDGE = [[1100, 0.006, 0.5], [530, -0.011, 0.3], [260, 0.017, 0.2]];
@@ -29,7 +35,8 @@ function readColors() {
 }
 
 /** Keeps an uneven glow along the bottom of a docs page's dot background: highest next to the article, sloping down to
- *  the edges of the screen, its top edge slowly changing shape. */
+ *  the edges of the screen, its top edge slowly changing shape. On the introduction a lower glow rises from the banner's
+ *  bottom edge as well. */
 export default function DotAmbient() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -53,6 +60,18 @@ export default function DotAmbient() {
     let colors = null;
     let colorsAt = 0;
     let article = null;
+    let banner = null;
+
+    // Lights the dot (gx, gy) centred at (cx, cy), `u` reach lengths away from the edge its glow rises from.
+    const light = (cx, cy, u, gx, gy, now) => {
+      const i = Math.exp(-u * u * 1.8) * (0.6 + 0.4 * Math.sin(now * 0.0015 + hash(gx, gy) * 2 * Math.PI));
+      if (i < 0.05) return;
+      // The light canvas is pale grey, where the light ripple green shows faintly: it needs about twice the opacity.
+      ctx.globalAlpha = colors.dark ? Math.min(0.06 + i * 0.6, 0.7) : Math.min(0.1 + i * 0.8, 0.9);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 1 + 0.8 * i, 0, Math.PI * 2);
+      ctx.fill();
+    };
 
     const render = (now) => {
       frame = requestAnimationFrame(render);
@@ -67,6 +86,7 @@ export default function DotAmbient() {
       if (!colors || now - colorsAt > 1000) {
         colors = readColors();
         article = document.querySelector(ARTICLE)?.getBoundingClientRect() ?? null;
+        banner = document.querySelector(BANNER);
         colorsAt = now;
       }
       // Without an article the slope runs to the middle of the screen.
@@ -87,13 +107,30 @@ export default function DotAmbient() {
           const cy = gy * GRID + GRID / 2;
           const u = (height - cy) / reach;
           if (u > 1.6) break;
-          const i = Math.exp(-u * u * 1.8) * (0.6 + 0.4 * Math.sin(now * 0.0015 + hash(gx, gy) * 2 * Math.PI));
-          if (i < 0.05) continue;
-          // The light canvas is pale grey, where the light ripple green shows faintly: it needs about twice the opacity.
-          ctx.globalAlpha = colors.dark ? Math.min(0.06 + i * 0.6, 0.7) : Math.min(0.1 + i * 0.8, 0.9);
-          ctx.beginPath();
-          ctx.arc(cx, cy, 1 + 0.8 * i, 0, Math.PI * 2);
-          ctx.fill();
+          light(cx, cy, u, gx, gy, now);
+        }
+      }
+
+      // The banner scrolls over the fixed dots, so its glow follows its box, read on every frame.
+      const box = banner?.isConnected ? banner.getBoundingClientRect() : null;
+      let grown = 1;
+      if (box && document.documentElement.hasAttribute('data-intro')) {
+        const p = Math.min(Math.max((now - Number(banner.dataset.glowAt ?? Infinity)) / GLOW_IN, 0), 1);
+        grown = p * p * (3 - 2 * p);
+      }
+      if (box && grown > 0 && box.bottom > 0 && box.top < height) {
+        const bannerReach = box.height * BANNER_DEPTH * breathe * grown;
+        for (let gx = Math.ceil((box.left - GRID / 2) / GRID); gx * GRID + GRID / 2 < box.right; gx++) {
+          const cx = gx * GRID + GRID / 2;
+          const slope = Math.min(cx - box.left, box.right - cx) / (box.width * BANNER_SLOPE);
+          // Shifted along the waves, so this edge does not copy the shape of the bottom glow's.
+          const reach = bannerReach * (SIDE + (1 - SIDE) * Math.min(slope, 1)) * (0.5 + 0.5 * wave(EDGE, cx + 3700, now));
+          for (let gy = Math.floor((box.bottom - GRID / 2) / GRID); gy * GRID + GRID / 2 >= box.top; gy--) {
+            const cy = gy * GRID + GRID / 2;
+            const u = (box.bottom - cy) / reach;
+            if (u > 1.6) break;
+            light(cx, cy, u, gx, gy, now);
+          }
         }
       }
       ctx.globalAlpha = 1;
@@ -110,10 +147,17 @@ export default function DotAmbient() {
       }
     };
 
+    // While the page scrolls, the banner glow is redrawn on every frame, so it does not trail behind the banner.
+    const onScroll = () => {
+      if (banner) last = 0;
+    };
+
     addEventListener('resize', resize);
+    addEventListener('scroll', onScroll, {passive: true});
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       removeEventListener('resize', resize);
+      removeEventListener('scroll', onScroll);
       document.removeEventListener('visibilitychange', onVisibility);
       cancelAnimationFrame(frame);
       canvas.remove();

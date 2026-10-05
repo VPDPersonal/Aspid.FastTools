@@ -9,6 +9,7 @@ import remarkAgentPrompt from './src/remark/agentPrompt.js';
 import remarkLiveDiagrams from './src/remark/liveDiagrams.js';
 import remarkIntroBanner, {remarkInlineCode, remarkStatusBadges} from './src/remark/introBanner.js';
 import {ACCENT_BOOT_SCRIPT} from './src/accents.js';
+import {INTRO_BOOT_SCRIPT} from './src/intro.js';
 
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
 const LOCALES = ['en', 'ru'];
@@ -110,8 +111,11 @@ const config = {
   title: 'Aspid.FastTools',
   tagline: 'Unity tools that cut boilerplate',
   favicon: 'img/favicon.png',
-  // Applies the stored accent colour before the first paint (src/accents.js).
-  headTags: [{ tagName: 'script', attributes: {}, innerHTML: ACCENT_BOOT_SCRIPT }],
+  // Applies the stored accent colour (src/accents.js) and arms the introduction's entrance (src/intro.js) before the first paint.
+  headTags: [
+    { tagName: 'script', attributes: {}, innerHTML: ACCENT_BOOT_SCRIPT },
+    { tagName: 'script', attributes: {}, innerHTML: INTRO_BOOT_SCRIPT },
+  ],
   clientModules: ['./src/clientModules/accent.js'],
 
   url: 'https://vpdpersonal.github.io',
@@ -130,7 +134,7 @@ const config = {
     // The shared introduction uses a banner instead of a heading; retain its page metadata.
     async parseFrontMatter({filePath, fileContent, defaultParseFrontMatter}) {
       const result = await defaultParseFrontMatter({filePath, fileContent});
-      if (fileContent.includes('/aspid_fasttools_readme_banner.gif')) {
+      if (fileContent.includes('/aspid_fasttools_readme_banner.png')) {
         result.frontMatter.title ??= 'Aspid.FastTools';
         // Pagination reuses the untranslated sidebar label of a page without a title; give it the translated one.
         result.frontMatter.pagination_label ??= introductionLabel(filePath);
