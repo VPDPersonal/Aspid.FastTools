@@ -6,7 +6,7 @@ import styles from './styles.module.css';
 const BUBBLES = [[15.6, 0.7, 0], [18.2, 0.9, 0.14], [20.6, 0.6, 0.07], [22.6, 0.75, 0.21]];
 const SPARKS = [[0, -11], [-8, -8], [8, -8], [-11, -2], [11, -2], [-4, -12], [4, -12]];
 
-// The marks from the README badge SVGs (`Documentation/Images/status-badge-*.svg`), drawn inline so they can move.
+// The marks from the README badge SVGs (`Website/docs/Images/status-badge-*.svg`), drawn inline so they can move.
 const ICONS = {
   // Unity mark: https://github.com/simple-icons/simple-icons/blob/develop/icons/unity.svg
   unity: (

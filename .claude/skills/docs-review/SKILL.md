@@ -11,13 +11,13 @@ A review checks one page and proposes changes. The first pass never edits anythi
 
 ## Scope
 
-- Review feature pages (`Documentation/NN-*.md`) and sample pages (`Samples~/<Sample>/Documentation/README*.md`).
-- Never review the Introduction (`Documentation/README.md`). It is the reference for all other pages.
+- Review feature pages (`Website/docs/NN-*.md`) and sample pages (`Website/tutorials/<Sample>/README.md`).
+- Never review the Introduction (`Website/docs/README.md`). It is the reference for all other pages.
 
 ## Steps
 
 1. Load the `docs-site` skill. Its rules are the checklist.
-2. Read the English page and its `ru/` twin.
+2. Read the English page and its Russian twin in `Website/i18n/ru/`.
 3. Run `Website/scripts/serve-all.sh`. Open the Russian page of this checkout in the built-in browser.
 4. Look at every section on screen.
 5. Extract frames from each GIF. Look for empty UI, encoder residue and cursor jumps.

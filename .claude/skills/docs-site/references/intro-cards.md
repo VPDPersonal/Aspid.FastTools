@@ -74,7 +74,7 @@ the dark theme's colours are bright enough to serve every role and are left alon
 Light yellow leans amber, since a darkened true yellow turns olive. Status colours split the same way:
 `--venom-{emerald,sapphire,ruby,amber}` for an admonition's heading and icon, `…-mark` for its frame. The light Prism
 theme (`src/prism/venom.js`) is Ayu Light's hues darkened only to 4.6:1 on the inline-code chip. Static light SVGs that
-draw code or marks (`Documentation/Images/*-light.svg`) use the same values; update them when the palette changes.
+draw code or marks (`Website/docs/Images/*-light.svg`) use the same values; update them when the palette changes.
 
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow

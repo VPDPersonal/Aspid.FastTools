@@ -2,8 +2,7 @@
 /**
  * Generated doc ids are `<folder>/readme`, the folder name run through `samplePrefixParser` in docusaurus.config.js
  * (`SerializeReferences` → `serialize-references`). `README.md` is the folder's index document, so the route is
- * /tutorials/<folder>. Source files live under each sample's `Documentation/` folder; the sync script flattens
- * that implementation detail for Docusaurus. Each sample is a single page.
+ * /tutorials/<folder>. Each sample is a single page, `tutorials/<Sample>/README.md`.
  * @type {import('@docusaurus/plugin-content-docs').SidebarsConfig}
  */
 export default {

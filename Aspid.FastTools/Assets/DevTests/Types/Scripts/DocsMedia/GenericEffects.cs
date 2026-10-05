@@ -3,7 +3,7 @@ using UnityEngine;
 using Aspid.FastTools.Types;
 
 // Docs-media harness for Images/aspid_fasttools_type_selector_generic.gif in
-// Documentation/02-serializable-types.md — picking Amplify<T> walks through its argument page
+// Website/docs/02-serializable-types.md — picking Amplify<T> walks through its argument page
 // before returning the constructed type.
 
 // ReSharper disable once CheckNamespace

@@ -1,7 +1,7 @@
 /**
  * Generate the copies of hand-written Markdown, rebasing file links:
- *   package Documentation/README.md → repository README.md
- *   repository CHANGELOG.md        → package CHANGELOG.md (Unity's Package Manager reads that copy)
+ *   Website/docs/README.md → repository README.md
+ *   repository CHANGELOG.md → package CHANGELOG.md (Unity's Package Manager reads that copy)
  * A link that leaves the package in the package copy becomes a GitHub URL, since the package ships without the repository.
  */
 import fs from 'node:fs';
@@ -16,7 +16,7 @@ const repoDir = fileURLToPath(new URL('../../', import.meta.url));
 const packageDir = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const repoUrl = 'https://github.com/VPDPersonal/Aspid.FastTools/blob/main';
 const copies = [
-  {source: `${packageDir}/Documentation/README.md`, destination: 'README.md'},
+  {source: 'Website/docs/README.md', destination: 'README.md'},
   // Copied as text: a remark round trip would rewrite its emphasis and escape `[Unreleased]`.
   {source: 'CHANGELOG.md', destination: `${packageDir}/CHANGELOG.md`, verbatim: true},
 ];

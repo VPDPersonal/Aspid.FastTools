@@ -3,9 +3,9 @@ build/
 .docusaurus/
 .cache-loader/
 npm-install.log
-i18n/
+# Generated from the root CHANGELOG*.md by scripts/sync-changelog.mjs.
 changelog/
-tutorials/
+i18n/*/docusaurus-plugin-content-docs-changelog/current/
 docfx/projects/
 .serve-all.log
 .serve-all.port

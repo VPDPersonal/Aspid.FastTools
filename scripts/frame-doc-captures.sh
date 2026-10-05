@@ -1,13 +1,13 @@
 #!/bin/sh
-# Crop raw Unity editor captures in Documentation/Images to their content and add an 8px margin that continues
-# Unity's own background, so GitHub, Unity and the site all show the same framed image and the site needs no
+# Crop raw Unity editor captures in Website/docs/Images to their content and add an 8px margin that continues
+# Unity's own background, so GitHub and the site show the same framed image and the site needs no
 # per-capture CSS. Run it after re-shooting a capture listed below; both the dark file and its -light twin are framed.
 # A file already at its framed size is skipped, so running it again is safe; a file of any other size is an error,
 # because the bounds below would no longer match it: measure the new capture and update its row.
 # Needs ImageMagick 6 (`convert`, `identify`) and gifsicle.
 #   scripts/frame-doc-captures.sh
 set -eu
-cd "$(dirname "$0")/../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images"
+cd "$(dirname "$0")/../Website/docs/Images"
 PAD=8
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT

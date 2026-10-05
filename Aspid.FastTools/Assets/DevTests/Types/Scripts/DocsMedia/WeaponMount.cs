@@ -1,7 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// Docs-media harness for Documentation/02-serializable-types.md, each capture showing one field (drop the other for the
+// Docs-media harness for Website/docs/02-serializable-types.md, each capture showing one field (drop the other for the
 // shot): Images/serializable-type-quick-start.gif picks _primaryWeapon, Images/serializable-type-missing.png stores a
 // removed Game.Combat.Spear in it, Images/type-selector-required.png shows _secondaryWeapon empty with the inline
 // "required" notice, and Images/type-selector-constraint-warning.png swaps both for

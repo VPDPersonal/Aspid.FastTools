@@ -18,7 +18,7 @@ The prefab's `FastEnemy` child covers `ComponentTypeSelector`: `EnemyBaseEditor`
 `editorForChildClasses: true`, so the inspector stays in IMGUI after the component swaps its own type.
 
 `Scripts/DocsMedia` holds the types that appear in the published screenshots of
-`Documentation/02-serializable-types.md`. Their namespaces are neutral and game-like because picker
+`Website/docs/02-serializable-types.md`. Their namespaces are neutral and game-like because picker
 breadcrumbs are visible in the captures; changing a name or a group there invalidates an image.
 
 ## SerializeReferences

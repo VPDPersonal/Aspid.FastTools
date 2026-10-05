@@ -1,6 +1,7 @@
 #!/bin/sh
 # Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text,
-# release link and install URLs in both README translations. The root README is regenerated from the package one; on a
+# release link and install URLs in both README translations (Website/docs, Website/i18n/ru), the install URL in the
+# package README. The root README is regenerated from the English one; on a
 # stable version the unshipped analyzer rules move to AnalyzerReleases.Shipped.md.
 # The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
 # from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one.
@@ -14,6 +15,8 @@ perl -e 'exit($ARGV[0] !~ /\A[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?\z/)' "$NEW
 # Checked before any file changes, so a missing install never leaves the root README out of step.
 [ -d Website/node_modules ] || { echo "Website/node_modules is missing; run: npm --prefix Website ci" >&2; exit 1; }
 PKG=Aspid.FastTools/Packages/tech.aspid.fasttools
+DOCS=Website/docs
+RU_DOCS=Website/i18n/ru/docusaurus-plugin-content-docs/current
 OLD=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "$PKG/package.json")
 [ -n "$OLD" ] || { echo "package.json version not found" >&2; exit 1; }
 case "$NEW" in
@@ -26,13 +29,15 @@ OLD=$OLD perl -pi -e 's/^(  "version": ")\Q$ENV{OLD}\E(",)$/$1$ENV{NEW}$2/' "$PK
 # Each file replaces the version its own badge carries, whole: 1.0.0 does not rewrite 1.0.0-rc.8 or 11.0.0.
 # shellcheck disable=SC2016 # perl code, expanded by perl
 WHOLE='s/(?<![0-9.])\Q$old\E(?![0-9A-Za-z-]|\.[0-9A-Za-z])/$ENV{NEW}/g if defined $old'
-for f in "$PKG/Documentation/README.md" "$PKG/Documentation/ru/README.md"; do
+for f in "$DOCS/README.md" "$RU_DOCS/README.md"; do
   perl -0pi -e 'my ($old) = /\[!\[(?:Preview|Release) ([^\]]+)\]/; '"$WHOLE"';
     s/\[!\[(?:Preview|Release) /[![$ENV{LABEL} /g;
     s/\.git#upm(?:-preview)?\b/.git#$ENV{BRANCH}/g;
     s/the latest (?:preview|release);/the $ENV{EN};/;
     s/на последнюю (?:preview-)?версию;/на $ENV{RU};/' "$f"
 done
+# The package README carries only the install URL.
+perl -pi -e 's/\.git#upm(?:-preview)?\b/.git#$ENV{BRANCH}/g' "$PKG/README.md"
 # The badge is as wide as its version text: an estimated 13px glyph width per character, plus 14px of padding,
 # which keeps 1.0.0-rc.8 at the original 162.
 perl -0pi -e 'my ($old) = /aria-label="(?:Preview|Release) ([^"]+)"/; '"$WHOLE"';
@@ -42,7 +47,7 @@ perl -0pi -e 'my ($old) = /aria-label="(?:Preview|Release) ([^"]+)"/; '"$WHOLE"'
     my $w = 90 + int($e + 0.5) + 14; my $r = $w - 1;
     s/width="\d+" height="32" viewBox="0 0 \d+ 32"/width="$w" height="32" viewBox="0 0 $w 32"/;
     s/(<rect class="outline"[^>]* width=")\d+/$1$r/;
-  }' "$PKG/Documentation/Images/status-badge-preview.svg"
+  }' "$DOCS/Images/status-badge-preview.svg"
 # Analyzer release tracking: the unshipped rules ship with a stable version. Its release headers accept only
 # System.Version numbers (RS2007), so pre-releases keep them unshipped. A version that already has its header is
 # never given a second one.

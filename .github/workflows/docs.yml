@@ -1,7 +1,7 @@
 name: Docs
 
 # Builds the Docusaurus site in Website/ and publishes it to GitHub Pages.
-# Content comes from the package (Documentation/ and Samples~/*/Documentation/) and the root CHANGELOG*.md,
+# Content lives in Website/ (docs, tutorials, i18n) plus the root README.md and CHANGELOG*.md,
 # so any change there rebuilds the site.
 
 on:
@@ -10,8 +10,10 @@ on:
     paths:
       - 'Website/**'
       - 'README.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
+      - 'scripts/frame-doc-captures.sh'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
       - 'CHANGELOG*.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
@@ -20,8 +22,10 @@ on:
     paths:
       - 'Website/**'
       - 'README.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
+      - 'scripts/frame-doc-captures.sh'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
       - 'CHANGELOG*.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
@@ -40,7 +44,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # A deploy needs the full history: Docusaurus and sync-i18n read each page's "Last updated" date from git log,
+      # A deploy needs the full history: Docusaurus and sync-changelog read each page's "Last updated" date from git log,
       # which needs only commits and trees, so the blob filter skips the old DLLs and media.
       - uses: actions/checkout@v7
         with:

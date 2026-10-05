@@ -1260,12 +1260,12 @@ html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[
    rows. The image itself stays in place, invisible, for its size, alt text and zoom: an image is snapped to the pixel
    grid while a border image is not, and on a card at a fractional offset the two meet half a pixel apart. The
    paragraph keeps the capture's height, so nothing stretches; the Inspector body fills the preview below. */
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { --capture-width: 850; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-card.gif'); }
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { --capture-width: 854; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-card.gif'); }
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { --capture-width: 854; border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card.gif'); }
-html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-card-light.gif'); }
-html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector-card-light.gif'); }
-html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { border-image-source: url('../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector_card-light.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { --capture-width: 850; border-image-source: url('../../docs/Images/serializable-type-card.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { --capture-width: 854; border-image-source: url('../../docs/Images/component-type-selector-card.gif'); }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { --capture-width: 854; border-image-source: url('../../docs/Images/aspid_fasttools_serialize_reference_selector_card.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/serializable-type-card']) { border-image-source: url('../../docs/Images/serializable-type-card-light.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/component-type-selector-card']) { border-image-source: url('../../docs/Images/component-type-selector-card-light.gif'); }
+html[data-theme='light'] .theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serialize_reference_selector']) { border-image-source: url('../../docs/Images/aspid_fasttools_serialize_reference_selector_card-light.gif'); }
 .theme-doc-markdown .feature-card__preview:is(:has(img[src*='/serializable-type-card']), :has(img[src*='/component-type-selector-card']), :has(img[src*='/aspid_fasttools_serialize_reference_selector'])) {
   --capture-margin-x: 8; --capture-margin-y: 8; --capture-background: none;
   background: #3c3c3c;

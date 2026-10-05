@@ -14,9 +14,17 @@ const repoDir = fileURLToPath(new URL('../../', import.meta.url));
 const packageDir = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const parser = unified().use(remarkParse).use(remarkGfm);
 
-/** The English file a translated path stands for: `ru/` folders and `.ru` suffixes dropped. */
+const I18N = 'Website/i18n/ru/';
+
+/**
+ * The English file a translated path stands for: `Website/i18n/ru/<plugin>/current/` maps to the plugin's folder
+ * (`docs`, `tutorials`), a `.ru` suffix is dropped.
+ */
 export function englishPath(file) {
-  return file.replace(/(^|\/)ru\//, '$1').replace(/\.ru\.md$/, '.md');
+  return file
+    .replace(/^Website\/i18n\/ru\/docusaurus-plugin-content-docs\/current\//, 'Website/docs/')
+    .replace(/^Website\/i18n\/ru\/docusaurus-plugin-content-docs-tutorials\/current\//, 'Website/tutorials/')
+    .replace(/\.ru\.md$/, '.md');
 }
 
 /** The parts of a page that must match across languages; links and images are resolved to English repository paths. */
@@ -62,13 +70,17 @@ export function compare(english, russian) {
 
 function translations() {
   const found = [];
-  (function walk(dir) {
+  function walk(dir) {
     for (const entry of fs.readdirSync(path.join(repoDir, dir), {withFileTypes: true})) {
       const file = path.posix.join(dir, entry.name);
       if (entry.isDirectory()) walk(file);
-      else if (/(^|\/)ru\/[^/]+\.md$|\.ru\.md$/.test(file)) found.push(file);
+      else if (file.startsWith(I18N) ? /\.md$/.test(file) : /\.ru\.md$/.test(file)) found.push(file);
     }
-  })(packageDir);
+  }
+  walk(packageDir);
+  // The changelog folder in i18n is generated from CHANGELOG.ru.md, which is checked below.
+  walk(`${I18N}docusaurus-plugin-content-docs`);
+  walk(`${I18N}docusaurus-plugin-content-docs-tutorials`);
   found.push('CHANGELOG.ru.md');
   return found.sort();
 }
