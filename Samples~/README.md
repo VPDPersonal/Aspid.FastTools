@@ -1,6 +1,6 @@
 # Samples
 
-Each feature ships with a sample: a small scene or editor tool that does something visible with the feature, plus a `README.md` that walks through what to try and where to look in the code. Import them from the Package Manager (**Aspid.FastTools → Samples**) or open the **Welcome** tab (`Tools → Aspid 🐍 → FastTools → Welcome`).
+Each feature ships with a sample: a small scene or editor tool that does something visible with the feature, plus a short `README.md` on how to open it, with a link to its full tutorial on the [site](https://vpdpersonal.github.io/Aspid.FastTools/tutorials). Import them from the Package Manager (**Aspid.FastTools → Samples**) or open the **Welcome** tab (`Tools → Aspid 🐍 → FastTools → Welcome`).
 
 The samples are listed in the recommended learning order; each can also be explored independently.
 
