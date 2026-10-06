@@ -445,12 +445,14 @@ export function startLogoMotion(banner, {entrance, onClose}) {
     if (shown() && lids) addEffect('blink', BLINK);
     blink();
   }, between(BLINK_EVERY));
-  // The light is the logo itself brightened, so it follows the accent the reader picks meanwhile.
+  const running = () => effects.some((effect) => effect.kind === 'run');
+  // The light is the logo itself brightened, so it follows the accent the reader picks meanwhile. The check runs again
+  // once the image is there: hovers and the timer may have queued several starts while it was loading.
   const startRun = () => {
-    if (!map || effects.some((effect) => effect.kind === 'run')) return;
+    if (!map || running()) return;
     currentImage().then((loaded) => {
       image = loaded;
-      if (!stopped) addEffect('run', RUN);
+      if (!stopped && !running()) addEffect('run', RUN);
     }, () => {});
   };
   const run = () => later(() => {
