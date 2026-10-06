@@ -36,7 +36,7 @@ body:
       label: 0. Test environment
       description: Cover the install paths and Unity versions a buyer will use.
       options:
-        - label: Clean project on minimum Unity **6000.0** — imports with 0 errors / 0 warnings
+        - label: Clean project on minimum Unity **6000.0.53f1** — imports with 0 errors / 0 warnings
         - label: Project on latest LTS / 6.1+ — no API drift
         - label: Installed from `.unitypackage` (Asset Store distribution form)
         - label: Installed via UPM `upm` git tag (stable)

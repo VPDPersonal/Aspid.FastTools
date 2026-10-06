@@ -9,3 +9,7 @@
 !Samples~/
 !Samples~/**
 /Aspid.FastTools/.codex/
+
+# Generated at release by scripts/package-changelog.mjs; only the upm branches carry it.
+/Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md
+/Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md.meta

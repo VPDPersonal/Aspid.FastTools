@@ -26,6 +26,7 @@
 
 ### Изменено
 
+- Минимальная версия Unity теперь 6000.0.53f1 вместо 6000.0.0f1. Пакет использует API UI Toolkit, которые появились в более поздних патчах 6000.0 (`IStyle.unityEditorTextRenderingMode`, `IStyle.unitySliceType`, `UxmlElement.libraryPath`), поэтому на ранних патчах он не компилировался.
 - Пакет больше не содержит папку `Documentation` со страницами и картинками, поэтому они не импортируются в ваш проект; документация находится на сайте: https://vpdpersonal.github.io/Aspid.FastTools/. В каждом примере остался короткий текстовый README о том, как его открыть, со ссылкой на полное руководство на сайте.
 - Agent Skills для пакета переехали из плагина `aspid-fasttools` для Claude Code в [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) в этот репозиторий (`skills/`). Устанавливайте их в Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI или другой агент командой `npx skills add VPDPersonal/Aspid.FastTools`; плагин больше не публикуется.
 - `GetScriptName()` переименован в `GetDisplayName()`, а `GetScriptNameWithIndex()` — в `GetDisplayNameWithIndex()`; замените старые вызовы новыми именами. Оба метода возвращают `string.Empty` для null и уничтоженных объектов. Поиск индекса компонента использует список из пула вместо временных массивов и LINQ.

@@ -14,7 +14,7 @@ Check, in this order:
 
 1. Correctness: bugs and missed edge cases, with the input that breaks.
 2. Boundaries from AGENTS.md:
-   - no Unity APIs newer than 6000.0;
+   - no Unity APIs newer than 6000.0.53f1 without a version guard;
    - no editor-only APIs reachable from runtime code;
    - generator and analyzer code does not write to `Console` and does not reference `SourceGenerator.Foundations`;
    - no Unity API or language feature newer than C# 9 in the SerializeReference YAML engine
@@ -30,7 +30,12 @@ Format:
 
 - At most 8 findings, most severe first.
 - Put each specific issue in an inline comment on its line.
-- Put only a short summary in the main comment: "No blocking issues" or the count of findings.
+- Start each inline comment with a severity tag:
+  - `[blocking]`: the PR must not merge until it is fixed;
+  - `[minor]`: an improvement that can wait.
+- Start the main comment with exactly one verdict line: `Verdict: <N> blocking, <M> minor`.
+  An agent reads this line to decide the next step, so keep the format.
+  Put at most 2 short sentences after it.
 - Do not praise.
 - Do not write the literal trigger phrase (at-sign + "claude") in your comments:
   it starts the workflow again.

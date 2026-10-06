@@ -395,6 +395,15 @@ h6 {
   box-shadow: none !important;
   border: 2px solid var(--venom-line-strong);
   border-radius: var(--ifm-pre-border-radius);
+  position: relative; /* holds the light of CopyShine */
+}
+
+/* CopyShine sets the place, size and blend of the canvas. */
+.copy-shine {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
 }
 
 .prism-code {

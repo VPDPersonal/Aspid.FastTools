@@ -33,7 +33,7 @@ image or a full page there.
 | Images | `Website/docs/Images/`, `Website/tutorials/<Sample>/Images/` | referenced relatively |
 | Root README | generated from `Website/docs/README.md` in GitHub's layout (committed); translations live on the site only | — |
 | Package README, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
-| Package changelog | generated from the root `CHANGELOG.md` (committed; Unity's Package Manager reads it) | — |
+| Package changelog | generated from the root `CHANGELOG.md` with its `.meta` by `release.yml` (`scripts/package-changelog.mjs`); gitignored, only the `upm` branches carry it; Unity's Package Manager reads it | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
 
@@ -54,8 +54,8 @@ Translations sit where Docusaurus looks for them, so they are read in place too.
 each locale (`editLocalizedFiles`).
 
 Generated and gitignored: `Website/changelog/`, `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/`,
-`Website/build/`, `Website/docfx/projects/`. Never edit them by hand. Generated **and committed**: the root `README.md`, the
-package `CHANGELOG.md` and `Website/api/`.
+`Website/build/`, `Website/docfx/projects/` and the package `CHANGELOG.md` with its `.meta`. Never edit them by hand.
+Generated **and committed**: the root `README.md` and `Website/api/`.
 
 ## Writing rules (so GitHub and the site agree)
 
@@ -329,10 +329,12 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
 ## Generated content
 
 - `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Website/docs/README.md` (no
-  translated copy: translations live on the site), rebasing file links to the repository root, and the package
-  `CHANGELOG.md` from the root one, turning links that leave the package into GitHub URLs. Never edit a copy by hand.
-  `prestart`/`prebuild` refresh them automatically and CI runs `check-readme` before building to reject a stale copy.
-  The script only updates existing files: recreating the package copy would give its `.meta` a new GUID.
+  translated copy: translations live on the site), rebasing file links to the repository root. Never edit the copy by
+  hand. `prestart`/`prebuild` refresh it automatically and CI runs `check-readme` before building to reject a stale copy.
+- The package `CHANGELOG.md` is not in git: `release.yml` runs `scripts/package-changelog.mjs` and commits the copy in
+  its runner before the subtree split. The script turns links that leave the package into GitHub URLs at the release
+  tag and writes the `.meta` with a fixed GUID, so a release never changes it. A PR that edits the root `CHANGELOG.md`
+  needs no sync.
 - The root README gets GitHub's version of the site's introduction blocks (`scripts/github-readme.mjs`, tested in
   `github-readme.test.mjs`): doc-page and samples-overview links open the site; the link row's site link becomes
   `Documentation: EN, RU`; the install instruction becomes a card (the recorded InstallPanel walk-through beside its

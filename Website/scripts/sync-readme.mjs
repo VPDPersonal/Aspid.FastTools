@@ -1,8 +1,7 @@
 /**
- * Generate the copies of hand-written Markdown, rebasing file links:
- *   Website/docs/README.md → repository README.md, in GitHub's layout (the translations live on the site only)
- *   repository CHANGELOG.md → package CHANGELOG.md (Unity's Package Manager reads that copy)
- * A link that leaves the package in the package copy becomes a GitHub URL, since the package ships without the repository.
+ * Generate the repository README.md from Website/docs/README.md in GitHub's layout (the translations live on the site
+ * only), rebasing file links to the repository root. The package CHANGELOG.md is generated at release instead
+ * (scripts/package-changelog.mjs).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,22 +13,17 @@ import remarkStringify from 'remark-stringify';
 import {githubLayout} from './github-readme.mjs';
 
 const repoDir = fileURLToPath(new URL('../../', import.meta.url));
-const packageDir = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const repository = 'https://github.com/VPDPersonal/Aspid.FastTools';
-const repoUrl = `${repository}/blob/main`;
 const site = 'https://vpdpersonal.github.io/Aspid.FastTools/';
 // LOCALES in docusaurus.config.js, the default one first.
 const locales = ['en', 'ru'];
-const copies = [
-  {source: 'Website/docs/README.md', destination: 'README.md', github: true},
-  // Copied as text: a remark round trip would rewrite its emphasis and escape `[Unreleased]`.
-  {source: 'CHANGELOG.md', destination: `${packageDir}/CHANGELOG.md`, verbatim: true},
-];
+const source = 'Website/docs/README.md';
+const destination = 'README.md';
 const processor = unified().use(remarkParse).use(remarkGfm, {tableCellPadding: false, tablePipeAlign: false}).use(remarkStringify, {
   bullet: '-', fences: true, emphasis: '_', resourceLink: true,
 });
 
-function generate({source, destination, verbatim, github}) {
+function generate() {
   const sourceDir = path.posix.dirname(source);
   const destinationDir = path.posix.dirname(destination);
 
@@ -37,7 +31,6 @@ function generate({source, destination, verbatim, github}) {
     if (/^(?:[a-z][a-z\d+.-]*:|\/|#)/i.test(url)) return url;
     const [, file, suffix = ''] = /^([^?#]*)(.*)$/.exec(url);
     const target = path.posix.normalize(path.posix.join(sourceDir, file));
-    if (destination.startsWith(`${packageDir}/`) && !target.startsWith(`${packageDir}/`)) return `${repoUrl}/${target}${suffix}`;
     return path.posix.relative(destinationDir, target) + suffix;
   }
 
@@ -50,45 +43,30 @@ function generate({source, destination, verbatim, github}) {
     node.children?.forEach(visit);
   }
 
-  const text = fs.readFileSync(path.join(repoDir, source), 'utf8');
-  if (verbatim) {
-    const markdown = text
-      .replace(/(\]\()([^)\s]+)(\))/g, (_, open, url, close) => open + rebase(url) + close)
-      .replace(/^(\[[^\]]+\]:\s*)(\S+)/gm, (_, label, url) => label + rebase(url));
-    return `<!-- Generated from ${source}. Edit that file, then run npm --prefix Website run sync-readme. -->\n\n${markdown}`;
-  }
-  const tree = processor.parse(text);
+  const tree = processor.parse(fs.readFileSync(path.join(repoDir, source), 'utf8'));
   visit(tree);
-  if (github) {
-    githubLayout(tree, {
-      site,
-      locales,
-      repository,
-      previews: path.posix.relative(destinationDir, 'docs/images/readme-previews'),
-      exists: (url) => fs.existsSync(path.join(repoDir, destinationDir, url)),
-    });
-  }
+  githubLayout(tree, {
+    site,
+    locales,
+    repository,
+    previews: path.posix.relative(destinationDir, 'docs/images/readme-previews'),
+    exists: (url) => fs.existsSync(path.join(repoDir, destinationDir, url)),
+  });
   // remark escapes the bracket that opens a GitHub alert (`> [!WARNING]`); GitHub needs it literal.
   const markdown = processor.stringify(tree).replace(/^(>\s*)\\\[!(?=[A-Z]+\])/gm, '$1[!');
   return `<!-- Generated from ${source}. Edit that file, then run npm --prefix Website run sync-readme. -->\n\n${markdown}`;
 }
 
-for (const copy of copies) {
-  const file = path.join(repoDir, copy.destination);
-  const result = generate(copy);
-  // The package copy has a committed .meta; creating the file anew would make Unity give it a new GUID.
-  if (!fs.existsSync(file)) {
-    console.error(`${copy.destination} is missing. Restore it from git; this script only updates existing copies.`);
+const file = path.join(repoDir, destination);
+const result = generate();
+if (process.argv.includes('--check')) {
+  if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== result) {
+    console.error(`${destination} is out of date. Run npm --prefix Website run sync-readme.`);
     process.exitCode = 1;
-  } else if (process.argv.includes('--check')) {
-    if (fs.readFileSync(file, 'utf8') !== result) {
-      console.error(`${copy.destination} is out of date. Run npm --prefix Website run sync-readme.`);
-      process.exitCode = 1;
-    } else {
-      console.log(`${copy.destination} matches ${copy.source}.`);
-    }
   } else {
-    fs.writeFileSync(file, result);
-    console.log(`Generated ${copy.destination} from ${copy.source}.`);
+    console.log(`${destination} matches ${source}.`);
   }
+} else {
+  fs.writeFileSync(file, result);
+  console.log(`Generated ${destination} from ${source}.`);
 }
