@@ -39,9 +39,9 @@ const LID = {x: 260, y: 65, size: 66}; // where a closed lid of eyelids.png cove
 const BLINK_EVERY = [4500, 7000]; // ms between blinks, the shortest and the longest
 const RUN = 1300;            // ms for the light to run from the tail past the snout
 const RUN_EVERY = 7000;      // ms between runs; the pointer coming onto the logo starts one as well
-const RUN_WIDTH = 0.04;      // length of the lit stretch, as a share of the body
-const RUN_GAIN = 0.6;        // brightness of the light at its peak
-const HALO = 3;              // the halo is the light at this many times less resolution, scaled back up
+const RUN_WIDTH = 0.03;      // the light's falloff behind its front, as a share of the body
+const RUN_FRONT = 0.2;       // the soft rise of its front, in RUN_WIDTH
+const RUN_TAIL = 4;          // how far behind the front the light still shows, in RUN_WIDTH
 
 const clamp = (v, low = 0, high = 1) => Math.min(high, Math.max(low, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -91,6 +91,29 @@ function loadBodyMap() {
     return {width: image.width, height: image.height, pixels};
   });
   return bodyMap;
+}
+
+// The logo lit up: its own texture made brighter and tinted with the light, so light on it keeps the facets. The canvas
+// lies over the logo element as a plain layer, so a light has to be drawn as this brighter logo, not added onto nothing.
+const brightLogos = new WeakMap();
+function brightLogo(image, light) {
+  const key = `${light}`;
+  const cached = brightLogos.get(image);
+  if (cached?.key === key) return cached.canvas;
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0);
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = 0.75;
+  ctx.drawImage(image, 0, 0);
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = `rgb(${light.join(', ')})`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  brightLogos.set(image, {key, canvas});
+  return canvas;
 }
 
 function readColors() {
@@ -351,50 +374,38 @@ export function startLogoMotion(banner, {entrance, onClose}) {
     ctx.globalAlpha = 1;
   };
 
-  // The light: the body's pixels near the running point light up, more behind it than ahead. Only the positions lit in
-  // the last frame are cleared and only the lit stretch is filled. The halo is that light drawn small and scaled back up.
-  let glow = null;
+  // The light: a narrow front runs along the body, lighting the logo's own texture, sharp ahead and fading behind. Only the
+  // positions lit in the last frame are cleared and only the lit stretch is filled; the mask is half the logo's size.
+  let light = null;
   const drawRun = (e, box, map) => {
-    if (!glow) {
-      const canvas = document.createElement('canvas');
-      canvas.width = map.width;
-      canvas.height = map.height;
-      const halo = document.createElement('canvas');
-      halo.width = Math.ceil(map.width / HALO);
-      halo.height = Math.ceil(map.height / HALO);
-      const haloCtx = halo.getContext('2d');
-      haloCtx.imageSmoothingQuality = 'high';
-      glow = {canvas, ctx: canvas.getContext('2d'), image: canvas.getContext('2d').createImageData(map.width, map.height), halo, haloCtx, lit: [1, 0]};
+    if (!image) return;
+    if (!light) {
+      const mask = document.createElement('canvas');
+      mask.width = map.width;
+      mask.height = map.height;
+      const lit = document.createElement('canvas');
+      lit.width = LOGO_WIDTH;
+      lit.height = LOGO_HEIGHT;
+      const maskCtx = mask.getContext('2d');
+      light = {mask, maskCtx, pixels: maskCtx.createImageData(map.width, map.height), lit, litCtx: lit.getContext('2d'), range: [1, 0]};
     }
-    const {data} = glow.image;
-    const [lr, lg, lb] = colors.light;
-    for (let v = glow.lit[0]; v <= glow.lit[1]; v++) for (const i of map.pixels[v]) data[i * 4 + 3] = 0;
-    const p = e / RUN * (1 + 2 * RUN_WIDTH) - RUN_WIDTH;
-    const from = Math.max(1, Math.floor(1 + (p - 3 * RUN_WIDTH) * 254));
-    const to = Math.min(255, Math.ceil(1 + (p + 0.1 * RUN_WIDTH) * 254));
-    glow.lit = [from, to];
+    const {data} = light.pixels;
+    for (let v = light.range[0]; v <= light.range[1]; v++) for (const i of map.pixels[v]) data[i * 4 + 3] = 0;
+    const p = e / RUN * (1 + (RUN_TAIL + 1) * RUN_WIDTH) - RUN_WIDTH;
+    const from = Math.max(1, Math.floor(1 + (p - RUN_TAIL * RUN_WIDTH) * 254));
+    const to = Math.min(255, Math.ceil(1 + (p + RUN_FRONT * RUN_WIDTH) * 254));
+    light.range = [from, to];
     for (let v = from; v <= to; v++) {
       const d = (p - (v - 1) / 254) / RUN_WIDTH;
-      const alpha = d > -0.1 ? 255 * clamp(Math.exp(-d * d) * RUN_GAIN) : 0;
-      for (const i of map.pixels[v]) {
-        data[i * 4] = lr;
-        data[i * 4 + 1] = lg;
-        data[i * 4 + 2] = lb;
-        data[i * 4 + 3] = alpha;
-      }
+      const alpha = d < -RUN_FRONT ? 0 : d < 0 ? 255 * (1 + d / RUN_FRONT) : 255 * Math.exp(-0.9 * d);
+      for (const i of map.pixels[v]) data[i * 4 + 3] = alpha;
     }
-    glow.ctx.putImageData(glow.image, 0, 0);
-    glow.haloCtx.clearRect(0, 0, glow.halo.width, glow.halo.height);
-    glow.haloCtx.drawImage(glow.canvas, 0, 0, glow.halo.width, glow.halo.height);
-    const w = map.width * BODY_SCALE * box.scale;
-    const h = map.height * BODY_SCALE * box.scale;
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    ctx.globalAlpha = 0.9;
-    ctx.drawImage(glow.halo, box.x, box.y, w, h);
-    ctx.globalAlpha = 0.55;
-    ctx.drawImage(glow.canvas, box.x, box.y, w, h);
-    ctx.restore();
+    light.maskCtx.putImageData(light.pixels, 0, 0);
+    light.litCtx.globalCompositeOperation = 'copy';
+    light.litCtx.drawImage(brightLogo(image, colors.light), 0, 0);
+    light.litCtx.globalCompositeOperation = 'destination-in';
+    light.litCtx.drawImage(light.mask, 0, 0, map.width * BODY_SCALE, map.height * BODY_SCALE);
+    ctx.drawImage(light.lit, box.x, box.y, LOGO_WIDTH * box.scale, LOGO_HEIGHT * box.scale);
   };
 
   let map = null;
@@ -434,12 +445,20 @@ export function startLogoMotion(banner, {entrance, onClose}) {
     if (shown() && lids) addEffect('blink', BLINK);
     blink();
   }, between(BLINK_EVERY));
+  // The light is the logo itself brightened, so it follows the accent the reader picks meanwhile.
+  const startRun = () => {
+    if (!map || effects.some((effect) => effect.kind === 'run')) return;
+    currentImage().then((loaded) => {
+      image = loaded;
+      if (!stopped) addEffect('run', RUN);
+    }, () => {});
+  };
   const run = () => later(() => {
-    if (shown() && map && !effects.some((effect) => effect.kind === 'run')) addEffect('run', RUN);
+    if (shown()) startRun();
     run();
   }, RUN_EVERY);
   const hover = () => {
-    if (closed && map && !effects.some((effect) => effect.kind === 'run')) addEffect('run', RUN);
+    if (closed) startRun();
   };
 
   function live() {
