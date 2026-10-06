@@ -1,8 +1,9 @@
 // Generate the package CHANGELOG.md and its .meta from the root CHANGELOG.md. Unity's Package Manager reads that copy.
 // Both files are gitignored: release.yml generates them and commits them in its runner before the subtree split.
-// A link that leaves the package becomes a GitHub URL, since the package ships without the repository.
+// A link that leaves the package becomes a GitHub URL at the given tag (default `main`), since the package ships
+// without the repository. A tag keeps the links of a shipped copy valid after a file moves on `main`.
 // The text is copied as is: a Markdown round trip would rewrite its emphasis and escape `[Unreleased]`.
-//   node scripts/package-changelog.mjs
+//   node scripts/package-changelog.mjs [v1.0.0]
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -12,7 +13,7 @@ process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 const SOURCE = 'CHANGELOG.md';
 const PKG = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const DESTINATION = `${PKG}/CHANGELOG.md`;
-const REPO_URL = 'https://github.com/VPDPersonal/Aspid.FastTools/blob/main';
+const REPO_URL = `https://github.com/VPDPersonal/Aspid.FastTools/blob/${process.argv[2] ?? 'main'}`;
 // The GUID the copy had while it was committed: a new one on every release would break references to it.
 const META = [
   'fileFormatVersion: 2',

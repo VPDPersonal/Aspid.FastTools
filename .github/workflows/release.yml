@@ -174,7 +174,7 @@ jobs:
       - name: Generate package CHANGELOG
         run: |
           set -euo pipefail
-          node scripts/package-changelog.mjs
+          node scripts/package-changelog.mjs "$TAG"
           git add --force "$PACKAGE_PATH/CHANGELOG.md" "$PACKAGE_PATH/CHANGELOG.md.meta"
           git commit --quiet -m "chore(release): generate the package CHANGELOG for $TAG"
 
