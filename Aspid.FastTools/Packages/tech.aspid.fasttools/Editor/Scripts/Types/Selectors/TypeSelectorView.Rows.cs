@@ -62,7 +62,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var favorite = new Button()
                 .AddClass(FavoriteToggleClass)
-                .SetText(TypeSelectorHelpers.StarEmpty);
+                .SetTextSelf(TypeSelectorHelpers.StarEmpty);
 
             var arrow = new Label("›")
                 .AddClass(ItemArrowClass);
@@ -110,7 +110,7 @@ namespace Aspid.FastTools.Types.Editors
             element.SetPickingMode(PickingMode.Position);
 
             element.Q<Label>(className: ItemTitleClass)
-                .SetText(node.DisplayName)
+                .SetTextSelf(node.DisplayName)
                 .SetTooltip(node.Tooltip);
 
             BindLeading(element.Q<Image>(className: ItemIconClass), element.Q<Label>(className: ItemGlyphClass), node, index == _listView.selectedIndex);
@@ -121,7 +121,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var typeCount = TypeCountFor(node);
             element.Q<Label>(className: ItemCountClass)
-                .SetText(typeCount > 0 ? typeCount.ToString() : string.Empty)
+                .SetTextSelf(typeCount > 0 ? typeCount.ToString() : string.Empty)
                 .SetDisplay(typeCount > 0 ? DisplayStyle.Flex : DisplayStyle.None);
 
             element.Q<Label>(className: ItemArrowClass)
@@ -163,7 +163,7 @@ namespace Aspid.FastTools.Types.Editors
             if (node.IsNoneOption)
             {
                 icon.SetDisplay(DisplayStyle.None);
-                glyph.SetText(TypeSelectorHelpers.None).SetDisplay(DisplayStyle.Flex);
+                glyph.SetTextSelf(TypeSelectorHelpers.None).SetDisplay(DisplayStyle.Flex);
                 return;
             }
 
@@ -225,7 +225,7 @@ namespace Aspid.FastTools.Types.Editors
 
             favorite
                 .SetDisplay(DisplayStyle.Flex)
-                .SetText(isFavorite ? TypeSelectorHelpers.StarFilled : TypeSelectorHelpers.StarEmpty)
+                .SetTextSelf(isFavorite ? TypeSelectorHelpers.StarFilled : TypeSelectorHelpers.StarEmpty)
                 .EnableClass(FavoriteToggleOnModifier, isFavorite);
         }
 

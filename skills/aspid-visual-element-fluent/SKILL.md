@@ -29,7 +29,7 @@ rootVisualElement.AddChild(new VisualElement()
         new Label("Settings").SetFontSize(14).AddBoldUnityFontStyleAndWeight(),
         new TextField("Name").SetPlaceholder("Player").AddValueChanged(evt => Rename(evt.newValue)),
         new Toggle("Enabled").SetValue(true, notify: false),
-        new Button().SetText("Apply").EnableClass("primary", true).AddClicked(Apply)));
+        new Button().SetTextSelf("Apply").EnableClass("primary", true).AddClicked(Apply)));
 ```
 
 ## Chain rules
@@ -47,7 +47,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf` |
+| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf` |
 
 | Unity API | FastTools |
 |---|---|
@@ -72,6 +72,8 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
 
 - Unity's own `SetEnabled`, `Focus`, `AddManipulator`, `SetValueWithoutNotify`, `Init`, `MarkDirtyLayout` return
   `void` and end the chain; use the replacements above.
+- On a `Label`, `Button` or other `TextElement`, set the text with `SetTextSelf`. From Unity 6000.6, `SetText(string)`
+  calls Unity's `TextElement.SetText`, which returns `void`. `Foldout`, `HelpBox` and `Toggle` keep `SetText`.
 - These do not exist: `ToggleInClass`, `EnableInClass`, `AddStyleSheets`, `...FromResource` (singular),
   `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use Unity's `RegisterCallback`).
 - Values are `Style*` types: sizes `StyleLength` (`12`, `Length.Percent(50)`, `StyleKeyword.Auto`),
