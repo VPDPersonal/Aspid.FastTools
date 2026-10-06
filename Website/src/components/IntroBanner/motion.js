@@ -32,7 +32,7 @@ const FLASH = 180;           // ms a landed piece glows
 const HANDOVER = 160;        // ms the pieces stay after the close, while the logo element fades in over them (styles.css)
 
 // The life after it.
-const EYE = {x: 293, y: 98, rx: 17, ry: 15}; // the eye, in logo px
+const EYE = {x: 293, y: 98}; // the eye's centre, in logo px
 const EYE_FLASH = 820;       // ms
 const BLINK = 240;           // ms for the lid to close and open again
 const LID = {x: 260, y: 65, size: 66}; // where a closed lid of eyelids.png covers the eye, in logo px

@@ -2,8 +2,8 @@
  * Generate the data of the introduction banner's logo animation (src/components/IntroBanner) from the logo image:
  * - `media/logo-body.png`: where each pixel lies along the snake's body, 1 at the tail .. 255 at the snout, 0 off it;
  * - `mesh.js`: the low-poly triangles the logo assembles from, ordered from the tail to the snout;
- * - `media/eyelids.png`: the closed eyelid `media/eyelid-green.png` recoloured for every accent, side by side in the order
- *   of ACCENTS in src/accents.js.
+ * - `media/eyelids.png`: a closed eyelid per accent, side by side in the order of ACCENTS in src/accents.js. Its first cell,
+ *   the green lid, is the source: it is kept as it is, and the other cells are recoloured from it.
  * Every accent's logo has the same shape, so the green one serves for the shape. Run it again only when a logo changes:
  *   node scripts/intro-logo-data.mjs
  * Needs `ffmpeg` on PATH to decode the WebP and encode the PNG.
@@ -16,8 +16,9 @@ import {ACCENTS} from '../src/accents.js';
 const dir = fileURLToPath(new URL('../src/components/IntroBanner/', import.meta.url));
 const W = 640;
 const H = 634;
-const decode = (file, width, height) => {
-  const rgba = execFileSync('ffmpeg', ['-loglevel', 'error', '-i', `${dir}media/${file}`, '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'],
+// The image as raw RGBA, optionally cut down by an ffmpeg filter first.
+const decode = (file, width, height, filter = 'null') => {
+  const rgba = execFileSync('ffmpeg', ['-loglevel', 'error', '-i', `${dir}media/${file}`, '-vf', filter, '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'],
     {maxBuffer: width * height * 8});
   if (rgba.length !== width * height * 4) throw new Error(`${file} is not ${width}×${height}`);
   return rgba;
@@ -247,10 +248,11 @@ ${lines(pieces.map((piece) => Math.round(piece.body * 1000)), 24)}
 ];
 `);
 // ---------- eyelids.png: the green lid in the colours of every accent's logo ----------
-// Each accent's logo is a recolouring of the green one, so an affine colour map fitted on the skin around the eye (the
-// eye itself left out) carries the lid over.
+// The green lid was cut from a closed-eye render of the green logo. Each other accent's logo is a recolouring of the green
+// one, so an affine colour map fitted on the skin around the eye (the eye itself left out) carries the lid over.
 const LID = 66; // px, the lid's square, as cut from the logo at (260, 65)
-const lid = decode('eyelid-green.png', LID, LID);
+if (ACCENTS[0] !== 'green') throw new Error('eyelids.png keeps its source, the green lid, in the first cell: keep green first in ACCENTS.');
+const lid = decode('eyelids.png', LID, LID, `crop=${LID}:${LID}:0:0`);
 
 function solve(matrix, vector) {
   const n = vector.length;
@@ -294,7 +296,8 @@ function colourMap(target) {
 
 const lids = Buffer.alloc(LID * ACCENTS.length * LID * 4);
 ACCENTS.forEach((accent, k) => {
-  const map = colourMap(decode(`logo-${accent}.webp`, W, H));
+  // The identity for green itself, so the source never drifts from re-runs.
+  const map = k === 0 ? [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]] : colourMap(decode(`logo-${accent}.webp`, W, H));
   for (let y = 0; y < LID; y++) {
     for (let x = 0; x < LID; x++) {
       const i = (y * LID + x) * 4;
