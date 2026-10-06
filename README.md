@@ -16,7 +16,18 @@ Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](ht
 
 ## Installation
 
-In **Window → Package Manager**, choose **+ → Install package from git URL…**, paste this URL and click **Install**:
+<table>
+<tr>
+<td width="56%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme-previews/install.webp"><source media="(prefers-color-scheme: light)" srcset="docs/images/readme-previews/install-light.webp"><img src="docs/images/readme-previews/install.webp" alt="Package Manager installs Aspid.FastTools from its git URL" width="100%"></picture></td>
+<td width="44%">
+<ol>
+<li>Open <b>Window → Package Manager</b></li>
+<li>Choose <b>+ → Install package from git URL…</b></li>
+<li>Paste the URL and press <b>Install</b></li>
+</ol>
+</td>
+</tr>
+</table>
 
 ```text
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview

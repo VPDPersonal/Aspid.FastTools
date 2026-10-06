@@ -1,8 +1,9 @@
-// Records the introduction's animated feature previews (Website/src/components/FeaturePreview) from a built site into
-// looping WebPs for the GitHub README: docs/images/readme-previews/<doc>[-light].webp. Headless Chrome runs on
+// Records the introduction's animated feature previews (Website/src/components/FeaturePreview) and the install panel's
+// Package Manager walk-through (Website/src/components/InstallPanel) from a built site into looping WebPs for the GitHub
+// README: docs/images/readme-previews/<name>[-light].webp. Headless Chrome runs on
 // virtual time, so every frame lands on its exact timestamp however slow the capture is.
 //   Website/scripts/serve-all.sh
-//   node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [doc …]
+//   node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [name …]
 // Needs Node 22+ (global WebSocket), Google Chrome (CHROME overrides the macOS path) and img2webp (brew install webp).
 import fs from 'node:fs';
 import os from 'node:os';
@@ -14,8 +15,14 @@ const CHROME = process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/M
 const OUT = fileURLToPath(new URL('../../images/readme-previews/', import.meta.url));
 // One loop of each preview, from FeaturePreview: `useLoop(count, interval)` steps, or the Profiler's 22 s ticker.
 // `fps` divides the loop into whole frames; the Profiler's timeline changes every frame, so it takes fewer.
+// A feature preview is found by its card's doc page; `box` finds any other preview. The loop starts when the preview
+// scrolls into view, and `warmup` passes before the first frame: one loop by default, which settles transitions.
 const FPS = 20;
 const PREVIEWS = {
+  // InstallPanel: the sum of DURATIONS. It plays PLAYS (2) times, so a short warm-up records the first play, which runs
+  // into the second one's first frame.
+  'install': {loop: 1300 + 1400 + 1800 + 1100 + 2600, warmup: 100,
+    box: `document.querySelector('section[class*="install_"] [class*="preview_"]')`},
   'profiler-markers': {loop: 22000, fps: 12.5},
   'visual-element-extensions': {loop: 6 * 1100},
   'serialized-property-extensions': {loop: 5 * 1200},
@@ -102,8 +109,8 @@ async function open(theme) {
   const page = (method, params) => send(method, params, sessionId);
   await page('Page.enable');
   await page('Emulation.setDeviceMetricsOverride', {...VIEWPORT, mobile: false});
-  // The entrance has played, so the banner rests. The card's frame, its rounded corner and the line between preview
-  // and text go: on GitHub the table cell is the frame.
+  // The entrance has played, so the banner rests. The frame of a card or the install panel, its rounded corner and the
+  // line between preview and text go: on GitHub the table cell is the frame.
   await page('Page.addScriptToEvaluateOnNewDocument', {source: `
     localStorage.setItem('theme', '${theme}');
     sessionStorage.setItem('aspid-intro-played', '1');
@@ -111,6 +118,8 @@ async function open(theme) {
       + '.feature-card { border: 0 !important; border-radius: 0 !important; }'
       + '.feature-card__preview { border-right: 0 !important; }'
       + '.feature-card__live [class*="inspector_"], .feature-card__live [class*="uiStage_"] { border-radius: 0 !important; }'
+      + 'section[class*="install_"] { border: 0 !important; border-radius: 0 !important; }'
+      + 'section[class*="install_"] [class*="preview_"] { border-right: 0 !important; }'
       + '</style>'));`});
   const loaded = once('Page.loadEventFired', sessionId);
   await page('Page.navigate', {url: new URL('docs', base).href});
@@ -128,10 +137,11 @@ async function advance({page, sessionId}, ms) {
 }
 
 async function record(tab, doc, file) {
+  const card = `[...document.querySelectorAll('.feature-card__title a')].find((a) => a.pathname.endsWith('/${doc}'))
+    ?.closest('.feature-card')?.querySelector('.feature-card__preview:has(.feature-card__live)')`;
   const {result} = await tab.page('Runtime.evaluate', {returnByValue: true, expression: `(() => {
-    const link = [...document.querySelectorAll('.feature-card__title a')].find((a) => a.pathname.endsWith('/${doc}'));
-    const box = link?.closest('.feature-card')?.querySelector('.feature-card__preview');
-    if (!box?.querySelector('.feature-card__live')) return null;
+    const box = ${PREVIEWS[doc].box ?? card};
+    if (!box) return null;
     box.scrollIntoView({block: 'center'});
     // The screenshot clip is in document coordinates.
     const {x, y, width, height} = box.getBoundingClientRect();
@@ -139,9 +149,8 @@ async function record(tab, doc, file) {
   })()`});
   if (!result.value) throw new Error(`No animated preview for ${doc}`);
   const clip = {...result.value, scale: 1};
-  const {loop, fps = FPS} = PREVIEWS[doc];
-  // The loop starts when the preview scrolls into view; one loop of warm-up settles its transitions.
-  await advance(tab, loop + 500);
+  const {loop, fps = FPS, warmup = loop + 500} = PREVIEWS[doc];
+  await advance(tab, warmup);
   const frames = fs.mkdtempSync(path.join(os.tmpdir(), `${doc}-`));
   const count = Math.round(loop * fps / 1000);
   for (let index = 0; index < count; index++) {

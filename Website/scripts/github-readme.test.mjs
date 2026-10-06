@@ -61,6 +61,16 @@ test('the pin note folds also when the source wraps after the full stop', () => 
   assert.match(result, /^Installs the latest preview\.\n\n<details>\n<summary>Pin a version<\/summary>\n\nTo pin a version, add its number:\n\n```text/);
 });
 
+test('the install instruction becomes a card with the walk-through and the steps', () => {
+  const install = '## Installation\n\nIn **Window → Package Manager**, paste this URL:\n\n```text\nhttps://github.com/owner/repo.git#upm\n```\n\nThe URL installs the latest release.\n';
+  const files = ['docs/images/readme-previews/install.webp', 'docs/images/readme-previews/install-light.webp'];
+  const result = layout(install, files);
+  assert.match(result, /^## Installation\n\n<table>\n<tr>\n<td width="56%"><picture>.*srcset="docs\/images\/readme-previews\/install-light.webp"><img src="docs\/images\/readme-previews\/install.webp"/);
+  assert.match(result, /<ol>\n<li>Open <b>Window → Package Manager<\/b><\/li>\n.*\n<li>Paste the URL and press <b>Install<\/b><\/li>\n<\/ol>/);
+  assert.match(result, /<\/table>\n\n```text\nhttps:\/\/github.com\/owner\/repo.git#upm\n```/);
+  assert.match(layout(install), /^## Installation\n\nIn \*\*Window → Package Manager\*\*, paste this URL:/);
+});
+
 test('a feature becomes a card with a themed preview, its summary as HTML', () => {
   const result = layout(features, ['Images/enum-light.gif']);
   assert.match(result, /### Serialization\n\n<table>\n<tr>\n<td width="56%"><picture>/);

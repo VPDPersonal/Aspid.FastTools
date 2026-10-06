@@ -3,6 +3,8 @@
  * site-only blocks get the closest GitHub equivalent in plain HTML (src/remark/introBanner.js builds the site's):
  * - links to doc pages and to the samples overview open the site, which renders them in full;
  * - the link row's link to the site lists the site's languages: `Documentation: EN, RU`;
+ * - the install instruction becomes a card like the site's install panel (src/components/InstallPanel): the recording
+ *   of its Package Manager walk-through beside its numbered steps, the URL to copy below;
  * - the note on pinning a version folds into <details>, with the pinned URL as a block to copy;
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
@@ -12,9 +14,15 @@
  * All file URLs are already relative to the README.
  */
 
-// The site's English strings: FeatureCardMore in src/theme/MDXComponents and SupportPanel.
+// The site's English strings: FeatureCardMore in src/theme/MDXComponents, InstallPanel and SupportPanel.
 const TEXT = {
   more: 'Read more',
+  steps: [
+    'Open <b>Window → Package Manager</b>',
+    'Choose <b>+ → Install package from git URL…</b>',
+    'Paste the URL and press <b>Install</b>',
+  ],
+  walkthrough: 'Package Manager installs Aspid.FastTools from its git URL',
   pin: 'Pin a version',
   support: 'Found a bug or have a question?',
   hint: 'Include your Unity version, package version and steps to reproduce.',
@@ -80,6 +88,17 @@ function linkRow(tree, site, locales) {
     return [{type: 'text', value: `${part.children.map((child) => child.value).join('')}: `},
       ...links.flatMap((link, at) => (at ? [{type: 'text', value: ', '}, link] : [link]))];
   });
+}
+
+/** The install section: an instruction, the URL block and a note. The instruction gives way to the install card. */
+function installCard(tree, {previews, exists}) {
+  const index = tree.children.findIndex((node, at) => isHeading(node, 2) && tree.children[at + 1]?.type === 'paragraph'
+    && tree.children[at + 2]?.type === 'code' && /\.git#upm/.test(tree.children[at + 2].value));
+  const file = `${previews}/install.webp`;
+  if (index === -1 || !exists(file)) return;
+  const steps = TEXT.steps.map((step) => `<li>${step}</li>`).join('\n');
+  tree.children[index + 1] = html(`<table>\n<tr>\n<td width="56%">${themedImage(file, TEXT.walkthrough, exists, ' width="100%"')}</td>\n`
+    + `<td width="44%">\n<ol>\n${steps}\n</ol>\n</td>\n</tr>\n</table>`);
 }
 
 /** The sentence that ends with the pinned install URL (`….git#upm-preview/1.0.0`) folds away under the rest. */
@@ -222,6 +241,7 @@ function themedImages(node, exists) {
 export function githubLayout(tree, options) {
   siteLinks(tree, options.site);
   linkRow(tree, options.site, options.locales);
+  installCard(tree, options);
   pinNote(tree);
   featureCards(tree, options);
   linkTiles(tree);

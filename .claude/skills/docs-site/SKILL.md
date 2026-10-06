@@ -334,14 +334,15 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   `prestart`/`prebuild` refresh them automatically and CI runs `check-readme` before building to reject a stale copy.
   The script only updates existing files: recreating the package copy would give its `.meta` a new GUID.
 - The root README gets GitHub's version of the site's introduction blocks (`scripts/github-readme.mjs`, tested in
-  `github-readme.test.mjs`): doc-page and samples-overview links open the site, the link row's site link becomes
-  `Documentation: EN, RU`, the pinned-version note folds into `<details>`, an image with a `-light` sibling becomes a `<picture>` per GitHub
-  theme, each feature becomes a card (a one-row table: preview, then title, summary and «Read more»), the Resources list
-  a row of tiles, and the help section the SupportPanel call to action without the licence line. A code preview gives
-  way to the recording of the site's animated preview, `docs/images/readme-previews/<doc>[-light].webp`. After a change
-  to `FeaturePreview` or to the site theme, rebuild the site and re-record:
-  `node docs/media/readme-previews/record.mjs <served URL> [doc …]` (`docs/media/readme-previews/README.md`), then run
-  `sync-readme`.
+  `github-readme.test.mjs`): doc-page and samples-overview links open the site; the link row's site link becomes
+  `Documentation: EN, RU`; the install instruction becomes a card (the recorded InstallPanel walk-through beside its
+  steps) and the pinned-version note folds into `<details>`; an image with a `-light` sibling becomes a `<picture>` per
+  GitHub theme; each feature becomes a card (a one-row table: preview, then title, summary and «Read more»); the
+  Resources list becomes a row of tiles and the help section the SupportPanel call to action without the licence line.
+  A code preview gives way to the recording of the site's animated preview, `docs/images/readme-previews/<name>[-light].webp`.
+  After a change to `FeaturePreview`, the InstallPanel walk-through, the site theme or a release (the walk-through
+  shows the version), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
+  (`docs/media/readme-previews/README.md`), then run `sync-readme`.
 - `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
   blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
   may differ, so make every structural change in both languages.

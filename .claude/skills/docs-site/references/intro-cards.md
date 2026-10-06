@@ -51,7 +51,9 @@ The README's URL carries the channel — `#upm-preview` for a prerelease, `#upm`
 `scripts/set-version.sh` switches it together with the badge label. The README URL selects the initial channel;
 each tab pins from its own branch out of `customFields.packageVersions` (the tags of both branches, per branch); `UPM_BRANCH` in `docusaurus.config.js`
 follows the `package.json` version the same way and only decides where the working-tree version is offered.
-Its text is written in the component per locale, so update it when the README's install steps change.
+Its text is written in the component per locale, so update it when the README's install steps change; the GitHub
+README repeats the English steps (`TEXT.steps` in `scripts/github-readme.mjs`) beside a recording of the walk-through
+(`docs/media/readme-previews/README.md`), so update both.
 
 `static/img/logo.png` and `favicon.png` are copies of the package icon
 `Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`, and `logo-red.png`, `logo-blue.png`, `logo-yellow.png` of
