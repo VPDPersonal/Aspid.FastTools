@@ -7,7 +7,10 @@ designed on the «README banner» page of the «FastTools Asset Store» Design c
 WebPs are recorded from this site's banner in the green accent: 640 px wide (the narrow layout) at 2x, by a CDP
 screencast of headless Chrome resampled to 25 fps. They show the calm state, not the entrance: 9 s from 1.6 s after the
 logo closes, with the run light pinned to 1.4 s and a blink to 4 s, and the last second crossfaded into the first, an
-8 s loop (`img2webp -lossy -q 70 -m 6`, about 0.6 MB each); the canvas shows them in its «Animated» row. The plugin
+8 s loop (`img2webp -lossy -q 70 -m 6`, about 0.6 MB each). The image has no page around it, so for the recording the
+banner's `__ambient` layer reaches 320 px past each side (`left`/`right: -320px`): the glow's side slopes fall outside
+the frame and inside it the glow runs from edge to edge, while the site keeps the slopes. The canvas shows them in its
+«Animated» row. The plugin
 renders the banner as
 `src/components/IntroBanner`: that layout rebuilt in HTML, the logo (`media/logo-<accent>.webp`, 640 px, picked from
 `html[data-accent]`) and the live title and tagline, sized in `cqi` so it scales like the PNG. It has no background: on
