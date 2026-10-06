@@ -174,7 +174,7 @@ namespace Aspid.FastTools.Enums.Editors
 
             public KeyMenuField SetCaption(string caption)
             {
-                _textElement.SetText(caption);
+                _textElement.SetTextSelf(caption);
                 return this;
             }
         }

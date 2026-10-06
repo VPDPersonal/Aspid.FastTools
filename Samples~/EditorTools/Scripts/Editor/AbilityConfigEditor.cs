@@ -87,7 +87,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 var color = EditorGUIUtility.isProSkin
                     ? (isFree ? _warning : _accent)
                     : (isFree ? new Color(0.6f, 0.4f, 0f) : new Color(0.25f, 0.48f, 0.28f));
-                badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP")
+                badge.SetTextSelf(isFree ? "FREE" : $"{config.ManaCost} MP")
                     .SetColor(color)
                     .SetBorderColor(color);
                 helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);

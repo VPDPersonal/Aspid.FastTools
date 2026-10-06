@@ -275,7 +275,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // With mixed types the foldout would expose only the first target's children; collapse it and show
             // the "different types" hint instead.
-            _caption.SetText(mixedTypes
+            _caption.SetTextSelf(mixedTypes
                 ? MixedCaption
                 : TypeSelectorHelpers.GetTypeSelectorTitle(currentType, missingType.DisplayName));
 

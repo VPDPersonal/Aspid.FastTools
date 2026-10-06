@@ -231,7 +231,7 @@ namespace Aspid.FastTools.Types.Editors
             _textElement
                 .EnableClass(className: MissingTextClass, enable: isMissing)
                 .EnableClass(className: mixedValueLabelUssClassName, enable: showMixedValue)
-                .SetText(value: showMixedValue
+                .SetTextSelf(value: showMixedValue
                     ? mixedValueString
                     : TypeSelectorHelpers.GetTypeSelectorTitle(value,
                         assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(_missingAssemblyQualifiedName)));
