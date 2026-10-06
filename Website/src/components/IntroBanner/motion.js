@@ -5,8 +5,8 @@ import eyelidsUrl from './media/eyelids.png';
 
 /*
  * The banner logo's motion, drawn on the banner's `__fx` canvas over the logo element.
- * - The entrance: every low-poly piece of the logo (mesh.js) takes off from a dot of the texture, unfolds on the way and
- *   lands in its place, from the tail to the snout. Then the logo element takes over and the eye flashes.
+ * - The entrance: every low-poly piece of the logo (mesh.js) takes off from a dot of the texture, fades in and unfolds on
+ *   the way and lands in its place, from the tail to the snout. Then the logo element takes over and the eye flashes.
  * - The life after it: now and then the snake blinks, and a light runs along its body from the tail to the snout, also
  *   when the pointer comes onto the logo. `media/logo-body.png` holds where each pixel lies along the body.
  * mesh.js, logo-body.png and eyelids.png come from `scripts/intro-logo-data.mjs`.
@@ -27,7 +27,7 @@ const REACH = [0.25, 1];     // the nearest and the farthest start of a piece, i
 const SWING = 0.8;           // rad, how far a start may turn away from the line out of the logo's centre
 const SPIN = 3.5;            // rad, the widest turn a piece unwinds on the way
 const BOW = 0.17;            // the widest sideways bow of a flight, in logo widths
-const IDLE_DOT = 0.35;       // opacity of a piece's dot before it takes off
+const APPEAR = 0.25;         // the share of its flight a piece takes to fade in; before it takes off it is not drawn
 const FLASH = 180;           // ms a landed piece glows
 const HANDOVER = 160;        // ms the pieces stay after the close, while the logo element fades in over them (styles.css)
 
@@ -275,6 +275,7 @@ export function startLogoMotion(banner, {entrance, onClose}) {
       const sx = piece.sx - ox;
       const sy = piece.sy - oy;
       last = Math.max(last, piece.delay + FLIGHT);
+      if (t <= piece.delay) continue;
       const u = clamp((t - piece.delay) / FLIGHT);
       const hx = box.x + piece.mx * box.scale;
       const hy = box.y + piece.my * box.scale;
@@ -290,7 +291,7 @@ export function startLogoMotion(banner, {entrance, onClose}) {
       // A dot that swells, then the piece of the logo it unfolds into.
       const texture = smooth(0.12, 0.42, grow);
       if (texture < 1) {
-        ctx.globalAlpha = (1 - texture) * (u > 0 ? 1 : IDLE_DOT);
+        ctx.globalAlpha = (1 - texture) * smooth(0, APPEAR, u);
         ctx.fillStyle = `rgb(${ar}, ${ag}, ${ab})`;
         ctx.beginPath();
         ctx.arc(x, y, 1 + grow * 7, 0, Math.PI * 2);
