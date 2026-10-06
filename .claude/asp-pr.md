@@ -11,6 +11,13 @@ Checked by `.github/workflows/pr-checks.yml`; keep this file in sync with it.
 
 The bot review rules with the verdict format are in `.github/claude-review.md`.
 
-- Logic paths: `Aspid.FastTools/Packages/tech.aspid.fasttools/` (except `README.md`), `Aspid.FastTools.Generators/`,
-  `Aspid.FastTools.Analyzers/`, `Aspid.FastTools.YamlTests/`, `scripts/`, `.github/workflows/`.
-- Other paths (`Website/`, `skills/`, `*.md`) are text: a fix there needs no re-review.
+Logic paths:
+
+- package: `Aspid.FastTools/Packages/tech.aspid.fasttools/` (except `README.md`), `Aspid.FastTools/Packages/manifest.json`,
+  `Aspid.FastTools/Packages/packages-lock.json`, `Aspid.FastTools/Assets/DevTests/`;
+- .NET: `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/`, `Aspid.FastTools.YamlTests/`, `global.json`;
+- site: `Website/` except `docs/`, `i18n/`, `tutorials/`, `api/`, `static/`;
+- CI: `scripts/`, `.github/workflows/`, `.github/claude-review.md`.
+
+Other paths are text: `Website/docs/`, `Website/i18n/`, `Website/tutorials/`, `skills/`, other `*.md`.
+A fix there needs no re-review.
