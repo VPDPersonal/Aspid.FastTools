@@ -126,7 +126,7 @@ jobs:
       matrix:
         include:
           - name: minimum
-            unity: 6000.0.0f1
+            unity: 6000.0.53f1
           - name: '6000.2'
             unity: 6000.2.15f1
           - name: '6000.3'
