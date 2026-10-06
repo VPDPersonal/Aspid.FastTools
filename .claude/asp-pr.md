@@ -9,12 +9,8 @@ Checked by `.github/workflows/pr-checks.yml`; keep this file in sync with it.
 
 ## Review loop
 
-`.github/workflows/claude.yml` reviews a PR once, when it leaves draft. The review rules are in `.github/claude-review.md`.
+The bot review rules with the verdict format are in `.github/claude-review.md`.
 
-- Verdict: the first line of the `claude[bot]` review comment, `Verdict: <N> blocking, <M> minor`.
-  Each inline comment starts with `[blocking]` or `[minor]`.
-- Re-review: post a PR comment `@claude review the commits after your last review`.
-  The `mention` job runs it with the same rules.
 - Logic paths: `Aspid.FastTools/Packages/tech.aspid.fasttools/` (except `README.md`), `Aspid.FastTools.Generators/`,
   `Aspid.FastTools.Analyzers/`, `Aspid.FastTools.YamlTests/`, `scripts/`, `.github/workflows/`.
-  Other paths (`Website/`, `skills/`, `*.md`) are text: a fix there needs no re-review.
+- Other paths (`Website/`, `skills/`, `*.md`) are text: a fix there needs no re-review.
