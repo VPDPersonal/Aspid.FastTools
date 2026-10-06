@@ -2,10 +2,11 @@
  * GitHub layout for the generated READMEs. GitHub renders the introduction without the site's components, so its
  * site-only blocks get the closest GitHub equivalent in plain HTML (src/remark/introBanner.js builds the site's):
  * - an image with a `-light` sibling becomes a <picture> per GitHub theme;
- * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
- *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
+ * - every feature becomes a frameless card: the preview floats on the left, the title and summary sit on the right
+ *   (a table cell would pad the preview); a code preview gives way to the recording of the site's animated preview
+ *   (`docs/images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
- * - a line at the top links the other translation.
+ * - a line under the link row links the other translation.
  * All URLs are already relative to the README.
  */
 
@@ -53,23 +54,24 @@ function card(heading, summary, preview, options) {
   const link = heading.children.find((part) => part.type === 'link');
   const url = link ? escape(link.url) : undefined;
   const title = inline(heading.children);
-  const body = `</td>\n<td width="44%">\n<h4>${title}</h4>\n<p>${inline(summary.children)}</p>\n`
+  const body = `<h4>${title}</h4>\n<p>${inline(summary.children)}</p>\n`
     + (url ? `<p><a href="${url}">${TEXT[options.language].more} →</a></p>\n` : '')
-    + '</td>\n</tr>\n</table>';
+    + '<br clear="all">\n</div>';
+  // The preview takes 56% of the width, as on the site; GitHub pads a left-aligned image on its right.
+  const size = ' width="56%" align="left"';
   let image;
   if (preview.type === 'html') {
     const {src, alt = ''} = attributes(preview.value);
-    image = themedImage(src, alt, options.exists, ' width="100%"');
+    image = themedImage(src, alt, options.exists, size);
   } else {
     // `09-profiler-markers.md` → `profiler-markers`, the key of the site's FeaturePreview.
     const doc = link?.url.replace(/^.*\//, '').replace(/^\d+-/, '').replace(/\.md$/, '');
     const file = doc && recording(doc, options);
-    if (file) image = themedImage(file, escape(link.children.map((part) => part.value ?? '').join('')), options.exists, ' width="100%"');
+    if (file) image = themedImage(file, escape(link.children.map((part) => part.value ?? '').join('')), options.exists, size);
   }
   // The preview is not a link: GitHub keeps a <picture> working only outside one, as the banner is.
-  const open = '<table>\n<tr>\n<td width="56%">';
-  // Without a recording the code stays a fenced block; the blank lines around it let GitHub parse it inside the cell.
-  return image ? [html(`${open}${image}${body}`)] : [html(open), preview, html(body)];
+  // Without a recording the code stays a fenced block above the text; a <div> block would not parse it.
+  return image ? [html(`<div>\n${image}\n${body}`)] : [preview, html(`<div>\n${body}`)];
 }
 
 /** On GitHub the features are grouped sections: a linked heading, a sentence and a preview. */
@@ -146,5 +148,10 @@ export function githubLayout(tree, options) {
   themedImages(tree, options.exists);
   const switcher = Object.entries(options.translations).map(([language, file]) => (language === options.language
     ? `<b>${TEXT[language].name}</b>` : `<a href="${file}">${TEXT[language].name}</a>`));
-  tree.children.unshift(html(`<p align="right">${switcher.join(' · ')}</p>`));
+  // The link row: text links and separators only (the badge row links images). Without one, the switch goes on top.
+  const links = tree.children.findIndex((node) => node.type === 'paragraph'
+    && node.children.some((part) => part.type === 'link')
+    && node.children.every((part) => (part.type === 'link' && part.children.every((child) => child.type === 'text'))
+      || (part.type === 'text' && /^[\s·|\-–—]*$/.test(part.value))));
+  tree.children.splice(links + 1, 0, html(`<p>${switcher.join(' · ')}</p>`));
 }
