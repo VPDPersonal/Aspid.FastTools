@@ -85,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Excluded scan folders** accepts only `Assets` and folders under it, the only ones project scans walk; a folder under `Packages/` or elsewhere was saved but excluded nothing.
 - Type picker search no longer matches the assembly part of a type name: short queries such as `Key`, `Token`, `ver` or `null` used to match every type. Search compares the label, the type name and the full name with the namespace and declaring types (`Namespace.Outer.Name`).
 - Typing and Backspace in the type picker edit the query again after the Down arrow moves into the results; they used to be ignored until the search field was clicked.
+- On Unity 6000.6 and later, a search that shortens the type picker's list past the selected row no longer overflows the stack, which usually crashed the Editor: the list's refresh reported a selection change, and the picker answered it with another refresh.
 - For a missing type the type picker no longer highlights `<None>`, so Enter right after opening does not erase the stored name.
 - In a UI Toolkit Inspector, choosing `<None>` now clears a `SerializableMonoScript` whose type is missing; the field used to keep showing `<Missing …>`.
 - **+** of a `[TypeSelector]` `[SerializeReference]` list nested in an element of another array (a list of structs, a list inside a list element) now appends to that list; it used to throw `InvalidOperationException` and add nothing.

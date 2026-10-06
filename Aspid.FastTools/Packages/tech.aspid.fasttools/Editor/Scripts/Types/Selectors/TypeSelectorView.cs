@@ -46,6 +46,9 @@ namespace Aspid.FastTools.Types.Editors
         private bool _searchFieldFocused;
         private bool _searchChromeOpen;
 
+        // The selected index the rows were last re-bound for, so the next selection change re-binds that row too.
+        private int _selectedRowIndex = -1;
+
         // Space toggles a favorite, but it is also a navigation submit key — so the same press raises a NavigationSubmit
         // that would choose (and close on) the row. This arms the submit suppressor for that one event.
         private bool _suppressNextSubmit;
@@ -232,13 +235,26 @@ namespace Aspid.FastTools.Types.Editors
             _listView.SetBindItem(BindListItem);
             _listView.itemsChosen += HandleItemChosen;
 
-            // Re-bind the visible rows on every selection change so the selected folder can swap to its opened icon
-            // (selection only toggles a USS class otherwise; the leading image is set in code, not USS).
+            // Re-bind the rows that lose and gain the selection so a selected folder can swap to its opened icon
+            // (selection only toggles a USS class otherwise; the leading image is set in code, not USS). Not
+            // RefreshItems: from Unity 6000.6 its selection refresh raises this event again while the selected index
+            // is past the end of a shrunk list, which recursed until the stack overflowed.
             _listView.selectedIndicesChanged += _ =>
             {
-                _listView.RefreshItems();
+                var previous = _selectedRowIndex;
+                _selectedRowIndex = _listView.selectedIndex;
+
+                RefreshRow(previous);
+                if (_selectedRowIndex != previous) RefreshRow(_selectedRowIndex);
+
                 UpdateFooterHint();
             };
+        }
+
+        private void RefreshRow(int index)
+        {
+            if (index >= 0 && index < (_listView.itemsSource?.Count ?? 0))
+                _listView.RefreshItem(index);
         }
 
         private TreeNode SelectedNode()
