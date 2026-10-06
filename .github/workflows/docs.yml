@@ -17,7 +17,6 @@ on:
       - 'scripts/frame-doc-captures.sh'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
       - 'CHANGELOG*.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
       - '.github/workflows/docs.yml'
   pull_request:
     paths:
@@ -30,7 +29,6 @@ on:
       - 'scripts/frame-doc-captures.sh'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
       - 'CHANGELOG*.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
