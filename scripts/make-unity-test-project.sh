@@ -41,12 +41,13 @@ PROJECT="$(cd "$PROJECT" && pwd)"
 # Relative, so the path still resolves when the workspace is mounted elsewhere (the GameCI container).
 PACKAGE_REF="$(python3 -c 'import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$PACKAGE" "$PROJECT/Packages")"
 
-# test-framework 1.6.0 is what every Unity 6000.x bundles; the modules cover what the samples use.
+# test-framework 1.4.6 is the newest one on the registry, which early 6000.0 releases resolve from; later Editors
+# bundle 1.6.0 (not on the registry) and raise the version to it. The modules cover what the samples use.
 cat > "$PROJECT/Packages/manifest.json" <<EOF
 {
   "dependencies": {
     "tech.aspid.fasttools": "file:$PACKAGE_REF",
-    "com.unity.test-framework": "1.6.0",
+    "com.unity.test-framework": "1.4.6",
     "com.unity.modules.animation": "1.0.0",
     "com.unity.modules.audio": "1.0.0",
     "com.unity.modules.imageconversion": "1.0.0",
