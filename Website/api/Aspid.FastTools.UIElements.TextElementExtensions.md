@@ -145,12 +145,12 @@ The element, for chaining.
 
 The element type.
 
-### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetText__1___0_System_String_}
+### SetTextSelf\<T\>\(T, string\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetTextSelf__1___0_System_String_}
 
 Sets [`text`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement-text.html).
 
 ```csharp
-public static T SetText<T>(this T element, string value) where T : TextElement
+public static T SetTextSelf<T>(this T element, string value) where T : TextElement
 ```
 
 #### Parameters

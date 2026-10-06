@@ -57,7 +57,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _search.SetValueWithoutNotify(_filter);
 
             var create = new Button()
-                .SetText("Create")
+                .SetTextSelf("Create")
                 .SetTooltip("Creates a new AbilityConfig asset next to the selected one")
                 .AddClicked(CreateAsset)
                 .AddClass("ability-primary");
@@ -83,8 +83,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetBindItem((element, index) =>
                 {
                     var ability = _filtered[index];
-                    element.Q<Label>("abilityName").SetText(ability.AbilityName);
-                    element.Q<Label>("abilityStats").SetText($"{ability.ManaCost} MP   /   {ability.Cooldown:0.##} s cooldown");
+                    element.Q<Label>("abilityName").SetTextSelf(ability.AbilityName);
+                    element.Q<Label>("abilityStats").SetTextSelf($"{ability.ManaCost} MP   /   {ability.Cooldown:0.##} s cooldown");
                 })
                 .AddSelectionChanged(selection => ShowDetails(selection.FirstOrDefault() as AbilityConfig))
                 .SetFlexGrow(1);
@@ -198,7 +198,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetWhiteSpace(WhiteSpace.Normal);
             effectLabel.TrackSerializedObjectValue(serializedObject, _ => RefreshEffect());
             var effectButton = new Button()
-                .SetText("Change…");
+                .SetTextSelf("Change…");
 
             // The same picker the [TypeSelector] attribute opens, driven from code: anchor it to the button,
             // constrain it to IAbilityEffect implementations and write the result into the string property.
@@ -224,7 +224,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
             // A one-click balance pass: chainable typed setters, Undo included, applied once at the end.
             var halveCooldown = new Button()
-                .SetText("Halve cooldown, +5 MP")
+                .SetTextSelf("Halve cooldown, +5 MP")
                 .AddClicked(() =>
                 {
                     serializedObject.Update();
@@ -236,7 +236,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddClass("ability-action");
 
             var selectAsset = new Button()
-                .SetText("Select asset")
+                .SetTextSelf("Select asset")
                 .AddClicked(() => Selection.activeObject = config)
                 .AddClass("ability-action");
 
@@ -259,7 +259,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
             title.TrackSerializedObjectValue(serializedObject, _ =>
             {
-                title.SetText(config.AbilityName);
+                title.SetTextSelf(config.AbilityName);
                 _list.RefreshItems();
             });
 
@@ -284,7 +284,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             {
                 var type = config.EffectType;
                 var description = type is null ? "none" : ((IAbilityEffect)Activator.CreateInstance(type)).Describe(config);
-                effectLabel.SetText(type is null ? "<None>" : $"{type.Name} — {description}");
+                effectLabel.SetTextSelf(type is null ? "<None>" : $"{type.Name} — {description}");
             }
         }
 
