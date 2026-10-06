@@ -1,7 +1,7 @@
 #!/bin/sh
 # Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text,
 # release link and install URLs in both README translations (Website/docs, Website/i18n/ru), the install URL in the
-# package README. The root README is regenerated from the English one; on a
+# package README. The root READMEs (README.md, README.ru.md) are regenerated from them; on a
 # stable version the unshipped analyzer rules move to AnalyzerReleases.Shipped.md.
 # The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
 # from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one.

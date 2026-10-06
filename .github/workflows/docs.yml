@@ -1,7 +1,7 @@
 name: Docs
 
 # Builds the Docusaurus site in Website/ and publishes it to GitHub Pages.
-# Content lives in Website/ (docs, tutorials, i18n) plus the root README.md and CHANGELOG*.md,
+# Content lives in Website/ (docs, tutorials, i18n) plus the root README*.md and CHANGELOG*.md,
 # so any change there rebuilds the site.
 
 on:
@@ -9,7 +9,8 @@ on:
     branches: [main]
     paths:
       - 'Website/**'
-      - 'README.md'
+      - 'README*.md'
+      - 'docs/images/readme-previews/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
@@ -21,7 +22,8 @@ on:
   pull_request:
     paths:
       - 'Website/**'
-      - 'README.md'
+      - 'README*.md'
+      - 'docs/images/readme-previews/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'

@@ -1,6 +1,6 @@
 /**
  * Generate the copies of hand-written Markdown, rebasing file links:
- *   Website/docs/README.md → repository README.md
+ *   Website/docs/README.md → repository README.md, and its Russian translation → README.ru.md, in GitHub's layout
  *   repository CHANGELOG.md → package CHANGELOG.md (Unity's Package Manager reads that copy)
  * A link that leaves the package in the package copy becomes a GitHub URL, since the package ships without the repository.
  */
@@ -11,12 +11,15 @@ import {unified} from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkStringify from 'remark-stringify';
+import {githubLayout} from './github-readme.mjs';
 
 const repoDir = fileURLToPath(new URL('../../', import.meta.url));
 const packageDir = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const repoUrl = 'https://github.com/VPDPersonal/Aspid.FastTools/blob/main';
+const translations = {en: 'README.md', ru: 'README.ru.md'};
 const copies = [
-  {source: 'Website/docs/README.md', destination: 'README.md'},
+  {source: 'Website/docs/README.md', destination: 'README.md', language: 'en'},
+  {source: 'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md', destination: 'README.ru.md', language: 'ru'},
   // Copied as text: a remark round trip would rewrite its emphasis and escape `[Unreleased]`.
   {source: 'CHANGELOG.md', destination: `${packageDir}/CHANGELOG.md`, verbatim: true},
 ];
@@ -24,7 +27,7 @@ const processor = unified().use(remarkParse).use(remarkGfm, {tableCellPadding: f
   bullet: '-', fences: true, emphasis: '_', resourceLink: true,
 });
 
-function generate({source, destination, verbatim}) {
+function generate({source, destination, verbatim, language}) {
   const sourceDir = path.posix.dirname(source);
   const destinationDir = path.posix.dirname(destination);
 
@@ -54,6 +57,14 @@ function generate({source, destination, verbatim}) {
   }
   const tree = processor.parse(text);
   visit(tree);
+  if (language) {
+    githubLayout(tree, {
+      language,
+      translations: Object.fromEntries(Object.entries(translations).map(([key, file]) => [key, path.posix.relative(destinationDir, file)])),
+      previews: path.posix.relative(destinationDir, 'docs/images/readme-previews'),
+      exists: (url) => fs.existsSync(path.join(repoDir, destinationDir, url)),
+    });
+  }
   // remark escapes the bracket that opens a GitHub alert (`> [!WARNING]`); GitHub needs it literal.
   const markdown = processor.stringify(tree).replace(/^(>\s*)\\\[!(?=[A-Z]+\])/gm, '$1[!');
   return `<!-- Generated from ${source}. Edit that file, then run npm --prefix Website run sync-readme. -->\n\n${markdown}`;
