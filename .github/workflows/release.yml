@@ -24,14 +24,13 @@ env:
   ANALYZERS_SOLUTION_DIR: Aspid.FastTools.Analyzers
 
 jobs:
-  # Every test of Tests on the commit being released; here a missing UNITY_LICENSE fails instead of skipping Unity.
+  # Every test of Tests on the commit being released; here missing Unity secrets fail instead of skipping Unity.
   tests:
     name: Tests
     uses: ./.github/workflows/tests.yml
     with:
       require-unity: true
     secrets:
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
       UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
     permissions:

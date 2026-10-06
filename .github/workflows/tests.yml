@@ -8,12 +8,10 @@ on:
   workflow_call:
     inputs:
       require-unity:
-        description: 'Fail instead of skipping the Unity tests when UNITY_LICENSE is unavailable.'
+        description: 'Fail instead of skipping the Unity tests when the Unity account secrets are unavailable.'
         type: boolean
         default: false
     secrets:
-      UNITY_LICENSE:
-        required: false
       UNITY_EMAIL:
         required: false
       UNITY_PASSWORD:
@@ -56,11 +54,9 @@ jobs:
   # Runs the Unity tests only for a change that can affect them and only with a license to run them.
   # Secrets are unavailable to fork PRs and until the owner adds them; the Unity tests are then skipped, not failed,
   # except under require-unity.
-  # Secrets for a Personal license (Unity no longer issues one through manual .alf activation):
-  #   UNITY_LICENSE   contents of the .ulf that Unity Hub writes after signing in and activating a Personal license
-  #                   (macOS /Library/Application Support/Unity/Unity_lic.ulf, Windows C:\ProgramData\Unity\Unity_lic.ulf,
-  #                   Linux ~/.local/share/unity3d/Unity/Unity_lic.ulf); repeat when Hub renews it
-  #   UNITY_EMAIL, UNITY_PASSWORD   that Unity account
+  # Secrets: UNITY_EMAIL and UNITY_PASSWORD of a Unity account with a Personal license; GameCI activates a seat with
+  # them in each job. Do not add the .ulf from Unity Hub (UNITY_LICENSE): it is bound to the Hub machine, and on
+  # 6000.0.53f1 GameCI keeps retrying it instead of falling back to the account.
   unity-plan:
     name: Unity plan
     runs-on: ubuntu-latest
@@ -72,7 +68,8 @@ jobs:
     steps:
       - id: plan
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           REQUIRE_UNITY: ${{ inputs.require-unity }}
           GH_TOKEN: ${{ github.token }}
           EVENT: ${{ github.event_name }}
@@ -98,12 +95,12 @@ jobs:
           if [ "$files" != all ] && ! grep -qE "$relevant" <<<"$code"; then
             echo "No change reaches the Unity tests; they are skipped."
             echo "run=false" >> "$GITHUB_OUTPUT"
-          elif [ -z "$UNITY_LICENSE" ]; then
+          elif [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
             if [ "$REQUIRE_UNITY" = true ]; then
-              echo "::error::UNITY_LICENSE is not available; the Unity EditMode tests must run here."
+              echo "::error::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests must run here."
               exit 1
             fi
-            echo "::notice::UNITY_LICENSE is not available; the Unity EditMode tests are skipped."
+            echo "::notice::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests are skipped."
             echo "run=false" >> "$GITHUB_OUTPUT"
           else
             echo "run=true" >> "$GITHUB_OUTPUT"
@@ -156,7 +153,6 @@ jobs:
 
       - uses: game-ci/unity-test-runner@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
