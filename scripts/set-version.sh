@@ -69,8 +69,8 @@ case "$NEW" in *-*) ;; *)
     mv "$REL.Unshipped.md.tmp" "$REL.Unshipped.md"
   fi ;;
 esac
-# Before sync-readme, which copies CHANGELOG.md into the package. The new section goes under an empty [Unreleased],
-# and its release link above the older ones.
+# The new section goes under an empty [Unreleased], and its release link above the older ones. The package copy of
+# CHANGELOG.md is generated at release (scripts/package-changelog.mjs).
 DATE=$(date +%Y-%m-%d) REPO=https://github.com/VPDPersonal/Aspid.FastTools
 export DATE REPO
 for f in CHANGELOG.md CHANGELOG.ru.md; do

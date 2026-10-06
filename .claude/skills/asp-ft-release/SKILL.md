@@ -49,7 +49,7 @@ Do every step without questions. Stop at the first failure and report it.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.
 9. Run `npm --prefix Website run check-readme`.
 10. Find the old version in prose:
-    `git grep -n -F '<old>' -- . ':!CHANGELOG*' ':!**/CHANGELOG.md' ':!scripts/'`.
+    `git grep -n -F '<old>' -- . ':!CHANGELOG*' ':!scripts/'`.
     Do not edit the hits. Put them into the report.
 11. Wait for both `unity-verify` agents. A failed test stops the release.
 12. Commit with the `asp-commit` skill. Message: `chore(release): v<version>`.
@@ -79,8 +79,10 @@ Do every step without questions. Stop at the first failure and report it.
    `git ls-remote origin refs/heads/<channel> refs/tags/<channel>/<version>`.
 4. Check the package version on the channel:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/package.json?ref=<channel>' --jq .content | base64 -d`.
-5. **Stable:** ask before you close the milestone `v<version>`. Then close it with `gh api -X PATCH`.
-6. Send the final report: the release URL, the channel, the open items from the Phase 1 report.
+5. Check that the package CHANGELOG on the channel has the version's section. The release generates that copy:
+   `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/CHANGELOG.md?ref=<channel>' --jq .content | base64 -d`.
+6. **Stable:** ask before you close the milestone `v<version>`. Then close it with `gh api -X PATCH`.
+7. Send the final report: the release URL, the channel, the open items from the Phase 1 report.
 
 ## Release failed
 
