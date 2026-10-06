@@ -80,8 +80,8 @@ Do every step without questions. Stop at the first failure and report it.
 ## Phase 3: check the publication
 
 1. Find the run of the tag as in "Phase 2" step 7.
-2. The run is still in progress → go to "Phase 2" step 8.
-3. The run failed → go to "Release failed".
+2. `status` is not `completed` → go to "Phase 2" step 8.
+3. `conclusion` is not `success` → go to "Release failed".
 4. Check the GitHub release: `gh release view v<version> --json url,isPrerelease`.
    `isPrerelease` must be true on `upm-preview` and false on `upm`.
 5. Check that `refs/heads/<channel>` and `refs/tags/<channel>/<version>` point to one commit:
