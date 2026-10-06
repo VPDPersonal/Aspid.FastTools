@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {ACCENTS} from '../src/accents.js';
 
 const dir = fileURLToPath(new URL('../src/components/IntroBanner/', import.meta.url));
 const W = 640;
@@ -249,7 +250,6 @@ ${lines(pieces.map((piece) => Math.round(piece.body * 1000)), 24)}
 // Each accent's logo is a recolouring of the green one, so an affine colour map fitted on the skin around the eye (the
 // eye itself left out) carries the lid over.
 const LID = 66; // px, the lid's square, as cut from the logo at (260, 65)
-const ACCENTS = ['green', 'red', 'blue', 'yellow', 'mono']; // as in src/accents.js
 const lid = decode('eyelid-green.png', LID, LID);
 
 function solve(matrix, vector) {

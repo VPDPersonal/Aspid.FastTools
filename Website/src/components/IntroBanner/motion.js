@@ -41,6 +41,7 @@ const RUN = 1300;            // ms for the light to run from the tail past the s
 const RUN_EVERY = 7000;      // ms between runs; the pointer coming onto the logo starts one as well
 const RUN_WIDTH = 0.04;      // length of the lit stretch, as a share of the body
 const RUN_GAIN = 0.6;        // brightness of the light at its peak
+const HALO = 3;              // the halo is the light at this many times less resolution, scaled back up
 
 const clamp = (v, low = 0, high = 1) => Math.min(high, Math.max(low, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -68,7 +69,8 @@ function loadImage(url) {
   return images.get(url);
 }
 
-// Position along the body for every pixel of logo-body.png: 0 off the body, else 1 (tail) .. 255 (snout).
+// Position along the body for every pixel of logo-body.png: 0 off the body, else 1 (tail) .. 255 (snout). `pixels[v]`
+// lists the pixels at position v, so the run light touches only the stretch it lights.
 let bodyMap = null;
 function loadBodyMap() {
   bodyMap ??= loadImage(bodyMapUrl).then((image) => {
@@ -78,9 +80,15 @@ function loadBodyMap() {
     const ctx = canvas.getContext('2d', {willReadFrequently: true});
     ctx.drawImage(image, 0, 0);
     const {data} = ctx.getImageData(0, 0, image.width, image.height);
-    const body = new Uint8Array(image.width * image.height);
-    for (let i = 0; i < body.length; i++) body[i] = data[i * 4];
-    return {width: image.width, height: image.height, body};
+    const count = new Uint32Array(256);
+    for (let i = 0; i < data.length; i += 4) count[data[i]]++;
+    const pixels = Array.from(count, (n) => new Uint32Array(n));
+    count.fill(0);
+    for (let i = 0; i < data.length / 4; i++) {
+      const v = data[i * 4];
+      pixels[v][count[v]++] = i;
+    }
+    return {width: image.width, height: image.height, pixels};
   });
   return bodyMap;
 }
@@ -127,6 +135,7 @@ export function startLogoMotion(banner, {entrance, onClose}) {
   let image = null;
   // The entrance's pieces, the time they took off and whether the logo is whole yet.
   let pieces = null;
+  let narrow = false;
   let start = 0;
   let closed = !entrance;
   // Running effects of the life: {kind, start, duration}.
@@ -187,8 +196,9 @@ export function startLogoMotion(banner, {entrance, onClose}) {
   const plan = () => {
     const box = logoBox();
     const size = LOGO_WIDTH * box.scale;
-    // The dots: on the fixed page texture in viewport coordinates, or on the banner's own from its corner.
-    const narrow = matchMedia(NARROW).matches;
+    // The dots: on the fixed page texture in viewport coordinates, or on the banner's own from its corner. A start is kept
+    // in those coordinates, so it stays on its dot when the page scrolls under it.
+    narrow = matchMedia(NARROW).matches;
     const snap = (value, offset) => Math.round((value + offset - GRID / 2) / GRID) * GRID + GRID / 2 - offset;
     const taken = new Set();
     pieces = [];
@@ -212,6 +222,10 @@ export function startLogoMotion(banner, {entrance, onClose}) {
         reach += GRID * 0.7;
       }
       taken.add(`${sx},${sy}`);
+      if (!narrow) {
+        sx += box.left;
+        sy += box.top;
+      }
       const xs = corners.map((c) => c[0]);
       const ys = corners.map((c) => c[1]);
       const x0 = Math.floor(Math.min(...xs)) - 1;
@@ -231,8 +245,12 @@ export function startLogoMotion(banner, {entrance, onClose}) {
   const drawPieces = (now, box) => {
     const t = now - start;
     const [ar, ag, ab] = colors.accent;
+    const ox = narrow ? 0 : box.left;
+    const oy = narrow ? 0 : box.top;
     let last = 0;
     for (const piece of pieces) {
+      const sx = piece.sx - ox;
+      const sy = piece.sy - oy;
       last = Math.max(last, piece.delay + FLIGHT);
       const u = clamp((t - piece.delay) / FLIGHT);
       const hx = box.x + piece.mx * box.scale;
@@ -240,12 +258,12 @@ export function startLogoMotion(banner, {entrance, onClose}) {
       const travel = easeOut(u);
       const grow = easeInOut(u);
       // The flight bows to one side of the straight line from the dot to the place.
-      const nx = piece.sy - hy;
-      const ny = hx - piece.sx;
+      const nx = sy - hy;
+      const ny = hx - sx;
       const nl = Math.hypot(nx, ny) || 1;
       const bow = Math.sin(Math.PI * u) * piece.bow;
-      const x = lerp(piece.sx, hx, travel) + nx / nl * bow;
-      const y = lerp(piece.sy, hy, travel) + ny / nl * bow;
+      const x = lerp(sx, hx, travel) + nx / nl * bow;
+      const y = lerp(sy, hy, travel) + ny / nl * bow;
       // A dot that swells, then the piece of the logo it unfolds into.
       const texture = smooth(0.12, 0.42, grow);
       if (texture < 1) {
@@ -326,49 +344,56 @@ export function startLogoMotion(banner, {entrance, onClose}) {
     const a = e < 60 ? e / 60 : e < 150 ? 1 : 1 - (e - 150) / (BLINK - 150);
     if (a <= 0 || !lids) return;
     const k = Math.max(0, ACCENTS.indexOf(document.documentElement.dataset.accent ?? DEFAULT_ACCENT));
+    if ((k + 1) * LID.size > lids.width) return;
     const size = LID.size * box.scale;
     ctx.globalAlpha = a;
     ctx.drawImage(lids, k * LID.size, 0, LID.size, LID.size, box.x + LID.x * box.scale, box.y + LID.y * box.scale, size, size);
     ctx.globalAlpha = 1;
   };
 
-  // The light: the body's pixels near the running point light up, more behind it than ahead.
-  let glowCanvas = null;
-  let glowPixels = null;
+  // The light: the body's pixels near the running point light up, more behind it than ahead. Only the positions lit in
+  // the last frame are cleared and only the lit stretch is filled. The halo is that light drawn small and scaled back up.
+  let glow = null;
   const drawRun = (e, box, map) => {
-    const p = e / RUN * (1 + 2 * RUN_WIDTH) - RUN_WIDTH;
-    if (!glowCanvas) {
-      glowCanvas = document.createElement('canvas');
-      glowCanvas.width = map.width;
-      glowCanvas.height = map.height;
-      glowPixels = glowCanvas.getContext('2d').createImageData(map.width, map.height);
+    if (!glow) {
+      const canvas = document.createElement('canvas');
+      canvas.width = map.width;
+      canvas.height = map.height;
+      const halo = document.createElement('canvas');
+      halo.width = Math.ceil(map.width / HALO);
+      halo.height = Math.ceil(map.height / HALO);
+      const haloCtx = halo.getContext('2d');
+      haloCtx.imageSmoothingQuality = 'high';
+      glow = {canvas, ctx: canvas.getContext('2d'), image: canvas.getContext('2d').createImageData(map.width, map.height), halo, haloCtx, lit: [1, 0]};
     }
-    const {data} = glowPixels;
+    const {data} = glow.image;
     const [lr, lg, lb] = colors.light;
-    for (let i = 0; i < map.body.length; i++) {
-      const v = map.body[i];
-      const j = i * 4;
-      if (!v) {
-        data[j + 3] = 0;
-        continue;
-      }
+    for (let v = glow.lit[0]; v <= glow.lit[1]; v++) for (const i of map.pixels[v]) data[i * 4 + 3] = 0;
+    const p = e / RUN * (1 + 2 * RUN_WIDTH) - RUN_WIDTH;
+    const from = Math.max(1, Math.floor(1 + (p - 3 * RUN_WIDTH) * 254));
+    const to = Math.min(255, Math.ceil(1 + (p + 0.1 * RUN_WIDTH) * 254));
+    glow.lit = [from, to];
+    for (let v = from; v <= to; v++) {
       const d = (p - (v - 1) / 254) / RUN_WIDTH;
-      data[j] = lr;
-      data[j + 1] = lg;
-      data[j + 2] = lb;
-      data[j + 3] = d > -0.1 ? 255 * clamp(Math.exp(-d * d) * RUN_GAIN) : 0;
+      const alpha = d > -0.1 ? 255 * clamp(Math.exp(-d * d) * RUN_GAIN) : 0;
+      for (const i of map.pixels[v]) {
+        data[i * 4] = lr;
+        data[i * 4 + 1] = lg;
+        data[i * 4 + 2] = lb;
+        data[i * 4 + 3] = alpha;
+      }
     }
-    glowCanvas.getContext('2d').putImageData(glowPixels, 0, 0);
+    glow.ctx.putImageData(glow.image, 0, 0);
+    glow.haloCtx.clearRect(0, 0, glow.halo.width, glow.halo.height);
+    glow.haloCtx.drawImage(glow.canvas, 0, 0, glow.halo.width, glow.halo.height);
     const w = map.width * BODY_SCALE * box.scale;
     const h = map.height * BODY_SCALE * box.scale;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = 0.9;
-    ctx.filter = `blur(${Math.max(1.5, w / 110)}px)`;
-    ctx.drawImage(glowCanvas, box.x, box.y, w, h);
-    ctx.filter = 'none';
+    ctx.drawImage(glow.halo, box.x, box.y, w, h);
     ctx.globalAlpha = 0.55;
-    ctx.drawImage(glowCanvas, box.x, box.y, w, h);
+    ctx.drawImage(glow.canvas, box.x, box.y, w, h);
     ctx.restore();
   };
 
@@ -410,7 +435,7 @@ export function startLogoMotion(banner, {entrance, onClose}) {
     blink();
   }, between(BLINK_EVERY));
   const run = () => later(() => {
-    if (shown() && map) addEffect('run', RUN);
+    if (shown() && map && !effects.some((effect) => effect.kind === 'run')) addEffect('run', RUN);
     run();
   }, RUN_EVERY);
   const hover = () => {

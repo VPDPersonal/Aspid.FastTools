@@ -5,6 +5,8 @@ import {startLogoMotion} from './motion';
 import './styles.css';
 
 const WAVE_POWER = 2; // the wave the assembled logo sends out: as strong as a fully charged click
+// ms after the navigation by which the entrance must start: styles.css shows the banner by itself from 3 s on.
+const LATEST_START = 2700;
 
 /**
  * The README banner on the introduction. GitHub shows the PNG (`docs/images/aspid_fasttools_readme_banner.png`); the site
@@ -26,8 +28,13 @@ export default function IntroBanner({alt}) {
     const root = document.documentElement;
     const banner = ref.current;
     if (!banner || matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-    const entrance = root.hasAttribute('data-intro');
+    let entrance = root.hasAttribute('data-intro');
+    if (entrance && performance.now() > LATEST_START) {
+      root.removeAttribute('data-intro');
+      entrance = false;
+    }
     if (entrance) {
+      banner.dataset.assembling = '';
       try {
         sessionStorage.setItem(INTRO_KEY, '1');
       } catch {

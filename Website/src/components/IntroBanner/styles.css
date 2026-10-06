@@ -88,7 +88,8 @@ html[data-accent='mono'] .readme-banner__logo { background-image: url('./media/l
 /* ---------- Entrance, once per tab session (src/intro.js sets html[data-intro], index.js clears it) ----------
    From the first paint the logo and the name wait hidden while motion.js assembles the logo from the dots. Once it is
    whole, index.js sets data-closed: the logo takes over from the pieces and pulses, the name is wiped in behind the wave
-   and the tagline rises. */
+   and the tagline rises. Until index.js takes the banner over (data-assembling), the banner shows itself after 3 s, so a
+   slow or failed script never leaves the page's only heading blank; index.js skips an entrance that starts that late. */
 @property --intro-wipe {
   syntax: '<percentage>';
   inherits: false;
@@ -98,6 +99,14 @@ html[data-accent='mono'] .readme-banner__logo { background-image: url('./media/l
 html[data-intro] .readme-banner:not([data-closed]) .readme-banner__logo,
 html[data-intro] .readme-banner:not([data-closed]) .readme-banner__tagline {
   opacity: 0;
+}
+
+html[data-intro] .readme-banner:not([data-assembling], [data-closed]) :is(.readme-banner__logo, .readme-banner__tagline) {
+  animation: readme-intro-fallback 400ms ease-out 3s forwards;
+}
+
+html[data-intro] .readme-banner:not([data-assembling], [data-closed]) .readme-banner__title {
+  animation: readme-intro-wipe 900ms cubic-bezier(0.25, 0.6, 0.3, 1) 3s both;
 }
 
 html[data-intro] .readme-banner[data-closed] .readme-banner__logo {
@@ -123,6 +132,10 @@ html[data-intro] .readme-banner[data-closed] .readme-banner__tagline {
 
 @keyframes readme-intro-show {
   from { opacity: 0; }
+}
+
+@keyframes readme-intro-fallback {
+  to { opacity: 1; }
 }
 
 @keyframes readme-intro-pulse {
