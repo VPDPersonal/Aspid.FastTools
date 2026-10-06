@@ -82,7 +82,7 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
-- The package supports Unity 6000.0. Wrap these in `#if UNITY_6000_x_OR_NEWER` when the project must support older
+- The package supports Unity 6000.0.53f1. Wrap these in `#if UNITY_6000_x_OR_NEWER` when the project must support older
   versions: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
   `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values
   (6000.4).
