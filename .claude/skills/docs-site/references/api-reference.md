@@ -13,12 +13,17 @@ cd Website && npm run api               # regenerate after public API or XML doc
 ```
 
 A worktree has no Unity-generated `.csproj`, no `Library/` and no `Website/node_modules`. Take them from the main
-checkout before `npm run api`:
+checkout before `npm run api`. Run these from the worktree root (macOS):
 
-1. Clone the Library: `cp -c -R <main>/Aspid.FastTools/Library Aspid.FastTools/Library`.
+1. Clone the Library: `cp -c -R <main>/Aspid.FastTools/Library Aspid.FastTools/Library`. On APFS, `-c` makes a
+   clone in seconds; GNU `cp` reads `-c` differently.
 2. Copy `Aspid.FastTools.csproj` and `Aspid.FastTools.Editor.csproj` into `Aspid.FastTools/`. Replace the main
    checkout path in them with the worktree path, so the analyzers come from the worktree.
-3. Link `Website/node_modules` to the main checkout's folder. Remove the link after the run.
+3. Link `Website/node_modules` to the main checkout's folder. Remove the link before you stage anything:
+   `Website/.gitignore` ignores a `node_modules/` directory, not a symlink.
+
+The cloned `Library/ScriptAssemblies` holds DLLs built from the main checkout. A PR that changes an asmdef outside
+the documented assemblies (for example the Math satellite) needs a Unity compile of the worktree first.
 
 `npm run api` deletes `Website/api/` and runs three steps (`Website/scripts/docfx-*.mjs`,
 `Website/docfx/docfx.json`) — if DocFX fails midway, the directory stays empty and the site build breaks, so
