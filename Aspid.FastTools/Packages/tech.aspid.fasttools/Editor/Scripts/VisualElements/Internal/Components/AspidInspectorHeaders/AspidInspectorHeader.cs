@@ -6,7 +6,11 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if UNITY_6000_0_53_OR_NEWER
     [UxmlElement(libraryPath = "Aspid/FastTools")]
+#else
+    [UxmlElement]
+#endif
     internal sealed partial class AspidInspectorHeader : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidInspectorHeader";

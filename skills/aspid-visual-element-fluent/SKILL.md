@@ -84,3 +84,5 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   versions: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
   `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values
   (6000.4).
+  `SetUnityEditorTextRenderingMode` (6000.0.1) and `SetUnitySliceType` (6000.0.46) need a patch guard: Unity has no
+  built-in define for a patch, so add a `versionDefines` entry on the `Unity` resource to the asmdef.

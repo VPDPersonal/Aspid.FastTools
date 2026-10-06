@@ -68,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The package now compiles on the early Unity 6000.0 patches that `package.json` allows (6000.0.0f1–6000.0.52f1). `SetUnityEditorTextRenderingMode` is available from 6000.0.1 and `SetUnitySliceType` from 6000.0.46, the patches that added the `IStyle` properties they set.
 - The `SHARED` badge in Asset References now fits its text; it used to shrink to the width of its colour dot, so the text ran out of it and the dot covered the letter "H".
 - Asset References shows unset required fields (the **Required type is not set** cards and REQUIRED badges) of an asset in an **Excluded scan folder**, as it already showed its missing types; the folder still keeps the asset out of Project References and the build / CI checks.
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
