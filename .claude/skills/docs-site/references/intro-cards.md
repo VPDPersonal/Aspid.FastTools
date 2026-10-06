@@ -4,8 +4,8 @@ There is no landing page: `/` redirects to `/docs`. The README banner is a `<pic
 GitHub theme (`docs/images/aspid_fasttools_readme_banner_dark.webp`, `…_light.webp`), and the static 2560×768 PNG
 (`aspid_fasttools_readme_banner.png`, the green dark variant) as its `<img>`, all linked by relative paths. The PNG is
 designed on the «README banner» page of the «FastTools Asset Store» Design canvas: one board per accent and theme. The
-WebPs are recorded from this site's banner in headless Chrome (one segment per accent, virtual time, 25 fps, 2x) and
-looped through the accents, each spreading from the logo; the canvas shows them in its «Animated» row. The plugin
+WebPs are recorded from this site's banner in the green accent in headless Chrome (virtual time, 25 fps, 2x): 9 s whose
+last second crossfades into its first, an 8 s loop; the canvas shows them in its «Animated» row. The plugin
 renders the banner as
 `src/components/IntroBanner`: that layout rebuilt in HTML, the logo (`media/logo-<accent>.webp`, 640 px, picked from
 `html[data-accent]`) and the live title and tagline, sized in `cqi` so it scales like the PNG. It has no background: on
