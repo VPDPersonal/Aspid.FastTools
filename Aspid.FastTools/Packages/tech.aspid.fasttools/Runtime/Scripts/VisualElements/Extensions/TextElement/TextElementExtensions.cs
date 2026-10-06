@@ -15,7 +15,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The text to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetText<T>(this T element, string value)
+        public static T SetTextSelf<T>(this T element, string value)
             where T : TextElement
         {
             element.text = value;
