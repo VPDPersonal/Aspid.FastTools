@@ -30,7 +30,12 @@ Format:
 
 - At most 8 findings, most severe first.
 - Put each specific issue in an inline comment on its line.
-- Put only a short summary in the main comment: "No blocking issues" or the count of findings.
+- Start each inline comment with a severity tag:
+  - `[blocking]`: the PR must not merge until it is fixed;
+  - `[minor]`: an improvement that can wait.
+- Start the main comment with exactly one verdict line: `Verdict: <N> blocking, <M> minor`.
+  An agent reads this line to decide the next step, so keep the format.
+  Put at most 2 short sentences after it.
 - Do not praise.
 - Do not write the literal trigger phrase (at-sign + "claude") in your comments:
   it starts the workflow again.
