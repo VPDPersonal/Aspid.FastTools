@@ -12,7 +12,7 @@
 
 Aspid.FastTools is a Unity package that takes the routine out of serialization, profiling and editor code.
 
-[Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs)
 
 ## Installation
 

@@ -18,6 +18,8 @@ const packageDir = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const repository = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const repoUrl = `${repository}/blob/main`;
 const site = 'https://vpdpersonal.github.io/Aspid.FastTools/';
+// LOCALES in docusaurus.config.js, the default one first.
+const locales = ['en', 'ru'];
 const copies = [
   {source: 'Website/docs/README.md', destination: 'README.md', github: true},
   // Copied as text: a remark round trip would rewrite its emphasis and escape `[Unreleased]`.
@@ -60,6 +62,7 @@ function generate({source, destination, verbatim, github}) {
   if (github) {
     githubLayout(tree, {
       site,
+      locales,
       repository,
       previews: path.posix.relative(destinationDir, 'docs/images/readme-previews'),
       exists: (url) => fs.existsSync(path.join(repoDir, destinationDir, url)),

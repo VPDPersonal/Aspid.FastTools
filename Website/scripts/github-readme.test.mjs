@@ -12,7 +12,7 @@ const repository = 'https://github.com/owner/repo';
 
 function layout(markdown, files = []) {
   const tree = processor.parse(markdown);
-  githubLayout(tree, {site, repository, previews: 'docs/images/readme-previews', exists: (url) => files.includes(url)});
+  githubLayout(tree, {site, locales: ['en', 'ru'], repository, previews: 'docs/images/readme-previews', exists: (url) => files.includes(url)});
   return processor.stringify(tree);
 }
 
@@ -45,9 +45,9 @@ test('doc pages and the samples overview open on the site', () => {
   assert.match(result, /<a href="Website\/tutorials\/Types\/README.md">Raw<\/a>/);
 });
 
-test('the link row drops the repository link', () => {
-  const result = layout('[Docs](https://site.test/docs) · [Source code](https://github.com/owner/repo) · [Releases](https://github.com/owner/repo/releases)');
-  assert.equal(result.trim(), '[Docs](https://site.test/docs) · [Releases](https://github.com/owner/repo/releases)');
+test('the link row lists the site languages for a link to the site', () => {
+  const result = layout('[Documentation](https://site.test/docs) · [Releases](https://github.com/owner/repo/releases)');
+  assert.equal(result.trim(), 'Documentation: [EN](https://site.test/docs), [RU](https://site.test/ru/docs) · [Releases](https://github.com/owner/repo/releases)');
 });
 
 test('the note on pinning a version folds into details with the URL as a block', () => {

@@ -2,7 +2,7 @@
  * GitHub layout for the generated README. GitHub renders the introduction without the site's components, so its
  * site-only blocks get the closest GitHub equivalent in plain HTML (src/remark/introBanner.js builds the site's):
  * - links to doc pages and to the samples overview open the site, which renders them in full;
- * - the link row loses the link to the repository the reader is already in;
+ * - the link row's link to the site lists the site's languages: `Documentation: EN, RU`;
  * - the note on pinning a version folds into <details>, with the pinned URL as a block to copy;
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
@@ -62,15 +62,24 @@ function siteLinks(node, site) {
   node.children?.forEach((child) => siteLinks(child, site));
 }
 
-/** The link row: text links and separators only (the badge row links images). */
-function linkRow(tree, repository) {
+/**
+ * The link row: text links and separators only (the badge row links images). A link to the site becomes its label and
+ * one link per site language, the first one the default: `Documentation: EN, RU`.
+ */
+function linkRow(tree, site, locales) {
   const row = tree.children.find((node) => node.type === 'paragraph'
     && node.children.some((part) => part.type === 'link')
     && node.children.every((part) => (part.type === 'link' && part.children.every((child) => child.type === 'text'))
       || (part.type === 'text' && /^[\s·|\-–—]*$/.test(part.value))));
   if (!row) return;
-  const links = row.children.filter((part) => part.type === 'link' && part.url.replace(/\/$/, '') !== repository);
-  row.children = links.flatMap((link, index) => (index ? [{type: 'text', value: ' · '}, link] : [link]));
+  row.children = row.children.flatMap((part) => {
+    if (part.type !== 'link' || !part.url.startsWith(site)) return [part];
+    const page = part.url.slice(site.length);
+    const links = locales.map((locale, at) => ({type: 'link', url: `${site}${at ? `${locale}/` : ''}${page}`,
+      children: [{type: 'text', value: locale.toUpperCase()}]}));
+    return [{type: 'text', value: `${part.children.map((child) => child.value).join('')}: `},
+      ...links.flatMap((link, at) => (at ? [{type: 'text', value: ', '}, link] : [link]))];
+  });
 }
 
 /** The sentence that ends with the pinned install URL (`….git#upm-preview/1.0.0`) folds away under the rest. */
@@ -205,13 +214,14 @@ function themedImages(node, exists) {
 /**
  * @param tree the README's Markdown tree, its file URLs relative to the README
  * @param options.site the documentation site, ending in `/`
+ * @param options.locales the site's languages, the default one first
  * @param options.repository the repository's GitHub URL, without a trailing `/`
  * @param options.previews the folder of the preview recordings, relative to the README
  * @param options.exists whether a URL relative to the README names a file
  */
 export function githubLayout(tree, options) {
   siteLinks(tree, options.site);
-  linkRow(tree, options.repository);
+  linkRow(tree, options.site, options.locales);
   pinNote(tree);
   featureCards(tree, options);
   linkTiles(tree);

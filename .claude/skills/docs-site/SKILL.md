@@ -334,8 +334,8 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   `prestart`/`prebuild` refresh them automatically and CI runs `check-readme` before building to reject a stale copy.
   The script only updates existing files: recreating the package copy would give its `.meta` a new GUID.
 - The root README gets GitHub's version of the site's introduction blocks (`scripts/github-readme.mjs`, tested in
-  `github-readme.test.mjs`): doc-page and samples-overview links open the site, the link row drops the repository's own
-  link, the pinned-version note folds into `<details>`, an image with a `-light` sibling becomes a `<picture>` per GitHub
+  `github-readme.test.mjs`): doc-page and samples-overview links open the site, the link row's site link becomes
+  `Documentation: EN, RU`, the pinned-version note folds into `<details>`, an image with a `-light` sibling becomes a `<picture>` per GitHub
   theme, each feature becomes a card (a one-row table: preview, then title, summary and «Read more»), the Resources list
   a row of tiles, and the help section the SupportPanel call to action without the licence line. A code preview gives
   way to the recording of the site's animated preview, `docs/images/readme-previews/<doc>[-light].webp`. After a change
