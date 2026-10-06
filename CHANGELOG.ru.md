@@ -26,6 +26,7 @@
 
 ### Изменено
 
+- Минимальная версия Unity теперь 6000.0.53f1 вместо 6000.0.0f1. Пакет использует API UI Toolkit, которые появились в более поздних патчах 6000.0 (`IStyle.unityEditorTextRenderingMode`, `IStyle.unitySliceType`, `UxmlElement.libraryPath`), поэтому на ранних патчах он не компилировался.
 - Пакет больше не содержит папку `Documentation` со страницами и картинками, поэтому они не импортируются в ваш проект; документация находится на сайте: https://vpdpersonal.github.io/Aspid.FastTools/. В каждом примере остался короткий текстовый README о том, как его открыть, со ссылкой на полное руководство на сайте.
 - Agent Skills для пакета переехали из плагина `aspid-fasttools` для Claude Code в [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) в этот репозиторий (`skills/`). Устанавливайте их в Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI или другой агент командой `npx skills add VPDPersonal/Aspid.FastTools`; плагин больше не публикуется.
 - `GetScriptName()` переименован в `GetDisplayName()`, а `GetScriptNameWithIndex()` — в `GetDisplayNameWithIndex()`; замените старые вызовы новыми именами. Оба метода возвращают `string.Empty` для null и уничтоженных объектов. Поиск индекса компонента использует список из пула вместо временных массивов и LINQ.
@@ -66,7 +67,6 @@
 
 ### Исправлено
 
-- Пакет теперь компилируется на ранних патчах Unity 6000.0, которые допускает `package.json` (6000.0.0f1–6000.0.52f1). `SetUnityEditorTextRenderingMode` доступен с 6000.0.1, а `SetUnitySliceType` — с 6000.0.46: в этих патчах появились свойства `IStyle`, которые они задают.
 - Значок `SHARED` в Asset References теперь вмещает свой текст; раньше он сжимался до ширины цветной точки, текст вылезал за его край, а точка закрывала букву «H».
 - Asset References показывает незаполненные обязательные поля (карточки **Required type is not set** и значки REQUIRED) ассета из папки **Excluded scan folders**, как уже показывал его потерянные типы; в Project References и проверки build / CI такой ассет по-прежнему не попадает.
 - `GetDisplayName()` и `GetDisplayNameWithIndex()` больше не добавляют « (Script)», когда `[AddComponentMenu]` унаследован от базового класса или его путь пуст либо заканчивается на `/`; такие типы получают «очеловеченное» имя типа. Заголовок теперь берётся из атрибута, объявленного на самом типе, а тип с `[Obsolete]` больше не получает « (Deprecated)».

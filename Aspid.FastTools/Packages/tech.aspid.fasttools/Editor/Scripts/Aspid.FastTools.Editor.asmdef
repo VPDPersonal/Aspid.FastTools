@@ -13,12 +13,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "Unity",
-            "expression": "6000.0.53",
-            "define": "UNITY_6000_0_53_OR_NEWER"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

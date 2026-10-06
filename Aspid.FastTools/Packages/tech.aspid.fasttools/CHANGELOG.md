@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The minimum Unity version is now 6000.0.53f1 instead of 6000.0.0f1. The package uses UI Toolkit APIs that later 6000.0 patches added (`IStyle.unityEditorTextRenderingMode`, `IStyle.unitySliceType`, `UxmlElement.libraryPath`), so it did not compile on earlier patches.
 - The package no longer ships the `Documentation` folder with its pages and images, so they are not imported into your project; the documentation lives on the site: https://vpdpersonal.github.io/Aspid.FastTools/. Each sample keeps a short text README on how to open it, with a link to its full tutorial on the site.
 - The Agent Skills for this package moved from the `aspid-fasttools` Claude Code plugin in [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) into this repository (`skills/`). Install them into Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI or another agent with `npx skills add VPDPersonal/Aspid.FastTools`; the plugin is no longer published.
 - Renamed `GetScriptName()` to `GetDisplayName()` and `GetScriptNameWithIndex()` to `GetDisplayNameWithIndex()`; update existing calls to the new names. Both methods now return `string.Empty` for null or destroyed objects. Component indexing uses a pooled list instead of temporary arrays and LINQ.
@@ -68,7 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- The package now compiles on the early Unity 6000.0 patches that `package.json` allows (6000.0.0f1–6000.0.52f1). `SetUnityEditorTextRenderingMode` is available from 6000.0.1 and `SetUnitySliceType` from 6000.0.46, the patches that added the `IStyle` properties they set.
 - The `SHARED` badge in Asset References now fits its text; it used to shrink to the width of its colour dot, so the text ran out of it and the dot covered the letter "H".
 - Asset References shows unset required fields (the **Required type is not set** cards and REQUIRED badges) of an asset in an **Excluded scan folder**, as it already showed its missing types; the folder still keeps the asset out of Project References and the build / CI checks.
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
