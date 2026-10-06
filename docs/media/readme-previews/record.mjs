@@ -90,7 +90,7 @@ async function open(theme, locale) {
   await page('Page.enable');
   await page('Emulation.setDeviceMetricsOverride', {...VIEWPORT, mobile: false});
   // The entrance has played, so the banner rests. The card's frame, its rounded corner and the line between preview
-  // and text go: the README shows the preview without a frame.
+  // and text go: on GitHub the table cell is the frame.
   await page('Page.addScriptToEvaluateOnNewDocument', {source: `
     localStorage.setItem('theme', '${theme}');
     sessionStorage.setItem('aspid-intro-played', '1');

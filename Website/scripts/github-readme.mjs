@@ -2,9 +2,8 @@
  * GitHub layout for the generated READMEs. GitHub renders the introduction without the site's components, so its
  * site-only blocks get the closest GitHub equivalent in plain HTML (src/remark/introBanner.js builds the site's):
  * - an image with a `-light` sibling becomes a <picture> per GitHub theme;
- * - every feature becomes a frameless card: the preview floats on the left, the title and summary sit on the right
- *   (a table cell would pad the preview); a code preview gives way to the recording of the site's animated preview
- *   (`docs/images/readme-previews`);
+ * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
+ *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
  * - a line under the link row links the other translation.
  * All URLs are already relative to the README.
@@ -54,11 +53,10 @@ function card(heading, summary, preview, options) {
   const link = heading.children.find((part) => part.type === 'link');
   const url = link ? escape(link.url) : undefined;
   const title = inline(heading.children);
-  const body = `<h4>${title}</h4>\n<p>${inline(summary.children)}</p>\n`
+  const body = `</td>\n<td width="44%">\n<h4>${title}</h4>\n<p>${inline(summary.children)}</p>\n`
     + (url ? `<p><a href="${url}">${TEXT[options.language].more} →</a></p>\n` : '')
-    + '<br clear="all">\n</div>';
-  // The preview takes 56% of the width, as on the site; GitHub pads a left-aligned image on its right.
-  const size = ' width="56%" align="left"';
+    + '</td>\n</tr>\n</table>';
+  const size = ' width="100%"';
   let image;
   if (preview.type === 'html') {
     const {src, alt = ''} = attributes(preview.value);
@@ -70,8 +68,9 @@ function card(heading, summary, preview, options) {
     if (file) image = themedImage(file, escape(link.children.map((part) => part.value ?? '').join('')), options.exists, size);
   }
   // The preview is not a link: GitHub keeps a <picture> working only outside one, as the banner is.
-  // Without a recording the code stays a fenced block above the text; a <div> block would not parse it.
-  return image ? [html(`<div>\n${image}\n${body}`)] : [preview, html(`<div>\n${body}`)];
+  const open = '<table>\n<tr>\n<td width="56%">';
+  // Without a recording the code stays a fenced block; the blank lines around it let GitHub parse it inside the cell.
+  return image ? [html(`${open}${image}${body}`)] : [html(open), preview, html(body)];
 }
 
 /** On GitHub the features are grouped sections: a linked heading, a sentence and a preview. */
