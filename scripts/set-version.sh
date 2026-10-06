@@ -16,11 +16,12 @@ perl -e 'exit($ARGV[0] !~ /\A[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?\z/)' "$NEW
 # Checked before any file changes, so a missing install never leaves the root README out of step.
 [ -d Website/node_modules ] || { echo "Website/node_modules is missing; run: npm --prefix Website ci" >&2; exit 1; }
 # A CHANGELOG that already has the version's section keeps it. Otherwise its [Unreleased] must have notes to release.
+# The heading is matched whole, as the move below needs it: a trailing space or a CRLF fails here, before any change.
 has_section() { perl -ne 'BEGIN { $v = shift } $f = 1 if /^## \[\Q$v\E\]/; END { exit !$f }' "$NEW" "$1"; }
 for f in CHANGELOG.md CHANGELOG.ru.md; do
   has_section "$f" && continue
-  awk '/^## \[Unreleased\]/ { on = 1; next } /^## \[/ { exit } on && NF && !/^#/ { notes = 1 } END { exit !notes }' "$f" \
-    || { echo "$f: [Unreleased] has no notes to release as $NEW" >&2; exit 1; }
+  awk '/^## \[Unreleased\]$/ { on = 1; next } /^## \[/ { exit } on && NF && !/^#/ { notes = 1 } END { exit !notes }' "$f" \
+    || { echo "$f: no \"## [Unreleased]\" line with notes to release as $NEW" >&2; exit 1; }
 done
 PKG=Aspid.FastTools/Packages/tech.aspid.fasttools
 DOCS=Website/docs
@@ -75,7 +76,7 @@ DATE=$(date +%Y-%m-%d) REPO=https://github.com/VPDPersonal/Aspid.FastTools
 export DATE REPO
 for f in CHANGELOG.md CHANGELOG.ru.md; do
   has_section "$f" && continue
-  perl -0pi -e 's/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW}] — $ENV{DATE}\n/m;
+  perl -0pi -e 's/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW}] — $ENV{DATE}\n/m or die "$ARGV: no [Unreleased] line\n";
     my $link = "[$ENV{NEW}]: $ENV{REPO}/releases/tag/v$ENV{NEW}\n";
     s/^(?=\[[0-9][^\]]*\]: )/$link/m or $_ .= "\n$link"' "$f"
 done

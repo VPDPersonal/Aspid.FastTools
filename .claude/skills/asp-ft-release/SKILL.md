@@ -42,6 +42,9 @@ Do every step without questions. Stop at the first failure and report it.
    - a project from `scripts/make-unity-test-project.sh <scratchpad>/unity-min <minimum>`, where `<minimum>` is the
      `minimum` entry of `.github/workflows/tests.yml`;
    - the dev project `Aspid.FastTools/` of this checkout.
+
+   The `unity-verify` agent is user-level. Without it, run the batch command from the header of
+   `scripts/make-unity-test-project.sh` for both projects, in the background.
 7. Run the checks of `.github/workflows/release.yml`:
    - `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in `Aspid.FastTools.Analyzers/`;
    - `dotnet test Aspid.FastTools.YamlTests --nologo` in the repository root;
@@ -55,6 +58,9 @@ Do every step without questions. Stop at the first failure and report it.
 12. Commit with the `asp-commit` skill. Message: `chore(release): v<version>`.
 13. Open the PR with the `asp-pr` skill. Title: `chore(release): v<version>`. Body: the channel and the version's
     CHANGELOG section in one line.
+
+    The `asp-commit` and `asp-pr` skills are user-level. Without them, use `git commit`, `git push` and
+    `gh pr create`, and follow `.claude/asp-pr.md`.
 14. Send the report (format below). The user merges the PR.
 
 ## Phase 2: tag
@@ -66,23 +72,26 @@ Do every step without questions. Stop at the first failure and report it.
 4. Wait for a clear yes. Any other answer → stop.
 5. Create the tag: `git tag -a v<version> -m "Release v<version>" <merge-sha>`.
 6. Push it: `git push origin v<version>`.
-7. Find the run: `gh run list --workflow release.yml --event push --limit 1 --json databaseId,headBranch`.
-   `headBranch` must be `v<version>`. If the run is not there yet, wait 10 seconds and try again.
+7. Find the run of the tag:
+   `gh run list --workflow release.yml --branch v<version> --limit 1 --json databaseId,status,conclusion`.
+   No run yet → wait 10 seconds and try again. After 6 tries, stop and report.
 8. Run `gh run watch <id> --exit-status` in the background. Go to "Phase 3" when it ends.
 
 ## Phase 3: check the publication
 
-1. The run failed → go to "Release failed".
-2. Check the GitHub release: `gh release view v<version> --json url,isPrerelease`.
+1. Find the run of the tag as in "Phase 2" step 7.
+2. The run is still in progress → go to "Phase 2" step 8.
+3. The run failed → go to "Release failed".
+4. Check the GitHub release: `gh release view v<version> --json url,isPrerelease`.
    `isPrerelease` must be true on `upm-preview` and false on `upm`.
-3. Check that `refs/heads/<channel>` and `refs/tags/<channel>/<version>` point to one commit:
+5. Check that `refs/heads/<channel>` and `refs/tags/<channel>/<version>` point to one commit:
    `git ls-remote origin refs/heads/<channel> refs/tags/<channel>/<version>`.
-4. Check the package version on the channel:
+6. Check the package version on the channel:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/package.json?ref=<channel>' --jq .content | base64 -d`.
-5. Check that the package CHANGELOG on the channel has the version's section. The release generates that copy:
+7. Check that the package CHANGELOG on the channel has the version's section. The release generates that copy:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/CHANGELOG.md?ref=<channel>' --jq .content | base64 -d`.
-6. **Stable:** ask before you close the milestone `v<version>`. Then close it with `gh api -X PATCH`.
-7. Send the final report: the release URL, the channel, the open items from the Phase 1 report.
+8. **Stable:** ask before you close the milestone `v<version>`. Then close it with `gh api -X PATCH`.
+9. Send the final report: the release URL, the channel, the open items from the Phase 1 report.
 
 ## Release failed
 
