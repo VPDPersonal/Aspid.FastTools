@@ -363,8 +363,10 @@ from `package.json`.
 
 The **API** tab is generated from XML doc comments by DocFX (`npm run api`); `Website/api/` is committed and never
 edited by hand. Read `references/api-reference.md` before you regenerate it or fix a DocFX or sidebar problem.
-The user regenerates it manually: never run `npm run api` or commit `Website/api/` in a feature or docs PR, even when a
-task asks for it. Say in the PR that the reference is updated separately.
+A PR that changes public API or XML docs runs `npm run api` and commits `Website/api/` in the same PR.
+When the regeneration also changes pages outside the PR, commit them too and name them in the PR.
+Without a local Unity install (CI, the GitHub `claude` jobs), do not commit `Website/api/`. Say in the PR that the
+reference still needs regenerating.
 
 ## Design
 
