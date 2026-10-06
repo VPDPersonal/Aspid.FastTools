@@ -54,6 +54,9 @@ function nearCanvas(x, y) {
     [x, rect.top - 1, y - rect.top],
     [x, rect.bottom + 1, rect.bottom - y],
   ];
+  // The introduction's banner opens the top of the article onto the canvas, so the light also shows there from below.
+  const banner = article.querySelector('.readme-banner')?.getBoundingClientRect();
+  if (banner && y > banner.bottom) beyondEdges.push([x, banner.bottom - 1, y - banner.bottom]);
   return beyondEdges.some(([px, py, distance]) => distance < RADIUS && inViewport(px, py) && isCanvas(document.elementFromPoint(px, py)));
 }
 

@@ -14,8 +14,16 @@ const CONTENT = [
   'dialog', '[role="dialog"]', '[role="menu"]',
 ].join(', ');
 
+// The introduction's banner lies on the article, but the panel leaves it open over the canvas (custom.css).
+const OPEN = '.readme-banner';
+// Its name and tagline are text a reader may select: a press there charges no wave, but the spotlight still shows.
+const TEXT = '.readme-banner__text';
+
 // Below 997px the page is painted with the reading surface instead of the dots (custom.css), so there is no canvas.
 let narrow = null;
+// There only the introduction's banner shows dots, painted by the banner itself: a wave sent then (sendWave) runs through
+// them from this layer of the banner, between those dots and its content.
+const BANNER_LAYER = '.readme-banner__ambient';
 
 /** True when `target` is the empty canvas of a docs page: the dots show there, and a click or the pointer may light them. */
 export function isCanvas(target) {
@@ -23,7 +31,7 @@ export function isCanvas(target) {
   narrow ??= matchMedia('(max-width: 996px)');
   if (narrow.matches) return false;
   if (!(target instanceof Element)) return false;
-  return !target.closest(CONTENT);
+  return target.closest(OPEN) !== null || !target.closest(CONTENT);
 }
 
 const GRID = 20;          // px, must match the CSS dot texture (background-size)
@@ -103,6 +111,16 @@ export function overload(now) {
 /** Time of the last burst, so the spotlight can go dark for a moment after it. */
 export const burstAt = () => charge.burstAt;
 
+// Set while the dot background runs.
+let launch = null;
+
+/** Sends a wave of strength `power` (1 is a click) from (`x`, `y`) in the viewport, without scoring it, and with `shake`
+ *  shakes the page as a burst does: the introduction's entrance (IntroBanner). Below 997px it runs through the banner's
+ *  own dots, and without a banner there does nothing. Does nothing while the dot background is off. */
+export function sendWave(x, y, power, {shake = false} = {}) {
+  launch?.(x, y, power, shake);
+}
+
 const gauss = (u) => Math.exp(-u * u);
 const radiusAt = (elapsed) => elapsed * (SPEED + ACCEL * elapsed);
 
@@ -175,17 +193,24 @@ export default function DotRipple() {
     let shakeFrame = 0;
     let colors = readColors();
 
+    // The canvas covers the viewport, or the banner while it lies in the banner's layer.
+    let host = document.body;
+    let areaWidth = 0;
+    let areaHeight = 0;
+
     const resize = () => {
       const dpr = Math.min(devicePixelRatio || 1, 2);
-      canvas.width = Math.ceil(innerWidth * dpr);
-      canvas.height = Math.ceil(innerHeight * dpr);
+      areaWidth = host === document.body ? innerWidth : host.clientWidth;
+      areaHeight = host === document.body ? innerHeight : host.clientHeight;
+      canvas.width = Math.ceil(areaWidth * dpr);
+      canvas.height = Math.ceil(areaHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
 
     const render = (now) => {
-      ctx.clearRect(0, 0, innerWidth, innerHeight);
-      const farthest = Math.hypot(innerWidth, innerHeight) + CRESTS[CRESTS.length - 1][0] + WIDTH * 3;
+      ctx.clearRect(0, 0, areaWidth, areaHeight);
+      const farthest = Math.hypot(areaWidth, areaHeight) + CRESTS[CRESTS.length - 1][0] + WIDTH * 3;
       waves = waves.filter((wave) => radiusAt(now - wave.start) < farthest);
       sparks = sparks.filter((spark) => now - spark.start < spark.life);
 
@@ -215,9 +240,9 @@ export default function DotRipple() {
         y1 = Math.max(y1, Math.ceil((wave.y + wave.outer) / GRID));
       }
       x0 = Math.max(x0, 0);
-      x1 = Math.min(x1, Math.ceil(innerWidth / GRID));
+      x1 = Math.min(x1, Math.ceil(areaWidth / GRID));
       y0 = Math.max(y0, 0);
-      y1 = Math.min(y1, Math.ceil(innerHeight / GRID));
+      y1 = Math.min(y1, Math.ceil(areaHeight / GRID));
 
       for (let gy = y0; gy <= y1; gy++) {
         const cy = gy * GRID + GRID / 2;
@@ -367,13 +392,39 @@ export default function DotRipple() {
       charge.pressAt = -1;
     };
 
-    const release = (x, y, now, power, score) => {
+    // Puts the canvas where the dots show: on the body, or in the banner's layer on a narrow screen. Returns the offset of
+    // the canvas in the viewport, or null when a narrow page has no banner, so no dots to run through.
+    const place = () => {
+      narrow ??= matchMedia('(max-width: 996px)');
+      const target = narrow.matches ? document.querySelector(BANNER_LAYER) : document.body;
+      if (!target) return null;
+      // A banner removed from the page takes the canvas with it, so it comes back to the body on the next wave.
+      if (canvas.parentNode !== target) {
+        target.append(canvas);
+        host = target;
+        resize();
+        waves = [];
+        sparks = [];
+      }
+      if (target === document.body) return {x: 0, y: 0};
+      const box = target.getBoundingClientRect();
+      return {x: box.left, y: box.top};
+    };
+
+    // Takes (x, y) in the viewport; returns false when there are no dots for the wave.
+    const spawn = (x, y, now, power) => {
+      const offset = place();
+      if (!offset) return false;
       colors = readColors();
-      waves.push({x, y, start: now, power});
+      waves.push({x: x - offset.x, y: y - offset.y, start: now, power});
+      if (!frame) frame = requestAnimationFrame(render);
+      return true;
+    };
+    const release = (x, y, now, power, score) => {
+      spawn(x, y, now, power);
       clicks += SCORES[score].points;
       saveClicks(clicks);
       showCount(score);
-      if (!frame) frame = requestAnimationFrame(render);
     };
 
     // The page swings on two unrelated frequencies, so the shake has no clear direction, and settles down.
@@ -402,6 +453,11 @@ export default function DotRipple() {
       shakeFrame = requestAnimationFrame(step);
     };
 
+    launch = (x, y, power, shakes) => {
+      const now = performance.now();
+      if (spawn(x, y, now, power) && shakes) shake(now);
+    };
+
     // The gathered light bursts: its dots fly apart with loose sparks between them, a wave stronger than any
     // release runs out, and the page shakes. The button is still down, so the coming release sends nothing.
     const burst = () => {
@@ -428,7 +484,7 @@ export default function DotRipple() {
     };
 
     const onPointerDown = (event) => {
-      if (event.button !== 0 || !isCanvas(event.target)) return;
+      if (event.button !== 0 || !isCanvas(event.target) || event.target.closest(TEXT)) return;
       charge.pressAt = performance.now();
       charge.x = event.clientX;
       charge.y = event.clientY;
@@ -465,6 +521,7 @@ export default function DotRipple() {
       document.removeEventListener('pointerup', onPointerUp);
       document.removeEventListener('pointercancel', onCancel);
       removeEventListener('blur', onCancel);
+      launch = null;
       charge.pressAt = -1;
       clearTimeout(burstTimer);
       removeEventListener('resize', resize);

@@ -1,0 +1,151 @@
+/* The banner keeps the 1280×384 layout of the «README banner» page of the FastTools Asset Store Design canvas: every size
+   is that design's pixels in `cqi` of the banner (1px = 100cqi / 1280), so the whole banner scales with its width. */
+.readme-banner {
+  position: relative;
+  isolation: isolate;
+  container-type: inline-size;
+}
+
+/* Below 997px the banner's own dots (custom.css) cover the fixed canvases of DotAmbient and DotRipple, so the canvases
+   move into this layer: above those dots, under the content. In it they shake with the page, so not on their own too. */
+.readme-banner__ambient {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.readme-banner__ambient > :is(.dot-ambient-canvas, .dot-ripple-canvas) {
+  position: absolute;
+  translate: none;
+}
+
+.readme-banner__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3.75cqi;
+  height: 100%;
+}
+
+.readme-banner__mark {
+  flex: none;
+  width: 23.672cqi;
+}
+
+/* One logo per accent (`src/accents.js`); the default accent has no `data-accent`. */
+.readme-banner__logo {
+  aspect-ratio: 1022 / 1011;
+  background: url('./media/logo-green.webp') center / contain no-repeat;
+}
+html[data-accent='red'] .readme-banner__logo { background-image: url('./media/logo-red.webp'); }
+html[data-accent='blue'] .readme-banner__logo { background-image: url('./media/logo-blue.webp'); }
+html[data-accent='yellow'] .readme-banner__logo { background-image: url('./media/logo-yellow.webp'); }
+html[data-accent='mono'] .readme-banner__logo { background-image: url('./media/logo-mono.webp'); }
+
+.readme-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5625cqi;
+  min-width: 0;
+}
+
+/* Beats Infima's `.markdown h1:first-child` margin. The padding keeps the descenders inside the box, so the entrance's
+   mask does not cut them; the margin takes it back out of the layout. */
+.theme-doc-markdown .readme-banner .readme-banner__title {
+  margin: -0.25em 0;
+  padding: 0.25em 0;
+  font-size: 8.75cqi;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--venom-fg-strong);
+}
+
+.readme-banner__title span {
+  color: var(--ifm-color-primary);
+}
+
+.theme-doc-markdown .readme-banner__tagline {
+  margin: 0;
+  font-size: 3.28125cqi;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--venom-fg);
+}
+
+/* ---------- Entrance, once per tab session (src/intro.js sets html[data-intro], index.js clears it) ----------
+   The ring draws itself from the snake's head, clockwise along its body, while the snake slides forward into place;
+   at the close (1.2 s) the mark pulses, index.js sends a wave through the dots, the name is wiped in behind it and the
+   tagline rises. */
+@property --intro-ring {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --intro-wipe {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+html[data-intro] .readme-banner__mark {
+  animation: readme-intro-pulse 700ms ease-out 1200ms both;
+}
+
+/* The sweep starts at the snout (-30°) and has a soft 30° leading edge, so it runs on to 390° to close fully. */
+html[data-intro] .readme-banner__logo {
+  -webkit-mask-image: conic-gradient(from -30deg, #000 calc(var(--intro-ring) - 30deg), transparent var(--intro-ring));
+  mask-image: conic-gradient(from -30deg, #000 calc(var(--intro-ring) - 30deg), transparent var(--intro-ring));
+  animation: readme-intro-ring 1000ms cubic-bezier(0.6, 0, 0.3, 1) 200ms both;
+}
+
+html[data-intro] .readme-banner__title {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--intro-wipe) - 15%), transparent var(--intro-wipe));
+  mask-image: linear-gradient(90deg, #000 calc(var(--intro-wipe) - 15%), transparent var(--intro-wipe));
+  animation: readme-intro-wipe 900ms cubic-bezier(0.25, 0.6, 0.3, 1) 1300ms both;
+}
+
+html[data-intro] .readme-banner__tagline {
+  animation: readme-intro-rise 600ms ease-out 1650ms both;
+}
+
+@keyframes readme-intro-ring {
+  from {
+    --intro-ring: 0deg;
+    transform: rotate(40deg) scale(0.9);
+  }
+  to {
+    --intro-ring: 390deg;
+    transform: none;
+  }
+}
+
+@keyframes readme-intro-pulse {
+  from {
+    transform: none;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  30% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 0 2.5cqi color-mix(in srgb, var(--ifm-color-primary) 55%, transparent));
+  }
+  to {
+    transform: none;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+@keyframes readme-intro-wipe {
+  from { --intro-wipe: 0%; }
+  to { --intro-wipe: 115%; }
+}
+
+@keyframes readme-intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1cqi);
+  }
+}

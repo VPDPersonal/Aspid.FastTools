@@ -38,7 +38,7 @@ image or a full page there.
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
 
 The site folder is `Website/`, not `Docs/`: the repo already has `docs/` (internal working documents, plus
-`docs/images/` which hosts the README banner GIF that GitHub serves over `raw.githubusercontent.com`), and
+`docs/images/` which hosts the README banner images, linked by relative paths), and
 macOS treats the two names as one directory.
 
 **Four docs plugin instances**, all in `docusaurus.config.js`:
@@ -62,9 +62,9 @@ package `CHANGELOG.md` and `Website/api/`.
 - **No front matter.** GitHub would show it as a table. Title comes from the first `# H1`, slug and
   order from the file name (`NN-` prefix orders, is stripped from the route).
 - **One `# H1` per file.** Use `##` in the body. Exception: the introduction (`Website/docs/README.md` and
-  its translations) starts with the banner `<img>` and the status badges, without an H1. `parseFrontMatter`
+  its translations) starts with the banner `<picture>` and the status badges, without an H1. `parseFrontMatter`
   in `docusaurus.config.js` recognises that page by the banner's file name and supplies the title,
-  description, `hide_title` and the translated `pagination_label` — do not rename `aspid_fasttools_readme_banner.gif`.
+  description, `hide_title` and the translated `pagination_label` — do not rename `aspid_fasttools_readme_banner.png`.
 - **Admonitions**: GitHub style only — `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`. Never `:::note`.
 - **Links** are relative paths to the `.md` file: `[EnumValues](08-enum-values.md)`, from a sample
   `[Selector](../../docs/04-serialize-reference-selector.md)`, from a doc `[Types sample](../tutorials/Types/README.md)`.

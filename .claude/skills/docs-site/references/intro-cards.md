@@ -1,9 +1,21 @@
 # Introduction feature cards
 
-There is no landing page: `/` redirects to `/docs`. The README banner GIF (6 MB) stays for GitHub only: the plugin
-renders it as `src/components/IntroBanner`, which plays `media/banner.mp4` with the poster `media/banner-poster.jpg`.
-Both are encoded from the GIF — re-encode them when it changes (`ffmpeg -i <gif> -movflags +faststart -c:v libx264
--pix_fmt yuv420p -preset veryslow -crf 22 -tune animation -an -vf fps=25 banner.mp4`, poster: `-frames:v 1 -q:v 4`).
+There is no landing page: `/` redirects to `/docs`. The README banner is a `<picture>`: an animated 1280×384 WebP per
+GitHub theme (`docs/images/aspid_fasttools_readme_banner_dark.webp`, `…_light.webp`), and the static 2560×768 PNG
+(`aspid_fasttools_readme_banner.png`, the green dark variant) as its `<img>`, all linked by relative paths. The PNG is
+designed on the «README banner» page of the «FastTools Asset Store» Design canvas: one board per accent and theme. The
+WebPs are recorded from this site's banner in the green accent in headless Chrome (virtual time, 25 fps, 2x): 9 s whose
+last second crossfades into its first, an 8 s loop; the canvas shows them in its «Animated» row. The plugin
+renders the banner as
+`src/components/IntroBanner`: that layout rebuilt in HTML, the logo (`media/logo-<accent>.webp`, 640 px, picked from
+`html[data-accent]`) and the live title and tagline, sized in `cqi` so it scales like the PNG. It has no background: on
+wide screens the article panel paints its surface only below the banner (`custom.css`), so the dot canvas shows
+through it, `DotAmbient` raises a glow from its bottom edge, and `DotRipple`'s `isCanvas` and `DotSpotlight` treat the
+banner as canvas. Once per tab session the banner makes an entrance: `src/intro.js` sets `html[data-intro]` before the
+first paint (never under reduced motion), `styles.css` draws the ring from the snake's head and wipes the name in, and
+`IntroBanner` sends a `DotRipple` wave with the burst's shake (`sendWave`) from the logo when the ring closes and lets the
+glow rise. Below 997 px the banner paints the dots itself, and `DotAmbient` (glow, sparks) and `DotRipple` (the entrance
+wave, with the shake) move their canvases into the banner's `__ambient` layer above them. A new accent in `src/accents.js` needs its logo WebP.
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
