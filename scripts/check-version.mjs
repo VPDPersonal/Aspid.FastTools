@@ -1,5 +1,6 @@
 // Check that the files scripts/set-version.sh writes carry the package.json version whole and its channel: a stable
 // version installs from `upm` under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one.
+// Both CHANGELOGs must have the version's section and its release link.
 // The version is matched whole, so 1.0.0 does not pass on a file that still says 1.0.0-rc.8. release.yml runs it:
 //   node scripts/check-version.mjs
 import { readFileSync } from 'node:fs';
@@ -16,11 +17,14 @@ const FILES = [
 ];
 // Files with an install URL and no badge.
 const INSTALL_FILES = [`${PKG}/README.md`];
+const CHANGELOGS = ['CHANGELOG.md', 'CHANGELOG.ru.md'];
+const REPOSITORY = 'https://github.com/VPDPersonal/Aspid.FastTools';
 
 const version = JSON.parse(readFileSync(`${PKG}/package.json`, 'utf8')).version ?? '';
 const [branch, label] = version.includes('-') ? ['upm-preview', 'Preview'] : ['upm', 'Release'];
 const fix = `run scripts/set-version.sh ${version}`;
-const whole = (text) => new RegExp(`(^|[^0-9A-Za-z.-])${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^0-9A-Za-z.-]|$)`);
+const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const whole = (text) => new RegExp(`(^|[^0-9A-Za-z.-])${escape(text)}([^0-9A-Za-z.-]|$)`);
 
 let errors = 0;
 const fail = (file, message) => {
@@ -44,6 +48,12 @@ for (const file of FILES) {
   }
   if (!text.includes(`/releases/tag/v${version})`)) fail(file, `the badge does not link the v${version} release; ${fix}`);
   checkInstallUrls(file, text);
+}
+
+for (const file of CHANGELOGS) {
+  const text = readFileSync(file, 'utf8');
+  if (!new RegExp(`^## \\[${escape(version)}\\] `, 'm').test(text)) fail(file, `has no "## [${version}]" section; ${fix}`);
+  if (!text.includes(`\n[${version}]: ${REPOSITORY}/releases/tag/v${version}\n`)) fail(file, `has no [${version}] release link; ${fix}`);
 }
 
 if (errors) process.exit(1);

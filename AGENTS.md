@@ -19,10 +19,10 @@ Agent Skills for projects that consume the package in `skills/`.
   `AssetDatabase.MakeEditable`, so a Unity API or a newer language feature added to that engine breaks this project
   first; tests that need the Editor are excluded in its csproj and run in the Unity job.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
-  READMEs; bump all of them with `scripts/set-version.sh <version>`, which the release workflow checks
-  (`scripts/check-version.mjs`). The version also picks the channel, and the script switches it: a prerelease installs
-  from `#upm-preview` under a Preview badge, a stable version from `#upm` under a Release one; the site derives
-  `UPM_BRANCH` from the version.
+  READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
+  which the release workflow checks (`scripts/check-version.mjs`). The version also picks the channel, and the script
+  switches it: a prerelease installs from `#upm-preview` under a Preview badge, a stable version from `#upm` under a
+  Release one; the site derives `UPM_BRANCH` from the version. `/asp-ft-release <version>` runs the whole release.
 - `skills/` is for **consumers** of the package and is installed with `npx skills add VPDPersonal/Aspid.FastTools`;
   skills for working on this repo live in `.claude/skills/` and carry `metadata.internal: true` so that command does
   not offer them; `scripts/check-skills.mjs` (CI) checks both. A skill that describes public API is updated in the same PR
