@@ -10,7 +10,7 @@
 
 Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации, профилирования и редакторского кода.
 
-[Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs)
 
 ## Установка
 
@@ -20,7 +20,7 @@ Aspid.FastTools — пакет для Unity, который убирает ру�
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую. Чтобы закрепить версию со страницы [релизов](https://github.com/VPDPersonal/Aspid.FastTools/releases), добавьте её номер без `v`: `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8`.
+URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую.
 
 ## Возможности
 

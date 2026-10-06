@@ -10,6 +10,7 @@ on:
     paths:
       - 'Website/**'
       - 'README.md'
+      - 'docs/images/readme-previews/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
@@ -22,6 +23,7 @@ on:
     paths:
       - 'Website/**'
       - 'README.md'
+      - 'docs/images/readme-previews/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'

@@ -31,7 +31,7 @@ image or a full page there.
 | Translations | `Website/i18n/ru/docusaurus-plugin-content-docs/current/**`, `…-docs-tutorials/current/**` (same names) | `/ru/...` |
 | Interface strings | `Website/i18n/ru/**/*.json` (`code.json`, `navbar.json`, each plugin's `current.json`) | |
 | Images | `Website/docs/Images/`, `Website/tutorials/<Sample>/Images/` | referenced relatively |
-| Root README | generated from `Website/docs/README.md` (committed) | — |
+| Root README | generated from `Website/docs/README.md` in GitHub's layout (committed); translations live on the site only | — |
 | Package README, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
 | Package changelog | generated from the root `CHANGELOG.md` (committed; Unity's Package Manager reads it) | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
@@ -328,11 +328,21 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
 
 ## Generated content
 
-- `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Website/docs/README.md`,
-  rebasing file links to the repository root, and the package `CHANGELOG.md` from the root one, turning links that
-  leave the package into GitHub URLs. Never edit either copy by hand. `prestart`/`prebuild` refresh them
-  automatically and CI runs `check-readme` before building to reject a stale copy. The script only updates existing
-  files: recreating the package copy would give its `.meta` a new GUID.
+- `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Website/docs/README.md` (no
+  translated copy: translations live on the site), rebasing file links to the repository root, and the package
+  `CHANGELOG.md` from the root one, turning links that leave the package into GitHub URLs. Never edit a copy by hand.
+  `prestart`/`prebuild` refresh them automatically and CI runs `check-readme` before building to reject a stale copy.
+  The script only updates existing files: recreating the package copy would give its `.meta` a new GUID.
+- The root README gets GitHub's version of the site's introduction blocks (`scripts/github-readme.mjs`, tested in
+  `github-readme.test.mjs`): doc-page and samples-overview links open the site; the link row's site link becomes
+  `Documentation: EN, RU`; the install instruction becomes a card (the recorded InstallPanel walk-through beside its
+  steps) and the note under the URL links the site's install panel for versions and channels; an image with a `-light` sibling becomes a `<picture>` per
+  GitHub theme; each feature becomes a card (a one-row table: preview, then title, summary and «Read more»); the
+  Resources list becomes a row of tiles and the help section the SupportPanel call to action without the licence line.
+  A code preview gives way to the recording of the site's animated preview, `docs/images/readme-previews/<name>[-light].webp`.
+  After a change to `FeaturePreview`, the InstallPanel walk-through, the site theme or the install channel (the
+  walk-through types its URL), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
+  (`docs/media/readme-previews/README.md`), then run `sync-readme`.
 - `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
   blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
   may differ, so make every structural change in both languages.
@@ -376,5 +386,5 @@ The cards on the Introduction page (layout, captures, previews, clip recipes) ha
 ## Deploy
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package README, `package.json`
-or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md` or `CHANGELOG*.md`, and on PRs (build only); it runs
+or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md`, `docs/images/readme-previews/` or `CHANGELOG*.md`, and on PRs (build only); it runs
 `check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
