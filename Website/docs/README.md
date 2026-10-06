@@ -20,7 +20,7 @@ In **Window → Package Manager**, choose **+ → Install package from git URL�
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), add its number without the `v`: `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8`.
+The URL installs the latest preview; **Update** in the Package Manager installs the next one.
 
 ## Features
 

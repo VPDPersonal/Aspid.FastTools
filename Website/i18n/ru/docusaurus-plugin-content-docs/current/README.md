@@ -20,7 +20,7 @@ Aspid.FastTools — пакет для Unity, который убирает ру�
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую. Чтобы закрепить версию со страницы [релизов](https://github.com/VPDPersonal/Aspid.FastTools/releases), добавьте её номер без `v`: `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8`.
+URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую.
 
 ## Возможности
 

@@ -5,7 +5,7 @@
  * - the link row's link to the site lists the site's languages: `Documentation: EN, RU`;
  * - the install instruction becomes a card like the site's install panel (src/components/InstallPanel): the recording
  *   of its Package Manager walk-through beside its numbered steps, the URL to copy below;
- * - the note on pinning a version folds into <details>, with the pinned URL as a block to copy;
+ * - the note under the install URL links the site's install panel for versions and channels;
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
@@ -23,7 +23,7 @@ const TEXT = {
     'Paste the URL and press <b>Install</b>',
   ],
   walkthrough: 'Package Manager installs Aspid.FastTools from its git URL',
-  pin: 'Pin a version',
+  install: ['To pin a version or switch channels, see ', 'Installation', ' in the documentation.'],
   support: 'Found a bug or have a question?',
   hint: 'Include your Unity version, package version and steps to reproduce.',
   issue: 'Open an issue',
@@ -101,28 +101,14 @@ function installCard(tree, {previews, exists}) {
     + `<td width="44%">\n<ol>\n${steps}\n</ol>\n</td>\n</tr>\n</table>`);
 }
 
-/** The sentence that ends with the pinned install URL (`….git#upm-preview/1.0.0`) folds away under the rest. */
-function pinNote(tree) {
-  const index = tree.children.findIndex((node) => node.type === 'paragraph'
-    && node.children.some((part) => part.type === 'inlineCode' && /\.git#upm[^/\s]*\/\d/.test(part.value)));
+/** The note under the install URL points to the site's install panel, which pins versions and switches channels. */
+function installLink(tree, site) {
+  const index = tree.children.findIndex((node, at) => node.type === 'code' && /\.git#upm/.test(node.value)
+    && tree.children[at + 1]?.type === 'paragraph');
   if (index === -1) return;
-  const node = tree.children[index];
-  const at = node.children.findIndex((part) => part.type === 'inlineCode' && /\.git#upm[^/\s]*\/\d/.test(part.value));
-  // The sentence starts after the last full stop before the URL.
-  let from = at - 1;
-  while (from >= 0 && !(node.children[from].type === 'text' && /\.\s/.test(node.children[from].value))) from--;
-  if (from < 0) return;
-  const split = [...node.children[from].value.matchAll(/\.\s/g)].at(-1).index + 1;
-  const before = [...node.children.slice(0, from), {type: 'text', value: node.children[from].value.slice(0, split)}];
-  const sentence = [{type: 'text', value: node.children[from].value.slice(split).trimStart()}, ...node.children.slice(from + 1, at)];
-  const last = sentence.at(-1);
-  if (last.type === 'text') last.value = last.value.replace(/\s+$/, '');
-  tree.children.splice(index, 1,
-    {...node, children: before},
-    html(`<details>\n<summary>${TEXT.pin}</summary>`),
-    {type: 'paragraph', children: sentence},
-    {type: 'code', lang: 'text', value: node.children[at].value},
-    html('</details>'));
+  tree.children[index + 1].children.push({type: 'text', value: ` ${TEXT.install[0]}`},
+    {type: 'link', url: `${site}docs#installation`, children: [{type: 'text', value: TEXT.install[1]}]},
+    {type: 'text', value: TEXT.install[2]});
 }
 
 /** The recording of the site's animated preview for `doc`, if there is one. */
@@ -242,7 +228,7 @@ export function githubLayout(tree, options) {
   siteLinks(tree, options.site);
   linkRow(tree, options.site, options.locales);
   installCard(tree, options);
-  pinNote(tree);
+  installLink(tree, options.site);
   featureCards(tree, options);
   linkTiles(tree);
   supportPanel(tree, options.repository);

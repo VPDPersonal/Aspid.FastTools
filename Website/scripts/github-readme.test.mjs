@@ -50,15 +50,9 @@ test('the link row lists the site languages for a link to the site', () => {
   assert.equal(result.trim(), 'Documentation: [EN](https://site.test/docs), [RU](https://site.test/ru/docs) · [Releases](https://github.com/owner/repo/releases)');
 });
 
-test('the note on pinning a version folds into details with the URL as a block', () => {
-  const result = layout('The URL installs the latest preview. To pin a version from [Releases](https://x.test), add its number: `https://github.com/owner/repo.git#upm-preview/1.0.0`.');
-  assert.equal(result, 'The URL installs the latest preview.\n\n<details>\n<summary>Pin a version</summary>\n\n'
-    + 'To pin a version from [Releases](https://x.test), add its number:\n\n```text\nhttps://github.com/owner/repo.git#upm-preview/1.0.0\n```\n\n</details>\n');
-});
-
-test('the pin note folds also when the source wraps after the full stop', () => {
-  const result = layout('Installs the latest preview.\nTo pin a version, add its number: `https://github.com/owner/repo.git#upm-preview/1.0.0`.');
-  assert.match(result, /^Installs the latest preview\.\n\n<details>\n<summary>Pin a version<\/summary>\n\nTo pin a version, add its number:\n\n```text/);
+test('the note under the install URL links the install panel on the site', () => {
+  const result = layout('```text\nhttps://github.com/owner/repo.git#upm\n```\n\nThe URL installs the latest release.\n');
+  assert.match(result, /\n\nThe URL installs the latest release\. To pin a version or switch channels, see \[Installation\]\(https:\/\/site.test\/docs#installation\) in the documentation\.\n$/);
 });
 
 test('the install instruction becomes a card with the walk-through and the steps', () => {

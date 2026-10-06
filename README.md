@@ -33,18 +33,7 @@ Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](ht
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-The URL installs the latest preview; **Update** in the Package Manager installs the next one.
-
-<details>
-<summary>Pin a version</summary>
-
-To pin a version from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), add its number without the `v`:
-
-```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
-```
-
-</details>
+The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
 
 ## Features
 
