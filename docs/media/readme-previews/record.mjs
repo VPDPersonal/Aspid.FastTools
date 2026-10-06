@@ -23,7 +23,8 @@ const FPS = 20;
 const ENCODE = ['-lossless', '-m', '6'];
 const PREVIEWS = {
   // InstallPanel: the sum of DURATIONS. It plays PLAYS (2) times, so a short warm-up records the first play, which runs
-  // into the second one's first frame.
+  // into the second one's first frame. The installed package's version is hidden, so a release needs no new recording;
+  // the typed URL still names the channel.
   'install': {loop: 1300 + 1400 + 1800 + 1100 + 2600, warmup: 100,
     box: `document.querySelector('section[class*="install_"] [class*="preview_"]')`},
   'profiler-markers': {loop: 22000, fps: 12.5, encode: ['-mixed', '-q', '90', '-m', '6']},
@@ -35,11 +36,13 @@ const PREVIEWS = {
 // The preview box takes 56% of the card; this viewport makes it 480×360 CSS px, recorded at 2x.
 const VIEWPORT = {width: 1180, height: 1000, deviceScaleFactor: 2};
 
-const [base, ...only] = process.argv.slice(2);
-if (!base) {
+const [given, ...only] = process.argv.slice(2);
+if (!given) {
   console.error('usage: node docs/media/readme-previews/record.mjs <site base URL> [doc …]');
   process.exit(1);
 }
+// Pages resolve against the base's last `/`: without it, `docs` would load from the host root.
+const base = given.endsWith('/') ? given : `${given}/`;
 const unknown = only.filter((doc) => !(doc in PREVIEWS));
 if (unknown.length) {
   console.error(`No loop length for ${unknown.join(', ')}; known previews: ${Object.keys(PREVIEWS).join(', ')}`);
@@ -123,6 +126,7 @@ async function open(theme) {
       + '.feature-card__live [class*="inspector_"], .feature-card__live [class*="uiStage_"] { border-radius: 0 !important; }'
       + 'section[class*="install_"] { border: 0 !important; border-radius: 0 !important; }'
       + 'section[class*="install_"] [class*="preview_"] { border-right: 0 !important; }'
+      + 'section[class*="install_"] [class*="pmNew_"] span:last-child { visibility: hidden; }'
       + '</style>'));`});
   const loaded = once('Page.loadEventFired', sessionId);
   await page('Page.navigate', {url: new URL('docs', base).href});

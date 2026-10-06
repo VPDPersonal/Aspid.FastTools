@@ -11,7 +11,8 @@ losslessly: lossy WebP leaves ghosts of earlier frames on these flat interfaces.
 frames (q 90) instead, which keeps it near 2 MB. Each loop length comes from the preview's `useLoop` steps (the
 Profiler's ticker for ProfilerMarkers, `DURATIONS` in `InstallPanel` for the walk-through); update `PREVIEWS` when they
 change. The recording drops the frame of the card or panel, since on GitHub the table cell is the frame. The
-walk-through shows the package version, so re-record `install` after a release.
+walk-through hides the package version, but its typed URL names the channel (`#upm-preview`), so re-record `install`
+when a release switches channels; `scripts/set-version.sh` says so.
 
 1. Build and serve the site: `Website/scripts/serve-all.sh`.
 2. Record every preview, or only the named ones: `node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [name …]`.

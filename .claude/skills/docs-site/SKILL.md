@@ -340,8 +340,8 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   GitHub theme; each feature becomes a card (a one-row table: preview, then title, summary and «Read more»); the
   Resources list becomes a row of tiles and the help section the SupportPanel call to action without the licence line.
   A code preview gives way to the recording of the site's animated preview, `docs/images/readme-previews/<name>[-light].webp`.
-  After a change to `FeaturePreview`, the InstallPanel walk-through, the site theme or a release (the walk-through
-  shows the version), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
+  After a change to `FeaturePreview`, the InstallPanel walk-through, the site theme or the install channel (the
+  walk-through types its URL), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
   (`docs/media/readme-previews/README.md`), then run `sync-readme`.
 - `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
   blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
