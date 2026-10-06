@@ -99,7 +99,8 @@ Read the failed step: `gh run view <id> --log-failed`. Then:
 
 Put these items into the Phase 1 report. Do not do them without a request.
 
-- The API reference on the site. `npm --prefix Website run api` runs by hand only. Ask if it is current.
+- The API reference on the site. Each PR that changes public API regenerates it (`docs-site` skill). A PR made
+  without Unity says that the reference still needs regenerating. Ask if such a PR is merged since the last release.
 - "The channel changed" from `set-version.sh` → re-record the README install walk-through in a separate PR
   (`docs/media/readme-previews/README.md`).
 - **Stable:** the manual QA of `.github/ISSUE_TEMPLATE/release_checklist.yml`: player builds, Asset Store.
