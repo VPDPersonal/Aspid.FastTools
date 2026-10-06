@@ -2,9 +2,12 @@ import {useEffect} from 'react';
 
 // A press on the copy button of a code block makes the block jump a little towards the reader while a soft light of the
 // accent runs across it, as over a glossy chip, and its frame catches that light.
-// The copy button has no class of its own: only its icons tell it from the word wrap button.
-const BUTTON = '.theme-code-block button:has([class*="copyButtonIcons_"])';
+// The copy button has no class of its own: only its icons tell it from the word wrap button. They are checked apart
+// from the selector, because `closest()` throws on `:has()` in a browser without it.
+const BUTTON = '.theme-code-block button';
+const COPY_ICONS = '[class*="copyButtonIcons_"]';
 
+const MAX_DPR = 2;         // device px per CSS px of the canvas at most: the light is soft and needs no more
 const DURATION = 450;      // ms the effect takes on a short block
 const SLOWDOWN = 1.5;      // a long block takes this many times longer, so the light does not race across it
 const LONG_FROM = 8;       // lines from which a block starts to count as long
@@ -123,7 +126,9 @@ function createShine() {
   for (const name of ['size', 'radius', 'border', 'unit', 'sweep', 'calm', 'light', 'tint']) {
     uniforms[name] = gl.getUniformLocation(program, name);
   }
-  return {canvas, gl, uniforms};
+  // The largest canvas side the GPU draws in full.
+  const limit = Math.min(...gl.getParameter(gl.MAX_VIEWPORT_DIMS), gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
+  return {canvas, gl, uniforms, limit};
 }
 
 // The colour of the site's light effects (the ripple, the spotlight) as resolved inside `block`, as RGB in 0–1.
@@ -165,8 +170,9 @@ function play(block) {
     return;
   }
 
-  const {canvas, gl, uniforms} = shine;
-  const dpr = devicePixelRatio || 1;
+  const {canvas, gl, uniforms, limit} = shine;
+  // A long block gets fewer device px per CSS px, so its canvas stays inside the GPU limit.
+  const dpr = Math.min(devicePixelRatio || 1, MAX_DPR, limit / width, limit / height);
   const frameWidth = parseFloat(style.borderTopWidth) || 0;
   const light = document.documentElement.dataset.theme !== 'dark';
   canvas.width = Math.round(width * dpr);
@@ -178,11 +184,15 @@ function play(block) {
     height: `${height}px`,
     mixBlendMode: light ? 'multiply' : 'normal',
   });
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.uniform2f(uniforms.size, canvas.width, canvas.height);
-  gl.uniform1f(uniforms.radius, Math.min(parseFloat(style.borderTopLeftRadius) || 0, width / 2, height / 2) * dpr);
-  gl.uniform1f(uniforms.border, frameWidth * dpr);
-  gl.uniform1f(uniforms.unit, Math.max(line, (width + height * LEAN) * UNIT) * dpr);
+  // The browser may still give a smaller drawing buffer than asked: the light is drawn at the size the buffer has.
+  const bufferWidth = gl.drawingBufferWidth;
+  const bufferHeight = gl.drawingBufferHeight;
+  const px = Math.min(bufferWidth / width, bufferHeight / height);
+  gl.viewport(0, 0, bufferWidth, bufferHeight);
+  gl.uniform2f(uniforms.size, bufferWidth, bufferHeight);
+  gl.uniform1f(uniforms.radius, Math.min(parseFloat(style.borderTopLeftRadius) || 0, width / 2, height / 2) * px);
+  gl.uniform1f(uniforms.border, frameWidth * px);
+  gl.uniform1f(uniforms.unit, Math.max(line, (width + height * LEAN) * UNIT) * px);
   gl.uniform1f(uniforms.calm, 1 + (LARGE_DIM - 1) * long);
   gl.uniform1f(uniforms.light, light ? 1 : 0);
   gl.uniform3fv(uniforms.tint, accentOf(block));
@@ -211,9 +221,9 @@ function play(block) {
 export default function CopyShine() {
   useEffect(() => {
     const onClick = (event) => {
-      const block = event.target.closest?.(BUTTON)?.closest('.theme-code-block');
-      if (!block || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      play(block);
+      const button = event.target.closest?.(BUTTON);
+      if (!button?.querySelector(COPY_ICONS) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      play(button.closest('.theme-code-block'));
     };
     document.addEventListener('click', onClick);
     return () => {
