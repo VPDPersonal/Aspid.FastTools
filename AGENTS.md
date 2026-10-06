@@ -6,7 +6,9 @@ Agent Skills for projects that consume the package in `skills/`.
 
 ## Never
 
-- Use Unity APIs newer than **6000.0** — the dev project runs 6000.4, but `package.json` promises 6000.0.
+- Use Unity APIs newer than **6000.0.53f1** without a `#if UNITY_6000_x_OR_NEWER` guard — the dev project runs
+  6000.4, but `package.json` promises 6000.0.53f1. Unity has no define for a patch: an API from a later 6000.0 patch
+  needs a higher `unityRelease`.
 - Write to `Console` from generator or analyzer code, or reference `SourceGenerator.Foundations` —
   it deadlocks Unity's compilation server.
 
