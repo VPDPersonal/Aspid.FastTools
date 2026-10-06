@@ -13,4 +13,4 @@ update `PREVIEWS` when they change. The recording drops the card's frame, since 
 2. Record every preview, or only the named ones: `node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [doc …]`.
 3. Regenerate the README: `npm --prefix Website run sync-readme`.
 
-Needs Google Chrome and `img2webp` (`brew install webp`).
+Needs Node 22+, Google Chrome and `img2webp` (`brew install webp`). Outside macOS, set `CHROME` to the Chrome binary.

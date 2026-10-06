@@ -56,6 +56,11 @@ test('the note on pinning a version folds into details with the URL as a block',
     + 'To pin a version from [Releases](https://x.test), add its number:\n\n```text\nhttps://github.com/owner/repo.git#upm-preview/1.0.0\n```\n\n</details>\n');
 });
 
+test('the pin note folds also when the source wraps after the full stop', () => {
+  const result = layout('Installs the latest preview.\nTo pin a version, add its number: `https://github.com/owner/repo.git#upm-preview/1.0.0`.');
+  assert.match(result, /^Installs the latest preview\.\n\n<details>\n<summary>Pin a version<\/summary>\n\nTo pin a version, add its number:\n\n```text/);
+});
+
 test('a feature becomes a card with a themed preview, its summary as HTML', () => {
   const result = layout(features, ['Images/enum-light.gif']);
   assert.match(result, /### Serialization\n\n<table>\n<tr>\n<td width="56%"><picture>/);

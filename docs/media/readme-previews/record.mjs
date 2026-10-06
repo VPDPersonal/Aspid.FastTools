@@ -3,14 +3,14 @@
 // virtual time, so every frame lands on its exact timestamp however slow the capture is.
 //   Website/scripts/serve-all.sh
 //   node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [doc …]
-// Needs Google Chrome and img2webp (brew install webp).
+// Needs Node 22+ (global WebSocket), Google Chrome (CHROME overrides the macOS path) and img2webp (brew install webp).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {spawn, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
-const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const CHROME = process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const OUT = fileURLToPath(new URL('../../images/readme-previews/', import.meta.url));
 // One loop of each preview, from FeaturePreview: `useLoop(count, interval)` steps, or the Profiler's 22 s ticker.
 // `fps` divides the loop into whole frames; the Profiler's timeline changes every frame, so it takes fewer.
@@ -30,6 +30,15 @@ if (!base) {
   console.error('usage: node docs/media/readme-previews/record.mjs <site base URL> [doc …]');
   process.exit(1);
 }
+const unknown = only.filter((doc) => !(doc in PREVIEWS));
+if (unknown.length) {
+  console.error(`No loop length for ${unknown.join(', ')}; known previews: ${Object.keys(PREVIEWS).join(', ')}`);
+  process.exit(1);
+}
+if (typeof WebSocket === 'undefined') {
+  console.error(`Node ${process.versions.node} has no global WebSocket; run the script with Node 22 or newer.`);
+  process.exit(1);
+}
 const docs = only.length ? only : Object.keys(PREVIEWS);
 
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'readme-previews-'));
@@ -43,6 +52,11 @@ const endpoint = await new Promise((resolve, reject) => {
     if (match) resolve(match[1]);
   });
   chrome.on('exit', () => reject(new Error(`Chrome exited:\n${log}`)));
+  chrome.on('error', (error) => reject(new Error(`Chrome did not start (${error.message}); set CHROME to its path.`)));
+}).catch((error) => {
+  fs.rmSync(profile, {recursive: true, force: true});
+  console.error(error.message);
+  process.exit(1);
 });
 // A stopped run takes its Chrome along.
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => {

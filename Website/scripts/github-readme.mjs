@@ -93,7 +93,7 @@ function pinNote(tree) {
   let from = at - 1;
   while (from >= 0 && !(node.children[from].type === 'text' && /\.\s/.test(node.children[from].value))) from--;
   if (from < 0) return;
-  const split = node.children[from].value.lastIndexOf('. ') + 1;
+  const split = [...node.children[from].value.matchAll(/\.\s/g)].at(-1).index + 1;
   const before = [...node.children.slice(0, from), {type: 'text', value: node.children[from].value.slice(0, split)}];
   const sentence = [{type: 'text', value: node.children[from].value.slice(split).trimStart()}, ...node.children.slice(from + 1, at)];
   const last = sentence.at(-1);
