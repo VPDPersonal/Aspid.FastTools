@@ -24,7 +24,23 @@ env:
   ANALYZERS_SOLUTION_DIR: Aspid.FastTools.Analyzers
 
 jobs:
+  # Every test of Tests on the commit being released; here a missing UNITY_LICENSE fails instead of skipping Unity.
+  tests:
+    name: Tests
+    uses: ./.github/workflows/tests.yml
+    with:
+      require-unity: true
+    secrets:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
+
   release:
+    needs: tests
     runs-on: ubuntu-latest
 
     steps:
@@ -145,27 +161,11 @@ jobs:
           fi
           echo "Package CHANGELOG.md matches the root $CHANGELOG_PATH."
 
-      # The test projects target net6.0; the SDK pinned in global.json builds them,
-      # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
+      # The SDK pinned in global.json builds the DLLs, the same one that built the committed ones.
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-          dotnet-version: '6.0.x'
-
-      # Tests run in Debug on purpose: the Directory.Build.targets deploy of the Roslyn
-      # DLLs into the Unity package is Release-only, so a Debug test run can never
-      # interfere with the DLL freshness verification below.
-      - name: Run generator tests
-        run: dotnet test --nologo
-        working-directory: ${{ env.GENERATORS_SOLUTION_DIR }}
-
-      - name: Run analyzer tests
-        run: dotnet test --nologo
-        working-directory: ${{ env.ANALYZERS_SOLUTION_DIR }}
-
-      - name: Run YAML engine tests
-        run: dotnet test Aspid.FastTools.YamlTests --nologo
 
       # Rebuilding in Release re-deploys both DLLs into the package checkout
       # (Directory.Build.targets); a clean `git diff` then proves the committed

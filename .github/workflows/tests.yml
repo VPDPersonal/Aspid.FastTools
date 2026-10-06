@@ -4,10 +4,26 @@ on:
   pull_request:
   push:
     branches: [main]
+  # release.yml runs every test on the commit it publishes; there the Unity tests may not be skipped.
+  workflow_call:
+    inputs:
+      require-unity:
+        description: 'Fail instead of skipping the Unity tests when UNITY_LICENSE is unavailable.'
+        type: boolean
+        default: false
+    secrets:
+      UNITY_LICENSE:
+        required: false
+      UNITY_EMAIL:
+        required: false
+      UNITY_PASSWORD:
+        required: false
 
+# Under workflow_call, github.workflow is the caller's name, so a release never cancels the run on main.
+# Only PR runs cancel each other; every commit on main keeps its result.
 concurrency:
-  group: tests-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   dotnet-tests:
@@ -37,35 +53,70 @@ jobs:
       - name: Run ${{ matrix.name }} tests
         run: dotnet test "${{ matrix.path }}" --nologo
 
-  # Secrets are unavailable to fork PRs and until the owner adds them; the Unity job is then skipped, not failed.
+  # Runs the Unity tests only for a change that can affect them and only with a license to run them.
+  # Secrets are unavailable to fork PRs and until the owner adds them; the Unity tests are then skipped, not failed,
+  # except under require-unity.
   # Secrets for a Personal license (Unity no longer issues one through manual .alf activation):
   #   UNITY_LICENSE   contents of the .ulf that Unity Hub writes after signing in and activating a Personal license
   #                   (macOS /Library/Application Support/Unity/Unity_lic.ulf, Windows C:\ProgramData\Unity\Unity_lic.ulf,
   #                   Linux ~/.local/share/unity3d/Unity/Unity_lic.ulf); repeat when Hub renews it
   #   UNITY_EMAIL, UNITY_PASSWORD   that Unity account
-  unity-license:
-    name: Unity license
+  unity-plan:
+    name: Unity plan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
-      available: ${{ steps.check.outputs.available }}
+      run: ${{ steps.plan.outputs.run }}
     steps:
-      - id: check
+      - id: plan
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          REQUIRE_UNITY: ${{ inputs.require-unity }}
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          BEFORE: ${{ github.event.before }}
         run: |
-          if [ -n "$UNITY_LICENSE" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::UNITY_LICENSE is not available; the Unity EditMode tests are skipped."
-            echo "available=false" >> "$GITHUB_OUTPUT"
+          # What the Unity jobs read: the package except its Markdown, the dev project's version, and their own setup.
+          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|Aspid\.FastTools/ProjectSettings/ProjectVersion\.txt$|scripts/make-unity-test-project\.sh$|\.github/workflows/tests\.yml$)'
+
+          # "all" when the changed files are unknown: a release, a new branch, a failed API call, a truncated list.
+          files=all
+          if [ "$REQUIRE_UNITY" != true ]; then
+            if [ "$EVENT" = pull_request ]; then
+              files="$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename')" || files=all
+            elif [ "$EVENT" = push ] && [ -n "${BEFORE//0/}" ]; then
+              # The compare API lists at most 300 files.
+              files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$GITHUB_SHA" --jq '.files[].filename')" || files=all
+              [ "$(wc -l <<<"$files")" -lt 300 ] || files=all
+            fi
           fi
 
-  # Compiles the package, its tests and all samples in a throwaway project and runs the EditMode tests, on the
-  # minimum Unity that package.json promises and on the dev project's version.
+          code="$(grep -vE '\.md(\.meta)?$' <<<"$files" || true)"
+          if [ "$files" != all ] && ! grep -qE "$relevant" <<<"$code"; then
+            echo "No change reaches the Unity tests; they are skipped."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ -z "$UNITY_LICENSE" ]; then
+            if [ "$REQUIRE_UNITY" = true ]; then
+              echo "::error::UNITY_LICENSE is not available; the Unity EditMode tests must run here."
+              exit 1
+            fi
+            echo "::notice::UNITY_LICENSE is not available; the Unity EditMode tests are skipped."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Compiles the package, its tests and all samples in a throwaway project and runs the EditMode tests: on the
+  # minimum Unity that package.json promises, on each line the code branches on (UNITY_6000_2/3/4_OR_NEWER),
+  # and on the newest line, which removes APIs first. Each version needs a GameCI image (unityci/editor);
+  # move `latest` to a new Unity line when it ships.
   unity-tests:
     name: Unity EditMode (${{ matrix.name }})
-    needs: unity-license
-    if: needs.unity-license.outputs.available == 'true'
+    needs: unity-plan
+    if: needs.unity-plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -75,9 +126,15 @@ jobs:
       matrix:
         include:
           - name: minimum
-            unity: 6000.0.64f1
+            unity: 6000.0.0f1
+          - name: '6000.2'
+            unity: 6000.2.15f1
+          - name: '6000.3'
+            unity: 6000.3.25f1
           - name: dev project
             unity: project
+          - name: latest
+            unity: 6000.6.4f1
     steps:
       - uses: actions/checkout@v7
 
@@ -115,3 +172,26 @@ jobs:
         with:
           name: unity-test-results-${{ steps.project.outputs.unity }}
           path: unity-test-results
+
+  # The one Unity check that the main ruleset requires. A skipped matrix job reports no per-version names,
+  # so a required "Unity EditMode (…)" check would wait forever; this job always reports.
+  unity:
+    name: Unity
+    needs: [unity-plan, unity-tests]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          PLAN: ${{ needs.unity-plan.result }}
+          RUN: ${{ needs.unity-plan.outputs.run }}
+          TESTS: ${{ needs.unity-tests.result }}
+        run: |
+          if [ "$PLAN" != success ]; then
+            echo "::error::Unity plan: $PLAN."
+            exit 1
+          fi
+          if [ "$RUN" = true ] && [ "$TESTS" != success ]; then
+            echo "::error::Unity EditMode: $TESTS."
+            exit 1
+          fi
+          echo "Unity EditMode: $TESTS."
