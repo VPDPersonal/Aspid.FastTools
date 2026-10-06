@@ -12,6 +12,14 @@ dotnet tool install -g docfx            # once; the tool lands in ~/.dotnet/tool
 cd Website && npm run api               # regenerate after public API or XML doc changes
 ```
 
+A worktree has no Unity-generated `.csproj`, no `Library/` and no `Website/node_modules`. Take them from the main
+checkout before `npm run api`:
+
+1. Clone the Library: `cp -c -R <main>/Aspid.FastTools/Library Aspid.FastTools/Library`.
+2. Copy `Aspid.FastTools.csproj` and `Aspid.FastTools.Editor.csproj` into `Aspid.FastTools/`. Replace the main
+   checkout path in them with the worktree path, so the analyzers come from the worktree.
+3. Link `Website/node_modules` to the main checkout's folder. Remove the link after the run.
+
 `npm run api` deletes `Website/api/` and runs three steps (`Website/scripts/docfx-*.mjs`,
 `Website/docfx/docfx.json`) — if DocFX fails midway, the directory stays empty and the site build breaks, so
 regenerate or `git checkout Website/api` before building:
