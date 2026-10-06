@@ -14,7 +14,7 @@ Check, in this order:
 
 1. Correctness: bugs and missed edge cases, with the input that breaks.
 2. Boundaries from AGENTS.md:
-   - no Unity APIs newer than 6000.0;
+   - no Unity APIs newer than 6000.0.53f1 without a version guard;
    - no editor-only APIs reachable from runtime code;
    - generator and analyzer code does not write to `Console` and does not reference `SourceGenerator.Foundations`;
    - no Unity API or language feature newer than C# 9 in the SerializeReference YAML engine
