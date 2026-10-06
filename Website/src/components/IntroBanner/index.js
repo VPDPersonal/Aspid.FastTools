@@ -8,8 +8,9 @@ const WAVE_POWER = 2; // the wave the closed ring sends out: as strong as a full
 /**
  * The README banner on the introduction. GitHub shows the PNG (`docs/images/aspid_fasttools_readme_banner.png`); the site
  * rebuilds it from the logo and live text, without a background: on wide screens the article panel leaves the banner open
- * (`custom.css`), so the page's dot canvas, its light and ripples included, shows through. The page hides its title, so the
- * name is the page's only `<h1>`; the banner must stay the article's first child.
+ * (`custom.css`), so the page's dot canvas, its light and ripples included, shows through. Narrower, the banner paints the
+ * dots itself, and `DotAmbient` draws its glow and sparks in the `__ambient` layer above them. The page hides its title,
+ * so the name is the page's only `<h1>`; the banner must stay the article's first child.
  *
  * Once per tab session it makes an entrance (`src/intro.js` arms it before the first paint, `styles.css` animates it):
  * the snake's ring draws itself from the head and closes, a wave runs from it through the dots and shakes the page as a
@@ -36,8 +37,7 @@ export default function IntroBanner({alt}) {
     const [ring] = logo.getAnimations();
     const close = () => {
       banner.dataset.glowAt = String(performance.now());
-      // Below 997px the page has no dot canvas for the wave to run through.
-      if (!matchMedia('(min-width: 997px)').matches) return;
+      // Below 997px the wave runs through the banner's own dots only.
       const box = logo.getBoundingClientRect();
       sendWave(box.left + box.width / 2, box.top + box.height / 2, WAVE_POWER, {shake: true});
     };
@@ -53,12 +53,14 @@ export default function IntroBanner({alt}) {
 
   return (
     <div className="readme-banner" ref={ref}>
+      <div className="readme-banner__ambient" aria-hidden="true" />
       <div className="readme-banner__content">
         <div className="readme-banner__mark" aria-hidden="true">
           <div className="readme-banner__logo" />
         </div>
         <div className="readme-banner__text">
           <h1 className="readme-banner__title"><span>{alt.slice(0, brand)}</span>{alt.slice(brand)}</h1>
+          {/* The brand line: English in every locale, as on the README banner. */}
           <p className="readme-banner__tagline">Boilerplate Killer for Unity</p>
         </div>
       </div>

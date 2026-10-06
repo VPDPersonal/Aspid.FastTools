@@ -1,7 +1,23 @@
 /* The banner keeps the 1280×384 layout of the «README banner» page of the FastTools Asset Store Design canvas: every size
    is that design's pixels in `cqi` of the banner (1px = 100cqi / 1280), so the whole banner scales with its width. */
 .readme-banner {
+  position: relative;
+  isolation: isolate;
   container-type: inline-size;
+}
+
+/* Below 997px the banner's own dots (custom.css) cover the fixed canvases of DotAmbient and DotRipple, so the canvases
+   move into this layer: above those dots, under the content. In it they shake with the page, so not on their own too. */
+.readme-banner__ambient {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.readme-banner__ambient > :is(.dot-ambient-canvas, .dot-ripple-canvas) {
+  position: absolute;
+  translate: none;
 }
 
 .readme-banner__content {

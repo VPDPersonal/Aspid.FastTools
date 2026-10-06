@@ -656,14 +656,12 @@ html.docs-doc-page body { background: transparent; }
 .dot-spotlight[data-on] { opacity: 0.85; }
 /* The pale light canvas needs the light at full strength to show as clearly as on the dark one. */
 html[data-theme='light'] .dot-spotlight[data-on] { opacity: 1; }
-/* A burst shakes the page (src/components/DotRipple), only where the canvas shows. A transform would make the app the
-   containing block of the fixed TOC button, so the app shifts by relative offsets and the dot texture by its background
-   position. The app clips the shift, so it never grows the scroll area and no scrollbar shows. */
-@media (min-width: 997px) {
-  html.docs-doc-page { background-position: var(--dot-shake-x, 0px) var(--dot-shake-y, 0px); }
-  html.docs-doc-page #__docusaurus { overflow: clip; }
-  html.docs-doc-page #__docusaurus > :is(div, footer) { position: relative; left: var(--dot-shake-x, 0px); top: var(--dot-shake-y, 0px); }
-}
+/* A burst shakes the page (src/components/DotRipple); below 997px only the introduction's entrance does. A transform would
+   make the app the containing block of the fixed TOC button, so the app shifts by relative offsets and the dot texture by
+   its background position. The app clips the shift, so it never grows the scroll area and no scrollbar shows. */
+html.docs-doc-page { background-position: var(--dot-shake-x, 0px) var(--dot-shake-y, 0px); }
+html.docs-doc-page #__docusaurus { overflow: clip; }
+html.docs-doc-page #__docusaurus > :is(div, footer) { position: relative; left: var(--dot-shake-x, 0px); top: var(--dot-shake-y, 0px); }
 .dot-ambient-canvas, .dot-ripple-canvas, .dot-spotlight { translate: var(--dot-shake-x, 0px) var(--dot-shake-y, 0px); }
 
 html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }

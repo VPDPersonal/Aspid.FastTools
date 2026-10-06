@@ -13,9 +13,9 @@ wide screens the article panel paints its surface only below the banner (`custom
 through it, `DotAmbient` raises a glow from its bottom edge, and `DotRipple`'s `isCanvas` and `DotSpotlight` treat the
 banner as canvas. Once per tab session the banner makes an entrance: `src/intro.js` sets `html[data-intro]` before the
 first paint (never under reduced motion), `styles.css` draws the ring from the snake's head and wipes the name in, and
-`IntroBanner` sends a `DotRipple` wave with the burst's shake (`sendWave`) from the logo when the ring closes and lets the glow rise; below
-997 px the banner paints
-the dots itself. A new accent in `src/accents.js` needs its logo WebP.
+`IntroBanner` sends a `DotRipple` wave with the burst's shake (`sendWave`) from the logo when the ring closes and lets the
+glow rise. Below 997 px the banner paints the dots itself, and `DotAmbient` (glow, sparks) and `DotRipple` (the entrance
+wave, with the shake) move their canvases into the banner's `__ambient` layer above them. A new accent in `src/accents.js` needs its logo WebP.
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
