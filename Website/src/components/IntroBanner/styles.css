@@ -75,52 +75,67 @@ html[data-accent='mono'] .readme-banner__logo { background-image: url('./media/l
   color: var(--venom-fg);
 }
 
-/* ---------- Entrance, once per tab session (src/intro.js sets html[data-intro], index.js clears it) ----------
-   The ring draws itself from the snake's head, clockwise along its body, while the snake slides forward into place;
-   at the close (1.2 s) the mark pulses, index.js sends a wave through the dots, the name is wiped in behind it and the
-   tagline rises. */
-@property --intro-ring {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
+/* The logo's motion (motion.js) draws here, over the content: the pieces of the entrance fly across the whole banner. */
+.readme-banner__fx {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
+/* ---------- Entrance, once per tab session (src/intro.js sets html[data-intro], index.js clears it) ----------
+   From the first paint the logo and the name wait hidden while motion.js assembles the logo from the dots. Once it is
+   whole, index.js sets data-closed: the logo takes over from the pieces and pulses, the name is wiped in behind the wave
+   and the tagline rises. Until index.js takes the banner over (data-assembling), the banner shows itself after 3 s, so a
+   slow or failed script never leaves the page's only heading blank; index.js skips an entrance that starts that late. */
 @property --intro-wipe {
   syntax: '<percentage>';
   inherits: false;
   initial-value: 0%;
 }
 
-html[data-intro] .readme-banner__mark {
-  animation: readme-intro-pulse 700ms ease-out 1200ms both;
+html[data-intro] .readme-banner:not([data-closed]) .readme-banner__logo,
+html[data-intro] .readme-banner:not([data-closed]) .readme-banner__tagline {
+  opacity: 0;
 }
 
-/* The sweep starts at the snout (-30°) and has a soft 30° leading edge, so it runs on to 390° to close fully. */
-html[data-intro] .readme-banner__logo {
-  -webkit-mask-image: conic-gradient(from -30deg, #000 calc(var(--intro-ring) - 30deg), transparent var(--intro-ring));
-  mask-image: conic-gradient(from -30deg, #000 calc(var(--intro-ring) - 30deg), transparent var(--intro-ring));
-  animation: readme-intro-ring 1000ms cubic-bezier(0.6, 0, 0.3, 1) 200ms both;
+html[data-intro] .readme-banner:not([data-assembling], [data-closed]) :is(.readme-banner__logo, .readme-banner__tagline) {
+  animation: readme-intro-fallback 400ms ease-out 3s forwards;
+}
+
+html[data-intro] .readme-banner:not([data-assembling], [data-closed]) .readme-banner__title {
+  animation: readme-intro-wipe 900ms cubic-bezier(0.25, 0.6, 0.3, 1) 3s both;
+}
+
+html[data-intro] .readme-banner[data-closed] .readme-banner__logo {
+  animation: readme-intro-show 140ms ease-out both;
+}
+
+html[data-intro] .readme-banner[data-closed] .readme-banner__mark {
+  animation: readme-intro-pulse 700ms ease-out 100ms both;
 }
 
 html[data-intro] .readme-banner__title {
   -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--intro-wipe) - 15%), transparent var(--intro-wipe));
   mask-image: linear-gradient(90deg, #000 calc(var(--intro-wipe) - 15%), transparent var(--intro-wipe));
-  animation: readme-intro-wipe 900ms cubic-bezier(0.25, 0.6, 0.3, 1) 1300ms both;
 }
 
-html[data-intro] .readme-banner__tagline {
-  animation: readme-intro-rise 600ms ease-out 1650ms both;
+html[data-intro] .readme-banner[data-closed] .readme-banner__title {
+  animation: readme-intro-wipe 900ms cubic-bezier(0.25, 0.6, 0.3, 1) 100ms both;
 }
 
-@keyframes readme-intro-ring {
-  from {
-    --intro-ring: 0deg;
-    transform: rotate(40deg) scale(0.9);
-  }
-  to {
-    --intro-ring: 390deg;
-    transform: none;
-  }
+html[data-intro] .readme-banner[data-closed] .readme-banner__tagline {
+  animation: readme-intro-rise 600ms ease-out 450ms both;
+}
+
+@keyframes readme-intro-show {
+  from { opacity: 0; }
+}
+
+@keyframes readme-intro-fallback {
+  to { opacity: 1; }
 }
 
 @keyframes readme-intro-pulse {

@@ -1,6 +1,6 @@
 /**
- * The introduction's entrance (src/components/IntroBanner): the logo's ring closes, a wave runs through the dots and the
- * name follows it. It plays once per tab session and never under reduced motion.
+ * The introduction's entrance (src/components/IntroBanner): the logo assembles from the dots, a wave runs through them and
+ * the name follows it. It plays once per tab session and never under reduced motion.
  * Plain module: `docusaurus.config.js` imports it for the boot script, so nothing here may touch the DOM on load.
  */
 export const INTRO_KEY = 'aspid-intro-played';

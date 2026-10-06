@@ -12,10 +12,17 @@ renders the banner as
 wide screens the article panel paints its surface only below the banner (`custom.css`), so the dot canvas shows
 through it, `DotAmbient` raises a glow from its bottom edge, and `DotRipple`'s `isCanvas` and `DotSpotlight` treat the
 banner as canvas. Once per tab session the banner makes an entrance: `src/intro.js` sets `html[data-intro]` before the
-first paint (never under reduced motion), `styles.css` draws the ring from the snake's head and wipes the name in, and
-`IntroBanner` sends a `DotRipple` wave with the burst's shake (`sendWave`) from the logo when the ring closes and lets the
-glow rise. Below 997 px the banner paints the dots itself, and `DotAmbient` (glow, sparks) and `DotRipple` (the entrance
-wave, with the shake) move their canvases into the banner's `__ambient` layer above them. A new accent in `src/accents.js` needs its logo WebP.
+first paint (never under reduced motion), and `motion.js` draws on the banner's `__fx` canvas: the logo's low-poly
+pieces (`mesh.js`) take off from the dots and assemble the snake from the tail to the snout. When it is whole,
+`IntroBanner` sets `data-closed`, so `styles.css` shows the logo and wipes the name in, sends a `DotRipple` wave with the
+burst's shake (`sendWave`) from the logo, lets the glow rise, and the eye flashes. If the script has not taken the
+banner over (`data-assembling`) within 3 s, `styles.css` shows it on its own. Afterwards the snake blinks every few
+seconds (`media/eyelids.png`, one lid per accent), and a light runs along its body every 7 s and on hover
+(`media/logo-body.png` holds each pixel's place along the body). Below 997 px the banner paints the dots itself, and
+`DotAmbient` (glow, sparks) and `DotRipple` (the entrance wave, with the shake) move their canvases into the banner's
+`__ambient` layer above them. A new accent in `src/accents.js` needs its logo WebP and a re-run of
+`node scripts/intro-logo-data.mjs` (needs `ffmpeg`), which also rebuilds `mesh.js` and the body map when the logo changes;
+`npm test` fails until `eyelids.png` has a lid for every accent.
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
