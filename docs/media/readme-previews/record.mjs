@@ -17,13 +17,16 @@ const OUT = fileURLToPath(new URL('../../images/readme-previews/', import.meta.u
 // `fps` divides the loop into whole frames; the Profiler's timeline changes every frame, so it takes fewer.
 // A feature preview is found by its card's doc page; `box` finds any other preview. The loop starts when the preview
 // scrolls into view, and `warmup` passes before the first frame: one loop by default, which settles transitions.
+// Lossy WebP leaves ghosts of earlier frames around the patches it updates on these flat interfaces, so a preview is
+// lossless; `encode` overrides that: the Profiler's timeline scrolls every frame, and only mixed frames keep it small.
 const FPS = 20;
+const ENCODE = ['-lossless', '-m', '6'];
 const PREVIEWS = {
   // InstallPanel: the sum of DURATIONS. It plays PLAYS (2) times, so a short warm-up records the first play, which runs
   // into the second one's first frame.
   'install': {loop: 1300 + 1400 + 1800 + 1100 + 2600, warmup: 100,
     box: `document.querySelector('section[class*="install_"] [class*="preview_"]')`},
-  'profiler-markers': {loop: 22000, fps: 12.5},
+  'profiler-markers': {loop: 22000, fps: 12.5, encode: ['-mixed', '-q', '90', '-m', '6']},
   'visual-element-extensions': {loop: 6 * 1100},
   'serialized-property-extensions': {loop: 5 * 1200},
   'editor-helpers': {loop: 5 * 950},
@@ -149,7 +152,7 @@ async function record(tab, doc, file) {
   })()`});
   if (!result.value) throw new Error(`No animated preview for ${doc}`);
   const clip = {...result.value, scale: 1};
-  const {loop, fps = FPS, warmup = loop + 500} = PREVIEWS[doc];
+  const {loop, fps = FPS, warmup = loop + 500, encode = ENCODE} = PREVIEWS[doc];
   await advance(tab, warmup);
   const frames = fs.mkdtempSync(path.join(os.tmpdir(), `${doc}-`));
   const count = Math.round(loop * fps / 1000);
@@ -159,7 +162,7 @@ async function record(tab, doc, file) {
     await advance(tab, 1000 / fps);
   }
   const list = fs.readdirSync(frames).sort().map((name) => path.join(frames, name));
-  execFileSync('img2webp', ['-loop', '0', '-lossy', '-q', '82', '-m', '6', '-d', String(1000 / fps), ...list, '-o', file], {stdio: 'ignore'});
+  execFileSync('img2webp', ['-loop', '0', ...encode, '-d', String(1000 / fps), ...list, '-o', file], {stdio: 'ignore'});
   fs.rmSync(frames, {recursive: true});
   console.log(`${path.relative(process.cwd(), file)}: ${count} frames, ${(fs.statSync(file).size / 1024).toFixed(0)} KB`);
 }
