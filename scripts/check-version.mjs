@@ -10,7 +10,6 @@ process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 const PKG = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const FILES = [
   'README.md',
-  'README.ru.md',
   'Website/docs/README.md',
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
   'Website/docs/Images/status-badge-preview.svg',

@@ -1,5 +1,5 @@
 // Records the introduction's animated feature previews (Website/src/components/FeaturePreview) from a built site into
-// looping WebPs for the GitHub READMEs: docs/images/readme-previews/<doc>[-ru][-light].webp. Headless Chrome runs on
+// looping WebPs for the GitHub README: docs/images/readme-previews/<doc>[-light].webp. Headless Chrome runs on
 // virtual time, so every frame lands on its exact timestamp however slow the capture is.
 //   Website/scripts/serve-all.sh
 //   node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [doc …]
@@ -14,14 +14,13 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const OUT = fileURLToPath(new URL('../../images/readme-previews/', import.meta.url));
 // One loop of each preview, from FeaturePreview: `useLoop(count, interval)` steps, or the Profiler's 22 s ticker.
 // `fps` divides the loop into whole frames; the Profiler's timeline changes every frame, so it takes fewer.
-// `ru`: the preview has Russian text, so README.ru.md gets its own recording.
 const FPS = 20;
 const PREVIEWS = {
   'profiler-markers': {loop: 22000, fps: 12.5},
   'visual-element-extensions': {loop: 6 * 1100},
-  'serialized-property-extensions': {loop: 5 * 1200, ru: true},
+  'serialized-property-extensions': {loop: 5 * 1200},
   'editor-helpers': {loop: 5 * 950},
-  'agent-skills': {loop: 6 * 1300, ru: true},
+  'agent-skills': {loop: 6 * 1300},
 };
 // The preview box takes 56% of the card; this viewport makes it 480×360 CSS px, recorded at 2x.
 const VIEWPORT = {width: 1180, height: 1000, deviceScaleFactor: 2};
@@ -82,8 +81,8 @@ const once = (method, sessionId) => new Promise((resolve) => {
   listeners.add(listener);
 });
 
-/** Opens the introduction in `theme` and `locale`, with virtual time paused once it has loaded. */
-async function open(theme, locale) {
+/** Opens the English introduction in `theme`, with virtual time paused once it has loaded. */
+async function open(theme) {
   const {targetId} = await send('Target.createTarget', {url: 'about:blank'});
   const {sessionId} = await send('Target.attachToTarget', {targetId, flatten: true});
   const page = (method, params) => send(method, params, sessionId);
@@ -100,7 +99,7 @@ async function open(theme, locale) {
       + '.feature-card__live [class*="inspector_"], .feature-card__live [class*="uiStage_"] { border-radius: 0 !important; }'
       + '</style>'));`});
   const loaded = once('Page.loadEventFired', sessionId);
-  await page('Page.navigate', {url: new URL(locale === 'en' ? 'docs' : `${locale}/docs`, base).href});
+  await page('Page.navigate', {url: new URL('docs', base).href});
   await loaded;
   await page('Runtime.evaluate', {expression: 'document.fonts.ready.then(() => true)', awaitPromise: true});
   await page('Emulation.setVirtualTimePolicy', {policy: 'pause'});
@@ -144,17 +143,12 @@ async function record(tab, doc, file) {
 
 try {
   fs.mkdirSync(OUT, {recursive: true});
-  for (const locale of ['en', 'ru']) {
-    const targets = docs.filter((doc) => locale === 'en' || PREVIEWS[doc].ru);
-    if (!targets.length) continue;
-    for (const theme of ['dark', 'light']) {
-      // A fresh page per preview: each one's loop starts on its own scroll into view.
-      for (const doc of targets) {
-        const tab = await open(theme, locale);
-        const suffix = `${locale === 'en' ? '' : `-${locale}`}${theme === 'light' ? '-light' : ''}`;
-        await record(tab, doc, path.join(OUT, `${doc}${suffix}.webp`));
-        await tab.close();
-      }
+  for (const theme of ['dark', 'light']) {
+    // A fresh page per preview: each one's loop starts on its own scroll into view.
+    for (const doc of docs) {
+      const tab = await open(theme);
+      await record(tab, doc, path.join(OUT, `${doc}${theme === 'light' ? '-light' : ''}.webp`));
+      await tab.close();
     }
   }
 } finally {

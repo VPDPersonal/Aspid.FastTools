@@ -1,22 +1,31 @@
 /**
- * GitHub layout for the generated READMEs. GitHub renders the introduction without the site's components, so its
+ * GitHub layout for the generated README. GitHub renders the introduction without the site's components, so its
  * site-only blocks get the closest GitHub equivalent in plain HTML (src/remark/introBanner.js builds the site's):
- * - an image with a `-light` sibling becomes a <picture> per GitHub theme;
+ * - links to doc pages and to the samples overview open the site, which renders them in full;
+ * - the link row loses the link to the repository the reader is already in;
+ * - the note on pinning a version folds into <details>, with the pinned URL as a block to copy;
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
- * - a line under the link row links the other translation.
- * All URLs are already relative to the README.
+ * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line;
+ * - an image with a `-light` sibling becomes a <picture> per GitHub theme.
+ * All file URLs are already relative to the README.
  */
 
+// The site's English strings: FeatureCardMore in src/theme/MDXComponents and SupportPanel.
 const TEXT = {
-  en: {name: 'English', more: 'Read more'},
-  ru: {name: 'Русский', more: 'Подробнее'},
+  more: 'Read more',
+  pin: 'Pin a version',
+  support: 'Found a bug or have a question?',
+  hint: 'Include your Unity version, package version and steps to reproduce.',
+  issue: 'Open an issue',
+  star: 'Star on GitHub',
 };
 
 const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const html = (value) => ({type: 'html', value});
 const attributes = (tag) => Object.fromEntries([...tag.matchAll(/([\w-]+)=(["'])(.*?)\2/g)].map(([, name, , value]) => [name, value]));
+const isHeading = (node, depth) => node?.type === 'heading' && node.depth === depth;
 
 /** Inline Markdown as HTML: inside an HTML block GitHub does not parse Markdown. */
 function inline(nodes) {
@@ -43,18 +52,62 @@ function themedImage(src, alt, exists, size = '') {
     + `<source media="(prefers-color-scheme: light)" srcset="${light}">${image}</picture>`;
 }
 
-/** The recording of the site's animated preview for `doc`: the translated one first, then the English one. */
-function recording(doc, {language, previews, exists}) {
-  const files = language === 'en' ? [`${doc}.webp`] : [`${doc}-${language}.webp`, `${doc}.webp`];
-  return files.map((file) => `${previews}/${file}`).find(exists);
+/** `Website/docs/09-profiler-markers.md#x` → `<site>docs/profiler-markers#x`; the samples overview → `<site>tutorials`. */
+function siteLinks(node, site) {
+  if (node.type === 'link' || node.type === 'definition') {
+    const doc = /^Website\/docs\/(?:\d+-)?([^/#]+)\.md(#.*)?$/.exec(node.url);
+    if (doc && doc[1] !== 'README') node.url = `${site}docs/${doc[1]}${doc[2] ?? ''}`;
+    else if (/\/Samples~\/README\.md$/.test(node.url)) node.url = `${site}tutorials`;
+  }
+  node.children?.forEach((child) => siteLinks(child, site));
+}
+
+/** The link row: text links and separators only (the badge row links images). */
+function linkRow(tree, repository) {
+  const row = tree.children.find((node) => node.type === 'paragraph'
+    && node.children.some((part) => part.type === 'link')
+    && node.children.every((part) => (part.type === 'link' && part.children.every((child) => child.type === 'text'))
+      || (part.type === 'text' && /^[\s·|\-–—]*$/.test(part.value))));
+  if (!row) return;
+  const links = row.children.filter((part) => part.type === 'link' && part.url.replace(/\/$/, '') !== repository);
+  row.children = links.flatMap((link, index) => (index ? [{type: 'text', value: ' · '}, link] : [link]));
+}
+
+/** The sentence that ends with the pinned install URL (`….git#upm-preview/1.0.0`) folds away under the rest. */
+function pinNote(tree) {
+  const index = tree.children.findIndex((node) => node.type === 'paragraph'
+    && node.children.some((part) => part.type === 'inlineCode' && /\.git#upm[^/\s]*\/\d/.test(part.value)));
+  if (index === -1) return;
+  const node = tree.children[index];
+  const at = node.children.findIndex((part) => part.type === 'inlineCode' && /\.git#upm[^/\s]*\/\d/.test(part.value));
+  // The sentence starts after the last full stop before the URL.
+  let from = at - 1;
+  while (from >= 0 && !(node.children[from].type === 'text' && /\.\s/.test(node.children[from].value))) from--;
+  if (from < 0) return;
+  const split = node.children[from].value.lastIndexOf('. ') + 1;
+  const before = [...node.children.slice(0, from), {type: 'text', value: node.children[from].value.slice(0, split)}];
+  const sentence = [{type: 'text', value: node.children[from].value.slice(split).trimStart()}, ...node.children.slice(from + 1, at)];
+  const last = sentence.at(-1);
+  if (last.type === 'text') last.value = last.value.replace(/\s+$/, '');
+  tree.children.splice(index, 1,
+    {...node, children: before},
+    html(`<details>\n<summary>${TEXT.pin}</summary>`),
+    {type: 'paragraph', children: sentence},
+    {type: 'code', lang: 'text', value: node.children[at].value},
+    html('</details>'));
+}
+
+/** The recording of the site's animated preview for `doc`, if there is one. */
+function recording(doc, {previews, exists}) {
+  const file = `${previews}/${doc}.webp`;
+  return exists(file) ? file : undefined;
 }
 
 function card(heading, summary, preview, options) {
   const link = heading.children.find((part) => part.type === 'link');
   const url = link ? escape(link.url) : undefined;
-  const title = inline(heading.children);
-  const body = `</td>\n<td width="44%">\n<h4>${title}</h4>\n<p>${inline(summary.children)}</p>\n`
-    + (url ? `<p><a href="${url}">${TEXT[options.language].more} →</a></p>\n` : '')
+  const body = `</td>\n<td width="44%">\n<h4>${inline(heading.children)}</h4>\n<p>${inline(summary.children)}</p>\n`
+    + (url ? `<p><a href="${url}">${TEXT.more} →</a></p>\n` : '')
     + '</td>\n</tr>\n</table>';
   const size = ' width="100%"';
   let image;
@@ -62,8 +115,8 @@ function card(heading, summary, preview, options) {
     const {src, alt = ''} = attributes(preview.value);
     image = themedImage(src, alt, options.exists, size);
   } else {
-    // `09-profiler-markers.md` → `profiler-markers`, the key of the site's FeaturePreview.
-    const doc = link?.url.replace(/^.*\//, '').replace(/^\d+-/, '').replace(/\.md$/, '');
+    // `…/docs/profiler-markers` → `profiler-markers`, the key of the site's FeaturePreview.
+    const doc = link?.url.replace(/[#?].*$/, '').replace(/^.*\//, '').replace(/^\d+-/, '').replace(/\.md$/, '');
     const file = doc && recording(doc, options);
     if (file) image = themedImage(file, escape(link.children.map((part) => part.value ?? '').join('')), options.exists, size);
   }
@@ -75,18 +128,17 @@ function card(heading, summary, preview, options) {
 
 /** On GitHub the features are grouped sections: a linked heading, a sentence and a preview. */
 function featureCards(tree, options) {
-  const start = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
-    && tree.children[index + 1]?.type === 'heading' && tree.children[index + 1].depth === 3
-    && tree.children[index + 2]?.type === 'heading' && tree.children[index + 2].depth === 4);
+  const start = tree.children.findIndex((node, index) => isHeading(node, 2)
+    && isHeading(tree.children[index + 1], 3) && isHeading(tree.children[index + 2], 4));
   if (start === -1) return;
   let end = start + 1;
-  while (end < tree.children.length && !(tree.children[end].type === 'heading' && tree.children[end].depth === 2)) end++;
+  while (end < tree.children.length && !isHeading(tree.children[end], 2)) end++;
   const section = tree.children.slice(start + 1, end);
   const result = [];
   for (let i = 0; i < section.length; i++) {
     const [node, summary, preview] = section.slice(i, i + 3);
     const isImage = preview?.type === 'html' && /^<img\b/.test(preview.value.trim());
-    if (node.type === 'heading' && node.depth === 4 && summary?.type === 'paragraph' && (isImage || preview?.type === 'code')) {
+    if (isHeading(node, 4) && summary?.type === 'paragraph' && (isImage || preview?.type === 'code')) {
       result.push(...card(node, summary, preview, options));
       i += 2;
     } else {
@@ -100,7 +152,7 @@ function featureCards(tree, options) {
 function linkTiles(tree) {
   tree.children.forEach((node, index) => {
     const list = tree.children[index + 1];
-    if (node.type !== 'heading' || node.depth !== 2 || list?.type !== 'list' || list.ordered) return;
+    if (!isHeading(node, 2) || list?.type !== 'list' || list.ordered) return;
     const items = list.children.map((item) => (item.children.length === 1 && item.children[0].type === 'paragraph'
       ? item.children[0].children : null));
     if (!items.every((parts) => parts?.[0]?.type === 'link' && parts[1]?.type === 'text' && /^\s*—\s*/.test(parts[1].value))) return;
@@ -113,6 +165,22 @@ function linkTiles(tree) {
     });
     tree.children[index + 1] = html(`<table>\n<tr>\n${cells.join('\n')}\n</tr>\n</table>`);
   });
+}
+
+/**
+ * The help section: a paragraph linking the issues, one linking the repository and an optional licence line become
+ * the site's call to action. The licence line goes: the badge and GitHub's License tab name it.
+ */
+function supportPanel(tree, repository) {
+  const linkIn = (node, test) => node?.type === 'paragraph' && node.children.find((part) => part.type === 'link' && test(part.url));
+  const isIssues = (url) => /\/issues\/?$/.test(url);
+  const index = tree.children.findIndex((node, at) => isHeading(node, 2) && linkIn(tree.children[at + 1], isIssues)
+    && linkIn(tree.children[at + 2], (url) => url.replace(/\/$/, '') === repository));
+  if (index === -1) return;
+  const issues = escape(linkIn(tree.children[index + 1], isIssues).url);
+  const licence = linkIn(tree.children[index + 3], (url) => /\/LICENSE$/.test(url));
+  tree.children.splice(index + 1, licence ? 3 : 2,
+    html(`<p>${TEXT.support} ${TEXT.hint}</p>\n<p><a href="${issues}"><b>${TEXT.issue}</b></a> · <a href="${repository}">${TEXT.star}</a></p>`));
 }
 
 /** Every other image with a light sibling: the README's `<img>` tags and Markdown images. */
@@ -135,22 +203,18 @@ function themedImages(node, exists) {
 }
 
 /**
- * @param tree the README's Markdown tree, its URLs relative to the README
- * @param options.language `en` or `ru`
- * @param options.translations README file per language, relative to this README
- * @param options.previews the folder of the preview recordings, relative to this README
+ * @param tree the README's Markdown tree, its file URLs relative to the README
+ * @param options.site the documentation site, ending in `/`
+ * @param options.repository the repository's GitHub URL, without a trailing `/`
+ * @param options.previews the folder of the preview recordings, relative to the README
  * @param options.exists whether a URL relative to the README names a file
  */
 export function githubLayout(tree, options) {
+  siteLinks(tree, options.site);
+  linkRow(tree, options.repository);
+  pinNote(tree);
   featureCards(tree, options);
   linkTiles(tree);
+  supportPanel(tree, options.repository);
   themedImages(tree, options.exists);
-  const switcher = Object.entries(options.translations).map(([language, file]) => (language === options.language
-    ? `<b>${TEXT[language].name}</b>` : `<a href="${file}">${TEXT[language].name}</a>`));
-  // The link row: text links and separators only (the badge row links images). Without one, the switch goes on top.
-  const links = tree.children.findIndex((node) => node.type === 'paragraph'
-    && node.children.some((part) => part.type === 'link')
-    && node.children.every((part) => (part.type === 'link' && part.children.every((child) => child.type === 'text'))
-      || (part.type === 'text' && /^[\s·|\-–—]*$/.test(part.value))));
-  tree.children.splice(links + 1, 0, html(`<p>${switcher.join(' · ')}</p>`));
 }

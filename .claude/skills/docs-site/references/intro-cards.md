@@ -31,7 +31,7 @@ seconds (`media/eyelids.png`, one lid per accent), and a light runs along its bo
 On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
-there, so update it when the page's quick start changes, and re-record the GitHub READMEs' copy of the changed preview
+there, so update it when the page's quick start changes, and re-record the GitHub README's copy of the changed preview
 (`docs/media/readme-previews/README.md`). The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme. Both are the
 `enum-values-multipliers-populate(-light).gif` padded to 1576×1080 (`-preset veryslow -crf 24
 -vf "fps=20,pad=1576:1080:20:206:color=0x333333"`, `0xC8C8C8` for light).
