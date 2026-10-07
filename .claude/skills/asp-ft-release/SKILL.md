@@ -45,10 +45,11 @@ Do every step without questions. Stop at the first failure and report it.
 
    The `unity-verify` agent is user-level. Without it, run the batch command from the header of
    `scripts/make-unity-test-project.sh` for both projects, in the background.
-7. Run the checks of `.github/workflows/release.yml`:
-   - `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in `Aspid.FastTools.Analyzers/`;
-   - `dotnet test Aspid.FastTools.YamlTests --nologo` in the repository root;
-   - the two Release builds of the step "Verify committed Roslyn DLLs match sources", then its `git diff`.
+7. Run the checks that the release runs:
+   - from `.github/workflows/tests.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
+     `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` in the repository root;
+   - from the `preflight` job of `.github/workflows/release.yml`: the two Release builds of the step
+     "Verify committed Roslyn DLLs match sources", then its `git diff`.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.
 9. Run `npm --prefix Website run check-readme`.
 10. Find the old version in prose:

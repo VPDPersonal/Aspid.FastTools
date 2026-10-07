@@ -17,10 +17,10 @@ on:
       UNITY_PASSWORD:
         required: false
 
-# Under workflow_call, github.workflow is the caller's name, so a release never cancels the run on main.
-# Only PR runs cancel each other; every commit on main keeps its result.
+# PR runs share one group per branch and cancel each other. A push to main or a release (workflow_call) gets one group
+# per commit: a group keeps only one pending run, so a shared group would cancel the run of a commit in the middle.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
