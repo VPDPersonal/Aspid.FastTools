@@ -33,6 +33,9 @@ Format:
 - Start each inline comment with a severity tag:
   - `[blocking]`: the PR must not merge until it is fixed;
   - `[minor]`: an improvement that can wait.
+- Post the main comment last, as a new comment with `gh pr comment`.
+  This applies to a requested review too. Do not put the verdict only into an edit of an earlier comment:
+  an edit does not notify the agent that waits for the verdict.
 - Start the main comment with exactly one verdict line: `Verdict: <N> blocking, <M> minor`.
   An agent reads this line to decide the next step, so keep the format.
   Put at most 2 short sentences after it.
