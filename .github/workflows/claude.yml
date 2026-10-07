@@ -59,12 +59,14 @@ jobs:
           APPEND_SYSTEM_PROMPT: ${{ steps.rules.outputs.text }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          track_progress: true
+          # No track_progress: the action would put the result into an edit of its progress comment.
+          # An edit does not notify a session that waits for the review, a new comment does.
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
             Review this pull request.
+            Post the inline comments first. Then post the main comment with `gh pr comment`.
           claude_args: |
             --model claude-opus-5-5
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
@@ -107,6 +109,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The inline comment tool lets a requested review put issues on their lines.
           # git diff and git fetch let Claude see what the PR changed against its base.
+          # gh pr comment posts the result of a requested review as a new comment.
           claude_args: |
             --model claude-opus-5-5
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(git diff:*),Bash(git fetch:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(git diff:*),Bash(git fetch:*),Bash(gh pr comment:*)"
