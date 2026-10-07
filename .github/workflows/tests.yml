@@ -153,6 +153,9 @@ jobs:
 
       - uses: game-ci/unity-test-runner@v4
         env:
+          # The action asks the GitHub API for the latest game-ci CLI release; without a token, the shared runner IP
+          # hits the anonymous rate limit (403).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
