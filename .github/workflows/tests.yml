@@ -132,6 +132,9 @@ jobs:
             unity: project
           - name: latest
             unity: 6000.6.4f1
+            # 6000.6.4f1 is often SIGKILLed (exit 137) in its first assembly reload from a restored Library;
+            # it passed every run with a fresh Library. Check again when `latest` moves.
+            library-cache: false
     steps:
       - uses: actions/checkout@v7
 
@@ -146,6 +149,7 @@ jobs:
           echo "unity=$version" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v6
+        if: matrix.library-cache != false
         with:
           path: ci-unity-project/Library
           key: unity-library-${{ steps.project.outputs.unity }}-${{ hashFiles('Aspid.FastTools/Packages/tech.aspid.fasttools/**') }}
