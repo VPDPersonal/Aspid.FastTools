@@ -6,6 +6,7 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.Types.Editors.Tests
@@ -84,6 +85,46 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [UnityTest]
+        public IEnumerator NarrowingTheResultsPastTheSelectedRow_DoesNotRecurse()
+        {
+            var view = AddView(string.Empty);
+            yield return null;
+
+            var search = view.Q<ToolbarSearchField>();
+            var list = view.Q<ListView>();
+
+            search.value = "ViewProbe";
+            var last = list.itemsSource.Count - 1;
+            Assert.Greater(last, 0, "The query must list both probes.");
+            list.selectedIndex = last;
+
+            // From Unity 6000.6 every refresh of a list that ends above the selected index reports a selection change.
+            search.value = "FirstViewProbe";
+
+            Assert.LessOrEqual(list.itemsSource.Count, last,
+                "The narrower query must end the list above the selected row.");
+        }
+
+        [UnityTest]
+        public IEnumerator SelectingAFolder_ShowsItsOpenedIconUntilTheSelectionMovesOn()
+        {
+            var view = AddView(string.Empty);
+            yield return null;
+
+            var list = view.Q<ListView>();
+            var items = (List<TreeNode>)list.itemsSource;
+            var none = items.FindIndex(node => node.IsNoneOption);
+            var folder = items.FindIndex(node => node.HasChildren && !node.IsType && !node.IsSectionTitle);
+            Assert.GreaterOrEqual(folder, 0, "The root must list the probes' namespace as a folder.");
+
+            list.selectedIndex = folder;
+            Assert.AreEqual(TypeSelectorIconResolver.Resolve("FolderOpened Icon"), RowIcon(list, folder));
+
+            list.selectedIndex = none;
+            Assert.AreEqual(TypeSelectorIconResolver.Resolve("Folder Icon"), RowIcon(list, folder));
+        }
+
+        [UnityTest]
         public IEnumerator TypeField_PickingNoneForAMissingType_RaisesTheChange()
         {
             var field = new TypeField();
@@ -109,6 +150,16 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             _window.rootVisualElement.Add(view);
             return view;
+        }
+
+        private static Texture RowIcon(ListView list, int index)
+        {
+            var node = list.itemsSource[index];
+            var row = list.Query<VisualElement>(className: "aspid-fasttools-type-selector__item")
+                .Where(element => element.userData == node)
+                .First();
+
+            return row.Q<Image>(className: "aspid-fasttools-type-selector__item-icon").image;
         }
 
         private static void SendKey(VisualElement target, char character, KeyCode key)
