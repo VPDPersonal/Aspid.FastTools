@@ -95,6 +95,18 @@ namespace Aspid.FastTools.UIElements.Tests
         }
 
         [Test]
+        public void RemoveChildren_SkipsNullAndForeignEntries()
+        {
+            var parent = CreateParent(out var children);
+            var foreign = new VisualElement().AddChild(new VisualElement());
+
+            parent.RemoveChildren(children[0], null, foreign, foreign.Children().First());
+
+            CollectionAssert.AreEqual(children.Skip(1), parent.Children().ToArray());
+            Assert.AreEqual(1, foreign.childCount);
+        }
+
+        [Test]
         public void RemoveChildrenIf_RemovesEveryOwnChild()
         {
             var parent = CreateParent(out _);

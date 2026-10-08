@@ -349,12 +349,12 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="child">The child element to remove.</param>
+        /// <param name="child">The child element to remove; <see langword="null"/> or an element that is not a child leaves the element unchanged.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveChild<T>(this T element, VisualElement child)
+        public static T RemoveChild<T>(this T element, VisualElement? child)
             where T : VisualElement
         {
-            element.Remove(child);
+            if (IsContentChild(element, child)) element.Remove(child);
             return element;
         }
 
@@ -364,9 +364,9 @@ namespace Aspid.FastTools.UIElements
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
-        /// <param name="child">The child element to remove.</param>
+        /// <param name="child">The child element to remove; <see langword="null"/> or an element that is not a child leaves the element unchanged.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveChildIf<T>(this T element, bool condition, VisualElement child)
+        public static T RemoveChildIf<T>(this T element, bool condition, VisualElement? child)
             where T : VisualElement => condition ? element.RemoveChild(child) : element;
 
         /// <summary>
@@ -399,15 +399,15 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveChildren<T>(this T element, params VisualElement[]? children)
+        public static T RemoveChildren<T>(this T element, params VisualElement?[]? children)
             where T : VisualElement
         {
             if (children is null) return element;
 
             foreach (var child in children)
-                element.Remove(child);
+                element.RemoveChild(child);
 
             return element;
         }
@@ -418,9 +418,9 @@ namespace Aspid.FastTools.UIElements
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveChildrenIf<T>(this T element, bool condition, params VisualElement[]? children)
+        public static T RemoveChildrenIf<T>(this T element, bool condition, params VisualElement?[]? children)
             where T : VisualElement => condition ? element.RemoveChildren(children) : element;
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
         public static T RemoveChildren<T>(this T element, List<VisualElement>? children)
             where T : VisualElement
@@ -436,7 +436,7 @@ namespace Aspid.FastTools.UIElements
             if (children is null) return element;
 
             foreach (var child in children)
-                element.Remove(child);
+                element.RemoveChild(child);
 
             return element;
         }
@@ -447,7 +447,7 @@ namespace Aspid.FastTools.UIElements
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
         public static T RemoveChildrenIf<T>(this T element, bool condition, List<VisualElement>? children)
             where T : VisualElement => condition ? element.RemoveChildren(children) : element;
@@ -461,22 +461,22 @@ namespace Aspid.FastTools.UIElements
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement>? children)
+        public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement?>? children)
             where T : VisualElement
         {
             switch (children)
             {
                 case null: return element;
-                case VisualElement[] array: return element.RemoveChildren(array);
+                case VisualElement?[] array: return element.RemoveChildren(array);
             }
 
-            using var pooled = ListPool<VisualElement>.Get(out var snapshot);
+            using var pooled = ListPool<VisualElement?>.Get(out var snapshot);
             snapshot.AddRange(children);
 
             foreach (var child in snapshot)
-                element.Remove(child);
+                element.RemoveChild(child);
 
             return element;
         }
@@ -491,9 +491,9 @@ namespace Aspid.FastTools.UIElements
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement>? children)
+        public static T RemoveChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement?>? children)
             where T : VisualElement => condition ? element.RemoveChildren(children) : element;
 
         /// <summary>
@@ -501,13 +501,13 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
         public static T RemoveChildren<T>(this T element, ReadOnlySpan<VisualElement> children)
             where T : VisualElement
         {
             foreach (var child in children)
-                element.Remove(child);
+                element.RemoveChild(child);
 
             return element;
         }
@@ -518,7 +518,7 @@ namespace Aspid.FastTools.UIElements
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
-        /// <param name="children">The children to remove.</param>
+        /// <param name="children">The children to remove; <see langword="null"/> entries and elements that are not children are skipped.</param>
         /// <returns>The element, for chaining.</returns>
         public static T RemoveChildrenIf<T>(this T element, bool condition, ReadOnlySpan<VisualElement> children)
             where T : VisualElement => condition ? element.RemoveChildren(children) : element;
@@ -548,5 +548,8 @@ namespace Aspid.FastTools.UIElements
         public static T ClearChildrenIf<T>(this T element, bool condition)
             where T : VisualElement => condition ? element.ClearChildren() : element;
         #endregion
+
+        private static bool IsContentChild(VisualElement element, VisualElement? child) =>
+            child is not null && child.hierarchy.parent == element.contentContainer;
     }
 }

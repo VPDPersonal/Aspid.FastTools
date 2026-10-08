@@ -65,6 +65,7 @@
 - `[TypeSelector]` на поле-массиве или `List<T>` теперь относится ко всей коллекции (`applyToCollection`): его drawer рисует список и выбор типа для каждого элемента. `PropertyField` и `EditorGUILayout.PropertyField` для такого списка теперь получают **+** с выбором типа в UI Toolkit и IMGUI, а `PropertyField` для отдельного элемента больше не показывает выбор типа. `SerializeReferenceIMGUIList.Draw` и `SerializeReferenceEditorGUI.CreateList` добавляют к `baseTypes` ограничения `[TypeSelector]` с поля списка. Списки managed references, которые рисует пакет, теперь учитывают `[NonReorderable]`.
 - Параметр `value` у `AddClass`, `RemoveClass`, `ToggleClass`, `AddStyleSheet`, `RemoveStyleSheet` и их вариантов `…If` переименован в `className` и `styleSheet`; вызов с именованным аргументом `value:` нужно обновить.
 - Методы таблиц стилей, например `AddStyleSheet` и `RemoveStyleSheet`, пропускают `null` вместо `ArgumentNullException`.
+- `RemoveChild` и `RemoveChildren` пропускают `null` и элементы, которые не являются дочерними, вместо исключения, поэтому `RemoveChildren` больше не останавливается на полпути.
 - Расширения для дочерних элементов, классов и таблиц стилей размечены для nullable reference types: проект с включённой проверкой видит, какие аргументы могут быть `null`.
 
 ### Удалено

@@ -3948,12 +3948,12 @@ Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Docu
 style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html),
 so nothing is written and the USS style stays, including the bold it was meant to remove.
 
-### RemoveChild\<T\>\(T, VisualElement\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChild__1___0_UnityEngine_UIElements_VisualElement_}
+### RemoveChild\<T\>\(T, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChild__1___0_UnityEngine_UIElements_VisualElement_}
 
 Removes the specified child from the element.
 
 ```csharp
-public static T RemoveChild<T>(this T element, VisualElement child) where T : VisualElement
+public static T RemoveChild<T>(this T element, VisualElement? child) where T : VisualElement
 ```
 
 #### Parameters
@@ -3962,9 +3962,9 @@ public static T RemoveChild<T>(this T element, VisualElement child) where T : Vi
 
 The element to modify.
 
-`child` VisualElement
+`child` VisualElement?
 
-The child element to remove.
+The child element to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an element that is not a child leaves the element unchanged.
 
 #### Returns
 
@@ -4042,12 +4042,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildIf\<T\>\(T, bool, VisualElement\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
+### RemoveChildIf\<T\>\(T, bool, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
 
 Conditionally removes the specified child from the element.
 
 ```csharp
-public static T RemoveChildIf<T>(this T element, bool condition, VisualElement child) where T : VisualElement
+public static T RemoveChildIf<T>(this T element, bool condition, VisualElement? child) where T : VisualElement
 ```
 
 #### Parameters
@@ -4060,9 +4060,9 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`child` VisualElement
+`child` VisualElement?
 
-The child element to remove.
+The child element to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an element that is not a child leaves the element unchanged.
 
 #### Returns
 
@@ -4076,12 +4076,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildren\<T\>\(T, params VisualElement\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_UnityEngine_UIElements_VisualElement___}
+### RemoveChildren\<T\>\(T, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_UnityEngine_UIElements_VisualElement___}
 
 Removes an array of child elements from the element.
 
 ```csharp
-public static T RemoveChildren<T>(this T element, params VisualElement[]? children) where T : VisualElement
+public static T RemoveChildren<T>(this T element, params VisualElement?[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -4090,9 +4090,9 @@ public static T RemoveChildren<T>(this T element, params VisualElement[]? childr
 
 The element to modify.
 
-`children` VisualElement\[\]?
+`children` VisualElement?\[\]?
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 
@@ -4122,7 +4122,7 @@ The element to modify.
 
 `children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 
@@ -4136,12 +4136,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildren\<T\>\(T, IEnumerable\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### RemoveChildren\<T\>\(T, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
 Removes an enumerable of child elements from the element.
 
 ```csharp
-public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement>? children) where T : VisualElement
+public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement?>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -4150,9 +4150,9 @@ public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement>? ch
 
 The element to modify.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>?
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement?\>?
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 
@@ -4187,7 +4187,7 @@ The element to modify.
 
 `children` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<VisualElement\>
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 
@@ -4201,12 +4201,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildrenIf\<T\>\(T, bool, params VisualElement\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
+### RemoveChildrenIf\<T\>\(T, bool, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
 
 Conditionally removes an array of child elements from the element.
 
 ```csharp
-public static T RemoveChildrenIf<T>(this T element, bool condition, params VisualElement[]? children) where T : VisualElement
+public static T RemoveChildrenIf<T>(this T element, bool condition, params VisualElement?[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -4219,9 +4219,9 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`children` VisualElement\[\]?
+`children` VisualElement?\[\]?
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 
@@ -4255,7 +4255,7 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
 `children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 
@@ -4269,12 +4269,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### RemoveChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
 Conditionally removes an enumerable of child elements from the element.
 
 ```csharp
-public static T RemoveChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement>? children) where T : VisualElement
+public static T RemoveChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement?>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -4287,9 +4287,9 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>?
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement?\>?
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 
@@ -4328,7 +4328,7 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
 `children` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<VisualElement\>
 
-The children to remove.
+The children to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries and elements that are not children are skipped.
 
 #### Returns
 

@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `[TypeSelector]` on an array or `List<T>` field now applies to the collection itself (`applyToCollection`): its drawer draws the list and a picker for each element. `PropertyField` and `EditorGUILayout.PropertyField` on such a list now get the picker-backed **+** in UI Toolkit and IMGUI, and a `PropertyField` on a single element of it no longer shows the picker. `SerializeReferenceIMGUIList.Draw` and `SerializeReferenceEditorGUI.CreateList` add the constraints of a `[TypeSelector]` on the list field to `baseTypes`. Managed-reference lists drawn by the package now honor `[NonReorderable]`.
 - Renamed the `value` parameter of `AddClass`, `RemoveClass`, `ToggleClass`, `AddStyleSheet`, `RemoveStyleSheet` and their `…If` variants to `className` and `styleSheet`; a call that names the `value:` argument needs the new name.
 - Style sheet methods such as `AddStyleSheet` and `RemoveStyleSheet` skip a `null` style sheet instead of throwing `ArgumentNullException`.
+- `RemoveChild` and `RemoveChildren` skip `null` and elements that are not children of the element instead of throwing, so `RemoveChildren` no longer stops halfway.
 - The child, class and style sheet extensions carry nullable annotations, so a project with nullable reference types enabled sees which arguments may be `null`.
 
 ### Removed

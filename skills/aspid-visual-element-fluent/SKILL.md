@@ -85,7 +85,7 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
 - Values are `Style*` types: sizes `StyleLength` (`12`, `Length.Percent(50)`, `StyleKeyword.Auto`),
   `SetBackgroundImage` only `StyleBackground`, transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
-  Style sheet methods skip `null` style sheets.
+  Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
