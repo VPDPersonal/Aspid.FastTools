@@ -59,7 +59,7 @@ Other style methods follow the same pattern. See the [API reference](https://vpd
 | <pre lang="csharp"><code>if (ColorUtility.TryParseHtmlString(&#10;        "#FFC24D", out var color))&#10;    badge.style.color = color;</code></pre> | <pre lang="csharp"><code>badge.SetColor("#FFC24D");</code></pre> |
 | <pre lang="csharp"><code>var texture = Resources&#10;    .Load&lt;Texture2D&gt;("UI/Card");&#10;if (texture != null)&#10;    root.style.backgroundImage = texture;</code></pre> | <pre lang="csharp"><code>root.SetBackgroundImageFromResources(&#10;    "UI/Card");</code></pre> |
 
-<code lang="function">SetImage</code>, <code lang="function">SetSprite</code>, <code lang="function">SetVectorImage</code>, <code lang="function">AddStyleSheet</code> and <code lang="function">RemoveStyleSheet</code> also have a <code lang="csharp">…FromResources</code> variant.
+<code lang="function">SetImage</code>, <code lang="function">SetSprite</code>, <code lang="function">SetVectorImage</code> and the style sheet methods also have a <code lang="csharp">…FromResources</code> variant.
 
 ### Bold and italic
 
@@ -92,7 +92,15 @@ Adding or removing one style preserves the other.
 | <code lang="csharp">EnableInClassList("selected", isFree)</code> | <code lang="csharp">EnableClass("selected", isFree)</code> |
 | <code lang="csharp">ClearClassList()</code> | <code lang="csharp">ClearClasses()</code> |
 | <code lang="csharp">styleSheets.Add(sheet)</code> | <code lang="csharp">AddStyleSheet(sheet)</code> |
+| <code lang="csharp">styleSheets.Insert(0, sheet)</code> | <code lang="csharp">InsertStyleSheet(0, sheet)</code> |
 | <code lang="csharp">styleSheets.Remove(sheet)</code> | <code lang="csharp">RemoveStyleSheet(sheet)</code> |
+| <code lang="csharp">styleSheets.Clear()</code> | <code lang="csharp">ClearStyleSheets()</code> |
+
+- Methods for several classes or style sheets take the plural name: <code lang="csharp">AddClasses("selected", "free")</code>, <code lang="csharp">AddStyleSheets(baseSheet, themeSheet)</code>.
+- <code lang="function">EnableClasses</code> takes the flag first: <code lang="csharp">EnableClasses(isFree, "selected", "free")</code>.
+- <code lang="csharp">EnableStyleSheet(darkSheet, isDark)</code> adds or removes a style sheet, as <code lang="function">EnableClass</code> does for a class.
+
+All of these methods have a variant with the suffix <code lang="csharp">If</code>. Name the arguments when a method takes two flags: <code lang="csharp">EnableClassIf(condition: isEditable, "selected", enable: isFree)</code>.
 
 ## Values and events
 

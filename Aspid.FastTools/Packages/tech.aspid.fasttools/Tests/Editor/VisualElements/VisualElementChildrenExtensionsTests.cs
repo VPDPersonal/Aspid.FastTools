@@ -7,6 +7,16 @@ namespace Aspid.FastTools.UIElements.Tests
     [TestFixture]
     internal sealed class VisualElementChildrenExtensionsTests
     {
+        private sealed class NestedContentContainer : VisualElement
+        {
+            private readonly Foldout _foldout = new();
+
+            public override VisualElement contentContainer => _foldout;
+
+            public NestedContentContainer() =>
+                hierarchy.Add(_foldout);
+        }
+
         private static VisualElement CreateParent(out VisualElement[] children)
         {
             children = new[]
@@ -73,6 +83,18 @@ namespace Aspid.FastTools.UIElements.Tests
         }
 
         [Test]
+        public void InsertChildren_SkipsNullEntries()
+        {
+            var first = new VisualElement();
+            var second = new VisualElement();
+            var target = new VisualElement();
+
+            target.InsertChildren(0, first, null, second);
+
+            CollectionAssert.AreEqual(new[] { first, second }, target.Children().ToArray());
+        }
+
+        [Test]
         public void RemoveChildren_RemovesEveryOwnChild()
         {
             var parent = CreateParent(out _);
@@ -80,6 +102,30 @@ namespace Aspid.FastTools.UIElements.Tests
             parent.RemoveChildren(parent.Children());
 
             Assert.AreEqual(0, parent.childCount);
+        }
+
+        [Test]
+        public void RemoveChildren_SkipsNullAndForeignEntries()
+        {
+            var parent = CreateParent(out var children);
+            var foreign = new VisualElement().AddChild(new VisualElement());
+
+            parent.RemoveChildren(children[0], null, foreign, foreign.Children().First());
+
+            CollectionAssert.AreEqual(children.Skip(1), parent.Children().ToArray());
+            Assert.AreEqual(1, foreign.childCount);
+        }
+
+        [Test]
+        public void RemoveChildren_RemovesChildOfNestedContentContainer()
+        {
+            var child = new VisualElement();
+            var parent = new NestedContentContainer().AddChild(child);
+
+            parent.RemoveChildren(child);
+
+            Assert.AreEqual(0, parent.childCount);
+            Assert.IsNull(child.hierarchy.parent);
         }
 
         [Test]
