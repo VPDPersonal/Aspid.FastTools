@@ -11,7 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `RemoveChildren` and `RemoveChildrenIf` remove several children in one call and take the same `params`, `IEnumerable`, `List`, `Span` and `ReadOnlySpan` overloads as `AddChildren`.
+- `RemoveChildren` and `RemoveChildrenIf` remove several children in one call and take the same `params`, `IEnumerable`, `List` and `ReadOnlySpan` overloads as `AddChildren`.
+- `AddClasses`, `RemoveClasses`, `ToggleClasses` and `EnableClasses` change several USS classes in one call and take the same `params`, `IEnumerable`, `List` and `ReadOnlySpan` overloads as `AddChildren`. An `IEnumerable` may read `GetClasses()` of the same element. `EnableClasses` takes the flag first: `EnableClasses(isFree, "selected", "free")`.
+- `InsertStyleSheet` inserts a style sheet at an index, `EnableStyleSheet(sheet, enable)` adds or removes it, and `ClearStyleSheets` removes every style sheet.
+- `AddStyleSheets`, `InsertStyleSheets`, `RemoveStyleSheets` and `EnableStyleSheets` take several style sheets, with the same overloads as `AddClasses`.
+- Every style sheet method has a `…FromResources` variant; the plural ones take several paths: `AddStyleSheetsFromResources("UI/Base", "UI/Dark")`.
+- Every class and style sheet method has an `…If` variant, for example `AddClassIf`, `EnableClassIf` and `AddStyleSheetFromResourcesIf`.
 - `ToggleButtonGroup` gets typed `SetValue`, `AddValueChanged`, `RemoveValueChanged` and `SetLabel` overloads for `ToggleButtonGroupState`, so calls such as `AddValueChanged(evt => …)` need no type arguments.
 - `RectIntField` gets a typed `SetLabel`, so `SetLabel("Area")` needs no type arguments, as on `RectField`.
 - `SetRootItemsSelf` fills a `TreeView` or `MultiColumnTreeView` in a chain: `tree.SetAutoExpand(true).SetRootItemsSelf(items)`.
@@ -34,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SetIsDelayed` / `SetIsPassword` / `SetIsReadOnly` / `SetIsSelectable` → `SetDelayed` / `SetPassword` / `SetReadOnly` / `SetSelectable`;
   - `IsFocus` → `IsFocused`, `SetFocus` / `SetBlur` → `FocusSelf` / `BlurSelf`;
   - `EnableInClass` / `ToggleInClass` → `EnableClass` / `ToggleClass`;
-  - `AddStyleSheets` / `RemoveStyleSheets` → `AddStyleSheet` / `RemoveStyleSheet`, `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` → `AddStyleSheetFromResources` / `RemoveStyleSheetFromResources`;
+  - `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` → `AddStyleSheetFromResources` / `RemoveStyleSheetFromResources`; `AddStyleSheets(sheet)` and `RemoveStyleSheets(sheet)` still compile, as the plural names now take several style sheets;
   - `SetImageFromResource`, `SetSpriteFromResource`, `SetVectorImageFromResource`, `SetBackgroundImageFromResource` → `…FromResources`;
   - `MarkDirtyLayout` → `MarkDirtyLayoutSelf`: `IMGUIContainer.MarkDirtyLayout()` hid the old extension, so the call returned `void`; the new name chains.
   - `SetText` of `TextElement` (`Label`, `Button` and others) → `SetTextSelf`: from Unity 6000.6 a string argument binds to Unity's own `TextElement.SetText(ReadOnlySpan<char>)`, which returns `void`, so chains such as `label.SetText(x).SetTooltip(y)` failed to compile; the new name chains on every Unity version. `SetText` of `Foldout`, `HelpBox` and `Toggle` keeps its name.
@@ -58,16 +63,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The animated dot background of the FastTools window and the settings page draws all its dots as one mesh instead of tessellating a path per dot on every frame, and pauses while Unity is in the background, so an idle open window no longer keeps the editor busy.
 - The FastTools window (Welcome, Asset References, Project References and Settings) and its pages in Project Settings and Preferences follow the light editor skin: its canvas, cards, text, status colours and the type picker inside it take a light palette, `Aspid-FastTools-Default-Light.uss`; they used to stay dark on both skins. A theme override still layers on top of either palette.
 - `[TypeSelector]` on an array or `List<T>` field now applies to the collection itself (`applyToCollection`): its drawer draws the list and a picker for each element. `PropertyField` and `EditorGUILayout.PropertyField` on such a list now get the picker-backed **+** in UI Toolkit and IMGUI, and a `PropertyField` on a single element of it no longer shows the picker. `SerializeReferenceIMGUIList.Draw` and `SerializeReferenceEditorGUI.CreateList` add the constraints of a `[TypeSelector]` on the list field to `baseTypes`. Managed-reference lists drawn by the package now honor `[NonReorderable]`.
+- Renamed the `value` parameter of `AddClass`, `RemoveClass`, `ToggleClass`, `AddStyleSheet`, `RemoveStyleSheet` and their `…If` variants to `className` and `styleSheet`; a call that names the `value:` argument needs the new name.
+- Style sheet methods such as `AddStyleSheet` and `RemoveStyleSheet` skip a `null` style sheet instead of throwing `ArgumentNullException`.
+- The child, class and style sheet extensions carry nullable annotations, so a project with nullable reference types enabled sees which arguments may be `null`.
 
 ### Removed
 
 - Removed `SetExposedReferenceAndApply()` from `SerializedProperty` extensions; call `SetExposedReference()` instead. Without an `IExposedPropertyTable` context, Unity's `exposedReferenceValue` setter already applies the write and records Undo, so the extra apply did nothing, and a variant without Undo cannot be built on top of it.
 - Removed the editor-only `SerializableMonoScript.Script`, which returned the `MonoScript` asset; no public accessor for the asset remains. The type is still available through `Type` or the implicit conversion to `Type`.
 - Removed `AddMakeItem` / `RemoveMakeItem` of `ListView` and `TreeView`, and `AddMakeHeader` / `AddMakeFooter` / `AddMakeNoneElement` of `BaseListView` with their `Remove*` pairs; the view keeps one factory, so call `SetMakeItem`, `SetMakeHeader`, `SetMakeFooter` or `SetMakeNoneElement`.
+- Removed the `Span<VisualElement>` overloads of `AddChildren`, `InsertChildren` and their `…If` variants. A `Span` argument converts to the `ReadOnlySpan` overload, so existing calls compile unchanged.
 - Removed the runtime `Aspid.FastTools.StringExtensions.ToKebabCase` and `Aspid.FastTools.TypeExtensions.GetMembersInfosIncludingBaseClasses` from the public API, without a replacement.
 
 ### Fixed
 
+- `InsertChildren` and `InsertChildrenIf` skip a `null` entry without moving the index: `InsertChildren(0, a, null, b)` puts `b` right after `a`; it used to leave a gap or throw `ArgumentOutOfRangeException` at the end of the parent.
 - The `SHARED` badge in Asset References now fits its text; it used to shrink to the width of its colour dot, so the text ran out of it and the dot covered the letter "H".
 - Asset References shows unset required fields (the **Required type is not set** cards and REQUIRED badges) of an asset in an **Excluded scan folder**, as it already showed its missing types; the folder still keeps the asset out of Project References and the build / CI checks.
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".

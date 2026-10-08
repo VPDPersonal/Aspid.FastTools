@@ -11,7 +11,12 @@
 
 ### Добавлено
 
-- Добавлены `RemoveChildren` и `RemoveChildrenIf`: удаляют несколько дочерних элементов за один вызов и принимают те же перегрузки `params`, `IEnumerable`, `List`, `Span` и `ReadOnlySpan`, что и `AddChildren`.
+- Добавлены `RemoveChildren` и `RemoveChildrenIf`: удаляют несколько дочерних элементов за один вызов и принимают те же перегрузки `params`, `IEnumerable`, `List` и `ReadOnlySpan`, что и `AddChildren`.
+- Добавлены `AddClasses`, `RemoveClasses`, `ToggleClasses` и `EnableClasses`: меняют несколько USS-классов за один вызов, принимают те же перегрузки `params`, `IEnumerable`, `List` и `ReadOnlySpan`, что и `AddChildren`. `IEnumerable` может читать `GetClasses()` того же элемента. `EnableClasses` принимает флаг первым: `EnableClasses(isFree, "selected", "free")`.
+- `InsertStyleSheet` вставляет таблицу стилей по индексу, `EnableStyleSheet(sheet, enable)` добавляет или убирает её, а `ClearStyleSheets` удаляет все таблицы стилей.
+- `AddStyleSheets`, `InsertStyleSheets`, `RemoveStyleSheets` и `EnableStyleSheets` принимают несколько таблиц стилей с теми же перегрузками, что у `AddClasses`.
+- У каждого метода таблиц стилей есть вариант `…FromResources`; методы во множественном числе принимают несколько путей: `AddStyleSheetsFromResources("UI/Base", "UI/Dark")`.
+- У каждого метода для классов и таблиц стилей есть вариант `…If`, например `AddClassIf`, `EnableClassIf`, `AddStyleSheetFromResourcesIf`.
 - Для `ToggleButtonGroup` добавлены типизированные перегрузки `SetValue`, `AddValueChanged`, `RemoveValueChanged` и `SetLabel` для `ToggleButtonGroupState`, поэтому вызовы вроде `AddValueChanged(evt => …)` не требуют аргументов типа.
 - Для `RectIntField` добавлен типизированный `SetLabel`, поэтому `SetLabel("Area")` не требует аргументов типа, как и у `RectField`.
 - `SetRootItemsSelf` заполняет `TreeView` или `MultiColumnTreeView` в цепочке: `tree.SetAutoExpand(true).SetRootItemsSelf(items)`.
@@ -34,7 +39,7 @@
   - `SetIsDelayed` / `SetIsPassword` / `SetIsReadOnly` / `SetIsSelectable` → `SetDelayed` / `SetPassword` / `SetReadOnly` / `SetSelectable`;
   - `IsFocus` → `IsFocused`, `SetFocus` / `SetBlur` → `FocusSelf` / `BlurSelf`;
   - `EnableInClass` / `ToggleInClass` → `EnableClass` / `ToggleClass`;
-  - `AddStyleSheets` / `RemoveStyleSheets` → `AddStyleSheet` / `RemoveStyleSheet`, `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` → `AddStyleSheetFromResources` / `RemoveStyleSheetFromResources`;
+  - `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` → `AddStyleSheetFromResources` / `RemoveStyleSheetFromResources`; `AddStyleSheets(sheet)` и `RemoveStyleSheets(sheet)` по-прежнему компилируются: имена во множественном числе теперь принимают несколько таблиц;
   - `SetImageFromResource`, `SetSpriteFromResource`, `SetVectorImageFromResource`, `SetBackgroundImageFromResource` → `…FromResources`;
   - `MarkDirtyLayout` → `MarkDirtyLayoutSelf`: `IMGUIContainer.MarkDirtyLayout()` перекрывал старое расширение, и вызов возвращал `void`; новое имя встраивается в цепочку.
   - `SetText` у `TextElement` (`Label`, `Button` и других) → `SetTextSelf`: начиная с Unity 6000.6 строковый аргумент связывается с собственным `TextElement.SetText(ReadOnlySpan<char>)` из Unity, который возвращает `void`, поэтому цепочки вида `label.SetText(x).SetTooltip(y)` не компилировались; новое имя встраивается в цепочку на любой версии Unity. `SetText` у `Foldout`, `HelpBox` и `Toggle` сохраняет имя.
@@ -58,16 +63,21 @@
 - Анимированный фон из точек в окне FastTools и на странице настроек рисует все точки одним мешем, а не тесселирует отдельный путь на каждую точку в каждом кадре, и замирает, пока Unity в фоне, поэтому открытое окно без действий больше не нагружает редактор.
 - Окно FastTools (Welcome, Asset References, Project References и Settings) и его страницы в Project Settings и Preferences учитывают светлую тему редактора: фон, карточки, текст, статусные цвета и окно выбора типа внутри него берут светлую палитру `Aspid-FastTools-Default-Light.uss`; раньше они оставались тёмными в обеих темах. Theme override по-прежнему накладывается поверх любой из палитр.
 - `[TypeSelector]` на поле-массиве или `List<T>` теперь относится ко всей коллекции (`applyToCollection`): его drawer рисует список и выбор типа для каждого элемента. `PropertyField` и `EditorGUILayout.PropertyField` для такого списка теперь получают **+** с выбором типа в UI Toolkit и IMGUI, а `PropertyField` для отдельного элемента больше не показывает выбор типа. `SerializeReferenceIMGUIList.Draw` и `SerializeReferenceEditorGUI.CreateList` добавляют к `baseTypes` ограничения `[TypeSelector]` с поля списка. Списки managed references, которые рисует пакет, теперь учитывают `[NonReorderable]`.
+- Параметр `value` у `AddClass`, `RemoveClass`, `ToggleClass`, `AddStyleSheet`, `RemoveStyleSheet` и их вариантов `…If` переименован в `className` и `styleSheet`; вызов с именованным аргументом `value:` нужно обновить.
+- Методы таблиц стилей, например `AddStyleSheet` и `RemoveStyleSheet`, пропускают `null` вместо `ArgumentNullException`.
+- Расширения для дочерних элементов, классов и таблиц стилей размечены для nullable reference types: проект с включённой проверкой видит, какие аргументы могут быть `null`.
 
 ### Удалено
 
 - Из расширений `SerializedProperty` удалён `SetExposedReferenceAndApply()`; вызывайте `SetExposedReference()`. Без контекста `IExposedPropertyTable` сеттер `exposedReferenceValue` в Unity сам применяет запись и записывает Undo, поэтому дополнительное применение ничего не делало, а вариант без Undo поверх него построить нельзя.
 - Удалено editor-only свойство `SerializableMonoScript.Script`, которое возвращало ассет `MonoScript`; публичного доступа к ассету больше нет. Тип по-прежнему доступен через `Type` или неявное преобразование в `Type`.
 - Удалены `AddMakeItem` / `RemoveMakeItem` у `ListView` и `TreeView`, а также `AddMakeHeader` / `AddMakeFooter` / `AddMakeNoneElement` у `BaseListView` вместе с парами `Remove*`; у списка одна фабрика, поэтому вызывайте `SetMakeItem`, `SetMakeHeader`, `SetMakeFooter` или `SetMakeNoneElement`.
+- Удалены перегрузки `Span<VisualElement>` у `AddChildren`, `InsertChildren` и их вариантов `…If`. Аргумент `Span` преобразуется в перегрузку `ReadOnlySpan`, поэтому существующие вызовы компилируются без изменений.
 - Runtime-методы `Aspid.FastTools.StringExtensions.ToKebabCase` и `Aspid.FastTools.TypeExtensions.GetMembersInfosIncludingBaseClasses` убраны из публичного API без замены.
 
 ### Исправлено
 
+- `InsertChildren` и `InsertChildrenIf` пропускают `null` без сдвига индекса: `InsertChildren(0, a, null, b)` ставит `b` сразу после `a`; раньше оставался пропуск, а в конце родителя вызов бросал `ArgumentOutOfRangeException`.
 - Значок `SHARED` в Asset References теперь вмещает свой текст; раньше он сжимался до ширины цветной точки, текст вылезал за его край, а точка закрывала букву «H».
 - Asset References показывает незаполненные обязательные поля (карточки **Required type is not set** и значки REQUIRED) ассета из папки **Excluded scan folders**, как уже показывал его потерянные типы; в Project References и проверки build / CI такой ассет по-прежнему не попадает.
 - `GetDisplayName()` и `GetDisplayNameWithIndex()` больше не добавляют « (Script)», когда `[AddComponentMenu]` унаследован от базового класса или его путь пуст либо заканчивается на `/`; такие типы получают «очеловеченное» имя типа. Заголовок теперь берётся из атрибута, объявленного на самом типе, а тип с `[Obsolete]` больше не получает « (Deprecated)».

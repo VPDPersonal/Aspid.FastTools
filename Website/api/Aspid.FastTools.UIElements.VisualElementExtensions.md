@@ -60,12 +60,12 @@ Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Docu
 style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html)
 and is therefore not preserved.
 
-### AddChild\<T\>\(T, VisualElement\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChild__1___0_UnityEngine_UIElements_VisualElement_}
+### AddChild\<T\>\(T, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChild__1___0_UnityEngine_UIElements_VisualElement_}
 
 Adds an element to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T AddChild<T>(this T element, VisualElement child) where T : VisualElement
+public static T AddChild<T>(this T element, VisualElement? child) where T : VisualElement
 ```
 
 #### Parameters
@@ -74,9 +74,9 @@ public static T AddChild<T>(this T element, VisualElement child) where T : Visua
 
 The element to modify.
 
-`child` VisualElement
+`child` VisualElement?
 
-The child element to add.
+The child element to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
 
 #### Returns
 
@@ -90,12 +90,12 @@ The element, for chaining.
 
 The element type.
 
-### AddChildIf\<T\>\(T, bool, VisualElement\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
+### AddChildIf\<T\>\(T, bool, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
 
 Conditionally adds an element to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T AddChildIf<T>(this T element, bool condition, VisualElement child) where T : VisualElement
+public static T AddChildIf<T>(this T element, bool condition, VisualElement? child) where T : VisualElement
 ```
 
 #### Parameters
@@ -108,39 +108,9 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`child` VisualElement
+`child` VisualElement?
 
-The child element to add.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### AddChildren\<T\>\(T, Span\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Span_UnityEngine_UIElements_VisualElement__}
-
-Adds a span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T AddChildren<T>(this T element, Span<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`children` [Span](https://learn.microsoft.com/dotnet/api/system.span-1)\<VisualElement\>
-
-The children to add.
+The child element to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
 
 #### Returns
 
@@ -154,42 +124,12 @@ The element, for chaining.
 
 The element type.
 
-### AddChildren\<T\>\(T, List\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
-
-Adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T AddChildren<T>(this T element, List<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>
-
-The children to add.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### AddChildren\<T\>\(T, params VisualElement\[\]\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_UnityEngine_UIElements_VisualElement___}
+### AddChildren\<T\>\(T, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_UnityEngine_UIElements_VisualElement___}
 
 Adds an array of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T AddChildren<T>(this T element, params VisualElement[] children) where T : VisualElement
+public static T AddChildren<T>(this T element, params VisualElement?[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -198,9 +138,9 @@ public static T AddChildren<T>(this T element, params VisualElement[] children) 
 
 The element to modify.
 
-`children` VisualElement\[\]
+`children` VisualElement?\[\]?
 
-The children to add.
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -214,12 +154,12 @@ The element, for chaining.
 
 The element type.
 
-### AddChildren\<T\>\(T, IEnumerable\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### AddChildren\<T\>\(T, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T AddChildren<T>(this T element, IEnumerable<VisualElement> children) where T : VisualElement
+public static T AddChildren<T>(this T element, List<VisualElement>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -228,9 +168,39 @@ public static T AddChildren<T>(this T element, IEnumerable<VisualElement> childr
 
 The element to modify.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>
+`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
 
-The children to add.
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddChildren\<T\>\(T, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+
+Adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+
+```csharp
+public static T AddChildren<T>(this T element, IEnumerable<VisualElement?>? children) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement?\>?
+
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -265,7 +235,7 @@ The element to modify.
 
 `children` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<VisualElement\>
 
-The children to add.
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -279,80 +249,12 @@ The element, for chaining.
 
 The element type.
 
-### AddChildrenIf\<T\>\(T, bool, Span\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Span_UnityEngine_UIElements_VisualElement__}
-
-Conditionally adds a span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T AddChildrenIf<T>(this T element, bool condition, Span<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
-
-`children` [Span](https://learn.microsoft.com/dotnet/api/system.span-1)\<VisualElement\>
-
-The children to add.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### AddChildrenIf\<T\>\(T, bool, List\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
-
-Conditionally adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T AddChildrenIf<T>(this T element, bool condition, List<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
-
-`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>
-
-The children to add.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### AddChildrenIf\<T\>\(T, bool, params VisualElement\[\]\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
+### AddChildrenIf\<T\>\(T, bool, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
 
 Conditionally adds an array of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T AddChildrenIf<T>(this T element, bool condition, params VisualElement[] children) where T : VisualElement
+public static T AddChildrenIf<T>(this T element, bool condition, params VisualElement?[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -365,9 +267,9 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`children` VisualElement\[\]
+`children` VisualElement?\[\]?
 
-The children to add.
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -381,12 +283,12 @@ The element, for chaining.
 
 The element type.
 
-### AddChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### AddChildrenIf\<T\>\(T, bool, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Conditionally adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T AddChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement> children) where T : VisualElement
+public static T AddChildrenIf<T>(this T element, bool condition, List<VisualElement>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -399,9 +301,43 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>
+`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
 
-The children to add.
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+
+Conditionally adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+
+```csharp
+public static T AddChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement?>? children) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement?\>?
+
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -440,7 +376,7 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
 `children` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<VisualElement\>
 
-The children to add.
+The children to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -454,12 +390,12 @@ The element, for chaining.
 
 The element type.
 
-### AddClass\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClass__1___0_System_String_}
+### AddClass\<T\>\(T, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClass__1___0_System_String_}
 
 Adds a USS class to the element.
 
 ```csharp
-public static T AddClass<T>(this T element, string value) where T : VisualElement
+public static T AddClass<T>(this T element, string? className) where T : VisualElement
 ```
 
 #### Parameters
@@ -468,9 +404,309 @@ public static T AddClass<T>(this T element, string value) where T : VisualElemen
 
 The element to modify.
 
-`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
 
-The USS class name to add.
+The USS class name to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddClassIf\<T\>\(T, bool, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClassIf__1___0_System_Boolean_System_String_}
+
+Conditionally adds a USS class to the element.
+
+```csharp
+public static T AddClassIf<T>(this T element, bool condition, string? className) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
+
+The USS class name to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddClasses\<T\>\(T, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClasses__1___0_System_String___}
+
+Adds an array of USS classes to the element.
+
+```csharp
+public static T AddClasses<T>(this T element, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddClasses\<T\>\(T, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClasses__1___0_System_Collections_Generic_List_System_String__}
+
+Adds a list of USS classes to the element.
+
+```csharp
+public static T AddClasses<T>(this T element, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddClasses\<T\>\(T, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClasses__1___0_System_Collections_Generic_IEnumerable_System_String__}
+
+Adds an enumerable of USS classes to the element.
+
+```csharp
+public static T AddClasses<T>(this T element, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### AddClasses\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClasses__1___0_System_ReadOnlySpan_System_String__}
+
+Adds a read-only span of USS classes to the element.
+
+```csharp
+public static T AddClasses<T>(this T element, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddClassesIf\<T\>\(T, bool, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClassesIf__1___0_System_Boolean_System_String___}
+
+Conditionally adds an array of USS classes to the element.
+
+```csharp
+public static T AddClassesIf<T>(this T element, bool condition, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddClassesIf\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClassesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Conditionally adds a list of USS classes to the element.
+
+```csharp
+public static T AddClassesIf<T>(this T element, bool condition, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddClassesIf\<T\>\(T, bool, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClassesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally adds an enumerable of USS classes to the element.
+
+```csharp
+public static T AddClassesIf<T>(this T element, bool condition, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### AddClassesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Conditionally adds a read-only span of USS classes to the element.
+
+```csharp
+public static T AddClassesIf<T>(this T element, bool condition, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -519,12 +755,12 @@ Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Docu
 style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html)
 and is therefore not preserved.
 
-### AddStyleSheet\<T\>\(T, StyleSheet\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_}
+### AddStyleSheet\<T\>\(T, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_}
 
 Adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
-public static T AddStyleSheet<T>(this T element, StyleSheet value) where T : VisualElement
+public static T AddStyleSheet<T>(this T element, StyleSheet? styleSheet) where T : VisualElement
 ```
 
 #### Parameters
@@ -533,9 +769,9 @@ public static T AddStyleSheet<T>(this T element, StyleSheet value) where T : Vis
 
 The element to modify.
 
-`value` StyleSheet
+`styleSheet` StyleSheet?
 
-The style sheet to add.
+The style sheet to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
 
 #### Returns
 
@@ -582,6 +818,622 @@ The element type.
 #### Remarks
 
 Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
+### AddStyleSheetFromResourcesIf\<T\>\(T, bool, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_}
+
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetFromResourcesIf<T>(this T element, bool condition, string path) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`path` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The Resources-relative path to the style sheet asset.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
+### AddStyleSheetIf\<T\>\(T, bool, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet_}
+
+Conditionally adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetIf<T>(this T element, bool condition, StyleSheet? styleSheet) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheet` StyleSheet?
+
+The style sheet to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheets\<T\>\(T, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_UnityEngine_UIElements_StyleSheet___}
+
+Adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheets<T>(this T element, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheets\<T\>\(T, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheets<T>(this T element, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheets\<T\>\(T, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheets<T>(this T element, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheets\<T\>\(T, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheets<T>(this T element, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheetsFromResources\<T\>\(T, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_String___}
+
+Loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResources<T>(this T element, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsFromResources\<T\>\(T, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_Collections_Generic_List_System_String__}
+
+Loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResources<T>(this T element, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsFromResources\<T\>\(T, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_Collections_Generic_IEnumerable_System_String__}
+
+Loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResources<T>(this T element, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsFromResources\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_ReadOnlySpan_System_String__}
+
+Loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResources<T>(this T element, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_String___}
+
+Conditionally loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Conditionally loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Conditionally loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### AddStyleSheetsIf\<T\>\(T, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet___}
+
+Conditionally adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsIf<T>(this T element, bool condition, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheetsIf\<T\>\(T, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsIf<T>(this T element, bool condition, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheetsIf\<T\>\(T, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsIf<T>(this T element, bool condition, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### AddStyleSheetsIf\<T\>\(T, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T AddStyleSheetsIf<T>(this T element, bool condition, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to add; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
 
 ### ClearChildren\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearChildren__1___0_}
 
@@ -665,12 +1517,12 @@ The element, for chaining.
 
 The element type.
 
-### EnableClass\<T\>\(T, string, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClass__1___0_System_String_System_Boolean_}
+### ClearClassesIf\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearClassesIf__1___0_System_Boolean_}
 
-Adds or removes the USS class depending on <code class="paramref">enable</code>.
+Conditionally removes all USS classes from the element.
 
 ```csharp
-public static T EnableClass<T>(this T element, string className, bool enable) where T : VisualElement
+public static T ClearClassesIf<T>(this T element, bool condition) where T : VisualElement
 ```
 
 #### Parameters
@@ -679,9 +1531,95 @@ public static T EnableClass<T>(this T element, string className, bool enable) wh
 
 The element to modify.
 
-`className` [string](https://learn.microsoft.com/dotnet/api/system.string)
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-The USS class name to enable or disable.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ClearStyleSheets\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearStyleSheets__1___0_}
+
+Removes all style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T ClearStyleSheets<T>(this T element) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ClearStyleSheetsIf\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearStyleSheetsIf__1___0_System_Boolean_}
+
+Conditionally removes all style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T ClearStyleSheetsIf<T>(this T element, bool condition) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableClass\<T\>\(T, string?, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClass__1___0_System_String_System_Boolean_}
+
+Adds or removes the USS class depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClass<T>(this T element, string? className, bool enable) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
+
+The USS class name to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
 
 `enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
@@ -699,12 +1637,12 @@ The element, for chaining.
 
 The element type.
 
-### InsertChild\<T\>\(T, int, VisualElement\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChild__1___0_System_Int32_UnityEngine_UIElements_VisualElement_}
+### EnableClassIf\<T\>\(T, bool, string?, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClassIf__1___0_System_Boolean_System_String_System_Boolean_}
 
-Inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally adds or removes the USS class depending on <code class="paramref">enable</code>.
 
 ```csharp
-public static T InsertChild<T>(this T element, int index, VisualElement child) where T : VisualElement
+public static T EnableClassIf<T>(this T element, bool condition, string? className, bool enable) where T : VisualElement
 ```
 
 #### Parameters
@@ -713,13 +1651,17 @@ public static T InsertChild<T>(this T element, int index, VisualElement child) w
 
 The element to modify.
 
-`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-The index at which to insert the child.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`child` VisualElement
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
 
-The child element to insert.
+The USS class name to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the class is added; otherwise, it is removed.
 
 #### Returns
 
@@ -733,12 +1675,1104 @@ The element, for chaining.
 
 The element type.
 
-### InsertChildIf\<T\>\(T, bool, int, VisualElement\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement_}
+### EnableClasses\<T\>\(T, bool, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClasses__1___0_System_Boolean_System_String___}
+
+Adds or removes an array of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClasses<T>(this T element, bool enable, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableClasses\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClasses__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Adds or removes a list of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClasses<T>(this T element, bool enable, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableClasses\<T\>\(T, bool, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClasses__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Adds or removes an enumerable of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClasses<T>(this T element, bool enable, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### EnableClasses\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClasses__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Adds or removes a read-only span of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClasses<T>(this T element, bool enable, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableClassesIf\<T\>\(T, bool, bool, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClassesIf__1___0_System_Boolean_System_Boolean_System_String___}
+
+Conditionally adds or removes an array of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClassesIf<T>(this T element, bool condition, bool enable, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableClassesIf\<T\>\(T, bool, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClassesIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Conditionally adds or removes a list of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClassesIf<T>(this T element, bool condition, bool enable, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableClassesIf\<T\>\(T, bool, bool, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClassesIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally adds or removes an enumerable of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClassesIf<T>(this T element, bool condition, bool enable, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### EnableClassesIf\<T\>\(T, bool, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClassesIf__1___0_System_Boolean_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Conditionally adds or removes a read-only span of USS classes depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableClassesIf<T>(this T element, bool condition, bool enable, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the classes are added; otherwise, they are removed.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to enable or disable; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheet\<T\>\(T, StyleSheet?, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_System_Boolean_}
+
+Adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheet<T>(this T element, StyleSheet? styleSheet, bool enable) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheet` StyleSheet?
+
+The style sheet to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheet is added; otherwise, it is removed.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheetFromResources\<T\>\(T, string, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetFromResources__1___0_System_String_System_Boolean_}
+
+Loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetFromResources<T>(this T element, string path, bool enable) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`path` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The Resources-relative path to the style sheet asset.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheet is added; otherwise, it is removed.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
+### EnableStyleSheetFromResourcesIf\<T\>\(T, bool, string, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_System_Boolean_}
+
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetFromResourcesIf<T>(this T element, bool condition, string path, bool enable) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`path` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The Resources-relative path to the style sheet asset.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheet is added; otherwise, it is removed.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
+### EnableStyleSheetIf\<T\>\(T, bool, StyleSheet?, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet_System_Boolean_}
+
+Conditionally adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetIf<T>(this T element, bool condition, StyleSheet? styleSheet, bool enable) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheet` StyleSheet?
+
+The style sheet to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheet is added; otherwise, it is removed.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheets\<T\>\(T, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet___}
+
+Adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheets<T>(this T element, bool enable, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheets\<T\>\(T, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheets<T>(this T element, bool enable, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheets\<T\>\(T, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheets<T>(this T element, bool enable, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheets\<T\>\(T, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheets<T>(this T element, bool enable, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheetsFromResources\<T\>\(T, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_String___}
+
+Loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsFromResources\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsFromResources\<T\>\(T, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsFromResources\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_String___}
+
+Conditionally loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Conditionally loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Conditionally loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### EnableStyleSheetsIf\<T\>\(T, bool, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_UnityEngine_UIElements_StyleSheet___}
+
+Conditionally adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheetsIf\<T\>\(T, bool, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheetsIf\<T\>\(T, bool, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### EnableStyleSheetsIf\<T\>\(T, bool, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+
+```csharp
+public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`enable` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the style sheets are added; otherwise, they are removed.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to add or remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### InsertChild\<T\>\(T, int, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChild__1___0_System_Int32_UnityEngine_UIElements_VisualElement_}
+
+Inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+
+```csharp
+public static T InsertChild<T>(this T element, int index, VisualElement? child) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to insert the child.
+
+`child` VisualElement?
+
+The child element to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### InsertChildIf\<T\>\(T, bool, int, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement_}
 
 Conditionally inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T InsertChildIf<T>(this T element, bool condition, int index, VisualElement child) where T : VisualElement
+public static T InsertChildIf<T>(this T element, bool condition, int index, VisualElement? child) where T : VisualElement
 ```
 
 #### Parameters
@@ -755,43 +2789,9 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
 The index at which to insert the child.
 
-`child` VisualElement
+`child` VisualElement?
 
-The child element to insert.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### InsertChildren\<T\>\(T, int, Span\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Span_UnityEngine_UIElements_VisualElement__}
-
-Inserts a span of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T InsertChildren<T>(this T element, int index, Span<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
-
-The index at which to start inserting children.
-
-`children` [Span](https://learn.microsoft.com/dotnet/api/system.span-1)\<VisualElement\>
-
-The children to insert.
+The child element to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
 
 #### Returns
 
@@ -805,46 +2805,12 @@ The element, for chaining.
 
 The element type.
 
-### InsertChildren\<T\>\(T, int, List\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
-
-Inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T InsertChildren<T>(this T element, int index, List<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
-
-The index at which to start inserting children.
-
-`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>
-
-The children to insert.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### InsertChildren\<T\>\(T, int, params VisualElement\[\]\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_UnityEngine_UIElements_VisualElement___}
+### InsertChildren\<T\>\(T, int, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_UnityEngine_UIElements_VisualElement___}
 
 Inserts an array of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T InsertChildren<T>(this T element, int index, params VisualElement[] children) where T : VisualElement
+public static T InsertChildren<T>(this T element, int index, params VisualElement?[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -857,9 +2823,9 @@ The element to modify.
 
 The index at which to start inserting children.
 
-`children` VisualElement\[\]
+`children` VisualElement?\[\]?
 
-The children to insert.
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -873,12 +2839,12 @@ The element, for chaining.
 
 The element type.
 
-### InsertChildren\<T\>\(T, int, IEnumerable\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### InsertChildren\<T\>\(T, int, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T InsertChildren<T>(this T element, int index, IEnumerable<VisualElement> children) where T : VisualElement
+public static T InsertChildren<T>(this T element, int index, List<VisualElement>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -891,9 +2857,43 @@ The element to modify.
 
 The index at which to start inserting children.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>
+`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
 
-The children to insert.
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### InsertChildren\<T\>\(T, int, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+
+Inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+
+```csharp
+public static T InsertChildren<T>(this T element, int index, IEnumerable<VisualElement?>? children) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting children.
+
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement?\>?
+
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -932,7 +2932,7 @@ The index at which to start inserting children.
 
 `children` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<VisualElement\>
 
-The children to insert.
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -946,88 +2946,12 @@ The element, for chaining.
 
 The element type.
 
-### InsertChildrenIf\<T\>\(T, bool, int, Span\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Span_UnityEngine_UIElements_VisualElement__}
-
-Conditionally inserts a span of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T InsertChildrenIf<T>(this T element, bool condition, int index, Span<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
-
-`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
-
-The index at which to start inserting children.
-
-`children` [Span](https://learn.microsoft.com/dotnet/api/system.span-1)\<VisualElement\>
-
-The children to insert.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### InsertChildrenIf\<T\>\(T, bool, int, List\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
-
-Conditionally inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
-
-```csharp
-public static T InsertChildrenIf<T>(this T element, bool condition, int index, List<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
-
-`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
-
-The index at which to start inserting children.
-
-`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>
-
-The children to insert.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### InsertChildrenIf\<T\>\(T, bool, int, params VisualElement\[\]\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement___}
+### InsertChildrenIf\<T\>\(T, bool, int, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement___}
 
 Conditionally inserts an array of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T InsertChildrenIf<T>(this T element, bool condition, int index, params VisualElement[] children) where T : VisualElement
+public static T InsertChildrenIf<T>(this T element, bool condition, int index, params VisualElement?[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -1044,9 +2968,9 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
 The index at which to start inserting children.
 
-`children` VisualElement\[\]
+`children` VisualElement?\[\]?
 
-The children to insert.
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -1060,12 +2984,12 @@ The element, for chaining.
 
 The element type.
 
-### InsertChildrenIf\<T\>\(T, bool, int, IEnumerable\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### InsertChildrenIf\<T\>\(T, bool, int, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Conditionally inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
-public static T InsertChildrenIf<T>(this T element, bool condition, int index, IEnumerable<VisualElement> children) where T : VisualElement
+public static T InsertChildrenIf<T>(this T element, bool condition, int index, List<VisualElement>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -1082,9 +3006,47 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
 The index at which to start inserting children.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>
+`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
 
-The children to insert.
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### InsertChildrenIf\<T\>\(T, bool, int, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+
+Conditionally inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+
+```csharp
+public static T InsertChildrenIf<T>(this T element, bool condition, int index, IEnumerable<VisualElement?>? children) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting children.
+
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement?\>?
+
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -1127,7 +3089,7 @@ The index at which to start inserting children.
 
 `children` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<VisualElement\>
 
-The children to insert.
+The children to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -1140,6 +3102,816 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+### InsertStyleSheet\<T\>\(T, int, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheet__1___0_System_Int32_UnityEngine_UIElements_StyleSheet_}
+
+Inserts a style sheet into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+
+```csharp
+public static T InsertStyleSheet<T>(this T element, int index, StyleSheet? styleSheet) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to insert the style sheet.
+
+`styleSheet` StyleSheet?
+
+The style sheet to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheetFromResources\<T\>\(T, int, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetFromResources__1___0_System_Int32_System_String_}
+
+Loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and inserts it into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+
+```csharp
+public static T InsertStyleSheetFromResources<T>(this T element, int index, string path) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to insert the style sheet.
+
+`path` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The Resources-relative path to the style sheet asset.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.</p>
+<p>A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetFromResourcesIf\<T\>\(T, bool, int, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetFromResourcesIf__1___0_System_Boolean_System_Int32_System_String_}
+
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and inserts it into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+
+```csharp
+public static T InsertStyleSheetFromResourcesIf<T>(this T element, bool condition, int index, string path) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to insert the style sheet.
+
+`path` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The Resources-relative path to the style sheet asset.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.</p>
+<p>A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetIf\<T\>\(T, bool, int, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_StyleSheet_}
+
+Conditionally inserts a style sheet into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+
+```csharp
+public static T InsertStyleSheetIf<T>(this T element, bool condition, int index, StyleSheet? styleSheet) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to insert the style sheet.
+
+`styleSheet` StyleSheet?
+
+The style sheet to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheets\<T\>\(T, int, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_UnityEngine_UIElements_StyleSheet___}
+
+Inserts an array of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheets<T>(this T element, int index, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheets\<T\>\(T, int, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Inserts a list of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheets<T>(this T element, int index, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheets\<T\>\(T, int, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Inserts an enumerable of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheets<T>(this T element, int index, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheets\<T\>\(T, int, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Inserts a read-only span of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheets<T>(this T element, int index, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheetsFromResources\<T\>\(T, int, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_String___}
+
+Loads style sheets from an array of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResources<T>(this T element, int index, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsFromResources\<T\>\(T, int, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_Collections_Generic_List_System_String__}
+
+Loads style sheets from a list of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResources<T>(this T element, int index, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsFromResources\<T\>\(T, int, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_Collections_Generic_IEnumerable_System_String__}
+
+Loads style sheets from an enumerable of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResources<T>(this T element, int index, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsFromResources\<T\>\(T, int, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_ReadOnlySpan_System_String__}
+
+Loads style sheets from a read-only span of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResources<T>(this T element, int index, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_String___}
+
+Conditionally loads style sheets from an array of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_System_String__}
+
+Conditionally loads style sheets from a list of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally loads style sheets from an enumerable of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_System_String__}
+
+Conditionally loads style sheets from a read-only span of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<p>Logs a warning for each path where no asset is found and skips that path.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+
+### InsertStyleSheetsIf\<T\>\(T, bool, int, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_StyleSheet___}
+
+Conditionally inserts an array of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheetsIf\<T\>\(T, bool, int, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally inserts a list of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheetsIf\<T\>\(T, bool, int, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally inserts an enumerable of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+
+### InsertStyleSheetsIf\<T\>\(T, bool, int, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally inserts a read-only span of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+
+```csharp
+public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`index` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The index at which to start inserting style sheets.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to insert; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### RemoveBoldUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveBoldUnityFontStyleAndWeight__1___0_}
 
@@ -1304,72 +4076,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildren\<T\>\(T, Span\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Span_UnityEngine_UIElements_VisualElement__}
-
-Removes a span of child elements from the element.
-
-```csharp
-public static T RemoveChildren<T>(this T element, Span<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`children` [Span](https://learn.microsoft.com/dotnet/api/system.span-1)\<VisualElement\>
-
-The children to remove.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### RemoveChildren\<T\>\(T, List\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
-
-Removes a list of child elements from the element.
-
-```csharp
-public static T RemoveChildren<T>(this T element, List<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>
-
-The children to remove.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### RemoveChildren\<T\>\(T, params VisualElement\[\]\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_UnityEngine_UIElements_VisualElement___}
+### RemoveChildren\<T\>\(T, params VisualElement\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_UnityEngine_UIElements_VisualElement___}
 
 Removes an array of child elements from the element.
 
 ```csharp
-public static T RemoveChildren<T>(this T element, params VisualElement[] children) where T : VisualElement
+public static T RemoveChildren<T>(this T element, params VisualElement[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -1378,7 +4090,7 @@ public static T RemoveChildren<T>(this T element, params VisualElement[] childre
 
 The element to modify.
 
-`children` VisualElement\[\]
+`children` VisualElement\[\]?
 
 The children to remove.
 
@@ -1394,12 +4106,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildren\<T\>\(T, IEnumerable\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### RemoveChildren\<T\>\(T, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Removes an enumerable of child elements from the element.
+Removes a list of child elements from the element.
 
 ```csharp
-public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement> children) where T : VisualElement
+public static T RemoveChildren<T>(this T element, List<VisualElement>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -1408,7 +4120,37 @@ public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement> chi
 
 The element to modify.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>
+`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
+
+The children to remove.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveChildren\<T\>\(T, IEnumerable\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+
+Removes an enumerable of child elements from the element.
+
+```csharp
+public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement>? children) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>?
 
 The children to remove.
 
@@ -1459,80 +4201,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildrenIf\<T\>\(T, bool, Span\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Span_UnityEngine_UIElements_VisualElement__}
-
-Conditionally removes a span of child elements from the element.
-
-```csharp
-public static T RemoveChildrenIf<T>(this T element, bool condition, Span<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
-
-`children` [Span](https://learn.microsoft.com/dotnet/api/system.span-1)\<VisualElement\>
-
-The children to remove.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### RemoveChildrenIf\<T\>\(T, bool, List\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
-
-Conditionally removes a list of child elements from the element.
-
-```csharp
-public static T RemoveChildrenIf<T>(this T element, bool condition, List<VisualElement> children) where T : VisualElement
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
-
-`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>
-
-The children to remove.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### RemoveChildrenIf\<T\>\(T, bool, params VisualElement\[\]\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
+### RemoveChildrenIf\<T\>\(T, bool, params VisualElement\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
 
 Conditionally removes an array of child elements from the element.
 
 ```csharp
-public static T RemoveChildrenIf<T>(this T element, bool condition, params VisualElement[] children) where T : VisualElement
+public static T RemoveChildrenIf<T>(this T element, bool condition, params VisualElement[]? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -1545,7 +4219,7 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`children` VisualElement\[\]
+`children` VisualElement\[\]?
 
 The children to remove.
 
@@ -1561,12 +4235,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+### RemoveChildrenIf\<T\>\(T, bool, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Conditionally removes an enumerable of child elements from the element.
+Conditionally removes a list of child elements from the element.
 
 ```csharp
-public static T RemoveChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement> children) where T : VisualElement
+public static T RemoveChildrenIf<T>(this T element, bool condition, List<VisualElement>? children) where T : VisualElement
 ```
 
 #### Parameters
@@ -1579,7 +4253,41 @@ The element to modify.
 
 When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
 
-`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>
+`children` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<VisualElement\>?
+
+The children to remove.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
+
+Conditionally removes an enumerable of child elements from the element.
+
+```csharp
+public static T RemoveChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement>? children) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`children` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<VisualElement\>?
 
 The children to remove.
 
@@ -1634,12 +4342,12 @@ The element, for chaining.
 
 The element type.
 
-### RemoveClass\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClass__1___0_System_String_}
+### RemoveClass\<T\>\(T, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClass__1___0_System_String_}
 
 Removes a USS class from the element.
 
 ```csharp
-public static T RemoveClass<T>(this T element, string value) where T : VisualElement
+public static T RemoveClass<T>(this T element, string? className) where T : VisualElement
 ```
 
 #### Parameters
@@ -1648,9 +4356,309 @@ public static T RemoveClass<T>(this T element, string value) where T : VisualEle
 
 The element to modify.
 
-`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
 
-The USS class name to remove.
+The USS class name to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveClassIf\<T\>\(T, bool, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassIf__1___0_System_Boolean_System_String_}
+
+Conditionally removes a USS class from the element.
+
+```csharp
+public static T RemoveClassIf<T>(this T element, bool condition, string? className) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
+
+The USS class name to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveClasses\<T\>\(T, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClasses__1___0_System_String___}
+
+Removes an array of USS classes from the element.
+
+```csharp
+public static T RemoveClasses<T>(this T element, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveClasses\<T\>\(T, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClasses__1___0_System_Collections_Generic_List_System_String__}
+
+Removes a list of USS classes from the element.
+
+```csharp
+public static T RemoveClasses<T>(this T element, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveClasses\<T\>\(T, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClasses__1___0_System_Collections_Generic_IEnumerable_System_String__}
+
+Removes an enumerable of USS classes from the element.
+
+```csharp
+public static T RemoveClasses<T>(this T element, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### RemoveClasses\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClasses__1___0_System_ReadOnlySpan_System_String__}
+
+Removes a read-only span of USS classes from the element.
+
+```csharp
+public static T RemoveClasses<T>(this T element, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveClassesIf\<T\>\(T, bool, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassesIf__1___0_System_Boolean_System_String___}
+
+Conditionally removes an array of USS classes from the element.
+
+```csharp
+public static T RemoveClassesIf<T>(this T element, bool condition, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveClassesIf\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Conditionally removes a list of USS classes from the element.
+
+```csharp
+public static T RemoveClassesIf<T>(this T element, bool condition, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveClassesIf\<T\>\(T, bool, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally removes an enumerable of USS classes from the element.
+
+```csharp
+public static T RemoveClassesIf<T>(this T element, bool condition, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### RemoveClassesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Conditionally removes a read-only span of USS classes from the element.
+
+```csharp
+public static T RemoveClassesIf<T>(this T element, bool condition, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 
@@ -1699,12 +4707,12 @@ Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Docu
 style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html),
 so nothing is written and the USS style stays, including the italic it was meant to remove.
 
-### RemoveStyleSheet\<T\>\(T, StyleSheet\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_}
+### RemoveStyleSheet\<T\>\(T, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_}
 
 Removes a style sheet from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
-public static T RemoveStyleSheet<T>(this T element, StyleSheet value) where T : VisualElement
+public static T RemoveStyleSheet<T>(this T element, StyleSheet? styleSheet) where T : VisualElement
 ```
 
 #### Parameters
@@ -1713,9 +4721,9 @@ public static T RemoveStyleSheet<T>(this T element, StyleSheet value) where T : 
 
 The element to modify.
 
-`value` StyleSheet
+`styleSheet` StyleSheet?
 
-The style sheet to remove.
+The style sheet to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
 
 #### Returns
 
@@ -1762,6 +4770,622 @@ The element type.
 #### Remarks
 
 Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
+### RemoveStyleSheetFromResourcesIf\<T\>\(T, bool, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_}
+
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and removes it from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetFromResourcesIf<T>(this T element, bool condition, string path) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`path` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The Resources-relative path to the style sheet asset.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
+### RemoveStyleSheetIf\<T\>\(T, bool, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet_}
+
+Conditionally removes a style sheet from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetIf<T>(this T element, bool condition, StyleSheet? styleSheet) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheet` StyleSheet?
+
+The style sheet to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheets\<T\>\(T, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_UnityEngine_UIElements_StyleSheet___}
+
+Removes an array of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheets<T>(this T element, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheets\<T\>\(T, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Removes a list of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheets<T>(this T element, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheets\<T\>\(T, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Removes an enumerable of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheets<T>(this T element, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheets\<T\>\(T, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Removes a read-only span of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheets<T>(this T element, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheetsFromResources\<T\>\(T, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_String___}
+
+Loads style sheets from an array of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResources<T>(this T element, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsFromResources\<T\>\(T, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_Collections_Generic_List_System_String__}
+
+Loads style sheets from a list of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResources<T>(this T element, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsFromResources\<T\>\(T, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_Collections_Generic_IEnumerable_System_String__}
+
+Loads style sheets from an enumerable of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResources<T>(this T element, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsFromResources\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_ReadOnlySpan_System_String__}
+
+Loads style sheets from a read-only span of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResources<T>(this T element, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_String___}
+
+Conditionally loads style sheets from an array of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, params string[]? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Conditionally loads style sheets from a list of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, List<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally loads style sheets from an enumerable of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, IEnumerable<string>? paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Conditionally loads style sheets from a read-only span of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, ReadOnlySpan<string> paths) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`paths` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The Resources-relative paths to the style sheet assets.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning for each path where no asset is found and skips that path.
+
+### RemoveStyleSheetsIf\<T\>\(T, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet___}
+
+Conditionally removes an array of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsIf<T>(this T element, bool condition, params StyleSheet?[]? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` StyleSheet?\[\]?
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheetsIf\<T\>\(T, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally removes a list of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsIf<T>(this T element, bool condition, List<StyleSheet>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<StyleSheet\>?
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheetsIf\<T\>\(T, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally removes an enumerable of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsIf<T>(this T element, bool condition, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<StyleSheet?\>?
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### RemoveStyleSheetsIf\<T\>\(T, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
+
+Conditionally removes a read-only span of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+
+```csharp
+public static T RemoveStyleSheetsIf<T>(this T element, bool condition, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`styleSheets` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<StyleSheet\>
+
+The style sheets to remove; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
 
 ### SetAlignContent\<T\>\(T, StyleEnum\<Align\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignContent__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Align__}
 
@@ -7064,12 +10688,12 @@ The element, for chaining.
 
 The element type.
 
-### ToggleClass\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClass__1___0_System_String_}
+### ToggleClass\<T\>\(T, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClass__1___0_System_String_}
 
 Adds the USS class when it is absent and removes it when it is present.
 
 ```csharp
-public static T ToggleClass<T>(this T element, string value) where T : VisualElement
+public static T ToggleClass<T>(this T element, string? className) where T : VisualElement
 ```
 
 #### Parameters
@@ -7078,9 +10702,309 @@ public static T ToggleClass<T>(this T element, string value) where T : VisualEle
 
 The element to modify.
 
-`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
 
-The USS class name to toggle.
+The USS class name to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ToggleClassIf\<T\>\(T, bool, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassIf__1___0_System_Boolean_System_String_}
+
+Conditionally adds the USS class when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClassIf<T>(this T element, bool condition, string? className) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`className` [string](https://learn.microsoft.com/dotnet/api/system.string)?
+
+The USS class name to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the element unchanged.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ToggleClasses\<T\>\(T, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClasses__1___0_System_String___}
+
+Adds each USS class of an array when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClasses<T>(this T element, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ToggleClasses\<T\>\(T, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClasses__1___0_System_Collections_Generic_List_System_String__}
+
+Adds each USS class of a list when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClasses<T>(this T element, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ToggleClasses\<T\>\(T, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClasses__1___0_System_Collections_Generic_IEnumerable_System_String__}
+
+Adds each USS class of an enumerable when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClasses<T>(this T element, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### ToggleClasses\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClasses__1___0_System_ReadOnlySpan_System_String__}
+
+Adds each USS class of a read-only span when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClasses<T>(this T element, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ToggleClassesIf\<T\>\(T, bool, params string?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_String___}
+
+Conditionally adds each USS class of an array when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClassesIf<T>(this T element, bool condition, params string?[]? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [string](https://learn.microsoft.com/dotnet/api/system.string)?\[\]?
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ToggleClassesIf\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
+
+Conditionally adds each USS class of a list when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClassesIf<T>(this T element, bool condition, List<string>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [List](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>?
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### ToggleClassesIf\<T\>\(T, bool, IEnumerable\<string?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
+
+Conditionally adds each USS class of an enumerable when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClassesIf<T>(this T element, bool condition, IEnumerable<string?>? classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)?\>?
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+#### Remarks
+
+<code class="paramref">classNames</code> is copied before the first change, so it may read
+[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+
+### ToggleClassesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
+
+Conditionally adds each USS class of a read-only span when it is absent and removes it when it is present.
+
+```csharp
+public static T ToggleClassesIf<T>(this T element, bool condition, ReadOnlySpan<string> classNames) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`condition` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the operation is performed; otherwise, the element is returned unchanged.
+
+`classNames` [ReadOnlySpan](https://learn.microsoft.com/dotnet/api/system.readonlyspan-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The USS class names to toggle; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are skipped.
 
 #### Returns
 

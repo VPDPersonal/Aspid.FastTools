@@ -73,6 +73,18 @@ namespace Aspid.FastTools.UIElements.Tests
         }
 
         [Test]
+        public void InsertChildren_SkipsNullEntries()
+        {
+            var first = new VisualElement();
+            var second = new VisualElement();
+            var target = new VisualElement();
+
+            target.InsertChildren(0, first, null, second);
+
+            CollectionAssert.AreEqual(new[] { first, second }, target.Children().ToArray());
+        }
+
+        [Test]
         public void RemoveChildren_RemovesEveryOwnChild()
         {
             var parent = CreateParent(out _);

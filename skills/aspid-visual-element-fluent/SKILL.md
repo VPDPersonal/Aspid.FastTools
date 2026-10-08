@@ -57,7 +57,11 @@ rootVisualElement.AddChild(new VisualElement()
 | `el.style.color = ...;` | `el.SetColor("#FFC24D")` or a `StyleColor` |
 | `el.style.backgroundImage = Resources.Load<Texture2D>("UI/Card");` | `el.SetBackgroundImageFromResources("UI/Card")` |
 | `el.AddToClassList("a"); el.EnableInClassList("b", on);` | `el.AddClass("a").EnableClass("b", on)` (also `ToggleClass`, `RemoveClass`) |
-| `el.styleSheets.Add(sheet);` | `el.AddStyleSheet(sheet)` |
+| `el.AddToClassList("a"); el.AddToClassList("b");` | `el.AddClasses("a", "b")` (also `RemoveClasses`, `ToggleClasses`, `EnableClasses(on, "a", "b")`) |
+| `el.styleSheets.Add(sheet);` | `el.AddStyleSheet(sheet)`; several: `el.AddStyleSheets(baseSheet, themeSheet)` |
+| `el.styleSheets.Insert(0, sheet);` | `el.InsertStyleSheet(0, sheet)` (also `InsertStyleSheets`) |
+| `if (dark) el.styleSheets.Add(s); else el.styleSheets.Remove(s);` | `el.EnableStyleSheet(s, dark)` (also `EnableStyleSheets(dark, a, b)`) |
+| `el.styleSheets.Add(Resources.Load<StyleSheet>("UI/Base"));` x2 | `el.AddStyleSheetsFromResources("UI/Base", "UI/Dark")` (every style sheet method has `...FromResources`) |
 | `if (show) parent.Add(help);` | `parent.AddChildIf(show, help)` |
 | `field.SetValueWithoutNotify(v);` | `field.SetValue(v, notify: false)` |
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
@@ -74,11 +78,14 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   `void` and end the chain; use the replacements above.
 - On a `Label`, `Button` or other `TextElement`, set the text with `SetTextSelf`. From Unity 6000.6, `SetText(string)`
   calls Unity's `TextElement.SetText`, which returns `void`. `Foldout`, `HelpBox` and `Toggle` keep `SetText`.
-- These do not exist: `ToggleInClass`, `EnableInClass`, `AddStyleSheets`, `...FromResource` (singular),
+- `EnableClasses` and `EnableStyleSheets` take the flag first: `EnableClasses(on, "a", "b")`, but `EnableClass("a", on)`.
+  Name both flags of `EnableClassIf(condition: x, "a", enable: y)`: swapped bools compile.
+- These do not exist: `ToggleInClass`, `EnableInClass`, `...FromResource` (singular),
   `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use Unity's `RegisterCallback`).
 - Values are `Style*` types: sizes `StyleLength` (`12`, `Length.Percent(50)`, `StyleKeyword.Auto`),
   `SetBackgroundImage` only `StyleBackground`, transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
+  Style sheet methods skip `null` style sheets.
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
