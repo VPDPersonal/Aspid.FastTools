@@ -67,20 +67,6 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Enables or disables the element via <see cref="VisualElement.SetEnabled"/>.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, the element is enabled; a disabled element receives most events no longer.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T SetEnabledSelf<T>(this T element, bool value)
-            where T : VisualElement
-        {
-            element.SetEnabled(value);
-            return element;
-        }
-
-        /// <summary>
         /// Sets <see cref="VisualElement.dataSource"/>.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
@@ -196,6 +182,20 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement
         {
             element.languageDirection = value;
+            return element;
+        }
+
+        /// <summary>
+        /// Enables or disables the element via <see cref="VisualElement.SetEnabled"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">When <see langword="true"/>, the element is enabled; a disabled element receives most events no longer.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetEnabledSelf<T>(this T element, bool value)
+            where T : VisualElement
+        {
+            element.SetEnabled(value);
             return element;
         }
     }
