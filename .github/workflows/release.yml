@@ -1,7 +1,8 @@
 name: Release
 
 # Publishes a release: a pushed v* tag, or a manual run on main. Everything is checked before anything is published:
-# the upm branch, the UPM tag and the release tag go out in one atomic push, then the GitHub release is created.
+# first the cheap checks (preflight), then every test (tests.yml); the upm branch, the UPM tag and the release tag
+# then go out in one atomic push, and the GitHub release is created last.
 
 on:
   push:
@@ -24,11 +25,22 @@ env:
   ANALYZERS_SOLUTION_DIR: Aspid.FastTools.Analyzers
 
 jobs:
-  release:
+  # The cheap checks run first, so a wrong ref, version, CHANGELOG or stale DLL fails before the Unity matrix starts.
+  preflight:
+    name: Preflight
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      upm-branch: ${{ steps.version.outputs.upm-branch }}
+      notes: ${{ steps.notes.outputs.notes }}
 
     steps:
       - name: Determine version
+        id: version
         env:
           INPUT_VERSION: ${{ inputs.version }}
         run: |
@@ -54,24 +66,25 @@ jobs:
             PRERELEASE=false
             UPM_BRANCH=upm
           fi
-          # Validated as SemVer above, so the later steps can read these from the environment.
+          # Validated as SemVer above, so the later steps and the release job can read these.
           {
             echo "VERSION=$VERSION"
             echo "TAG=v$VERSION"
             echo "PRERELEASE=$PRERELEASE"
             echo "UPM_BRANCH=$UPM_BRANCH"
           } >> "$GITHUB_ENV"
+          {
+            echo "version=$VERSION"
+            echo "tag=v$VERSION"
+            echo "prerelease=$PRERELEASE"
+            echo "upm-branch=$UPM_BRANCH"
+          } >> "$GITHUB_OUTPUT"
           echo "Releasing v$VERSION"
 
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Check tags do not already exist
         run: |
@@ -112,6 +125,7 @@ jobs:
         run: node scripts/check-version.mjs
 
       - name: Extract CHANGELOG section
+        id: notes
         run: |
           set -euo pipefail
           NOTES=$(awk -v ver="$VERSION" '
@@ -128,30 +142,18 @@ jobs:
             exit 1
           fi
 
-          printf '%s\n' "$NOTES" > "$RUNNER_TEMP/release-notes.md"
+          {
+            echo 'notes<<RELEASE_NOTES_EOF'
+            printf '%s\n' "$NOTES"
+            echo 'RELEASE_NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
           echo "CHANGELOG section for $VERSION extracted ($(echo "$NOTES" | wc -l) lines)."
 
-      # The test projects target net6.0; the SDK pinned in global.json builds them,
-      # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
+      # The SDK pinned in global.json builds the DLLs, the same one that built the committed ones.
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-          dotnet-version: '6.0.x'
-
-      # Tests run in Debug on purpose: the Directory.Build.targets deploy of the Roslyn
-      # DLLs into the Unity package is Release-only, so a Debug test run can never
-      # interfere with the DLL freshness verification below.
-      - name: Run generator tests
-        run: dotnet test --nologo
-        working-directory: ${{ env.GENERATORS_SOLUTION_DIR }}
-
-      - name: Run analyzer tests
-        run: dotnet test --nologo
-        working-directory: ${{ env.ANALYZERS_SOLUTION_DIR }}
-
-      - name: Run YAML engine tests
-        run: dotnet test Aspid.FastTools.YamlTests --nologo
 
       # Rebuilding in Release re-deploys both DLLs into the package checkout
       # (Directory.Build.targets); a clean `git diff` then proves the committed
@@ -168,6 +170,46 @@ jobs:
             exit 1
           fi
           echo "Committed Roslyn DLLs match a fresh Release build."
+
+  # Every test of Tests on the commit being released; here missing Unity secrets fail instead of skipping Unity.
+  tests:
+    name: Tests
+    needs: preflight
+    uses: ./.github/workflows/tests.yml
+    with:
+      require-unity: true
+    secrets:
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
+
+  release:
+    needs: [preflight, tests]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.preflight.outputs.version }}
+      TAG: ${{ needs.preflight.outputs.tag }}
+      PRERELEASE: ${{ needs.preflight.outputs.prerelease }}
+      UPM_BRANCH: ${{ needs.preflight.outputs.upm-branch }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
 
       # The package CHANGELOG.md and its .meta are not in git. They are generated and committed here, so the subtree
       # split below publishes them. The commit stays in this runner: the release tag points at $GITHUB_SHA.
@@ -200,6 +242,8 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          NOTES: ${{ needs.preflight.outputs.notes }}
         run: |
           set -euo pipefail
+          printf '%s\n' "$NOTES" > "$RUNNER_TEMP/release-notes.md"
           gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease="$PRERELEASE"
