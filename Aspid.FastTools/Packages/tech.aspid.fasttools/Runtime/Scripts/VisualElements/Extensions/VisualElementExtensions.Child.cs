@@ -550,6 +550,6 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         private static bool IsContentChild(VisualElement element, VisualElement? child) =>
-            child is not null && child.hierarchy.parent == element.contentContainer;
+            child is not null && element.IndexOf(child) >= 0;
     }
 }
