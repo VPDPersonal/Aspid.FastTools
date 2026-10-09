@@ -43,7 +43,7 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 - saved `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from **Excluded scan folders**;
 - <code lang="csharp">[SerializeReference]</code> and the names in <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields; <code lang="csharp">[TypeSelector]</code> strings are not checked;
 - pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing;
-- binary assets and unfetched Git LFS files are not scanned, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files.
+- binary assets and unfetched Git LFS files are not scanned, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files; to make CI count them as violations, pass `-srGateStrict`.
 
 **Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection.
 
