@@ -1,9 +1,12 @@
 using System;
 using System.IO;
+using UnityEngine;
 using System.Linq;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
+using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -268,5 +271,124 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TestCase(null, ExpectedResult = false)]
         public bool IsScannedFolder_AcceptsOnlyAssets(string relative) =>
             SerializeReferenceExcludedFoldersField.IsScannedFolder(relative);
+
+        // -----------------------------------------------------------------------------------------------------
+        // F — the shared settings follow the file on disk and respect a read-only file
+        // -----------------------------------------------------------------------------------------------------
+
+        // Saves every shared setting, so the file exists and holds exactly the values set here.
+        private static void SaveSharedDefaults()
+        {
+            SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
+            SerializeReferenceSettings.BuildSeverity = GateSeverity.Warn;
+            SerializeReferenceSettings.AutoDeAliasEnabled = true;
+            SerializeReferenceSettings.ExcludedFolders = Array.Empty<string>();
+        }
+
+        // Rewrites the shared settings file behind the Editor, as a pull from the team repository does.
+        private static void EditSharedSettingsFile(string pattern, string replacement)
+        {
+            var text = File.ReadAllText(SharedSettingsPath);
+            var edited = Regex.Replace(text, pattern, replacement);
+
+            Assert.AreNotEqual(text, edited, $"The shared settings file has no match for '{pattern}'.");
+            File.WriteAllText(SharedSettingsPath, edited);
+        }
+
+        [Test]
+        public void Setter_AfterExternalEdit_KeepsTheEditedValueOfAnotherSetting()
+        {
+            SaveSharedDefaults();
+            EditSharedSettingsFile("_buildSeverity: .*", "_buildSeverity: " + (int)GateSeverity.Fail);
+
+            SerializeReferenceSettings.AutoDeAliasEnabled = false;
+
+            Assert.AreEqual(GateSeverity.Fail, SerializeReferenceSettings.BuildSeverity,
+                "A setter must start from the file on disk, not from the copy loaded before the external edit.");
+            var saved = File.ReadAllText(SharedSettingsPath);
+            StringAssert.Contains("_buildSeverity: 2", saved, "The save must not overwrite the externally edited severity.");
+            StringAssert.Contains("_autoDeAlias: 0", saved);
+        }
+
+        [Test]
+        public void ReloadShared_AfterExternalEdit_PicksUpTheFile_AndRaisesTheChangeEvents()
+        {
+            SaveSharedDefaults();
+            EditSharedSettingsFile("_buildSeverity: .*", "_buildSeverity: " + (int)GateSeverity.Fail);
+            EditSharedSettingsFile(@"_excludedFolders: \[\]", "_excludedFolders:\n  - Assets/Pulled");
+
+            var changed = 0;
+            void Handler() => changed++;
+            SerializeReferenceSettings.Changed += Handler;
+            try
+            {
+                var foldersChanged = ExcludedFoldersChangedCount(SerializeReferenceSettings.ReloadShared);
+
+                Assert.AreEqual(GateSeverity.Fail, SerializeReferenceSettings.BuildSeverity);
+                CollectionAssert.AreEqual(new[] { "Assets/Pulled" }, SerializeReferenceSettings.ExcludedFolders);
+                Assert.AreEqual(1, changed, "A reload that moved a value must raise Changed once.");
+                Assert.AreEqual(1, foldersChanged, "A reload that moved the folders must drop the warm usage index.");
+            }
+            finally { SerializeReferenceSettings.Changed -= Handler; }
+        }
+
+        [Test]
+        public void ReloadShared_UnchangedFile_RaisesNothing()
+        {
+            SaveSharedDefaults();
+
+            var changed = 0;
+            void Handler() => changed++;
+            SerializeReferenceSettings.Changed += Handler;
+            try
+            {
+                var foldersChanged = ExcludedFoldersChangedCount(SerializeReferenceSettings.ReloadShared);
+
+                Assert.AreEqual(0, changed, "A reload that moved nothing must not raise Changed.");
+                Assert.AreEqual(0, foldersChanged, "A reload that moved nothing must keep the usage index warm.");
+            }
+            finally { SerializeReferenceSettings.Changed -= Handler; }
+        }
+
+        [Test]
+        public void BuildGate_AfterExternalEdit_ReadsTheEditedSeverity()
+        {
+            SaveSharedDefaults();
+            EditSharedSettingsFile("_buildSeverity: .*", "_buildSeverity: " + (int)GateSeverity.Off);
+
+            // Off returns before any scan; a stale Warn would scan the whole project.
+            new SerializeReferenceBuildGate().OnPreprocessBuild(null);
+
+            Assert.AreEqual(GateSeverity.Off, SerializeReferenceSettings.BuildSeverity,
+                "The build gate must re-read the settings file before it reads the severity.");
+        }
+
+        [Test]
+        public void Setter_ReadOnlyFile_RefusesWithClearError_AndKeepsTheStoredValue()
+        {
+            SaveSharedDefaults();
+            var before = File.ReadAllBytes(SharedSettingsPath);
+
+            var changed = 0;
+            void Handler() => changed++;
+            SerializeReferenceSettings.Changed += Handler;
+            File.SetAttributes(SharedSettingsPath, FileAttributes.ReadOnly);
+            try
+            {
+                LogAssert.Expect(LogType.Error, new Regex("is read-only"));
+                SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
+
+                Assert.AreEqual(GateSeverity.Warn, SerializeReferenceSettings.BuildSeverity,
+                    "A refused write must leave the stored value.");
+                Assert.AreEqual(1, changed, "Changed must fire so the controls return to the stored value.");
+                CollectionAssert.AreEqual(before, File.ReadAllBytes(SharedSettingsPath),
+                    "A refused write must leave the file byte-identical.");
+            }
+            finally
+            {
+                SerializeReferenceSettings.Changed -= Handler;
+                File.SetAttributes(SharedSettingsPath, FileAttributes.Normal);
+            }
+        }
     }
 }
