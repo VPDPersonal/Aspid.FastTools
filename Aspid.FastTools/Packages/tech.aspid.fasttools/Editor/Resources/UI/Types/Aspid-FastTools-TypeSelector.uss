@@ -259,11 +259,12 @@ ToolbarSearchField TextElement {
     flex-grow:              1;
 }
 
-/* With a context after it, the title keeps its text while the context can shrink; a near-zero shrink still lets a very
-   long name give way to the check, count and star instead of pushing them out of the row. */
+/* With a context after it, the title and the context both shrink, the context far first: a long name pushes the
+   namespace out completely before the title gives way with an ellipsis, and the check, count and star stay in the row. */
 .aspid-fasttools-type-selector__item-title--with-context {
     flex-grow:              0;
-    flex-shrink:            0.01;
+    flex-shrink:            1;
+    min-width:              0;
     overflow:               hidden;
     white-space:            nowrap;
     text-overflow:          ellipsis;
@@ -271,8 +272,11 @@ ToolbarSearchField TextElement {
 
 .aspid-fasttools-type-selector__item-context {
     margin-left:            6px;
+    padding-left:           0;
+    padding-right:          0;
     flex-grow:              1;
-    flex-shrink:            1;
+    flex-shrink:            1000;
+    min-width:              0;
     overflow:               hidden;
     white-space:            nowrap;
     text-overflow:          ellipsis;
