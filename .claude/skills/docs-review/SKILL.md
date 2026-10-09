@@ -21,7 +21,8 @@ A review checks one page and proposes changes. The first pass never edits anythi
 3. Run `Website/scripts/serve-all.sh`. Open the Russian page of this checkout in the built-in browser.
 4. Look at every section on screen.
 5. Extract frames from each GIF. Look for empty UI, encoder residue and cursor jumps.
-6. Start the `docs-verifier` agent in the background. Give it the page pair, the source folders and the claims to check.
+6. Check the page against the source. If the `docs-verifier` agent exists, start it in the background and give it the page pair,
+   the source folders and the claims to check. If not, follow "Check without the agent".
 7. Compare the page with the Introduction and ProfilerMarkers: lead, quick start, density and visuals.
 8. Send the review in the format below. Do not edit yet.
 9. When the user answers, apply what they accepted to both languages. Rebuild and check the page.
@@ -29,6 +30,18 @@ A review checks one page and proposes changes. The first pass never edits anythi
 11. If a remark is ambiguous, state your reading in one line and apply it. Ask only on «что думаешь».
 12. A user remark can apply to other pages too, and no rule may cover it yet. Then propose a rule in one line.
 13. Add the rule to `docs-site` only after the user's yes. A remark about one page only stays a page edit.
+
+## Check without the agent
+
+The `docs-verifier` agent is not in this repository. Without it, do the check yourself. The check changes no files.
+
+1. List the claims on the page: type, member and attribute names, signatures, namespaces, `using` lines, sample paths,
+   menu paths, default values, versions and install URLs.
+2. Find the names in one call: `grep -rnE 'Name1|Name2'` over `Aspid.FastTools/Packages/tech.aspid.fasttools`.
+3. Read the declarations, not the usages. A code sample must compile: check every call and every argument.
+4. For a feature list, grep the public types and compare them with the list on the page.
+5. Compare the English and Russian pages section by section.
+6. Note each mismatch as `<page>:<line> — <claim> → <what the code says> (<file>:<line>)`. Use the notes in the review (step 8).
 
 ## Review format
 

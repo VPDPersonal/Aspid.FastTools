@@ -5,6 +5,9 @@ using Aspid.FastTools.Types;
 // FastEnemy with Health 75 and Speed 40 to ArmoredEnemy through _enemyType. Each class sits in a file named after it
 // because the switch writes the class's own MonoScript.
 
+// Serialized fields are read by the Inspector only.
+#pragma warning disable CS0414
+
 // ReSharper disable once CheckNamespace
 namespace Game.Enemies
 {
@@ -14,3 +17,4 @@ namespace Game.Enemies
         [SerializeField] private float _health = 100f;
     }
 }
+#pragma warning restore CS0414
