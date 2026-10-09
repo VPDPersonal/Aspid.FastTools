@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Reflection;
 using System.Collections;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -46,20 +47,26 @@ namespace Aspid.FastTools.Editors
             var lastDotIndex = path.LastIndexOf('.');
             if (lastDotIndex < 0) return current;
 
-            foreach (var part in path[..lastDotIndex].Split('.'))
+            // Walks the owner path in place: IMGUI resolves it on every event of a nested reference.
+            for (var start = 0; start < lastDotIndex;)
             {
                 if (current is null) return null;
 
-                var bracket = part.IndexOf('[');
-                var name = bracket < 0 ? part : part[..bracket];
+                var separator = path.IndexOf('.', start, lastDotIndex - start);
+                var end = separator < 0 ? lastDotIndex : separator;
 
-                current = GetFieldIncludingBaseClasses(current.GetType(), name)?.GetValue(current);
+                var bracket = path.IndexOf('[', start, end - start);
+                var nameEnd = bracket < 0 ? end : bracket;
+
+                current = GetFieldIncludingBaseClasses(current.GetType(), path.Substring(start, nameEnd - start))?.GetValue(current);
 
                 if (bracket >= 0 && current is IList list)
                 {
-                    var index = int.Parse(part[(bracket + 1)..^1]);
+                    var index = int.Parse(path.AsSpan(bracket + 1, end - bracket - 2));
                     current = index < list.Count ? list[index] : null;
                 }
+
+                start = end + 1;
             }
 
             return current;
@@ -69,7 +76,16 @@ namespace Aspid.FastTools.Editors
         internal static bool IsNonReorderable(this SerializedProperty listProperty) =>
             listProperty.GetFieldInfo()?.IsDefined(typeof(NonReorderableAttribute), inherit: true) ?? false;
 
+        // Fields change only with a domain reload, which also clears this cache. A missing field is cached too.
+        private static readonly Dictionary<(Type, string), FieldInfo> FieldCache = new();
+
         private static FieldInfo GetFieldIncludingBaseClasses(Type type, string name)
+        {
+            if (FieldCache.TryGetValue((type, name), out var cached)) return cached;
+            return FieldCache[(type, name)] = FindFieldIncludingBaseClasses(type, name);
+        }
+
+        private static FieldInfo FindFieldIncludingBaseClasses(Type type, string name)
         {
             const BindingFlags bindingAttr = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 

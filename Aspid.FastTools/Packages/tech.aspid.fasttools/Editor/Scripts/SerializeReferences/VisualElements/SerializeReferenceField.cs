@@ -339,15 +339,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_childrenBuilt) return;
             _childrenBuilt = true;
 
-            var iterator = _property.Copy();
-            var end = _property.GetEndProperty();
-            var enterChildren = true;
-
-            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
-            {
-                enterChildren = false;
+            foreach (var iterator in _property.VisibleChildren())
                 _content.Add(CreateChildField(iterator.Copy(), _depth));
-            }
         }
 
         // Unity ships no type picker for a managed reference, so a nested one drawn as a plain PropertyField is a

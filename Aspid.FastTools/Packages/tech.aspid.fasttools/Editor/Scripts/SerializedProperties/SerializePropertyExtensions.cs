@@ -1,4 +1,5 @@
 using UnityEditor;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -77,6 +78,21 @@ namespace Aspid.FastTools.Editors
             if (persistent is null) serializedObject.Dispose();
 
             return persistent;
+        }
+
+        // Every yielded property is the same iterator, advanced for each child: copy it to keep one.
+        // The loop disposes both native copies, also when it ends early.
+        internal static IEnumerable<SerializedProperty> VisibleChildren(this SerializedProperty property)
+        {
+            using var iterator = property.Copy();
+            using var end = property.GetEndProperty();
+            var enterChildren = true;
+
+            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
+            {
+                enterChildren = false;
+                yield return iterator;
+            }
         }
     }
 }
