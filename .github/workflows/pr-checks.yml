@@ -85,12 +85,17 @@ jobs:
               add.add(TYPES[m[1]]);
               current.filter(l => l.startsWith('type: ') && l !== TYPES[m[1]]).forEach(l => remove.add(l));
             }
+            // The title alone decides breaking-change; an unparsable title leaves the label as it is.
             if (m?.[3]) add.add('breaking-change');
+            else if (m && current.includes('breaking-change')) remove.add('breaking-change');
 
             const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: pr.number });
             for (const { filename } of files)
               for (const [prefix, label] of AREAS)
                 if (filename.startsWith(prefix)) add.add(label);
+            // An area no changed file reaches any more (the PR moved on) loses its label.
+            for (const label of new Set(AREAS.map(([, area]) => area)))
+              if (current.includes(label) && !add.has(label)) remove.add(label);
 
             const toAdd = [...add].filter(l => !current.includes(l));
             if (toAdd.length) await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: toAdd });
@@ -99,7 +104,8 @@ jobs:
 
             if (errors.length) core.setFailed(errors.join('\n'));
 
-  # User-visible package code changed → a CHANGELOG entry, or the `no-changelog` label.
+  # User-visible package code changed → an entry in the English root CHANGELOG.md, or the `no-changelog` label.
+  # CHANGELOG.ru.md alone is not enough: the package copy and the release notes are built from the English file.
   changelog:
     name: CHANGELOG
     runs-on: ubuntu-latest
@@ -118,10 +124,16 @@ jobs:
             const shipped = files.filter(f =>
               f.startsWith(PKG + 'Runtime/') || f.startsWith(PKG + 'Editor/') ||
               (f.startsWith(PKG + 'Samples~/') && !f.includes('/Documentation/')) ||
-              (f.startsWith(PKG) && /^[^/]+\.dll$/.test(f.slice(PKG.length))));
+              (f.startsWith(PKG) && /^(?:[^/]+\.dll|package\.json)$/.test(f.slice(PKG.length))));
             if (!shipped.length) return core.info('No shipped package code changed.');
-            if (files.some(f => /(^|\/)CHANGELOG(\.ru)?\.md$/.test(f))) return core.info('CHANGELOG updated.');
+            if (files.includes('CHANGELOG.md')) return core.info('CHANGELOG updated.');
 
-            core.setFailed(
-              `Package code changed (${shipped.slice(0, 3).join(', ')}${shipped.length > 3 ? ', …' : ''}) ` +
-              'but CHANGELOG.md did not. Add an entry under [Unreleased], or the `no-changelog` label if users see no change.');
+            const list = `${shipped.slice(0, 3).join(', ')}${shipped.length > 3 ? ', …' : ''}`;
+            if (files.includes('CHANGELOG.ru.md'))
+              core.setFailed(
+                `Package code changed (${list}) and CHANGELOG.ru.md did, but the English CHANGELOG.md did not. ` +
+                'Add the same entry under [Unreleased] in CHANGELOG.md: scripts/set-version.sh and the package changelog read it.');
+            else
+              core.setFailed(
+                `Package code changed (${list}) but CHANGELOG.md did not. ` +
+                'Add an entry under [Unreleased], or the `no-changelog` label if users see no change.');
