@@ -109,7 +109,7 @@ the enum type comes from the generic argument alone.
 </p>
 <p>
 Internal hot paths are wrapped in profiler markers; define the
-<code>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.
+<code>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.
 </p>
 
 ## Methods
