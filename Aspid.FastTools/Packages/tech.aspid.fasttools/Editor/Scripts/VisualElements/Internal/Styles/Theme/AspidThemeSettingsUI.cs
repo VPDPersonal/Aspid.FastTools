@@ -20,7 +20,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             " * Aspid FastTools window and settings pages on the light skin, Default-Light, so\n" +
             " * you only need to declare the tokens you want to change.\n" +
             " * Full token list: Packages/tech.aspid.fasttools/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss\n" +
-            " * Fields drawn inside a regular Inspector follow Unity's editor theme instead.\n" +
+            " * Fields drawn inside a regular Inspector start from Default-Dark on both skins, and some of their\n" +
+            " * colors come from Unity's editor theme, so these tokens do not change them.\n" +
             " */\n" +
             ":root {\n" +
             "    /* Backgrounds (surface palette, dark → light) */\n" +
@@ -59,7 +60,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                     + "to the default look.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
-            overrideField.AddClass(AspidSettingsUI.UserScopeClass);
+            overrideField.WithScopeStripe(AspidSettingsUI.UserScopeClass);
             overrideField.RegisterValueChangedCallback(evt =>
                 AspidThemeSettings.OverrideStyleSheet = evt.newValue as StyleSheet);
             SyncFromSettings(overrideField, () => (UnityEngine.Object)AspidThemeSettings.OverrideStyleSheet);
@@ -70,7 +71,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private static VisualElement BuildTemplateRow()
         {
-            var row = new VisualElement().AddClass(AspidSettingsUI.RowClass).AddClass(AspidSettingsUI.UserScopeClass);
+            var row = new VisualElement().AddClass(AspidSettingsUI.RowClass).WithScopeStripe(AspidSettingsUI.UserScopeClass);
             row.tooltip = "Create a starter override .uss with the palette's tokens listed in comments, and assign it "
                 + "as the theme override.";
 

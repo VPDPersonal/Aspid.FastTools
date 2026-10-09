@@ -23,11 +23,20 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             {
                 UpdateSkinClass(element);
                 OnThemeChanged();
-                AspidThemeSettings.Changed += OnThemeChanged;
+                Subscribe();
             });
             element.RegisterCallback<DetachFromPanelEvent>(_ => AspidThemeSettings.Changed -= OnThemeChanged);
 
+            // An element already in a panel gets no attach event, so it subscribes now.
+            if (element.panel is not null) Subscribe();
+
             return element;
+
+            void Subscribe()
+            {
+                AspidThemeSettings.Changed -= OnThemeChanged;
+                AspidThemeSettings.Changed += OnThemeChanged;
+            }
 
             void OnThemeChanged()
             {
