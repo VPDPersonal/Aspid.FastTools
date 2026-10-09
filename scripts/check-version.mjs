@@ -15,8 +15,6 @@ const FILES = [
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
   'Website/docs/Images/status-badge-preview.svg',
 ];
-// Files with an install URL and no badge.
-const INSTALL_FILES = [`${PKG}/README.md`];
 const CHANGELOGS = ['CHANGELOG.md', 'CHANGELOG.ru.md'];
 const REPOSITORY = 'https://github.com/VPDPersonal/Aspid.FastTools';
 
@@ -36,8 +34,6 @@ const checkInstallUrls = (file, text) => {
   const urls = [...text.matchAll(/\.git#(upm(?:-preview)?)\b/g)].map((match) => match[1]);
   if (!urls.length || urls.some((url) => url !== branch)) fail(file, `the install URLs must use #${branch} for ${version}; ${fix}`);
 };
-
-for (const file of INSTALL_FILES) checkInstallUrls(file, readFileSync(file, 'utf8'));
 
 for (const file of FILES) {
   const text = readFileSync(file, 'utf8');

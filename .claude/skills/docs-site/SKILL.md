@@ -14,9 +14,10 @@ Write GitHub Flavored Markdown; the site adapts to it, never the other way round
 
 The UPM package (`Aspid.FastTools/Packages/tech.aspid.fasttools/`) ships no documentation pages or images: everything in
 that folder reaches every consumer project through `git subtree split` in `release.yml`. It keeps only `README.md`
-(a description, the install URL and the site link) and a short text-only `Samples~/<Sample>/Documentation/README.md`
-(+ `README.ru.md`) per sample: what it shows, how to open it, and a link to its tutorial on the site. Never add an
-image or a full page there.
+(a description and the site link), `SETUP.md` (the offline setup steps of the Asset Store package, English only; it
+gives no git URL, because a store buyer who follows one adds a second copy) and a short text-only
+`Samples~/<Sample>/Documentation/README.md` (+ `README.ru.md`) per sample: what it shows, how to open it, and a link to
+its tutorial on the site. Never add an image or a full page there.
 
 ## Layout
 
@@ -32,7 +33,7 @@ image or a full page there.
 | Interface strings | `Website/i18n/ru/**/*.json` (`code.json`, `navbar.json`, each plugin's `current.json`) | |
 | Images | `Website/docs/Images/`, `Website/tutorials/<Sample>/Images/` | referenced relatively |
 | Root README | generated from `Website/docs/README.md` in GitHub's layout (committed); translations live on the site only | — |
-| Package README, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
+| Package README, setup notes, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `SETUP.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
 | Package changelog | generated from the root `CHANGELOG.md` with its `.meta` by `release.yml` (`scripts/package-changelog.mjs`); gitignored, only the `upm` branches carry it; Unity's Package Manager reads it | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
