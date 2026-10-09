@@ -16,8 +16,9 @@ namespace Aspid.FastTools.Enums.Editors
         {
             var valueProperty = property.FindPropertyRelative("_value");
 
+            // Rect, RectInt and Bounds take more than a line even though they have no foldout.
             if (!valueProperty.HasFoldout())
-                return EditorGUIUtility.singleLineHeight;
+                return EditorGUI.GetPropertyHeight(valueProperty, GUIContent.none, includeChildren: false);
 
             return EditorGUIUtility.singleLineHeight
                 + EditorGUIUtility.standardVerticalSpacing
@@ -54,7 +55,7 @@ namespace Aspid.FastTools.Enums.Editors
                 label = GUIContent.none;
 
                 var halfWidth = (position.width - FieldSpacing) / 2f;
-                keyRect = new Rect(position.x, position.y, halfWidth, position.height);
+                keyRect = new Rect(position.x, position.y, halfWidth, EditorGUIUtility.singleLineHeight);
 
                 valueRect = new Rect(
                     keyRect.xMax + FieldSpacing,

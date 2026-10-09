@@ -58,6 +58,8 @@ namespace Aspid.FastTools.Enums.Tests
             [SerializeField] private EnumValues<int> _ints = new();
             [SerializeField] private EnumValues<int[]> _arrays = new();
             [SerializeField] private EnumValues<List<string>> _lists = new();
+
+            public EnumValues<int> Ints => _ints;
         }
 
         private Host _host;
@@ -349,6 +351,55 @@ namespace Aspid.FastTools.Enums.Tests
 
             Assert.AreEqual(TopBitFlags.Low | TopBitFlags.Top, value);
             Assert.AreEqual(TopBitFlags.Low | TopBitFlags.Top, Enum.Parse(typeof(TopBitFlags), value.ToString()));
+        }
+
+        [Test]
+        public void ToKey_FlagsWithEveryBitSet_KeepsOnlyTheDefinedBits()
+        {
+            Assert.AreEqual(nameof(Sides.Both), EnumValuesPropertyDrawerHelper.ToKey((Sides)(-1)));
+            Assert.AreEqual(nameof(BigFlags.All), EnumValuesPropertyDrawerHelper.ToKey((BigFlags)(-1L)));
+            Assert.AreEqual("Low, High", EnumValuesPropertyDrawerHelper.ToKey((NarrowUnsignedFlags)uint.MaxValue));
+            Assert.AreEqual("Low, Top", EnumValuesPropertyDrawerHelper.ToKey((WideUnsignedFlags)ulong.MaxValue));
+        }
+
+        [Test]
+        public void ToKey_FlagsWithDefinedBits_IsUnchanged()
+        {
+            Assert.AreEqual(nameof(Sides.Left), EnumValuesPropertyDrawerHelper.ToKey(Sides.Left));
+            Assert.AreEqual(nameof(Sides.None), EnumValuesPropertyDrawerHelper.ToKey(Sides.None));
+            Assert.AreEqual("Low, High", EnumValuesPropertyDrawerHelper.ToKey(NarrowUnsignedFlags.Low | NarrowUnsignedFlags.High));
+        }
+
+        [Test]
+        public void ToKey_RegularEnum_IsTheMemberName()
+        {
+            Assert.AreEqual(nameof(Season.Summer), EnumValuesPropertyDrawerHelper.ToKey(Season.Summer));
+            Assert.AreEqual(nameof(SignedValues.Negative), EnumValuesPropertyDrawerHelper.ToKey(SignedValues.Negative));
+        }
+
+        [Test]
+        public void EverythingKey_MatchesLookupValuesThatHaveEveryFlag()
+        {
+            SetEnumType("_ints", typeof(NarrowUnsignedFlags));
+
+            var everything = EnumValuesPropertyDrawerHelper.ToKey((NarrowUnsignedFlags)uint.MaxValue);
+            AddEntry("_ints", everything);
+
+            var entry = _serializedObject.FindProperty("_ints._values").GetArrayElementAtIndex(0);
+            entry.FindPropertyRelative("_value").intValue = 7;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+
+            Assert.AreEqual(7, _host.Ints.GetValue(NarrowUnsignedFlags.Low | NarrowUnsignedFlags.High));
+            Assert.AreEqual(0, _host.Ints.GetValue(NarrowUnsignedFlags.Low));
+        }
+
+        [Test]
+        public void ToggleFlag_KeyWithEveryBit_WritesOnlyDefinedBits()
+        {
+            // A key written by an earlier version holds every bit; toggling a member must not keep the undefined ones.
+            var toggled = EnumValuesPropertyDrawerHelper.ToggleFlag((Sides)(-1), Sides.Left);
+
+            Assert.AreEqual(nameof(Sides.Right), EnumValuesPropertyDrawerHelper.ToKey(toggled));
         }
 
         private void SetEnumType(string field, Type enumType)

@@ -70,7 +70,7 @@ namespace Aspid.FastTools.Enums.Editors
 
             void OnKeyChanged(Enum value) => serializedObject
                 .FindProperty(keyPath)
-                .SetStringAndApply(value.ToString());
+                .SetStringAndApply(EnumValuesPropertyDrawerHelper.ToKey(value));
 
             void UpdateValue()
             {
