@@ -23,11 +23,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const string PartialPartScriptGuid = "a4d91e7c3b6f482e9c0a5f1b7e2d8c64";
         private const string ProbeAssetPath = "Assets/__AspidDeleteGuardProbe__.asset";
 
+        // The asset name is serialized as m_Name, so the text names DeleteGuardPistol although it holds no reference.
+        private const string PlainAssetPath = "Assets/__AspidDeleteGuardPlain_DeleteGuardPistol__.asset";
+
         [TearDown]
         public void TearDown()
         {
             AssetDatabase.DeleteAsset(ProbeAssetPath);
+            AssetDatabase.DeleteAsset(PlainAssetPath);
             SerializeReferenceTypeUsageIndex.Reset();
+            SerializeReferenceDeleteGuard.ResetSweep();
         }
 
         [Test]
@@ -96,8 +101,65 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             CollectionAssert.AreEqual(new[] { ProbeAssetPath }, samples);
         }
 
+        [Test]
+        public void CountUsages_AssetNamingClassWithoutManagedReferences_IsNotCounted()
+        {
+            CreatePlainAsset();
+
+            var counts = SerializeReferenceDeleteGuard.CountUsages(new List<Type> { typeof(DeleteGuardPistol) }, samplePaths: null);
+
+            Assert.AreEqual(0, counts[typeof(DeleteGuardPistol)]);
+        }
+
+        [Test]
+        public void CountUsages_ReusedSweep_SecondCallReadsOnlyAssetsThatHoldManagedReferences()
+        {
+            CreateProbe(new DeleteGuardPistol(), new DeleteGuardArmory.Crate());
+            CreatePlainAsset();
+
+            var first = SerializeReferenceDeleteGuard.CountUsages(
+                new List<Type> { typeof(DeleteGuardPistol) }, samplePaths: null, reuseSweep: true);
+
+            Assert.AreEqual(1, first[typeof(DeleteGuardPistol)]);
+
+            var swept = SerializeReferenceDeleteGuard.SweptReferencePaths;
+            CollectionAssert.Contains(swept, ProbeAssetPath);
+            CollectionAssert.DoesNotContain(swept, PlainAssetPath);
+
+            var samples = new List<string>();
+            var second = SerializeReferenceDeleteGuard.CountUsages(
+                new List<Type> { typeof(DeleteGuardArmory.Crate), typeof(DeleteGuardRifle) }, samples, reuseSweep: true);
+
+            Assert.AreEqual(1, second[typeof(DeleteGuardArmory.Crate)]);
+            Assert.AreEqual(0, second[typeof(DeleteGuardRifle)]);
+            CollectionAssert.AreEqual(new[] { ProbeAssetPath }, samples);
+            Assert.AreSame(swept, SerializeReferenceDeleteGuard.SweptReferencePaths, "The second call must not sweep the project again.");
+
+            SerializeReferenceDeleteGuard.ResetSweep();
+            Assert.IsNull(SerializeReferenceDeleteGuard.SweptReferencePaths);
+        }
+
+        [Test]
+        public void CountUsages_WithoutReusedSweep_KeepsNothing()
+        {
+            CreateProbe(new DeleteGuardPistol(), new DeleteGuardArmory.Crate());
+
+            var counts = SerializeReferenceDeleteGuard.CountUsages(new List<Type> { typeof(DeleteGuardPistol) }, samplePaths: null);
+
+            Assert.AreEqual(1, counts[typeof(DeleteGuardPistol)]);
+            Assert.IsNull(SerializeReferenceDeleteGuard.SweptReferencePaths);
+        }
+
         private static List<Type> Resolve(params string[] scriptGuids) =>
             SerializeReferenceDeleteGuard.ResolveCandidateTypes(scriptGuids.Select(AssetDatabase.GUIDToAssetPath).ToList());
+
+        private static void CreatePlainAsset()
+        {
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<DeleteGuardSettingsFixture>(), PlainAssetPath);
+            AssetDatabase.SaveAssets();
+
+            SerializeReferenceTypeUsageIndex.Reset();
+        }
 
         private static void CreateProbe(ITestWeapon a, ITestWeapon b)
         {
