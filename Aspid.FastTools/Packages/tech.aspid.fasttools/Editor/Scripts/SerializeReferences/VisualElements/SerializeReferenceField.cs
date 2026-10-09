@@ -283,8 +283,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
-            // Unity puts its mixed-value class on the caption of a real EnumField, which tints the "—".
-            _caption.EnableInClassList(BaseField<object>.mixedValueLabelUssClassName, mixedTypes);
+            // Unity puts its mixed-value class on the caption of a real EnumField, which tints the "—". The theme rule
+            // matches only a caption that is a direct child of the input, which carries BaseField's input class.
+            _caption.EnableClass(className: BaseField<object>.mixedValueLabelUssClassName, enable: mixedTypes);
             _dropdown.EnableInClassList(DropdownMissingClass, !missingType.IsEmpty);
             EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
             _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);

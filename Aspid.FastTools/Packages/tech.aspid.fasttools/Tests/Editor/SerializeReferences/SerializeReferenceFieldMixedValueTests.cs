@@ -45,6 +45,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual("—", caption.text);
                 Assert.IsTrue(caption.ClassListContains(MixedValueClass),
                     "The caption must carry Unity's mixed-value class so the theme tints the dash.");
+                Assert.IsTrue(caption.parent.ClassListContains(BaseField<object>.inputUssClassName),
+                    "Unity's mixed-value rule matches only a direct child of the input, so the caption's parent must carry its class.");
             }
             finally
             {
