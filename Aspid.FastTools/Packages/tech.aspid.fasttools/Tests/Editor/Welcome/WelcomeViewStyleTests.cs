@@ -20,6 +20,7 @@ namespace Aspid.FastTools.Editors.Tests
         private const string WindowStyleSheet = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
         private const string HeroClass = "aspid-fasttools-welcome__hero";
+        private const string HeroLinkClass = "aspid-fasttools-welcome__hero-link";
         private const string ToastClass = "aspid-fasttools-welcome__toast";
         private const string ToastVisibleClass = "aspid-fasttools-welcome__toast--visible";
         private const string CanvasClass = "aspid-fasttools-serialize-reference-window__background";
@@ -112,6 +113,18 @@ namespace Aspid.FastTools.Editors.Tests
         }
 
         [UnityTest]
+        public IEnumerator HeroLink_LightSkin_StaysReadable()
+        {
+            UseSkin(light: true);
+            var link = AddHeroLink();
+            var canvas = AddCanvas();
+            yield return null;
+
+            // The link is 13 px, so it needs the AA minimum for small text.
+            Assert.GreaterOrEqual(Contrast(link.resolvedStyle.color, canvas.resolvedStyle.backgroundColor), 4.5f, "The hero link must pass AA contrast on the light canvas.");
+        }
+
+        [UnityTest]
         public IEnumerator Toast_LightSkin_StaysReadable()
         {
             UseSkin(light: true);
@@ -156,6 +169,13 @@ namespace Aspid.FastTools.Editors.Tests
             var title = new AspidAnimatedTitle("Welcome");
             _panel.Root.Add(new VisualElement().AddClass(HeroClass).AddChild(title));
             return title;
+        }
+
+        private Label AddHeroLink()
+        {
+            var link = new Label("Documentation").AddClass(HeroLinkClass);
+            _panel.Root.Add(new VisualElement().AddClass(HeroClass).AddChild(link));
+            return link;
         }
 
         private Label AddToast()

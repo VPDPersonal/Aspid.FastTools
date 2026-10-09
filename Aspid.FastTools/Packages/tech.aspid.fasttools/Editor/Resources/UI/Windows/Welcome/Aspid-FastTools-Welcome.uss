@@ -70,6 +70,15 @@ AspidAnimatedTitle {
     color: var(--aspid-colors-status-success-text-light);
 }
 
+/* The link tone of the dark palette is about 3.5:1 on the light canvas; the light skin uses the next darker tones. */
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero-link {
+    color: var(--aspid-colors-status-success-text-light);
+}
+
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero-link:hover {
+    color: var(--aspid-colors-status-success-text-lightness);
+}
+
 .aspid-fasttools-welcome__hero-link-separator {
     margin: 0 6px;
     padding: 0;
