@@ -39,6 +39,7 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 |---|---|
 | Several objects selected | Select one: until then **Missing type** is not shown |
 | Unsaved changes in the scene or Prefab Mode | Save: until then the field shows `<None>` without **Missing type** |
+| Unsaved list edits that leave it unclear which element a slot holds, such as deleting one of two missing elements side by side | Save: until then the slot shows `<None>` without **Missing type** |
 | Prefab instance, class stored in the source prefab | Repair the source prefab; the tooltip names it |
 | Prefab instance, class set through an override | Choose a new class on the instance or revert the override |
 
