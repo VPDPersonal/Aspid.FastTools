@@ -19,6 +19,7 @@
 | <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (строка)</code> |
 | <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (строка)</code> |
 | <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (строка)</code> |
+| Явная реализация <code lang="csharp">void ISimulation.Step()</code> | <code lang="string">FlockSimulation.Step (строка)</code> |
 
 Номер строки меняется при перемещении вызова в коде.
 
@@ -61,13 +62,17 @@ public void Step()
 
 ## В Profiler
 
-Маркеры создаются один раз. После инициализации повторные замеры не выделяют память.
+Маркеры создаются один раз. После инициализации повторные замеры не выделяют память. В сборке плеера без **Development Build** <code lang="csharp">this.Marker()</code> ничего не замеряет: символ `ENABLE_PROFILER` не определён.
 
 ![Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.](../../../../docs/Images/profiler-markers-hierarchy.svg)
 
+## Маркеры пакета
+
+Пакет ставит маркеры и на свои горячие пути, например на поиск в <code lang="class-name">EnumValues</code> или разрешение типа в <code lang="class-name">SerializableType</code>. Чтобы вырезать эти маркеры, добавьте символ `ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED` в **Scripting Define Symbols**. Маркеры от ваших вызовов <code lang="csharp">this.Marker()</code> остаются.
+
 ## Ограничения
 
-- Вызывайте <code lang="csharp">this.Marker()</code> внутри собственного типа. Вызовы на объекте другого типа, в статическом классе или вложенном <code lang="csharp">private</code>/<code lang="csharp">protected</code> типе ненадёжны: замер может отсутствовать или попасть в чужой маркер.
+- Вызывайте <code lang="csharp">this.Marker()</code> внутри собственного типа. Вызовы на объекте другого типа, в статическом классе или вложенном <code lang="csharp">private</code>/<code lang="csharp">protected</code> типе ненадёжны: замер может отсутствовать или попасть в чужой маркер. <code lang="csharp">Marker()</code> объявлен без пространства имён: <code lang="csharp">using</code> не нужен, а автодополнение предлагает его у любого выражения, даже если вызов не получит маркер.
 - Используйте <code lang="csharp">using</code>. Отдельный вызов <code lang="csharp">this.Marker();</code> начинает замер и не завершает его.
 - Закрывайте <code lang="csharp">using</code> до <code lang="csharp">yield return</code> или <code lang="csharp">await</code>. Корутина или <code lang="csharp">async</code>-метод продолжают работу в другом кадре или потоке, поэтому незакрытый замер оставляет в Profiler несбалансированные сэмплы.
 

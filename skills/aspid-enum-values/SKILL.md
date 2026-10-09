@@ -29,8 +29,9 @@ public sealed class DamageConfig : ScriptableObject
 - Rows are **not** created automatically. After adding a field, tell the user to set Default Value and add rows by
   hand or via right-click on the table header -> **Populate Missing Enum Members**. For enums without `[Flags]`,
   only members whose value differs from the default need a row. A flags row set to Default Value can override a partial match.
-- `foreach (var (key, value) in table)` yields rows in list order (struct enumerator, no allocation), never the
-  default, and skips rows whose key no longer resolves. `Count` is the number of rows it yields.
+- `foreach (var (key, value) in table)` yields rows in list order (struct enumerator, no allocation; boxed
+  through `IEnumerable<T>` or LINQ), never the default, and skips rows whose key no longer resolves. `Count` is the
+  number of rows it yields.
 - `table.TryGetValue(key, out var value)` returns `true` when a row matches. `value` is the row's value, or Default
   Value on a miss, so it tells a missing row from a row equal to Default Value. `EnumValues<TValue>` also has
   `TryGetValue<TEnum>`.

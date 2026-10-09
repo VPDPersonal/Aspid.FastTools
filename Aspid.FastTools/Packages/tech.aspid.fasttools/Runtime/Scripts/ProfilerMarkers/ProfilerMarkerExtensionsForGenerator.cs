@@ -17,6 +17,8 @@ public static class ProfilerMarkerExtensionsForGenerator
     /// This overload runs only for calls the generator cannot support; analyzer <c>AFT0010</c> reports them.
     /// It takes the same parameters as the generated overload, so the generated one also wins for a type
     /// in the global namespace; that overload takes a struct by <see langword="in"/>, so the call does not copy it.
+    /// The class has no namespace, so the method needs no <c>using</c> and code completion offers it after any expression;
+    /// only a call on an instance of the calling type gets a marker.
     /// </remarks>
     /// <typeparam name="T">The type of <paramref name="instance"/>; generic, so a struct is not boxed.</typeparam>
     /// <param name="instance">The instance the scope is opened on; its value is never read.</param>
