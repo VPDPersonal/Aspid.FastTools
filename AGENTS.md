@@ -29,6 +29,9 @@ Agent Skills for projects that consume the package in `skills/`.
   skills for working on this repo live in `.claude/skills/` and carry `metadata.internal: true` so that command does
   not offer them; `scripts/check-skills.mjs` (CI) checks both. A skill that describes public API is updated in the same PR
   as that API.
+- `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
+  environment. Allow there only commands that cannot run code or read the environment; put the rest in
+  `.claude/settings.local.json`.
 
 ## C# style beyond `.editorconfig`
 
