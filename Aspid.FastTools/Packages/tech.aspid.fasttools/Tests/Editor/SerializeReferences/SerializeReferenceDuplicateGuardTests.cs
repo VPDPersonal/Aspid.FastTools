@@ -7,16 +7,10 @@ using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    [System.Serializable]
-    internal sealed class DuplicateGuardLoadout
-    {
-        [SerializeReference] public List<ITestWeapon> weapons = new();
-    }
-
     internal sealed class DuplicateGuardTestObject : ScriptableObject
     {
         [SerializeReference] public List<ITestWeapon> weapons = new();
-        public List<DuplicateGuardLoadout> loadouts = new();
+        public List<ListAddTestLoadout> loadouts = new();
     }
 
     /// <summary>
