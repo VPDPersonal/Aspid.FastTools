@@ -142,6 +142,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void ComputeRewrites_SeveralEntries_GivesTheEditOfEachEntryInOrder_AndWritesNothing()
+        {
+            var before = File.ReadAllText(_path);
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, rid: 999999, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, storedType: default),
+            };
+
+            var edits = SerializeReferenceYamlEditor.ComputeRewrites(_path, entries, _pistol);
+
+            Assert.AreEqual(entries.Length, edits.Length, "The result must have one slot per entry.");
+            Assert.IsFalse(edits[1].IsValid, "A stale entry must give an invalid slot.");
+
+            foreach (var index in new[] { 0, 2 })
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryComputeRewrite(
+                    _path, entries[index].FileId, entries[index].Rid, _pistol, out var single));
+                Assert.AreEqual(single.LineNumber, edits[index].LineNumber);
+                Assert.AreEqual(single.OldLine, edits[index].OldLine);
+                Assert.AreEqual(single.NewLine, edits[index].NewLine);
+            }
+
+            Assert.AreEqual(before, File.ReadAllText(_path), "Computing the edits must not write the file.");
+
+            Assert.AreEqual(2, SerializeReferenceYamlEditor.RewriteTypes(_path, entries, _pistol));
+            var after = File.ReadAllLines(_path);
+            Assert.AreEqual(edits[0].NewLine, after[edits[0].LineNumber], "The batch preview must equal what the batch writes.");
+            Assert.AreEqual(edits[2].NewLine, after[edits[2].LineNumber], "The batch preview must equal what the batch writes.");
+        }
+
+        [Test]
+        public void ComputeRewrites_UnknownDocument_GivesOnlyInvalidSlots()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(fileId: 424242, YamlFixtures.GhostPistolRid, storedType: default),
+                new MissingReferenceEntry(fileId: 424242, YamlFixtures.ShotgunRid, storedType: default),
+            };
+
+            var edits = SerializeReferenceYamlEditor.ComputeRewrites(_path, entries, _pistol);
+
+            Assert.AreEqual(entries.Length, edits.Length);
+            Assert.IsFalse(edits.Any(edit => edit.IsValid), "An entry of a document the file does not have cannot be computed.");
+        }
+
+        [Test]
         public void TryRemoveEntry_RemovesOnlyTheTargetEntry()
         {
             var beforeLines = File.ReadAllLines(_path).Length;

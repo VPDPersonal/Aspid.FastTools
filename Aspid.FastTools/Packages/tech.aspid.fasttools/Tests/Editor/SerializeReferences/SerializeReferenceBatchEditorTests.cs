@@ -115,6 +115,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void FilterStillHolding_EntriesOfSeveralFilesInterleaved_KeepsTheirOrder()
+        {
+            Assert.AreEqual(4, SerializeReferenceBatchEditor.Rewrite(_locations, _storedType, progressTitle: "Test"));
+
+            // The first entry of the second probe is re-pointed to another type since the rewrite.
+            var repointed = _locations[2];
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(repointed.AssetPath, repointed.Entry.FileId, repointed.Entry.Rid, _otherType));
+
+            // The files alternate, so the per-file reads must put each verdict back at its entry.
+            var interleaved = new[] { _locations[0], _locations[2], _locations[1], _locations[3] };
+            var holding = SerializeReferenceBatchEditor.FilterStillHolding(interleaved, _storedType, out var diverged);
+
+            Assert.AreEqual(1, diverged);
+            CollectionAssert.AreEqual(
+                new[] { _locations[0], _locations[1], _locations[3] }.Select(Describe),
+                holding.Select(Describe));
+        }
+
+        [Test]
+        public void ComputeRewrites_EntriesOfSeveralFilesInterleaved_GivesEachEntryItsOwnEdit()
+        {
+            var interleaved = new[] { _locations[2], _locations[0], _locations[3], _locations[1] };
+
+            var edits = SerializeReferenceBatchEditor.ComputeRewrites(interleaved, _storedType);
+
+            Assert.AreEqual(interleaved.Length, edits.Length);
+            for (var i = 0; i < interleaved.Length; i++)
+            {
+                var entry = interleaved[i];
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, _storedType, out var single));
+                Assert.AreEqual(entry.AssetPath, edits[i].AssetPath, Describe(entry));
+                Assert.AreEqual(single.LineNumber, edits[i].LineNumber, Describe(entry));
+                Assert.AreEqual(single.NewLine, edits[i].NewLine, Describe(entry));
+            }
+        }
+
+        [Test]
         public void FilterWritable_AssetWithUnsavedChanges_HoldsBackEveryEntryOfIt()
         {
             var dirty = AssetDatabase.LoadAssetAtPath<UnsavedRepairTestObject>(FirstProbePath);

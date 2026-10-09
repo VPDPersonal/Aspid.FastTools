@@ -19,7 +19,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in source)
             {
-                if (IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) onDisk.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) onDisk.Add(entry);
                 else inMemory.Add(entry);
             }
         }
@@ -35,7 +35,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in source)
             {
-                if (IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) writable.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) writable.Add(entry);
                 else skipped++;
             }
 
@@ -48,19 +48,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static List<MissingReferenceLocation> FilterStillHolding(IReadOnlyList<MissingReferenceLocation> source,
             ManagedTypeName appliedType, out int diverged)
         {
+            var edits = ComputeRewrites(source, appliedType);
             var holding = new List<MissingReferenceLocation>(source.Count);
             diverged = 0;
 
-            foreach (var entry in source)
+            for (var i = 0; i < source.Count; i++)
             {
-                if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, appliedType, out var edit) &&
-                    edit.IsValid && string.Equals(edit.OldLine, edit.NewLine, StringComparison.Ordinal))
-                    holding.Add(entry);
+                if (edits[i].IsValid && string.Equals(edits[i].OldLine, edits[i].NewLine, StringComparison.Ordinal))
+                    holding.Add(source[i]);
                 else
                     diverged++;
             }
 
             return holding;
+        }
+
+        // The edit a rewrite to newType would make for each entry, in the order of entries, with one read per file.
+        // A slot whose IsValid is false is an entry that could not be computed.
+        public static RewriteEdit[] ComputeRewrites(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName newType)
+        {
+            var edits = new RewriteEdit[entries.Count];
+
+            var byFile = Enumerable.Range(0, entries.Count)
+                .GroupBy(index => entries[index].AssetPath, StringComparer.Ordinal);
+
+            foreach (var file in byFile)
+            {
+                var indices = file.ToArray();
+                var fileEdits = SerializeReferenceYamlEditor.ComputeRewrites(
+                    file.Key,
+                    indices.Select(index => entries[index].Entry).ToArray(),
+                    newType);
+
+                for (var i = 0; i < indices.Length; i++)
+                    edits[indices[i]] = fileEdits[i];
+            }
+
+            return edits;
         }
 
         public static int Rewrite(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName targetType, string progressTitle) =>
@@ -84,21 +108,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static int CountFiles(IEnumerable<MissingReferenceLocation> entries) =>
             entries.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
-
-        // The answer is the same for every entry of a file, and the unsaved-changes check loads every object of the
-        // asset, so it is asked once per path.
-        private static bool IsRewriteSafe(string assetPath, string prefabStagePath, Dictionary<string, bool> verdicts)
-        {
-            if (assetPath is null) return SerializeReferenceOpenCopyGuard.IsRewriteSafe(assetPath, prefabStagePath);
-
-            if (!verdicts.TryGetValue(assetPath, out var safe))
-            {
-                safe = SerializeReferenceOpenCopyGuard.IsRewriteSafe(assetPath, prefabStagePath);
-                verdicts.Add(assetPath, safe);
-            }
-
-            return safe;
-        }
 
         // Edits each file once: edit gets all the file's entries and returns how many it applied.
         private static int RunBatch(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle,

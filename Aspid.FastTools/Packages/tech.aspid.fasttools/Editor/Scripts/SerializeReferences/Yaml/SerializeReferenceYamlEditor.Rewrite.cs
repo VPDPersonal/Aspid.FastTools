@@ -26,21 +26,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
 
-                var lines = File.ReadAllLines(assetPath);
+                var lines = ReadAllLines(assetPath, out var original, out var encoding);
                 if (!LooksLikeUnityYaml(lines)) return 0;
 
+                var refIdsBlocks = new Dictionary<long, (int RefIdsStart, int End)>();
                 var applied = 0;
+
                 foreach (var entry in entries)
                 {
                     // Single scan shared with the diff preview: compute the edit, then apply exactly that line so the
                     // preview and the applied result can never diverge.
-                    if (!TryComputeRewrite(lines, assetPath, entry.FileId, entry.Rid, newType, out var edit)) continue;
+                    if (!TryComputeRewrite(lines, assetPath, entry.FileId, entry.Rid, newType, refIdsBlocks, out var edit)) continue;
 
                     lines[edit.LineNumber] = edit.NewLine;
                     applied++;
                 }
 
-                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines)) return 0;
+                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines, original, encoding)) return 0;
 
                 // Same-tick writes can leave the modification-time key unchanged, so bust the probe cache explicitly.
                 SerializeReferenceYamlProbeCache.ClearCache();
@@ -57,41 +59,62 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // edit verbatim, so the bulk-fix preview shows exactly what will be written.
         public static bool TryComputeRewrite(string assetPath, long fileId, long rid, ManagedTypeName newType, out RewriteEdit edit)
         {
-            edit = default;
+            edit = ComputeRewrites(assetPath, new[] { new MissingReferenceEntry(fileId, rid, storedType: default) }, newType)[0];
+            return edit.IsValid;
+        }
+
+        // Computes the edit of every entry with one read of the file. The result has one slot per entry, in the same
+        // order; a slot whose IsValid is false is an entry that could not be computed.
+        public static RewriteEdit[] ComputeRewrites(string assetPath, IReadOnlyList<MissingReferenceEntry> entries, ManagedTypeName newType)
+        {
+            var edits = new RewriteEdit[entries?.Count ?? 0];
+            if (edits.Length == 0) return edits;
 
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return edits;
 
                 var lines = File.ReadAllLines(assetPath);
-                return LooksLikeUnityYaml(lines) && TryComputeRewrite(lines, assetPath, fileId, rid, newType, out edit);
+                if (!LooksLikeUnityYaml(lines)) return edits;
+
+                var refIdsBlocks = new Dictionary<long, (int RefIdsStart, int End)>();
+                for (var i = 0; i < edits.Length; i++)
+                    TryComputeRewrite(lines, assetPath, entries[i].FileId, entries[i].Rid, newType, refIdsBlocks, out edits[i]);
+
+                return edits;
             }
             catch (Exception exception)
             {
                 Debug.LogError($"[TypeSelector] Failed to compute managed-reference rewrite in '{assetPath}': {exception}");
-                return false;
+                return new RewriteEdit[edits.Length];
             }
         }
 
+        // refIdsBlocks caches the RefIds block of each document for one batch. A type-line edit never adds, removes or
+        // moves a line, so the cached ranges stay valid while the batch rewrites lines.
         private static bool TryComputeRewrite(string[] lines, string assetPath, long fileId, long rid, ManagedTypeName newType,
-            out RewriteEdit edit)
+            Dictionary<long, (int RefIdsStart, int End)> refIdsBlocks, out RewriteEdit edit)
         {
             edit = default;
 
-            var (start, end) = FindDocumentRange(lines, fileId);
-            if (start < 0) return false;
+            if (!refIdsBlocks.TryGetValue(fileId, out var block))
+            {
+                var (start, end) = FindDocumentRange(lines, fileId);
 
-            // Field pointers ("_sidearms:\n  - rid: 1002") share the "- rid:" shape with RefIds entries, so confine
-            // the search to the RefIds block — the entries are the only ones with a following type:.
-            var refIdsStart = FindRefIdsStart(lines, start, end);
-            if (refIdsStart < 0) return false;
+                // Field pointers ("_sidearms:\n  - rid: 1002") share the "- rid:" shape with RefIds entries, so confine
+                // the search to the RefIds block — the entries are the only ones with a following type:.
+                block = (start < 0 ? -1 : FindRefIdsStart(lines, start, end), end);
+                refIdsBlocks.Add(fileId, block);
+            }
+
+            if (block.RefIdsStart < 0) return false;
 
             // Only the entry header counts: a nested "- rid: N" list element in an earlier entry's data block would
             // aim the rewrite at the type line of whichever entry follows it.
-            var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
+            var headerIndex = FindEntryHeader(lines, block.RefIdsStart, block.End, rid, out var entryIndent);
             if (headerIndex < 0) return false;
 
-            var typeLine = FindEntryTypeLine(lines, headerIndex, FindEntryEnd(lines, headerIndex, end, entryIndent));
+            var typeLine = FindEntryTypeLine(lines, headerIndex, FindEntryEnd(lines, headerIndex, block.End, entryIndent));
             if (typeLine < 0) return false;
 
             var match = new Regex(@"^(?<indent>\s*type:\s*)\{.*\}\s*$").Match(lines[typeLine]);
@@ -162,7 +185,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
 
-                var lines = File.ReadAllLines(assetPath);
+                var lines = ReadAllLines(assetPath, out var original, out var encoding);
                 if (!LooksLikeUnityYaml(lines)) return 0;
 
                 var applied = 0;
@@ -174,7 +197,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     applied++;
                 }
 
-                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines)) return 0;
+                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines, original, encoding)) return 0;
 
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return applied;
@@ -211,6 +234,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             for (var i = start; i < end; i++)
             {
+                // The entry header and every pointer shape below contain "rid:", so other lines skip both regexes.
+                if (lines[i].IndexOf("rid:", StringComparison.Ordinal) < 0) continue;
+
                 // This rid's own RefIds entry header (a "- rid: N" under RefIds at the entry indent) is removed
                 // below, not nulled — skip it so it isn't rewritten to the null id.
                 if (headerIndex < 0 && i > refIdsStart
