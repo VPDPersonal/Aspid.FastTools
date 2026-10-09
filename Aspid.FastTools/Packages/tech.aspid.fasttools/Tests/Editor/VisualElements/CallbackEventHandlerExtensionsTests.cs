@@ -121,6 +121,85 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.AreEqual(PropagationPhase.BubbleUp, bubble);
         }
 
+        [UnityTest]
+        public IEnumerator UnregisterCallbackSelf_UseTrickleDown_RemovesTrickleDownCallback()
+        {
+            var calls = 0;
+            var parent = new VisualElement();
+            var child = new VisualElement();
+            parent.Add(child);
+            _panel.Root.Add(parent);
+            yield return null;
+
+            EventCallback<ClickEvent> callback = _ => calls++;
+            parent
+                .RegisterCallbackSelf(callback, TrickleDown.TrickleDown)
+                .UnregisterCallbackSelf(callback, TrickleDown.TrickleDown);
+            Send<ClickEvent>(child);
+
+            Assert.AreEqual(0, calls);
+        }
+
+        [UnityTest]
+        public IEnumerator UnregisterCallbackSelf_UserArgs_UseTrickleDown_RemovesTrickleDownCallback()
+        {
+            var calls = 0;
+            var parent = new VisualElement();
+            var child = new VisualElement();
+            parent.Add(child);
+            _panel.Root.Add(parent);
+            yield return null;
+
+            EventCallback<ClickEvent, int> callback = (_, _) => calls++;
+            parent
+                .RegisterCallbackSelf(callback, 7, TrickleDown.TrickleDown)
+                .UnregisterCallbackSelf(callback, TrickleDown.TrickleDown);
+            Send<ClickEvent>(child);
+
+            Assert.AreEqual(0, calls);
+        }
+
+        [UnityTest]
+        public IEnumerator RegisterCallbackOnceSelf_InvokesCallbackOnce()
+        {
+            var calls = 0;
+            var button = new Button();
+            _panel.Root.Add(button);
+            yield return null;
+
+            var result = button
+                .RegisterCallbackOnceSelf((MouseEnterEvent _) => calls++)
+                .SetTooltip("Apply");
+            Send<MouseEnterEvent>(button);
+            Send<MouseEnterEvent>(button);
+
+            Assert.AreSame(button, result);
+            Assert.AreEqual(1, calls);
+        }
+
+        [UnityTest]
+        public IEnumerator RegisterCallbackOnceSelf_UserArgs_PassesArgsOnce()
+        {
+            var calls = 0;
+            var received = 0;
+            var button = new Button();
+            _panel.Root.Add(button);
+            yield return null;
+
+            EventCallback<MouseEnterEvent, int> callback = (_, args) =>
+            {
+                calls++;
+                received = args;
+            };
+            var result = button.RegisterCallbackOnceSelf(callback, 7);
+            Send<MouseEnterEvent>(button);
+            Send<MouseEnterEvent>(button);
+
+            Assert.AreSame(button, result);
+            Assert.AreEqual(1, calls);
+            Assert.AreEqual(7, received);
+        }
+
         private static void Send<TEvent>(VisualElement target)
             where TEvent : EventBase<TEvent>, new()
         {

@@ -47,7 +47,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf`, `RegisterCallbackSelf`, `UnregisterCallbackSelf` |
+| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf`, `RegisterCallbackSelf`, `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf` |
 
 | Unity API | FastTools |
 |---|---|
@@ -66,7 +66,7 @@ rootVisualElement.AddChild(new VisualElement()
 | `if (show) parent.Add(help);` | `parent.AddChildIf(show, help)` |
 | `field.SetValueWithoutNotify(v);` | `field.SetValue(v, notify: false)` |
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
-| `el.RegisterCallback<ClickEvent>(OnClick);` | `el.RegisterCallbackSelf<Button, ClickEvent>(OnClick)` (also `UnregisterCallbackSelf`) |
+| `el.RegisterCallback<ClickEvent>(OnClick);` | `el.RegisterCallbackSelf<Button, ClickEvent>(OnClick)` (also `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf`) |
 | `enumField.Init(v);` | `enumField.Initialize(v)` |
 | `el.AddManipulator(new Clickable(cb));` | `el.AddClickable(cb)` (also `AddContextualMenuManipulator`) |
 
@@ -80,9 +80,10 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   `void` and end the chain; use the replacements above.
 - On a `Label`, `Button` or other `TextElement`, set the text with `SetTextSelf`. From Unity 6000.6, `SetText(string)`
   calls Unity's `TextElement.SetText`, which returns `void`. `Foldout`, `HelpBox` and `Toggle` keep `SetText`.
-- From Unity 6000.6, `SetTextSelf` also takes an `int`, a `float` (with a format), a `ReadOnlySpan<char>`, a `StringBuilder`
-  or a `char[]` slice and calls Unity's allocation-free `TextElement.SetText`. Use them for text that changes every frame
-  instead of `SetTextSelf(value.ToString())`. Attach the element to a panel first, otherwise Unity may allocate the string.
+- From Unity 6000.6, `SetTextSelf` also takes an `int`, a `long`, a `ulong`, a `float` (with a format), a `ReadOnlySpan<char>`,
+  a `StringBuilder` or a `char[]` slice and calls Unity's allocation-free `TextElement.SetText`. Use them for text that
+  changes every frame instead of `SetTextSelf(value.ToString())`. An element that is not attached to a panel yet gets the
+  string instead, without a warning, so attach it first to avoid the allocation.
 - `EnableClasses` and `EnableStyleSheets` take the flag first: `EnableClasses(on, "a", "b")`, but `EnableClass("a", on)`.
   Name both flags of `EnableClassIf(condition: x, "a", enable: y)`: swapped bools compile.
 - These do not exist: `ToggleInClass`, `EnableInClass`, `...FromResource` (singular),
