@@ -132,7 +132,7 @@ foreach (var entry in _multipliers)
     total += entry.Value;
 ```
 
-**Default Value** and rows with unresolved keys are not yielded. After the first access initializes the keys, a direct <code lang="csharp">foreach</code> over the table does not allocate.
+**Default Value** and rows with unresolved keys are not yielded. After the first access initializes the keys, a direct <code lang="csharp">foreach</code> over the table does not allocate. Through <code lang="class-name">IEnumerable&lt;T&gt;</code>, for example in LINQ, the enumerator is boxed and allocates.
 
 ## When the enum changes
 
