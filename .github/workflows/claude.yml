@@ -57,6 +57,11 @@ jobs:
             echo 'CLAUDE_RULES_EOF'
           } >> "$GITHUB_OUTPUT"
 
+      - name: Prepare bubblewrap
+        run: |
+          sudo apt-get install -y --no-install-recommends bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Review PR
         uses: anthropics/claude-code-action@2dca132ff0e0c4094ce6048b422c6915a071210b # v1.0.247
         env:
@@ -112,6 +117,11 @@ jobs:
             cat .github/claude-review.md
             echo 'CLAUDE_RULES_EOF'
           } >> "$GITHUB_OUTPUT"
+
+      - name: Prepare bubblewrap
+        run: |
+          sudo apt-get install -y --no-install-recommends bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Run Claude
         uses: anthropics/claude-code-action@2dca132ff0e0c4094ce6048b422c6915a071210b # v1.0.247
