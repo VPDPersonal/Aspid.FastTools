@@ -323,8 +323,9 @@ Both run `npm run start` / `start:ru`, so `prestart` runs `sync-changelog` first
 which a fresh worktree's `docusaurus start` fails. The changelogs reach the site as copies: after editing them run
 `npm --prefix Website run sync-changelog` for a running dev server to see the change.
 
-`onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
-(`onBrokenAnchors` only warns — check the log for `#anchor` typos).
+`onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose.
+`onBrokenAnchors` throws when `CI` is set and only warns on a local build: check the log for `#anchor` typos, or run
+`CI=true npm run build`.
 
 ## Generated content
 
