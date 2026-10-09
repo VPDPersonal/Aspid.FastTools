@@ -152,6 +152,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EditorTools sample: the Ability Catalog window follows assets created or deleted in the Project window, and **Create** selects the new asset even while a search is active.
 - EnumValues and ProfilerMarkers samples no longer break compilation of a project without the built-in Physics module; their scripts are skipped there, and the sample descriptions say they need it.
 - Samples no longer import ten unused screenshots (about 1 MB) as textures.
+- The package's internal editor elements (`AspidBox`, `AspidLabel` and ten more) no longer show in the UI Builder Library of your project: they are made for the FastTools windows and look unstyled in your UXML.
+- The tab icon of the FastTools window is a 64×64 texture with mipmaps (7 KB) instead of a 1022×1011 one without them (583 KB): the package is smaller and the icon edges stay smooth at 16 pt.
 - `Persistent()` keeps the `context` of the source `SerializedObject`, so an `ExposedReference` read or written through the copy resolves in the same table (for example a `PlayableDirector`) instead of the default value in the asset.
 - *Link to Existing* in the `[SerializeReference]` context menu now offers only instances the field's type picker accepts under its `[TypeSelector]` base types, including member-referenced ones; it used to offer any instance assignable to the declared field type.
 - *Find Usages* in the `[SerializeReference]` context menu now lists usages of the exact type in the field (namespace and assembly included); it used to match every stored class name containing its name, such as `PistolMk2` or a `Pistol` from another namespace. A typed `sr:` query still matches class names by substring.

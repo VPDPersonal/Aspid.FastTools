@@ -7,7 +7,7 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    [UxmlElement(libraryPath = "Aspid/FastTools")]
+    [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
     internal sealed partial class AspidWindowFooter : VisualElement
     {
         private const string PackageName = "tech.aspid.fasttools";
