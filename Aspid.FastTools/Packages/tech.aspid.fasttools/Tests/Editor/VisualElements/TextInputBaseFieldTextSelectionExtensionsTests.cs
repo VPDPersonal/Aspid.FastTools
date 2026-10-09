@@ -88,6 +88,21 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.IsFalse(field.doubleClickSelectsWord);
         }
 
+#if UNITY_6000_4_OR_NEWER
+        [Test]
+        public void GuidField_ChainKeepsFieldTypeAndSetsSelectionProperties()
+        {
+            GUIDField field = new GUIDField()
+                .SetSelectAllOnFocus(false)
+                .SetDoubleClickSelectsWord(false)
+                .SetCursorIndex(0);
+
+            Assert.IsFalse(field.selectAllOnFocus);
+            Assert.IsFalse(field.doubleClickSelectsWord);
+            Assert.AreEqual(0, field.cursorIndex);
+        }
+#endif
+
         [Test]
         public void TextElement_StillResolvesITextSelectionOverload()
         {

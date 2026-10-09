@@ -53,5 +53,23 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.AreEqual(-10, slider.lowValue);
             Assert.AreEqual(10, slider.highValue);
         }
+
+        [Test]
+        public void Setters_ReturnMinMaxSlider()
+        {
+            var source = new MinMaxSlider();
+
+            MinMaxSlider slider = source
+                .SetLowLimit(-5f)
+                .SetHighLimit(5f)
+                .SetMinValue(-2f)
+                .SetMaxValue(3f);
+
+            Assert.AreSame(source, slider);
+            Assert.AreEqual(-5f, slider.lowLimit);
+            Assert.AreEqual(5f, slider.highLimit);
+            Assert.AreEqual(-2f, slider.minValue);
+            Assert.AreEqual(3f, slider.maxValue);
+        }
     }
 }

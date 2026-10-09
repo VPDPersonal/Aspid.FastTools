@@ -47,7 +47,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf` |
+| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf`, `SetVerticalScrollerVisibilitySelf` |
 
 | Unity API | FastTools |
 |---|---|
@@ -66,6 +66,10 @@ rootVisualElement.AddChild(new VisualElement()
 | `field.SetValueWithoutNotify(v);` | `field.SetValue(v, notify: false)` |
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
 | `enumField.Init(v);` | `enumField.Initialize(v)` |
+| `dropdown.choices = list; dropdown.index = 1;` | `dropdown.SetChoices(list).SetIndex(1)` (`SetChoices` also on `PopupField<T>` and `RadioButtonGroup`) |
+| `minMax.lowLimit = 0; minMax.highLimit = 100;` | `minMax.SetLowLimit(0).SetHighLimit(100)` (also `SetMinValue`, `SetMaxValue`) |
+| `textField.multiline = true;` | `textField.SetMultiline(true)` (also `SetVerticalScrollerVisibilitySelf`) |
+| `floatField.formatString = "F2";` | `floatField.SetFormatString("F2")` |
 | `el.AddManipulator(new Clickable(cb));` | `el.AddClickable(cb)` (also `AddContextualMenuManipulator`) |
 
 Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])`, `UnbindFrom()`,
@@ -81,15 +85,20 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
 - `EnableClasses` and `EnableStyleSheets` take the flag first: `EnableClasses(on, "a", "b")`, but `EnableClass("a", on)`.
   Name both flags of `EnableClassIf(condition: x, "a", enable: y)`: swapped bools compile.
 - These do not exist: `ToggleInClass`, `EnableInClass`, `...FromResource` (singular),
-  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use Unity's `RegisterCallback`).
+  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use Unity's `RegisterCallback`),
+  `SetVerticalScrollerVisibility` (Unity's obsolete instance method of that name hides it; use `...Self`).
 - Values are `Style*` types: sizes `StyleLength` (`12`, `Length.Percent(50)`, `StyleKeyword.Auto`),
   `SetBackgroundImage` only `StyleBackground`, transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
   Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
 - `...If` variants evaluate their arguments even when the condition is false.
+- Unity calls the callback of `SetFormatSelectedValueCallback` at once on the current value, which is `null` for a
+  `DropdownField` without a selection: call `SetChoices` and `SetIndex` first, or null-check.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
-  setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
+  setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`. Likewise `PopupField<T>`: `SetChoices` infers `T`, but
+  `SetIndex` and the two `SetFormat...Callback` setters need `popup.SetIndex<PopupField<int>, int>(1)`; `DropdownField`
+  has overloads without type arguments.
 - The package supports Unity 6000.0.53f1. Wrap these in `#if UNITY_6000_x_OR_NEWER` when the project must support older
   versions: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
-  `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values
-  (6000.4).
+  `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values and
+  `GUIDField` setters (6000.4).

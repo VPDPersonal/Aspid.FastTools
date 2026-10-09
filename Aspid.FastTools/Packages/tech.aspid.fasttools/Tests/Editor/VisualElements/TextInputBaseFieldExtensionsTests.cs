@@ -74,6 +74,25 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.IsTrue(field.isReadOnly);
         }
 
+#if UNITY_6000_4_OR_NEWER
+        [Test]
+        public void GuidField_ChainKeepsFieldTypeAndSetsFieldProperties()
+        {
+            GUIDField field = new GUIDField()
+                .SetLabel("Id")
+                .SetMaxLength(32)
+                .SetDelayed(true)
+                .SetReadOnly(true)
+                .SetPlaceholder("Guid");
+
+            Assert.AreEqual("Id", field.label);
+            Assert.AreEqual(32, field.maxLength);
+            Assert.IsTrue(field.isDelayed);
+            Assert.IsTrue(field.isReadOnly);
+            Assert.AreEqual("Guid", field.textEdition.placeholder);
+        }
+#endif
+
         [Test]
         public void TextElement_StillResolvesITextEditionOverload()
         {
@@ -88,6 +107,44 @@ namespace Aspid.FastTools.UIElements.Tests
             var field = new TextField { value = "abcdef" }.SetMaxLength(3);
 
             Assert.AreEqual("abc", field.text);
+        }
+
+        [Test]
+        public void TextField_MultilineSettersKeepFieldType()
+        {
+            TextField field = new TextField()
+                .SetMultiline(true)
+                .SetVerticalScrollerVisibilitySelf(ScrollerVisibility.AlwaysVisible);
+
+            Assert.IsTrue(field.multiline);
+            Assert.AreEqual(ScrollerVisibility.AlwaysVisible, field.verticalScrollerVisibility);
+        }
+
+        [Test]
+        public void NumericFields_SetFormatStringResolvesTheirValueTypeOverload()
+        {
+            Assert.AreEqual("0000", new IntegerField().SetFormatString("0000").formatString);
+            Assert.AreEqual("0000", new LongField().SetFormatString("0000").formatString);
+            Assert.AreEqual("0000", new FloatField().SetFormatString("0000").formatString);
+            Assert.AreEqual("0000", new DoubleField().SetFormatString("0000").formatString);
+            Assert.AreEqual("0000", new UnsignedIntegerField().SetFormatString("0000").formatString);
+            Assert.AreEqual("0000", new UnsignedLongField().SetFormatString("0000").formatString);
+        }
+
+        [Test]
+        public void SetFormatString_FormatsDisplayedValue()
+        {
+            var field = new IntegerField { value = 7 }.SetFormatString("0000");
+
+            Assert.AreEqual("0007", field.text);
+        }
+
+        [Test]
+        public void CustomValueType_SetFormatStringUsesExplicitTypeArguments()
+        {
+            var field = new ShortField().SetFormatString<ShortField, short>("0000");
+
+            Assert.AreEqual("0000", field.formatString);
         }
     }
 }
