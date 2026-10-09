@@ -39,11 +39,11 @@ jobs:
           - name: YAML engine
             path: Aspid.FastTools.YamlTests
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
-      - uses: actions/setup-dotnet@v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
           dotnet-version: 6.0.x
@@ -136,7 +136,7 @@ jobs:
             # it passed every run with a fresh Library. Check again when `latest` moves.
             library-cache: false
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Create the test project
         id: project
@@ -148,14 +148,14 @@ jobs:
           [ -n "$version" ] || { echo "::error::make-unity-test-project.sh printed no Unity version"; exit 1; }
           echo "unity=$version" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v6
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         if: matrix.library-cache != false
         with:
           path: ci-unity-project/Library
           key: unity-library-${{ steps.project.outputs.unity }}-${{ hashFiles('Aspid.FastTools/Packages/tech.aspid.fasttools/**') }}
           restore-keys: unity-library-${{ steps.project.outputs.unity }}-
 
-      - uses: game-ci/unity-test-runner@v4
+      - uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
         env:
           # The action asks the GitHub API for the latest game-ci CLI release; without a token, the shared runner IP
           # hits the anonymous rate limit (403).
@@ -170,7 +170,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ steps.project.outputs.unity }})
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: unity-test-results-${{ steps.project.outputs.unity }}

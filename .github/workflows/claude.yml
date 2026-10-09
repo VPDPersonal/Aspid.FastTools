@@ -39,7 +39,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
@@ -53,7 +53,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Review PR
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@2dca132ff0e0c4094ce6048b422c6915a071210b # v1.0.247
         env:
           # The action reads this variable and appends it to the system prompt.
           APPEND_SYSTEM_PROMPT: ${{ steps.rules.outputs.text }}
@@ -87,7 +87,7 @@ jobs:
       actions: read # lets Claude read CI results on PRs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
@@ -101,7 +101,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Run Claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@2dca132ff0e0c4094ce6048b422c6915a071210b # v1.0.247
         env:
           # The action reads this variable and appends it to the system prompt.
           APPEND_SYSTEM_PROMPT: ${{ steps.rules.outputs.text }}
