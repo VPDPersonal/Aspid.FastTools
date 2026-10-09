@@ -452,7 +452,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (SerializeReferenceHelpers.NoticesApply(property) &&
                 SerializeReferenceHelpers.HasSharedReference(property))
                 menu.AddItem(new GUIContent("Make Unique Reference"), false,
-                    () => detached.Use(SerializeReferenceHelpers.MakeReferenceUnique));
+                    () => detached.Use(SerializeReferenceHelpers.MakeReferenceUniqueOnCopy));
 
             var usagesType = SerializeReferenceHelpers.GetCurrentType(property);
             if (usagesType != null)

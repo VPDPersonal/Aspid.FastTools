@@ -35,23 +35,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (property is null || type is null) return;
 
-            var persistent = property.Persistent();
-            if (persistent is null) return;
-
-            using var serializedObject = persistent.serializedObject;
-
-            var previous = persistent.managedReferenceValue;
-
-            if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
+            new DetachedProperty(property).Use(persistent =>
             {
-                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(persistent,
-                    target => SerializeReferenceHelpers.CreateInstancePreservingData(type, target));
-            }
-            else
-            {
-                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-                SerializeReferenceHelpers.InvalidateReferenceMemos();
-            }
+                var previous = persistent.managedReferenceValue;
+
+                if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
+                {
+                    SerializeReferenceHelpers.ApplyManagedReferencePerTarget(persistent,
+                        target => SerializeReferenceHelpers.CreateInstancePreservingData(type, target));
+                }
+                else
+                {
+                    persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+                    SerializeReferenceHelpers.InvalidateReferenceMemos();
+                }
+            });
         }
     }
 }

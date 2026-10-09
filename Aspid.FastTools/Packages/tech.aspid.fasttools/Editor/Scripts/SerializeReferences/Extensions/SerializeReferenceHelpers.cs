@@ -1586,13 +1586,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Undo.undoRedoPerformed += InvalidateReferenceMemos;
         }
 
-        public static void MakeReferenceUnique(SerializedProperty property)
+        public static void MakeReferenceUnique(SerializedProperty property) =>
+            new DetachedProperty(property).Use(MakeReferenceUniqueOnCopy);
+
+        // For a caller that already owns a copy of the property, as DetachedProperty.Use provides.
+        public static void MakeReferenceUniqueOnCopy(SerializedProperty persistent)
         {
-            var persistent = property.Persistent();
-            if (persistent is null) return;
-
-            using var serializedObject = persistent.serializedObject;
-
             var current = persistent.managedReferenceValue;
             if (current is null) return;
 

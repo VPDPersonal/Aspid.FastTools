@@ -10,8 +10,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
     /// Covers the copies of <see cref="SerializedObject"/> the drawers open for menu, picker and drop callbacks:
-    /// <see cref="DetachedProperty"/> disposes its copy, and <see cref="SerializeReferenceHelpers.MakeReferenceUnique"/>
-    /// and <see cref="SerializeReferenceDropHandler.Assign"/> skip a path that no longer exists.
+    /// <see cref="DetachedProperty"/> disposes its copy and skips a destroyed target, and
+    /// <see cref="SerializeReferenceHelpers.MakeReferenceUnique"/> and <see cref="SerializeReferenceDropHandler.Assign"/>
+    /// skip a path that no longer exists.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceDetachedCopyTests
@@ -99,6 +100,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var called = false;
             detached.Use(_ => called = true);
 
+            Assert.IsFalse(called);
+        }
+
+        [Test]
+        public void Use_SkipsTheActionWhenATargetIsDestroyed()
+        {
+            var other = ScriptableObject.CreateInstance<SharedAliasTestObject>();
+            DetachedProperty detached;
+
+            using (var source = new SerializedObject(other))
+                detached = new DetachedProperty(source.FindProperty("primary"));
+
+            Object.DestroyImmediate(other);
+
+            var called = false;
+            Assert.DoesNotThrow(() => detached.Use(_ => called = true));
             Assert.IsFalse(called);
         }
 

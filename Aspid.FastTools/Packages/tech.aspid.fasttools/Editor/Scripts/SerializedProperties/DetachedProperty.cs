@@ -25,10 +25,15 @@ namespace Aspid.FastTools.Editors
             Path = property.propertyPath;
         }
 
-        // The copy is disposed when the action returns, so the action must not keep it. A path that no longer
-        // exists on the targets skips the action.
+        // The copy is disposed when the action returns, so the action must not keep it. A target destroyed since
+        // the callback was set up, or a path that no longer exists on the targets, skips the action.
         public void Use(Action<SerializedProperty> action)
         {
+            foreach (var target in Targets)
+            {
+                if (target == null) return;
+            }
+
             using var serializedObject = new SerializedObject(Targets, _context);
 
             var property = serializedObject.FindProperty(Path);
