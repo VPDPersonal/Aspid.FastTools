@@ -324,9 +324,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // and a list whose "+" appends elements nothing can fill. Use this package's own header instead.
                 if (SerializeReferenceNesting.DrawsOwnHeader(child, depth))
                 {
-                    var nestedHeight = ChildHeight(child, depth);
-                    var nestedRect = new Rect(x, y, width, nestedHeight);
-                    var content = new GUIContent(child.displayName);
+                    // Drawing the child here skips Unity's decorator drawers, so [Header] and [Space] are drawn above it.
+                    var decorators = SerializeReferenceDecorators.For(child);
+                    var decoratorsHeight = GetDecoratorsHeight(decorators);
+                    DrawDecorators(new Rect(x, y, width, decoratorsHeight), decorators);
+
+                    var nestedHeight = NestedHeight(child, depth);
+                    var nestedRect = new Rect(x, y + decoratorsHeight, width, nestedHeight);
+                    var content = new GUIContent(child.displayName, decorators.Tooltip);
 
                     if (child.isArray)
                     {
@@ -338,7 +343,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         Draw(nestedRect, content, child, depth + 1, Array.Empty<Type>());
                     }
 
-                    y += nestedHeight + spacing;
+                    y += decoratorsHeight + nestedHeight + spacing;
                     continue;
                 }
 
@@ -370,10 +375,61 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!SerializeReferenceNesting.DrawsOwnHeader(child, depth))
                 return EditorGUI.GetPropertyHeight(child, includeChildren: true);
 
-            return child.isArray
+            return GetDecoratorsHeight(SerializeReferenceDecorators.For(child)) + NestedHeight(child, depth);
+        }
+
+        private static float NestedHeight(SerializedProperty child, int depth) =>
+            child.isArray
                 ? SerializeReferenceIMGUIList.GetHeight(child, new GUIContent(child.displayName),
                     SerializeReferenceHelpers.GetArrayElementType(child), Array.Empty<Type>(), depth + 1)
                 : GetHeight(child, depth + 1);
+
+        private static float GetDecoratorsHeight(SerializeReferenceDecorators decorators)
+        {
+            var height = 0f;
+
+            foreach (var decorator in decorators.Items)
+                height += GetDecoratorHeight(decorator);
+
+            return height;
+        }
+
+        private static float GetDecoratorHeight(PropertyAttribute decorator)
+        {
+            if (decorator is SpaceAttribute space) return space.height;
+            if (decorator is not HeaderAttribute header) return 0f;
+
+            // Same as Unity's HeaderDrawer: one and a half lines, plus the height of each further line of text.
+            var lines = 1;
+            if (header.header is not null)
+            {
+                foreach (var character in header.header)
+                {
+                    if (character == '\n') lines++;
+                }
+            }
+
+            _measureContent.text = header.header;
+            var lineHeight = EditorStyles.boldLabel.CalcHeight(_measureContent, width: 1f) / lines;
+            return EditorGUIUtility.singleLineHeight * 1.5f + lineHeight * (lines - 1);
+        }
+
+        private static void DrawDecorators(Rect position, SerializeReferenceDecorators decorators)
+        {
+            foreach (var decorator in decorators.Items)
+            {
+                position.height = GetDecoratorHeight(decorator);
+
+                if (decorator is HeaderAttribute header)
+                {
+                    var labelRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight * 0.5f,
+                        position.width, position.height - EditorGUIUtility.singleLineHeight * 0.5f);
+
+                    GUI.Label(EditorGUI.IndentedRect(labelRect), header.header, EditorStyles.boldLabel);
+                }
+
+                position.y += position.height;
+            }
         }
 
         private static void ShowSelector(SerializedProperty property, Type fieldType, Type[] baseTypes, Type currentType, Rect dropdownRect)
