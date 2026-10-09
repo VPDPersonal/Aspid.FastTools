@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -17,6 +16,10 @@ namespace Aspid.FastTools.Types.Editors
         internal readonly string Assembly;
         internal readonly string Namespace;
         internal readonly string AssemblyQualifiedName;
+
+        // Outer.Inner for the types enclosing a nested type, null for a top-level one: it tells apart nested types
+        // of the same name.
+        internal readonly string DeclaringName;
 
         // Namespace.Outer.Name without the assembly part, which search matches instead of the assembly-qualified name.
         internal readonly string QualifiedName;
@@ -46,12 +49,14 @@ namespace Aspid.FastTools.Types.Editors
             Name = TypeUtility.FormatGenericName(type);
             Assembly = GetAssemblyName(type.Assembly);
             AssemblyQualifiedName = type.AssemblyQualifiedName;
-            QualifiedName = GetQualifiedName(type, Name);
+            DeclaringName = TypeUtility.FormatDeclaringName(type);
+            QualifiedName = TypeUtility.FormatQualifiedName(type);
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
 
             var item = type.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false);
 
-            Tooltip = type.FullName;
+            // The text of TypeSelectorHelpers.GetTypeSelectorTooltip, built from the cached parts.
+            Tooltip = $"{QualifiedName}, {Assembly}";
             Icon = null;
             CustomName = TypeSelectorHelpers.GetCustomDisplayName(type);
             GroupPath = null;
@@ -63,16 +68,6 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!string.IsNullOrWhiteSpace(item.Tooltip))
                 Tooltip = item.Tooltip;
-        }
-
-        // The declaring types stay in, so a nested type is found by its outer class and two nested types of the same
-        // name can be told apart.
-        private static string GetQualifiedName(Type type, string name)
-        {
-            for (var declaring = type.DeclaringType; declaring is not null; declaring = declaring.DeclaringType)
-                name = $"{TypeUtility.FormatGenericName(declaring)}.{name}";
-
-            return string.IsNullOrEmpty(type.Namespace) ? name : $"{type.Namespace}.{name}";
         }
 
         private static string GetAssemblyName(System.Reflection.Assembly assembly)
@@ -104,8 +99,8 @@ namespace Aspid.FastTools.Types.Editors
 
         // Additional candidates bypass ordinary constraints, but hidden types remain excluded unless the repair
         // picker explicitly includes them. Types from editor-only assemblies are left out of both when the value is
-        // stored in a runtime object, since a player cannot resolve them. The cheap name and modifier checks run
-        // before the attribute lookups, which matters for an unconstrained picker scanning the whole domain.
+        // stored in a runtime object, since a player cannot resolve them. The cheap modifier checks run before the
+        // attribute lookups, which matters for an unconstrained picker scanning the whole domain.
         internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
@@ -117,14 +112,12 @@ namespace Aspid.FastTools.Types.Editors
             var result = new List<TypeInfo>();
 
             result.AddRange(TypeUtility.DomainTypes
-                .Where(t => !t.Name.Contains("<") &&
-                    !t.Name.Contains(">") &&
-                    !(t.IsAbstract && t.IsSealed) &&
+                .Where(t => !(t.IsAbstract && t.IsSealed) &&
                     (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
                     (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
                     baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
                     (!excludeEditorOnly || !TypeUtility.IsEditorOnlyAssembly(t.Assembly)) &&
-                    !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
+                    !TypeUtility.IsCompilerGenerated(t) &&
                     (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(t)) &&
                     (filter is null || filter(t)))
                 .Select(Get));

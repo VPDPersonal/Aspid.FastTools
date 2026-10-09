@@ -141,7 +141,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 ## Окно выбора
 
-Окно группирует типы по namespace или <code lang="csharp">Group</code> и различает одинаковые имена по сборкам.
+Окно группирует типы по namespace или <code lang="csharp">Group</code>. Одинаковые имена оно различает по сборкам, а имена вложенных типов по внешнему классу.
 
 ![Избранные и недавние типы на корневой странице окна выбора](../../../../docs/Images/type-selector-window.png)
 

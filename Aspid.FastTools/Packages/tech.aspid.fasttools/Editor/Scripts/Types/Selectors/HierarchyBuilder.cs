@@ -224,7 +224,10 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     1 => type.Label,
                     _ when labelAssemblyCounts[(type.Label, type.Assembly)] == 1 => $"{type.Label} ({type.Assembly})",
-                    _ => type.Label == type.Name ? $"{type.Label} ({type.Assembly})" : $"{type.Label} ({type.Name})",
+                    // Same label in one assembly: nested types differ by their outer class, the rest by their real name.
+                    _ => type.Label == type.Name
+                        ? $"{type.Label} ({type.DeclaringName ?? type.Assembly})"
+                        : $"{type.Label} ({type.Name})",
                 };
 
                 var caption = string.IsNullOrEmpty(captionPrefix)

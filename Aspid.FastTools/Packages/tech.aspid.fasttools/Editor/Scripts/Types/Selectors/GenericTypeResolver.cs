@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -236,12 +235,7 @@ namespace Aspid.FastTools.Types.Editors
             type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
             !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type) &&
-            !IsCompilerGenerated(type);
-
-        private static bool IsCompilerGenerated(Type type) =>
-            type.IsDefined(typeof(CompilerGeneratedAttribute), false)
-            || type.Name.Contains('<')
-            || type.Name.Contains('>');
+            !TypeUtility.IsCompilerGenerated(type);
 
         private static bool CanCloseToAllNarrowing(Type openDefinition, Type[] narrowTypes)
         {

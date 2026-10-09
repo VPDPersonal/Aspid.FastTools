@@ -81,6 +81,20 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
+        public void TypeInfo_TooltipIsTheReadableIdentity_NotTheClrFullName()
+        {
+            foreach (var type in new[] { typeof(PlainSearchProbe), typeof(List<int>), typeof(Dictionary<string, List<int>>) })
+            {
+                var tooltip = TypeInfo.Get(type).Tooltip;
+
+                Assert.AreEqual(TypeSelectorHelpers.GetTypeSelectorTooltip(type), tooltip);
+                StringAssert.DoesNotContain("Version=", tooltip, "The tooltip must not carry the assembly version.");
+                StringAssert.DoesNotContain("`", tooltip, "The tooltip must spell generics with angle brackets.");
+                StringAssert.DoesNotContain("+", tooltip, "The tooltip must spell a nested type with a dot.");
+            }
+        }
+
+        [Test]
         public void IsEditorOnlyAssembly_SeparatesEditorAndRuntimeAssemblies()
         {
             Assert.IsTrue(TypeUtility.IsEditorOnlyAssembly(typeof(EditorWindow).Assembly), "UnityEditor");

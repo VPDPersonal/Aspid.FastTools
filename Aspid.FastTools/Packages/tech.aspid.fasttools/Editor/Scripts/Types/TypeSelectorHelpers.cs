@@ -19,7 +19,8 @@ namespace Aspid.FastTools.Types.Editors
 
         // The type's display-name override, or null when it declares none. Whitespace counts as none, as does a
         // value equal to the <None> sentinel, which a real type must not impersonate. A generic keeps its formatted
-        // arguments after the custom name, so closed forms stay distinguishable.
+        // arguments after the custom name, so closed forms stay distinguishable; a nested type of a generic class
+        // has none of its own.
         internal static string GetCustomDisplayName(Type value)
         {
             if (value is null) return null;
@@ -36,7 +37,10 @@ namespace Aspid.FastTools.Types.Editors
             if (name is not null && value.IsGenericType)
             {
                 var formatted = TypeUtility.FormatGenericName(value);
-                name += formatted[formatted.IndexOf('<')..];
+                var arguments = formatted.IndexOf('<');
+
+                if (arguments >= 0)
+                    name += formatted[arguments..];
             }
 
             _customDisplayNames[value] = name;
@@ -95,10 +99,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (value is null) return null;
 
-            var name = TypeUtility.FormatGenericName(value);
-            var displayName = string.IsNullOrEmpty(value.Namespace) ? name : $"{value.Namespace}.{name}";
-
-            return $"{displayName}, {value.Assembly.GetName().Name}";
+            return $"{TypeUtility.FormatQualifiedName(value)}, {value.Assembly.GetName().Name}";
         }
     }
 }

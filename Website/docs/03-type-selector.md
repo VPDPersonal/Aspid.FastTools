@@ -141,7 +141,7 @@ Subclasses do not inherit these settings.
 
 ## The picker
 
-The picker groups types by namespace or <code lang="csharp">Group</code> and distinguishes identical names by assembly.
+The picker groups types by namespace or <code lang="csharp">Group</code> and distinguishes identical names by assembly, or by the outer class for nested types.
 
 ![Favorites and Recent on the picker root page](Images/type-selector-window.png)
 

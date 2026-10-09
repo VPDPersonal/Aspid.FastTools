@@ -55,7 +55,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var reference = anchor.GetFirstAncestorOfType<ListView>() ?? anchor;
 
-            var width = Mathf.Max(350f, reference.worldBound.width);
+            var width = Mathf.Max(TypeSelectorWindow.MinWidth, reference.worldBound.width);
 
             var x = Mathf.Max(
                 window.position.x,

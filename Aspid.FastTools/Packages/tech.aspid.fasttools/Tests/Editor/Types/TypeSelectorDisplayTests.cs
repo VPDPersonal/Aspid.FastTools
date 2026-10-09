@@ -13,8 +13,9 @@ namespace Aspid.FastTools.Types.Editors.Tests
     /// the real type name;</item>
     /// <item>an explicit group replaces the namespace placement, its path segments are normalized and
     /// shared between types;</item>
-    /// <item>label collisions disambiguate with the assembly suffix as plain same-named types always did, and
-    /// two types given the same custom name within one assembly fall back to the real type name.</item>
+    /// <item>label collisions disambiguate with the assembly suffix as plain same-named types always did, nested
+    /// types of the same name within one assembly by their outer class, and two types given the same custom name
+    /// within one assembly fall back to the real type name.</item>
     /// </list>
     /// </summary>
     [TestFixture]
@@ -41,6 +42,16 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
         [TypeSelectorDisplay(Name = "Twin")]
         private sealed class TwinSecond : IDisplayProbe { }
+
+        private sealed class PlayerOwner
+        {
+            internal sealed class State : IDisplayProbe { }
+        }
+
+        private sealed class EnemyOwner
+        {
+            internal sealed class State : IDisplayProbe { }
+        }
 
         private static TreeNode BuildHierarchy() =>
             HierarchyBuilder.Build(new[] { typeof(IDisplayProbe) }, TypeAllow.None, includeNoneOption: false);
@@ -111,6 +122,25 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 twins.Select(node => node.DisplayName).ToList(),
                 "The assembly suffix cannot split a custom-name collision within one assembly — the real type " +
                 "name is the identity that still can.");
+        }
+
+        [Test]
+        public void SameNestedName_InOneAssembly_IsToldApartByTheOuterClass()
+        {
+            var root = BuildHierarchy();
+            var states = Leaves(root).Where(node =>
+                node.AssemblyQualifiedName == typeof(PlayerOwner.State).AssemblyQualifiedName ||
+                node.AssemblyQualifiedName == typeof(EnemyOwner.State).AssemblyQualifiedName).ToList();
+
+            Assert.AreEqual(2, states.Count, "Both nested types must keep their own row.");
+            CollectionAssert.AreEquivalent(
+                new[]
+                {
+                    $"State ({nameof(TypeSelectorDisplayTests)}.{nameof(PlayerOwner)})",
+                    $"State ({nameof(TypeSelectorDisplayTests)}.{nameof(EnemyOwner)})",
+                },
+                states.Select(node => node.DisplayName).ToList(),
+                "The assembly suffix is the same for both, so the outer class is what tells them apart.");
         }
 
         [Test]
