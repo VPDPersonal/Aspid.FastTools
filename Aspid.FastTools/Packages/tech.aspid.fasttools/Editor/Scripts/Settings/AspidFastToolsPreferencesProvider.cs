@@ -27,6 +27,8 @@ namespace Aspid.FastTools.Editors
                 "Breakage",
                 "Welcome",
                 "Dropdown",
+                "Appearance",
+                "Animated",
             },
         };
 
@@ -70,6 +72,20 @@ namespace Aspid.FastTools.Editors
                     WelcomeSettingsUI.BuildControls),
 
                 keywords = new[] { "Aspid", "FastTools", "Welcome", "Auto", "Show" },
+            };
+
+        [SettingsProvider]
+        public static SettingsProvider CreateAppearance() =>
+            new(SettingsPath + "/Appearance", SettingsScope.User)
+            {
+                label = "Appearance",
+
+                activateHandler = static (_, root) => AspidSettingsUI.BuildAreaProviderPage(
+                    root,
+                    title: "Appearance",
+                    AspidAppearanceSettingsUI.BuildControls),
+
+                keywords = new[] { "Aspid", "FastTools", "Appearance", "Animated", "Animation", "Background" },
             };
     }
 }

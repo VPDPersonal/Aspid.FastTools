@@ -62,21 +62,44 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _metrics = new AspidHoverGradientOverlayMetricsStyle(this, DefaultSteps, DefaultLerpRate, DefaultAlphaScale, MarkDirtyRepaint);
 
             generateVisualContent += DrawOverlay;
-            _animation = schedule.Execute(Tick).Every(TickMs);
 
-            RegisterCallback<AttachToPanelEvent>(_ => _animation.Resume());
+            // The timer runs only while the progress moves toward the target.
+            _animation = schedule.Execute(Tick).Every(TickMs);
+            _animation.Pause();
+
+            RegisterCallback<AttachToPanelEvent>(_ => ResumeIfMoving());
             RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
         }
 
-        public void SetTarget(float target) => _targetProgress = Mathf.Clamp01(target);
+        internal bool IsAnimating => _animation.isActive;
 
-        private void Tick()
+        public void SetTarget(float target)
+        {
+            _targetProgress = Mathf.Clamp01(target);
+            ResumeIfMoving();
+        }
+
+        private void ResumeIfMoving()
+        {
+            if (panel != null && !Mathf.Approximately(_progress, _targetProgress))
+                _animation.Resume();
+        }
+
+        internal void Tick()
         {
             var previous = _progress;
             _progress = Mathf.Lerp(_progress, _targetProgress, _metrics.LerpRate);
 
             if (Mathf.Abs(_progress - previous) > ProgressEpsilon)
+            {
                 MarkDirtyRepaint();
+                return;
+            }
+
+            // The step is too small to show: land on the target and stop the timer.
+            _progress = _targetProgress;
+            if (!Mathf.Approximately(_progress, previous)) MarkDirtyRepaint();
+            _animation.Pause();
         }
 
         private void DrawOverlay(MeshGenerationContext ctx)

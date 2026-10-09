@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -18,7 +19,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly AspidHoverGradientOverlay _overlay;
         private readonly AspidGradientButtonColorsStyle _colors;
 
-        private Texture2D _gradientTexture;
+        // One white-to-transparent ramp for every button; the gradient color tints it.
+        private static Texture2D s_fadeTexture;
+
         private bool _highlighted;
         private bool _hovered;
 
@@ -108,13 +111,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 this,
                 preset.Gradient,
                 preset.Accent,
-                RebuildGradient,
+                ApplyGradient,
                 accent => _overlay.Color = accent);
 
             RegisterCallback<MouseEnterEvent>(OnMouseEnter);
             RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
-            RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
-            RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
         }
 
         public T AddLeadingContent<T>(T content) where T : VisualElement
@@ -148,38 +149,57 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private void ApplyHoverVisual(bool on)
         {
             _overlay.SetTarget(on ? 1f : 0f);
-            var labelColor = on ? new StyleColor(_colors.Accent) : new StyleColor(StyleKeyword.Null);
+
+            // On the light palette the accent label sits on a wash of the same accent and loses its contrast.
+            var recolor = on && !IsOnLightPalette();
+            var labelColor = recolor ? new StyleColor(_colors.Accent) : new StyleColor(StyleKeyword.Null);
             _label.style.color = labelColor;
             _trailingLabel.style.color = labelColor;
         }
 
-        private void OnAttachToPanel(AttachToPanelEvent _)
+        private bool IsOnLightPalette()
         {
-            if (_gradientTexture == null)
-                RebuildGradient(_colors.Gradient);
+            for (VisualElement current = this; current is not null; current = current.hierarchy.parent)
+            {
+                if (current.ClassListContains(AspidStyles.PaletteLightClass)) return true;
+            }
+
+            return false;
         }
 
-        private void OnDetachFromPanel(DetachFromPanelEvent _) => DisposeTexture();
-
-        private void RebuildGradient(Color color)
+        private void ApplyGradient(Color color)
         {
-            // Detached elements may never attach, so allocate textures only while a panel owns them.
-            if (panel == null) return;
+            // A transparent gradient draws nothing, so the button skips the background image.
+            if (color.a <= 0f)
+            {
+                style.backgroundImage = StyleKeyword.Null;
+                style.unityBackgroundImageTintColor = StyleKeyword.Null;
+                return;
+            }
 
-            DisposeTexture();
-            _gradientTexture = CreateHorizontalFadeTexture(color);
-            style.backgroundImage = new StyleBackground(_gradientTexture);
+            style.backgroundImage = new StyleBackground(GetFadeTexture());
+            style.unityBackgroundImageTintColor = color;
         }
 
-        private void DisposeTexture()
+        private static Texture2D GetFadeTexture()
         {
-            if (_gradientTexture == null) return;
+            if (s_fadeTexture != null) return s_fadeTexture;
 
-            UnityEngine.Object.DestroyImmediate(_gradientTexture);
-            _gradientTexture = null;
+            s_fadeTexture = CreateHorizontalFadeTexture();
+
+            // The texture is hidden and not saved, so it outlives the domain; destroy it before the reload.
+            AssemblyReloadEvents.beforeAssemblyReload -= DestroyFadeTexture;
+            AssemblyReloadEvents.beforeAssemblyReload += DestroyFadeTexture;
+            return s_fadeTexture;
         }
 
-        private static Texture2D CreateHorizontalFadeTexture(Color baseColor)
+        private static void DestroyFadeTexture()
+        {
+            if (s_fadeTexture != null) UnityEngine.Object.DestroyImmediate(s_fadeTexture);
+            s_fadeTexture = null;
+        }
+
+        private static Texture2D CreateHorizontalFadeTexture()
         {
             const int width = 256;
             var texture = new Texture2D(width, 1, TextureFormat.RGBA32, mipChain: false)
@@ -193,7 +213,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             for (var i = 0; i < width; i++)
             {
                 var t = (float)i / (width - 1);
-                pixels[i] = new Color(baseColor.r, baseColor.g, baseColor.b, baseColor.a * (1f - t));
+                pixels[i] = new Color(1f, 1f, 1f, 1f - t);
             }
 
             texture.SetPixels(pixels);
