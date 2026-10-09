@@ -276,15 +276,12 @@ namespace Aspid.FastTools.Types.Editors
 
         // The argument page checks each candidate with this. The arguments so far, with the candidate last, must
         // meet their constraints, and the definition must still close to every field type. An argument that is an
-        // open definition is checked on its own argument pages.
+        // open definition gets its own argument pages, so here only its shape must fit the field.
         internal static bool CanCloseWithArguments(Type openDefinition, Type[] arguments, Type[] fieldTypes)
         {
             var parameters = openDefinition.GetGenericArguments();
             var known = new Type[parameters.Length];
             Array.Copy(arguments, known, Math.Min(arguments.Length, known.Length));
-
-            foreach (var argument in known)
-                if (argument is not null && argument.ContainsGenericParameters) return true;
 
             for (var index = 0; index < known.Length; index++)
             {
@@ -294,25 +291,49 @@ namespace Aspid.FastTools.Types.Editors
 
             if (fieldTypes is null) return true;
 
+            // A non-generic field type does not depend on the arguments, and the picker offers a definition only
+            // when it fits that type.
             foreach (var fieldType in fieldTypes)
             {
-                if (fieldType is null || fieldType == typeof(object)) continue;
+                if (fieldType is null || !fieldType.IsGenericType) continue;
                 if (!CanCloseToFieldType(openDefinition, fieldType, known)) return false;
             }
 
             return true;
         }
 
+        // Whether CanCloseWithArguments can tell the candidates of an argument page apart: only a generic field
+        // type or a constraint that names a parameter depends on the arguments. If not, the page skips the check.
+        internal static bool NeedsArgumentCheck(Type openDefinition, Type[] fieldTypes)
+        {
+            if (fieldTypes is not null)
+            {
+                foreach (var fieldType in fieldTypes)
+                    if (fieldType is { IsGenericType: true }) return true;
+            }
+
+            foreach (var parameter in openDefinition.GetGenericArguments())
+            {
+                foreach (var constraint in parameter.GetGenericParameterConstraints())
+                    if (constraint.ContainsGenericParameters) return true;
+            }
+
+            return false;
+        }
+
         // Also checks constraints that name parameters, such as T : IComparable<T> or U : T, closed over the known
-        // arguments. While such a constraint names an open parameter, TryConstruct checks it later.
+        // arguments. While such a constraint names an open parameter or an open argument, TryConstruct checks it
+        // later.
         private static bool SatisfiesConstraints(Type parameter, Type argument, Type[] parameters, Type[] arguments)
         {
             if (!SatisfiesSpecialConstraints(parameter, argument)) return false;
+            if (argument.ContainsGenericParameters) return true;
 
             foreach (var constraint in parameter.GetGenericParameterConstraints())
             {
                 var closedConstraint = Substitute(constraint, parameters, arguments);
-                if (closedConstraint is not null && !closedConstraint.IsAssignableFrom(argument)) return false;
+                if (closedConstraint is null || closedConstraint.ContainsGenericParameters) continue;
+                if (!closedConstraint.IsAssignableFrom(argument)) return false;
             }
 
             return true;
@@ -493,7 +514,7 @@ namespace Aspid.FastTools.Types.Editors
                     if (openView.GetGenericTypeDefinition() != fieldDefinition) continue;
 
                     var bindings = new Type[parameters.Length];
-                    arguments?.CopyTo(bindings, 0);
+                    arguments?.CopyTo(bindings, index: 0);
 
                     // A parameter the field fixes must also meet its own constraints, or no argument page choice
                     // can close the row.
@@ -547,11 +568,12 @@ namespace Aspid.FastTools.Types.Editors
                 var variance = Variance(fieldParameters[index]);
                 var resolved = Substitute(openArguments[index], parameters, bindings);
 
-                if (resolved is not null)
+                // An open definition chosen as an argument leaves the result open, so only its shape is judged.
+                if (resolved is { ContainsGenericParameters: false })
                 {
                     if (!IsVarianceCompatible(resolved, fieldArguments[index], variance)) return false;
                 }
-                else if (!CanVaryTo(openArguments[index], fieldArguments[index], variance))
+                else if (!CanVaryTo(resolved ?? openArguments[index], fieldArguments[index], variance))
                 {
                     return false;
                 }
@@ -561,10 +583,10 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // True when the field admits exactly one argument at this position, so the candidate must name it: an
-        // invariant parameter, or any parameter the field closed over a value type. The latter is where variance
-        // stops at the boundary of the reference world.
+        // invariant parameter, a value type, where variance stops at the boundary of the reference world, or a
+        // reference type that no other type converts to, such as a sealed type at a covariant position.
         private static bool PinsArgumentExactly(Type fieldParameter, Type fieldArgument) =>
-            Variance(fieldParameter) is GenericParameterAttributes.None || fieldArgument.IsValueType;
+            fieldArgument.IsValueType || !AdmitsOtherArguments(fieldArgument, Variance(fieldParameter));
 
         private static GenericParameterAttributes Variance(Type fieldParameter) =>
             fieldParameter.GenericParameterAttributes & GenericParameterAttributes.VarianceMask;
@@ -581,13 +603,58 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             if (openArgument.IsValueType) return false;
+            if (openArgument.IsArray) return CanArrayVaryTo(openArgument, fieldArgument, variance);
             if (!openArgument.IsGenericType) return true;
 
             var definition = openArgument.GetGenericTypeDefinition();
 
+            // The arguments that are already known take part, such as an open definition chosen inside List<T>.
+            var known = openArgument.GetGenericArguments()
+                .Select(argument => argument.IsGenericParameter ? null : argument)
+                .ToArray();
+
             return variance is GenericParameterAttributes.Covariant
-                ? CanCloseToFieldType(definition, fieldArgument)
+                ? CanCloseToFieldType(definition, fieldArgument, known)
                 : ClosedGenericViews(fieldArgument).Any(view => view.GetGenericTypeDefinition() == definition);
+        }
+
+        // Only an array converts to an array, so a contravariant position needs an array of the same rank. A
+        // covariant position also takes Array and its interfaces, and IList<T> and its bases for one dimension.
+        private static bool CanArrayVaryTo(Type openArray, Type fieldArgument, GenericParameterAttributes variance)
+        {
+            var rank = openArray.GetArrayRank();
+            var element = openArray.GetElementType();
+
+            if (fieldArgument.IsArray)
+            {
+                return fieldArgument.GetArrayRank() == rank &&
+                       CanElementVaryTo(element, fieldArgument.GetElementType(), variance);
+            }
+
+            if (variance is not GenericParameterAttributes.Covariant) return false;
+            if (fieldArgument.IsAssignableFrom(typeof(Array))) return true;
+            if (rank != 1 || !fieldArgument.IsGenericType) return false;
+
+            var fieldArguments = fieldArgument.GetGenericArguments();
+            if (fieldArguments.Length != 1) return false;
+
+            return fieldArgument.IsAssignableFrom(fieldArguments[0].MakeArrayType()) &&
+                   CanElementVaryTo(element, fieldArguments[0], variance);
+        }
+
+        // An element varies like its array, except that a value-type element must match exactly.
+        private static bool CanElementVaryTo(Type openElement, Type fieldElement, GenericParameterAttributes variance)
+        {
+            if (!fieldElement.IsValueType) return CanVaryTo(openElement, fieldElement, variance);
+
+            if (openElement.IsGenericParameter)
+            {
+                return (openElement.GenericParameterAttributes &
+                        GenericParameterAttributes.ReferenceTypeConstraint) == 0;
+            }
+
+            return openElement.IsGenericType && fieldElement.IsGenericType &&
+                   openElement.GetGenericTypeDefinition() == fieldElement.GetGenericTypeDefinition();
         }
 
         // A pinned position leaves no slack: the candidate must name the field's argument exactly. Records what
@@ -600,6 +667,20 @@ namespace Aspid.FastTools.Types.Editors
                 // A parameter the definition does not own cannot be recorded here, so nothing is rejected.
                 var parameterIndex = Array.IndexOf(parameters, openArgument);
                 if (parameterIndex < 0) return true;
+
+                // An open definition chosen as the argument closes on its own pages. Here it must only share the
+                // field argument's definition, and from then on it stands for that argument.
+                var bound = bindings[parameterIndex];
+
+                if (bound is { ContainsGenericParameters: true })
+                {
+                    if (!bound.IsGenericType || !fieldArgument.IsGenericType ||
+                        bound.GetGenericTypeDefinition() != fieldArgument.GetGenericTypeDefinition())
+                        return false;
+
+                    bindings[parameterIndex] = fieldArgument;
+                    return true;
+                }
 
                 bindings[parameterIndex] ??= fieldArgument;
                 return bindings[parameterIndex] == fieldArgument;

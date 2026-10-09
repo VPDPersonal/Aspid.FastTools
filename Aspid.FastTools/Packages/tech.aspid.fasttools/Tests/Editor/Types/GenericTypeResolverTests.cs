@@ -135,6 +135,23 @@ namespace Aspid.FastTools.Types.Editors.Tests
     // Through the second view any T is an IResolverSink<List<int>>, so the first view's T = int decides nothing.
     internal sealed class ResolverSinkTwice<T> : IResolverSink<System.Collections.Generic.List<T>>, IResolverSink<object> { }
 
+    // Constraints at variant positions that a field can still pin: no type converts to a sealed type or to object
+    // but that type itself.
+    internal sealed class ResolverNewSource<T> : IResolverSource<T>
+        where T : new() { }
+
+    internal sealed class ResolverComparableSink<T> : IResolverSink<T>
+        where T : System.IComparable<T> { }
+
+    // An array converts only to an array, to Array and to the interfaces that arrays implement.
+    internal sealed class ResolverArraySource<T> : IResolverSource<T[]> { }
+
+    internal sealed class ResolverArraySink<T> : IResolverSink<T[]> { }
+
+    // The constraint of the first parameter names the second, which the argument page picks later.
+    internal sealed class ResolverReversedPair<TFirst, TSecond>
+        where TFirst : TSecond { }
+
     /// <summary>
     /// Coverage for <see cref="GenericTypeResolver"/> — pure reflection logic that gates which closed generic types the
     /// picker may instantiate. A regression here lets the picker construct a managed reference Unity silently nulls.
@@ -614,9 +631,15 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void CanCloseWithArguments_ConstraintNamingALaterParameter_IsLeftForLater()
         {
-            // TDerived : TBase cannot be judged while TBase is the one being chosen.
+            // TFirst : TSecond cannot be judged while TSecond is open, and is judged once TSecond is chosen.
+            var pair = typeof(ResolverReversedPair<,>);
+
             Assert.IsTrue(GenericTypeResolver.CanCloseWithArguments(
-                typeof(ResolverDerivedPair<,>), new[] { typeof(ResolverClass) }, fieldTypes: null));
+                pair, new[] { typeof(ResolverClass) }, fieldTypes: null));
+            Assert.IsTrue(GenericTypeResolver.CanCloseWithArguments(
+                pair, new[] { typeof(ResolverClass), typeof(IResolverThing) }, fieldTypes: null));
+            Assert.IsFalse(GenericTypeResolver.CanCloseWithArguments(
+                pair, new[] { typeof(ResolverClass), typeof(OpenBox<int>) }, fieldTypes: null));
         }
 
         [Test]
@@ -752,6 +775,107 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             Assert.IsTrue(GenericTypeResolver.CanCloseWithArguments(typeof(ResolverPair<,>), new[] { typeof(string) }, fieldTypes));
             Assert.IsFalse(GenericTypeResolver.CanCloseWithArguments(typeof(ResolverPair<,>), new[] { typeof(int) }, fieldTypes));
+        }
+
+        [Test]
+        public void CanCloseWithArguments_OpenDefinitionCandidate_MustMatchTheFieldShape()
+        {
+            // An open definition gets its own argument page, so here only its definition is judged.
+            var keyed = new[] { typeof(IResolverKeyed<System.Collections.Generic.List<int>>) };
+            var sink = new[] { typeof(IResolverSink<ResolverClass>) };
+            var source = new[] { typeof(IResolverSource<System.Collections.Generic.IEnumerable<int>>) };
+
+            Assert.IsTrue(GenericTypeResolver.CanCloseWithArguments(
+                typeof(ResolverPair<,>), new[] { typeof(System.Collections.Generic.List<>) }, keyed));
+            Assert.IsFalse(GenericTypeResolver.CanCloseWithArguments(
+                typeof(ResolverPair<,>), new[] { typeof(System.Collections.Generic.Dictionary<,>) }, keyed));
+
+            Assert.IsFalse(GenericTypeResolver.CanCloseWithArguments(
+                typeof(ResolverSinkOf<>), new[] { typeof(System.Collections.Generic.List<>) }, sink),
+                "No List<T> is a base type of ResolverClass.");
+
+            Assert.IsTrue(GenericTypeResolver.CanCloseWithArguments(
+                typeof(ResolverSourceOf<>), new[] { typeof(System.Collections.Generic.List<>) }, source));
+            Assert.IsFalse(GenericTypeResolver.CanCloseWithArguments(
+                typeof(ResolverSourceOf<>), new[] { typeof(System.Collections.Generic.Dictionary<,>) }, source),
+                "A dictionary enumerates pairs, never int.");
+        }
+
+        [Test]
+        public void NeedsArgumentCheck_OnlyGenericFieldTypesAndParameterConstraints_DependOnArguments()
+        {
+            Assert.IsFalse(GenericTypeResolver.NeedsArgumentCheck(
+                typeof(OpenBox<>), new[] { typeof(IResolverThing), typeof(object) }));
+            Assert.IsTrue(GenericTypeResolver.NeedsArgumentCheck(
+                typeof(OpenBox<>), new[] { typeof(IResolverKeyed<int>) }));
+            Assert.IsTrue(GenericTypeResolver.NeedsArgumentCheck(typeof(ResolverComparableBox<>), fieldTypes: null));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ConstraintAtAPinnedVariantPosition_DropsTheCandidate()
+        {
+            // string pins the covariant T, and string has no parameterless constructor. object pins the
+            // contravariant T, and object is not an IComparable<object>.
+            var forString = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverSource<string>), null)
+                .ToArray();
+
+            var forObject = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverSink<object>), null)
+                .ToArray();
+
+            Assert.IsFalse(OffersAnyFormOf(forString, typeof(ResolverNewSource<>)));
+            Assert.IsFalse(OffersAnyFormOf(forObject, typeof(ResolverComparableSink<>)));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ConstraintAtAPinnedVariantPosition_KeepsAFittingCandidate()
+        {
+            // ResolverClass is sealed and has a parameterless constructor. string is an IComparable<string>.
+            var forClass = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverSource<ResolverClass>), null)
+                .ToArray();
+
+            var forString = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverSink<string>), null)
+                .ToArray();
+
+            CollectionAssert.Contains(forClass, typeof(ResolverNewSource<ResolverClass>));
+            CollectionAssert.Contains(forString, typeof(ResolverComparableSink<string>));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ArrayAtACovariantPosition_KeepsOnlyTypesArraysConvertTo()
+        {
+            var arrayField = typeof(IResolverSource<IResolverThing[]>);
+            var listField = typeof(IResolverSource<System.Collections.Generic.IReadOnlyList<IResolverThing>>);
+            var thingField = typeof(IResolverSource<IResolverThing>);
+
+            Assert.IsTrue(arrayField.IsAssignableFrom(typeof(ResolverArraySource<ResolverClass>)));
+            Assert.IsTrue(listField.IsAssignableFrom(typeof(ResolverArraySource<ResolverClass>)));
+
+            var forArray = GenericTypeResolver.GetAssignableGenericDefinitions(arrayField, null).ToArray();
+            var forList = GenericTypeResolver.GetAssignableGenericDefinitions(listField, null).ToArray();
+            var forThing = GenericTypeResolver.GetAssignableGenericDefinitions(thingField, null).ToArray();
+
+            Assert.IsTrue(OffersAnyFormOf(forArray, typeof(ResolverArraySource<>)));
+            Assert.IsTrue(OffersAnyFormOf(forList, typeof(ResolverArraySource<>)));
+            Assert.IsFalse(OffersAnyFormOf(forThing, typeof(ResolverArraySource<>)), "No array is an IResolverThing.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ArrayAtAContravariantPosition_NeedsAnArray()
+        {
+            var arrayField = typeof(IResolverSink<ResolverClass[]>);
+            var thingField = typeof(IResolverSink<IResolverThing>);
+
+            Assert.IsTrue(arrayField.IsAssignableFrom(typeof(ResolverArraySink<IResolverThing>)));
+
+            var forArray = GenericTypeResolver.GetAssignableGenericDefinitions(arrayField, null).ToArray();
+            var forThing = GenericTypeResolver.GetAssignableGenericDefinitions(thingField, null).ToArray();
+
+            Assert.IsTrue(OffersAnyFormOf(forArray, typeof(ResolverArraySink<>)));
+            Assert.IsFalse(OffersAnyFormOf(forThing, typeof(ResolverArraySink<>)), "Only an array converts to an array.");
         }
 
         // A resolver that closes a candidate returns it under a different Type than the definition asserted on, so
