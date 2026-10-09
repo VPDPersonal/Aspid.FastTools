@@ -4,17 +4,21 @@ Skills that make a coding agent write code with Aspid.FastTools instead of the r
 
 ## Quick start
 
-[Install Aspid.FastTools](README.md#installation) in your Unity project, then ask your agent:
+[Install Aspid.FastTools](README.md#installation) in your Unity project. The skills installer needs Node.js 22.20 or newer. Then ask your agent:
 
 ```text prompt
-Install the skills from VPDPersonal/Aspid.FastTools in the current project.
+Install the skills from VPDPersonal/Aspid.FastTools in the current project, not globally. Run npx skills add VPDPersonal/Aspid.FastTools#v<version>, where <version> is the version of the installed Aspid.FastTools package.
 ```
 
 Or run in the project root:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools
+npx skills add VPDPersonal/Aspid.FastTools#v<version>
 ```
+
+Replace `<version>` with the version of the installed package: `1.0.0` becomes `#v1.0.0`. In the installer, choose the **Project** scope: a global install applies to every Unity project, whatever its package version.
+
+For `1.0.0-rc.8` and older, see [Versions and updates](#versions-and-updates).
 
 ```text prompt
 Profile Simulate and the neighbor search
@@ -26,15 +30,23 @@ Profile Simulate and the neighbor search
 
 ## Versions and updates
 
-Without a tag, `npx skills add` takes the skills from the `main` branch, which can already describe API your package version does not have. To match the installed package, add them from its release tag, and run `add` again with the new tag after a package upgrade:
+Skills from the `main` branch can describe API that your package version does not have, so the agent writes code that does not compile. A release tag holds the skills that match that release. After a package upgrade, repeat the installation with the new tag.
 
-```bash
-npx skills add VPDPersonal/Aspid.FastTools#v<version>
+`npx skills update` does not move skills installed from a tag: it fetches the same tag again and changes nothing. It refreshes only skills installed without a tag, from `main`, and it updates every skill in the project, not only these.
+
+Releases up to and including `1.0.0-rc.8` do not ship the skills. With one of them, upgrade the package to a release that does, or install the package from `main` together with the skills, so both match. In **Window → Package Manager**, choose **+ → Install package from git URL…** and paste this URL:
+
+```text
+https://github.com/VPDPersonal/Aspid.FastTools.git?path=/Aspid.FastTools/Packages/tech.aspid.fasttools#main
 ```
 
-Releases up to and including `1.0.0-rc.8` do not ship the skills; with them, install from `main`.
+Then install the skills without a tag:
 
-To update the skills, repeat the installation. `npx skills update` updates every skill in the project, not only these.
+```bash
+npx skills add VPDPersonal/Aspid.FastTools
+```
+
+The skills used to ship as the `aspid-fasttools` Claude Code plugin. If you have it, remove it with `/plugin marketplace remove aspid-claude-plugins`: it teaches the agent API that no longer exists.
 
 ## Skills
 
