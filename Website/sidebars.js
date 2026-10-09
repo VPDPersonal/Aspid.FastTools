@@ -8,7 +8,7 @@ export default {
       'serialize-reference-tooling', 'serialize-reference-validation', 'enum-values',
     ] },
     { type: 'category', label: 'Editor & tooling', className: 'doc-menu-group', collapsible: false, items: [
-      'profiler-markers', 'visual-element-extensions', 'serialized-property-extensions', 'editor-helpers', 'agent-skills',
+      'profiler-markers', 'visual-element-extensions', 'serialized-property-extensions', 'editor-helpers', 'theme-override', 'agent-skills',
     ] },
   ],
 };
