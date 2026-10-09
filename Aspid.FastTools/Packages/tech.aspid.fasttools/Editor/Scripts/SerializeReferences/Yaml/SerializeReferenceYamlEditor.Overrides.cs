@@ -228,18 +228,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 i++;
             }
 
-            return Unquote(builder.ToString());
-        }
-
-        private static string Unquote(string scalar)
-        {
-            if (scalar.Length >= 2 && scalar[0] == '\'' && scalar[^1] == '\'')
-                return scalar[1..^1].Replace("''", "'");
-
-            if (scalar.Length >= 2 && scalar[0] == '"' && scalar[^1] == '"')
-                return scalar[1..^1].Replace("\\\"", "\"").Replace("\\\\", "\\");
-
-            return scalar;
+            return SerializeReferenceYaml.UnquoteScalar(builder.ToString());
         }
 
         // "- target: {fileID: ..., guid: ..., type: 3}", joined with the deeper-indented lines it wraps onto until the

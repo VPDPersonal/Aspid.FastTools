@@ -64,6 +64,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 ("Assets/Scene/LightingData.asset", AssetFileFormat.Binary),
                 ("Assets/B.prefab", AssetFileFormat.LfsPointer),
+                ("Assets/Old.asset", AssetFileFormat.UnsupportedReferencesVersion),
             };
 
             var lines = SerializeReferenceCiGate.BuildReport(new[] { violation }, unscanned)
@@ -71,9 +72,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 .Select(line => line.TrimEnd('\r'))
                 .ToArray();
 
-            CollectionAssert.Contains(lines, "# Not scanned (not text YAML): 2");
+            CollectionAssert.Contains(lines, "# Not scanned: 3");
             CollectionAssert.Contains(lines, "#   Binary\tAssets/Scene/LightingData.asset");
             CollectionAssert.Contains(lines, "#   LfsPointer\tAssets/B.prefab");
+            CollectionAssert.Contains(lines, "#   UnsupportedReferencesVersion\tAssets/Old.asset");
             CollectionAssert.Contains(lines, "MissingType\tAssets/A.prefab\t1\t2\tGhost\t\t");
         }
     }

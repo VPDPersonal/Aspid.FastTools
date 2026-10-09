@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -19,11 +20,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static readonly Regex _typeLine = new(@"^\s*type:\s*\{.*\}\s*$", RegexOptions.Compiled);
 
+        // A flow scalar of the inline type mapping: single-quoted (a generic class), double-quoted (a name with non-ASCII
+        // characters, which Unity writes as "\uXXXX" escapes) or plain up to the next ',' or '}'.
+        private const string FlowScalar = @"'(?:[^']|'')*'|""(?:[^""\\]|\\.)*""|[^,}]*?";
+
         public static readonly Regex InlineType = new(
-            @"class:\s*(?:'(?<class>(?:[^']|'')*)'|(?<class>[^,}]*?))\s*,\s*ns:\s*(?<ns>[^,}]*?)\s*,\s*asm:\s*(?<asm>[^,}]*?)\s*$",
+            $@"class:\s*(?<class>{FlowScalar})\s*,\s*ns:\s*(?<ns>{FlowScalar})\s*,\s*asm:\s*(?<asm>{FlowScalar})\s*$",
             RegexOptions.Compiled);
 
-        public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
+        // Unity 2021.2 and newer write the managed reference registry as version 2, with its entries under RefIds: the
+        // only layout the scanners read.
+        private const string SupportedReferencesVersion = "2";
+
+        private static readonly Regex _referencesKey = new(@"^(?<indent>\s*)references:\s*$", RegexOptions.Compiled);
+
+        private static readonly Regex _referencesVersion = new(@"^(?<indent>\s*)version:\s*(?<version>\d+)\s*$", RegexOptions.Compiled);
+
+        // A Timeline (.playable) stores its tracks and clips, and an Animator Controller (.controller) its
+        // StateMachineBehaviours, as MonoBehaviour documents, so they may hold [SerializeReference] fields.
+        public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity", ".controller", ".playable" };
 
         private const int FormatSniffLength = 64;
 
@@ -93,10 +108,130 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!match.Success)
                 return false;
 
-            var className = match.Groups["class"].Value.Replace("''", "'");
-            type = new ManagedTypeName(match.Groups["asm"].Value, match.Groups["ns"].Value, className);
+            type = new ManagedTypeName(
+                UnquoteScalar(match.Groups["asm"].Value),
+                UnquoteScalar(match.Groups["ns"].Value),
+                UnquoteScalar(match.Groups["class"].Value));
 
             return !type.IsEmpty;
+        }
+
+        // Reads a flow scalar as YAML does: a single-quoted one doubles its quotes, a double-quoted one has escapes, a
+        // plain one stays as written.
+        public static string UnquoteScalar(string scalar)
+        {
+            if (scalar.Length >= 2 && scalar[0] == '\'' && scalar[^1] == '\'')
+                return scalar[1..^1].Replace("''", "'");
+
+            return scalar.Length >= 2 && scalar[0] == '"' && scalar[^1] == '"'
+                ? UnescapeDoubleQuoted(scalar[1..^1])
+                : scalar;
+        }
+
+        // Unity writes every character outside printable ASCII as "\uXXXX". An unknown or cut escape stays as written.
+        private static string UnescapeDoubleQuoted(string body)
+        {
+            if (body.IndexOf('\\') < 0) return body;
+
+            var builder = new StringBuilder(capacity: body.Length);
+
+            for (var i = 0; i < body.Length; i++)
+            {
+                if (body[i] != '\\' || i + 1 == body.Length)
+                {
+                    builder.Append(body[i]);
+                    continue;
+                }
+
+                var escape = body[i + 1];
+                var digits = escape switch { 'x' => 2, 'u' => 4, 'U' => 8, _ => 0 };
+
+                if (digits > 0 && TryReadHex(body, i + 2, digits, out var code))
+                {
+                    // "\u" may be one half of a surrogate pair, so it is appended as one UTF-16 unit.
+                    if (digits < 8) builder.Append((char)code);
+                    else builder.Append(char.ConvertFromUtf32(code));
+
+                    i += 1 + digits;
+                    continue;
+                }
+
+                var decoded = digits > 0 ? null : DecodeEscape(escape);
+
+                if (decoded is null)
+                {
+                    builder.Append(body[i]);
+                    continue;
+                }
+
+                builder.Append(decoded);
+                i++;
+            }
+
+            return builder.ToString();
+        }
+
+        private static string DecodeEscape(char escape) => escape switch
+        {
+            '0' => "\0",
+            'a' => "\a",
+            'b' => "\b",
+            't' or '\t' => "\t",
+            'n' => "\n",
+            'v' => "\v",
+            'f' => "\f",
+            'r' => "\r",
+            'e' => "\u001B",
+            ' ' => " ",
+            '"' => "\"",
+            '/' => "/",
+            '\\' => "\\",
+            'N' => "\u0085",
+            '_' => "\u00A0",
+            'L' => "\u2028",
+            'P' => "\u2029",
+            _ => null,
+        };
+
+        // Reads `length` hex digits at `start`. An 8-digit value must be a Unicode scalar value, not a surrogate.
+        private static bool TryReadHex(string text, int start, int length, out int value)
+        {
+            value = 0;
+            if (start + length > text.Length) return false;
+
+            var digits = text.Substring(start, length);
+            if (!long.TryParse(digits, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var code)) return false;
+            if (code > 0x10FFFF || (length == 8 && code is >= 0xD800 and <= 0xDFFF)) return false;
+
+            value = (int)code;
+            return true;
+        }
+
+        // True when a document stores its managed references in a registry version other than 2: version 1 of an asset
+        // last saved before Unity 2021.2 (no RefIds), or a newer format. The scanners would read such a file as clean.
+        public static bool HasUnsupportedReferencesVersion(string[] lines)
+        {
+            if (lines is null) return false;
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var key = _referencesKey.Match(lines[i]);
+                if (!key.Success) continue;
+
+                var next = i + 1;
+                while (next < lines.Length && lines[next].Trim().Length == 0)
+                    next++;
+
+                if (next == lines.Length) return false;
+
+                // The registry opens with its version; a user field named "references" does not.
+                var version = _referencesVersion.Match(lines[next]);
+                if (!version.Success || version.Groups["indent"].Length <= key.Groups["indent"].Length) continue;
+
+                if (version.Groups["version"].Value != SupportedReferencesVersion) return true;
+            }
+
+            return false;
         }
 
         public static int FindRefIdsStart(string[] lines, int start, int end)

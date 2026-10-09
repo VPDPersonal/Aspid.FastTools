@@ -79,9 +79,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var builder = new StringBuilder();
             builder.AppendLine($"# SerializeReference Gate Report");
             builder.AppendLine($"# Violations: {violations.Count}");
-            builder.AppendLine($"# Not scanned (not text YAML): {unscanned?.Count ?? 0}");
+            builder.AppendLine($"# Not scanned: {unscanned?.Count ?? 0}");
 
-            // Comment lines, so a parser of the violation lines below is unaffected.
+            // Comment lines, so a parser of the violation lines below is unaffected. The format names the reason:
+            // Binary, LfsPointer or UnsupportedReferencesVersion.
             if (unscanned is not null)
             {
                 foreach (var (assetPath, format) in unscanned)
