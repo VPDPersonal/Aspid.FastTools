@@ -47,7 +47,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf` |
+| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf`, `RegisterCallbackSelf`, `UnregisterCallbackSelf` |
 
 | Unity API | FastTools |
 |---|---|
@@ -56,6 +56,7 @@ rootVisualElement.AddChild(new VisualElement()
 | `el.style.width = 100; el.style.height = 50;` | `el.SetSize(100, 50)` |
 | `el.style.color = ...;` | `el.SetColor("#FFC24D")` or a `StyleColor` |
 | `el.style.backgroundImage = Resources.Load<Texture2D>("UI/Card");` | `el.SetBackgroundImageFromResources("UI/Card")` |
+| `el.style.backgroundImage = new StyleBackground(sprite);` | `el.SetBackgroundImage(sprite)` (also a `VectorImage`) |
 | `el.AddToClassList("a"); el.EnableInClassList("b", on);` | `el.AddClass("a").EnableClass("b", on)` (also `ToggleClass`, `RemoveClass`) |
 | `el.AddToClassList("a"); el.AddToClassList("b");` | `el.AddClasses("a", "b")` (also `RemoveClasses`, `ToggleClasses`, `EnableClasses(on, "a", "b")`) |
 | `el.styleSheets.Add(sheet);` | `el.AddStyleSheet(sheet)`; several: `el.AddStyleSheets(baseSheet, themeSheet)` |
@@ -65,6 +66,7 @@ rootVisualElement.AddChild(new VisualElement()
 | `if (show) parent.Add(help);` | `parent.AddChildIf(show, help)` |
 | `field.SetValueWithoutNotify(v);` | `field.SetValue(v, notify: false)` |
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
+| `el.RegisterCallback<ClickEvent>(OnClick);` | `el.RegisterCallbackSelf<Button, ClickEvent>(OnClick)` (also `UnregisterCallbackSelf`) |
 | `enumField.Init(v);` | `enumField.Initialize(v)` |
 | `el.AddManipulator(new Clickable(cb));` | `el.AddClickable(cb)` (also `AddContextualMenuManipulator`) |
 
@@ -78,18 +80,24 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   `void` and end the chain; use the replacements above.
 - On a `Label`, `Button` or other `TextElement`, set the text with `SetTextSelf`. From Unity 6000.6, `SetText(string)`
   calls Unity's `TextElement.SetText`, which returns `void`. `Foldout`, `HelpBox` and `Toggle` keep `SetText`.
+- From Unity 6000.6, `SetTextSelf` also takes an `int`, a `float` (with a format), a `ReadOnlySpan<char>`, a `StringBuilder`
+  or a `char[]` slice and calls Unity's allocation-free `TextElement.SetText`. Use them for text that changes every frame
+  instead of `SetTextSelf(value.ToString())`. Attach the element to a panel first, otherwise Unity may allocate the string.
 - `EnableClasses` and `EnableStyleSheets` take the flag first: `EnableClasses(on, "a", "b")`, but `EnableClass("a", on)`.
   Name both flags of `EnableClassIf(condition: x, "a", enable: y)`: swapped bools compile.
 - These do not exist: `ToggleInClass`, `EnableInClass`, `...FromResource` (singular),
-  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use Unity's `RegisterCallback`).
+  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use `RegisterCallbackSelf`).
 - Values are `Style*` types: sizes `StyleLength` (`12`, `Length.Percent(50)`, `StyleKeyword.Auto`),
-  `SetBackgroundImage` only `StyleBackground`, transitions `StyleList<T>` from a `List<T>` (not an array).
+  `SetBackgroundImage` a `Sprite`, a `VectorImage` or a `StyleBackground` (a `Texture2D` converts to it),
+  transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
   Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
+- `RegisterCallbackSelf` infers its type arguments only from a callback with a typed parameter, such as
+  `(ClickEvent evt) => ...`. For a method group or an untyped lambda name both: `RegisterCallbackSelf<Button, ClickEvent>(OnClick)`.
 - The package supports Unity 6000.0.53f1. Wrap these in `#if UNITY_6000_x_OR_NEWER` when the project must support older
   versions: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
   `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values
-  (6000.4).
+  (6000.4); the `SetTextSelf` overloads for numbers, spans, builders and arrays (6000.6).
