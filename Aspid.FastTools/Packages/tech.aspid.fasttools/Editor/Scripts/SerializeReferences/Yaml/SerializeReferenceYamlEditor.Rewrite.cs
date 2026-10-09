@@ -13,28 +13,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NullSentinelType = "type: {class: , ns: , asm: }";
 
         // Replaces the entry's type mapping. The caller reimports the asset.
-        public static bool TryRewriteType(string assetPath, long fileId, long rid, ManagedTypeName newType)
+        public static bool TryRewriteType(string assetPath, long fileId, long rid, ManagedTypeName newType) =>
+            RewriteTypes(assetPath, new[] { new MissingReferenceEntry(fileId, rid, storedType: default) }, newType) == 1;
+
+        // Replaces the type mapping of every entry with one read and one write of the file. A stale entry is skipped.
+        // Returns how many entries were rewritten; the caller reimports the asset.
+        public static int RewriteTypes(string assetPath, IReadOnlyList<MissingReferenceEntry> entries, ManagedTypeName newType)
         {
-            // Single scan shared with the diff preview: compute the edit, then apply exactly that line so the preview
-            // and the applied result can never diverge.
-            if (!TryComputeRewrite(assetPath, fileId, rid, newType, out var edit)) return false;
+            if (entries is null || entries.Count == 0) return 0;
 
             try
             {
-                var lines = File.ReadAllLines(assetPath);
-                if (edit.LineNumber < 0 || edit.LineNumber >= lines.Length || lines[edit.LineNumber] != edit.OldLine)
-                    return false; // the file changed since the edit was computed — abort rather than write a stale line
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
 
-                lines[edit.LineNumber] = edit.NewLine;
-                if (!TryWritePreservingNewlines(assetPath, lines)) return false;
+                var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return 0;
+
+                var applied = 0;
+                foreach (var entry in entries)
+                {
+                    // Single scan shared with the diff preview: compute the edit, then apply exactly that line so the
+                    // preview and the applied result can never diverge.
+                    if (!TryComputeRewrite(lines, assetPath, entry.FileId, entry.Rid, newType, out var edit)) continue;
+
+                    lines[edit.LineNumber] = edit.NewLine;
+                    applied++;
+                }
+
+                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines)) return 0;
+
                 // Same-tick writes can leave the modification-time key unchanged, so bust the probe cache explicitly.
                 SerializeReferenceYamlProbeCache.ClearCache();
-                return true;
+                return applied;
             }
             catch (Exception exception)
             {
-                Debug.LogError($"[TypeSelector] Failed to rewrite managed-reference type in '{assetPath}': {exception}");
-                return false;
+                Debug.LogError($"[TypeSelector] Failed to rewrite managed-reference types in '{assetPath}': {exception}");
+                return 0;
             }
         }
 
@@ -49,34 +64,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
-                if (!LooksLikeUnityYaml(lines)) return false;
-                var (start, end) = FindDocumentRange(lines, fileId);
-                if (start < 0) return false;
-
-                // Field pointers ("_sidearms:\n  - rid: 1002") share the "- rid:" shape with RefIds entries, so confine
-                // the search to the RefIds block — the entries are the only ones with a following type:.
-                var refIdsStart = FindRefIdsStart(lines, start, end);
-                if (refIdsStart < 0) return false;
-
-                // Only the entry header counts: a nested "- rid: N" list element in an earlier entry's data block would
-                // aim the rewrite at the type line of whichever entry follows it.
-                var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
-                if (headerIndex < 0) return false;
-
-                var typeLine = FindEntryTypeLine(lines, headerIndex, FindEntryEnd(lines, headerIndex, end, entryIndent));
-                if (typeLine < 0) return false;
-
-                var match = new Regex(@"^(?<indent>\s*type:\s*)\{.*\}\s*$").Match(lines[typeLine]);
-                if (!match.Success) return false;
-
-                edit = new RewriteEdit(assetPath, typeLine, lines[typeLine], match.Groups["indent"].Value + newType.ToYamlType());
-                return true;
+                return LooksLikeUnityYaml(lines) && TryComputeRewrite(lines, assetPath, fileId, rid, newType, out edit);
             }
             catch (Exception exception)
             {
                 Debug.LogError($"[TypeSelector] Failed to compute managed-reference rewrite in '{assetPath}': {exception}");
                 return false;
             }
+        }
+
+        private static bool TryComputeRewrite(string[] lines, string assetPath, long fileId, long rid, ManagedTypeName newType,
+            out RewriteEdit edit)
+        {
+            edit = default;
+
+            var (start, end) = FindDocumentRange(lines, fileId);
+            if (start < 0) return false;
+
+            // Field pointers ("_sidearms:\n  - rid: 1002") share the "- rid:" shape with RefIds entries, so confine
+            // the search to the RefIds block — the entries are the only ones with a following type:.
+            var refIdsStart = FindRefIdsStart(lines, start, end);
+            if (refIdsStart < 0) return false;
+
+            // Only the entry header counts: a nested "- rid: N" list element in an earlier entry's data block would
+            // aim the rewrite at the type line of whichever entry follows it.
+            var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
+            if (headerIndex < 0) return false;
+
+            var typeLine = FindEntryTypeLine(lines, headerIndex, FindEntryEnd(lines, headerIndex, end, entryIndent));
+            if (typeLine < 0) return false;
+
+            var match = new Regex(@"^(?<indent>\s*type:\s*)\{.*\}\s*$").Match(lines[typeLine]);
+            if (!match.Success) return false;
+
+            edit = new RewriteEdit(assetPath, typeLine, lines[typeLine], match.Groups["indent"].Value + newType.ToYamlType());
+            return true;
         }
 
         // Deletes a whole RefIds entry, dropping an orphaned payload no field points at. Confined to the RefIds
@@ -127,92 +149,120 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // reproduces exactly what Unity writes for a cleared field — an array element cannot be dropped, so it must
         // point at -2, and that pointer is only valid while the sentinel entry exists, or the load errors with
         // "serialized array … is missing entry for Refid -2". Not undoable: the broken payload is discarded.
-        public static bool TryNullReference(string assetPath, long fileId, long rid)
+        public static bool TryNullReference(string assetPath, long fileId, long rid) =>
+            NullReferences(assetPath, new[] { new MissingReferenceEntry(fileId, rid, storedType: default) }) == 1;
+
+        // Nulls every entry as TryNullReference does, one after another, with one read and one write of the file. A
+        // stale entry is skipped. Returns how many entries were nulled; the caller reimports the asset.
+        public static int NullReferences(string assetPath, IReadOnlyList<MissingReferenceEntry> entries)
         {
+            if (entries is null || entries.Count == 0) return 0;
+
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
 
                 var lines = File.ReadAllLines(assetPath);
-                if (!LooksLikeUnityYaml(lines)) return false;
-                var (start, end) = FindDocumentRange(lines, fileId);
-                if (start < 0) return false;
+                if (!LooksLikeUnityYaml(lines)) return 0;
 
-                var refIdsStart = FindRefIdsStart(lines, start, end);
-                if (refIdsStart < 0) return false;
-
-                // RefIds entry headers sit at the shallowest "- rid:" indent under RefIds; a pointer to the rid lives
-                // anywhere else — a field/array element before "references:" or a nested reference inside another entry's
-                // data block. The header for this rid is removed; every pointer to it becomes the null id.
-                var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
-                if (entryIndent < 0) return false;
-
-                var pointerToken = BuildPointerPattern(rid);
-
-                var headerIndex = -1;
-                var pointerNulled = false;
-
-                for (var i = start; i < end; i++)
+                var applied = 0;
+                foreach (var entry in entries)
                 {
-                    // This rid's own RefIds entry header (a "- rid: N" under RefIds at the entry indent) is removed
-                    // below, not nulled — skip it so it isn't rewritten to the null id.
-                    if (headerIndex < 0 && i > refIdsStart
-                        && SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
-                        && headerRid == rid)
-                    {
-                        headerIndex = i;
-                        continue;
-                    }
+                    if (!TryNullReference(lines, entry.FileId, entry.Rid, out var nulled)) continue;
 
-                    // Null every pointer to the rid — a "- rid: N" array element, a "rid: N" scalar field or an inline
-                    // "{rid: N}" — so no dangling pointer survives the entry's removal (which errors on array fields).
-                    // The anchored pattern preserves each pointer's structural prefix/suffix and only rewrites the id.
-                    if (pointerToken.IsMatch(lines[i]))
-                    {
-                        lines[i] = pointerToken.Replace(lines[i], $"${{prefix}}rid: {NullRid}${{suffix}}");
-                        pointerNulled = true;
-                    }
+                    lines = nulled;
+                    applied++;
                 }
 
-                if (headerIndex < 0 && !pointerNulled) return false;
+                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines)) return 0;
 
-                var blockStart = headerIndex;
-                var blockEnd = headerIndex >= 0 ? FindEntryEnd(lines, headerIndex, end, entryIndent) : -1;
-
-                // The entry block we're about to drop must use Unity's space-only indentation; a tab / mixed prefix can
-                // mis-bound it (IndentOf vs the "- rid:" \s* regex), so bail before this non-undoable rewrite. (Pointer
-                // nulling above is line-local and indent-agnostic, so no write has reached disk yet.)
-                if (headerIndex >= 0 && !BlockIndentIsTrusted(lines, blockStart, blockEnd)) return false;
-
-                // A "- rid: -2" pointer is valid only while the RefIds list carries Unity's null sentinel entry; add it
-                // when we just introduced a null pointer and the document does not already have one (a shared singleton).
-                var needsNullEntry = pointerNulled && !HasNullSentinelEntry(lines, refIdsStart, end, entryIndent);
-                var dash = new string(' ', entryIndent);
-                var typeIndent = new string(' ', entryIndent + 2);
-
-                var result = new List<string>(lines.Length + 2);
-                for (var i = 0; i < lines.Length; i++)
-                {
-                    if (headerIndex >= 0 && i >= blockStart && i < blockEnd) continue;
-
-                    result.Add(lines[i]);
-
-                    if (needsNullEntry && i == refIdsStart)
-                    {
-                        result.Add($"{dash}- rid: {NullRid}");
-                        result.Add($"{typeIndent}{NullSentinelType}");
-                    }
-                }
-
-                if (!TryWritePreservingNewlines(assetPath, result)) return false;
                 SerializeReferenceYamlProbeCache.ClearCache();
-                return true;
+                return applied;
             }
             catch (Exception exception)
             {
-                Debug.LogError($"[Aspid FastTools] Failed to null managed-reference rid {rid} in '{assetPath}': {exception}");
-                return false;
+                Debug.LogError($"[Aspid FastTools] Failed to null managed references in '{assetPath}': {exception}");
+                return 0;
             }
+        }
+
+        // Works on a copy, so source stays unchanged when the entry bails after its pointers were nulled.
+        private static bool TryNullReference(string[] source, long fileId, long rid, out string[] result)
+        {
+            result = null;
+
+            var lines = (string[])source.Clone();
+            var (start, end) = FindDocumentRange(lines, fileId);
+            if (start < 0) return false;
+
+            var refIdsStart = FindRefIdsStart(lines, start, end);
+            if (refIdsStart < 0) return false;
+
+            // RefIds entry headers sit at the shallowest "- rid:" indent under RefIds; a pointer to the rid lives
+            // anywhere else — a field/array element before "references:" or a nested reference inside another entry's
+            // data block. The header for this rid is removed; every pointer to it becomes the null id.
+            var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
+            if (entryIndent < 0) return false;
+
+            var pointerToken = BuildPointerPattern(rid);
+
+            var headerIndex = -1;
+            var pointerNulled = false;
+
+            for (var i = start; i < end; i++)
+            {
+                // This rid's own RefIds entry header (a "- rid: N" under RefIds at the entry indent) is removed
+                // below, not nulled — skip it so it isn't rewritten to the null id.
+                if (headerIndex < 0 && i > refIdsStart
+                    && SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
+                    && headerRid == rid)
+                {
+                    headerIndex = i;
+                    continue;
+                }
+
+                // Null every pointer to the rid — a "- rid: N" array element, a "rid: N" scalar field or an inline
+                // "{rid: N}" — so no dangling pointer survives the entry's removal (which errors on array fields).
+                // The anchored pattern preserves each pointer's structural prefix/suffix and only rewrites the id.
+                if (pointerToken.IsMatch(lines[i]))
+                {
+                    lines[i] = pointerToken.Replace(lines[i], $"${{prefix}}rid: {NullRid}${{suffix}}");
+                    pointerNulled = true;
+                }
+            }
+
+            if (headerIndex < 0 && !pointerNulled) return false;
+
+            var blockStart = headerIndex;
+            var blockEnd = headerIndex >= 0 ? FindEntryEnd(lines, headerIndex, end, entryIndent) : -1;
+
+            // The entry block we're about to drop must use Unity's space-only indentation; a tab / mixed prefix can
+            // mis-bound it (IndentOf vs the "- rid:" \s* regex), so bail before this non-undoable rewrite. (Pointer
+            // nulling above is line-local and indent-agnostic, so no write has reached disk yet.)
+            if (headerIndex >= 0 && !BlockIndentIsTrusted(lines, blockStart, blockEnd)) return false;
+
+            // A "- rid: -2" pointer is valid only while the RefIds list carries Unity's null sentinel entry; add it
+            // when we just introduced a null pointer and the document does not already have one (a shared singleton).
+            var needsNullEntry = pointerNulled && !HasNullSentinelEntry(lines, refIdsStart, end, entryIndent);
+            var dash = new string(' ', entryIndent);
+            var typeIndent = new string(' ', entryIndent + 2);
+
+            var nulled = new List<string>(lines.Length + 2);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (headerIndex >= 0 && i >= blockStart && i < blockEnd) continue;
+
+                nulled.Add(lines[i]);
+
+                if (needsNullEntry && i == refIdsStart)
+                {
+                    nulled.Add($"{dash}- rid: {NullRid}");
+                    nulled.Add($"{typeIndent}{NullSentinelType}");
+                }
+            }
+
+            result = nulled.ToArray();
+            return true;
         }
 
         // How many slots TryNullReference would null. A missing reference can be aliased across several, so the

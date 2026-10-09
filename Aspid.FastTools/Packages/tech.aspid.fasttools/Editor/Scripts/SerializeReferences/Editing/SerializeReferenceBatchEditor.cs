@@ -13,12 +13,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             out List<MissingReferenceLocation> onDisk, out List<MissingReferenceLocation> inMemory)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();
+            var verdicts = new Dictionary<string, bool>(StringComparer.Ordinal);
             onDisk = new List<MissingReferenceLocation>(source.Count);
             inMemory = new List<MissingReferenceLocation>();
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) onDisk.Add(entry);
+                if (IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) onDisk.Add(entry);
                 else inMemory.Add(entry);
             }
         }
@@ -28,12 +29,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static List<MissingReferenceLocation> FilterWritable(IReadOnlyList<MissingReferenceLocation> source, out int skipped)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();
+            var verdicts = new Dictionary<string, bool>(StringComparer.Ordinal);
             var writable = new List<MissingReferenceLocation>(source.Count);
             skipped = 0;
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) writable.Add(entry);
+                if (IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) writable.Add(entry);
                 else skipped++;
             }
 
@@ -62,12 +64,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         public static int Rewrite(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName targetType, string progressTitle) =>
-            RunBatch(entries, progressTitle, (path, entry) =>
-                SerializeReferenceYamlEditor.TryRewriteType(path, entry.Entry.FileId, entry.Entry.Rid, targetType));
+            RunBatch(entries, progressTitle, (path, fileEntries) =>
+                SerializeReferenceYamlEditor.RewriteTypes(path, fileEntries, targetType));
 
         public static int Null(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle) =>
-            RunBatch(entries, progressTitle, (path, entry) =>
-                SerializeReferenceYamlEditor.TryNullReference(path, entry.Entry.FileId, entry.Entry.Rid));
+            RunBatch(entries, progressTitle, SerializeReferenceYamlEditor.NullReferences);
 
         public static int ClearOpenInMemory(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName storedType)
         {
@@ -84,8 +85,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int CountFiles(IEnumerable<MissingReferenceLocation> entries) =>
             entries.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
 
+        // The answer is the same for every entry of a file, and the unsaved-changes check loads every object of the
+        // asset, so it is asked once per path.
+        private static bool IsRewriteSafe(string assetPath, string prefabStagePath, Dictionary<string, bool> verdicts)
+        {
+            if (assetPath is null) return SerializeReferenceOpenCopyGuard.IsRewriteSafe(assetPath, prefabStagePath);
+
+            if (!verdicts.TryGetValue(assetPath, out var safe))
+            {
+                safe = SerializeReferenceOpenCopyGuard.IsRewriteSafe(assetPath, prefabStagePath);
+                verdicts.Add(assetPath, safe);
+            }
+
+            return safe;
+        }
+
+        // Edits each file once: edit gets all the file's entries and returns how many it applied.
         private static int RunBatch(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle,
-            Func<string, MissingReferenceLocation, bool> edit)
+            Func<string, IReadOnlyList<MissingReferenceEntry>, int> edit)
         {
             var byFile = entries
                 .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
@@ -108,16 +125,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // it writable before its first entry, even when that entry turns out stale.
                     if (File.Exists(file.Key) && !SerializeReferenceYamlEditor.TryMakeEditable(file.Key)) continue;
 
-                    var changed = false;
-                    foreach (var entry in file)
-                    {
-                        if (!edit(file.Key, entry)) continue;
+                    var fileApplied = edit(file.Key, file.Select(location => location.Entry).ToArray());
+                    if (fileApplied == 0) continue;
 
-                        applied++;
-                        changed = true;
-                    }
-
-                    if (changed) AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
+                    applied += fileApplied;
+                    AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
                 }
             }
             finally
