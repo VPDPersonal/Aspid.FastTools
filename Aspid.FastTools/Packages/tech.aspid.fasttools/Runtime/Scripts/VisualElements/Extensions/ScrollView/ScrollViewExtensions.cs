@@ -99,9 +99,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="ScrollView.mouseWheelScrollSize"/>.
         /// </summary>
+        /// <remarks>
+        /// Setting the default value 18 on a new <see cref="ScrollView"/> does not override the theme.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The distance in pixels that one mouse wheel step scrolls.</param>
+        /// <param name="value">The pixels scrolled per unit of mouse wheel delta; replaces the single-line height from the theme.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetMouseWheelScrollSize<T>(this T element, float value)
             where T : ScrollView

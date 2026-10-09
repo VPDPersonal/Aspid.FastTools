@@ -85,6 +85,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+When several callbacks are subscribed, Unity runs all of them and uses only the result of the last one.
+
 ### AddSelected\<T\>\(T, Action\<Tab\>\) {#Aspid_FastTools_UIElements_TabExtensions_AddSelected__1___0_System_Action_UnityEngine_UIElements_Tab__}
 
 Subscribes to the [`selected`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Tab-selected.html) event.

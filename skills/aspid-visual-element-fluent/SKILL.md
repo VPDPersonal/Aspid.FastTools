@@ -91,7 +91,7 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
 - Add the tabs before `SetActiveTab` and `SetSelectedTabIndex`: Unity throws for a tab that is not in the view and
   ignores an index out of range. Call `ScrollView.SetScrollOffset` after the content is laid out: the scrollers limit
-  the offset to the scrollable range.
+  the offset to the scrollable range. `Tab.AddClosing` callbacks all run, but only the last result counts.
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.

@@ -191,7 +191,7 @@ The element to modify.
 
 `value` [float](https://learn.microsoft.com/dotnet/api/system.single)
 
-The distance in pixels that one mouse wheel step scrolls.
+The pixels scrolled per unit of mouse wheel delta; replaces the single-line height from the theme.
 
 #### Returns
 
@@ -204,6 +204,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Setting the default value 18 on a new [`ScrollView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView.html) does not override the theme.
 
 ### SetNestedInteractionKind\<T\>\(T, NestedInteractionKind\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetNestedInteractionKind__1___0_UnityEngine_UIElements_ScrollView_NestedInteractionKind_}
 

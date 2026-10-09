@@ -43,6 +43,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="Tab.closing"/> event.
         /// </summary>
+        /// <remarks>
+        /// When several callbacks are subscribed, Unity runs all of them and uses only the result of the last one.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe; it returns <see langword="false"/> to cancel the closing.</param>
