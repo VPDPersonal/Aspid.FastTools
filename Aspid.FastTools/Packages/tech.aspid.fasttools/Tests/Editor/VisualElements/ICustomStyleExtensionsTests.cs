@@ -41,6 +41,8 @@ namespace Aspid.FastTools.UIElements.Tests
         [TestCase("7")]
         [TestCase("-1")]
         [TestCase("On, Auto")]
+        [TestCase("Off, On")]
+        [TestCase("On,On")]
         [TestCase("Missing")]
         [TestCase("")]
         public void TryGetByEnum_UndefinedValue_ReturnsFalseAndDefault(string text)

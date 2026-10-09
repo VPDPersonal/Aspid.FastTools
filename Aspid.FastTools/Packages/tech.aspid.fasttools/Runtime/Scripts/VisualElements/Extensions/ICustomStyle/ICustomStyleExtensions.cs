@@ -15,7 +15,8 @@ namespace Aspid.FastTools.UIElements
         /// it as the enum <typeparamref name="T"/>. Parsing is case-insensitive.
         /// </summary>
         /// <remarks>
-        /// A number is accepted only when it is a defined value; a <see cref="FlagsAttribute"/> enum accepts names only.
+        /// A number is accepted only when it is a defined value, and a comma-separated list only for a
+        /// <see cref="FlagsAttribute"/> enum, which accepts names only.
         /// </remarks>
         /// <typeparam name="T">The enum type to parse the USS value as.</typeparam>
         /// <param name="style">The resolved custom-style container, typically obtained from
@@ -34,7 +35,7 @@ namespace Aspid.FastTools.UIElements
                 && TryParseDefined(propertyValue, out value);
         }
 
-        // Enum.TryParse accepts any number, so an undefined value has to be rejected afterwards.
+        // Enum.TryParse accepts any number and any comma list, so both are rejected afterwards.
         private static bool TryParseDefined<T>(string text, out T value)
             where T : struct, Enum
         {
@@ -43,7 +44,7 @@ namespace Aspid.FastTools.UIElements
 
             var isDefined = typeof(T).IsDefined(typeof(FlagsAttribute), inherit: false)
                 ? !HasNumericToken(text)
-                : Enum.IsDefined(typeof(T), value);
+                : !text.Contains(value: ',') && Enum.IsDefined(typeof(T), value);
 
             if (isDefined) return true;
 

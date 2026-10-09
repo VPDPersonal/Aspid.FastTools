@@ -66,5 +66,6 @@ The enum type to parse the USS value as.
 
 #### Remarks
 
-A number is accepted only when it is a defined value; a [`FlagsAttribute`](https://learn.microsoft.com/dotnet/api/system.flagsattribute) enum accepts names only.
+A number is accepted only when it is a defined value, and a comma-separated list only for a
+[`FlagsAttribute`](https://learn.microsoft.com/dotnet/api/system.flagsattribute) enum, which accepts names only.
 
