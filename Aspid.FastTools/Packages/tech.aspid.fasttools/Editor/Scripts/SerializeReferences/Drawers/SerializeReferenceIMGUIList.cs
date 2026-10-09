@@ -43,32 +43,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <param name="baseTypes">Additional constraints below <paramref name="elementType"/>; <see langword="null"/> or an empty array adds none.</param>
         /// <exception cref="ArgumentNullException"><paramref name="listProperty"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="listProperty"/> is not a managed-reference array.</exception>
-        public static void Draw(SerializedProperty listProperty, GUIContent label, Type elementType, params Type[] baseTypes)
-        {
-            ThrowIfNotManagedReferenceList(listProperty);
-
-            label ??= new GUIContent(listProperty.displayName);
-            baseTypes = TypeSelectorConstraintResolver.AppendFieldConstraints(listProperty, baseTypes);
-
-            GetOrCreate(listProperty, label, elementType, baseTypes, depth: 0).DoLayoutList();
-        }
+        public static void Draw(SerializedProperty listProperty, GUIContent label, Type elementType, params Type[] baseTypes) =>
+            DrawLayout(listProperty: listProperty, label: label, elementType: elementType, baseTypes: baseTypes);
 
         /// <summary>
         /// Draws a managed-reference list whose add button selects a type and appends an independent instance, taking the element type from the field declaration.
         /// </summary>
         /// <remarks>
-        /// When the list is empty and its field cannot be found by reflection, the element type falls back to <see cref="object"/>; pass it to the overload with <c>elementType</c> then.
+        /// When the list is empty and its field cannot be found by reflection, the element type falls back to <see cref="object"/>; call the overload with <c>elementType</c> then.
         /// </remarks>
         /// <param name="listProperty">An array/list property whose elements are managed references.</param>
         /// <param name="label">The list header; <see langword="null"/> uses the display name of <paramref name="listProperty"/>, <see cref="GUIContent.none"/> displays no label.</param>
         /// <param name="baseTypes">Additional constraints below the element type; <see langword="null"/> or an empty array adds none.</param>
         /// <exception cref="ArgumentNullException"><paramref name="listProperty"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="listProperty"/> is not a managed-reference array.</exception>
-        public static void Draw(SerializedProperty listProperty, GUIContent label = null, Type[] baseTypes = null)
-        {
-            ThrowIfNotManagedReferenceList(listProperty);
+        public static void Draw(SerializedProperty listProperty, GUIContent label = null, Type[] baseTypes = null) =>
+            DrawLayout(listProperty: listProperty, label: label, elementType: null, baseTypes: baseTypes);
 
-            Draw(listProperty, label, SerializeReferenceHelpers.GetArrayElementType(listProperty), baseTypes);
+        // A null elementType is resolved from the list field when the list is created, not on every GUI event.
+        private static void DrawLayout(SerializedProperty listProperty, GUIContent label, Type elementType, Type[] baseTypes)
+        {
+            if (listProperty is null) throw new ArgumentNullException(nameof(listProperty));
+            if (!SerializeReferenceHelpers.IsManagedReferenceArray(listProperty))
+                throw new ArgumentException("Draw expects an array/list property whose elements are [SerializeReference] managed references.", nameof(listProperty));
+
+            label ??= new GUIContent(listProperty.displayName);
+            baseTypes = TypeSelectorConstraintResolver.AppendFieldConstraints(listProperty, baseTypes);
+
+            GetOrCreate(listProperty, label, elementType, baseTypes, depth: 0).DoLayoutList();
         }
 
         // Fixed-rect twin of Draw, for a list nested inside a managed reference the drawer is already laying out —
@@ -102,6 +104,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static PickerList Create(SerializedProperty listProperty, Type elementType, int depth)
         {
+            elementType ??= SerializeReferenceHelpers.GetArrayElementType(listProperty);
+
             var targets = GetAppendTargets(listProperty);
             var arrayPath = listProperty.propertyPath;
 
@@ -160,13 +164,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
 
             return list;
-        }
-
-        private static void ThrowIfNotManagedReferenceList(SerializedProperty listProperty)
-        {
-            if (listProperty is null) throw new ArgumentNullException(nameof(listProperty));
-            if (!SerializeReferenceHelpers.IsManagedReferenceArray(listProperty))
-                throw new ArgumentException("Draw expects an array/list property whose elements are [SerializeReference] managed references.", nameof(listProperty));
         }
 
         // Every target, so "+" under a multi-object selection appends to each object, not only the first.

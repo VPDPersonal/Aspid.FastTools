@@ -349,6 +349,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        [Test]
+        public void GetArrayElementType_EmptyList_ResolvesTheDeclaredElementType()
+        {
+            var obj = ScriptableObject.CreateInstance<ListAddTestObject>();
+            try
+            {
+                var serialized = new SerializedObject(obj);
+
+                Assert.AreEqual(typeof(ITestWeapon), SerializeReferenceHelpers.GetArrayElementType(serialized.FindProperty("sidearms")),
+                    "The list overload of Draw relies on this to constrain the picker of an empty list.");
+
+                Assert.AreEqual(typeof(ITestWeapon), SerializeReferenceHelpers.GetArrayElementType(serialized.FindProperty("selected")),
+                    "A [TypeSelector] on the list field must not change the declared element type.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
         private static ListView FindList(VisualElement root, string bindingPath)
         {
             var listView = root.Query<ListView>().Where(view => view.bindingPath == bindingPath).First();

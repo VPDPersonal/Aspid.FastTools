@@ -90,7 +90,7 @@ Additional constraints below the element type; <a href="https://learn.microsoft.
 
 #### Remarks
 
-When the list is empty and its field cannot be found by reflection, the element type falls back to [`Object`](https://learn.microsoft.com/dotnet/api/system.object); pass it to the overload with <code>elementType</code> then.
+When the list is empty and its field cannot be found by reflection, the element type falls back to [`Object`](https://learn.microsoft.com/dotnet/api/system.object); call the overload with <code>elementType</code> then.
 
 #### Exceptions
 
