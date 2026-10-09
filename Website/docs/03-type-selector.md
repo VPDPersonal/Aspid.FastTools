@@ -62,7 +62,7 @@ A wrapper's <code lang="class-name">T</code> and a <code lang="csharp">[Serializ
 ```
 
 > [!NOTE]
-> In the Inspector of a runtime object, the picker leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them.
+> In the Inspector of a runtime object, the picker leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them. On a `[SerializeReference]` field, **Paste**, **Paste Template**, **Link to Existing**, **Smart Fix** and a dropped script refuse them too.
 
 ## Properties
 

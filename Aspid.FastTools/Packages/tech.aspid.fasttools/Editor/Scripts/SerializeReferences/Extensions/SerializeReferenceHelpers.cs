@@ -100,48 +100,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // hasMultipleDifferentValues also compares rids, which differ between objects that hold the same type, and
             // it misses the all-missing case, where every target reads back null but the stored, unloadable type names
             // still differ. Only the stored type names decide.
-            if (!property.hasMultipleDifferentValues && property.managedReferenceValue is not null) return false;
+            var loaded = property.hasMultipleDifferentValues;
+            if (!loaded && property.managedReferenceValue is not null) return false;
 
             var first = property.managedReferenceFullTypename;
             var targets = property.serializedObject.targetObjects;
             if (targets.Length < 2) return false;
 
-            if (TryGetMixedCache(property.propertyPath, first, targets, out var cached)) return cached;
+            // Unloadable type names change only with the file, which every package write, Undo and import reports.
+            // A loaded value can change without them (Play Mode code, an editor script), so its result lasts one tick.
+            var tick = loaded ? MemoTick : -1;
+            var path = property.propertyPath;
+
+            if (!MixedTargetsMatch(targets)) ResetMixedSelection(targets);
+            if (_mixedResults.TryGetValue(path, out var entry) && entry.tick == tick && entry.first == first)
+                return entry.result;
 
             var result = false;
-            foreach (var target in targets)
+            for (var i = 0; i < targets.Length && !result; i++)
             {
-                if (target == null) continue;
-
-                using var single = new SerializedObject(target);
-                var other = single.FindProperty(property.propertyPath);
-                if (other is null) continue;
-                if (other.managedReferenceFullTypename != first) { result = true; break; }
+                var other = GetMixedTarget(i)?.FindProperty(path);
+                result = other is not null && other.managedReferenceFullTypename != first;
             }
 
-            StoreMixedCache(property.propertyPath, first, targets, result);
+            _mixedResults[path] = (first, tick, result);
             return result;
         }
 
-        // Cache by property path within one selection; invalidate when the selection changes.
+        // One entry per property path within one selection. Each selected object has one SerializedObject, refreshed
+        // at most once per tick, so a long list reads each object once instead of once per element.
         private static Object[] _mixedTargets;
-        private static readonly Dictionary<string, (string first, bool result)> _mixedResults = new(StringComparer.Ordinal);
+        private static SerializedObject[] _mixedTargetObjects;
+        private static long[] _mixedTargetTicks;
+        private static readonly Dictionary<string, (string first, long tick, bool result)> _mixedResults = new(StringComparer.Ordinal);
 
         // Keyed by selection, not file state, so an external rewrite of the selected assets must drop it explicitly.
         public static void InvalidateMixedTypesCache()
         {
-            _mixedTargets = null;
             _mixedResults.Clear();
-        }
-
-        private static bool TryGetMixedCache(string path, string first, UnityEngine.Object[] targets, out bool result)
-        {
-            result = false;
-            if (!MixedTargetsMatch(targets)) return false;
-            if (!_mixedResults.TryGetValue(path, out var entry) || entry.first != first) return false;
-
-            result = entry.result;
-            return true;
+            if (_mixedTargetTicks is not null) Array.Fill(_mixedTargetTicks, -1);
         }
 
         private static bool MixedTargetsMatch(UnityEngine.Object[] targets)
@@ -154,15 +151,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        private static void StoreMixedCache(string path, string first, UnityEngine.Object[] targets, bool result)
+        private static void ResetMixedSelection(UnityEngine.Object[] targets)
         {
-            if (!MixedTargetsMatch(targets))
+            if (_mixedTargetObjects is not null)
             {
-                _mixedResults.Clear();
-                _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
+                foreach (var serializedObject in _mixedTargetObjects)
+                    serializedObject?.Dispose();
             }
 
-            _mixedResults[path] = (first, result);
+            _mixedResults.Clear();
+            _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
+            _mixedTargetObjects = new SerializedObject[targets.Length];
+            _mixedTargetTicks = new long[targets.Length];
+        }
+
+        private static SerializedObject GetMixedTarget(int index)
+        {
+            var target = _mixedTargets[index];
+            if (target == null) return null;
+
+            var serializedObject = _mixedTargetObjects[index];
+            if (serializedObject is null)
+                _mixedTargetObjects[index] = serializedObject = new SerializedObject(target);
+            else if (_mixedTargetTicks[index] != MemoTick)
+                serializedObject.Update();
+
+            _mixedTargetTicks[index] = MemoTick;
+            return serializedObject;
         }
 
         // Repair notices operate on one backing asset and cannot represent a multi-object selection.

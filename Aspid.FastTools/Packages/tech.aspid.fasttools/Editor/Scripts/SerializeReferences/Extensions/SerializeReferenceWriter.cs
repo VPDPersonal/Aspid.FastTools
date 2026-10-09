@@ -15,8 +15,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // from one would load there as missing. Null clears the field and always fits.
         public static bool CanHold(SerializedProperty property, Type type) =>
             type is null ||
-            !TypeUtility.IsEditorOnlyAssembly(type.Assembly) ||
+            !IsEditorOnly(type) ||
             !Array.Exists(property.serializedObject.targetObjects, TypeSelectorHelpers.IsRuntimeObject);
+
+        // A closed generic reports the assembly of its definition, so an editor-only argument needs its own check.
+        private static bool IsEditorOnly(Type type) =>
+            TypeUtility.IsEditorOnlyAssembly(type.Assembly) ||
+            (type.HasElementType && IsEditorOnly(type.GetElementType())) ||
+            (type.IsGenericType && Array.Exists(type.GetGenericArguments(), IsEditorOnly));
 
         // Narrows a menu filter to the types a write accepts, so a menu never offers a type the write refuses.
         public static Func<Type, bool> WithHoldCheck(SerializedProperty property, Func<Type, bool> filter) =>

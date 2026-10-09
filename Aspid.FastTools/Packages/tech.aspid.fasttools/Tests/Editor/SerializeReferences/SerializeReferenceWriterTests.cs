@@ -3,19 +3,24 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
 using Aspid.FastTools.Tests;
 using Aspid.FastTools.Editors;
+using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    // Covers the shared write path of the inspector actions (picker, drop, Paste, Paste Template, Link to Existing):
-    // a re-pick of the current type, one instance per selected object, the editor-only filter for runtime objects,
-    // the note on a replaced missing list element and the expansion of the inspector's own property.
+    // Covers the shared write path of the inspector actions (picker, drop, Paste, Paste Template, Link to Existing)
+    // and of the Asset References picker: a re-pick of the current type, one instance per selected object, the
+    // editor-only filter for runtime objects, the note on a replaced missing list element and the expansion of the
+    // inspector's own property.
     [TestFixture]
     internal sealed class SerializeReferenceWriterTests
     {
         private const string MissingElementAssetPath = "Assets/__AspidWriterMissingElementProbe__.asset";
+        private const string GraphAssetPath = "Assets/__AspidWriterGraphProbe__.asset";
 
         private static readonly Func<ManagedTypeName, bool> Resolves = type =>
             !type.Class.StartsWith("Ghost", StringComparison.Ordinal);
@@ -244,6 +249,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void CanHold_GenericOverEditorOnlyArgument_IsFalseForRuntimeObject()
+        {
+            var obj = ScriptableObject.CreateInstance<InMemoryRepairTestObject>();
+            try
+            {
+                var property = new SerializedObject(obj).FindProperty(nameof(InMemoryRepairTestObject.value));
+
+                Assert.IsTrue(SerializeReferenceWriter.CanHold(property, typeof(List<int>)));
+                Assert.IsFalse(SerializeReferenceWriter.CanHold(property, typeof(List<TestSword>)),
+                    "A runtime generic closed over an editor-only type loads as missing in a player build.");
+                Assert.IsFalse(SerializeReferenceWriter.CanHold(property, typeof(List<TestSword[]>)));
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [Test]
         public void SetValue_TemplateRemoved_LeavesTheFieldAsItIs()
         {
             var obj = ScriptableObject.CreateInstance<LinkerTestObject>();
@@ -406,6 +430,92 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Object.DestroyImmediate(first);
                 Object.DestroyImmediate(second);
             }
+        }
+
+        [UnityTest]
+        public IEnumerator HasMixedTypes_ObjectChangedOutsideTheInspector_IsTrueOnTheNextTick()
+        {
+            var first = ScriptableObject.CreateInstance<LinkerTestObject>();
+            var second = ScriptableObject.CreateInstance<LinkerTestObject>();
+            try
+            {
+                first.a = new TestSword { damage = 1 };
+                second.a = new TestSword { damage = 2 };
+                var serialized = new SerializedObject(new Object[] { first, second });
+                Assert.IsFalse(SerializeReferenceHelpers.HasMixedTypes(serialized.FindProperty("a")));
+
+                // Play Mode code or an editor script: no package write, Undo or import reports this change.
+                second.a = new WriterTestBow();
+
+                var tick = SerializeReferenceHelpers.MemoTick;
+                for (var i = 0; i < 100 && SerializeReferenceHelpers.MemoTick == tick; i++)
+                    yield return null;
+
+                Assert.AreNotEqual(tick, SerializeReferenceHelpers.MemoTick, "The editor update did not run.");
+
+                serialized.Update();
+                Assert.IsTrue(SerializeReferenceHelpers.HasMixedTypes(serialized.FindProperty("a")),
+                    "A cached result must not hide another type that a later object now holds.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+            }
+        }
+
+        [Test]
+        public void GraphApplyLive_CurrentType_KeepsTheSharedReference()
+        {
+            var obj = ScriptableObject.CreateInstance<LinkerTestObject>();
+            var shared = new TestSword { damage = 3 };
+            obj.a = shared;
+            obj.b = shared;
+
+            try
+            {
+                AssetDatabase.CreateAsset(obj, GraphAssetPath);
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out long fileId);
+                AssertReachable(fileId, "a");
+
+                Assert.IsFalse(SerializeReferenceGraphEditor.ApplyLive(GraphAssetPath, fileId, "a",
+                    typeof(TestSword).AssemblyQualifiedName), "Picking the type the slot already holds must not write.");
+                Assert.AreSame(shared, obj.a);
+                Assert.AreSame(obj.a, obj.b, "A re-pick in Asset References must not break a shared reference.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(GraphAssetPath);
+            }
+        }
+
+        [Test]
+        public void GraphApplyLive_EditorOnlyTypeOnRuntimeObject_IsRefused()
+        {
+            var obj = ScriptableObject.CreateInstance<InMemoryRepairTestObject>();
+
+            try
+            {
+                AssetDatabase.CreateAsset(obj, GraphAssetPath);
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out long fileId);
+                AssertReachable(fileId, nameof(InMemoryRepairTestObject.value));
+
+                Assert.IsFalse(SerializeReferenceGraphEditor.ApplyLive(GraphAssetPath, fileId,
+                    nameof(InMemoryRepairTestObject.value), typeof(TestSword).AssemblyQualifiedName));
+                Assert.IsNull(obj.value, "A type a player build leaves out must not reach a runtime object.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(GraphAssetPath);
+            }
+        }
+
+        // An unreachable slot also returns false, after a dialog; the graph tests must fail on the write, not on that.
+        private static void AssertReachable(long fileId, string graphPath)
+        {
+            Assert.IsTrue(SerializeReferenceGraphEditor.TryResolveLiveProperty(GraphAssetPath, fileId, graphPath,
+                out var serializedObject, out _));
+            serializedObject.Dispose();
         }
 
         [Test]

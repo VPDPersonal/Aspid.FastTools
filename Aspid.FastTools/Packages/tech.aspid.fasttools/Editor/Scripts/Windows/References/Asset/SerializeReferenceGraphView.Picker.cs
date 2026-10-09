@@ -26,6 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var constraint = typeof(object);
             var currentAqn = string.Empty;
+            var excludeEditorOnly = false;
 
             if (SerializeReferenceGraphEditor.TryResolveLiveProperty(assetPath, fileId, graphPath, out var serializedObject, out var property))
             {
@@ -33,10 +34,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     constraint = SerializeReferenceHelpers.GetFieldType(property);
                     currentAqn = property.managedReferenceValue?.GetType().AssemblyQualifiedName ?? string.Empty;
+                    excludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property);
                 }
             }
 
-            TogglePicker(anchor, ManagedReferenceFilter.For(constraint), currentAqn,
+            // The write refuses an editor-only type for a runtime object, so the picker does not offer one.
+            var filter = ManagedReferenceFilter.For(constraint);
+            filter.ExcludeEditorOnly = excludeEditorOnly;
+
+            TogglePicker(anchor, filter, currentAqn,
                 assemblyQualifiedName => ApplyLive(assetPath, fileId, graphPath, assemblyQualifiedName));
         }
 
