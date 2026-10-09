@@ -442,7 +442,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var modification in modifications)
             {
                 if (modification.target != source || modification.propertyPath != modificationPath) continue;
-                if (!long.TryParse(modification.value, out referenceId)) return false;
+                if (!SerializeReferenceYaml.TryParseId(modification.value, out referenceId)) return false;
 
                 found = true;
                 break;
@@ -1244,7 +1244,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             foreach (Match match in Regex.Matches(data ?? string.Empty, @"(?<!\w)rid:\s*(-?\d+)"))
             {
-                if (long.TryParse(match.Groups[1].Value, out var child) && child != self)
+                if (SerializeReferenceYaml.TryParseId(match.Groups[1].Value, out var child) && child != self)
                     yield return child;
             }
         }

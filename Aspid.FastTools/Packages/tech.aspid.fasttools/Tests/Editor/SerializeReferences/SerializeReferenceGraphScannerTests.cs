@@ -96,6 +96,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 "An empty root must carry a null sentinel rid.");
         }
 
+        // On CoreCLR, the Hebrew negative sign starts with a direction mark, so a culture-aware parse rejects "rid: -2".
+        [Test]
+        [SetCulture("he-IL")]
+        public void Build_ClearedFields_LocaleWithAnotherNegativeSign_SurfaceAsEmptyRoots()
+        {
+            var document = SingleDocument(_emptyPath);
+
+            var emptyRoots = document.Roots.Where(root => root.IsEmpty).Select(root => root.Label).ToList();
+            CollectionAssert.AreEquivalent(new[] { "_onHitEffect", "_sidearms[1]" }, emptyRoots);
+        }
+
         [Test]
         public void Build_ClearedNestedField_SurfacesAsEmptyEdge()
         {

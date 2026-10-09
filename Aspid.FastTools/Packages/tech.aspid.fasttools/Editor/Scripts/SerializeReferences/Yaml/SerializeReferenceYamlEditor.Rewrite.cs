@@ -16,7 +16,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Regex _leadingRidKey = new(@"^(?<lead>\s*(?<dash>-\s+)?)rid:", RegexOptions.Compiled);
 
         // "  _field:" or "  - _field:": a key whose value is the block below it; the lead ends at the key's column.
-        private static readonly Regex _openKey = new(@"^(?<lead>\s*(?:-\s+)?)(?<key>[A-Za-z_][^:\s]*):\s*$", RegexOptions.Compiled);
+        // Any key Unity writes counts, such as "<Prop>k__BackingField" or a non-ASCII field name.
+        private static readonly Regex _openKey = new(@"^(?<lead>\s*(?:-\s+)?)(?<key>[^\s:#-][^:]*):\s*$", RegexOptions.Compiled);
 
         // Replaces the entry's type mapping. The caller reimports the asset.
         public static bool TryRewriteType(string assetPath, long fileId, long rid, ManagedTypeName newType)

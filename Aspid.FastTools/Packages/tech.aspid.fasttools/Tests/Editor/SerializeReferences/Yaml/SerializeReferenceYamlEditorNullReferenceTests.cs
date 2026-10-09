@@ -67,6 +67,43 @@ MonoBehaviour:
         rid: 1002
 ";
 
+        private const long BackingFieldsFileId = 11400000L;
+        private const long BackingFieldsTarget = 1002L;
+        private const long BackingFieldsDangling = 1005L;
+
+        // Scalar pointers under keys that do not start with a letter or an underscore: the backing field of a
+        // [field: SerializeReference] auto-property and a non-ASCII field name. Rid 1002 is pointed at three times, once
+        // inside another entry's data; rid 1005 has a pointer but no RefIds entry.
+        private const string BackingFieldsAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: BackingFields
+  <Weapon>k__BackingField:
+    rid: 1002
+  _оружие:
+    rid: 1002
+  <Holster>k__BackingField:
+    rid: 1003
+  <Spare>k__BackingField:
+    rid: 1005
+  references:
+    version: 2
+    RefIds:
+    - rid: 1002
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+    - rid: 1003
+      type: {class: Holster, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        <Weapon>k__BackingField:
+          rid: 1002
+";
+
         [Test]
         public void TryNullReference_ListElement_NullsPointer_RemovesEntry_AddsSentinel()
         {
@@ -285,6 +322,66 @@ MonoBehaviour:
             try
             {
                 Assert.AreEqual(2, SerializeReferenceYamlEditor.CountPointersTo(path, UserRidFieldsFileId, UserRidFieldsTarget));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryNullReference_PointersUnderBackingFieldAndNonAsciiKeys_AreNulled()
+        {
+            var path = YamlFixtures.WriteTemp(BackingFieldsAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(path, BackingFieldsFileId, BackingFieldsTarget));
+
+                var after = File.ReadAllText(path);
+                Assert.AreEqual(0, CountOccurrences(after, "rid: 1002"), "No pointer to the removed entry may survive.");
+                Assert.AreEqual(4, CountOccurrences(after, "rid: -2"), "Three nulled pointers and the null sentinel.");
+                StringAssert.DoesNotContain("GhostPistol", after);
+                StringAssert.Contains("Holster", after);
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, BackingFieldsFileId, "<Weapon>k__BackingField", out var weapon));
+                Assert.AreEqual(-2, weapon);
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, BackingFieldsFileId, "_оружие", out var other));
+                Assert.AreEqual(-2, other);
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void CountPointersTo_PointersUnderBackingFieldAndNonAsciiKeys_CountsThem()
+        {
+            var path = YamlFixtures.WriteTemp(BackingFieldsAsset);
+            try
+            {
+                Assert.AreEqual(3, SerializeReferenceYamlEditor.CountPointersTo(path, BackingFieldsFileId, BackingFieldsTarget));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryNullReference_DanglingPointerUnderBackingField_IsNulled()
+        {
+            var path = YamlFixtures.WriteTemp(BackingFieldsAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(path, BackingFieldsFileId, BackingFieldsDangling));
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, BackingFieldsFileId, "<Spare>k__BackingField", out var spare));
+                Assert.AreEqual(-2, spare);
+                Assert.AreEqual(1, CountOccurrences(File.ReadAllText(path), NullSentinelType));
             }
             finally
             {
