@@ -76,11 +76,10 @@ public class PackagedAnalyzerTests
             .Select(handle => reader.GetString(reader.GetAssemblyReference(handle).Name))
             .ToArray();
 
-        // Aspid.Generators.Helper* are merged into the generator; Unity loads the DLL without its neighbours.
-        Assert.DoesNotContain(assemblies, name => name.StartsWith("Aspid.Generators.Helper"));
-
-        // SourceGenerator.Foundations injects a module initializer that writes to Console and deadlocks Unity's compiler.
-        Assert.DoesNotContain(assemblies, name => name.Contains("Foundations"));
+        // Unity loads the DLL without its neighbours, so anything the compiler does not provide must be merged in.
+        // That covers Aspid.Generators.Helper* and SourceGenerator.Foundations, whose module initializer
+        // writes to Console and deadlocks Unity's compiler.
+        Assert.Empty(assemblies.Where(name => !PackagedAnalyzer.IsProvidedByCompiler(name)));
 
         var types = reader.TypeReferences
             .Select(handle => reader.GetTypeReference(handle))

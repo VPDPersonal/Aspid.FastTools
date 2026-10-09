@@ -63,16 +63,19 @@ internal sealed class PackagedAnalyzer : AssemblyLoadContext, IAnalyzerAssemblyL
 
     Assembly IAnalyzerAssemblyLoader.LoadFromPath(string fullPath) => LoadFromAssemblyPath(fullPath);
 
-    // The compiler offers an analyzer the framework and Roslyn, nothing else. The test output also holds the
-    // unmerged Aspid.Generators.Helper*, so falling back to it would hide a DLL that lost its merged copy.
+    // The compiler offers an analyzer the framework and Roslyn, nothing else.
+    public static bool IsProvidedByCompiler(string assemblyName) =>
+        assemblyName is "netstandard" or "mscorlib"
+        || assemblyName.StartsWith("System", StringComparison.Ordinal)
+        || assemblyName.StartsWith("Microsoft.CodeAnalysis", StringComparison.Ordinal);
+
+    // The test output also holds the unmerged Aspid.Generators.Helper*, so falling back to it
+    // would hide a DLL that lost its merged copy.
     protected override Assembly? Load(AssemblyName assemblyName)
     {
         var name = assemblyName.Name ?? string.Empty;
-        var isProvidedByCompiler = name is "netstandard" or "mscorlib"
-            || name.StartsWith("System", StringComparison.Ordinal)
-            || name.StartsWith("Microsoft.CodeAnalysis", StringComparison.Ordinal);
 
-        return isProvidedByCompiler
+        return IsProvidedByCompiler(name)
             ? null
             : throw new FileNotFoundException($"{Path.GetFileName(FilePath)} needs {name}, which the compiler does not provide.");
     }
