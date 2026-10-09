@@ -20,7 +20,7 @@ Configuration methods return the original element, preserving its type. All exte
 | <code lang="csharp">text = "Ability Config"</code> | <code lang="csharp">SetTextSelf("Ability Config")</code> |
 | <code lang="csharp">SetEnabled(false)</code> | <code lang="csharp">SetEnabledSelf(false)</code> |
 
-The suffix <code lang="csharp">Self</code> marks a name that a Unity method already has. That method returns <code lang="csharp">void</code> and takes precedence over an extension, so a chain through it does not compile; the FastTools method returns the element instead.
+The suffix <code lang="csharp">Self</code> marks a name that Unity uses, or may start to use, for a method that returns <code lang="csharp">void</code>. Such a method takes precedence over an extension, so a chain through it does not compile; the FastTools method returns the element instead.
 
 The full list of extensions is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements).
 
@@ -122,11 +122,7 @@ All of these methods have a variant with the suffix <code lang="csharp">If</code
 
 For custom value types, use the generic <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> and <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
 
-For <code lang="csharp">Unity.Mathematics</code> types (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>), <code lang="function">SetValue</code> and <code lang="function">AddValueChanged</code> need no type arguments:
-
-- The overloads are in the `Aspid.FastTools.VisualElements.Math` assembly, listed in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions).
-- The assembly compiles when the `com.unity.mathematics` package is installed.
-- A project with its own asmdef adds the assembly to its references.
+For <code lang="csharp">Unity.Mathematics</code> types (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>), <code lang="function">SetValue</code> and <code lang="function">AddValueChanged</code> need no type arguments. The overloads are in the separate assembly `Aspid.FastTools.VisualElements.Math` ([API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), which compiles when the `com.unity.mathematics` package is installed.
 
 ## Focus
 

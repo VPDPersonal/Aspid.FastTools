@@ -20,7 +20,7 @@
 | <code lang="csharp">text = "Ability Config"</code> | <code lang="csharp">SetTextSelf("Ability Config")</code> |
 | <code lang="csharp">SetEnabled(false)</code> | <code lang="csharp">SetEnabledSelf(false)</code> |
 
-Суффикс <code lang="csharp">Self</code> означает, что метод с таким именем уже есть в Unity. Он возвращает <code lang="csharp">void</code> и имеет приоритет над расширением, поэтому цепочка через него не соберётся; метод FastTools возвращает элемент.
+Суффикс <code lang="csharp">Self</code> стоит у имён, которые Unity использует (или может начать использовать) для метода, возвращающего <code lang="csharp">void</code>. Такой метод имеет приоритет над расширением, поэтому цепочка через него не соберётся; метод FastTools возвращает элемент.
 
 Полный список расширений — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements).
 
@@ -122,11 +122,7 @@
 
 Для собственных типов значений доступны обобщённые <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> и <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
 
-Для типов <code lang="csharp">Unity.Mathematics</code> (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>) методам <code lang="function">SetValue</code> и <code lang="function">AddValueChanged</code> аргументы типа не нужны:
-
-- Перегрузки лежат в сборке `Aspid.FastTools.VisualElements.Math`, они перечислены в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions).
-- Сборка компилируется, когда установлен пакет `com.unity.mathematics`.
-- Проект со своим asmdef добавляет эту сборку в ссылки.
+Для типов <code lang="csharp">Unity.Mathematics</code> (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>) методам <code lang="function">SetValue</code> и <code lang="function">AddValueChanged</code> аргументы типа не нужны. Перегрузки лежат в отдельной сборке `Aspid.FastTools.VisualElements.Math` ([справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), которая компилируется, когда установлен пакет `com.unity.mathematics`.
 
 ## Фокус
 
