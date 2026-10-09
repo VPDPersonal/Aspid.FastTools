@@ -1,0 +1,24 @@
+name: Contrast
+
+on:
+  pull_request:
+    paths:
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/**/*.uss'
+      - 'scripts/check-contrast.mjs'
+      - '.github/workflows/contrast.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/**/*.uss'
+      - 'scripts/check-contrast.mjs'
+
+jobs:
+  palette:
+    name: Editor palette contrast
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node scripts/check-contrast.mjs
