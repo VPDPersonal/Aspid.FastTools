@@ -13,6 +13,8 @@ updates:
       actions:
         patterns: ['*']
 
+  # "overrides" in Website/package.json force patched tinypool, serialize-javascript, postcss-selector-parser
+  # and uuid (under sockjs). Remove an override once Docusaurus itself requires a patched range.
   - package-ecosystem: npm
     directory: /Website
     schedule:
