@@ -6,7 +6,7 @@ namespace Aspid.FastTools.Editors
     /// <summary>
     /// Provides extension methods for synchronizing and assigning <see cref="SerializedProperty"/> values.
     /// </summary>
-    public static partial class SerializePropertyExtensions
+    public static partial class SerializedPropertyExtensions
     {
         /// <summary>
         /// Calls <see cref="SerializedObject.Update"/> on the property's serialized object and returns the property for chaining.

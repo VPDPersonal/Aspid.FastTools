@@ -127,14 +127,14 @@ namespace Aspid.FastTools.Editors.Tests
         [Test]
         public void EveryAndApplyOverload_HasMatchingWithoutUndoSignature()
         {
-            var methods = typeof(SerializePropertyExtensions).GetMethods()
+            var methods = typeof(SerializedPropertyExtensions).GetMethods()
                 .Where(method => method.Name.EndsWith("AndApply", StringComparison.Ordinal))
                 .ToArray();
             Assert.IsNotEmpty(methods);
             foreach (var method in methods)
             {
                 var original = method.MakeGenericMethod(typeof(SerializedProperty));
-                var counterpart = typeof(SerializePropertyExtensions).GetMethods()
+                var counterpart = typeof(SerializedPropertyExtensions).GetMethods()
                     .Where(candidate => candidate.Name == method.Name + "WithoutUndo")
                     .Select(candidate => candidate.MakeGenericMethod(typeof(SerializedProperty)))
                     .SingleOrDefault(candidate => candidate.GetParameters().Select(p => p.ParameterType)

@@ -16,7 +16,7 @@ Write values and access C# fields through SerializedProperty.
 | <code lang="csharp">SetIntAndApply(42)</code> | Writes the value and applies changes |
 | <code lang="csharp">SetIntAndApplyWithoutUndo(42)</code> | Writes the value and applies changes without Undo |
 
-The <code lang="function">SetValue</code> overloads select a setter by argument type: <code lang="csharp">SetValue(42)</code> calls <code lang="function">SetInt</code>. The argument type must match the field type. See the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors.SerializePropertyExtensions) for the full list of setters.
+The <code lang="function">SetValue</code> overloads select a setter by argument type: <code lang="csharp">SetValue(42)</code> calls <code lang="function">SetInt</code>. The argument type must match the field type. See the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors.SerializedPropertyExtensions) for the full list of setters.
 
 ### Enums, arrays and references
 

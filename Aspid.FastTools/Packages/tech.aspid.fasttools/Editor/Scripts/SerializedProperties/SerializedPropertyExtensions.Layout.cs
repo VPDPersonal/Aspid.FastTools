@@ -3,7 +3,7 @@ using UnityEditor;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    public static partial class SerializePropertyExtensions
+    public static partial class SerializedPropertyExtensions
     {
         /// <summary>
         /// Determines whether a generic serialized value has visible children.

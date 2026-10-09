@@ -7,7 +7,7 @@ using System.Collections;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    public static partial class SerializePropertyExtensions
+    public static partial class SerializedPropertyExtensions
     {
         /// <summary>
         /// Returns the backing field type or, for an array or list element, its element type.
