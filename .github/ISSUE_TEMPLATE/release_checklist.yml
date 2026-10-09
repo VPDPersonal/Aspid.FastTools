@@ -79,7 +79,7 @@ body:
     attributes:
       label: 5. Optional Mathematics integration
       options:
-        - label: Without `com.unity.mathematics` — compiles; Math satellite not built; no errors
+        - label: Without `com.unity.mathematics` — compiles; no errors; Math satellite built only on Unity 6000.5+
         - label: With `com.unity.mathematics` — satellite compiles; `SetValue`/`ValueChanged` for `float2/3/4`, `int2/3/4` available
         - label: Installing / removing the package at runtime leaves no broken references
 

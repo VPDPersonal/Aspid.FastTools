@@ -18,6 +18,11 @@
             "name": "com.unity.mathematics",
             "expression": "",
             "define": "ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.5.0a1",
+            "define": "ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION"
         }
     ],
     "noEngineReferences": false
