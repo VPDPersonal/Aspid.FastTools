@@ -515,6 +515,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                            Array.TrueForAll(narrowing, baseType => baseType.IsAssignableFrom(type));
         }
 
+        // The type picker filter of a [SerializeReference] field, shared by every picker so none forgets a check.
+        public static TypeSelectorFilter BuildPickerFilter(Type fieldType, Type[] baseTypes, bool excludeEditorOnly) => new()
+        {
+            Types = new[] { fieldType },
+            Predicate = BuildAssignableFilter(baseTypes),
+            AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
+            ArgumentFilter = IsValidGenericArgument,
+            InferredArgumentFilter = IsAcceptableGenericArgument,
+            GenericDefinitionFilter = IsValidGenericArgumentDefinition,
+            NarrowingTypes = baseTypes,
+            ExcludeEditorOnly = excludeEditorOnly,
+        };
+
         // Return null when no constraint narrows the candidates to avoid allocating a predicate.
         private static Type[] FilterNarrowingTypes(Type[] baseTypes)
         {
@@ -702,6 +715,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (type is null) return false;
             if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters) return false;
             if (typeof(Delegate).IsAssignableFrom(type)) return false;
+            if (IsFrameworkGenericStruct(type)) return false;
 
             return type.IsPrimitive ||
                    type.IsEnum ||
@@ -710,6 +724,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    UnityNativeSerializableTypes.Contains(type) ||
                    (type.IsValueType && type.IsSerializable) ||
                    (type.IsClass && type.IsSerializable);
+        }
+
+        // The open definitions an argument page offers as nested arguments. IsValidGenericArgument judges a closed
+        // generic by its definition alone, so a definition it rejects would lead only to a dead end.
+        public static bool IsValidGenericArgumentDefinition(Type definition) =>
+            definition is { IsGenericTypeDefinition: true, IsSerializable: true } &&
+            !IsFrameworkGenericStruct(definition);
+
+        // Nullable<T>, KeyValuePair<,>, ValueTuple<…> and the like carry [Serializable], but Unity does not serialize
+        // them, so a field of such a type silently loses its value.
+        private static bool IsFrameworkGenericStruct(Type type)
+        {
+            if (type is not { IsValueType: true, IsGenericType: true }) return false;
+
+            var assembly = type.Assembly.GetName().Name;
+            return assembly is "mscorlib" or "netstandard" or "System" ||
+                   assembly.StartsWith("System.", StringComparison.Ordinal);
         }
 
         // Inferred arguments require serializability only when the parameter reaches a field serialized by value.
@@ -922,21 +953,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Repair permits hidden types because visibility limits authoring, not recovery of existing data.
         public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null)
         {
-            var fieldType = GetFieldType(property);
+            var filter = BuildPickerFilter(GetFieldType(property), baseTypes,
+                excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(property));
+            filter.IncludeHidden = true;
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                filter: new TypeSelectorFilter
-                {
-                    Types = new[] { fieldType },
-                    Predicate = BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
-                    ArgumentFilter = IsValidGenericArgument,
-                    InferredArgumentFilter = IsAcceptableGenericArgument,
-                    NarrowingTypes = baseTypes,
-                    IncludeHidden = true,
-                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
-                },
+                filter: filter,
                 currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
                 {

@@ -74,17 +74,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                filter: new TypeSelectorFilter
-                {
-                    Types = new[] { elementType },
-                    Predicate = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
-                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
-                    InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
-                    NarrowingTypes = baseTypes,
-                    // Any runtime object in the selection ships the new element in a build, so its types must be too.
-                    ExcludeEditorOnly = Array.Exists(targets, TypeSelectorHelpers.IsRuntimeObject),
-                },
+                // Any runtime object in the selection ships the new element in a build, so its types must be too.
+                filter: SerializeReferenceHelpers.BuildPickerFilter(elementType, baseTypes,
+                    excludeEditorOnly: Array.Exists(targets, TypeSelectorHelpers.IsRuntimeObject)),
                 currentAqn: null, // a "+" append has no current value — nothing (not even <None>) wears the check
                 onSelected: aqn => Append(targets, arrayPath, aqn));
         }

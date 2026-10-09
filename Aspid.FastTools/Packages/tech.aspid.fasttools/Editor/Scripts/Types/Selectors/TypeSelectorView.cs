@@ -58,6 +58,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly Action _onDismiss;
         private readonly Action<string> _onSelected;
         private readonly Func<Type, bool> _argumentFilter;
+        private readonly Func<Type, bool> _genericDefinitionFilter;
         private readonly GenericArgumentFilter _inferredArgumentFilter;
         private readonly Type[] _fieldTypes;
         private readonly string _currentAqn;
@@ -77,6 +78,7 @@ namespace Aspid.FastTools.Types.Editors
             _onDismiss = onDismiss;
             _onSelected = onSelected;
             _argumentFilter = filter.ArgumentFilter;
+            _genericDefinitionFilter = filter.GenericDefinitionFilter;
             _inferredArgumentFilter = filter.InferredArgumentFilter;
             _currentAqn = currentAqn;
             _fieldTypes = GetRootValidationTypes(types, filter.NarrowingTypes);

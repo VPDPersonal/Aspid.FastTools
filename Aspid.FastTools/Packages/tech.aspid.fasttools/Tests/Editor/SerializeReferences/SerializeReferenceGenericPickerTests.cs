@@ -40,23 +40,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeField] private T _value;
     }
 
+    internal interface IGenericPickerBox<T> { }
+
+    [Serializable]
+    internal sealed class GenericPickerBox<T> : IGenericPickerBox<T>
+    {
+        [SerializeField] private T _value;
+    }
+
     // No [Serializable]: Unity drops a field of this type, so it must not end up as a generic argument.
-    internal sealed class GenericPickerUnserializableBox<T>
+    internal sealed class GenericPickerUnserializableBox<T> : IGenericPickerBox<T>
     {
         private T _value;
+    }
+
+    // The constraint pins the argument of a nested box, so the argument page offers boxes already closed.
+    [Serializable]
+    internal sealed class GenericPickerBoxContainer<TBox> : IGenericPickerEffect
+        where TBox : IGenericPickerBox<int>
+    {
+        [SerializeField] private TBox _box;
     }
 #pragma warning restore CS0169
 
     /// <summary>
-    /// The generic flow of the <c>[SerializeReference]</c> type picker, driven without a window: a generic closed on
-    /// an argument page passes the argument filter, a generic struct can be an argument, and a generic closed on the
-    /// root page fits the <c>[TypeSelector]</c> types.
+    /// The generic flow of the <c>[SerializeReference]</c> type picker, driven without a window: an argument page
+    /// offers only generics Unity can serialize, a generic struct can be an argument, and a generic closed on the root
+    /// page fits the <c>[TypeSelector]</c> types.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceGenericPickerTests
     {
         private static readonly MethodInfo ActivateNode = typeof(TypeSelectorView)
             .GetMethod("ActivateNode", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        private static readonly Type FieldType = typeof(IGenericPickerEffect);
 
         private string _recentsJson;
 
@@ -85,6 +103,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 "A [SerializeReference] value cannot be a struct.");
             CollectionAssert.Contains(arguments, typeof(GenericPickerOptional<>),
                 "A generic argument can be a struct.");
+            CollectionAssert.DoesNotContain(arguments, typeof(Span<>),
+                "A ref struct cannot be a generic argument.");
+        }
+
+        [Test]
+        public void IsValidGenericArgument_FrameworkGenericStruct_IsRejected()
+        {
+            Assert.IsFalse(SerializeReferenceHelpers.IsValidGenericArgument(typeof(int?)));
+            Assert.IsFalse(SerializeReferenceHelpers.IsValidGenericArgument(typeof(KeyValuePair<string, int>)));
+            Assert.IsFalse(SerializeReferenceHelpers.IsValidGenericArgument(typeof(ValueTuple<int, int>)),
+                "These carry [Serializable], but Unity does not serialize them.");
+            Assert.IsTrue(SerializeReferenceHelpers.IsValidGenericArgument(typeof(GenericPickerOptional<int>)));
         }
 
         [Test]
@@ -102,9 +132,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void ArgumentPage_NestedGenericWithoutSerializable_IsRejected()
+        public void ArgumentPage_GenericUnityDoesNotSerialize_IsNotOffered()
         {
             var picker = Open(narrowingTypes: null);
+
+            picker.Pick(typeof(GenericPickerContainer<>));
+
+            Assert.IsFalse(picker.Offers(typeof(GenericPickerUnserializableBox<>)), "It has no [Serializable].");
+            Assert.IsFalse(picker.Offers(typeof(Nullable<>)), "Unity does not serialize Nullable<T>.");
+            Assert.IsFalse(picker.Offers(typeof(KeyValuePair<,>)), "Unity does not serialize KeyValuePair<,>.");
+        }
+
+        [Test]
+        public void ArgumentPage_InferredNestedGeneric_PassesTheArgumentFilter()
+        {
+            var picker = Open(narrowingTypes: null);
+
+            picker.Pick(typeof(GenericPickerBoxContainer<>));
+
+            Assert.IsFalse(picker.Offers(typeof(GenericPickerUnserializableBox<int>)),
+                "Unity would drop the value of a type without [Serializable].");
+
+            picker.Pick(typeof(GenericPickerBox<int>));
+
+            Assert.AreEqual(typeof(GenericPickerBoxContainer<GenericPickerBox<int>>).AssemblyQualifiedName,
+                picker.Selected);
+        }
+
+        // The last line of defence for a filter that lists definitions it cannot judge up front.
+        [Test]
+        public void ArgumentPage_ClosedGenericTheFilterRejects_IsNotStored()
+        {
+            var filter = SerializeReferenceHelpers.BuildPickerFilter(FieldType, baseTypes: null,
+                excludeEditorOnly: false);
+            filter.GenericDefinitionFilter = null;
+
+            var picker = Open(filter);
 
             picker.Pick(typeof(GenericPickerContainer<>));
             picker.Pick(typeof(GenericPickerUnserializableBox<>));
@@ -151,22 +214,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         // The filter the [SerializeReference] drawers build for a field of IGenericPickerEffect.
-        private static Picker Open(Type[] narrowingTypes)
+        private static Picker Open(Type[] narrowingTypes) =>
+            Open(SerializeReferenceHelpers.BuildPickerFilter(FieldType, narrowingTypes, excludeEditorOnly: false));
+
+        private static Picker Open(TypeSelectorFilter filter)
         {
-            var fieldType = typeof(IGenericPickerEffect);
             var picker = new Picker();
 
             picker.View = new TypeSelectorView(
-                filter: new TypeSelectorFilter
-                {
-                    Types = new[] { fieldType },
-                    Predicate = SerializeReferenceHelpers.BuildAssignableFilter(narrowingTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, narrowingTypes,
-                        SerializeReferenceHelpers.IsAcceptableGenericArgument),
-                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
-                    InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
-                    NarrowingTypes = narrowingTypes,
-                },
+                filter: filter,
                 currentAqn: null,
                 onSelected: assemblyQualifiedName => picker.Selected = assemblyQualifiedName);
 
@@ -190,12 +246,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // Picks the row of the type on the current page, as a click would.
             public void Pick(Type type)
             {
-                var items = (IEnumerable<TreeNode>)View.Q<ListView>().itemsSource;
-                var node = Find(items, type.AssemblyQualifiedName);
+                var node = FindOnPage(type);
 
                 Assert.IsNotNull(node, $"The current page must offer {type.Name}.");
                 ActivateNode.Invoke(View, new object[] { node });
             }
+
+            public bool Offers(Type type) =>
+                FindOnPage(type) is not null;
+
+            private TreeNode FindOnPage(Type type) =>
+                Find((IEnumerable<TreeNode>)View.Q<ListView>().itemsSource, type.AssemblyQualifiedName);
 
             private static TreeNode Find(IEnumerable<TreeNode> nodes, string assemblyQualifiedName)
             {

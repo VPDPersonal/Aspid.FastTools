@@ -67,12 +67,13 @@ namespace Aspid.FastTools.Types.Editors
             // Open definitions are offered as arguments too, so generics can nest; picking one resolves its own
             // arguments first. Every constraint base type goes in, not just the collapsed one, so a multi-constraint
             // parameter narrows the nested definitions up front instead of offering ones that fail every later pick.
-            // The argument filter cannot judge an open definition, so here it meets only the special constraints;
-            // Validate checks the type it closes to.
+            // The argument filter cannot judge an open definition, so here it meets only the special constraints and
+            // the definition filter; Validate checks the type it closes to.
             var nested = GenericTypeResolver
                 .GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter, includeValueTypes: true)
                 .Where(candidate => candidate.IsGenericTypeDefinition
                     ? GenericTypeResolver.SatisfiesSpecialConstraints(parameter, candidate)
+                      && (_genericDefinitionFilter?.Invoke(candidate) ?? true)
                     : Filter(candidate));
 
             var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, (Func<Type, bool>)Filter, nested,

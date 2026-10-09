@@ -232,12 +232,12 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // The open definitions that can be offered once closed: non-abstract generic classes (and structs when
-        // asked) that are neither UnityEngine.Object nor delegates, and not compiler-generated. The last exclusion
-        // has to happen here because these definitions are injected verbatim, bypassing the checks applied to
-        // ordinary candidates.
+        // asked, except ref structs, which no generic argument can be) that are neither UnityEngine.Object nor
+        // delegates, and not compiler-generated. The last exclusion has to happen here because these definitions
+        // are injected verbatim, bypassing the checks applied to ordinary candidates.
         private static bool IsAssignableGenericDefinition(Type type, bool includeValueTypes) =>
             type is { IsAbstract: false, IsGenericTypeDefinition: true } &&
-            (type.IsClass || (includeValueTypes && type.IsValueType)) &&
+            (type.IsClass || (includeValueTypes && type is { IsValueType: true, IsByRefLike: false })) &&
             !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type) &&
             !IsCompilerGenerated(type);
