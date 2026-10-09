@@ -39,16 +39,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // found by the reference's id, whichever list slot holds the reference now. The result is kept with the file
         // version: a repaint does not parse an unchanged file again.
         public static bool TryReadStoredType(string assetPath, long fileId, long anchorRid, string propertyPath,
-            out long rid, out ManagedTypeName type)
+            out long rid, out ManagedTypeName type) =>
+            TryReadStoredType(ReadProbedFile(assetPath), fileId, anchorRid, propertyPath, out rid, out type);
+
+        // The same read from a version of the file that ReadProbedFile returned.
+        public static bool TryReadStoredType(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid,
+            string propertyPath, out long rid, out ManagedTypeName type)
         {
             rid = 0;
             type = default;
+            if (file is null) return false;
 
             try
             {
-                var file = SerializeReferenceYamlProbeCache.Read(assetPath);
-                if (file is null) return false;
-
                 var key = (fileId, anchorRid, propertyPath);
                 if (!file.StoredTypes.TryGetValue(key, out var read))
                 {
@@ -70,15 +73,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The element ids of the list of references at listPath, read like TryReadStoredType; a null element reads as -2.
         // False when the path does not end at such a list. The array is shared, so callers must treat it as read-only.
-        public static bool TryReadListIds(string assetPath, long fileId, long anchorRid, string listPath, out long[] rids)
+        public static bool TryReadListIds(string assetPath, long fileId, long anchorRid, string listPath, out long[] rids) =>
+            TryReadListIds(ReadProbedFile(assetPath), fileId, anchorRid, listPath, out rids);
+
+        // The same read from a version of the file that ReadProbedFile returned.
+        public static bool TryReadListIds(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid,
+            string listPath, out long[] rids)
         {
             rids = null;
+            if (file is null) return false;
 
             try
             {
-                var file = SerializeReferenceYamlProbeCache.Read(assetPath);
-                if (file is null) return false;
-
                 var key = (fileId, anchorRid, listPath);
                 if (!file.ListIds.TryGetValue(key, out rids))
                 {
@@ -97,18 +103,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The type recorded in the RefIds entry of rid. False for a rid without an entry or without a readable type.
-        public static bool TryReadEntryType(string assetPath, long fileId, long rid, out ManagedTypeName type)
+        public static bool TryReadEntryType(string assetPath, long fileId, long rid, out ManagedTypeName type) =>
+            TryReadEntryType(ReadProbedFile(assetPath), fileId, rid, out type);
+
+        // The same read from a version of the file that ReadProbedFile returned.
+        public static bool TryReadEntryType(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long rid,
+            out ManagedTypeName type)
         {
             type = default;
+            if (file is null) return false;
 
             try
             {
-                var file = SerializeReferenceYamlProbeCache.Read(assetPath);
-                return file is not null && TryGetEntryType(file, fileId, rid, out type);
+                return TryGetEntryType(file, fileId, rid, out type);
             }
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        // The current version of the file, so a series of reads checks the file on disk once. Null for a missing or
+        // unreadable path.
+        public static SerializeReferenceYamlProbeCache.ProbedFile ReadProbedFile(string assetPath)
+        {
+            try
+            {
+                return SerializeReferenceYamlProbeCache.Read(assetPath);
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 

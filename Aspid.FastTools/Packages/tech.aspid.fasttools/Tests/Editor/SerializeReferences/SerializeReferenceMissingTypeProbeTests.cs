@@ -3,6 +3,8 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -17,6 +19,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const string AssetPath = "Assets/__AspidMissingTypeProbe__.asset";
         private const long FileId = 11400000;
         private const string Gear = nameof(GearListTestObject.gear);
+
+        // delayCall can wait many ticks in the batch-mode test runner.
+        private const double DelayCallTimeoutSeconds = 10;
 
         private GearListTestObject _asset;
         private SerializedObject _serializedObject;
@@ -140,6 +145,63 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void UndoOfNone_BringsTheMarkBack_AfterAProbeOnTheSameStep()
+        {
+            Create(new TestBlade { damage = 1 }, new TestBlade { damage = 2 }, new TestBlade { damage = 3 });
+            BreakElement(1);
+
+            var undoProbe = ScriptableObject.CreateInstance<GearListTestObject>();
+            var notified = 0;
+
+            // What a UI Toolkit field does on undoRedoPerformed, which Unity may call before the guard sees the step.
+            Undo.UndoRedoCallback probeOnUndo = () => IsMissing(Element(1));
+            Action onNotesChanged = () => notified++;
+
+            Undo.undoRedoPerformed += probeOnUndo;
+            SerializeReferenceMissingListGuard.UndoChangedNotes += onNotesChanged;
+            try
+            {
+                Undo.IncrementCurrentGroup();
+                PickNone(Element(1));
+
+                Undo.RecordObject(undoProbe, "Missing type probe test");
+                undoProbe.name = "Changed";
+                Undo.FlushUndoRecordObjects();
+
+                Assert.IsFalse(IsMissing(Element(1)));
+
+                Undo.PerformUndo();
+
+                Assert.AreEqual(1, notified, "Fields must hear that the undo brought the missing reference back.");
+                Assert.IsTrue(IsMissing(Element(1)), "A probe made earlier in the same step must not hide the mark.");
+            }
+            finally
+            {
+                Undo.undoRedoPerformed -= probeOnUndo;
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= onNotesChanged;
+                Undo.ClearUndo(undoProbe);
+                Object.DestroyImmediate(undoProbe);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator RetryFixAfterSave_FixesTheElementOnALaterTick()
+        {
+            Create(new TestBlade { damage = 1 }, new TestBlade { damage = 2 });
+            BreakElement(1);
+
+            SerializeReferenceHelpers.RetryFixAfterSave(Find(Element(1)), typeof(TestBlade));
+            Assert.IsTrue(IsMissing(Element(1)), "The retry waits for the missing-list guard of the save.");
+
+            yield return FlushDelayCalls();
+
+            // The fixture class has no script asset, so the reimported asset cannot load it; the file tells the result.
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryReadStoredType(AssetPath, FileId, Element(1), out _, out var type));
+            Assert.AreEqual(nameof(TestBlade), type.Class, "The retry must repair the element.");
+            StringAssert.Contains("damage: 2", File.ReadAllText(AssetPath), "The retry must keep the stored data.");
+        }
+
+        [Test]
         public void NoneAfterAnUnsavedDelete_ClearsTheMark()
         {
             Create(new TestBlade { damage = 1 }, new TestBlade { damage = 2 }, new TestBlade { damage = 3 });
@@ -237,6 +299,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             for (var i = 0; i < expected.Length; i++)
                 Assert.AreEqual(expected[i], SerializeReferenceHelpers.IsMissingType(Find(Element(i))), $"element {i}");
+        }
+
+        // delayCall runs in registration order, so once this marker has run, the calls queued before it have too.
+        private static IEnumerator FlushDelayCalls()
+        {
+            var flushed = false;
+            EditorApplication.delayCall += () => flushed = true;
+
+            var deadline = EditorApplication.timeSinceStartup + DelayCallTimeoutSeconds;
+            while (!flushed && EditorApplication.timeSinceStartup < deadline)
+                yield return null;
+
+            Assert.IsTrue(flushed, "delayCall did not run in time.");
         }
 
         // A synchronous test runs inside one editor update, so the per-update memos must be dropped by hand.
