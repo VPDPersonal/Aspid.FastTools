@@ -82,12 +82,13 @@ namespace Aspid.FastTools.Editors
         internal static Object ResolvePendingTarget(Object current, Object requested) =>
             CanInspect(requested) ? requested : current;
 
-        // Asset References maps a saved asset, or the source prefab of a prefab instance.
+        // Asset References maps a prefab, ScriptableObject or scene under Assets, or the source prefab of a prefab
+        // instance. A folder, a texture or a script has no managed references to show.
         internal static bool CanInspect(Object target)
         {
             if (!target) return false;
 
-            return !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(target))
+            return SerializeReferenceYaml.IsCandidateAssetPath(AssetDatabase.GetAssetPath(target))
                    || SerializeReferenceHelpers.TryGetSourcePrefabPath(target, out _);
         }
 

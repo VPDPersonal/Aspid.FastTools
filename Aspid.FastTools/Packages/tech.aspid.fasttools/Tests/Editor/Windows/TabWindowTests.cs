@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
@@ -13,6 +14,7 @@ namespace Aspid.FastTools.Editors.Tests
     internal sealed class TabWindowTests
     {
         private const string PrefabPath = "Assets/__AspidTabWindowProbe__.prefab";
+        private const string TextPath = "Assets/__AspidTabWindowProbe__.txt";
 
         private TabWindow _window;
         private GameObject _prefab;
@@ -20,10 +22,28 @@ namespace Aspid.FastTools.Editors.Tests
         private GameObject _prefabInstance;
 
         [SetUp]
-        public void SetUp()
-        {
+        public void SetUp() =>
             _window = ScriptableObject.CreateInstance<TabWindow>();
 
+        [TearDown]
+        public void TearDown()
+        {
+            Object.DestroyImmediate(_window);
+
+            // Only the target tests create these, so the tab tests pay for no AssetDatabase round trip.
+            if (_sceneObject) Object.DestroyImmediate(_sceneObject);
+            if (_prefabInstance) Object.DestroyImmediate(_prefabInstance);
+
+            AssetDatabase.DeleteAsset(PrefabPath);
+            AssetDatabase.DeleteAsset(TextPath);
+
+            _prefab = null;
+            _sceneObject = null;
+            _prefabInstance = null;
+        }
+
+        private void CreateTargets()
+        {
             var root = new GameObject("TabWindowProbe");
             try
             {
@@ -38,20 +58,10 @@ namespace Aspid.FastTools.Editors.Tests
             _prefabInstance = (GameObject)PrefabUtility.InstantiatePrefab(_prefab);
         }
 
-        [TearDown]
-        public void TearDown()
-        {
-            Object.DestroyImmediate(_window);
-            Object.DestroyImmediate(_sceneObject);
-            Object.DestroyImmediate(_prefabInstance);
-            AssetDatabase.DeleteAsset(PrefabPath);
-        }
-
         [Test]
         public void CurrentTabType_DefaultsToWelcome() =>
             Assert.AreEqual(TabType.Welcome, _window.CurrentTabType);
 
-        [TestCase(TabType.Welcome)]
         [TestCase(TabType.AssetReference)]
         [TestCase(TabType.ProjectReferences)]
         [TestCase(TabType.Settings)]
@@ -87,6 +97,8 @@ namespace Aspid.FastTools.Editors.Tests
         [Test]
         public void CanInspect_SavedAssetAndPrefabInstance_AreAccepted()
         {
+            CreateTargets();
+
             Assert.IsTrue(TabWindow.CanInspect(_prefab), "A saved asset can be mapped.");
             Assert.IsTrue(TabWindow.CanInspect(_prefabInstance), "A prefab instance maps through its source prefab.");
         }
@@ -94,21 +106,60 @@ namespace Aspid.FastTools.Editors.Tests
         [Test]
         public void CanInspect_NullAndPlainSceneObject_AreRejected()
         {
+            CreateTargets();
+
             Assert.IsFalse(TabWindow.CanInspect(null), "An empty selection is not an asset.");
             Assert.IsFalse(TabWindow.CanInspect(_sceneObject), "A plain scene object has no saved asset.");
         }
 
         [Test]
-        public void ResolvePendingTarget_ValidRequest_ReplacesCurrent() =>
+        public void CanInspect_FolderAndNonYamlAsset_AreRejected()
+        {
+            File.WriteAllText(TextPath, "probe");
+            AssetDatabase.ImportAsset(TextPath);
+
+            var folder = AssetDatabase.LoadMainAssetAtPath("Assets");
+            var text = AssetDatabase.LoadMainAssetAtPath(TextPath);
+
+            Assert.IsNotNull(folder, "The Assets folder loads as an asset.");
+            Assert.IsNotNull(text, "The probe text file loads as an asset.");
+            Assert.IsFalse(TabWindow.CanInspect(folder), "A folder has no managed references.");
+            Assert.IsFalse(TabWindow.CanInspect(text), "A text file is not a prefab, ScriptableObject or scene.");
+        }
+
+        [Test]
+        public void ResolvePendingTarget_ValidRequest_ReplacesCurrent()
+        {
+            CreateTargets();
+
             Assert.AreSame(_prefab, TabWindow.ResolvePendingTarget(current: _sceneObject, requested: _prefab));
+        }
 
         [Test]
-        public void ResolvePendingTarget_EmptySelection_KeepsCurrent() =>
+        public void ResolvePendingTarget_EmptySelection_KeepsCurrent()
+        {
+            CreateTargets();
+
             Assert.AreSame(_prefab, TabWindow.ResolvePendingTarget(current: _prefab, requested: null));
+        }
 
         [Test]
-        public void ResolvePendingTarget_PlainSceneObject_KeepsCurrent() =>
+        public void ResolvePendingTarget_PlainSceneObject_KeepsCurrent()
+        {
+            CreateTargets();
+
             Assert.AreSame(_prefab, TabWindow.ResolvePendingTarget(current: _prefab, requested: _sceneObject));
+        }
+
+        [Test]
+        public void ResolvePendingTarget_Folder_KeepsCurrent()
+        {
+            CreateTargets();
+
+            var folder = AssetDatabase.LoadMainAssetAtPath("Assets");
+
+            Assert.AreSame(_prefab, TabWindow.ResolvePendingTarget(current: _prefab, requested: folder));
+        }
 
         [Test]
         public void ResolvePendingTarget_NothingToKeep_StaysEmpty() =>
