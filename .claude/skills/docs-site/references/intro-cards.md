@@ -111,7 +111,8 @@ keys, Enter and Esc. `node --test scripts/*.test.mjs` in `Website/` (`npm test`)
 `waves.js` culls, per grid row, the waves whose ring misses it. `node --test scripts/dot-ripple.test.mjs` checks
 that no dot of a ring is dropped.
 
-`DotAmbient`, `DotSpotlight` and `DotRipple` create their canvases only where dots show: a docs page, and below 997 px
-only the introduction's banner. A page without dots (the 404 page, a narrow page without the banner) holds none, and
-`DotAmbient` runs no frames there (it follows the root's class, the width and the banner). The canvases are stacked by
-`z-index` in `custom.css` (-3 glow, -2 spotlight, -1 ripples), not by the order they were created in.
+`DotAmbient` creates its canvases only where dots show: a docs page, and below 997 px only the introduction's banner.
+It follows the root's class, the width and the banner, and runs no frames elsewhere. `DotSpotlight` and `DotRipple`
+create theirs on first use (the first hover, the first click) and keep them, idle, until the page reloads. A page
+loaded without dots (the 404 page, a narrow page without the banner) holds none. The canvases are stacked by `z-index`
+in `custom.css` (-3 glow, -2 spotlight, -1 ripples), not by the order they were created in.

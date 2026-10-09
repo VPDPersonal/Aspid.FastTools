@@ -177,7 +177,7 @@ const config = {
           sidebarPath: './sidebars.js',
           versions: { current: { label: PACKAGE_VERSION } },
           ...markdownOptions,
-          beforeDefaultRemarkPlugins: [[remarkIntroBanner, {baseUrl: '/Aspid.FastTools/', siteUrl: 'https://vpdpersonal.github.io'}], ...markdownOptions.beforeDefaultRemarkPlugins],
+          beforeDefaultRemarkPlugins: [[remarkIntroBanner, {baseUrl: BASE_URL, siteUrl: 'https://vpdpersonal.github.io'}], ...markdownOptions.beforeDefaultRemarkPlugins],
           remarkPlugins: [remarkStatusBadges],
         },
         blog: false,
