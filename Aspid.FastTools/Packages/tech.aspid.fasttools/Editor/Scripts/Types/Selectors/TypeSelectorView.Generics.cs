@@ -41,13 +41,14 @@ namespace Aspid.FastTools.Types.Editors
             var index = argsSoFar.Length;
             var parameter = parameters[index];
 
-            var page = BuildParamPage(openDefinition, argsSoFar, index, parameter, picked =>
+            var page = BuildParamPage(openDefinition, validationFieldTypes, argsSoFar, index, parameter, picked =>
                 PickParam(openDefinition, validationFieldTypes, Append(argsSoFar, picked), startDepth, onClosed));
 
             PushPage(page);
         }
 
-        private PickerPage BuildParamPage(Type openDefinition, Type[] argsSoFar, int index, Type parameter, Action<Type> onPicked)
+        private PickerPage BuildParamPage(Type openDefinition, Type[] validationFieldTypes, Type[] argsSoFar, int index,
+            Type parameter, Action<Type> onPicked)
         {
             var baseTypes = GenericTypeResolver.GetConstraintBaseTypes(parameter);
             var constraintType = baseTypes.Length == 1 ? baseTypes[0] : typeof(object);
@@ -68,9 +69,13 @@ namespace Aspid.FastTools.Types.Editors
                 IsBase = false,
             };
 
+            // This also checks constraints that name parameters, and the field type. So the page does not offer a
+            // candidate that can only end in the construction error.
             bool Filter(Type candidate) =>
                 GenericTypeResolver.SatisfiesSpecialConstraints(parameter, candidate)
-                && (_argumentFilter?.Invoke(candidate) ?? true);
+                && (_argumentFilter?.Invoke(candidate) ?? true)
+                && GenericTypeResolver.CanCloseWithArguments(openDefinition, Append(argsSoFar, candidate),
+                    validationFieldTypes);
         }
 
         private void PushPage(PickerPage page)
