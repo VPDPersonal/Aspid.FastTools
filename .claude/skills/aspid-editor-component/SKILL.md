@@ -25,6 +25,10 @@ Read and mirror, in full, before writing:
 `Styles/Aspid<Name><Property>Style.cs`, plus the `.uss` and every `.meta`. Namespace
 `Aspid.FastTools.UIElements.Editors.Internal` with `// ReSharper disable once CheckNamespace`.
 
+A path from the package root may have at most 123 characters (the Asset Store Validator limit is 140, counted from
+`Aspid/FastTools/`; `scripts/check-package-files.mjs` checks it). For a long component name, drop a word from the style
+struct names: `AspidAnimatedDotsBackground` has `AspidAnimatedDotsSizeStyle`.
+
 Preset and Extensions are skipped only when there is nothing to configure (`AspidSwitch` is a `BaseField<bool>`,
 `AspidWindowFooter` takes one constructor flag) or the element is a child that its owner configures through the
 owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` / `AspidGradientButton`).
