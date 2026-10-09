@@ -29,6 +29,9 @@ Agent Skills for projects that consume the package in `skills/`.
   skills for working on this repo live in `.claude/skills/` and carry `metadata.internal: true` so that command does
   not offer them; `scripts/check-skills.mjs` (CI) checks both. A skill that describes public API is updated in the same PR
   as that API.
+- `scripts/check-package-files.mjs` (CI) fails on a package path longer than 123 characters (the Asset Store Validator
+  limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, and
+  on a `.uss.meta` with importer id 12388. Unity rewrites the last two in the working tree when it imports them.
 
 ## C# style beyond `.editorconfig`
 

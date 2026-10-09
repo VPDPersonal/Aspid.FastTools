@@ -1,0 +1,25 @@
+name: Package files
+
+on:
+  pull_request:
+    paths:
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/**'
+      - 'Aspid.FastTools/Assets/DevTests/**'
+      - 'scripts/check-package-files.mjs'
+      - '.github/workflows/package-files.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/**'
+      - 'Aspid.FastTools/Assets/DevTests/**'
+
+jobs:
+  files:
+    name: Path length and .meta importers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node scripts/check-package-files.mjs
