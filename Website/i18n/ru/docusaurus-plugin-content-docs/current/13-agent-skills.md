@@ -4,10 +4,17 @@
 
 ## Быстрый старт
 
-[Установите Aspid.FastTools](README.md#установка) в Unity-проект. Установщику скиллов нужен Node.js 22.20 или новее. Затем попросите агента:
+[Установите Aspid.FastTools](README.md#установка) в Unity-проект. Установщику скиллов нужен Node.js 22.20 или новее.
+
+> [!NOTE]
+> Релизы до `1.0.0-rc.8` включительно не содержат скиллов. С таким релизом сначала см. [Версии и обновление](#версии-и-обновление).
+
+Попросите агента:
 
 ```text prompt
-Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект, не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#v<version>, где <version> — версия установленного пакета Aspid.FastTools.
+Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект,
+не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#v<version>,
+где <version> — версия установленного пакета Aspid.FastTools.
 ```
 
 Или выполните в корне проекта:
@@ -17,8 +24,6 @@ npx skills add VPDPersonal/Aspid.FastTools#v<version>
 ```
 
 Замените `<version>` версией установленного пакета: `1.0.0` даёт `#v1.0.0`. В установщике выберите область **Project**: глобальная установка действует во всех Unity-проектах, какая бы версия пакета в них ни стояла.
-
-Для `1.0.0-rc.8` и старше см. [Версии и обновление](#версии-и-обновление).
 
 ```text prompt
 Замерь Simulate и отдельно поиск соседей
@@ -46,7 +51,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git?path=/Aspid.FastTools/Package
 npx skills add VPDPersonal/Aspid.FastTools
 ```
 
-Раньше скиллы поставлялись плагином `aspid-fasttools` для Claude Code. Если он у вас стоит, удалите его командой `/plugin marketplace remove aspid-claude-plugins`: он учит агента API, которого больше нет.
+Раньше скиллы поставлялись плагином `aspid-fasttools` для Claude Code. Если он у вас стоит, удалите его командой `/plugin uninstall aspid-fasttools@aspid-claude-plugins`: он учит агента API, которого больше нет.
 
 ## Скиллы
 
@@ -66,7 +71,7 @@ npx skills add VPDPersonal/Aspid.FastTools
 
 ### aspid-serializable-type
 
-Хранение <code lang="class-name">System.Type</code> и выбор типов в инспекторе. Руководства: [Serializable Types](02-serializable-types.md), [TypeSelector](03-type-selector.md), [SerializeReference Selector](04-serialize-reference-selector.md), [ComponentTypeSelector](05-component-type-selector.md).
+Хранение <code lang="class-name">System.Type</code>, выбор типов в инспекторе и провал CI-задачи при потерянных типах. Руководства: [Serializable Types](02-serializable-types.md), [TypeSelector](03-type-selector.md), [SerializeReference Selector](04-serialize-reference-selector.md), [ComponentTypeSelector](05-component-type-selector.md), [Проверка перед сборкой и CI](07-serialize-reference-validation.md).
 
 ![Скилл aspid-serializable-type добавляет поле выбора типа оружия](../../../../docs/Images/agent-skills-serializable-type.svg)
 

@@ -53,5 +53,6 @@ Unity -batchmode -projectPath . \
   either flag the **Build / CI gate** mode of the project settings applies, and `Off` skips the check.
 - Exit code `2` means the check itself failed.
 - `-srGateReport <path>` (default `SerializeReferenceGateReport.txt`; the folder must exist) gets one tab-separated
-  line per violation: `KIND assetPath fileId rid className fieldPath origin`.
+  line per violation: `KIND assetPath fileId rid className fieldPath origin`. The report starts with `#` comment
+  lines (counts and files not scanned); parse only the lines that do not start with `#`.
 - Details: [Build and CI checks](https://vpdpersonal.github.io/Aspid.FastTools/docs/serialize-reference-validation).
