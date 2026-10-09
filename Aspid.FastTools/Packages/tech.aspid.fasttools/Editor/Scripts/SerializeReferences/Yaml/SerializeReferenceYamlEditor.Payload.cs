@@ -43,7 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     last--;
 
                 var continuation = new string[last - i];
-                Array.Copy(lines, i + 1, continuation, 0, continuation.Length);
+                Array.Copy(sourceArray: lines, sourceIndex: i + 1, destinationArray: continuation, destinationIndex: 0, length: continuation.Length);
 
                 var next = last + 1 < lines.Length ? lines[last + 1] : string.Empty;
                 i = last;
@@ -62,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!TryDecodeScalar(first, continuation, out var text, out var plain)) continue;
 
                 var asNumber = plain && !(isTextField?.Invoke(key) ?? false);
-                result.Add(new KeyValuePair<string, string>(key, ToJsonValue(text, asNumber)));
+                result.Add(new KeyValuePair<string, string>(key, ToJsonValue(text, asNumber: asNumber)));
             }
 
             return result;
@@ -100,7 +100,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The scalar after its opening quote, with its lines joined by '\n' for the folding rules.
         private static string JoinScalarLines(string first, string[] continuation)
         {
-            var raw = new StringBuilder(first, 1, first.Length - 1, first.Length + 64);
+            var raw = new StringBuilder(value: first, startIndex: 1, length: first.Length - 1, capacity: first.Length + 64);
             foreach (var line in continuation) raw.Append('\n').Append(line);
             return raw.ToString();
         }
@@ -111,7 +111,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             text = null;
 
-            var builder = new StringBuilder(raw.Length);
+            var builder = new StringBuilder(capacity: raw.Length);
             var whitespaceStart = -1;
             var quote = doubleQuoted ? '"' : '\'';
             var i = 0;
@@ -191,7 +191,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             if (emptyLines == 0) builder.Append(' ');
-            else builder.Append('\n', emptyLines);
+            else builder.Append('\n', repeatCount: emptyLines);
 
             return i;
         }
@@ -270,7 +270,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
 
                 if (emptyLines == 0) builder.Append(' ');
-                else builder.Append('\n', emptyLines);
+                else builder.Append('\n', repeatCount: emptyLines);
 
                 builder.Append(line);
                 emptyLines = 0;
@@ -290,7 +290,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static string QuoteJson(string text)
         {
-            var json = new StringBuilder(text.Length + 2).Append('"');
+            var json = new StringBuilder(capacity: text.Length + 2).Append('"');
 
             foreach (var c in text)
             {
@@ -303,7 +303,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     '\t' => "\\t",
                     '\b' => "\\b",
                     '\f' => "\\f",
-                    < ' ' => "\\u" + ((int)c).ToString("x4", CultureInfo.InvariantCulture),
+                    < ' ' => "\\u" + ((int)c).ToString(format: "x4", CultureInfo.InvariantCulture),
                     _ => null,
                 };
 

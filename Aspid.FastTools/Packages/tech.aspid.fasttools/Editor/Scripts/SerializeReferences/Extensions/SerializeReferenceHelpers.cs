@@ -1325,7 +1325,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // JsonUtility rejects the whole object for one bad value, so each scalar gets its own try.
             foreach (var scalar in scalars)
-                TryOverwriteFromJson(new[] { scalar }, instance);
+                TryOverwriteFromJson(scalars: new[] { scalar }, instance);
         }
 
         private static bool TryOverwriteFromJson(IEnumerable<KeyValuePair<string, string>> scalars, object instance)

@@ -395,6 +395,85 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(3, ((InMemoryRepairShapedReplacement)_component.shape).x);
         }
 
+        // One Undo step must bring every repaired field back to the missing rid, and the save must keep the entry.
+        [Test]
+        public void FixInMemory_SharedMissingReference_ThenUndoAndSave_KeepsEveryFieldOnMissingEntry()
+        {
+            TearDown();
+            OpenSceneWithMissingType(component =>
+            {
+                var payload = new InMemoryRepairPayload { x = 3 };
+                component.value = payload;
+                component.other = payload;
+            });
+
+            using var serializedObject = new SerializedObject(_component);
+            var property = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.value));
+            Assert.IsTrue(SerializeReferenceHelpers.TryGetMissingReferenceId(property, out var referenceId));
+
+            Undo.IncrementCurrentGroup();
+            Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
+            Undo.PerformUndo();
+
+            Assert.IsNull(_component.value);
+            Assert.IsNull(_component.other);
+            Assert.IsTrue(SerializationUtility.HasManagedReferencesWithMissingTypes(_component));
+            Assert.IsTrue(EditorSceneManager.SaveScene(_scene));
+
+            var text = File.ReadAllText(ScenePath).Replace("\r\n", "\n");
+            Assert.That(text, Does.Contain($"value:\n    rid: {referenceId}\n"), "The field must still point at the missing rid.");
+            Assert.That(text, Does.Contain($"other:\n    rid: {referenceId}\n"), "The other field must still point at the missing rid.");
+            Assert.That(text, Does.Contain($"- rid: {referenceId}\n      type: {{class: {MissingClass},"));
+            Assert.That(text, Does.Contain("x: 3"));
+        }
+
+        // The YAML route retypes the shared entry itself, so a field that cannot hold the new type would load empty.
+        [Test]
+        public void FixAsset_SharedMissingReference_RefusesTypeAnotherFieldCannotHold()
+        {
+            const string assetPath = "Assets/AspidSharedRepairTest.asset";
+            var asset = ScriptableObject.CreateInstance<InMemoryRepairTestObject>();
+            var payload = new InMemoryRepairPayload { x = 3 };
+            asset.value = payload;
+            asset.shape = payload;
+            AssetDatabase.CreateAsset(asset, assetPath);
+
+            try
+            {
+                var broken = File.ReadAllText(assetPath)
+                    .Replace($"class: {nameof(InMemoryRepairPayload)},", $"class: {MissingClass},");
+                File.WriteAllText(assetPath, broken);
+                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+                asset = AssetDatabase.LoadAssetAtPath<InMemoryRepairTestObject>(assetPath);
+                Assert.IsTrue(SerializationUtility.HasManagedReferencesWithMissingTypes(asset), "The fixture must load as a missing type.");
+
+                using (var serializedObject = new SerializedObject(asset))
+                {
+                    var property = serializedObject.FindProperty(nameof(InMemoryRepairTestObject.value));
+                    LogAssert.Expect(LogType.Warning, new Regex("does not fit 'shape'"));
+                    Assert.IsFalse(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
+                }
+
+                Assert.AreEqual(broken, File.ReadAllText(assetPath), "A refused fix must leave the file unchanged.");
+
+                using (var serializedObject = new SerializedObject(asset))
+                {
+                    var property = serializedObject.FindProperty(nameof(InMemoryRepairTestObject.value));
+                    Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairShapedReplacement)));
+                }
+
+                asset = AssetDatabase.LoadAssetAtPath<InMemoryRepairTestObject>(assetPath);
+                Assert.IsInstanceOf<InMemoryRepairShapedReplacement>(asset.shape);
+                Assert.AreSame(asset.value, asset.shape, "Both fields must keep sharing one instance.");
+                Assert.AreEqual(3, ((InMemoryRepairShapedReplacement)asset.shape).x);
+            }
+            finally
+            {
+                if (asset != null) Undo.ClearUndo(asset);
+                AssetDatabase.DeleteAsset(assetPath);
+            }
+        }
+
         // Unity hands the payload back as YAML: floats in exponent form, non-ASCII text in escaped double quotes and
         // long text wrapped onto several lines must all reach the replacement.
         [Test]
@@ -431,6 +510,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(expected.tiny, recovered.tiny);
                 Assert.AreEqual(expected.huge, recovered.huge);
                 Assert.AreEqual(expected.infinity, recovered.infinity);
+                Assert.AreEqual(expected.negativeInfinity, recovered.negativeInfinity);
+                Assert.IsNaN(recovered.nan);
                 Assert.AreEqual(expected.precise, recovered.precise);
                 Assert.AreEqual(expected.count, recovered.count);
             }
@@ -452,6 +533,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public float tiny = 9.99e-05f;
         public float huge = 3.4e38f;
         public float infinity = float.PositiveInfinity;
+        public float negativeInfinity = float.NegativeInfinity;
+        public float nan = float.NaN;
         public double precise = 1e300;
         public int count = 7;
     }
@@ -466,6 +549,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public float tiny;
         public float huge;
         public float infinity;
+        public float negativeInfinity;
+        public float nan;
         public double precise;
         public int count;
     }
