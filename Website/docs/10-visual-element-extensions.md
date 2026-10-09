@@ -45,15 +45,13 @@ All of these methods have a variant with the suffix <code lang="csharp">If</code
 | <code lang="csharp">SetPadding(8)</code> | every side |
 | <code lang="csharp">SetPaddingX(8)</code> | left and right |
 | <code lang="csharp">SetPaddingY(8)</code> | top and bottom |
+| <code lang="csharp">SetPadding(8, 4)</code> | top and right (order: top, right, bottom, left) |
 | <code lang="csharp">SetPadding(top: 8, left: 4)</code> | top and left, keeps the rest |
 | <code lang="csharp">SetBorderRadiusTop(6)</code> | both top corners |
 | <code lang="csharp">SetSize(24, 16)</code> | <code lang="csharp">width</code> and <code lang="csharp">height</code> |
 | <code lang="csharp">SetTop(8)</code> | <code lang="csharp">top</code>, like <code lang="csharp">SetDistance(top: 8)</code> |
 
 Other style methods follow the same pattern. See the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.VisualElementExtensions) for the full list.
-
-> [!NOTE]
-> Positional arguments follow the order top, right, bottom, left, so <code lang="csharp">SetPadding(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs. For pairs use <code lang="function">SetPaddingY</code> and <code lang="function">SetPaddingX</code>. <code lang="function">SetMargin</code>, <code lang="function">SetBorderWidth</code> and <code lang="function">SetBorderColor</code> work the same way.
 
 ### Colors from strings and assets from Resources
 

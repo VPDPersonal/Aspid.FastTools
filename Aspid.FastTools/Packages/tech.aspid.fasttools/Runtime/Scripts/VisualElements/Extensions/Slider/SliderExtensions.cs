@@ -9,7 +9,8 @@ namespace Aspid.FastTools.UIElements
     /// </summary>
     /// <remarks>
     /// A slider clamps its value to its range, which is 0 to 10 for a new <see cref="Slider"/> or <see cref="SliderInt"/>.
-    /// Set the range with <c>SetLowValue</c> and <c>SetHighValue</c> before <c>SetValue</c>:
+    /// Set the range with <see cref="SetLowValue{T, TValue}(T, TValue)"/> and <see cref="SetHighValue{T, TValue}(T, TValue)"/>
+    /// before <c>SetValue</c>:
     /// <c>new Slider().SetValue(50f).SetHighValue(100f)</c> ends at 10,
     /// while <c>new Slider().SetHighValue(100f).SetValue(50f)</c> ends at 50.
     /// </remarks>
@@ -18,6 +19,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <remarks>
+        /// Call before <c>SetValue</c>: a slider clamps its value to the range.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
@@ -34,6 +38,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <remarks>
+        /// Call before <c>SetValue</c>: a slider clamps its value to the range.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>

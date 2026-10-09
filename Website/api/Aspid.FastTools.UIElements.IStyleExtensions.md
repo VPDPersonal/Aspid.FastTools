@@ -1263,6 +1263,11 @@ The style, for chaining.
 
 The style type.
 
+#### Remarks
+
+Positional arguments follow the order top-left, top-right, bottom-right, bottom-left, so
+<code>SetBorderRadius(8, 4)</code> sets the top-left and the top-right corner, not the diagonal pairs.
+
 ### SetBorderRadiusBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderRadiusBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
 Sets [`borderBottomRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
@@ -2020,6 +2025,12 @@ The style, for chaining.
 `T` 
 
 The style type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetDistance(8, 4)</code> sets the top and the right offset, not the vertical and horizontal pairs.
+Name the arguments, or use [`IStyleExtensions.SetDistanceY<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetDistanceY__1___0_UnityEngine_UIElements_StyleLength_) and [`IStyleExtensions.SetDistanceX<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetDistanceX__1___0_UnityEngine_UIElements_StyleLength_) for pairs.
 
 ### SetDistanceX\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetDistanceX__1___0_UnityEngine_UIElements_StyleLength_}
 

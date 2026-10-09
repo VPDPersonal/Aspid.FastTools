@@ -1252,6 +1252,10 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderTopRightRadius"/>,
         /// <see cref="IStyle.borderBottomRightRadius"/> and <see cref="IStyle.borderBottomLeftRadius"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top-left, top-right, bottom-right, bottom-left, so
+        /// <c>SetBorderRadius(8, 4)</c> sets the top-left and the top-right corner, not the diagonal pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="topLeft">The top-left radius, or <see langword="null"/> to leave unchanged.</param>
@@ -1985,6 +1989,11 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.top"/>, <see cref="IStyle.right"/>,
         /// <see cref="IStyle.bottom"/> and <see cref="IStyle.left"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top, right, bottom, left, so
+        /// <c>SetDistance(8, 4)</c> sets the top and the right offset, not the vertical and horizontal pairs.
+        /// Name the arguments, or use <see cref="SetDistanceY{T}(T, StyleLength)"/> and <see cref="SetDistanceX{T}(T, StyleLength)"/> for pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="top">The top offset, or <see langword="null"/> to leave unchanged.</param>

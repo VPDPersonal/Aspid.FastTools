@@ -45,15 +45,13 @@
 | <code lang="csharp">SetPadding(8)</code> | все стороны |
 | <code lang="csharp">SetPaddingX(8)</code> | левую и правую |
 | <code lang="csharp">SetPaddingY(8)</code> | верхнюю и нижнюю |
+| <code lang="csharp">SetPadding(8, 4)</code> | верхнюю и правую (порядок: top, right, bottom, left) |
 | <code lang="csharp">SetPadding(top: 8, left: 4)</code> | верхнюю и левую, остальные не меняет |
 | <code lang="csharp">SetBorderRadiusTop(6)</code> | оба верхних угла |
 | <code lang="csharp">SetSize(24, 16)</code> | <code lang="csharp">width</code> и <code lang="csharp">height</code> |
 | <code lang="csharp">SetTop(8)</code> | <code lang="csharp">top</code>, как <code lang="csharp">SetDistance(top: 8)</code> |
 
 Остальные методы стилей работают по схожему принципу. Полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.VisualElementExtensions).
-
-> [!NOTE]
-> Позиционные аргументы следуют в порядке top, right, bottom, left, поэтому <code lang="csharp">SetPadding(8, 4)</code> задаёт верхнюю и правую стороны, а не пары по вертикали и горизонтали. Для пар есть <code lang="function">SetPaddingY</code> и <code lang="function">SetPaddingX</code>. Так же работают <code lang="function">SetMargin</code>, <code lang="function">SetBorderWidth</code> и <code lang="function">SetBorderColor</code>.
 
 ### Цвет из строки и ассеты из Resources
 

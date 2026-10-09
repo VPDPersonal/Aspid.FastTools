@@ -1,5 +1,5 @@
-using NUnit.Framework;
 using UnityEngine;
+using NUnit.Framework;
 using UnityEngine.UIElements;
 
 namespace Aspid.FastTools.UIElements.Tests
@@ -73,6 +73,28 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.AreEqual(Color.blue, element.style.borderRightColor.value);
             Assert.AreEqual(StyleKeyword.Null, element.style.borderBottomColor.keyword);
             Assert.AreEqual(StyleKeyword.Null, element.style.borderLeftColor.keyword);
+        }
+
+        [Test]
+        public void SetDistance_PositionalArguments_SetTopAndRight()
+        {
+            var element = new VisualElement().SetDistance(8, 4);
+
+            Assert.AreEqual(8f, element.style.top.value.value);
+            Assert.AreEqual(4f, element.style.right.value.value);
+            Assert.AreEqual(StyleKeyword.Null, element.style.bottom.keyword);
+            Assert.AreEqual(StyleKeyword.Null, element.style.left.keyword);
+        }
+
+        [Test]
+        public void SetBorderRadius_PositionalArguments_SetTopLeftAndTopRight()
+        {
+            var element = new VisualElement().SetBorderRadius(8, 4);
+
+            Assert.AreEqual(8f, element.style.borderTopLeftRadius.value.value);
+            Assert.AreEqual(4f, element.style.borderTopRightRadius.value.value);
+            Assert.AreEqual(StyleKeyword.Null, element.style.borderBottomRightRadius.keyword);
+            Assert.AreEqual(StyleKeyword.Null, element.style.borderBottomLeftRadius.keyword);
         }
     }
 }
