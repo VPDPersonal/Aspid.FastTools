@@ -21,6 +21,10 @@ namespace Aspid.FastTools.UIElements.Tests
         private const string MathExtensionsName =
             "Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions, Aspid.FastTools.VisualElements.Math";
 
+        // The lookup finds 36 overloads without com.unity.mathematics, which a CI project does not install,
+        // and about 100 with it.
+        private static readonly int MinOverloads = Type.GetType(MathExtensionsName) is null ? 30 : 50;
+
         #region Anchors
         [Test]
         public void SetValue_Notify_RaisesChangeEvent()
@@ -125,7 +129,7 @@ namespace Aspid.FastTools.UIElements.Tests
                 if (!IsCounted((IProbe)probe, notified: 2, silent: 1)) failures.Add($"{name} with notify: true must notify");
             }
 
-            Assert.Greater(checkedOverloads, 50, "The reflection lookup must find the SetValue overloads.");
+            Assert.Greater(checkedOverloads, MinOverloads, "The reflection lookup must find the SetValue overloads.");
             Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
         }
 
@@ -170,7 +174,7 @@ namespace Aspid.FastTools.UIElements.Tests
                 if (counter.Count != 1) failures.Add($"{name} Remove must unregister the callback, it ran {counter.Count} times");
             }
 
-            Assert.Greater(checkedOverloads, 50, "The reflection lookup must find the AddValueChanged overloads.");
+            Assert.Greater(checkedOverloads, MinOverloads, "The reflection lookup must find the AddValueChanged overloads.");
             Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
         }
 

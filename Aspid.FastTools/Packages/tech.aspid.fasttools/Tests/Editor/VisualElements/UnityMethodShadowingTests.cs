@@ -59,6 +59,20 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.Greater(GetUnityTypes().Count, 100);
         }
 
+        // An extension without a receiver is never compared, so a gap in the lookup would hide a clash.
+        [Test]
+        public void Extensions_HaveReceivers()
+        {
+            var unityTypes = GetUnityTypes();
+
+            var withoutReceiver = GetExtensionMethods()
+                .Where(extension => !GetReceivers(extension, unityTypes).Any())
+                .Select(extension => $"{extension.DeclaringType.Name}.{extension.Name}({FormatParameters(extension.GetParameters())})")
+                .ToArray();
+
+            Assert.IsEmpty(withoutReceiver, "These extensions have no receiver type to check:" + Environment.NewLine + string.Join(Environment.NewLine, withoutReceiver));
+        }
+
         private static IEnumerable<MethodInfo> GetExtensionMethods() =>
             typeof(VisualElementExtensions).Assembly
                 .GetTypes()
@@ -66,27 +80,38 @@ namespace Aspid.FastTools.UIElements.Tests
                 .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
                 .Where(method => method.IsDefined(typeof(ExtensionAttribute), inherit: false));
 
-        // The type the extension extends, or for a generic one the type that its constraint names.
+        // The type the extension extends, or for a generic one every Unity type that meets the constraints.
         private static IEnumerable<Type> GetReceivers(MethodInfo extension, IReadOnlyList<Type> unityTypes)
         {
             var thisType = extension.GetParameters()[0].ParameterType;
-            if (thisType.IsGenericParameter)
-            {
-                var constraints = thisType.GetGenericParameterConstraints();
-                if (constraints.Length == 0) yield break;
+            var constraints = thisType.IsGenericParameter ? thisType.GetGenericParameterConstraints() : new[] { thisType };
+            if (constraints.Length == 0) return Enumerable.Empty<Type>();
 
-                thisType = constraints[0];
-            }
+            // A constraint type from another assembly, such as Texture2D, is not among the Unity types.
+            return unityTypes
+                .Concat(constraints.Where(constraint => !constraint.ContainsGenericParameters))
+                .Distinct()
+                .Where(type => constraints.All(constraint => Meets(type, constraint)));
+        }
 
-            if (thisType.ContainsGenericParameters) yield break;
+        // A constraint such as BaseField<TValue> is met by every closed type built from the same generic type.
+        private static bool Meets(Type type, Type constraint)
+        {
+            if (constraint.IsGenericParameter) return true;
+            if (!constraint.ContainsGenericParameters) return constraint.IsAssignableFrom(type);
+            if (!constraint.IsGenericType) return true;
 
-            yield return thisType;
+            var definition = constraint.GetGenericTypeDefinition();
+            return GetSupertypes(type).Any(supertype => supertype.IsGenericType && supertype.GetGenericTypeDefinition() == definition);
+        }
 
-            foreach (var type in unityTypes)
-            {
-                if (type != thisType && thisType.IsAssignableFrom(type))
-                    yield return type;
-            }
+        private static IEnumerable<Type> GetSupertypes(Type type)
+        {
+            for (var current = type; current is not null; current = current.BaseType)
+                yield return current;
+
+            foreach (var @interface in type.GetInterfaces())
+                yield return @interface;
         }
 
         // Does `receiver.Name(arguments)` bind to the instance method, with the optional parameters left out as needed?

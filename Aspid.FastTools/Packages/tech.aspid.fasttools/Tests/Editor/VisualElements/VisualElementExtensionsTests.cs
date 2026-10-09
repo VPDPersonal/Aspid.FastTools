@@ -1,3 +1,4 @@
+using UnityEngine;
 using NUnit.Framework;
 using Unity.Properties;
 using UnityEngine.UIElements;
@@ -148,16 +149,55 @@ namespace Aspid.FastTools.UIElements.Tests
         }
 
         [Test]
-        public void AddClickable_WithoutOut_ReturnsElementAndAttachesManipulator()
+        public void Press_WithoutClickable_DoesNotCapturePointer()
         {
+            using var panel = new TestPanel();
             var element = new VisualElement();
+            panel.Root.Add(element);
 
-            var result = element
-                .AddClickable(() => { })
-                .AddClickable(_ => { })
-                .AddClickable(() => { }, delay: 100, interval: 50);
+            Assert.IsFalse(Press(element));
+        }
 
-            Assert.AreSame(element, result);
+        [Test]
+        public void AddClickable_Action_AttachesManipulator()
+        {
+            using var panel = new TestPanel();
+            var element = new VisualElement().AddClickable(() => { });
+            panel.Root.Add(element);
+
+            Assert.IsTrue(Press(element));
+        }
+
+        [Test]
+        public void AddClickable_EventHandler_AttachesManipulator()
+        {
+            using var panel = new TestPanel();
+            var element = new VisualElement().AddClickable(_ => { });
+            panel.Root.Add(element);
+
+            Assert.IsTrue(Press(element));
+        }
+
+        [Test]
+        public void AddClickable_DelayAndInterval_AttachesRepeatingManipulator()
+        {
+            using var panel = new TestPanel();
+            var element = new VisualElement().AddClickable(() => { }, delay: 100, interval: 50);
+            panel.Root.Add(element);
+
+            Assert.IsTrue(Press(element));
+        }
+
+        // Clickable captures the pointer when the left button goes down, so a capture shows that it is attached.
+        private static bool Press(VisualElement element)
+        {
+            using var evt = PointerDownEvent.GetPooled(new Event { type = EventType.MouseDown, button = 0 });
+            evt.target = element;
+            element.SendEvent(evt);
+
+            var captured = element.HasPointerCapture(PointerId.mousePointerId);
+            element.ReleasePointer(PointerId.mousePointerId);
+            return captured;
         }
 
         [Test]

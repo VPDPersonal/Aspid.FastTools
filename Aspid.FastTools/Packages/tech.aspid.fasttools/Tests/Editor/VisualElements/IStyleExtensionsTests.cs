@@ -314,6 +314,57 @@ namespace Aspid.FastTools.UIElements.Tests
         }
         #endregion
 
+        #region Single-value setters
+        // SetFlexShrink must write flexShrink and nothing else. The wrapper sweep below cannot see a wrong property
+        // here, because the VisualElement wrapper and the IStyle twin would both write it.
+        [Test]
+        public void SingleValueSetters_WriteOnlyTheirOwnProperty()
+        {
+            var texture = new Texture2D(width: 2, height: 2);
+            var properties = StyleProperties.ToDictionary(property => property.Name);
+            var failures = new List<string>();
+            var checkedSetters = 0;
+
+            try
+            {
+                foreach (var setter in typeof(IStyleExtensions).GetMethods(BindingFlags.Public | BindingFlags.Static))
+                {
+                    var parameters = setter.GetParameters();
+                    if (!setter.IsGenericMethodDefinition || !setter.Name.StartsWith("Set") || parameters.Length != 2) continue;
+
+                    // The shorthands (SetMargin) and the string overloads (SetColor) have no property of that name and type.
+                    var name = char.ToLowerInvariant(setter.Name[3]) + setter.Name.Substring(startIndex: 4);
+                    if (!properties.TryGetValue(name, out var property) || property.PropertyType != parameters[1].ParameterType) continue;
+
+                    // A default MaterialDefinition reads back as unset, and building a real one needs a Shader Graph asset.
+                    if (name == "unityMaterial") continue;
+
+                    // A default Background reads back as unset.
+                    var argument = property.PropertyType == typeof(StyleBackground)
+                        ? new StyleBackground(Background.FromTexture2D(texture))
+                        : CreateArgument(property.PropertyType, parameters[1].Name, index: 0);
+
+                    var style = new VisualElement().style;
+                    setter.MakeGenericMethod(typeof(IStyle)).Invoke(null, new[] { style, argument });
+                    checkedSetters++;
+
+                    var written = GetSetPropertyNames(style);
+                    if (!written.SequenceEqual(new[] { name }))
+                        failures.Add($"{setter.Name} must write only {name}, it wrote [{string.Join(", ", written)}]");
+                    else if (GetValue(property.GetValue(style)) != GetValue(argument))
+                        failures.Add($"{setter.Name} must write the given value to {name}, it wrote {GetValue(property.GetValue(style))}");
+                }
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(texture);
+            }
+
+            Assert.Greater(checkedSetters, 50, "The reflection lookup must find the single-value setters.");
+            Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
+        }
+        #endregion
+
         #region VisualElement wrappers
         [Test]
         public void VisualElementWrappers_WriteTheSameStyleAsTheIStyleOverloads()
