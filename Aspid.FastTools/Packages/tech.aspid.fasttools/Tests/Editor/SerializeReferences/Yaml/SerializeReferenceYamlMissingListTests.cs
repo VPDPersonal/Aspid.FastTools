@@ -74,6 +74,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void Restore_ReplacedSlotOfASharedElement_RestoresTheOtherSlot()
+        {
+            // [Ghost, Shotgun, Ghost] share one entry, and slot 0 was set to <None>: only slot 2 comes back.
+            _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid, GhostRid }, backups: new[] { N }, ghostEntry: true));
+            var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 0) };
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots);
+            File.WriteAllText(_path, Asset(sidearms: new[] { N, ShotgunRid, N }, backups: new[] { N }, ghostEntry: false));
+
+            var report = SerializeReferenceYamlEditor.RestoreMissingLists(_path, snapshots);
+
+            Assert.AreEqual(1, report.Restored.Count);
+            AssertList("_sidearms", N, ShotgunRid, GhostRid);
+        }
+
+        [Test]
+        public void Snapshot_ReplacedSlotThatNoLongerHoldsTheElement_LeavesEverySlotOut()
+        {
+            // The list was edited before the pick, so the noted slot holds Shotgun now: the note covers every slot of Ghost.
+            _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid }, backups: new[] { N }, ghostEntry: true));
+            var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 1) };
+
+            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots));
+        }
+
+        [Test]
         public void Restore_Reorder_RestoresTheMovedElement()
         {
             var report = SaveAndRestore(new[] { GhostRid, ShotgunRid }, new[] { ShotgunRid, N });

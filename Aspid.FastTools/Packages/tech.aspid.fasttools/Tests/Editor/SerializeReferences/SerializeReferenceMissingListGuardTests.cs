@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
 using UnityEditor.SceneManagement;
 using System.Collections.Generic;
 
@@ -18,6 +20,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class SerializeReferenceMissingListGuardTests
     {
         private const string PristineSidearms = "  _sidearms:\n  - rid: 1002\n  - rid: 1003\n";
+
+        private const string ShotgunType =
+            "{class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}";
+
+        // delayCall can wait many ticks in the batch-mode test runner.
+        private const double DelayCallTimeoutSeconds = 10;
 
         private static readonly Func<ManagedTypeName, bool> Resolves = type =>
             !type.Class.StartsWith("Ghost", StringComparison.Ordinal);
@@ -208,6 +216,85 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        [UnityTest]
+        public IEnumerator NotedClear_IsBackOnRedoOfAGroupBeforeTheLastOne()
+        {
+            // The replace records into the group after the note's own, and a focus change moves the current group on
+            // before the next tick: a Redo of the replace's group restores the note.
+            Write(1002, 1003);
+            var probe = ScriptableObject.CreateInstance<ReferenceListTestObject>();
+
+            try
+            {
+                Undo.IncrementCurrentGroup();
+                SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+                Undo.IncrementCurrentGroup();
+                Undo.RecordObject(probe, "Missing list guard test");
+                probe.name = "Changed";
+                Undo.FlushUndoRecordObjects();
+                Undo.IncrementCurrentGroup();
+
+                yield return FlushDelayCalls();
+
+                Undo.PerformUndo();
+                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+
+                Undo.PerformRedo();
+                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+            }
+            finally
+            {
+                Undo.ClearUndo(probe);
+                UnityEngine.Object.DestroyImmediate(probe);
+            }
+        }
+
+        [Test]
+        public void NotedClear_IsDroppedByAChangeOutsideASave()
+        {
+            // A revert in version control brings the element back: the old note must not let the next save drop it.
+            Write(1002, 1003);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+
+            File.WriteAllText(_path, WithSidearms(new long[] { 1002, 1003 }, keepGhostEntry: true) + "\n");
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+        }
+
+        [Test]
+        public void NotedSlot_KeepsTheOtherSlotOfASharedElementGuarded()
+        {
+            // [GhostPistol, Shotgun, GhostPistol] share one entry; slot 0 set to <None>.
+            Write(1002, 1003, 1002);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid,
+                "_sidearms", index: 0);
+
+            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
+            Save(-2, 1003, -2);
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
+            AssertGhostPistolAt(2);
+            AssertElements(-2, 1003, YamlFixtures.GhostPistolRid);
+        }
+
+        [Test]
+        public void MovedFromSibling_IsNotTakenForMissing()
+        {
+            // [Shotgun renamed with [MovedFrom], GhostPistol]: Unity loads the renamed element and keeps its id, while
+            // the GhostPistol it dropped comes back.
+            var movedFrom = $"{{class: {nameof(MovedNamespacePistol)}, ns: {typeof(MovedNamespacePistol).Namespace}.Legacy, " +
+                $"asm: {typeof(MovedNamespacePistol).Assembly.GetName().Name}}}";
+
+            _path = YamlFixtures.WriteTemp(WithSidearms(new long[] { 1003, 1002 }, keepGhostEntry: true).Replace(ShotgunType, movedFrom));
+            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path,
+                SerializeReferenceMissingListGuard.StoredTypeLoads);
+
+            File.WriteAllText(_path, WithSidearms(new long[] { 1003, -2 }, keepGhostEntry: false).Replace(ShotgunType, movedFrom));
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
+            AssertGhostPistolAt(1);
+        }
+
         [Test]
         public void Reorder_RestoresTheMovedElement()
         {
@@ -349,6 +436,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 AssetDatabase.DeleteAsset(prefabPath);
             }
+        }
+
+        // delayCall runs in registration order, so once this marker has run, the guard's queued calls have too.
+        private static IEnumerator FlushDelayCalls()
+        {
+            var flushed = false;
+            EditorApplication.delayCall += () => flushed = true;
+
+            var deadline = EditorApplication.timeSinceStartup + DelayCallTimeoutSeconds;
+            while (!flushed && EditorApplication.timeSinceStartup < deadline)
+                yield return null;
+
+            Assert.IsTrue(flushed, "delayCall did not run in time.");
         }
 
         // Records and undoes a change of its own, so the editor's Undo stack is left as it was.

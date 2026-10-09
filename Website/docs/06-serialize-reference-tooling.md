@@ -44,13 +44,13 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 
 ## Missing elements in lists
 
-A save that resizes a list, and every save of a prefab, writes the list's missing elements as `<None>` and drops their data. FastTools puts them back right after the save. It matches the other elements by their `rid`, so a missing element returns between the same neighbours after you reorder, delete or add elements. The Console lists the restored elements.
+A save that resizes a list, and every save of a prefab, writes the list's missing elements as `<None>` and drops their data. FastTools puts them back right after the save. It matches the other elements by their `rid`, so after you move, delete, duplicate or add an element, a missing element returns between the same neighbours. The Console lists the restored elements.
 
 | Case | What happens |
 |---|---|
 | You set a missing element to `<None>`, pick another class or paste over it | It stays replaced, also after a script reload. After **Edit → Undo** of that pick the next save keeps it |
 | You delete an element that sits among other missing or `<None>` elements | The saved file doesn't say which one went: the `<None>` elements and the first missing ones stay. The Console warns about the missing element left out and gives its index and `rid`, so you can take it from version control |
-| Between two saves elements are moved and some of them changed | FastTools picks the most likely slot and marks it **slot guessed** in the Console |
+| You make several edits to the list between two saves | The data comes back, but in the most likely slot, which is not always the original one. The Console names the slot of every restored element and marks the least certain ones **slot guessed** |
 | Lists inside another reference or a nested class, loaded scenes, Prefab Mode | Not guarded |
 
 ## Project References: repair a group

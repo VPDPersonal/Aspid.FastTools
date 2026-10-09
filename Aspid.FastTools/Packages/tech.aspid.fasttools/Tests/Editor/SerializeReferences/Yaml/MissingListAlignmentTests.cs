@@ -78,6 +78,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void NoneMovedToTheTop_KeepsTheMissingElementBetweenItsNeighbours()
+        {
+            // [Sword, Ghost, Shotgun, <None>]: the <None> dragged to the top.
+            AssertPlaced(Before(1000, 2001, 1002, N), After(N, 1000, N, 1002), index: 1, expected: 2, guessed: false);
+        }
+
+        [Test]
+        public void DuplicateBeforeANone_FollowsTheShift()
+        {
+            // [Sword, <None>, Ghost]: Sword duplicated; the copy has an id of its own or shares Sword's.
+            AssertPlaced(Before(1000, N, 2002), After(1000, 5000, N, N), index: 2, expected: 3, guessed: false);
+            AssertPlaced(Before(1000, N, 2002), After(1000, 1000, N, N), index: 2, expected: 3, guessed: false);
+        }
+
+        [Test]
+        public void SingleEditWithTwoReadings_IsMarkedGuessed()
+        {
+            // [<None>, Ghost] saved with one more null: "+" keeps Ghost at 1, a duplicate of the <None> moves it to 2.
+            AssertPlaced(Before(N, 2001), After(N, N, N), index: 1, expected: 1, guessed: true);
+        }
+
+        [Test]
+        public void KeptMissingIdInAResizedList_KeepsTheOtherMissingElement()
+        {
+            // Unity loaded 2001, which the guard took for missing, and kept its id while the list grew: the save still
+            // dropped 2002, which comes back.
+            AssertPlaced(Before(2001, 2002, 1003), After(2001, N, 1003, N), index: 1, expected: 1, guessed: false);
+        }
+
+        [Test]
         public void RemoveAndAdd_FollowsTheHealthyNeighbours()
         {
             // 1003 deleted and "+" pressed: the old index 1 now holds 1005.
@@ -180,8 +210,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // Every list of up to five healthy, <None> and missing elements, edited by every pair of list edits (remove,
         // append, insert, duplicate, move, set to <None>, retype). Histories that give the same saved list differ only in
         // what the guard cannot see, so each missing element is checked against all of them: it survives when no history
-        // deletes it, stays deleted when every history deletes it, never takes a slot that holds an id, and after a single
-        // edit takes the slot every history agrees on.
+        // deletes it, stays deleted when every history deletes it and never takes a slot that holds an id. When a single
+        // edit explains the save, it takes the slot the histories with the fewest edits agree on, or is marked guessed
+        // when they disagree.
         [Test]
         public void EveryPairOfEdits_KeepsEachUntouchedMissingElement()
         {
@@ -207,7 +238,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         private static void CheckGroup(Group group, List<string> failures)
         {
-            var targets = MissingListAlignment.Align(group.Before, group.After, out _);
+            var targets = MissingListAlignment.Align(group.Before, group.After, out var guessed);
             var taken = new HashSet<int>();
 
             for (var b = 0; b < group.Before.Count; b++)
@@ -215,6 +246,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 if (!group.Before.Collapsible[b]) continue;
 
                 var fates = group.Fates[b];
+                var likeliest = group.FatesAtFewest[b];
                 var target = targets[b];
                 var problem = default(string);
 
@@ -226,8 +258,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     problem = "was dropped, though no history deletes it";
                 else if (target >= 0 && fates.Count == 1 && fates.First() < 0)
                     problem = $"went to {target}, though every history deletes it";
-                else if (group.FewestEdits <= 1 && fates.Count == 1 && fates.First() != target)
-                    problem = $"went to {target}, every history puts it at {fates.First()}";
+                else if (group.FewestEdits <= 1 && likeliest.Count == 1 && likeliest.First() != target)
+                    problem = $"went to {target}, every history with the fewest edits puts it at {likeliest.First()}";
+                else if (group.FewestEdits <= 1 && likeliest.Count > 1 && target >= 0 && !guessed[b])
+                    problem = $"went to {target} unmarked, though the histories with the fewest edits disagree";
 
                 if (problem is not null)
                     failures.Add($"[{string.Join(", ", group.Before.Rids)}] -> [{string.Join(", ", group.After)}]: element {b} {problem} ({group.Example})");
@@ -243,7 +277,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             if (!groups.TryGetValue(key, out var group))
                 groups[key] = group = new Group(before, after, history.Name);
 
-            group.FewestEdits = Math.Min(group.FewestEdits, history.Edits);
+            if (history.Edits < group.FewestEdits)
+            {
+                group.FewestEdits = history.Edits;
+                foreach (var likeliest in group.FatesAtFewest.Values) likeliest.Clear();
+            }
 
             for (var b = 0; b < start.Count; b++)
             {
@@ -251,6 +289,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 var position = history.Items.FindIndex(item => item.Kind == Kind.Missing && item.Origin == b);
                 group.Fates[b].Add(position);
+                if (history.Edits == group.FewestEdits) group.FatesAtFewest[b].Add(position);
             }
         }
 
@@ -329,8 +368,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             yield return history.With("append <None>", list => list.Add(new Item(Kind.Null, -1)));
             yield return history.With("append a new element", list => list.Add(new Item(Kind.Added, -1)));
 
+            // "+" only appends, so a <None> inserted before the end takes a second edit, a move.
             for (var i = 0; i < items.Count; i++)
-                yield return history.With($"insert <None> at {i}", list => list.Insert(i, new Item(Kind.Null, -1)));
+                yield return history.With($"insert <None> at {i}", list => list.Insert(i, new Item(Kind.Null, -1)), cost: 2);
 
             for (var i = 0; i < items.Count; i++)
             {
@@ -426,14 +466,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Edits = edits;
             }
 
-            public History With(string edit, Action<List<Item>> apply, int replace = -1)
+            public History With(string edit, Action<List<Item>> apply, int replace = -1, int cost = 1)
             {
                 var items = new List<Item>(Items);
                 var replaced = new HashSet<int>(Replaced);
                 if (replace >= 0 && Items[replace].Kind == Kind.Missing) replaced.Add(Items[replace].Origin);
 
                 apply(items);
-                return new History(items, replaced, Name == "no edit" ? edit : $"{Name}, {edit}", Edits + 1);
+                return new History(items, replaced, Name == "no edit" ? edit : $"{Name}, {edit}", Edits + cost);
             }
         }
 
@@ -443,6 +483,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             public readonly long[] After;
             public readonly string Example;
             public readonly Dictionary<int, HashSet<int>> Fates = new();
+
+            // The fates in the histories with the fewest edits, the likeliest readings of the save.
+            public readonly Dictionary<int, HashSet<int>> FatesAtFewest = new();
             public int FewestEdits = int.MaxValue;
 
             public Group(MissingListState before, long[] after, string example)
@@ -452,7 +495,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Example = example;
 
                 for (var b = 0; b < before.Count; b++)
-                    if (before.Collapsible[b]) Fates[b] = new HashSet<int>();
+                {
+                    if (!before.Collapsible[b]) continue;
+
+                    Fates[b] = new HashSet<int>();
+                    FatesAtFewest[b] = new HashSet<int>();
+                }
             }
         }
     }

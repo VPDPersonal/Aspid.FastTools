@@ -4,11 +4,11 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Matches the list a save wrote with the list before the save. Elements with an id that both lists hold are matched by
-    // that id; the ones taken to have kept their place split both lists into runs. The anonymous elements of a run
-    // (missing, <None>, a healthy element whose id is gone) are aligned with the slots of the same run by the fewest
-    // edits, and a missing element that no run kept moves to a free null slot. A missing element never takes a slot that
-    // holds an id.
+    // Matches the list a save wrote with the list before the save. A save that one list edit explains is replayed. Other
+    // saves are aligned: elements with an id that both lists hold are matched by that id; the ones taken to have kept
+    // their place split both lists into runs. The anonymous elements of a run (missing, <None>, a healthy element whose id
+    // is gone) are aligned with the slots of the same run by the fewest edits, and a missing element that no run kept
+    // moves to a free null slot. A missing element never takes a slot that holds an id.
     internal static class MissingListAlignment
     {
         // The largest edit table built, about 4 MB: a larger run is matched in order, and a larger list takes only the
@@ -19,6 +19,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const byte Delete = 1;
         private const byte Insert = 2;
 
+        private enum Edit
+        {
+            Remove,
+            Insert,
+            Move,
+            Replace,
+        }
+
         // Where each element of before sits in after: its index there, or -1 when the save deleted it. guessed marks a
         // missing element the save does not pin down: placed by a guess, or dropped while the list keeps a null slot it may
         // have collapsed into.
@@ -26,33 +34,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var anchors = MatchIds(before, after);
 
-            // A save that kept a missing element kept them all: its nulls are real, and a missing element it left out was
-            // deleted.
-            foreach (var (fromIndex, _) in anchors)
+            // A save that kept a missing element without a resize kept them all: its nulls are real, and a missing element
+            // it left out was deleted. A resized list cannot keep a missing element, so there the kept one is an element
+            // the guard took for missing by mistake, and the list is aligned as usual.
+            if (after.Count == before.Count)
             {
-                if (!before.Collapsible[fromIndex]) continue;
+                foreach (var (fromIndex, _) in anchors)
+                {
+                    if (!before.Collapsible[fromIndex]) continue;
 
-                guessed = new bool[before.Count];
-                return AnchorsOnly(before, anchors);
+                    guessed = new bool[before.Count];
+                    return AnchorsOnly(before, anchors);
+                }
             }
 
-            // Two readings of which matched elements kept their place. The one that needs fewer edits wins, then the one
-            // that keeps more missing elements.
-            var targets = AlignAround(before, after, anchors, LongestOrderedRun(anchors), out guessed);
+            var targets = AlignByRuns(before, after, anchors, out guessed);
 
-            // An empty saved list leaves nothing to read, and its cost scale would overflow on a huge list.
-            if (after.Count > 0 && (long)(before.Count + 1) * (after.Count + 1) <= MaxRunCells)
+            if (TryReplayOneEdit(before, after, targets, out var replayed, out var guessedByReplay))
             {
-                var byEdits = AlignAround(before, after, anchors, OrderedRunByEdits(before, after, anchors), out var guessedByEdits);
-
-                var costByEdits = CountEdits(before, after, byEdits);
-                var cost = CountEdits(before, after, targets);
-
-                if (costByEdits < cost || (costByEdits == cost && CountPlaced(before, byEdits) >= CountPlaced(before, targets)))
-                {
-                    targets = byEdits;
-                    guessed = guessedByEdits;
-                }
+                targets = replayed;
+                guessed = guessedByReplay;
             }
 
             var hasNull = false;
@@ -62,6 +63,212 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (before.Collapsible[b] && targets[b] < 0) guessed[b] = hasNull;
 
             return targets;
+        }
+
+        // Two readings of which matched elements kept their place. The one that needs fewer edits wins, then the one that
+        // keeps more missing elements; a missing element the two readings place apart is a guess.
+        private static int[] AlignByRuns(MissingListState before, IReadOnlyList<long> after,
+            List<(int before, int after)> anchors, out bool[] guessed)
+        {
+            var targets = AlignAround(before, after, anchors, LongestOrderedRun(anchors), out guessed);
+
+            // An empty saved list leaves nothing to read, and its cost scale would overflow on a huge list.
+            if (after.Count == 0 || (long)(before.Count + 1) * (after.Count + 1) > MaxRunCells) return targets;
+
+            var byEdits = AlignAround(before, after, anchors, OrderedRunByEdits(before, after, anchors), out var guessedByEdits);
+
+            var costByEdits = CountEdits(before, after, byEdits);
+            var cost = CountEdits(before, after, targets);
+
+            var other = byEdits;
+            if (costByEdits < cost || (costByEdits == cost && CountPlaced(before, byEdits) >= CountPlaced(before, targets)))
+            {
+                (targets, other) = (byEdits, targets);
+                guessed = guessedByEdits;
+            }
+
+            for (var b = 0; b < before.Count; b++)
+                if (before.Collapsible[b] && targets[b] >= 0 && targets[b] != other[b]) guessed[b] = true;
+
+            return targets;
+        }
+
+        // A save that one list edit explains: a remove, an append, an insert or duplicate, a move, or a <None> pick or a
+        // retype of one element. Each missing element goes where that edit puts it. When several edits explain the save,
+        // the one closest to the alignment wins, and a missing element the edits place apart is a guess. False when no
+        // single edit explains the save, or checking every edit would take too long.
+        private static bool TryReplayOneEdit(MissingListState before, IReadOnlyList<long> after, int[] aligned,
+            out int[] targets, out bool[] guessed)
+        {
+            targets = null;
+            guessed = null;
+
+            var n = before.Count;
+            var m = after.Count;
+            if (Math.Abs(n - m) > 1) return false;
+
+            var direct = CountFits(before, after, shift: 0);
+            var edits = new List<(Edit kind, int first, int second)>();
+
+            if (m == n)
+            {
+                if (AllFit(direct, 0, n))
+                {
+                    targets = new int[n];
+                    for (var b = 0; b < n; b++) targets[b] = b;
+
+                    guessed = new bool[n];
+                    return true;
+                }
+
+                var firstMismatch = 0;
+                while (Fits(before, after, firstMismatch, firstMismatch)) firstMismatch++;
+
+                var lastMismatch = n - 1;
+                while (Fits(before, after, lastMismatch, lastMismatch)) lastMismatch--;
+
+                if (firstMismatch == lastMismatch && IsReplace(before, after, firstMismatch))
+                    edits.Add((Edit.Replace, firstMismatch, 0));
+
+                // A move leaves the elements before its lower end and after its upper end in place.
+                if ((long)(firstMismatch + 1) * (n - lastMismatch) > MaxRunCells) return false;
+
+                var down = CountFits(before, after, shift: -1);
+                var up = CountFits(before, after, shift: 1);
+
+                for (var low = 0; low <= firstMismatch; low++)
+                {
+                    for (var high = Math.Max(lastMismatch, low + 1); high < n; high++)
+                    {
+                        if (Fits(before, after, low, high) && AllFit(down, low + 1, high + 1)) edits.Add((Edit.Move, low, high));
+                        if (Fits(before, after, high, low) && AllFit(up, low, high)) edits.Add((Edit.Move, high, low));
+                    }
+                }
+            }
+            else if (m == n - 1)
+            {
+                var down = CountFits(before, after, shift: -1);
+                for (var i = 0; i < n; i++)
+                    if (AllFit(direct, 0, i) && AllFit(down, i + 1, n)) edits.Add((Edit.Remove, i, 0));
+            }
+            else
+            {
+                var up = CountFits(before, after, shift: 1);
+                var ids = new HashSet<long>();
+                foreach (var rid in before.Rids)
+                    if (rid >= 0) ids.Add(rid);
+
+                for (var slot = 0; slot <= n; slot++)
+                {
+                    if (AllFit(direct, 0, slot) && AllFit(up, slot, n) && IsInsert(before, after, slot, ids))
+                        edits.Add((Edit.Insert, slot, 0));
+                }
+            }
+
+            if (edits.Count == 0 || (long)edits.Count * n > MaxRunCells) return false;
+
+            var fates = new int[n];
+            var apart = new bool[n];
+            var best = 0;
+            var bestAgreement = -1;
+
+            for (var e = 0; e < edits.Count; e++)
+            {
+                var agreement = 0;
+                for (var b = 0; b < n; b++)
+                {
+                    if (!before.Collapsible[b]) continue;
+
+                    var fate = Fate(edits[e], b);
+                    if (e == 0) fates[b] = fate;
+                    else if (fate != fates[b]) apart[b] = true;
+
+                    if (fate == aligned[b]) agreement++;
+                }
+
+                if (agreement <= bestAgreement) continue;
+
+                best = e;
+                bestAgreement = agreement;
+            }
+
+            targets = new int[n];
+            guessed = new bool[n];
+
+            for (var b = 0; b < n; b++)
+            {
+                targets[b] = Fate(edits[best], b);
+                guessed[b] = before.Collapsible[b] && apart[b];
+            }
+
+            return true;
+        }
+
+        // The slot an edit moves element b of before to, or -1 when it removes it.
+        private static int Fate((Edit kind, int first, int second) edit, int b)
+        {
+            var (kind, first, second) = edit;
+
+            switch (kind)
+            {
+                case Edit.Remove: return b < first ? b : b == first ? -1 : b - 1;
+                case Edit.Insert: return b < first ? b : b + 1;
+                case Edit.Move when b == first: return second;
+                case Edit.Move when first < second: return b > first && b <= second ? b - 1 : b;
+                case Edit.Move: return b >= second && b < first ? b + 1 : b;
+                default: return b;
+            }
+        }
+
+        // Whether the save wrote element b of before unchanged into slot a: a healthy element under its id, a <None> as a
+        // null, a missing element as a null or under its id.
+        private static bool Fits(MissingListState before, IReadOnlyList<long> after, int b, int a)
+        {
+            if (b < 0 || b >= before.Count || a < 0 || a >= after.Count) return false;
+
+            if (before.Collapsible[b]) return after[a] < 0 || after[a] == before.Rids[b];
+            if (before.IsNull(b)) return after[a] < 0;
+
+            return after[a] == before.Rids[b];
+        }
+
+        // counts[k]: how many of the first k elements of before the save wrote unchanged shift slots further on.
+        private static int[] CountFits(MissingListState before, IReadOnlyList<long> after, int shift)
+        {
+            var counts = new int[before.Count + 1];
+            for (var b = 0; b < before.Count; b++)
+                counts[b + 1] = counts[b] + (Fits(before, after, b, b + shift) ? 1 : 0);
+
+            return counts;
+        }
+
+        private static bool AllFit(int[] counts, int start, int end) =>
+            start >= end || counts[end] - counts[start] == end - start;
+
+        // A <None> pick on a healthy element, or a retype of a healthy or <None> element, which gives it a new id. A pick
+        // on a missing element is noted, so before already holds it as a <None>.
+        private static bool IsReplace(MissingListState before, IReadOnlyList<long> after, int index)
+        {
+            if (before.Collapsible[index]) return false;
+            if (after[index] >= 0) return Array.IndexOf(before.Rids, after[index]) < 0;
+
+            return !before.IsNull(index);
+        }
+
+        // The slot an edit added: "+" appends a <None> or a new element, and a duplicate follows its source, a <None> or a
+        // healthy element under a new id or the same one. An element added anywhere else takes a second edit, a move.
+        private static bool IsInsert(MissingListState before, IReadOnlyList<long> after, int slot, HashSet<long> ids)
+        {
+            var value = after[slot];
+            var isNew = value >= 0 && !ids.Contains(value);
+
+            if (slot == before.Count && (value < 0 || isNew)) return true;
+            if (slot == 0) return false;
+
+            var source = slot - 1;
+            if (value < 0) return before.IsNull(source);
+
+            return !before.Collapsible[source] && before.Rids[source] >= 0 && (isNew || value == before.Rids[source]);
         }
 
         private static int[] AnchorsOnly(MissingListState before, List<(int before, int after)> anchors)
@@ -105,6 +312,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The edits a placement implies: deleted elements, inserted slots, type changes, and elements out of order as moves.
+        // A deleted <None> and an untaken null slot count as one move of that <None>.
         private static int CountEdits(MissingListState before, IReadOnlyList<long> after, int[] targets)
         {
             var edits = 0;
@@ -127,8 +335,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!keepsItsId && MatchCost(before, b, after[slot]) != 0) edits++;
             }
 
+            var untakenNulls = 0;
             for (var a = 0; a < after.Count; a++)
-                if (!taken[a]) edits++;
+            {
+                if (taken[a]) continue;
+
+                edits++;
+                if (after[a] < 0) untakenNulls++;
+            }
+
+            var deletedNulls = 0;
+            for (var b = 0; b < before.Count; b++)
+                if (targets[b] < 0 && before.IsNull(b)) deletedNulls++;
+
+            edits -= Math.Min(untakenNulls, deletedNulls);
 
             // The longest increasing run of slots stays; every other placed element moved.
             var tails = new List<int>();
@@ -205,7 +425,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             for (var j = q - 1; j >= 0; j--)
             {
-                next[j] = (movedIn[j] ? 0 : InsertCost(appended: true) * scale) + next[j + 1];
+                next[j] = (movedIn[j] ? 0 : InsertCost(after, j, appended: true) * scale) + next[j + 1];
                 choice[p * width + j] = Insert;
             }
 
@@ -237,7 +457,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         pick = Delete;
                     }
 
-                    var insertCost = movedIn[j] ? 0 : InsertCost(appended: false) * scale;
+                    var insertCost = movedIn[j] ? 0 : InsertCost(after, j, appended: false) * scale;
                     if (insertCost + current[j + 1] < best)
                     {
                         best = insertCost + current[j + 1];
@@ -404,7 +624,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Slots after the whole run are appended when the run ends the list.
             for (var j = q - 1; j >= 0; j--)
             {
-                next[j] = InsertCost(appended: isTail) * scale + next[j + 1];
+                next[j] = InsertCost(after, slots[j], appended: isTail) * scale + next[j + 1];
                 choice[p * width + j] = Insert;
             }
 
@@ -433,9 +653,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         pick = Delete;
                     }
 
-                    if (InsertCost(appended: false) * scale + current[j + 1] < best)
+                    var insertCost = InsertCost(after, slots[j], appended: false) * scale;
+                    if (insertCost + current[j + 1] < best)
                     {
-                        best = InsertCost(appended: false) * scale + current[j + 1];
+                        best = insertCost + current[j + 1];
                         pick = Insert;
                     }
 
@@ -601,8 +822,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static long DeleteCost(MissingListState before, int index, long scale) =>
             scale + (before.IsNull(index) ? 1 : 0);
 
-        // "+" appends at the end; an element anywhere else takes an extra step, such as a move.
-        private static long InsertCost(bool appended) => appended ? 1 : 2;
+        // "+" appends at the end, and a new id right after an id is a duplicate; an element anywhere else takes an extra
+        // step, such as a move.
+        private static long InsertCost(IReadOnlyList<long> after, int slot, bool appended) =>
+            appended || (after[slot] >= 0 && slot > 0 && after[slot - 1] >= 0) ? 1 : 2;
 
         private static int[] Unmatched(int count)
         {

@@ -26,16 +26,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static MissingListState Build(IReadOnlyList<long> rids, long fileId,
             ICollection<(long fileId, long rid)> missingRids, ICollection<(long fileId, long rid)> replaced)
         {
+            var isReplaced = new bool[rids.Count];
+            for (var i = 0; i < isReplaced.Length; i++)
+                isReplaced[i] = replaced is not null && replaced.Contains((fileId, rids[i]));
+
+            return Build(rids, fileId, missingRids, isReplaced);
+        }
+
+        // isReplaced marks the slots the user replaced.
+        public static MissingListState Build(IReadOnlyList<long> rids, long fileId,
+            ICollection<(long fileId, long rid)> missingRids, bool[] isReplaced)
+        {
             var slots = new long[rids.Count];
             var collapsible = new bool[rids.Count];
 
             for (var i = 0; i < slots.Length; i++)
             {
-                var rid = rids[i];
-                var isReplaced = replaced is not null && replaced.Contains((fileId, rid));
-
-                slots[i] = isReplaced ? NullRid : rid;
-                collapsible[i] = !isReplaced && missingRids.Contains((fileId, rid));
+                slots[i] = isReplaced[i] ? NullRid : rids[i];
+                collapsible[i] = !isReplaced[i] && missingRids.Contains((fileId, rids[i]));
             }
 
             return new MissingListState(slots, collapsible);

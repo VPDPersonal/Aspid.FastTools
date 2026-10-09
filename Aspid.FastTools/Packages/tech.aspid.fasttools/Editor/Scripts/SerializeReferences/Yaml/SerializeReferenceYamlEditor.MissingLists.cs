@@ -20,9 +20,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The lists a save may shrink: each top-level list that holds a missing element, with the RefIds entry of every
         // missing element in it. replaced holds the missing elements the user replaced since the last save; they count
-        // as nulls. A file without a RefIds block is not parsed.
+        // as nulls. replacedSlots holds the ones replaced in a single list slot: only that slot counts as a null, unless
+        // it no longer holds the rid. A file without a RefIds block is not parsed.
         public static List<MissingListSnapshot> SnapshotMissingLists(string assetPath, Func<ManagedTypeName, bool> resolves,
-            ICollection<(long fileId, long rid)> replaced)
+            ICollection<(long fileId, long rid)> replaced,
+            IReadOnlyList<(long fileId, long rid, string field, int index)> replacedSlots = null)
         {
             var result = new List<MissingListSnapshot>();
 
@@ -47,7 +49,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
 
                 foreach (var pair in storedTypes)
-                    SnapshotObjectLists(lines, pair.Key, pair.Value, missingRids, replaced, result);
+                    SnapshotObjectLists(lines, pair.Key, pair.Value, missingRids, replaced, replacedSlots, result);
             }
             catch (Exception exception)
             {
@@ -60,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void SnapshotObjectLists(string[] lines, long fileId, Dictionary<long, ManagedTypeName> types,
             HashSet<(long fileId, long rid)> missingRids, ICollection<(long fileId, long rid)> replaced,
-            List<MissingListSnapshot> result)
+            IReadOnlyList<(long fileId, long rid, string field, int index)> replacedSlots, List<MissingListSnapshot> result)
         {
             var (start, end) = FindDocumentRange(lines, fileId);
             if (start < 0) return;
@@ -68,15 +70,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var refIdsStart = FindRefIdsStart(lines, start, end);
             if (refIdsStart < 0) return;
 
-            var lists = new List<(string field, MissingListState before)>();
-            var wanted = new HashSet<long>();
-
+            var found = new List<(string field, List<long> rids)>();
             foreach (var field in FindTopLevelListsHolding(lines, start, refIdsStart, types.Keys))
             {
                 var rids = new List<long>();
-                if (!TryCollectArrayElementPointers(lines, start, refIdsStart, field, null, rids)) continue;
+                if (TryCollectArrayElementPointers(lines, start, refIdsStart, field, null, rids)) found.Add((field, rids));
+            }
 
-                var before = MissingListState.Build(rids, fileId, missingRids, replaced);
+            var lists = new List<(string field, MissingListState before)>();
+            var wanted = new HashSet<long>();
+
+            foreach (var (field, rids) in found)
+            {
+                var isReplaced = FindReplacedSlots(fileId, field, rids, found, replaced, replacedSlots);
+                var before = MissingListState.Build(rids, fileId, missingRids, isReplaced);
                 if (!before.HasMissing) continue;
 
                 lists.Add((field, before));
@@ -98,6 +105,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (entries.Count > 0) result.Add(new MissingListSnapshot(fileId, field, before, entries));
             }
+        }
+
+        // Which slots of a list the user replaced. A note without a slot replaces every slot of its rid. A note with a slot
+        // replaces only that one while it still holds the rid; when the lists were edited since and it does not, the note
+        // replaces every slot of its rid.
+        private static bool[] FindReplacedSlots(long fileId, string field, List<long> rids,
+            List<(string field, List<long> rids)> lists, ICollection<(long fileId, long rid)> replaced,
+            IReadOnlyList<(long fileId, long rid, string field, int index)> replacedSlots)
+        {
+            var result = new bool[rids.Count];
+
+            for (var i = 0; i < rids.Count; i++)
+            {
+                var rid = rids[i];
+                if (replaced is not null && replaced.Contains((fileId, rid)))
+                {
+                    result[i] = true;
+                    continue;
+                }
+
+                if (replacedSlots is null) continue;
+
+                foreach (var note in replacedSlots)
+                {
+                    if (note.fileId != fileId || note.rid != rid) continue;
+                    var isThisSlot = note.field == field && note.index == i;
+                    if (isThisSlot || !HoldsRid(lists, note.field, note.index, rid)) result[i] = true;
+                }
+            }
+
+            return result;
+        }
+
+        private static bool HoldsRid(List<(string field, List<long> rids)> lists, string field, int index, long rid)
+        {
+            foreach (var list in lists)
+                if (list.field == field) return index >= 0 && index < list.rids.Count && list.rids[index] == rid;
+
+            return false;
         }
 
         // Puts back the missing elements a save dropped from the lists of the snapshots. Each list is matched with the
@@ -132,10 +178,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     var targets = MissingListAlignment.Align(snapshot.Before, after, out var guessed);
 
-                    // Without a null slot left, the list has no place a dropped element could have collapsed into: the
-                    // user deleted it.
-                    var hasNull = after.Exists(rid => rid < 0);
-
                     for (var b = 0; b < snapshot.Before.Count; b++)
                     {
                         if (!snapshot.Before.Collapsible[b]) continue;
@@ -148,7 +190,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                         if (target < 0)
                         {
-                            report.Dropped.Add(new MissingListReport.Element(snapshot.Field, b, rid, entry.storedType, guessed: hasNull));
+                            report.Dropped.Add(new MissingListReport.Element(snapshot.Field, b, rid, entry.storedType, guessed[b]));
                             continue;
                         }
 
