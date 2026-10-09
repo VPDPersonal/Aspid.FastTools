@@ -116,7 +116,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         private static int CountFadeTextures() =>
-            Resources.FindObjectsOfTypeAll<Texture2D>().Count(texture => texture.width == 256 && texture.height == 1);
+            Resources.FindObjectsOfTypeAll<Texture2D>()
+                .Count(texture => texture.name == AspidGradientButton.FadeTextureName);
 
         private static AspidGradientButton CreateButton(Color gradient) =>
             new("Text") { Gradient = gradient, Accent = Accent };

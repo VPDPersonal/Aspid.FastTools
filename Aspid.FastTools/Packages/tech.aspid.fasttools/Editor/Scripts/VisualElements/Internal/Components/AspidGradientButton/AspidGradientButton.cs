@@ -9,18 +9,20 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidGradientButton : VisualElement
     {
+        internal const string FadeTextureName = "Aspid.FastTools.GradientButtonFade";
+
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidGradientButton";
         private const string BlockClass = "aspid-fasttools-gradient-button";
         private const string LabelClass = "aspid-fasttools-gradient-button__label";
         private const string TrailingLabelClass = "aspid-fasttools-gradient-button__trailing-label";
 
+        // One white-to-transparent ramp for every button; the gradient color tints it.
+        private static Texture2D _fadeTexture;
+
         private readonly Label _label;
         private readonly Label _trailingLabel;
         private readonly AspidHoverGradientOverlay _overlay;
         private readonly AspidGradientButtonColorsStyle _colors;
-
-        // One white-to-transparent ramp for every button; the gradient color tints it.
-        private static Texture2D s_fadeTexture;
 
         private bool _highlighted;
         private bool _hovered;
@@ -183,20 +185,20 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private static Texture2D GetFadeTexture()
         {
-            if (s_fadeTexture != null) return s_fadeTexture;
+            if (_fadeTexture != null) return _fadeTexture;
 
-            s_fadeTexture = CreateHorizontalFadeTexture();
+            _fadeTexture = CreateHorizontalFadeTexture();
 
             // The texture is hidden and not saved, so it outlives the domain; destroy it before the reload.
             AssemblyReloadEvents.beforeAssemblyReload -= DestroyFadeTexture;
             AssemblyReloadEvents.beforeAssemblyReload += DestroyFadeTexture;
-            return s_fadeTexture;
+            return _fadeTexture;
         }
 
         private static void DestroyFadeTexture()
         {
-            if (s_fadeTexture != null) UnityEngine.Object.DestroyImmediate(s_fadeTexture);
-            s_fadeTexture = null;
+            if (_fadeTexture != null) UnityEngine.Object.DestroyImmediate(_fadeTexture);
+            _fadeTexture = null;
         }
 
         private static Texture2D CreateHorizontalFadeTexture()
@@ -204,6 +206,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             const int width = 256;
             var texture = new Texture2D(width, 1, TextureFormat.RGBA32, mipChain: false)
             {
+                name = FadeTextureName,
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Bilinear,
                 hideFlags = HideFlags.HideAndDontSave,
