@@ -45,7 +45,12 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 
 ### Empty field
 
-Unity creates the wrapper for every serialized field, so <code lang="csharp">field == null</code> never finds an unset one. <code lang="csharp">IsEmpty</code> and <code lang="csharp">IsMissing</code> tell the states apart:
+Test an unset field with <code lang="csharp">field is null || field.IsEmpty</code>, not <code lang="csharp">field == null</code> alone:
+
+- Loaded from an asset, a scene or a prefab, a field holds a wrapper, empty when nothing is picked.
+- On an object created in code (<code lang="csharp">AddComponent</code>, <code lang="csharp">ScriptableObject.CreateInstance</code>), a field is <code lang="csharp">null</code> until Unity serializes the object.
+
+<code lang="csharp">IsEmpty</code> and <code lang="csharp">IsMissing</code> tell the states of a wrapper apart:
 
 | State | Type | IsEmpty | IsMissing |
 |---|---|---|---|

@@ -45,7 +45,12 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 ### Пустое поле
 
-Unity создаёт обёртку для каждого сериализуемого поля, поэтому <code lang="csharp">field == null</code> никогда не находит незаполненное поле. Состояния различают <code lang="csharp">IsEmpty</code> и <code lang="csharp">IsMissing</code>:
+Незаполненное поле проверяйте через <code lang="csharp">field is null || field.IsEmpty</code>, а не через один <code lang="csharp">field == null</code>:
+
+- У объекта, загруженного из ассета, сцены или префаба, в поле лежит обёртка, пустая, если ничего не выбрано.
+- У объекта, созданного в коде (<code lang="csharp">AddComponent</code>, <code lang="csharp">ScriptableObject.CreateInstance</code>), поле равно <code lang="csharp">null</code>, пока Unity не сериализует объект.
+
+Состояния обёртки различают <code lang="csharp">IsEmpty</code> и <code lang="csharp">IsMissing</code>:
 
 | Состояние | Type | IsEmpty | IsMissing |
 |---|---|---|---|

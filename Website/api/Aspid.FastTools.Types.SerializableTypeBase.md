@@ -75,9 +75,11 @@ Not meant to be derived from outside the package — use [`SerializableType`](As
 so every wrapper shares one serialized layout.
 </p>
 <p>
-Unity creates an empty wrapper for every serialized field, so such a field is never <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
-and <code>field == null</code> does not detect an unset one. Check [`SerializableTypeBase.IsEmpty`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsEmpty), [`SerializableTypeBase.IsMissing`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsMissing)
-or [`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) instead.
+Unity fills a serialized field with an empty wrapper when it loads the object from an asset, a scene or
+a prefab, so <code>field == null</code> does not detect an unset field there. On an object created in code
+(<code>AddComponent</code>, <code>ScriptableObject.CreateInstance</code>) the field stays <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> until
+Unity serializes the object. Test an unset field with <code>field is null || field.IsEmpty</code>, or a usable
+type with <code>field?.Type is not null</code>.
 </p>
 <p>
 A player resolves the type by the stored name only, which managed code stripping does not see: from

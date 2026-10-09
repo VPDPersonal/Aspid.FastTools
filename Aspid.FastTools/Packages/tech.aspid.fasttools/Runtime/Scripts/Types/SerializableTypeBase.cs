@@ -16,9 +16,11 @@ namespace Aspid.FastTools.Types
     /// so every wrapper shares one serialized layout.
     /// </para>
     /// <para>
-    /// Unity creates an empty wrapper for every serialized field, so such a field is never <see langword="null"/>
-    /// and <c>field == null</c> does not detect an unset one. Check <see cref="IsEmpty"/>, <see cref="IsMissing"/>
-    /// or <see cref="Type"/> instead.
+    /// Unity fills a serialized field with an empty wrapper when it loads the object from an asset, a scene or
+    /// a prefab, so <c>field == null</c> does not detect an unset field there. On an object created in code
+    /// (<c>AddComponent</c>, <c>ScriptableObject.CreateInstance</c>) the field stays <see langword="null"/> until
+    /// Unity serializes the object. Test an unset field with <c>field is null || field.IsEmpty</c>, or a usable
+    /// type with <c>field?.Type is not null</c>.
     /// </para>
     /// <para>
     /// A player resolves the type by the stored name only, which managed code stripping does not see: from

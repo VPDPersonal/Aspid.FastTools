@@ -164,7 +164,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 // Unity creates the wrapper when it serializes the object, never earlier.
                 new UnityEditor.SerializedObject(holder).Update();
 
-                Assert.IsFalse(holder.wrapper == null, "Unity fills the field, so a null check never sees it empty.");
+                Assert.IsFalse(holder.wrapper == null, "Once Unity has serialized the object it fills the field, so a null check does not see it empty.");
                 Assert.IsTrue(holder.wrapper.IsEmpty);
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
