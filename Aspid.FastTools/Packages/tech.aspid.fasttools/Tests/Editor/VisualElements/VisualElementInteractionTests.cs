@@ -51,6 +51,32 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsEmpty(actions, "Collapsing a selected row's ancestor must block every action on that row.");
         }
 
+        [Test]
+        public void NavRing_FocusElement_FocusesARegisteredTargetAndIgnoresOthers()
+        {
+            var host = new VisualElement();
+            var first = new VisualElement();
+            var second = new VisualElement();
+            var scrolled = new List<VisualElement>();
+
+            var ring = new NavRing(host, "nav-target", "nav-focused", scrollTo: scrolled.Add);
+            ring.Register(first, () => { });
+            ring.Register(second, () => { });
+
+            ring.Focus(second, scrollTo: false);
+            Assert.IsTrue(second.ClassListContains("nav-focused"));
+            Assert.IsFalse(first.ClassListContains("nav-focused"));
+            Assert.IsEmpty(scrolled, "scrollTo: false must not scroll.");
+
+            ring.Focus(new VisualElement(), scrollTo: false);
+            Assert.IsTrue(second.ClassListContains("nav-focused"), "An element that is not a target keeps the focus where it was.");
+
+            ring.Focus(first);
+            Assert.IsTrue(first.ClassListContains("nav-focused"));
+            Assert.IsFalse(second.ClassListContains("nav-focused"));
+            CollectionAssert.AreEqual(new[] { first }, scrolled);
+        }
+
         [UnityTest]
         public IEnumerator InspectorHeader_LeavingAfterStatusClearedResetsHoverAccents()
         {

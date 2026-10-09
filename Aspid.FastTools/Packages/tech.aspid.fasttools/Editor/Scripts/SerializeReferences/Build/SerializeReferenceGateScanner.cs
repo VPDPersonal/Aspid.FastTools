@@ -14,8 +14,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const int MaxListedPaths = 10;
 
-        // How many files the required-field sweep loads before it releases the ones nothing references any more.
-        // Not const so tests can lower it.
+        // How many files a sweep loads before it releases the ones nothing references any more. The required-field
+        // sweep and SerializeReferenceConstraintCache both use it. Not const so tests can lower it.
         internal static int UnloadEveryLoadedFiles = 64;
 
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only

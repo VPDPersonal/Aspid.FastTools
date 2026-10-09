@@ -63,6 +63,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Rows shown so far per card, by card key; a card that is not here shows its first page.
         private readonly Dictionary<string, int> _shownRows = new(StringComparer.Ordinal);
 
+        // The row to focus while the list is rebuilt after Show more: its card key and its index in that card.
+        private (string Key, int Index) _focusRow;
+
+        // Which list layout is on screen, so that Show more rebuilds the same one and keeps its header.
+        private bool _isMissingClean;
+
         private readonly AuditPickerHost _picker;
 
         private static readonly LegendClasses _legendClassSet = new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
@@ -260,6 +266,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void RenderGroups(List<MissingReferenceGroup> groups, IReadOnlyList<GateViolation> requiredViolations)
         {
+            _isMissingClean = false;
             _list.Clear();
             ResetNavTargets();
 
@@ -310,6 +317,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _list.AddChild(BuildGroupCard(group, migration));
         }
 
+        // Builds the list again for the data on screen, with the layout and the header it already has.
+        private void RerenderList()
+        {
+            if (_isMissingClean) ShowMissingReferencesClean();
+            else RenderWarmGroups();
+        }
+
         private void RerenderAfterBulkEdit()
         {
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
@@ -322,6 +336,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void ShowMissingReferencesClean()
         {
+            _isMissingClean = true;
             _list.Clear();
             ResetNavTargets();
             var requiredViolations = RequiredViolationsForRender;

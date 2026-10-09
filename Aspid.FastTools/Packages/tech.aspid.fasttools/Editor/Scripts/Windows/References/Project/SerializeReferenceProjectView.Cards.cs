@@ -14,9 +14,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal sealed partial class SerializeReferenceProjectView
     {
-        // A card builds this many rows, then offers Show more, so thousands of entries stay cheap to build.
-        private const int RowsPerPage = 200;
-
         private const string GroupClass = RootClass + "__group";
         private const string GroupMigrateClass = GroupClass + "--migrate";
         private const string GroupHeaderHoverClass = GroupClass + "--header-hover";
@@ -167,24 +164,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void AddPagedRows<T>(
             VisualElement card, string key, IReadOnlyList<T> entries, Func<T, VisualElement> buildRow)
         {
-            var shown = Math.Min(entries.Count, _shownRows.GetValueOrDefault(key, RowsPerPage));
+            var shown = SerializeReferenceProjectSummary.GetShownRows(_shownRows.GetValueOrDefault(key), entries.Count);
+            var focusIndex = _focusRow.Key == key ? _focusRow.Index : -1;
 
             for (var i = 0; i < shown; i++)
-                card.AddChild(buildRow(entries[i]));
+            {
+                var row = buildRow(entries[i]);
+                card.AddChild(row);
+
+                if (i == focusIndex) _ring.Focus(row, scrollTo: false);
+            }
 
             if (shown == entries.Count) return;
 
-            void ShowMore()
+            // A click leaves the keyboard focus alone. Enter on the row moves it to the first row the page adds, so
+            // the next arrow key continues from there instead of from the Scan button.
+            void ShowMore(bool focusFirstNewRow)
             {
-                _shownRows[key] = shown + RowsPerPage;
-                RerenderAfterBulkEdit();
+                _shownRows[key] = SerializeReferenceProjectSummary.GetNextShownRows(shown);
+                if (focusFirstNewRow) _focusRow = (key, shown);
+
+                _picker.Close();
+                RerenderList();
+                _focusRow = default;
             }
 
             var more = new Label(SerializeReferenceProjectSummary.BuildShowMoreText(shown, entries.Count))
                 .AddClass(GroupMoreClass);
-            more.tooltip = $"Show the next {Math.Min(RowsPerPage, entries.Count - shown)} rows.";
-            more.RegisterCallback<ClickEvent>(_ => ShowMore());
-            RegisterNavTarget(more, ShowMore);
+            more.tooltip = SerializeReferenceProjectSummary.BuildShowMoreTooltip(shown, entries.Count);
+            more.RegisterCallback<ClickEvent>(_ => ShowMore(focusFirstNewRow: false));
+            RegisterNavTarget(more, () => ShowMore(focusFirstNewRow: true));
 
             card.AddChild(more);
         }
