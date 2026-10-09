@@ -14,6 +14,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeField] private int _damage;
     }
 
+    // A type that moved out of the global namespace: the stored identity has an empty namespace.
+    [Serializable]
+    [MovedFrom("")]
+    internal sealed class MovedFromGlobalShield { }
+
+    // A stand-in for a Unity version that moved the rename data: it has a "data" field, but the field type has no parts.
+    internal sealed class MovedFromWithoutParts
+    {
+        public readonly string data = string.Empty;
+    }
+
     // Two types claiming the same recorded old class name: neither claim is authoritative.
     [Serializable]
     [MovedFrom(false, null, null, "AmbiguousOldSword")]
@@ -27,7 +38,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// Coverage for <see cref="SerializeReferenceMovedFromResolver"/> — the authoritative-rename resolver behind the
     /// migration classification (breakage report entries and the Project References bulk <b>Migrate all</b>):
     /// a recorded namespace move and a recorded class rename each resolve to their single declaring type, while an
-    /// ambiguous claim, an unknown identity or a mismatched assembly resolve to nothing.
+    /// ambiguous claim, an unknown identity or a mismatched namespace or assembly resolve to nothing.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceMovedFromResolverTests
@@ -65,6 +76,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(SerializeReferenceMovedFromResolver.TryResolve(stored, out var target),
                 "Two types claiming the same old identity make the rename non-authoritative.");
             Assert.IsNull(target);
+        }
+
+        [Test]
+        public void TryResolve_RecordedMoveFromGlobalNamespace_FindsTheSingleTarget()
+        {
+            var stored = new ManagedTypeName(Assembly, string.Empty, nameof(MovedFromGlobalShield));
+
+            Assert.IsTrue(SerializeReferenceMovedFromResolver.TryResolve(stored, out var target),
+                "An empty stored namespace must match a [MovedFrom] that records the global namespace.");
+            Assert.AreEqual(typeof(MovedFromGlobalShield), target);
+        }
+
+        [Test]
+        public void TryResolve_GlobalStoredIdentity_DoesNotMatchAForeignClassRename()
+        {
+            // RenamedRanged records only a class rename, so its old namespace is its own. A stored type with the
+            // same class name in the global namespace is a different type, not that rename.
+            var stored = new ManagedTypeName(Assembly, string.Empty, "OldRenamedRanged");
+
+            Assert.IsFalse(SerializeReferenceMovedFromResolver.TryResolve(stored, out var target),
+                "A stored global type must not be taken for a renamed class from another namespace.");
+            Assert.IsNull(target);
+        }
+
+        [Test]
+        public void TryResolve_NamespaceMismatch_ReturnsFalse()
+        {
+            var stored = new ManagedTypeName(Assembly, "Some.Other.Namespace", "OldRenamedRanged");
+
+            Assert.IsFalse(SerializeReferenceMovedFromResolver.TryResolve(stored, out _));
         }
 
         [Test]
@@ -109,6 +150,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             foreach (var name in new[] { "className", "nameSpace", "assembly", "classHasChanged", "nameSpaceHasChanged", "assemblyHasChanged" })
                 Assert.IsNotNull(data.FieldType.GetField(name, flags),
                     $"Unity renamed MovedFromAttributeData.{name}; update SerializeReferenceMovedFromResolver.");
+        }
+
+        [Test]
+        public void MovedFromFields_UnityAttribute_HasEveryField()
+        {
+            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(typeof(MovedFromAttribute));
+
+            Assert.IsNull(fields.Missing, "The resolver would warn and match nothing.");
+        }
+
+        [Test]
+        public void MovedFromFields_AttributeWithoutData_NamesTheDataField()
+        {
+            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(typeof(object));
+
+            Assert.AreEqual("data", fields.Missing);
+        }
+
+        [Test]
+        public void MovedFromFields_DataWithoutParts_NamesTheFirstMissingPart()
+        {
+            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(typeof(MovedFromWithoutParts));
+
+            Assert.AreEqual("className", fields.Missing);
         }
     }
 }
