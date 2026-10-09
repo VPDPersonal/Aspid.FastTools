@@ -44,7 +44,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 Drag(notAScript, _script);
 
-                Assert.IsTrue(SerializeReferenceDropHandler.TryResolveDroppedType(typeof(ITestWeapon), null, out var type));
+                Assert.IsTrue(SerializeReferenceDropHandler.TryResolveDroppedType(typeof(ITestWeapon), baseTypes: null, out var type));
                 Assert.AreEqual(typeof(IMGUIDropWeapon), type, "An object that is not a script must be skipped, not reject the drop.");
             }
             finally
@@ -133,7 +133,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 var original = obj.a;
                 var serialized = new SerializedObject(obj);
 
-                Assert.DoesNotThrow(() => SerializeReferenceDropHandler.Assign(null, typeof(IMGUIDropWeapon)));
+                Assert.DoesNotThrow(() => SerializeReferenceDropHandler.Assign(property: null, typeof(IMGUIDropWeapon)));
                 SerializeReferenceDropHandler.Assign(serialized.FindProperty("a"), type: null);
 
                 Assert.AreSame(original, obj.a, "A drop without a resolved type must not clear the field.");

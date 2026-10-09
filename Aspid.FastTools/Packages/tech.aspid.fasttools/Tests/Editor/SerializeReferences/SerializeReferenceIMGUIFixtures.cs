@@ -19,10 +19,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeReference] public ITestWeapon inner;
     }
 
+    // A value with a managed-reference list of its own: the drawer paints that child with the package's list.
+    [Serializable]
+    internal sealed class IMGUIListWeapon : ITestWeapon
+    {
+        [SerializeReference] public List<ITestWeapon> items = new();
+    }
+
     // The attribute routes Unity's own IMGUI path (PropertyField, GetPropertyHeight) into the drawer.
     internal sealed class IMGUIDrawerTestObject : ScriptableObject
     {
         [TypeSelector] [SerializeReference] public ITestWeapon weapon;
-        [TypeSelector] [SerializeReference] public List<ITestWeapon> weapons = new();
     }
 }

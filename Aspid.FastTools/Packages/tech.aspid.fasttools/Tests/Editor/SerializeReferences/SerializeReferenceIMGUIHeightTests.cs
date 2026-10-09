@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -97,6 +98,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(Line + (Line + Spacing) + (Line + (Line + Spacing) + Spacing),
                     SerializeReferenceIMGUIPropertyDrawer.GetHeight(property),
                     "An expanded nested value must add its own child rows inside the outer field.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [Test]
+        public void GetHeight_ExpandedValue_MeasuresANestedListWithThePackageList()
+        {
+            var obj = ScriptableObject.CreateInstance<LinkerTestObject>();
+            try
+            {
+                obj.a = new IMGUIListWeapon { items = { new TestSword(), null } };
+                var serialized = new SerializedObject(obj);
+                var property = serialized.FindProperty("a");
+                property.isExpanded = true;
+
+                var listHeight = SerializeReferenceIMGUIList.GetHeight(serialized.FindProperty("a.items"), new GUIContent("Items"),
+                    typeof(ITestWeapon), Array.Empty<Type>(), depth: 1);
+
+                Assert.Greater(listHeight, Line, "Precondition: a list with two elements is taller than a line.");
+                Assert.AreEqual(Line + listHeight + Spacing, SerializeReferenceIMGUIPropertyDrawer.GetHeight(property),
+                    "The outer field must reserve the height of the nested list at the next depth.");
             }
             finally
             {

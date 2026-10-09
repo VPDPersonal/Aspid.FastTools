@@ -86,6 +86,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [UnityTest]
+        public IEnumerator Draw_ExpandedValueWithAList_PaintsTheNestedList()
+        {
+            var obj = ScriptableObject.CreateInstance<LinkerTestObject>();
+            try
+            {
+                var value = new IMGUIListWeapon { items = { new TestSword(), null } };
+                obj.a = value;
+
+                var property = new SerializedObject(obj).FindProperty("a");
+                property.isExpanded = true;
+                var report = new PaintReport();
+
+                yield return Paint(report, () => DrawField(property));
+
+                AssertPainted(report);
+                Assert.AreSame(value, obj.a, "Painting must not replace the value.");
+                Assert.AreEqual(2, value.items.Count, "Painting must not change the nested list.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator Draw_RequiredAndEmpty_PaintsTheNotice()
         {
             var obj = ScriptableObject.CreateInstance<RequiredTestObject>();
@@ -261,7 +286,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             try
             {
                 filled.weapons.Add(new TestSword());
-                filled.weapons.Add(null);
+                filled.weapons.Add(item: null);
                 filled.weapons.Add(new IMGUINestingWeapon { level = 3 });
 
                 var filledList = new SerializedObject(filled).FindProperty("weapons");
@@ -311,6 +336,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         // Runs the draw in an IMGUIContainer and waits until the window has run it, ideally for a layout pass and a
         // paint pass. The container leaves again before the caller disposes what the draw reads.
+        // A repaint is not asserted: a batch-mode window may never send one, and then the tests check the layout pass only.
         private IEnumerator Paint(PaintReport report, Action draw)
         {
             _window.rootVisualElement.Add(new IMGUIContainer(() =>
@@ -333,9 +359,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 }
 
                 report.Passes++;
+                if (Event.current.type == EventType.Repaint) report.Repaints++;
             }));
 
-            for (var frame = 0; frame < 10 && report.Passes < 2; frame++)
+            for (var frame = 0; frame < 10 && (report.Passes < 2 || report.Repaints == 0); frame++)
             {
                 _window.Repaint();
                 yield return null;
@@ -347,6 +374,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private sealed class PaintReport
         {
             public int Passes;
+            public int Repaints;
             public Exception Error;
             public bool StateBalanced = true;
         }

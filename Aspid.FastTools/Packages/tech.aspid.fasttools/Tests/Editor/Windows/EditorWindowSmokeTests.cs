@@ -6,9 +6,9 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
+using Object = UnityEngine.Object;
 using Aspid.FastTools.Editors.Internal;
 using Aspid.FastTools.SerializeReferences.Editors;
-using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.Editors.Tests
 {
@@ -90,8 +90,10 @@ namespace Aspid.FastTools.Editors.Tests
         }
 
         // The prompt is a pure IMGUI window: its OnGUI lays out a text field and two buttons by hand.
+        // The test cannot prove that OnGUI ran: it fails on a logged error or a closed window, nothing else.
+        // Closing the prompt with a sent Escape event would prove more, but it could not be tried without a display.
         [UnityTest]
-        public IEnumerator SerializeReferenceNamePrompt_PaintsItsFormAndStaysOpen()
+        public IEnumerator SerializeReferenceNamePrompt_Repaints_WithoutErrorAndStaysOpen()
         {
             var prompt = ScriptableObject.CreateInstance<SerializeReferenceNamePrompt>();
             try
@@ -104,7 +106,7 @@ namespace Aspid.FastTools.Editors.Tests
                     yield return null;
                 }
 
-                Assert.IsTrue(prompt != null, "Painting the form must not close the prompt.");
+                Assert.IsTrue(prompt != null, "Repainting the form must not close the prompt.");
             }
             finally
             {
