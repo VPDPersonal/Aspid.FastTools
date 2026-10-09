@@ -19,8 +19,7 @@ checkout before `npm run api`. Run these from the worktree root (macOS):
    clone in seconds; GNU `cp` reads `-c` differently.
 2. Copy `Aspid.FastTools.csproj` and `Aspid.FastTools.Editor.csproj` into `Aspid.FastTools/`. Replace the main
    checkout path in them with the worktree path, so the analyzers come from the worktree.
-3. Link `Website/node_modules` to the main checkout's folder. Remove the link before you stage anything:
-   `Website/.gitignore` ignores a `node_modules/` directory, not a symlink.
+3. Link `Website/node_modules` to the main checkout's folder. `Website/.gitignore` ignores the link.
 
 The cloned `Library/ScriptAssemblies` holds DLLs built from the main checkout. A PR that changes an asmdef outside
 the documented assemblies (for example the Math satellite) needs a Unity compile of the worktree first.
