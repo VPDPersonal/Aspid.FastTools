@@ -28,7 +28,7 @@ namespace Aspid.FastTools.Enums.Editors
         {
             var keyProperty = property.FindPropertyRelative("_key");
             var valueProperty = property.FindPropertyRelative("_value");
-            var enumTypeProperty = property.FindPropertyRelative("_enumType");
+            var enumTypeProperty = EnumValuesPropertyDrawerHelper.FindEnumTypeProperty(property);
 
             var hasFoldout = valueProperty.HasFoldout();
 
@@ -78,7 +78,7 @@ namespace Aspid.FastTools.Enums.Editors
 
             var enumValue = EnumValuesPropertyDrawerHelper.ParseKey(keyProperty.stringValue, enumType);
 
-            if (enumValue is null || EnumValuesPropertyDrawerHelper.IsWideFlags(enumType))
+            if (EnumValuesPropertyDrawerHelper.UsesKeyMenu(enumType, enumValue))
             {
                 var caption = EnumValuesPropertyDrawerHelper.GetKeyCaption(keyProperty.stringValue, enumValue);
 

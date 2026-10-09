@@ -22,7 +22,7 @@ namespace Aspid.FastTools.Enums.Editors
             var serializedObject = property.serializedObject;
             var keyPath = property.FindPropertyRelative("_key").propertyPath;
             var valuePath = property.FindPropertyRelative("_value").propertyPath;
-            var enumTypePath = property.FindPropertyRelative("_enumType").propertyPath;
+            var enumTypePath = EnumValuesPropertyDrawerHelper.FindEnumTypeProperty(property)?.propertyPath;
 
             var keyEnumField = new EnumField(label: string.Empty)
                 .SetDisplay(DisplayStyle.None)
@@ -32,7 +32,8 @@ namespace Aspid.FastTools.Enums.Editors
                 .SetDisplay(DisplayStyle.None)
                 .AddValueChanged(e => OnKeyChanged(e.newValue));
 
-            // Shows a key the enum cannot parse, and the flags of a 64-bit enum that EnumFlagsField would truncate.
+            // Shows a key the enum cannot parse, a key on an [Obsolete] member that EnumField leaves blank,
+            // and the flags of a 64-bit enum that EnumFlagsField would truncate.
             var keyMenuField = new KeyMenuField(rect => EnumValuesPropertyDrawerHelper.ShowKeyMenu(
                     rect, serializedObject, keyPath, enumTypePath))
                 .SetDisplay(DisplayStyle.None);
@@ -64,7 +65,9 @@ namespace Aspid.FastTools.Enums.Editors
             // Track the serialized properties because the enum fields are not bound: Undo, Revert or Paste
             // change the key without notifying them, and direct writes do not notify a hidden PropertyField.
             root.TrackPropertyValue(serializedObject.FindProperty(keyPath), _ => UpdateValue());
-            root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValue());
+
+            if (enumTypePath is not null)
+                root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValue());
 
             return root;
 
@@ -75,7 +78,7 @@ namespace Aspid.FastTools.Enums.Editors
             void UpdateValue()
             {
                 var keyProperty = serializedObject.FindProperty(keyPath);
-                var enumTypeProperty = serializedObject.FindProperty(enumTypePath);
+                var enumTypeProperty = enumTypePath is null ? null : serializedObject.FindProperty(enumTypePath);
 
                 keyField.SetDisplay(DisplayStyle.None);
                 keyEnumField.SetDisplay(DisplayStyle.None);
@@ -91,7 +94,7 @@ namespace Aspid.FastTools.Enums.Editors
 
                 var enumValue = EnumValuesPropertyDrawerHelper.ParseKey(keyProperty.stringValue, enumType);
 
-                if (enumValue is null || EnumValuesPropertyDrawerHelper.IsWideFlags(enumType))
+                if (EnumValuesPropertyDrawerHelper.UsesKeyMenu(enumType, enumValue))
                 {
                     keyMenuField
                         .SetCaption(EnumValuesPropertyDrawerHelper.GetKeyCaption(keyProperty.stringValue, enumValue))

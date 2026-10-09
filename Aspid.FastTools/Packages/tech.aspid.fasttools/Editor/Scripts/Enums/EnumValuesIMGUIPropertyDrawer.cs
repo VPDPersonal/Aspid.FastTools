@@ -58,8 +58,6 @@ namespace Aspid.FastTools.Enums.Editors
             var enumTypeProperty = property.FindPropertyRelative("_enumType");
             var defaultValueProperty = property.FindPropertyRelative("_defaultValue");
 
-            EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(valuesProperty, enumTypeProperty);
-
             var inset = BorderWidth + CardPadding;
 
             var headerBackgroundHeight = BorderWidth + CardPadding + EditorGUIUtility.singleLineHeight + SeamPadding;
@@ -88,10 +86,7 @@ namespace Aspid.FastTools.Enums.Editors
                 position.x + contentInset, containerBackgroundRect.y + SeamPadding,
                 position.width - contentInset - inset, valuesHeight);
 
-            EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(valuesRect, valuesProperty, includeChildren: true);
-            if (EditorGUI.EndChangeCheck())
-                EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(valuesProperty, enumTypeProperty);
 
             var defaultValueHeight = EditorGUI.GetPropertyHeight(defaultValueProperty, includeChildren: true);
             var defaultValueRect = new Rect(valuesRect.x, valuesRect.yMax + EditorGUIUtility.standardVerticalSpacing, valuesRect.width, defaultValueHeight);
