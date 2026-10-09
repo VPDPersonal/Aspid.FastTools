@@ -6,8 +6,8 @@ using CardKind = Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceG
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     // Pins what SerializeReferenceGraphPlan draws for a graph that the YAML scanner would build: each reference
-    // expands its children once, references that point at each other stay linear, and the card budget only counts
-    // what it leaves out. Works on hand-built documents, so it needs no asset.
+    // expands its children once, under a field that the Editor can open, references that point at each other stay
+    // linear, and the card budget only counts what it leaves out. Works on hand-built documents, so it needs no asset.
     [TestFixture]
     internal sealed class SerializeReferenceGraphPlanTests
     {
@@ -107,20 +107,78 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             CollectionAssert.AreEqual(new[] { "Node 1 _a", "Node 2 _a.x", "Repeat 1 _b" }, Describe(plan));
         }
 
+        private static void Missing(ReferenceGraphDocument document, long rid) =>
+            document.Nodes.Add(new ReferenceGraphNode(rid, new ManagedTypeName("Asm", "Ns", "Ghost" + rid), resolves: false));
+
+        // Serialization does not enter a missing reference, so a healthy field is the only path where the children of
+        // a shared reference can be edited and where the required-field scan reports them.
         [Test]
-        public void Build_MissingRoot_IsDrawnFirstAndOwnsTheSharedSubtree()
+        public void Build_MissingRoot_IsDrawnFirstAndYieldsTheSharedSubtreeToAHealthyField()
         {
-            var document = Document(1, 3);
-            document.Nodes.Add(new ReferenceGraphNode(2, new ManagedTypeName("Asm", "Ns", "Ghost"), resolves: false));
+            var document = Document(1, 3, 4);
+            Missing(document, rid: 2);
             Root(document, rid: 1, label: "_healthy");
             Root(document, rid: 2, label: "_missing");
             Edge(document, parent: 1, child: 3, label: "x");
             Edge(document, parent: 2, child: 3, label: "y");
+            Edge(document, parent: 3, child: 4, label: "z");
 
             var plan = SerializeReferenceGraphPlan.Build(document, Budget);
 
             CollectionAssert.AreEqual(
-                new[] { "Node 2 _missing", "Node 3 _missing.y", "Node 1 _healthy", "Repeat 3 _healthy.x" },
+                new[] { "Node 2 _missing", "Repeat 3 _missing.y", "Node 1 _healthy", "Node 3 _healthy.x", "Node 4 _healthy.x.z" },
+                Describe(plan));
+        }
+
+        [Test]
+        public void Build_MissingRootFirstInTheFile_StillYieldsTheSharedSubtreeToAHealthyField()
+        {
+            var document = Document(1, 3, 4);
+            Missing(document, rid: 2);
+            Root(document, rid: 2, label: "_missing");
+            Root(document, rid: 1, label: "_healthy");
+            Edge(document, parent: 1, child: 3, label: "x");
+            Edge(document, parent: 2, child: 3, label: "y");
+            Edge(document, parent: 3, child: 4, label: "z");
+
+            var plan = SerializeReferenceGraphPlan.Build(document, Budget);
+
+            CollectionAssert.AreEqual(
+                new[] { "Node 2 _missing", "Repeat 3 _missing.y", "Node 1 _healthy", "Node 3 _healthy.x", "Node 4 _healthy.x.z" },
+                Describe(plan));
+        }
+
+        [Test]
+        public void Build_MissingNestedReference_YieldsTheSharedSubtreeToAHealthyField()
+        {
+            var document = Document(1, 3, 4);
+            Missing(document, rid: 2);
+            Root(document, rid: 1, label: "_a");
+            Edge(document, parent: 1, child: 2, label: "gone");
+            Edge(document, parent: 1, child: 3, label: "x");
+            Edge(document, parent: 2, child: 3, label: "y");
+            Edge(document, parent: 3, child: 4, label: "z");
+
+            var plan = SerializeReferenceGraphPlan.Build(document, Budget);
+
+            CollectionAssert.AreEqual(
+                new[] { "Node 1 _a", "Node 2 _a.gone", "Repeat 3 _a.gone.y", "Node 3 _a.x", "Node 4 _a.x.z" },
+                Describe(plan));
+        }
+
+        [Test]
+        public void Build_SubtreeOnlyBelowAMissingReference_IsStillDrawnThere()
+        {
+            var document = Document(3, 4);
+            Missing(document, rid: 2);
+            Root(document, rid: 2, label: "_missing");
+            Edge(document, parent: 2, child: 3, label: "y");
+            Edge(document, parent: 3, child: 4, label: "z");
+
+            var plan = SerializeReferenceGraphPlan.Build(document, Budget);
+
+            CollectionAssert.AreEqual(
+                new[] { "Node 2 _missing", "Node 3 _missing.y", "Node 4 _missing.y.z" },
                 Describe(plan));
         }
 
@@ -181,6 +239,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(2, plan.Hidden);
         }
 
+        [Test]
+        public void Build_BudgetRunsOut_CountsTheEmptyFieldsItLeavesOut()
+        {
+            var document = Document(1);
+            Root(document, rid: 1, label: "r");
+            Edge(document, parent: 1, child: -2, label: "a");
+            Edge(document, parent: 1, child: -2, label: "b");
+
+            var plan = SerializeReferenceGraphPlan.Build(document, budget: 2);
+
+            CollectionAssert.AreEqual(new[] { "Node 1 r", "Empty -2 r.a" }, Describe(plan));
+            Assert.AreEqual(1, plan.Hidden);
+            Assert.AreEqual(1, plan.HiddenEmpty);
+        }
+
+        [Test]
+        public void BuildAll_SharesOneBudgetAcrossTheDocuments()
+        {
+            var documents = new List<ReferenceGraphDocument>();
+            for (var i = 0; i < 3; i++)
+            {
+                var document = Document(1, 2, 3);
+                Root(document, rid: 1, label: "r");
+                Edge(document, parent: 1, child: 2, label: "b");
+                Edge(document, parent: 2, child: 3, label: "c");
+                documents.Add(document);
+            }
+
+            var plans = SerializeReferenceGraphPlan.BuildAll(documents, budget: 5);
+
+            CollectionAssert.AreEqual(new[] { 3, 2, 0 }, plans.Select(plan => plan.Cards.Count));
+            CollectionAssert.AreEqual(new[] { 0, 1, 3 }, plans.Select(plan => plan.Hidden));
+            Assert.AreSame(documents[2], plans[2].Document);
+        }
+
         // A recursive walk overflowed the stack on a long chain; Unity cannot recover from that.
         [Test]
         public void Build_LongChain_DoesNotOverflowTheStack()
@@ -195,6 +288,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.AreEqual(100, plan.Cards.Count);
             Assert.AreEqual(length - 100, plan.Hidden);
+        }
+
+        private static GateViolation Required(long rid, string path) =>
+            new(assetPath: "Assets/A.prefab", fileId: 7, rid: rid, storedType: default, kind: GateViolationKind.RequiredUnset, fieldPath: path);
+
+        [Test]
+        public void SelectRequiredCards_WithinTheBudget_KeepsEveryViolation()
+        {
+            var violations = new List<GateViolation> { Required(-2, "a"), Required(0, "b") };
+
+            var cards = SerializeReferenceGraphAnalysis.SelectRequiredCards(violations, budget: 2, out var hidden);
+
+            Assert.AreEqual(2, cards.Count);
+            Assert.AreEqual(0, hidden);
+        }
+
+        // A required string field has no node in the graph, so it has no other card; a reference past the budget does.
+        [Test]
+        public void SelectRequiredCards_BudgetSpent_LeavesOutReferencesButKeepsStrings()
+        {
+            var violations = new List<GateViolation>
+            {
+                Required(-2, "a"), Required(0, "b"), Required(-2, "c"), Required(0, "d"), Required(-2, "e"),
+            };
+
+            var cards = SerializeReferenceGraphAnalysis.SelectRequiredCards(violations, budget: 1, out var hidden);
+
+            CollectionAssert.AreEqual(new[] { "a", "b", "d" }, cards.Select(card => card.FieldPath));
+            Assert.AreEqual(2, hidden);
+        }
+
+        [Test]
+        public void SelectRequiredCards_NoBudget_StillKeepsStrings()
+        {
+            var violations = new List<GateViolation> { Required(-2, "a"), Required(0, "b") };
+
+            var cards = SerializeReferenceGraphAnalysis.SelectRequiredCards(violations, budget: 0, out var hidden);
+
+            CollectionAssert.AreEqual(new[] { "b" }, cards.Select(card => card.FieldPath));
+            Assert.AreEqual(1, hidden);
         }
 
         [Test]

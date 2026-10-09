@@ -58,7 +58,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             if (orphans is not null) body.AddChild(orphans);
-            if (plan.Hidden > 0) body.AddChild(BuildHiddenNotice(plan.Hidden));
 
             if (header is null)
                 return new VisualElement().AddClass(DocumentClass).AddChild(body);
@@ -117,7 +116,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var cards = hidden == 1 ? "1 more card is" : $"{hidden} more cards are";
             return new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
-                .SetMessage($"{cards} not shown: the window draws at most {SerializeReferenceGraphPlan.MaxCards} cards. " +
+                .SetMessage($"{cards} not shown: the window draws at most {SerializeReferenceGraphPlan.MaxCards} reference cards. " +
                             "Project References repairs missing types without that limit.");
         }
     }

@@ -30,6 +30,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return paths;
         }
 
+        // The violations that get their own required-field card. A required string field has no node in the graph, so it
+        // always gets one; a required reference only while the budget lasts, like the cards of the plans.
+        public static List<GateViolation> SelectRequiredCards(List<GateViolation> violations, int budget, out int hidden)
+        {
+            var cards = new List<GateViolation>();
+            hidden = 0;
+
+            foreach (var violation in violations)
+            {
+                if (violation.Rid != 0 && budget <= 0)
+                {
+                    hidden++;
+                    continue;
+                }
+
+                cards.Add(violation);
+                budget--;
+            }
+
+            return cards;
+        }
+
         public static int CountEmptySlots(ReferenceGraphDocument document)
         {
             var count = document.Roots.Count(root => root.IsEmpty);
