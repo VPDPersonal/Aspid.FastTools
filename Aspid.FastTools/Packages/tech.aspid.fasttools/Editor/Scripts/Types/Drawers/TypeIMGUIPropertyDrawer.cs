@@ -124,6 +124,7 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     Types = types,
                     Allow = allow,
+                    AdditionalTypes = GenericTypeResolver.GetClosableGenericDefinitions(types),
                     HideNoneOption = repair,
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
