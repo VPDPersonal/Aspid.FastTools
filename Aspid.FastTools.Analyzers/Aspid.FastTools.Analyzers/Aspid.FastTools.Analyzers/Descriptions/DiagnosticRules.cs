@@ -126,7 +126,7 @@ public static class DiagnosticRules
     public static readonly Descriptor ProfilerMarkerScopeDiscardedRule = new(
         id: "AFT0011",
         title: "this.Marker() scope is never disposed",
-        messageFormat: "The scope of this.Marker() is discarded, so the sample it begins never ends — wrap the measured code in 'using (this.Marker()) { … }', or declare 'using var scope = this.Marker();' under a name this scope does not use yet",
+        messageFormat: "The scope of this.Marker() is discarded, so the sample it begins never ends — wrap the measured code in 'using (this.Marker()) { … }', or write 'using var scope = this.Marker();' with a name this block does not declare yet",
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true,

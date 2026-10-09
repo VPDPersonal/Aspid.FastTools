@@ -34,4 +34,9 @@
                           LogicalName="PackageSources/%(Filename)%(Extension)" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The docs pages the rules' help links point to, so a renamed heading fails the tests. -->
+        <EmbeddedResource Include="$(MSBuildThisFileDirectory)../../../Website/docs/*.md" LogicalName="Docs/%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>
