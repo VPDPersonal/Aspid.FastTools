@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
@@ -13,7 +14,9 @@ namespace Aspid.FastTools.Analyzers;
 
 /// <summary>
 /// Reports <c>this.Marker()</c> calls the profiler-marker source generator skips (AFT0010) — they bind to the
-/// fallback and silently open no marker — and supported calls whose scope is discarded, so the sample never ends (AFT0011).
+/// fallback and silently open no marker — supported calls whose scope is discarded, so the sample never ends (AFT0011),
+/// or stays open across <c>yield return</c> or <c>await</c> (AFT0013), and <c>WithName()</c> names the generator cannot
+/// read (AFT0014).
 /// </summary>
 /// <remarks>
 /// Which calls are supported is decided by <see cref="MarkerCallRules"/>, the file the generator itself compiles.
@@ -25,7 +28,11 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
     private const string ConditionalAccessReason = "it uses '?.' — call this.Marker() directly";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule, DiagnosticRules.ProfilerMarkerScopeDiscardedRule);
+        ImmutableArray.Create(
+            DiagnosticRules.ProfilerMarkerUnsupportedTypeRule,
+            DiagnosticRules.ProfilerMarkerScopeDiscardedRule,
+            DiagnosticRules.ProfilerMarkerScopeSuspendedRule,
+            DiagnosticRules.ProfilerMarkerNameNotConstantRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -64,8 +71,15 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        if (IsDiscarded(WithNameChain(invocation), model, context))
+        if (MarkerCallRules.FindWithNameArgument(invocation, model, ct) is { } nameArgument
+            && MarkerCallRules.GetConstantName(nameArgument, model, ct) is null)
+            context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerNameNotConstantRule, nameArgument.GetLocation()));
+
+        var scope = WithNameChain(invocation);
+        if (IsDiscarded(scope, model, context))
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerScopeDiscardedRule, name.GetLocation()));
+        else if (FindSuspension(scope) is { } suspension)
+            context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerScopeSuspendedRule, name.GetLocation(), suspension));
     }
 
     // The package fallback or a generated overload; a call with the wrong arguments has it only as a candidate.
@@ -113,6 +127,55 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
             ISimpleAssignmentOperation { Target: IDiscardOperation } => true,
             IVariableInitializerOperation { Parent: IVariableDeclaratorOperation declarator } => IsUnusedLocal(declarator, model, context),
             _ => false,
+        };
+    }
+
+    // The first `yield return` or `await` the using of the scope covers: the method resumes after it later,
+    // possibly in another frame or on another thread, so the sample cannot end there.
+    private static string? FindSuspension(SyntaxNode scope)
+    {
+        // Lambdas and local functions are other methods: their awaits do not suspend this one.
+        var nodes = GetUsingRegion(scope).SelectMany(static statement => statement.DescendantNodesAndSelf(
+            static node => node is not (AnonymousFunctionExpressionSyntax or LocalFunctionStatementSyntax)));
+
+        foreach (var node in nodes)
+        {
+            switch (node)
+            {
+                case YieldStatementSyntax yield when yield.IsKind(SyntaxKind.YieldReturnStatement):
+                    return "yield return";
+
+                case AwaitExpressionSyntax:
+                case CommonForEachStatementSyntax { AwaitKeyword.RawKind: not 0 }:
+                case UsingStatementSyntax { AwaitKeyword.RawKind: not 0 }:
+                case LocalDeclarationStatementSyntax { AwaitKeyword.RawKind: not 0 }:
+                    return "await";
+            }
+        }
+
+        return null;
+    }
+
+    // The statements a using of the scope covers: the body of `using (scope)` or `using (var s = scope)`,
+    // or the rest of the block after `using var s = scope;`. Empty when no using disposes the scope.
+    private static IEnumerable<StatementSyntax> GetUsingRegion(SyntaxNode scope)
+    {
+        var outer = scope;
+        while (outer.Parent is ParenthesizedExpressionSyntax paren)
+            outer = paren;
+
+        if (outer.Parent is UsingStatementSyntax { Expression: { } expression } usingExpression && expression == outer)
+            return new[] { usingExpression.Statement };
+
+        if (outer.Parent is not EqualsValueClauseSyntax { Parent: VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax declaration } })
+            return Enumerable.Empty<StatementSyntax>();
+
+        return declaration.Parent switch
+        {
+            UsingStatementSyntax usingDeclaration => new[] { usingDeclaration.Statement },
+            LocalDeclarationStatementSyntax { UsingKeyword.RawKind: not 0, Parent: BlockSyntax block } local =>
+                block.Statements.SkipWhile(statement => statement != local).Skip(1),
+            _ => Enumerable.Empty<StatementSyntax>(),
         };
     }
 
