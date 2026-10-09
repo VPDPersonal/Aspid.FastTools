@@ -46,6 +46,9 @@ Right-click the table → **Populate Missing Enum Members** adds the `Stone` row
 Select **Walker**. It has two tables. **Color Sample Interval** takes <code lang="class-name">SurfaceType</code> from the code, as in step 1: its rows set the seconds between trail color samples on each surface. **Speed By Terrain** declares only its value type, and the <code lang="class-name">TerrainFlags</code> enum is picked in the table header. A row can hold several flags: the `Wet` + `Slippery` row gives `0.5`.
 
 ```csharp
+[SerializeField, InspectorName("Color Sample Interval")]
+private EnumValues<SurfaceType, float> _stepInterval;
+
 [SerializeField] private EnumValues<float> _speedByTerrain;
 
 var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags));
