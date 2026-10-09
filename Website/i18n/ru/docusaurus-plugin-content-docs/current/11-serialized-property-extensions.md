@@ -33,10 +33,12 @@
 | <code lang="csharp">boxedValue = value</code> | <code lang="csharp">SetBoxed(value)</code> |
 | <code lang="csharp">exposedReferenceValue = value</code> | <code lang="csharp">SetExposedReference(value)</code> |
 
-<code lang="function">SetEnumIndex</code> и <code lang="function">SetEnumFlag</code> принимают <code lang="csharp">int</code>, как <code lang="function">SetInt</code>, поэтому формы <code lang="function">SetValue</code> у них нет: вызывайте их по имени. <code lang="csharp">SetValue(1)</code> для поля-перечисления — это <code lang="csharp">SetInt(1)</code>, он записывает значение 1, а не индекс. Значение перечисления записывают <code lang="function">SetEnum</code> и <code lang="csharp">SetValue(Rarity.Rare)</code>.
+- У <code lang="function">SetEnumIndex</code> и <code lang="function">SetEnumFlag</code> нет формы <code lang="function">SetValue</code>: вызывайте их по имени.
+- <code lang="csharp">SetValue(1)</code> для поля-перечисления вызывает <code lang="function">SetInt</code>: записывается значение 1, а не индекс.
+- Значение перечисления записывают <code lang="function">SetEnum</code> и <code lang="csharp">SetValue(Rarity.Rare)</code>.
 
 > [!WARNING]
-> Если у <code lang="class-name">SerializedObject</code> есть контекст <code lang="class-name">IExposedPropertyTable</code>, например <code lang="class-name">PlayableDirector</code>, <code lang="csharp">SetExposedReference()</code> сразу кладёт ссылку в таблицу, но новое имя остаётся неприменённым. Вызовите после него <code lang="csharp">ApplyModifiedProperties()</code>: <code lang="csharp">Update()</code> или перезагрузка домена сбросят имя, и запись в таблице останется без владельца.
+> С контекстом <code lang="class-name">IExposedPropertyTable</code>, например <code lang="class-name">PlayableDirector</code>, <code lang="csharp">SetExposedReference()</code> сразу кладёт ссылку в таблицу, но новое имя остаётся неприменённым. Вызовите после него <code lang="csharp">ApplyModifiedProperties()</code>: иначе очередное обновление или перезагрузка домена сбросят имя, и запись в таблице останется без владельца.
 
 ### Update() и Apply…()
 

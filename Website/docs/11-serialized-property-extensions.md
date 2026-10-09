@@ -33,10 +33,12 @@ The <code lang="function">SetValue</code> overloads select a setter by argument 
 | <code lang="csharp">boxedValue = value</code> | <code lang="csharp">SetBoxed(value)</code> |
 | <code lang="csharp">exposedReferenceValue = value</code> | <code lang="csharp">SetExposedReference(value)</code> |
 
-<code lang="function">SetEnumIndex</code> and <code lang="function">SetEnumFlag</code> take an <code lang="csharp">int</code> like <code lang="function">SetInt</code>, so they have no <code lang="function">SetValue</code> form: call them by name. <code lang="csharp">SetValue(1)</code> on an enum field is <code lang="csharp">SetInt(1)</code>, which writes the value 1, not the index. <code lang="function">SetEnum</code> and <code lang="csharp">SetValue(Rarity.Rare)</code> write the enum value.
+- <code lang="function">SetEnumIndex</code> and <code lang="function">SetEnumFlag</code> have no <code lang="function">SetValue</code> form: call them by name.
+- <code lang="csharp">SetValue(1)</code> on an enum field calls <code lang="function">SetInt</code>: it writes the value 1, not the index.
+- <code lang="function">SetEnum</code> and <code lang="csharp">SetValue(Rarity.Rare)</code> write the enum value.
 
 > [!WARNING]
-> When the <code lang="class-name">SerializedObject</code> has an <code lang="class-name">IExposedPropertyTable</code> context, for example a <code lang="class-name">PlayableDirector</code>, <code lang="csharp">SetExposedReference()</code> stores the reference in the table at once, but the new exposed name stays a pending change. Call <code lang="csharp">ApplyModifiedProperties()</code> after it: <code lang="csharp">Update()</code> or a domain reload discards the name and leaves an orphan entry in the table.
+> With an <code lang="class-name">IExposedPropertyTable</code> context, such as a <code lang="class-name">PlayableDirector</code>, <code lang="csharp">SetExposedReference()</code> stores the reference in the table at once, but the new name stays pending. Call <code lang="csharp">ApplyModifiedProperties()</code> after it: otherwise the next update or a domain reload discards the name and leaves an orphan entry in the table.
 
 ### Update() and Apply…()
 

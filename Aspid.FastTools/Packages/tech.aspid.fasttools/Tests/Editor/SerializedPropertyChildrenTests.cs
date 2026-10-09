@@ -1,10 +1,10 @@
 using System;
-using System.Linq;
-using NUnit.Framework;
 using UnityEditor;
+using System.Linq;
 using UnityEngine;
-using Aspid.FastTools.SerializeReferences.Editors;
+using NUnit.Framework;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 namespace Aspid.FastTools.Editors.Tests
 {
