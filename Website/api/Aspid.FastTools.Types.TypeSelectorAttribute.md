@@ -28,35 +28,7 @@ PropertyAttribute ←
 
 #### Extension Methods
 
-[TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
-[INotifyValueChangedExtensions.AddValueChanged\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<TypeSelectorAttribute\>\(TypeSelectorAttribute, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
-[INotifyValueChangedExtensions.RemoveValueChanged\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[TextInputBaseFieldExtensions.SetAutoCorrection\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetAutoCorrection__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetCursorIndex\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetCursorIndex__2___0_System_Int32_),
-[TextInputBaseFieldExtensions.SetDelayed\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetDelayed__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetDoubleClickSelectsWord\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetDoubleClickSelectsWord__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHideMobileInput\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideMobileInput__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHidePlaceholderOnFocus\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHidePlaceholderOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHideSoftKeyboard\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideSoftKeyboard__2___0_System_Boolean_),
-[SliderExtensions.SetHighValue\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_),
-[TextInputBaseFieldExtensions.SetKeyboardType\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, TouchScreenKeyboardType\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetKeyboardType__2___0_UnityEngine_TouchScreenKeyboardType_),
-[BaseFieldExtensions.SetLabel\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, string\)](Aspid.FastTools.UIElements.BaseFieldExtensions.md#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_),
-[SliderExtensions.SetLowValue\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_),
-[TextInputBaseFieldExtensions.SetMaskChar\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, char\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaskChar__2___0_System_Char_),
-[TextInputBaseFieldExtensions.SetMaxLength\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaxLength__2___0_System_Int32_),
-[TextInputBaseFieldExtensions.SetPassword\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPassword__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetPlaceholder\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, string\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPlaceholder__2___0_System_String_),
-[TextInputBaseFieldExtensions.SetReadOnly\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetReadOnly__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnFocus\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnMouseUp\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnMouseUp__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectIndex\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectIndex__2___0_System_Int32_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectable\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectable__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetTripleClickSelectsLine\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetTripleClickSelectsLine__2___0_System_Boolean_),
-[INotifyValueChangedExtensions.SetValue\<TypeSelectorAttribute, TValue\>\(TypeSelectorAttribute, TValue, bool\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__2___0___1_System_Boolean_)
+[ProfilerMarkerExtensionsForGenerator.Marker\<TypeSelectorAttribute\>\(TypeSelectorAttribute, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_)
 
 ## Examples
 
@@ -82,10 +54,7 @@ PropertyAttribute ←
 ## Remarks
 
 <p>With several base types the picker shows only types assignable to all of them.</p>
-<p>
-On an array or [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1) field it applies to the collection itself: each
-element gets a picker, and the add button of a <code>[SerializeReference]</code> list opens one, even when empty.
-</p>
+<p>On an array or [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1) field it applies to the collection itself: each element gets a picker, and the add button of a <code>[SerializeReference]</code> list opens one, even when empty.</p>
 
 ## Constructors
 
@@ -229,13 +198,6 @@ public bool Required { get; set; }
 
 #### Remarks
 
-<p>
-"Unset" means <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a <code>[SerializeReference]</code> field and an empty name for a
-[`String`](https://learn.microsoft.com/dotnet/api/system.string) or [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) field. A reference that is set but whose type no longer
-resolves is not a violation of this flag — the separate missing-type check covers that.
-</p>
-<p>
-Asset References marks the field in any gate mode, Project References → Scan Project reports it when the
-gate is Warn or Fail, and the CI gate only with <code>-srGateRequired</code>. The player build never checks it.
-</p>
+<p>"Unset" means <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a <code>[SerializeReference]</code> field and an empty name for a [`String`](https://learn.microsoft.com/dotnet/api/system.string) or [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) field. A reference that is set but whose type no longer resolves is not a violation of this flag — the separate missing-type check covers that.</p>
+<p>Asset References marks the field in any gate mode, Project References → Scan Project reports it when the gate is Warn or Fail, and the CI gate only with <code>-srGateRequired</code>. The player build never checks it.</p>
 

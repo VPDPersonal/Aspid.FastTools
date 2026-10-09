@@ -38,12 +38,16 @@ regenerate or `git checkout Website/api` before building:
    real bug in an XML comment — fix the `cref`, do not ignore it.
 3. `docfx-postprocess.mjs` makes it MDX-safe: `<xref>` → links (own pages, learn.microsoft.com, Unity Scripting
    Reference), `<pre><code>` → fenced code, heading anchors as `{#id}`, escaped `<T`/`{}`, no "Inherited Members",
+   no extension method on a type it cannot extend (DocFX ignores a receiver constraint such as
+   `where T : BaseSlider<TValue>` and lists the method on every type), each multi-line `<p>` joined to one line (MDX
+   would nest its own `<p>` in it, and React reports hydration error #418),
    front matter with a short `sidebar_label`, and `toc.yml` → `sidebar.js` (namespace → Classes/Interfaces/…
    groups). A type name that appears in two namespaces (`VisualElementExtensions` in `UIElements` and
    `UIElements.Editors`) gets a namespace suffix in its label — Docusaurus derives one translation key per label
    and the `ru` build fails on duplicates. Unity links point at the Scripting Reference of the Editor in
    `Aspid.FastTools/ProjectSettings/ProjectVersion.txt` (members move between versions);
-   `node --test scripts/unity-script-reference.test.mjs` checks the URL builder.
+   `node --test scripts/unity-script-reference.test.mjs` checks the URL builder, and
+   `scripts/docfx-markdown.test.mjs` checks the extension-method filter and the paragraph join.
 
 `Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
 prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the

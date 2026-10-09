@@ -4,6 +4,9 @@
  * - `<xref href="uid">` tags become Markdown links (to our own pages, learn.microsoft.com or the Unity
  *   Scripting Reference of the Unity project's Editor version), since MDX does not know the element;
  * - the "Inherited Members" list is dropped (dozens of `object`/`Attribute` members on every page);
+ * - an extension method is dropped from the pages of types it cannot extend: DocFX does not check a receiver
+ *   constraint like `where T : BaseSlider<TValue>` and lists the method on every type;
+ * - a `<p>` spread over three lines becomes one line, since MDX would nest its own `<p>` inside it;
  * - `{` and `}` outside code are escaped, MDX would read them as expressions;
  * - every page gets front matter with a short title for the sidebar;
  * - `toc.yml` becomes `Website/api/sidebar.js`, the sidebar of the `api` docs plugin instance. Every namespace keeps
@@ -15,6 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unityScriptReferenceUrl } from './unity-script-reference.mjs';
+import { collectReceiverBases, dropForeignExtensions, joinParagraphs } from './docfx-markdown.mjs';
 
 const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const apiDir = path.join(siteDir, 'api');
@@ -29,6 +33,11 @@ const files = new Set(fs.readdirSync(apiDir).filter((f) => f.endsWith('.md')));
 /** Anchors DocFX emitted per file (`<a id="…">`), so member links only carry anchors that exist. */
 const anchors = new Map(
   [...files].map((f) => [f, new Set([...fs.readFileSync(path.join(apiDir, f), 'utf8').matchAll(/<a id="([^"]+)"/g)].map((m) => m[1]))]),
+);
+
+/** Generic types the receiver of an extension method must derive from, by the method's anchor; see `dropForeignExtensions`. */
+const receiverBases = new Map(
+  [...files].flatMap((f) => [...collectReceiverBases(fs.readFileSync(path.join(apiDir, f), 'utf8').replace(/\r\n?/g, '\n'))]),
 );
 
 /** `Aspid.FastTools.Types.SerializableType%601` → `Aspid.FastTools.Types.SerializableType-1` (the file name DocFX uses for generic types). */
@@ -129,8 +138,10 @@ for (const file of files) {
 
   markdown = convertXrefs(markdown);
   markdown = preToFence(markdown);
+  markdown = joinParagraphs(markdown);
   markdown = unescapeLinkTargets(markdown);
   markdown = dropSection(markdown, 'Inherited Members');
+  markdown = dropForeignExtensions(markdown, receiverBases);
   markdown = dropObjectExtensions(markdown);
   markdown = escapeMdx(markdown);
   markdown = headingAnchors(markdown);
