@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    internal class NamespaceNode
+    internal sealed class NamespaceNode
     {
         internal string Segment { get; set; }
 

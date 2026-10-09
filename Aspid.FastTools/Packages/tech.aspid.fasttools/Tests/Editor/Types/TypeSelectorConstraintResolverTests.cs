@@ -49,6 +49,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             private Type WeaponProperty => typeof(int);
             private Type WriteOnlyProperty { set { } }
             private int UnsupportedProperty => throw new InvalidOperationException("Getter must not run.");
+            private Type ThrowingProperty => throw new InvalidOperationException("Getter failed.");
             public Type this[int index] => throw new InvalidOperationException("Indexer must not run.");
         }
 #pragma warning restore CS0169, CS0414, CS0649
@@ -145,6 +146,26 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var result = Resolve(memberName, new Host());
 
             CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
+        }
+
+        [Test]
+        public void ThrowingGetter_AddsAWarningWithTheCauseAndNoType()
+        {
+            var result = Resolve("ThrowingProperty", new Host());
+
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
+            StringAssert.Contains("Getter failed.", result.Warnings[0]);
+        }
+
+        [Test]
+        public void ThrowingGetter_DoesNotHideTheOtherArguments()
+        {
+            var result = TypeSelectorConstraintResolver.Resolve(
+                new Host(), new[] { "ThrowingProperty", "_weaponType" });
+
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, result.Types);
             Assert.AreEqual(1, result.Warnings.Count);
         }
 
