@@ -100,6 +100,7 @@ Open **Tools → Aspid 🐍 → FastTools → Asset References** and assign a sa
 | **Migrate → Crossbow** row under a **Fix ▼** band | The class was renamed with <code lang="csharp">[MovedFrom]</code>: the row writes the new name, **Fix ▼** picks a different class |
 | Band with **Change ▼**, **Assign ▼** or **Assign Required ▼** | Changes the class of a healthy reference, fills an empty or required field; the asset is saved at once |
 | **SHARED** | Several fields point at one instance; matching colours mark the connected fields |
+| **shown above** in a card's footer | The children of this reference are drawn once, under its first card; this card is another field that points at it |
 | **Orphaned** | An entry no field points at; **Clear** deletes it from the file, without Undo |
 
 **Fix Missing**, **Smart Fix** and **Migrate** write the class to the file at once, and **Edit → Undo** does not revert it.
@@ -129,6 +130,7 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 | Open scenes, Prefab Mode, unsaved and locked files | Fix all, Smart Fix and Migrate all skip them: save and close the file, or use [Fix in the Inspector](#fix-in-the-inspector) with its data-transfer limitations |
 | Scenes and fields under a missing parent reference | Asset References changes only missing types |
 | Binary assets and unfetched Git LFS files | Not scanned: use **Force Text** and fetch LFS files |
+| More than 1000 cards in one window | Asset References draws the first 1000 and says how many it left out; Project References repairs missing types without this limit |
 
 ## Package sample
 

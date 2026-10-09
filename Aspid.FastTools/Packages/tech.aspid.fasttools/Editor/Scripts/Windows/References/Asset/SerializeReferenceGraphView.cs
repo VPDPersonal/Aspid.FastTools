@@ -265,12 +265,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var empties = 0;
             var migrations = 0;
 
-            var emptySlotPaths = SerializeReferenceGraphAnalysis.CollectEmptySlotPaths(documents);
-
-            var showHeaders = documents.Count > 1;
+            // The card budget is shared, so a scene with many documents is bounded as a whole.
+            var budget = SerializeReferenceGraphPlan.MaxCards;
+            var plans = new List<SerializeReferenceGraphPlan>(documents.Count);
             foreach (var document in documents)
             {
-                _list.AddChild(BuildDocument(assetPath, document, showHeaders));
+                var plan = SerializeReferenceGraphPlan.Build(document, budget);
+                budget -= plan.Cards.Count;
+                plans.Add(plan);
+            }
+
+            var emptySlotPaths = SerializeReferenceGraphAnalysis.CollectEmptySlotPaths(plans);
+
+            var showHeaders = documents.Count > 1;
+            foreach (var plan in plans)
+            {
+                var document = plan.Document;
+                _list.AddChild(BuildDocument(assetPath, plan, showHeaders));
 
                 total += document.Nodes.Count;
                 var (broken, documentMigrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
