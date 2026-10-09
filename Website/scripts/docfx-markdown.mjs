@@ -6,10 +6,12 @@
 /**
  * `<p>`, the text and `</p>` on three lines → one line. MDX reads the lines between the tags as a Markdown paragraph
  * and wraps it in its own `<p>`, so the page holds a `<p>` inside a `<p>`: the browser closes the outer one while
- * parsing and React reports a hydration mismatch (error #418). On one line MDX leaves the element alone.
+ * parsing and React reports a hydration mismatch (error #418). On one line MDX leaves the element alone. A block with
+ * a code fence stays as it is: joining the lines would break the fence.
  */
 export function joinParagraphs(markdown) {
-  return markdown.replace(/^<p>\n([\s\S]*?)\n<\/p>$/gm, (_, text) => `<p>${text.replace(/\s*\n\s*/g, ' ')}</p>`);
+  return markdown.replace(/^<p>\n([\s\S]*?)\n<\/p>$/gm, (block, text) =>
+    text.includes('```') ? block : `<p>${text.replace(/\s*\n\s*/g, ' ')}</p>`);
 }
 
 /** Splits `A, B<C, D>, E` at the commas outside angle brackets. */
@@ -71,7 +73,7 @@ function sectionOf(markdown, heading) {
 export function dropForeignExtensions(markdown, receiverBases) {
   const ancestors = `${sectionOf(markdown, 'Inheritance')}\n${sectionOf(markdown, 'Implements')}`;
   // `BaseField<Type>` counts, `TextInputBaseField<string>` and the nested `BaseField<Type>.UxmlSerializedData` do not.
-  const derivesFrom = (base) => new RegExp(`(?:^|[\\s\\[])${base}\\\\?<.*?\\\\?>(?=[\\s,]|$)`, 'm').test(ancestors);
+  const derivesFrom = (base) => new RegExp(`(?:^|[\\s\\[])${base}\\\\?<.*?\\\\?>(?=[\\s,\\]]|$)`, 'm').test(ancestors);
 
   return markdown.replace(/(\n#### Extension Methods\n\n)([\s\S]*?)(?=\n#{1,4} |$)/, (_, header, list) => {
     const kept = list

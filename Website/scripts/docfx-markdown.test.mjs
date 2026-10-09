@@ -6,6 +6,10 @@ test('a paragraph spread over lines becomes one line', () => {
   const source = 'Remarks\n\n<p>\nFirst line\nsecond [`x`](y.md) line.\n</p>\n<p>\nNext.\n</p>\n\n## Methods\n';
   assert.equal(joinParagraphs(source), 'Remarks\n\n<p>First line second [`x`](y.md) line.</p>\n<p>Next.</p>\n\n## Methods\n');
 });
+test('a paragraph with a code fence is left alone', () => {
+  const source = '<p>\nText\n\n```csharp\nvar a = 1;\nvar b = 2;\n```\n</p>\n';
+  assert.equal(joinParagraphs(source), source);
+});
 test('a paragraph on one line is left alone', () => {
   const source = '<p>One line.</p>\n<p>Another <code>one</code>.</p>\n';
   assert.equal(joinParagraphs(source), source);
@@ -62,6 +66,11 @@ test('only the generic type itself counts, not a type with the same ending or a 
   assert.deepEqual(listed(result), []);
   const field = page('TextInputBaseField<string\\> ← \n[X](X.md)', 'IBindable', entries);
   assert.deepEqual(listed(dropForeignExtensions(field, new Map([...bases, ['A_SetLabel', ['BaseField']]]))), ['SetMaxLength']);
+});
+test('an ancestor written as a link counts', () => {
+  const entries = [entry('SetHighValue', 'A_SetHighValue'), entry('SetValue', 'A_SetValue')].join(',\n');
+  const text = page('[BaseSlider<float\\>](https://docs.unity3d.com/BaseSlider.html) ← \n[X](X.md)', '[INotifyValueChanged<float\\>](n.md),\nIBindable', entries);
+  assert.deepEqual(listed(dropForeignExtensions(text, bases)), ['SetHighValue', 'SetValue']);
 });
 test('a list left empty stays a bare header', () => {
   const result = dropForeignExtensions(page('[X](X.md)', 'IFoo', entry('SetMaxLength', 'A_SetMaxLength')), bases);
