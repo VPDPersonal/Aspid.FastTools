@@ -308,9 +308,10 @@
     -unity-background-image-tint-color:                  var(--aspid-colors-text-dark);
 }
 
+/* The hover border must stay as visible as the idle control border on the light palette. */
 .aspid-fasttools-settings .unity-enum-field:hover .unity-enum-field__input,
 .aspid-fasttools-settings .unity-base-popup-field:hover .unity-base-popup-field__input {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    border-color:                                         var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-settings .unity-enum-field:hover .unity-enum-field__arrow,
@@ -345,7 +346,7 @@
 }
 
 .aspid-fasttools-settings .unity-object-field:hover .unity-object-field__input {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    border-color:                                         var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-settings .unity-object-field__selector {
@@ -368,20 +369,21 @@
     background-color:                                     var(--aspid-colors-bg-dark);
 }
 
+/* The fill and the text match the hover; the strong border marks the keyboard focus. */
 .aspid-fasttools-settings__action.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    border-color:                                         var(--aspid-colors-status-success-text-light);
     color:                                                var(--aspid-colors-status-success-text-light);
     background-color:                                     var(--aspid-colors-status-success-tint);
 }
 
 .aspid-fasttools-settings__action--danger.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-error-text-dark);
+    border-color:                                         var(--aspid-colors-status-error-text-light);
     color:                                                var(--aspid-colors-status-error-text-light);
     background-color:                                     var(--aspid-colors-status-error-tint);
 }
 
 .aspid-fasttools-settings__action--info.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-info-text-dark);
+    border-color:                                         var(--aspid-colors-status-info-text-light);
     color:                                                var(--aspid-colors-status-info-text-light);
     background-color:                                     var(--aspid-colors-status-info-tint);
 }
