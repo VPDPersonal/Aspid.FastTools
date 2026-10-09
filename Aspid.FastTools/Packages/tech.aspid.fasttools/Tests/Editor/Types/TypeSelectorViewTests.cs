@@ -105,6 +105,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             search.Focus();
             yield return null;
+            Assert.IsTrue(IsFocusedWithin(view, search), "Setup: the search field must hold the focus before Enter.");
 
             SendKey(search, '\n', KeyCode.Return);
 
@@ -125,6 +126,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             search.Focus();
             yield return null;
+            Assert.IsTrue(IsFocusedWithin(view, search), "Setup: the search field must hold the focus before Enter.");
 
             SendKey(search, '\n', KeyCode.Return);
 
@@ -227,6 +229,9 @@ namespace Aspid.FastTools.Types.Editors.Tests
             _window.rootVisualElement.Add(view);
             return view;
         }
+
+        private static bool IsFocusedWithin(TypeSelectorView view, VisualElement element) =>
+            view.focusController?.focusedElement is VisualElement focused && (focused == element || element.Contains(focused));
 
         private static List<Label> Crumbs(TypeSelectorView view) =>
             view.Query<Label>(className: "aspid-fasttools-type-selector__breadcrumb").ToList();

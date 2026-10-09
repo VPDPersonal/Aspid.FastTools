@@ -38,6 +38,15 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual(0, Leaf("Button").GetMatchRank("Game.Button"));
         }
 
+        [TestCase("List", 0, TestName = "Generic type: the name without its arguments is exact")]
+        [TestCase("List<T>", 0, TestName = "Generic type: the full generic name is exact")]
+        [TestCase("Lis", 1, TestName = "Generic type: a prefix of the name")]
+        [TestCase("Game.List", 0, TestName = "Generic type: the full name without its arguments is exact")]
+        public void GetMatchRank_GenericType_IgnoresTheArguments(string filter, int expected)
+        {
+            Assert.AreEqual(expected, Leaf("List<T>").GetMatchRank(filter));
+        }
+
         [Test]
         public void GetMatchRank_UsesTheTypeName_BehindALabelOrADisambiguation()
         {

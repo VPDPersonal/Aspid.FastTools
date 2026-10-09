@@ -259,10 +259,14 @@ ToolbarSearchField TextElement {
     flex-grow:              1;
 }
 
-/* With a context after it, the title keeps its whole text and the context takes the rest of the row, clipped. */
+/* With a context after it, the title keeps its text while the context can shrink; a near-zero shrink still lets a very
+   long name give way to the check, count and star instead of pushing them out of the row. */
 .aspid-fasttools-type-selector__item-title--with-context {
     flex-grow:              0;
-    flex-shrink:            0;
+    flex-shrink:            0.01;
+    overflow:               hidden;
+    white-space:            nowrap;
+    text-overflow:          ellipsis;
 }
 
 .aspid-fasttools-type-selector__item-context {

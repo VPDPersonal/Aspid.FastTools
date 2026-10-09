@@ -94,8 +94,18 @@ namespace Aspid.FastTools.Types.Editors
             return 3;
         }
 
+        // The generic suffix is not part of the name a user types: "List" is an exact match for "List<T>".
         private static bool IsExact(string text, string filter) =>
-            string.Equals(text, filter, StringComparison.OrdinalIgnoreCase);
+            string.Equals(text, filter, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(CutGenericSuffix(text), filter, StringComparison.OrdinalIgnoreCase);
+
+        private static string CutGenericSuffix(string text)
+        {
+            if (text is null || !text.EndsWith('>')) return text;
+
+            var angle = text.LastIndexOf('<');
+            return angle > 0 ? text[..angle] : text;
+        }
 
         private static bool StartsWith(string text, string filter) =>
             text is not null && text.StartsWith(filter, StringComparison.OrdinalIgnoreCase);
