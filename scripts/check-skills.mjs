@@ -2,7 +2,9 @@
 // - the frontmatter, with a strict YAML parser, as the skills installer and the agents read it;
 // - the `internal` mark: the installer (`npx skills add`) scans about 30 agent folders (.claude/skills, .agents/skills,
 //   ...), so any SKILL.md outside skills/ must be internal, or it reaches users;
-// - the analyzer codes (AFT0001) that the skills mention: each one must be reported by an analyzer.
+// - the analyzer codes (AFT0001) that the skills mention: each one must be reported by an analyzer;
+// - the namespaces and assemblies (Aspid.FastTools.Types) that the consumer skills mention: each one must exist in the
+//   package.
 // Needs js-yaml:
 //   npm install --no-save js-yaml@4 && node scripts/check-skills.mjs
 import { execFileSync } from 'node:child_process';
@@ -14,6 +16,7 @@ import yaml from 'js-yaml';
 const CONSUMER_ROOT = 'skills';
 const SKILL_ROOTS = [CONSUMER_ROOT, '.claude/skills'];
 const ANALYZERS = ':(glob)Aspid.FastTools.Analyzers/**/*.cs';
+const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 
 let errors = 0;
 const fail = (file, message) => {
@@ -69,7 +72,21 @@ const reported = new Set(
   files(ANALYZERS)
     .filter(file => !file.includes('.Tests/'))
     .flatMap(file => [...readFileSync(file, 'utf8').matchAll(/"(AFT\d{4})"/g)].map(m => m[1])));
-if (!reported.size) fail('Aspid.FastTools.Analyzers', 'no AFT code found in the analyzer sources; fix the search in scripts/check-skills.mjs');
+if (!reported.size)
+  fail('Aspid.FastTools.Analyzers', 'no AFT code found: analyzer sources not checked out (sparse checkout?) or moved');
+
+// A skill that names a renamed namespace or assembly makes the agent write a `using` or an asmdef reference that does
+// not compile. The set holds every declared name and each of its parents, so `Aspid.FastTools` matches too.
+const known = new Set();
+const addWithParents = name => {
+  const parts = name.split('.');
+  for (let length = 1; length <= parts.length; length++) known.add(parts.slice(0, length).join('.'));
+};
+for (const file of files(`:(glob)${PACKAGE}/**/*.cs`))
+  for (const m of readFileSync(file, 'utf8').matchAll(/^\s*namespace\s+(Aspid\.FastTools[\w.]*)/gm)) addWithParents(m[1]);
+for (const file of files(`:(glob)${PACKAGE}/**/*.asmdef`))
+  for (const m of readFileSync(file, 'utf8').matchAll(/"name"\s*:\s*"(Aspid\.FastTools[\w.]*)"/g)) addWithParents(m[1]);
+if (!known.size) fail(PACKAGE, 'no Aspid.FastTools namespace found: package not checked out (sparse checkout?) or moved');
 
 // A mention is `AFT0001` or a range `AFT0001-AFT0009`; every code of a range must exist.
 const mentionedIn = text => [...text.matchAll(/AFT(\d{4})(?:`?\s*[-–—]\s*`?AFT(\d{4}))?/g)].flatMap(m => {
@@ -79,12 +96,18 @@ const mentionedIn = text => [...text.matchAll(/AFT(\d{4})(?:`?\s*[-–—]\s*`?A
 
 const documented = new Set();
 for (const file of files(...SKILL_ROOTS).filter(file => extname(file) === '.md')) {
-  const mentioned = new Set(mentionedIn(readFileSync(file, 'utf8')));
-  if (file.startsWith(`${CONSUMER_ROOT}/`)) mentioned.forEach(code => documented.add(code));
+  const text = readFileSync(file, 'utf8');
+  const consumer = file.startsWith(`${CONSUMER_ROOT}/`);
+  const mentioned = new Set(mentionedIn(text));
+  if (consumer) mentioned.forEach(code => documented.add(code));
   for (const code of mentioned) if (reported.size && !reported.has(code)) fail(file, `${code} is not reported by any analyzer`);
+  // Only a namespace or an assembly: a fully qualified type name is not known here, so write a `using` instead.
+  if (consumer)
+    for (const name of new Set(text.match(/Aspid\.FastTools(?:\.\w+)*/g)))
+      if (known.size && !known.has(name)) fail(file, `${name} is not a namespace or an assembly of the package`);
 }
 for (const code of [...reported].sort().filter(code => !documented.has(code)))
   console.log(`::warning::${code} is reported by an analyzer but no consumer skill in ${CONSUMER_ROOT}/ mentions it`);
 
 if (errors) process.exit(1);
-console.log(`Skills OK: ${skillFiles.length} SKILL.md, ${reported.size} analyzer codes`);
+console.log(`Skills OK: ${skillFiles.length} SKILL.md, ${reported.size} analyzer codes, ${known.size} package names`);
