@@ -52,6 +52,11 @@ namespace Aspid.FastTools.Types.Editors
             return TypeUtility.GetTypeOrNull(assemblyQualifiedName);
         }
 
+        // The script is written together with the name, so the wrapper differs across targets when its name does.
+        internal static bool HasMultipleDifferentValues(SerializedProperty wrapperProperty) =>
+            wrapperProperty.hasMultipleDifferentValues ||
+            SerializableTypeUtility.GetBackingProperty(wrapperProperty) is { hasMultipleDifferentValues: true };
+
         internal static void Assign(SerializedProperty wrapperProperty, Type? type)
         {
             var script = type is not null && TryGetScript(type, out var found) ? found : null;
