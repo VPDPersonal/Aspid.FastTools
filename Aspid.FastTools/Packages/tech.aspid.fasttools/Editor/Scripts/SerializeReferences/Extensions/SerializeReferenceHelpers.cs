@@ -230,26 +230,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<(Object target, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
             _missingProbeMemo = new();
 
-        // Where each memoized missing reference is stored, kept beside the memo above under the same key.
-        private static readonly Dictionary<(Object target, string path), (MissingTypeOrigin origin, string storedIn)>
+        // Where each memoized missing reference is stored, kept beside the memo above under the same key: its origin, the
+        // asset, and the slot in the file of an element of a top-level list.
+        private static readonly Dictionary<(Object target, string path), (MissingTypeOrigin origin, string storedIn, (string field, int index) slot)>
             _missingOriginMemo = new();
 
         // Every null reference field of a prefab instance reads the same modification list, so it is fetched once
         // per instance and frame alongside the memos above.
         private static readonly Dictionary<Object, PropertyModification[]> _propertyModificationsMemo = new();
 
-        public static void InvalidateMissingTypeMemo() => _missingProbeFrame = -1;
+        public static void InvalidateMissingTypeMemo()
+        {
+            _missingProbeFrame = -1;
+            _listMatches.Clear();
+        }
 
         private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType) =>
-            TryGetMissingType(property, out referenceId, out storedType, out _, out _);
+            TryGetMissingType(property, out referenceId, out storedType, out _, out _, out _);
 
         private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType,
-            out MissingTypeOrigin origin, out string storedIn)
+            out MissingTypeOrigin origin, out string storedIn, out (string field, int index) slot)
         {
             referenceId = 0;
             storedType = default;
             origin = MissingTypeOrigin.OwnDocument;
             storedIn = null;
+            slot = (null, -1);
 
             if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
             if (property.managedReferenceValue is not null) return false;
@@ -270,32 +276,211 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 referenceId = cached.referenceId;
                 storedType = cached.storedType;
-                (origin, storedIn) = _missingOriginMemo[key];
+                (origin, storedIn, slot) = _missingOriginMemo[key];
                 return cached.missing;
             }
 
-            var missing = ProbeMissingType(property, out referenceId, out storedType, out origin, out storedIn);
+            var missing = ProbeMissingType(property, out referenceId, out storedType, out origin, out storedIn, out slot);
             _missingProbeMemo[key] = (missing, referenceId, storedType);
-            _missingOriginMemo[key] = (origin, storedIn);
+            _missingOriginMemo[key] = (origin, storedIn, slot);
             return missing;
         }
 
         private static bool ProbeMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType,
-            out MissingTypeOrigin origin, out string storedIn)
+            out MissingTypeOrigin origin, out string storedIn, out (string field, int index) slot)
         {
             referenceId = 0;
             storedType = default;
             origin = MissingTypeOrigin.OwnDocument;
             storedIn = null;
+            slot = (null, -1);
 
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _))
                 return ProbeInheritedMissingType(property, out referenceId, out storedType, out origin, out storedIn);
 
-            if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, property.propertyPath, out referenceId, out storedType))
+            if (!TryGetStoredPath(property, assetPath, fileId, out var anchorRid, out var storedPath, out slot)) return false;
+
+            if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, anchorRid, storedPath, out referenceId, out storedType))
                 return false;
 
+            if (storedType.IsEmpty || StoredTypeResolvesCached(storedType)) return false;
+
+            // A <None> pick, another type or a paste changes the file only on save.
+            if (SerializeReferenceMissingListGuard.IsReplaced(assetPath, fileId, referenceId, slot.field, slot.index)) return false;
+
             storedIn = assetPath;
-            return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+            return true;
+        }
+
+        // The slot in the file of a missing element of a top-level list. After an unsaved edit of the list it may differ
+        // from the index the Inspector shows. False for a reference outside a top-level list.
+        public static bool TryGetMissingListSlot(SerializedProperty property, out string field, out int index)
+        {
+            field = null;
+            index = -1;
+
+            if (!TryGetMissingType(property, out _, out _, out _, out _, out var slot) || slot.field is null) return false;
+
+            (field, index) = slot;
+            return true;
+        }
+
+        private static readonly Regex _listElementPath = new(@"^(?<list>.+)\.Array\.data\[(?<index>\d+)\]$", RegexOptions.Compiled);
+
+        // Where the property's reference sits in the file, which an unsaved edit can make differ from its path. A field
+        // inside a reference is read from that reference's data by the reference's rid. A list element is matched with the
+        // list in the file by the rids of the other elements; false when the match is not certain. slot names the place of
+        // an element of a top-level list in the file.
+        private static bool TryGetStoredPath(SerializedProperty property, string assetPath, long fileId,
+            out long anchorRid, out string storedPath, out (string field, int index) slot)
+        {
+            anchorRid = SerializeReferenceYamlEditor.NoAnchor;
+            storedPath = property.propertyPath;
+            slot = (null, -1);
+
+            var serializedObject = property.serializedObject;
+            var anchorPath = string.Empty;
+
+            var enclosing = GetEnclosingReferences(serializedObject, storedPath);
+            if (enclosing.Count > 0)
+            {
+                (anchorPath, anchorRid) = enclosing[^1];
+                if (anchorRid < 0) return false;
+
+                storedPath = storedPath[(anchorPath.Length + 1)..];
+            }
+
+            var element = _listElementPath.Match(storedPath);
+            if (!element.Success || !int.TryParse(element.Groups["index"].Value, out var index)) return true;
+
+            var list = element.Groups["list"].Value;
+            var listPath = anchorPath.Length == 0 ? list : $"{anchorPath}.{list}";
+
+            var stored = MatchStoredSlot(serializedObject, listPath, assetPath, fileId, anchorRid, list, index);
+            if (stored < 0) return false;
+
+            storedPath = $"{list}.Array.data[{stored}]";
+
+            var topLevel = anchorRid == SerializeReferenceYamlEditor.NoAnchor && list.IndexOfAny(_pathSeparators) < 0;
+            if (topLevel) slot = (list, stored);
+
+            return true;
+        }
+
+        private static readonly char[] _pathSeparators = { '.', '[', ']' };
+
+        // The list in the file each in-memory list is matched with, kept while the in-memory ids, the file and the guard's
+        // notes stay the same. The in-memory ids are read once per editor update.
+        private const int MaxListMatches = 64;
+        private static readonly Dictionary<(Object target, string path), ListMatch> _listMatches = new();
+
+        private sealed class ListMatch
+        {
+            public long Tick = -1;
+            public long[] Current;
+            public long[] Stored;
+            public int NotesVersion;
+            public int[] Sources;
+        }
+
+        // The index in the file's list of the element that the in-memory slot holds, or -1.
+        private static int MatchStoredSlot(SerializedObject serializedObject, string listPath, string assetPath, long fileId,
+            long anchorRid, string storedListPath, int index)
+        {
+            if (!SerializeReferenceYamlEditor.TryReadListIds(assetPath, fileId, anchorRid, storedListPath, out var stored)) return -1;
+
+            var key = (serializedObject.targetObject, listPath);
+            if (!_listMatches.TryGetValue(key, out var match))
+            {
+                if (_listMatches.Count >= MaxListMatches) _listMatches.Clear();
+                _listMatches[key] = match = new ListMatch();
+            }
+
+            if (match.Tick != MemoTick)
+            {
+                match.Tick = MemoTick;
+
+                var current = ReadElementIds(serializedObject, listPath);
+                if (match.Current is null || current is null || !match.Current.AsSpan().SequenceEqual(current))
+                {
+                    match.Current = current;
+                    match.Sources = null;
+                }
+            }
+
+            if (match.Current is null) return -1;
+
+            var notesVersion = SerializeReferenceMissingListGuard.NotesVersion;
+            if (match.Sources is null || !ReferenceEquals(match.Stored, stored) || match.NotesVersion != notesVersion)
+            {
+                var state = BuildStoredListState(assetPath, fileId, anchorRid, storedListPath, stored, match.Current);
+
+                match.Stored = stored;
+                match.NotesVersion = notesVersion;
+                match.Sources = state.HasMissing
+                    ? MissingListAlignment.MatchSlots(state, match.Current)
+                    : Array.Empty<int>();
+            }
+
+            return index < match.Sources.Length ? match.Sources[index] : -1;
+        }
+
+        // A missing element reads as a null id, like a <None> one.
+        private static long[] ReadElementIds(SerializedObject serializedObject, string listPath)
+        {
+            using var list = serializedObject.FindProperty(listPath);
+            if (list is null || !IsManagedReferenceArray(list)) return null;
+
+            var ids = new long[list.arraySize];
+            for (var i = 0; i < ids.Length; i++)
+            {
+                using var element = list.GetArrayElementAtIndex(i);
+                ids[i] = element.managedReferenceId;
+            }
+
+            return ids;
+        }
+
+        // The list in the file as a save would find it: an element is missing while its type does not resolve, the editor
+        // does not hold its id and the user has not replaced it; a replaced one counts as a null.
+        private static MissingListState BuildStoredListState(string assetPath, long fileId, long anchorRid, string listPath,
+            long[] stored, long[] current)
+        {
+            var held = new HashSet<long>(current);
+            var topLevel = anchorRid == SerializeReferenceYamlEditor.NoAnchor && listPath.IndexOfAny(_pathSeparators) < 0;
+            var slotField = topLevel ? listPath : null;
+
+            var rids = (long[])stored.Clone();
+            var collapsible = new bool[stored.Length];
+
+            for (var i = 0; i < stored.Length; i++)
+            {
+                var rid = stored[i];
+                if (rid < 0 || held.Contains(rid)) continue;
+                if (!SerializeReferenceYamlEditor.TryReadEntryType(assetPath, fileId, rid, out var type)) continue;
+                if (StoredTypeResolvesCached(type)) continue;
+
+                var slotIndex = topLevel ? i : -1;
+                if (SerializeReferenceMissingListGuard.IsReplaced(assetPath, fileId, rid, slotField, slotIndex))
+                    rids[i] = MissingListState.NullRid;
+                else
+                    collapsible[i] = true;
+            }
+
+            return new MissingListState(rids, collapsible);
+        }
+
+        // Type.GetType is too slow to repeat for every probed element on every repaint, and its answer changes only with a
+        // domain reload, which clears this memo.
+        private static readonly Dictionary<(string assembly, string @namespace, string className), bool> _storedTypeResolvesMemo = new();
+
+        private static bool StoredTypeResolvesCached(ManagedTypeName name)
+        {
+            var key = (name.Assembly, name.Namespace, name.Class);
+            if (!_storedTypeResolvesMemo.TryGetValue(key, out var resolves))
+                _storedTypeResolvesMemo[key] = resolves = StoredTypeResolves(name);
+
+            return resolves;
         }
 
         // Deeper chains than this are not authored by hand; the bound only guards against a malformed source loop.
@@ -334,7 +519,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                         if (depth == 0) origin = MissingTypeOrigin.PrefabOverride;
                         storedIn = GetStoragePath(current);
-                        return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+                        return !storedType.IsEmpty && !StoredTypeResolvesCached(storedType);
                     }
 
                     // No modification of the field itself, but an override of an enclosing reference still owns its data.
@@ -358,7 +543,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
 
             storedIn = assetPath;
-            return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+            return !storedType.IsEmpty && !StoredTypeResolvesCached(storedType);
         }
 
         // The managed references the path passes through, outermost first, with their rids on this level.
@@ -475,7 +660,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Why Fix is unavailable for a missing reference, as the notice's second line.
         public static string GetMissingTypeRepairHint(SerializedProperty property)
         {
-            if (!TryGetMissingType(property, out _, out _, out var origin, out var storedIn))
+            if (!TryGetMissingType(property, out _, out _, out var origin, out var storedIn, out _))
                 return "Open this asset from the Project window to repair it.";
 
             return origin switch
