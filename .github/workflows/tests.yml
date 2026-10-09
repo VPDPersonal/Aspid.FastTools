@@ -115,10 +115,13 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-  # Compiles the package, its tests and all samples in a throwaway project and runs the EditMode tests: on the
-  # minimum Unity that package.json promises, on each line the code branches on (UNITY_6000_2/3/4_OR_NEWER),
-  # and on the newest line, which removes APIs first. Each version needs a GameCI image (unityci/editor);
-  # move `latest` to a new Unity line when it ships.
+  # Compiles the package, its tests, its Math assembly and all samples in a throwaway project and runs the EditMode
+  # tests: on the minimum Unity that package.json promises, on each line the code branches on
+  # (UNITY_6000_2/3/4_OR_NEWER), and on the newest line, which removes APIs first. Each version needs a GameCI image
+  # (unityci/editor); move `latest` to a new Unity line when it ships.
+  # The tests include PlayerCompilationTests, which compiles every script for a standalone player: the Editor compile
+  # alone accepts a UnityEditor call in Runtime/ that breaks the user's player build. The job is part of the required
+  # "Unity" check below.
   unity-tests:
     name: Unity EditMode (${{ matrix.name }})
     needs: unity-plan
