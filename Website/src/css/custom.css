@@ -849,13 +849,21 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
    article to keep 4.5:1. */
 html[data-theme='light']:not([data-accent]).docs-doc-page { --venom-canvas-accent: #197738; }
 
-/* Article links are set apart by colour alone; the underline appears on hover as an affordance. */
 /* The introduction hosts its TOC disclosure inside the article; its links keep the TOC look, not the article link accent. */
 .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link) {
   color: var(--venom-accent);
   text-decoration: none;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
+}
+
+/* Colour alone does not set a link apart from the text around it (in the dark theme the accent is close to the text
+   colour), so every accent underlines article links at rest, in the mark tone; hover takes the text accent. Heading
+   anchors and card titles are marked by other means. The exceptions sit in `:where()` to keep the rule's specificity:
+   buttons and cards that style their own link outrank it. */
+.markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):where(:not(.hash-link, :is(.feature-card__title, .resource-card__title) a)) {
+  text-decoration-line: underline;
+  text-decoration-color: var(--venom-accent-mark);
 }
 
 .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover {
