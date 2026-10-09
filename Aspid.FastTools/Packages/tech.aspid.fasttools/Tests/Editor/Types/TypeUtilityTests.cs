@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
@@ -22,6 +23,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
             {
                 internal sealed class Leaf<TLeaf> { }
             }
+        }
+
+        // A source generator may mark an ordinary class like this; the types written inside it stay selectable.
+        [CompilerGenerated]
+        internal sealed class MarkedOuter
+        {
+            internal sealed class Written { }
         }
 
         // Three or more constants make the compiler keep the data in <PrivateImplementationDetails>, whose nested
@@ -100,6 +108,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.IsTrue(TypeUtility.IsCompilerGenerated(nested));
             Assert.IsFalse(TypeUtility.IsCompilerGenerated(typeof(TypeUtilityTests)));
             Assert.IsFalse(TypeUtility.IsCompilerGenerated(typeof(Outer<>.Inner)));
+        }
+
+        [Test]
+        public void IsCompilerGenerated_TypeNestedInAMarkedClass_IsFalse()
+        {
+            Assert.IsTrue(TypeUtility.IsCompilerGenerated(typeof(MarkedOuter)));
+            Assert.IsFalse(TypeUtility.IsCompilerGenerated(typeof(MarkedOuter.Written)));
         }
 
         [Test]

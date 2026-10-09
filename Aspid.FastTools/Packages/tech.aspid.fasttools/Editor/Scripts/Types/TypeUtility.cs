@@ -113,13 +113,16 @@ namespace Aspid.FastTools.Types.Editors
 
         // A type the compiler synthesized, or one nested in such a type: the compiler's static-data holder
         // <PrivateImplementationDetails> carries __StaticArrayInitTypeSize=12, whose own name has no angle brackets.
+        // The attribute is read on the type only: a source generator may mark an ordinary class with it,
+        // and the types written inside that class stay selectable.
         internal static bool IsCompilerGenerated(Type type)
         {
+            if (type.IsDefined(typeof(CompilerGeneratedAttribute), inherit: false))
+                return true;
+
             for (var current = type; current is not null; current = current.DeclaringType)
             {
-                if (current.Name.Contains('<') ||
-                    current.Name.Contains('>') ||
-                    current.IsDefined(typeof(CompilerGeneratedAttribute), inherit: false))
+                if (current.Name.Contains('<') || current.Name.Contains('>'))
                     return true;
             }
 
