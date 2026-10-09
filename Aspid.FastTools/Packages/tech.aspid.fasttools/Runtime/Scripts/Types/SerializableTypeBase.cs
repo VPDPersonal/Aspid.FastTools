@@ -16,9 +16,15 @@ namespace Aspid.FastTools.Types
     /// so every wrapper shares one serialized layout.
     /// </para>
     /// <para>
+    /// Unity creates an empty wrapper for every serialized field, so such a field is never <see langword="null"/>
+    /// and <c>field == null</c> does not detect an unset one. Check <see cref="IsEmpty"/>, <see cref="IsMissing"/>
+    /// or <see cref="Type"/> instead.
+    /// </para>
+    /// <para>
     /// A player resolves the type by the stored name only, which managed code stripping does not see: from
-    /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build and
-    /// <see cref="Type"/> returns <see langword="null"/>. Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
+    /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build,
+    /// <see cref="Type"/> returns <see langword="null"/> and <see cref="IsMissing"/> is <see langword="true"/>.
+    /// Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
     /// </para>
     /// <para>
     /// A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
@@ -62,22 +68,42 @@ namespace Aspid.FastTools.Types
         {
             get
             {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
-                using (this.Marker())
-#endif
+                var type = _type;
+                if (type is null)
                 {
-                    // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
-                    var type = _type;
-                    if (type is null)
+                    // Only the lookup is measured: a marker on the cached hot path would flood the Profiler.
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+                    using (this.Marker())
+#endif
                     {
+                        // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
                         type = ResolveType(_assemblyQualifiedName, out var cacheable) ?? _unresolved;
                         if (cacheable) _type = type;
                     }
-
-                    return ReferenceEquals(type, _unresolved) ? null : type;
                 }
+
+                return ReferenceEquals(type, _unresolved) ? null : type;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether no type is stored.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Type"/> is <see langword="null"/>. Mutually exclusive with <see cref="IsMissing"/>.
+        /// </remarks>
+        public bool IsEmpty =>
+            string.IsNullOrWhiteSpace(_assemblyQualifiedName) && Type is null;
+
+        /// <summary>
+        /// Gets a value indicating whether a type name is stored but does not resolve.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Type"/> is <see langword="null"/> and <see cref="AssemblyQualifiedName"/> keeps the old name,
+        /// for example after the class was renamed, moved or stripped from a player build.
+        /// </remarks>
+        public bool IsMissing =>
+            !string.IsNullOrWhiteSpace(_assemblyQualifiedName) && Type is null;
 
         private protected string? StoredAssemblyQualifiedName => _assemblyQualifiedName;
 

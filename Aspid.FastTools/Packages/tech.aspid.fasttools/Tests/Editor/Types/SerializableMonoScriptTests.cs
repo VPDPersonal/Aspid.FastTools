@@ -323,6 +323,46 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
+        public void State_EmptyWrapper_IsEmpty()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                Assert.IsTrue(holder.wrapper.IsEmpty);
+                Assert.IsFalse(holder.wrapper.IsMissing);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void State_UnresolvedNameWithoutScript_IsMissing()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                Store(holder, "Old.Name, Old", script: null);
+
+                Assert.IsTrue(holder.wrapper.IsMissing);
+                Assert.IsFalse(holder.wrapper.IsEmpty);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void State_ScriptResolvesWhileTheNameIsStale_IsNeitherEmptyNorMissing()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                LoadWithStaleName(holder);
+
+                Assert.IsFalse(holder.wrapper.IsMissing, "The script's class keeps the field resolved.");
+                Assert.IsFalse(holder.wrapper.IsEmpty);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
         public void MissingPredicate_DifferentValuesAcrossTargets_IsNotMissing()
         {
             var first = CreateHolder();

@@ -75,9 +75,15 @@ Not meant to be derived from outside the package — use [`SerializableType`](As
 so every wrapper shares one serialized layout.
 </p>
 <p>
+Unity creates an empty wrapper for every serialized field, so such a field is never <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
+and <code>field == null</code> does not detect an unset one. Check [`SerializableTypeBase.IsEmpty`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsEmpty), [`SerializableTypeBase.IsMissing`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsMissing)
+or [`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) instead.
+</p>
+<p>
 A player resolves the type by the stored name only, which managed code stripping does not see: from
-Managed Stripping Level Low up, a class referenced only by this name can be removed from the build and
-[`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Keep such classes with <code>[Preserve]</code> or <code>link.xml</code>.
+Managed Stripping Level Low up, a class referenced only by this name can be removed from the build,
+[`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> and [`SerializableTypeBase.IsMissing`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsMissing) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.
+Keep such classes with <code>[Preserve]</code> or <code>link.xml</code>.
 </p>
 <p>
 A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
@@ -117,6 +123,39 @@ public abstract Type BaseType { get; }
 #### Remarks
 
 A loaded type is not checked against it: a name stored before the constraint changed resolves as is.
+
+### IsEmpty {#Aspid_FastTools_Types_SerializableTypeBase_IsEmpty}
+
+Gets a value indicating whether no type is stored.
+
+```csharp
+public bool IsEmpty { get; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+#### Remarks
+
+[`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Mutually exclusive with [`SerializableTypeBase.IsMissing`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsMissing).
+
+### IsMissing {#Aspid_FastTools_Types_SerializableTypeBase_IsMissing}
+
+Gets a value indicating whether a type name is stored but does not resolve.
+
+```csharp
+public bool IsMissing { get; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+#### Remarks
+
+[`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> and [`SerializableTypeBase.AssemblyQualifiedName`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_AssemblyQualifiedName) keeps the old name,
+for example after the class was renamed, moved or stripped from a player build.
 
 ### Type {#Aspid_FastTools_Types_SerializableTypeBase_Type}
 
