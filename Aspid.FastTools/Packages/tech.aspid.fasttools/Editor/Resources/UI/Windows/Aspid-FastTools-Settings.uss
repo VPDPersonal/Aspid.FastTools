@@ -220,7 +220,7 @@
     margin-top:                                           -2px;
     border-width:                                         0;
     border-radius:                                        2px;
-    background-color:                                     var(--aspid-colors-shade-darkness);
+    background-color:                                     var(--aspid-colors-control-border);
 }
 
 .aspid-fasttools-settings__section-content .unity-base-slider__dragger {
@@ -262,7 +262,7 @@
     -unity-text-align:                                    middle-center;
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-shade-dark);
+    border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        6px;
     color:                                                var(--aspid-colors-text-lightness);
 }
@@ -283,7 +283,7 @@
     padding:                                              1px 6px;
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-shade-dark);
+    border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        8px;
 }
 
@@ -336,7 +336,7 @@
     padding:                                              1px 2px 1px 6px;
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-shade-dark);
+    border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        8px;
 }
 
@@ -357,8 +357,11 @@
     background-color:                                     var(--aspid-colors-overlay-control-hover);
 }
 
+/* The fill alone matches the hover; the border marks the keyboard focus. */
 .aspid-fasttools-settings__nav-target--focused > .aspid-fasttools-settings__row-backplate {
     background-color:                                     var(--aspid-colors-bg-dark);
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-status-success-text-light);
 }
 
 .aspid-fasttools-settings__footer .aspid-fasttools-settings__row.aspid-fasttools-settings__nav-target--focused {
@@ -386,6 +389,7 @@
 /* Two classes outrank the control stylesheet loaded deeper in the hierarchy. */
 .aspid-fasttools-excluded-folders__header.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
+    border-color:                                         var(--aspid-colors-status-success-text-light);
 }
 
 .aspid-fasttools-excluded-folders__header.aspid-fasttools-settings__nav-target--focused
@@ -395,6 +399,7 @@
 
 .aspid-fasttools-excluded-folders__entry.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
+    border-color:                                         var(--aspid-colors-status-success-text-light);
 }
 
 /* Scope base-slider rules to the scroller so the recent-items slider keeps its geometry. */
