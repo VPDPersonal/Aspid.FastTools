@@ -1,5 +1,6 @@
 using UnityEngine;
 using NUnit.Framework;
+using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.SerializeReferences.Editors;
 
@@ -48,6 +49,27 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var rid = SerializeReferenceRidColor.ForIndex(3);
 
             Assert.AreEqual(rid, InspectorNoticeGUI.SharedTextColor(rid, lightSkin: false));
+        }
+
+        [Test]
+        public void SkinSwitch_RecolorsSharedText()
+        {
+            var rid = SerializeReferenceRidColor.ForIndex(3);
+            var lightText = InspectorNoticeGUI.SharedTextColor(rid, lightSkin: true);
+            Assert.AreNotEqual(rid, lightText, "The reference colour must darken on the light skin.");
+
+            var notice = new InspectorNotice();
+            notice.Set("Shared reference", actionText: "Make unique", detail: null, onAction: () => { }, dotColor: rid);
+            var message = notice.Q<Label>(className: "aspid-fasttools-inspector-notice__message");
+            var action = notice.Q<Label>(className: "aspid-fasttools-inspector-notice__action");
+
+            notice.SetSkin(lightSkin: true);
+            Assert.AreEqual(lightText, message.style.color.value, "The text must take the light-skin colour.");
+            Assert.AreEqual(lightText, action.style.color.value, "The link must take the light-skin colour.");
+
+            notice.SetSkin(lightSkin: false);
+            Assert.AreEqual(rid, message.style.color.value, "The text must return to the reference colour.");
+            Assert.AreEqual(rid, action.style.color.value, "The link must return to the reference colour.");
         }
 
         private static float Contrast(Color a, Color b)

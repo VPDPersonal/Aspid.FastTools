@@ -333,8 +333,16 @@ ToolbarSearchField TextElement {
     margin-left:            6px;
 }
 
-/* The dropdown sits on Unity's popup background, so on the light skin it takes Unity's light colours, the palette's
-   darker text shades and its light-skin tokens; embedded in an Aspid window the picker takes the window's palette. */
+/* The dropdown sits on Unity's popup background, lighter than the window palette's bg-dark, so on the dark skin its dim
+   text shades move one step up. The light-skin rule below has the same specificity and replaces all of them. */
+.aspid-fasttools-type-selector.aspid-fasttools-type-selector--dropdown {
+    --aspid-colors-text-dark:                       var(--aspid-colors-text-light);
+    --aspid-colors-text-darkness:                   var(--aspid-colors-dark-skin-text-darkness);
+    --aspid-colors-status-error-text-light:         var(--aspid-colors-status-error-text-lightness);
+}
+
+/* On the light skin the dropdown takes Unity's light colours, the palette's darker text shades and its light-skin
+   tokens; embedded in an Aspid window the picker takes the window's palette. */
 .aspid-fasttools-type-selector--dropdown.aspid-fasttools-skin--light {
     --aspid-colors-bg-dark:                         var(--unity-colors-dropdown-background);
     --aspid-colors-shade-darkness:                  var(--unity-colors-dropdown-border);

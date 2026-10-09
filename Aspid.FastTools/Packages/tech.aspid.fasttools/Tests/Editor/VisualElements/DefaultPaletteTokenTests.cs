@@ -16,7 +16,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         private const string DarkSheet = "Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss";
         private const string LightSheet = "Editor/Resources/UI/Aspid-FastTools-Default-Light.uss";
 
-        // Only the type picker dropdown uses these, on the light skin outside an Aspid window.
+        // Only elements outside an Aspid window use these: the type picker dropdown and the inspector notice.
         private static readonly string[] DarkOnlyTokens =
         {
             "--aspid-colors-status-info-tint-light",
@@ -24,6 +24,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             "--aspid-colors-light-skin-text-dark",
             "--aspid-colors-light-skin-text-darkness",
             "--aspid-colors-light-skin-status-warning-text",
+            "--aspid-colors-light-skin-status-warning-text-hover",
+            "--aspid-colors-dark-skin-text-darkness",
         };
 
         private static readonly Regex Comment = new(@"/\*.*?\*/", RegexOptions.Singleline);

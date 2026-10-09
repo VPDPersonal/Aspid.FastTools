@@ -99,13 +99,18 @@
     --aspid-colors-status-error-tint:               rgba(125, 35, 35, 0.25);
     --aspid-colors-status-info-tint:                rgba(25, 75, 130, 0.25);
 
-    /* Only for the type picker dropdown on the light skin: it sits on Unity's popup background and keeps this
-       palette, not Default-Light. */
+    /* Only for light-skin elements outside an Aspid window, the type picker dropdown and the inspector notice: they
+       sit on Unity's background and keep this palette, not Default-Light. */
     --aspid-colors-status-info-tint-light:          rgb(160, 189, 226);
     --aspid-colors-status-info-tint-lightness:      rgb(186, 204, 228);
     --aspid-colors-light-skin-text-dark:            rgb(72, 72, 72);
     --aspid-colors-light-skin-text-darkness:        rgb(96, 96, 96);
     --aspid-colors-light-skin-status-warning-text:  rgb(140, 88, 0);
+    --aspid-colors-light-skin-status-warning-text-hover: rgb(90, 65, 30);
+
+    /* Only for the type picker dropdown on the dark skin: its rows sit on Unity's window background, lighter than
+       bg-dark, so its dimmest text takes the text-dark shade. */
+    --aspid-colors-dark-skin-text-darkness:         rgb(150, 150, 150);
 
     --aspid-colors-status-success-blob:             rgb(41, 71, 54);
     --aspid-colors-status-warning-blob:             rgb(77, 64, 31);

@@ -8,7 +8,7 @@ namespace Aspid.FastTools.Editors
     internal static class InspectorNoticeGUI
     {
         // Keep these colors aligned with the UI Toolkit notice: --unity-colors-warning-text, the hover tokens
-        // --aspid-colors-status-warning-text-lightness / --aspid-colors-status-warning-shade-dark, and
+        // --aspid-colors-status-warning-text-lightness / --aspid-colors-light-skin-status-warning-text-hover, and
         // --unity-colors-helpbox-text.
         internal static Color NoticeColor => EditorGUIUtility.isProSkin
             ? new Color32(244, 188, 2, 255)

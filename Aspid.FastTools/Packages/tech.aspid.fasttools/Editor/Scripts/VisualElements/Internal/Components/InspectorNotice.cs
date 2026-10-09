@@ -39,13 +39,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private Action _onSuggestion;
         private Action _onNavigate;
 
+        private Color? _ridColor;
         private Color? _sharedColor;
+        private bool _lightSkin = !EditorGUIUtility.isProSkin;
 
         public InspectorNotice()
         {
             this.AddAspidThemeStyleSheets()
                 .AddStyleSheetFromResources(StyleSheetPath)
                 .AddClass(NoticeClass);
+
+            // A switch of the editor skin restyles the panel; the inline text colour follows it without a refresh.
+            RegisterCallback<CustomStyleResolvedEvent>(_ => SetSkin(lightSkin: !EditorGUIUtility.isProSkin));
 
             var icon = new VisualElement()
                 .AddClass(IconClass)
@@ -138,11 +143,20 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             ClearSuggestion();
         }
 
+        internal void SetSkin(bool lightSkin)
+        {
+            if (_lightSkin == lightSkin) return;
+
+            _lightSkin = lightSkin;
+            if (_ridColor.HasValue) ApplySharedColor(_ridColor);
+        }
+
         // The dot keeps the given color; the text takes a variant that reads on the current skin.
         private void ApplySharedColor(Color? color)
         {
+            _ridColor = color;
             _sharedColor = color.HasValue
-                ? InspectorNoticeGUI.SharedTextColor(color.Value, lightSkin: !EditorGUIUtility.isProSkin)
+                ? InspectorNoticeGUI.SharedTextColor(color.Value, lightSkin: _lightSkin)
                 : null;
 
             if (color.HasValue)
@@ -181,8 +195,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _suggestionSeparator.EnableInClassList(SuggestionSeparatorVisibleClass, false);
         }
 
-        private static Color SharedHoverColor(Color textColor) =>
-            InspectorNoticeGUI.SharedHoverColor(textColor, lightSkin: !EditorGUIUtility.isProSkin);
+        private Color SharedHoverColor(Color textColor) =>
+            InspectorNoticeGUI.SharedHoverColor(textColor, lightSkin: _lightSkin);
 
         // USS has no text-decoration property; rich text supplies the action underline.
         private static string Underline(string text) =>

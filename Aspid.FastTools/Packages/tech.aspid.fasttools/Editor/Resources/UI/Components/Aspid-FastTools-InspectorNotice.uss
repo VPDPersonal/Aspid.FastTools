@@ -70,7 +70,7 @@
     .aspid-fasttools-inspector-notice__action:hover,
 .aspid-fasttools-inspector-notice.aspid-fasttools-skin--light
     .aspid-fasttools-inspector-notice__suggestion:hover {
-    color:                                                 var(--aspid-colors-status-warning-shade-dark);
+    color:                                                 var(--aspid-colors-light-skin-status-warning-text-hover);
 }
 
 .aspid-fasttools-inspector-notice__dot {

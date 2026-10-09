@@ -1,18 +1,22 @@
 // Check the WCAG contrast of the Editor palette without Unity: text against the background it sits on, with
-// Default-Dark on either skin, Default-Light in an Aspid window on the light skin, and the light-skin overrides of the
-// type picker dropdown. Text needs 4.5:1; large text, glyph icons and UI borders need 3:1.
+// Default-Dark on either skin, Default-Light in an Aspid window on the light skin, and the type picker dropdown's
+// overrides on either skin. Text needs 4.5:1; large text, glyph icons and UI borders need 3:1.
 //   node scripts/check-contrast.mjs [--all]
 // Pairs come from two sources: the list below, for a background and a text set in different rules (a component box and
 // the labels in it), and every package rule that sets both `color` and `background-color`. A pair with a `baseline` is
 // known to be below the minimum: it passes while it stays at that ratio and fails if it drops lower.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const UI = join(PACKAGE, 'Editor/Resources/UI');
 const DARK_SHEET = join(UI, 'Aspid-FastTools-Default-Dark.uss');
 const LIGHT_SHEET = join(UI, 'Aspid-FastTools-Default-Light.uss');
 const TYPE_SELECTOR_SHEET = join(UI, 'Types/Aspid-FastTools-TypeSelector.uss');
+const DROPDOWN_SELECTOR = '.aspid-fasttools-type-selector.aspid-fasttools-type-selector--dropdown';
 const LIGHT_DROPDOWN_SELECTOR = '.aspid-fasttools-type-selector--dropdown.aspid-fasttools-skin--light';
 
 const TEXT = 4.5;
@@ -49,8 +53,6 @@ const WINDOW = ['dark', 'light-window'];
 const INSPECTOR = ['dark', 'light-inspector'];
 const DROPDOWN = ['dark-dropdown', 'light-dropdown'];
 
-const DARK_DROPDOWN = value => ({ 'dark-dropdown': value });
-
 const LIST_BG = '--unity-colors-window-background';
 const ROW_HOVER = ['--unity-colors-window-background', 'status-info-shade-darkness'];
 const ROW_SELECTED = ['--unity-colors-window-background', 'status-info-shade-dark'];
@@ -80,35 +82,22 @@ const PAIRS = [
   { where: 'notice link', fg: '--unity-colors-warning-text', bg: LIST_BG, min: TEXT, in: INSPECTOR },
   {
     where: 'notice link hover',
-    fg: { 'dark': 'status-warning-text-lightness', 'light-inspector': 'status-warning-shade-dark' },
+    fg: { 'dark': 'status-warning-text-lightness', 'light-inspector': 'light-skin-status-warning-text-hover' },
     bg: LIST_BG, min: TEXT, in: INSPECTOR,
   },
 
-  // Type picker dropdown: rows on Unity's popup background, header and footer on bg-dark. The dark skin keeps the
-  // window palette, made for darker cards, so some of its text is still below the minimum there.
+  // Type picker dropdown: rows on Unity's popup background, header and footer on bg-dark.
   { where: 'picker row title', fg: 'text-lightness', bg: LIST_BG, min: TEXT, in: DROPDOWN },
-  { where: 'picker row count', fg: 'text-dark', bg: LIST_BG, min: TEXT, in: DROPDOWN, baseline: DARK_DROPDOWN(3.96) },
-  {
-    where: 'picker selected row count',
-    fg: 'text-dark', bg: ROW_SELECTED, min: TEXT, in: DROPDOWN, baseline: DARK_DROPDOWN(3.56),
-  },
+  { where: 'picker row count', fg: 'text-dark', bg: LIST_BG, min: TEXT, in: DROPDOWN },
+  { where: 'picker selected row count', fg: 'text-dark', bg: ROW_SELECTED, min: TEXT, in: DROPDOWN },
   { where: 'picker hovered row count', fg: 'text-dark', bg: ROW_HOVER, min: TEXT, in: DROPDOWN },
-  {
-    where: 'picker error',
-    fg: 'status-error-text-light', bg: LIST_BG, min: TEXT, in: DROPDOWN, baseline: DARK_DROPDOWN(3.53),
-  },
+  { where: 'picker error', fg: 'status-error-text-light', bg: LIST_BG, min: TEXT, in: DROPDOWN },
   { where: 'picker breadcrumb', fg: 'text-light', bg: 'bg-dark', min: TEXT, in: DROPDOWN },
   { where: 'picker breadcrumb hover', fg: 'status-info-text-lightness', bg: 'bg-dark', min: TEXT, in: DROPDOWN },
-  {
-    where: 'picker footer hint',
-    fg: 'text-darkness', bg: 'bg-dark', min: TEXT, in: DROPDOWN, baseline: DARK_DROPDOWN(3.04),
-  },
+  { where: 'picker footer hint', fg: 'text-darkness', bg: 'bg-dark', min: TEXT, in: DROPDOWN },
   { where: 'picker favorite star', fg: 'status-warning-text-light', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
   { where: 'picker favorite star hover', fg: 'status-warning-text-lightness', bg: ROW_HOVER, min: LARGE, in: DROPDOWN },
-  {
-    where: 'picker favorite toggle',
-    fg: 'text-darkness', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN, baseline: DARK_DROPDOWN(2.06),
-  },
+  { where: 'picker favorite toggle', fg: 'text-darkness', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
   { where: 'picker check mark', fg: 'status-success-text-dark', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
 ];
 
@@ -133,15 +122,16 @@ function tokens(file, selector) {
 
 const darkTokens = tokens(DARK_SHEET, ':root');
 const lightTokens = tokens(LIGHT_SHEET, '.aspid-fasttools-palette--light');
-const dropdownTokens = tokens(TYPE_SELECTOR_SHEET, LIGHT_DROPDOWN_SELECTOR);
+const dropdownTokens = tokens(TYPE_SELECTOR_SHEET, DROPDOWN_SELECTOR);
+const lightDropdownTokens = tokens(TYPE_SELECTOR_SHEET, LIGHT_DROPDOWN_SELECTOR);
 
 // Custom properties of one element resolve against that element's own values, so each context is one flat map.
 const CONTEXTS = {
   'dark': { ...darkTokens, ...UNITY.dark },
   'light-window': { ...darkTokens, ...lightTokens, ...UNITY.light },
   'light-inspector': { ...darkTokens, ...UNITY.light },
-  'dark-dropdown': { ...darkTokens, ...UNITY.dark },
-  'light-dropdown': { ...darkTokens, ...UNITY.light, ...dropdownTokens },
+  'dark-dropdown': { ...darkTokens, ...UNITY.dark, ...dropdownTokens },
+  'light-dropdown': { ...darkTokens, ...UNITY.light, ...dropdownTokens, ...lightDropdownTokens },
 };
 
 // --- Colours ---
