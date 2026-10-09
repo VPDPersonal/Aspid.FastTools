@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
@@ -9,13 +10,37 @@ namespace Aspid.FastTools.UIElements
     /// </summary>
     /// <remarks>
     /// Counterparts of <see cref="PopupFieldExtensions"/> that need no type arguments.
-    /// <see cref="PopupFieldExtensions.SetChoices{TField, TChoice}"/> needs none either, so it has no counterpart.
+    /// <see cref="PopupFieldExtensions.SetChoices{TField, TChoice}"/> needs none either, so <see cref="SetChoices{T}"/>
+    /// only adds support for sources other than a <see cref="List{T}"/>.
     /// </remarks>
     public static class DropdownFieldExtensions
     {
         /// <summary>
+        /// Sets <see cref="BasePopupField{TValueType, TValueChoice}.choices"/> to a copy of <paramref name="value"/>.
+        /// </summary>
+        /// <remarks>
+        /// Use it for an array or a query. A <see cref="List{T}"/> argument calls
+        /// <see cref="PopupFieldExtensions.SetChoices{TField, TChoice}"/>, which keeps the list itself.
+        /// </remarks>
+        /// <typeparam name="T">The field type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The choices to copy.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetChoices<T>(this T element, IEnumerable<string> value)
+            where T : DropdownField
+        {
+            element.choices = value is null ? null : new List<string>(value);
+            return element;
+        }
+
+        /// <summary>
         /// Sets <see cref="PopupField{T}.index"/>.
         /// </summary>
+        /// <remarks>
+        /// Unity resolves the index against the current choices: call
+        /// <see cref="PopupFieldExtensions.SetChoices{TField, TChoice}"/> or
+        /// <see cref="SetChoices{T}"/> first.
+        /// </remarks>
         /// <typeparam name="T">The field type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The index of the selected choice to set.</param>

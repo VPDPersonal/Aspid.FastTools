@@ -171,3 +171,7 @@ The field type.
 
 The choice type held by the field.
 
+#### Remarks
+
+Unity resolves the index against the current choices: call [`PopupFieldExtensions.SetChoices<T1, T2>`](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetChoices__2___0_System_Collections_Generic_List___1__) first.
+

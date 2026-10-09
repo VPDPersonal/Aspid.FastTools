@@ -22,6 +22,20 @@ namespace Aspid.FastTools.UIElements.Tests
         }
 
         [Test]
+        public void DropdownField_SetChoicesCopiesArray()
+        {
+            var choices = new[] { "A", "B", "C" };
+
+            DropdownField field = new DropdownField()
+                .SetChoices(choices)
+                .SetIndex(2);
+
+            CollectionAssert.AreEqual(choices, field.choices);
+            Assert.AreNotSame(choices, field.choices);
+            Assert.AreEqual("C", field.value);
+        }
+
+        [Test]
         public void DropdownField_SetFormatCallbacksStoreThem()
         {
             static string ToLower(string choice) => choice.ToLowerInvariant();

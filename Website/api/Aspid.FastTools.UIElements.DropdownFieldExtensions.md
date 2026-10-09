@@ -26,9 +26,45 @@ public static class DropdownFieldExtensions
 ## Remarks
 
 Counterparts of [`PopupFieldExtensions`](Aspid.FastTools.UIElements.PopupFieldExtensions.md) that need no type arguments.
-[`PopupFieldExtensions.SetChoices<T1, T2>`](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetChoices__2___0_System_Collections_Generic_List___1__) needs none either, so it has no counterpart.
+[`PopupFieldExtensions.SetChoices<T1, T2>`](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetChoices__2___0_System_Collections_Generic_List___1__) needs none either, so [`DropdownFieldExtensions.SetChoices<T>`](Aspid.FastTools.UIElements.DropdownFieldExtensions.md#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetChoices__1___0_System_Collections_Generic_IEnumerable_System_String__)
+only adds support for sources other than a [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1).
 
 ## Methods
+
+### SetChoices\<T\>\(T, IEnumerable\<string\>\) {#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetChoices__1___0_System_Collections_Generic_IEnumerable_System_String__}
+
+Sets [`choices`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BasePopupField_2-choices.html) to a copy of <code class="paramref">value</code>.
+
+```csharp
+public static T SetChoices<T>(this T element, IEnumerable<string> value) where T : DropdownField
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+The choices to copy.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The field type.
+
+#### Remarks
+
+Use it for an array or a query. A [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1) argument calls
+[`PopupFieldExtensions.SetChoices<T1, T2>`](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetChoices__2___0_System_Collections_Generic_List___1__), which keeps the list itself.
 
 ### SetFormatListItemCallback\<T\>\(T, Func\<string, string\>\) {#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetFormatListItemCallback__1___0_System_Func_System_String_System_String__}
 
@@ -124,4 +160,10 @@ The element, for chaining.
 `T` 
 
 The field type.
+
+#### Remarks
+
+Unity resolves the index against the current choices: call
+[`PopupFieldExtensions.SetChoices<T1, T2>`](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetChoices__2___0_System_Collections_Generic_List___1__) or
+[`DropdownFieldExtensions.SetChoices<T>`](Aspid.FastTools.UIElements.DropdownFieldExtensions.md#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetChoices__1___0_System_Collections_Generic_IEnumerable_System_String__) first.
 

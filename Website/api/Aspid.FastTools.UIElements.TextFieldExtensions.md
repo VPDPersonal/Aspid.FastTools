@@ -87,6 +87,11 @@ The field type.
 
 #### Remarks
 
+<p>
+Takes effect only on a multiline field: call [`TextFieldExtensions.SetMultiline<T>`](Aspid.FastTools.UIElements.TextFieldExtensions.md#Aspid_FastTools_UIElements_TextFieldExtensions_SetMultiline__1___0_System_Boolean_) first.
+</p>
+<p>
 Named with <code>Self</code>: the obsolete instance method <code>SetVerticalScrollerVisibility</code> of Unity returns
 [`Boolean`](https://learn.microsoft.com/dotnet/api/system.boolean) and hides an extension method of that name.
+</p>
 

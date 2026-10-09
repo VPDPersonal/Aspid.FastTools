@@ -112,6 +112,7 @@ namespace Aspid.FastTools.UIElements.Tests
         [Test]
         public void TextField_MultilineSettersKeepFieldType()
         {
+            // Unity ignores the scroller visibility until the field is multiline.
             TextField field = new TextField()
                 .SetMultiline(true)
                 .SetVerticalScrollerVisibilitySelf(ScrollerVisibility.AlwaysVisible);

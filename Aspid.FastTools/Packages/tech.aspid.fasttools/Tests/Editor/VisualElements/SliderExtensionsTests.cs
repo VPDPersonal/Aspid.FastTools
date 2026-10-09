@@ -1,3 +1,5 @@
+using System;
+using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 
@@ -70,6 +72,58 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.AreEqual(5f, slider.highLimit);
             Assert.AreEqual(-2f, slider.minValue);
             Assert.AreEqual(3f, slider.maxValue);
+        }
+
+        [Test]
+        public void MinMaxSlider_RangeMovesUpWhenUpperEndIsSetFirst()
+        {
+            var slider = new MinMaxSlider()
+                .SetLowLimit(0f)
+                .SetHighLimit(100f)
+                .SetMaxValue(80f)
+                .SetMinValue(20f);
+
+            Assert.AreEqual(20f, slider.minValue);
+            Assert.AreEqual(80f, slider.maxValue);
+        }
+
+        [Test]
+        public void MinMaxSlider_RangeMovesDownWhenLowerEndIsSetFirst()
+        {
+            var slider = new MinMaxSlider()
+                .SetLowLimit(0f)
+                .SetHighLimit(100f)
+                .SetValue(new Vector2(20f, 30f))
+                .SetMinValue(0f)
+                .SetMaxValue(5f);
+
+            Assert.AreEqual(0f, slider.minValue);
+            Assert.AreEqual(5f, slider.maxValue);
+        }
+
+        [Test]
+        public void MinMaxSlider_SetValueSetsBothEnds()
+        {
+            var slider = new MinMaxSlider()
+                .SetLowLimit(0f)
+                .SetHighLimit(100f)
+                .SetValue(new Vector2(20f, 30f));
+
+            Assert.AreEqual(20f, slider.minValue);
+            Assert.AreEqual(30f, slider.maxValue);
+        }
+
+        [Test]
+        public void MinMaxSlider_LimitsThrowWhenCrossed()
+        {
+            Assert.Throws<ArgumentException>(() => new MinMaxSlider()
+                .SetLowLimit(0f)
+                .SetHighLimit(10f)
+                .SetLowLimit(20f));
+
+            Assert.Throws<ArgumentException>(() => new MinMaxSlider()
+                .SetLowLimit(0f)
+                .SetHighLimit(-5f));
         }
     }
 }

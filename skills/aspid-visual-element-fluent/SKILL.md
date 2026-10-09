@@ -66,9 +66,9 @@ rootVisualElement.AddChild(new VisualElement()
 | `field.SetValueWithoutNotify(v);` | `field.SetValue(v, notify: false)` |
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
 | `enumField.Init(v);` | `enumField.Initialize(v)` |
-| `dropdown.choices = list; dropdown.index = 1;` | `dropdown.SetChoices(list).SetIndex(1)` (`SetChoices` also on `PopupField<T>` and `RadioButtonGroup`) |
-| `minMax.lowLimit = 0; minMax.highLimit = 100;` | `minMax.SetLowLimit(0).SetHighLimit(100)` (also `SetMinValue`, `SetMaxValue`) |
-| `textField.multiline = true;` | `textField.SetMultiline(true)` (also `SetVerticalScrollerVisibilitySelf`) |
+| `dropdown.choices = list; dropdown.index = 1;` | `dropdown.SetChoices(list).SetIndex(1)` (`SetChoices` also on `PopupField<T>` and `RadioButtonGroup`; `DropdownField` also takes an array) |
+| `minMax.lowLimit = 0; minMax.highLimit = 100;` | `minMax.SetLowLimit(0).SetHighLimit(100)` (also `SetMinValue`, `SetMaxValue`; see Pitfalls) |
+| `textField.multiline = true;` | `textField.SetMultiline(true)` (also `SetVerticalScrollerVisibilitySelf`, after `SetMultiline`) |
 | `floatField.formatString = "F2";` | `floatField.SetFormatString("F2")` |
 | `el.AddManipulator(new Clickable(cb));` | `el.AddClickable(cb)` (also `AddContextualMenuManipulator`) |
 
@@ -94,6 +94,14 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
 - `...If` variants evaluate their arguments even when the condition is false.
 - Unity calls the callback of `SetFormatSelectedValueCallback` at once on the current value, which is `null` for a
   `DropdownField` without a selection: call `SetChoices` and `SetIndex` first, or null-check.
+- Call `SetChoices` before `SetIndex`: Unity resolves the index against the current choices, so `SetIndex(1)` before
+  `SetChoices(list)` selects nothing and raises no error.
+- `MinMaxSlider` clamps the range on every assignment. On the default range of 0 to 10,
+  `SetMinValue(20).SetMaxValue(30)` gives 10 to 30. Set both ends with `SetValue(new Vector2(20, 30))`, or the upper end
+  first when the range moves up (the lower end first when it moves down). `SetLowLimit` throws `ArgumentException`
+  above the current high limit, and `SetHighLimit` below the current low limit.
+- `SetVerticalScrollerVisibilitySelf` does nothing on a `TextField` that is not multiline yet: call `SetMultiline(true)`
+  first.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`. Likewise `PopupField<T>`: `SetChoices` infers `T`, but
   `SetIndex` and the two `SetFormat...Callback` setters need `popup.SetIndex<PopupField<int>, int>(1)`; `DropdownField`

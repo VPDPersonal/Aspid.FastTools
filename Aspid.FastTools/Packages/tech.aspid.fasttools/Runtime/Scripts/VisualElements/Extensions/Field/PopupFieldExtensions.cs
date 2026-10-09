@@ -32,6 +32,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="PopupField{T}.index"/>.
         /// </summary>
+        /// <remarks>
+        /// Unity resolves the index against the current choices: call <see cref="SetChoices{TField, TChoice}"/> first.
+        /// </remarks>
         /// <typeparam name="TField">The field type.</typeparam>
         /// <typeparam name="TChoice">The choice type held by the field.</typeparam>
         /// <param name="element">The element to modify.</param>

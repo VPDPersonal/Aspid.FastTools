@@ -26,8 +26,13 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="TextInputBaseField{TValueType}.verticalScrollerVisibility"/>.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// Takes effect only on a multiline field: call <see cref="SetMultiline{T}"/> first.
+        /// </para>
+        /// <para>
         /// Named with <c>Self</c>: the obsolete instance method <c>SetVerticalScrollerVisibility</c> of Unity returns
         /// <see cref="bool"/> and hides an extension method of that name.
+        /// </para>
         /// </remarks>
         /// <typeparam name="T">The field type.</typeparam>
         /// <param name="element">The element to modify.</param>
