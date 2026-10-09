@@ -27,6 +27,7 @@ const outDir = path.join(siteDir, 'docfx', 'projects');
 const ASSEMBLIES = {
   'Aspid.FastTools': 'Runtime/Scripts',
   'Aspid.FastTools.Editor': 'Editor/Scripts',
+  'Aspid.FastTools.VisualElements.Math': 'Runtime/Scripts/VisualElements/Extensions/INotifyValueChanged/Math',
 };
 
 function attr(xml, tag, name) {
