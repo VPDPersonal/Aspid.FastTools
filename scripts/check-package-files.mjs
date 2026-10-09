@@ -1,9 +1,10 @@
 // Check the package files that Unity or the Asset Store Validator complain about later:
 //  1. Path length: the Validator warns when a path is 140 characters or longer, counted from "Aspid/FastTools/"
 //     (the install folder under Assets/) without the .meta files.
-//  2. Every .cs.meta of the package and the dev tests has a MonoImporter block; without it Unity adds the block when
-//     the dev project opens and dirties the working tree. Samples~ is not imported in the dev project, so it is skipped.
-//  3. A .uss.meta importer (samples included) is the StyleSheetImporter (12385), not the ThemeStyleSheetImporter (12388).
+//  2. Every .cs.meta of the package and the dev tests has a MonoImporter block, so all of them stay in the format Unity
+//     writes for a new file. Samples~ is skipped: it is not imported in the dev project.
+//  3. A .uss.meta importer (samples included) is the StyleSheetImporter (12385), not the ThemeStyleSheetImporter (12388);
+//     Unity rewrites 12388 in the working tree when it imports the sample.
 // package-files.yml runs it. It has no dependencies:
 //   node scripts/check-package-files.mjs
 import { readdirSync, readFileSync } from 'node:fs';

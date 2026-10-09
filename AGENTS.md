@@ -31,7 +31,8 @@ Agent Skills for projects that consume the package in `skills/`.
   as that API.
 - `scripts/check-package-files.mjs` (CI) fails on a package path longer than 123 characters (the Asset Store Validator
   limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, and
-  on a `.uss.meta` with importer id 12388. Unity rewrites the last two in the working tree when it imports them.
+  on a `.uss.meta` with importer id 12388. Unity writes the full block into every new `.cs.meta`, and a reserialize adds
+  it to old ones, so the check keeps all of them in one format. Unity rewrites id 12388 to 12385 when it imports a sample.
 
 ## C# style beyond `.editorconfig`
 
