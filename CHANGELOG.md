@@ -148,9 +148,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
 - `AddChildren`, `InsertChildren` and their `…If` variants with an `IEnumerable` no longer throw `InvalidOperationException` ("Collection was modified") when given `Children()` of another element: `target.AddChildren(source.Children())` moves every child.
 - Types sample: the `Enemy Type` picker no longer offers the abstract `Enemy`, which spawned empty capsules and an error per enemy; the rename step of the README now uses the IDE's Rename refactoring, so `ArmoredGrunt` keeps compiling.
+- Types sample: `Brute` no longer sinks halfway into the platform; its height now follows its scale.
 - SerializeReferences sample: no more CS0414 warning on import, and deleting the Training Dummy in Play Mode no longer throws `MissingReferenceException` on every shot.
 - EditorTools sample: the Ability Catalog window follows assets created or deleted in the Project window, and **Create** selects the new asset even while a search is active.
+- EditorTools sample: the Ability Catalog window keeps its search text after a script recompilation; it used to clear it.
 - EnumValues and ProfilerMarkers samples no longer break compilation of a project without the built-in Physics module; their scripts are skipped there, and the sample descriptions say they need it.
+- EnumValues sample: the Walker no longer puts `[InspectorName]` on fields, where Unity ignores it (it reads the attribute only on enum values); its Inspector labels are **Step Interval** and **Footprint Lifetime**, and **Log Tables** prints the same label.
+- Types and SerializeReferences samples: the descriptions and READMEs say that the colliders of their scenes need the built-in Physics module.
 - Samples no longer import ten unused screenshots (about 1 MB) as textures.
 - `Persistent()` keeps the `context` of the source `SerializedObject`, so an `ExposedReference` read or written through the copy resolves in the same table (for example a `PlayableDirector`) instead of the default value in the asset.
 - *Link to Existing* in the `[SerializeReference]` context menu now offers only instances the field's type picker accepts under its `[TypeSelector]` base types, including member-referenced ones; it used to offer any instance assignable to the declared field type.

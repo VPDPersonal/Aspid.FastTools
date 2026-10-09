@@ -27,7 +27,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private TextField _search;
         private VisualElement _details;
         [NonSerialized] private AbilityConfig _shown;
-        private string _filter = string.Empty;
+        [SerializeField] private string _filter = string.Empty;
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Samples/Ability Catalog")]
         private static void Open() =>
@@ -53,7 +53,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetPlaceholder("Search abilities…")
                 .AddValueChanged(evt => ApplyFilter(evt.newValue));
 
-            // _filter survives a domain reload like other window fields, so show it in the new search box.
+            // _filter is serialized and survives a domain reload, so show it in the new search box.
             _search.SetValueWithoutNotify(_filter);
 
             var create = new Button()
