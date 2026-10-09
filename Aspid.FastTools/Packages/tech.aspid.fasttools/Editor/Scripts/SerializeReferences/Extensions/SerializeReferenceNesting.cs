@@ -29,7 +29,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // itself, ahead of any type drawer, as the drawer did when it reached each element.
             var isArrayElement = child.IsArrayElement();
             if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true)) return !isArrayElement;
-            if (CustomDrawerRegistry.DeclaresDrawnAttribute(field, isManagedReference: true, isArrayElement: isArrayElement))
+            if (CustomDrawerRegistry.DeclaresDrawnAttribute(
+                    field,
+                    isManagedReference: true,
+                    isArrayElement: isArrayElement,
+                    isCollection: child.isArray))
                 return true;
 
             // Unity applies a type drawer to each element, never to the list, so the list keeps the picker-backed add.
