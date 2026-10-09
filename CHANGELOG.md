@@ -147,6 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
 - `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
 - `AddChildren`, `InsertChildren` and their `…If` variants with an `IEnumerable` no longer throw `InvalidOperationException` ("Collection was modified") when given `Children()` of another element: `target.AddChildren(source.Children())` moves every child.
+- `TryGetByEnum` returns `false` for a USS number that is not a member of the enum (`--preview-theme: 7;`), so the element keeps its default instead of an undefined value. A `[Flags]` enum accepts names only.
 - Types sample: the `Enemy Type` picker no longer offers the abstract `Enemy`, which spawned empty capsules and an error per enemy; the rename step of the README now uses the IDE's Rename refactoring, so `ArmoredGrunt` keeps compiling.
 - SerializeReferences sample: no more CS0414 warning on import, and deleting the Training Dummy in Play Mode no longer throws `MissingReferenceException` on every shot.
 - EditorTools sample: the Ability Catalog window follows assets created or deleted in the Project window, and **Create** selects the new asset even while a search is active.
