@@ -385,6 +385,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var excludedFolders = SerializeReferenceSettings.ExcludedFolders;
             var settingsFile = File.Exists(SharedSettingsPath) ? File.ReadAllBytes(SharedSettingsPath) : null;
+            var baselines = new BreakageBaselineSnapshot();
             try
             {
                 AssetDatabase.CreateFolder(parentFolder: "Assets", newFolderName: Path.GetFileName(ExcludedFolderPath));
@@ -402,6 +403,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 }
                 finally
                 {
+                    // Changing the excluded folders resets the detector baselines, so they are restored after the last change.
+                    baselines.Restore();
+
                     if (settingsFile is null) File.Delete(SharedSettingsPath);
                     else File.WriteAllBytes(SharedSettingsPath, settingsFile);
 

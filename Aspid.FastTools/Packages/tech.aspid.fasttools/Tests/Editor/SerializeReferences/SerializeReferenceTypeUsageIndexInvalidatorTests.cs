@@ -24,10 +24,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         private string[] _excludedFolders;
         private byte[] _sharedSettingsFile;
+        private BreakageBaselineSnapshot _baselines;
 
         [SetUp]
         public void SetUp()
         {
+            _baselines = new BreakageBaselineSnapshot();
             _excludedFolders = SerializeReferenceSettings.ExcludedFolders;
             _sharedSettingsFile = File.Exists(SharedSettingsPath) ? File.ReadAllBytes(SharedSettingsPath) : null;
 
@@ -51,6 +53,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
+                // Changing the excluded folders resets the detector baselines, so they are restored after the last change.
+                _baselines.Restore();
+
                 // The values above already match the snapshot in memory; this puts the file back byte for byte.
                 if (_sharedSettingsFile is null) File.Delete(SharedSettingsPath);
                 else File.WriteAllBytes(SharedSettingsPath, _sharedSettingsFile);
@@ -132,6 +137,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.IsTrue(SerializeReferenceTypeUsageIndex.IsWarm);
             Assert.AreEqual(2, SerializeReferenceTypeUsageIndex.AllUsages().Count(usage => usage.Guid == guid));
+        }
+
+        [Test]
+        public void Apply_SeveralAssetsImported_ReplacesTheirUsagesOnly()
+        {
+            var first = CreateProbe($"{ScannedFolder}/First.asset");
+            var second = CreateProbe($"{ScannedFolder}/Second.asset");
+            var untouched = CreateProbe($"{ScannedFolder}/Untouched.asset");
+            WarmIndex();
+
+            foreach (var name in new[] { "First", "Second" })
+            {
+                var probe = AssetDatabase.LoadAssetAtPath<LinkerTestObject>($"{ScannedFolder}/{name}.asset");
+                probe.b = new DeleteGuardPistol();
+                EditorUtility.SetDirty(probe);
+            }
+
+            AssetDatabase.SaveAssets();
+            SerializeReferenceTypeUsageIndexInvalidator.Apply(
+                new[] { $"{ScannedFolder}/First.asset", $"{ScannedFolder}/Second.asset" }, _none, _none, _none);
+
+            Assert.IsTrue(SerializeReferenceTypeUsageIndex.IsWarm);
+            Assert.AreEqual(2, UsageCount(first));
+            Assert.AreEqual(2, UsageCount(second));
+            Assert.AreEqual(1, UsageCount(untouched));
         }
 
         [Test]

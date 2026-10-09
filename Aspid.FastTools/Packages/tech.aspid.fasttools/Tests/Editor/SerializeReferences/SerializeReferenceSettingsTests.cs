@@ -30,11 +30,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private string[] _excludedFolders;
         private GateSeverity _buildSeverity;
         private byte[] _sharedSettingsFile;
+        private BreakageBaselineSnapshot _baselines;
 
         [SetUp]
         public void SetUp()
         {
             // Snapshot the project's real settings so the assertions below can mutate them freely and restore on teardown.
+            _baselines = new BreakageBaselineSnapshot();
             _autoDeAlias = SerializeReferenceSettings.AutoDeAliasEnabled;
             _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
             _excludedFolders = SerializeReferenceSettings.ExcludedFolders;
@@ -54,6 +56,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
+                // Putting the excluded folders back resets the detector baselines, so they are restored after it.
+                _baselines.Restore();
+
                 // The values above already match the snapshot in memory; this puts the file back byte for byte,
                 // even if one of the setters threw.
                 if (_sharedSettingsFile is null) File.Delete(SharedSettingsPath);
@@ -125,10 +130,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // Runs `body` with an established baseline holding one key in each detector, then puts the session's own back.
         private static void WithBreakageBaselines(Action body)
         {
-            var typesEstablished = SessionState.GetBool(SerializeReferenceBreakageDetector.EstablishedKey, false);
-            var typesBaseline = SerializeReferenceBreakageDetector.ExportBaseline();
-            var namesEstablished = SessionState.GetBool(TypeNameBreakageDetector.EstablishedKey, false);
-            var namesBaseline = TypeNameBreakageDetector.ExportBaseline();
+            var snapshot = new BreakageBaselineSnapshot();
 
             try
             {
@@ -141,16 +143,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
-                SerializeReferenceBreakageDetector.ResetForTests();
-                TypeNameBreakageDetector.ResetForTests();
-
-                SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, typesEstablished);
-                SerializeReferenceBreakageDetector.ImportBaseline(typesBaseline);
-                SerializeReferenceBreakageDetector.PersistBaseline();
-
-                SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, namesEstablished);
-                TypeNameBreakageDetector.ImportBaseline(namesBaseline);
-                TypeNameBreakageDetector.PersistBaseline();
+                snapshot.Restore();
             }
         }
 

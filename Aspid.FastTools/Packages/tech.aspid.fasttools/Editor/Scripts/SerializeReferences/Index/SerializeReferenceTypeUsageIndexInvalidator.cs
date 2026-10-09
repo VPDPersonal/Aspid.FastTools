@@ -59,7 +59,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            foreach (var path in rebuilt) SerializeReferenceTypeUsageIndex.RebuildAsset(path);
+            SerializeReferenceTypeUsageIndex.RebuildAssets(rebuilt);
         }
 
         private static bool HasScript(string[] paths) =>

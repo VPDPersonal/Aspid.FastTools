@@ -112,15 +112,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static void ClearCache() => Reset();
 
-        public static void RebuildAsset(string path)
+        // Removing usages walks every usage set, so a batch drops its old usages in one walk instead of one per asset.
+        public static void RebuildAssets(IReadOnlyCollection<string> paths)
         {
-            if (_index is null) return;
+            if (_index is null || paths.Count == 0) return;
 
-            var guid = AssetDatabase.AssetPathToGUID(path);
-            if (string.IsNullOrEmpty(guid)) return;
+            var assets = new List<(string path, string guid)>(paths.Count);
+            var guids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var path in paths)
+            {
+                var guid = AssetDatabase.AssetPathToGUID(path);
+                if (string.IsNullOrEmpty(guid)) continue;
 
-            RemoveGuid(guid);
-            AddAsset(path, guid);
+                assets.Add((path, guid));
+                guids.Add(guid);
+            }
+
+            if (assets.Count == 0) return;
+
+            RemoveGuids(guids);
+            foreach (var (path, guid) in assets) AddAsset(path, guid);
         }
 
         // Drops the usages of assets that were deleted or are no longer scanned; a path that was just deleted still maps
@@ -236,9 +247,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             set.Remove(usage);
             set.Add(usage);
         }
-
-        private static void RemoveGuid(string guid) =>
-            RemoveGuids(new HashSet<string>(StringComparer.Ordinal) { guid });
 
         private static void RemoveGuids(HashSet<string> guids)
         {
