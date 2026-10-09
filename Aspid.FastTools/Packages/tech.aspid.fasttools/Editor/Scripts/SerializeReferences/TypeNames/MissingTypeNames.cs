@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using System.Reflection;
@@ -118,16 +119,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        public static List<MissingTypeNameLocation> FindInFile(string assetPath)
+        // `unscanned` collects the file when it exists but is not text YAML (binary, LFS pointer), so the caller can
+        // tell a file with no missing names from a file nobody read.
+        public static List<MissingTypeNameLocation> FindInFile(
+            string assetPath, ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
-            var lines = SerializeReferenceYaml.ReadLines(assetPath);
+            var lines = ReadLines(assetPath, unscanned);
             return lines is null || !lines.Any(SerializeReferenceYamlEditor.MayHoldTypeNames)
                 ? new List<MissingTypeNameLocation>()
                 : Find(assetPath, lines);
         }
 
-        // Every scanned file under Assets/, apart from Excluded scan folders.
-        public static List<MissingTypeNameLocation> ScanProject()
+        // Every scanned file under Assets/, apart from Excluded scan folders. `unscanned` is filled as in FindInFile.
+        public static List<MissingTypeNameLocation> ScanProject(
+            ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
             ClearCache();
 
@@ -143,7 +148,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         $"{paths[i]}  ({i + 1}/{paths.Length})",
                         (float)i / Math.Max(1, paths.Length));
 
-                    result.AddRange(FindInFile(paths[i]));
+                    result.AddRange(FindInFile(paths[i], unscanned: unscanned));
                 }
             }
             finally
@@ -152,6 +157,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return result;
+        }
+
+        // Sniffed once: the format decides whether the file is read, and a file that cannot be read is reported.
+        private static string[] ReadLines(string assetPath, ICollection<(string AssetPath, AssetFileFormat Format)> unscanned)
+        {
+            if (unscanned is null || !File.Exists(assetPath)) return SerializeReferenceYaml.ReadLines(assetPath);
+
+            var format = SerializeReferenceYaml.SniffFileFormat(assetPath);
+            if (format == AssetFileFormat.TextYaml) return SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml: true);
+
+            unscanned.Add((assetPath, format));
+            return null;
         }
 
         // Re-reads the given files and swaps their entries in an earlier result; every other file keeps its entries.

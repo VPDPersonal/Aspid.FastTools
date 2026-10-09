@@ -107,7 +107,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (skipped > 0)
                 summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
             if (rewritten < entries.Count)
-                summaryBody += $" {entries.Count - rewritten} changed on disk since the scan and were left alone.";
+                summaryBody += " " + SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten);
 
             var receipt = new TypeNameReceipt(entries, newName, group.DisplayName, newType.FullName);
 
@@ -217,6 +217,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
             if (skipped > 0)
                 summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
+            if (rewritten < entries.Count)
+                summaryBody += " " + SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten);
 
             var receipt = new RepairReceipt(entries, group.StoredType, managedType, group.DisplayName, newType.FullName);
 
@@ -274,6 +276,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? " 1 was nulled in memory — save the asset to persist it (still listed until saved)."
                     : $" {clearedInMemory} were nulled in memory — save the assets to persist them (still listed until saved).";
             }
+
+            if (cleared < total)
+                summaryBody += " " + SerializeReferenceProjectSummary.BuildNotRewrittenText(total - cleared, verb: "cleared");
 
             // Clearing can create required-field violations. The files edited on disk are re-audited; a reference nulled
             // only in memory reaches disk on save, so that audit is stale until the next Rescan.

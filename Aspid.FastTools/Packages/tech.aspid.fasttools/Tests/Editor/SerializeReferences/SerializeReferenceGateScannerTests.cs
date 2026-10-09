@@ -338,6 +338,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // The Project References window counts the files DescribeUnscanned names, so a binary engine asset under Force
+        // Text does not turn its summary into a warning.
+        [Test]
+        public void CountReportableUnscanned_CountsWhatDescribeUnscannedNames()
+        {
+            try
+            {
+                AssetDatabase.CreateAsset(new Mesh(), EngineAssetPath);
+
+                var unscanned = new[]
+                {
+                    (EngineAssetPath, AssetFileFormat.Binary),
+                    ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Binary),
+                    ("Assets/Weapons/Rifle.prefab", AssetFileFormat.LfsPointer),
+                };
+
+                Assert.AreEqual(2, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.ForceText));
+                Assert.AreEqual(3, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.Mixed));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(EngineAssetPath);
+            }
+        }
+
+        [Test]
+        public void CountReportableUnscanned_Nothing_IsZero() =>
+            Assert.AreEqual(0, SerializeReferenceGateScanner.CountReportableUnscanned(
+                Array.Empty<(string, AssetFileFormat)>(), SerializationMode.ForceBinary));
+
         [Test]
         public void DescribeUnscanned_Nothing_IsSilent() =>
             Assert.IsNull(SerializeReferenceGateScanner.DescribeUnscanned(
