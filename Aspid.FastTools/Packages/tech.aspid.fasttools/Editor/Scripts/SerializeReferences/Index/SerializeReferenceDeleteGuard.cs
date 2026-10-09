@@ -41,6 +41,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // What a cold sweep learned about the project, kept until the end of the editor tick. Unity calls the guard once
         // per deleted script or folder, so a delete of many scripts would sweep the whole project once for each of them.
         // The later calls read only the assets that held managed references, or stop at once when the user cancelled.
+        // An asset that is imported, moved or deleted in the meantime drops the list (see InvalidateSweep).
         private static List<string> _referencePaths;
         private static bool _isSweepCancelled;
 
@@ -314,8 +315,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Null when the user cancels the sweep, which cancels the delete too: its outcome was never shown. samplePaths,
         // when given, collects up to SamplePathCount asset paths that hold a usage. reuseSweep shares the project sweep
-        // with the other calls of the same editor tick (see _referencePaths). Leave it off when the project may have
-        // changed since the last sweep of this tick.
+        // with the other calls of the same editor tick (see _referencePaths); leave it off for a call that is not part
+        // of a delete.
         internal static Dictionary<Type, int> CountUsages(
             IReadOnlyList<Type> types,
             ICollection<string> samplePaths,
@@ -418,7 +419,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _isSweepCancelled = false;
         }
 
-        private static void KeepSweepUntilTickEnds(bool cancelled)
+        // A changed asset can add a reference the kept list lacks. The cancel flag stays: the user's answer outlives it.
+        internal static void InvalidateSweep() => _referencePaths = null;
+
+        internal static void KeepSweepUntilTickEnds(bool cancelled)
         {
             _isSweepCancelled = cancelled;
 

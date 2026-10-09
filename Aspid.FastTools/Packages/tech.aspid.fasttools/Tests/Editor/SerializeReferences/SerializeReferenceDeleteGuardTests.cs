@@ -150,6 +150,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsNull(SerializeReferenceDeleteGuard.SweptReferencePaths);
         }
 
+        [Test]
+        public void CountUsages_ReusedSweep_AssetSavedAfterSweep_IsCounted()
+        {
+            var types = new List<Type> { typeof(DeleteGuardPistol) };
+
+            var first = SerializeReferenceDeleteGuard.CountUsages(types, samplePaths: null, reuseSweep: true);
+
+            Assert.AreEqual(0, first[typeof(DeleteGuardPistol)]);
+            Assert.IsNotNull(SerializeReferenceDeleteGuard.SweptReferencePaths);
+
+            // The import runs the postprocessor, which drops the kept list, so the next call sweeps again.
+            CreateProbe(new DeleteGuardPistol(), new DeleteGuardArmory.Crate());
+
+            var second = SerializeReferenceDeleteGuard.CountUsages(types, samplePaths: null, reuseSweep: true);
+
+            Assert.AreEqual(1, second[typeof(DeleteGuardPistol)]);
+        }
+
+        [Test]
+        public void CountUsages_CancelledSweep_CancelsLaterCallsThatReuseIt()
+        {
+            CreateProbe(new DeleteGuardPistol(), new DeleteGuardArmory.Crate());
+            SerializeReferenceDeleteGuard.KeepSweepUntilTickEnds(cancelled: true);
+
+            var types = new List<Type> { typeof(DeleteGuardPistol) };
+
+            Assert.IsNull(SerializeReferenceDeleteGuard.CountUsages(types, samplePaths: null, reuseSweep: true));
+
+            // A call without reuseSweep is stateless and ignores the flag.
+            var counts = SerializeReferenceDeleteGuard.CountUsages(types, samplePaths: null);
+
+            Assert.AreEqual(1, counts[typeof(DeleteGuardPistol)]);
+        }
+
+        [Test]
+        public void CountUsages_CancelledSweepAndWarmIndex_StillCounts()
+        {
+            CreateProbe(new DeleteGuardPistol(), new DeleteGuardArmory.Crate());
+            SerializeReferenceTypeUsageIndex.FindUsages("warm-up");
+            SerializeReferenceDeleteGuard.KeepSweepUntilTickEnds(cancelled: true);
+
+            var counts = SerializeReferenceDeleteGuard.CountUsages(
+                new List<Type> { typeof(DeleteGuardPistol) }, samplePaths: null, reuseSweep: true);
+
+            Assert.IsNotNull(counts);
+            Assert.AreEqual(1, counts[typeof(DeleteGuardPistol)]);
+        }
+
         private static List<Type> Resolve(params string[] scriptGuids) =>
             SerializeReferenceDeleteGuard.ResolveCandidateTypes(scriptGuids.Select(AssetDatabase.GUIDToAssetPath).ToList());
 
