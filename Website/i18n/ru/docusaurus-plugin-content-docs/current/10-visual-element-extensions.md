@@ -8,7 +8,7 @@
 |---|---|
 | <pre lang="csharp"><code>var title = new Label("Ability Config");&#10;title.style.fontSize = 14;&#10;&#10;var header = new VisualElement();&#10;header.style.paddingLeft = 12;&#10;header.style.paddingRight = 12;&#10;header.style.paddingTop = 10;&#10;header.style.paddingBottom = 10;&#10;header.Add(title);</code></pre> | <pre lang="csharp"><code>var header = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(10)&#10;    .AddChild(new Label("Ability Config")&#10;        .SetFontSize(14));</code></pre> |
 
-Методы настройки возвращают исходный элемент, сохраняя его тип.
+Методы настройки возвращают исходный элемент, сохраняя его тип. Все расширения, кроме [расширений редактора](#расширения-редактора), работают также в сборке плеера.
 
 ## Свойства элемента
 
@@ -17,8 +17,15 @@
 | <code lang="csharp">tooltip = "Mana cost"</code> | <code lang="csharp">SetTooltip("Mana cost")</code> |
 | <code lang="csharp">isDelayed = true</code> | <code lang="csharp">SetDelayed(true)</code> |
 | <code lang="csharp">bindItem = BindRow</code> | <code lang="csharp">SetBindItem(BindRow)</code> |
+| <code lang="csharp">text = "Ability Config"</code> | <code lang="csharp">SetTextSelf("Ability Config")</code> |
+| <code lang="csharp">SetEnabled(false)</code> | <code lang="csharp">SetEnabledSelf(false)</code> |
+
+Суффикс <code lang="csharp">Self</code> означает, что метод с таким именем уже есть в Unity. Он возвращает <code lang="csharp">void</code> и имеет приоритет над расширением, поэтому цепочка через него не соберётся; метод FastTools возвращает элемент.
 
 Полный список расширений — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements).
+
+> [!NOTE]
+> <code lang="class-name">VisualElementExtensions</code> и <code lang="class-name">INotifyValueChangedExtensions</code> называются так же, как классы <code lang="csharp">UnityEngine.UIElements</code>. На вызовы расширений это не влияет; вызов через имя класса требует namespace: <code lang="csharp">Aspid.FastTools.UIElements.VisualElementExtensions.SetName(title, "Title")</code>.
 
 ## Дочерние элементы
 
@@ -111,8 +118,15 @@
 | <code lang="csharp">RegisterValueChangedCallback(OnChanged)</code> | <code lang="csharp">AddValueChanged(OnChanged)</code> |
 | <code lang="csharp">UnregisterValueChangedCallback(OnChanged)</code> | <code lang="csharp">RemoveValueChanged(OnChanged)</code> |
 | <code lang="csharp">clicked += Refresh</code> | <code lang="csharp">AddClicked(Refresh)</code> |
+| <code lang="csharp">clicked -= Refresh</code> | <code lang="csharp">RemoveClicked(Refresh)</code> |
 
 Для собственных типов значений доступны обобщённые <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> и <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
+
+Для типов <code lang="csharp">Unity.Mathematics</code> (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>) методам <code lang="function">SetValue</code> и <code lang="function">AddValueChanged</code> аргументы типа не нужны:
+
+- Перегрузки лежат в сборке `Aspid.FastTools.VisualElements.Math`, они перечислены в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions).
+- Сборка компилируется, когда установлен пакет `com.unity.mathematics`.
+- Проект со своим asmdef добавляет эту сборку в ссылки.
 
 ## Фокус
 
@@ -124,6 +138,9 @@
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>if (manaCost.focusController?&#10;        .focusedElement == manaCost)&#10;    Refresh();</code></pre> | <pre lang="csharp"><code>if (manaCost.IsFocused())&#10;    Refresh();</code></pre> |
+
+> [!NOTE]
+> <code lang="csharp">IsFocused()</code> возвращает <code lang="csharp">false</code> для поля внутри другого поля (<code lang="class-name">FloatField</code> в <code lang="class-name">Vector3Field</code>) или в строке списка. Такое поле отслеживайте через <code lang="class-name">FocusInEvent</code> и <code lang="class-name">FocusOutEvent</code>.
 
 ## Манипуляторы
 
