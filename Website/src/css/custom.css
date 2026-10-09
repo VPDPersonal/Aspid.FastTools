@@ -867,8 +867,9 @@ html[data-theme='light']:not([data-accent]).docs-doc-page { --venom-canvas-accen
 }
 
 .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover {
-  text-decoration: underline;
+  text-decoration-line: underline;
   text-decoration-color: var(--venom-accent);
+  text-decoration-thickness: 2px;
 }
 
 /* Documentation media uses the same frame as code blocks in both themes. */

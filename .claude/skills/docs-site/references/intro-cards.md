@@ -94,7 +94,7 @@ the dark theme's colours are bright enough to serve every role and are left alon
 
 - `--venom-accent`: text (links, the picked item) — the mark hue darkened only to 4.5:1 on white;
 - `--venom-canvas-accent`: text on the grey canvas (the sidebar's active item, the TOC) — 4.5:1 there;
-- `--venom-accent-mark`: marks and tints (frame bars, underlines, outlines, focus rings, dots, `--venom-glow*`), the rest underline of article links included — 3:1;
+- `--venom-accent-mark`: marks and tints (frame bars, underlines, outlines, focus rings, dots, `--venom-glow*`) and the underline of article links at rest — 3:1;
 - `--venom-accent-fill` / `-fill-ink`: filled surfaces with text (the primary button, the active install step) —
   the text accent with white ink, except yellow (bright amber with dark ink) and mono (a mid grey).
 
