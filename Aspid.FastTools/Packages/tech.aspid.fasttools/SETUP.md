@@ -36,7 +36,7 @@ Install the package once. Do not also add it from GitHub with **Install package 
 The project has a second copy of the package. Keep one: remove the package from **Window → Package Manager** (**In Project**), or delete `Assets/Aspid/FastTools`.
 
 **Compile errors appear right after the import.**
-Check the Unity version in **Help → About Unity**. It must be 6000.0.53f1 or newer: earlier 6000.0 patches lack UI Toolkit APIs that the package uses.
+Check the Unity version in Unity Hub or in **About Unity** (**Help → About Unity** on Windows and Linux, **Unity → About Unity** on macOS). It must be 6000.0.53f1 or newer: earlier 6000.0 patches lack UI Toolkit APIs that the package uses.
 
 ## 5. Support
 
