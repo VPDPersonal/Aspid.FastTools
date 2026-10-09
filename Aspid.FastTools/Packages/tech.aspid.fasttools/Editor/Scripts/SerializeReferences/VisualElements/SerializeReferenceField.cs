@@ -221,6 +221,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // fires; each field re-evaluates itself on undo/redo or a re-/un-aliased sibling would stay stale.
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 Undo.undoRedoPerformed += OnUndoRedo;
+                // The same step can take back a <None> pick on a missing reference after this field refreshed.
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
+                SerializeReferenceMissingListGuard.UndoChangedNotes += OnUndoRedo;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -229,6 +232,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
                 _liveFields.Remove(this);
             });
         }

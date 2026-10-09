@@ -242,7 +242,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static void InvalidateMissingTypeMemo()
         {
             _missingProbeFrame = -1;
-            _listMatches.Clear();
+
+            // The in-memory ids are read again; a match is rebuilt only when they, the file or the guard's notes changed.
+            foreach (var match in _listMatches.Values)
+                match.Tick = -1;
         }
 
         private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType) =>
@@ -298,9 +301,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _))
                 return ProbeInheritedMissingType(property, out referenceId, out storedType, out origin, out storedIn);
 
-            if (!TryGetStoredPath(property, assetPath, fileId, out var anchorRid, out var storedPath, out slot)) return false;
+            // One version of the file serves every read of the probe, so the file on disk is checked once.
+            var file = SerializeReferenceYamlEditor.ReadProbedFile(assetPath);
+            if (file is null) return false;
 
-            if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, anchorRid, storedPath, out referenceId, out storedType))
+            if (!TryGetStoredPath(property, assetPath, file, fileId, out var anchorRid, out var storedPath, out slot)) return false;
+
+            if (!SerializeReferenceYamlEditor.TryReadStoredType(file, fileId, anchorRid, storedPath, out referenceId, out storedType))
                 return false;
 
             if (storedType.IsEmpty || StoredTypeResolvesCached(storedType)) return false;
@@ -331,8 +338,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // inside a reference is read from that reference's data by the reference's rid. A list element is matched with the
         // list in the file by the rids of the other elements; false when the match is not certain. slot names the place of
         // an element of a top-level list in the file.
-        private static bool TryGetStoredPath(SerializedProperty property, string assetPath, long fileId,
-            out long anchorRid, out string storedPath, out (string field, int index) slot)
+        private static bool TryGetStoredPath(SerializedProperty property, string assetPath,
+            SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, out long anchorRid, out string storedPath,
+            out (string field, int index) slot)
         {
             anchorRid = SerializeReferenceYamlEditor.NoAnchor;
             storedPath = property.propertyPath;
@@ -356,7 +364,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var list = element.Groups["list"].Value;
             var listPath = anchorPath.Length == 0 ? list : $"{anchorPath}.{list}";
 
-            var stored = MatchStoredSlot(serializedObject, listPath, assetPath, fileId, anchorRid, list, index);
+            var stored = MatchStoredSlot(serializedObject, listPath, assetPath, file, fileId, anchorRid, list, index);
             if (stored < 0) return false;
 
             storedPath = $"{list}.Array.data[{stored}]";
@@ -384,10 +392,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The index in the file's list of the element that the in-memory slot holds, or -1.
-        private static int MatchStoredSlot(SerializedObject serializedObject, string listPath, string assetPath, long fileId,
-            long anchorRid, string storedListPath, int index)
+        private static int MatchStoredSlot(SerializedObject serializedObject, string listPath, string assetPath,
+            SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid, string storedListPath, int index)
         {
-            if (!SerializeReferenceYamlEditor.TryReadListIds(assetPath, fileId, anchorRid, storedListPath, out var stored)) return -1;
+            if (!SerializeReferenceYamlEditor.TryReadListIds(file, fileId, anchorRid, storedListPath, out var stored)) return -1;
 
             var key = (serializedObject.targetObject, listPath);
             if (!_listMatches.TryGetValue(key, out var match))
@@ -413,7 +421,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var notesVersion = SerializeReferenceMissingListGuard.NotesVersion;
             if (match.Sources is null || !ReferenceEquals(match.Stored, stored) || match.NotesVersion != notesVersion)
             {
-                var state = BuildStoredListState(assetPath, fileId, anchorRid, storedListPath, stored, match.Current);
+                var state = BuildStoredListState(assetPath, file, fileId, anchorRid, storedListPath, stored, match.Current);
 
                 match.Stored = stored;
                 match.NotesVersion = notesVersion;
@@ -443,8 +451,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The list in the file as a save would find it: an element is missing while its type does not resolve, the editor
         // does not hold its id and the user has not replaced it; a replaced one counts as a null.
-        private static MissingListState BuildStoredListState(string assetPath, long fileId, long anchorRid, string listPath,
-            long[] stored, long[] current)
+        private static MissingListState BuildStoredListState(string assetPath, SerializeReferenceYamlProbeCache.ProbedFile file,
+            long fileId, long anchorRid, string listPath, long[] stored, long[] current)
         {
             var held = new HashSet<long>(current);
             var topLevel = anchorRid == SerializeReferenceYamlEditor.NoAnchor && listPath.IndexOfAny(_pathSeparators) < 0;
@@ -457,7 +465,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var rid = stored[i];
                 if (rid < 0 || held.Contains(rid)) continue;
-                if (!SerializeReferenceYamlEditor.TryReadEntryType(assetPath, fileId, rid, out var type)) continue;
+                if (!SerializeReferenceYamlEditor.TryReadEntryType(file, fileId, rid, out var type)) continue;
                 if (StoredTypeResolvesCached(type)) continue;
 
                 var slotIndex = topLevel ? i : -1;
@@ -1134,7 +1142,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Repair assets through YAML and open Prefab Mode objects and loaded scenes through their live serialized state.
-        public static bool TryFixMissingType(SerializedProperty property, Type newType)
+        public static bool TryFixMissingType(SerializedProperty property, Type newType) =>
+            TryFixMissingType(property, newType, retryAfterSave: true);
+
+        private static bool TryFixMissingType(SerializedProperty property, Type newType, bool retryAfterSave)
         {
             if (newType is null) return false;
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
@@ -1143,6 +1154,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Prefab Mode saves over the asset file, so neither route would survive. The reimport would drop unsaved
             // changes, so a dirty asset is saved first: the YAML route keeps the whole stored payload, which the
             // in-memory route cannot recover.
+            var savesFirst = !inMemory && SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath);
             if (!inMemory &&
                 (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath, "Fix Missing Type") ||
                  SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath, "Fix Missing Type")))
@@ -1158,6 +1170,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 repaired = SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
                 // ForceUpdate invalidates the live SerializedObject, so the property must not be touched afterwards.
                 if (repaired) AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+                else if (savesFirst && retryAfterSave) RetryFixAfterSave(property, newType);
             }
 
             // An IMGUI repaint can land in the same frame as this click, so the frame-keyed memos must go too.
@@ -1171,6 +1184,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (repaired) ScheduleInspectorRebuild();
             return repaired;
+        }
+
+        // A save that resizes a list writes its missing element as a null and drops its entry, so the rewrite finds no
+        // entry. The missing-list guard puts the element back under a new rid in a delayCall queued by that save; this
+        // call is queued after it, so the fix runs again on the element the guard put back.
+        public static void RetryFixAfterSave(SerializedProperty property, Type newType)
+        {
+            var target = property.serializedObject.targetObject;
+            var propertyPath = property.propertyPath;
+
+            EditorApplication.delayCall += () =>
+            {
+                InvalidateMissingTypeMemo();
+
+                if (target != null)
+                {
+                    using var serializedObject = new SerializedObject(target);
+                    var retried = serializedObject.FindProperty(propertyPath);
+                    if (retried is not null && TryFixMissingType(retried, newType, retryAfterSave: false)) return;
+                }
+
+                Debug.LogWarning($"[Aspid FastTools] Fix Missing Type did not apply to '{propertyPath}': saving the asset " +
+                    "moved the missing reference. If the field still shows Missing type, click Fix again.");
+            };
         }
 
         // Unity caches the missing-types banner on editor creation; reselection rebuilds it after repair.

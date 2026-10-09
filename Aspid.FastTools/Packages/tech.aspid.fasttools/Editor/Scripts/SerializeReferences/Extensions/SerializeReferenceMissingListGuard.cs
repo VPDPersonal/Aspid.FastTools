@@ -25,6 +25,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Grows with every change of the notes, so a cache built from them can tell it is stale.
         internal static int NotesVersion { get; private set; }
 
+        // Raised after an undo or redo takes a replace back or restores it. Unity does not order undoRedoEvent against
+        // undoRedoPerformed, so a field that refreshed on the same step may have read the notes before they changed.
+        internal static event Action UndoChangedNotes;
+
         // Drops the loaded notes, as a domain reload does; the next access reads them back from SessionState.
         internal static void ReloadNotes()
         {
@@ -170,7 +174,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 changed = true;
             }
 
-            if (changed) SaveNotes();
+            if (!changed) return;
+
+            SaveNotes();
+            SerializeReferenceHelpers.InvalidateMissingTypeMemo();
+            UndoChangedNotes?.Invoke();
         }
 
         // The state a save is about to overwrite: the lists at risk, the notes they rely on and a stamp of the file. Null
