@@ -35,6 +35,9 @@ namespace Aspid.FastTools.Editors
         [Tooltip("The asset the References tabs open when the window is rebuilt.")]
         [SerializeField] private Object _pendingTarget;
 
+        // Serialized so the tab survives a domain reload and a Play Mode entry; an auto-property is not serialized.
+        [SerializeField] private TabType _currentTabType;
+
         // Kept here because the Project References view is rebuilt on every tab switch, so a repair's Undo survives
         // a visit to another tab; closing the window or a domain reload drops it.
         private readonly List<RepairSummary> _projectSummaries = new();
@@ -46,7 +49,7 @@ namespace Aspid.FastTools.Editors
         private Button _projectButton;
         private Button _settingsButton;
 
-        internal TabType CurrentTabType { get; private set; }
+        internal TabType CurrentTabType => _currentTabType;
 
         #region Open Methods
         [MenuItem("Tools/Aspid 🐍/FastTools/Welcome", priority = 0)]
@@ -59,15 +62,33 @@ namespace Aspid.FastTools.Editors
         }
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Asset References", priority = 20)]
+        [MenuItem("Assets/Aspid 🐍/FastTools/Asset References")]
         public static void OpenAssetReferences() =>
             OpenAssetReferences(Selection.activeObject);
+
+        [MenuItem("Assets/Aspid 🐍/FastTools/Asset References", validate = true)]
+        private static bool ValidateOpenAssetReferences() =>
+            CanInspect(Selection.activeObject);
 
         public static void OpenAssetReferences(Object target)
         {
             var window = Open();
 
-            window._pendingTarget = target;
+            window._pendingTarget = ResolvePendingTarget(window._pendingTarget, target);
             window.SwitchMode(TabType.AssetReference);
+        }
+
+        // An empty selection or a plain scene object keeps the asset the tab already shows.
+        internal static Object ResolvePendingTarget(Object current, Object requested) =>
+            CanInspect(requested) ? requested : current;
+
+        // Asset References maps a saved asset, or the source prefab of a prefab instance.
+        internal static bool CanInspect(Object target)
+        {
+            if (!target) return false;
+
+            return !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(target))
+                   || SerializeReferenceHelpers.TryGetSourcePrefabPath(target, out _);
         }
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Project References", priority = 21)]
@@ -163,7 +184,7 @@ namespace Aspid.FastTools.Editors
 
         internal void SwitchMode(TabType tabType)
         {
-            CurrentTabType = tabType;
+            _currentTabType = tabType;
             if (_container is null) return; // CreateGUI applies the selected tab once the container exists.
 
             _container.Clear();

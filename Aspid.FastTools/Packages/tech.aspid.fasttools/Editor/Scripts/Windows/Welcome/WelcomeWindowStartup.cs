@@ -43,14 +43,17 @@ namespace Aspid.FastTools.Editors
             if (SessionState.GetBool(SessionKey, false)) return;
             SessionState.SetBool(SessionKey, true);
 
-            if (Application.isBatchMode) return;
+            var shouldShow = ShouldShow(
+                isBatchMode: Application.isBatchMode,
+                autoShowEnabled: WelcomeSettings.AutoShowEnabled,
+                hasBeenSeen: HasBeenSeen,
+                hasOpenWindow: HasOpenWindow());
 
-            if (!WelcomeSettings.AutoShowEnabled) return;
-            if (HasBeenSeen) return;
-            if (HasOpenWindow()) return;
-
-            TabWindow.OpenWelcome();
+            if (shouldShow) TabWindow.OpenWelcome();
         }
+
+        internal static bool ShouldShow(bool isBatchMode, bool autoShowEnabled, bool hasBeenSeen, bool hasOpenWindow) =>
+            !isBatchMode && autoShowEnabled && !hasBeenSeen && !hasOpenWindow;
 
         private static bool HasOpenWindow()
         {
