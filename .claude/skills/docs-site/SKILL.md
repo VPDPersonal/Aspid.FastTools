@@ -373,9 +373,12 @@ reference still needs regenerating.
 The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as accent (`--venom-*` tokens in
 `Website/src/css/custom.css`). Green is the default; the reader can switch the accent to red, blue, yellow or mono in the
 sidebar footer appearance menu, next to the theme (`NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
-`html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. Colour things with `--venom-accent*`
+`html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. The accent's favicon is set on the plain
+`<link rel="icon">` in `headTags`, not on the `favicon` field: React Helmet owns that field's tag and resets it on every
+navigation. Colour things with `--venom-accent*`
 / `--ifm-color-primary*`, never a literal green, unless it mimics Unity or means success (`--venom-emerald`).
-Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) from Google Fonts; iA Writer Quattro, the
+Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) from Google Fonts, linked by `preconnect` and
+`stylesheet` tags in `headTags` (a CSS `@import` would start them only after the stylesheet); iA Writer Quattro, the
 samples' editor font, is self-hosted in `src/fonts/` (OFL, keep the licence file) for navigation labels only — sidebar
 and TOC, `--venom-font-family-nav`. Prism themes are Ayu-based, in `src/prism/venom.js`, with a transparent background.
 Keep the admonition style (`.theme-admonition` in `custom.css`): a 2px outline in the block colour, 12px radius, no fill,

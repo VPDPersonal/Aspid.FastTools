@@ -169,11 +169,9 @@ export default function DotRipple() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
-    const canvas = document.createElement('canvas');
-    canvas.className = 'dot-ripple-canvas';
-    canvas.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
+    // The canvas is created by the first wave that has dots to run through (place), so a page without dots never holds one.
+    let canvas = null;
+    let ctx = null;
 
     const counter = document.createElement('div');
     counter.className = 'dot-ripple-counter';
@@ -199,6 +197,7 @@ export default function DotRipple() {
     let areaHeight = 0;
 
     const resize = () => {
+      if (!canvas) return;
       const dpr = Math.min(devicePixelRatio || 1, 2);
       areaWidth = host === document.body ? innerWidth : host.clientWidth;
       areaHeight = host === document.body ? innerHeight : host.clientHeight;
@@ -206,7 +205,6 @@ export default function DotRipple() {
       canvas.height = Math.ceil(areaHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
-    resize();
 
     const render = (now) => {
       ctx.clearRect(0, 0, areaWidth, areaHeight);
@@ -398,13 +396,23 @@ export default function DotRipple() {
       narrow ??= matchMedia('(max-width: 996px)');
       const target = narrow.matches ? document.querySelector(BANNER_LAYER) : document.body;
       if (!target) return null;
+      if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.className = 'dot-ripple-canvas';
+        canvas.setAttribute('aria-hidden', 'true');
+        ctx = canvas.getContext('2d');
+      }
       // A banner removed from the page takes the canvas with it, so it comes back to the body on the next wave.
       if (canvas.parentNode !== target) {
+        // A new canvas has no waves to drop; the sparks of a burst that charged before it are waiting.
+        const moved = canvas.parentNode !== null;
         target.append(canvas);
         host = target;
         resize();
-        waves = [];
-        sparks = [];
+        if (moved) {
+          waves = [];
+          sparks = [];
+        }
       }
       if (target === document.body) return {x: 0, y: 0};
       const box = target.getBoundingClientRect();
@@ -530,7 +538,7 @@ export default function DotRipple() {
       clearTimeout(counterTimer);
       cancelAnimationFrame(countFrame);
       tocButton?.removeAttribute('data-counting');
-      canvas.remove();
+      canvas?.remove();
       counter.remove();
     };
   }, []);
