@@ -96,7 +96,7 @@ jobs:
           set -euo pipefail
           git fetch --no-tags --quiet origin +refs/heads/main:refs/remotes/origin/main
           if ! git merge-base --is-ancestor HEAD refs/remotes/origin/main; then
-            echo "::error::Commit $(git rev-parse --short HEAD) is not in main. Merge it into main, then tag the merge commit."
+            echo "::error::Commit $(git rev-parse --short HEAD) is not in main. Delete the tag, merge the commit into main, then tag the merge commit."
             exit 1
           fi
           echo "Commit $(git rev-parse --short HEAD) is in main."
@@ -255,7 +255,8 @@ jobs:
   # The gh CLI instead of a third-party action, which would run with this job's contents: write token.
   # A separate job: the tags are out when it starts, so a failure here is repaired with "Re-run failed jobs",
   # which runs only this job. Creating the release by hand works too:
-  #   gh release create v<version> --verify-tag --notes-file <the version's section of CHANGELOG.md>
+  #   gh release create v<version> --verify-tag --title v<version> --prerelease=<true|false> \
+  #     --notes-file <the version's section of CHANGELOG.md>
   github-release:
     name: GitHub release
     needs: [preflight, release]
