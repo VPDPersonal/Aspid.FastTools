@@ -93,18 +93,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         #endregion
 
         #region Multi-object editing
-        public static bool IsEditingMultipleObjects(SerializedProperty property) =>
-            property.serializedObject.isEditingMultipleObjects;
-
         public static bool HasMixedTypes(SerializedProperty property)
         {
             if (!property.serializedObject.isEditingMultipleObjects) return false;
 
-            // hasMultipleDifferentValues misses the all-missing case, where every target reads back null but the
-            // stored, unloadable type names still differ.
-            if (property.hasMultipleDifferentValues) return true;
-
-            if (property.managedReferenceValue is not null) return false;
+            // hasMultipleDifferentValues also compares rids, which differ between objects that hold the same type, and
+            // it misses the all-missing case, where every target reads back null but the stored, unloadable type names
+            // still differ. Only the stored type names decide.
+            if (!property.hasMultipleDifferentValues && property.managedReferenceValue is not null) return false;
 
             var first = property.managedReferenceFullTypename;
             var targets = property.serializedObject.targetObjects;
@@ -167,40 +163,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             _mixedResults[path] = (first, result);
-        }
-
-        // Assign per target so each object receives an independent instance; collapse the writes into one Undo step.
-        public static void ApplyManagedReferencePerTarget(SerializedProperty property, Func<object, object> factory)
-        {
-            var serializedObject = property.serializedObject;
-            var targets = serializedObject.targetObjects;
-            var propertyPath = property.propertyPath;
-
-            Undo.IncrementCurrentGroup();
-            var undoGroup = Undo.GetCurrentGroup();
-
-            foreach (var target in targets)
-            {
-                if (target == null) continue;
-
-                using var single = new SerializedObject(target);
-                var singleProperty = single.FindProperty(propertyPath);
-                if (singleProperty is null) continue;
-
-                var previous = singleProperty.managedReferenceValue;
-                var instance = factory(previous);
-
-                singleProperty.managedReferenceValue = instance;
-                singleProperty.isExpanded = instance is not null;
-                single.ApplyModifiedProperties();
-            }
-
-            Undo.CollapseUndoOperations(undoGroup);
-
-            // Update() pulls the per-target writes back in; applying instead would write the live object's stale
-            // reference back over them.
-            serializedObject.Update();
-            InvalidateReferenceMemos();
         }
 
         // Repair notices operate on one backing asset and cannot represent a multi-object selection.
@@ -743,7 +705,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string GetMissingTypeDisplayName(SerializedProperty property) =>
             GetMissingTypeName(property).DisplayName;
 
-        // Rank only picker-compatible candidates so quick repair cannot bypass the field constraints.
+        // Rank only picker-compatible candidates so quick repair cannot bypass the field constraints or the editor-only
+        // types the Fix picker hides.
         public static bool TryGetRepairSuggestion(SerializedProperty property, Type[] baseTypes,
             out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
         {
@@ -763,7 +726,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var candidate in ranked)
             {
-                if (!pickerFilter(candidate.Type)) continue;
+                if (!pickerFilter(candidate.Type) || !SerializeReferenceWriter.CanHold(property, candidate.Type)) continue;
                 suggestion = candidate;
                 return true;
             }
@@ -951,7 +914,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Repair assets through YAML and open Prefab Mode objects and loaded scenes through their live serialized state.
         public static bool TryFixMissingType(SerializedProperty property, Type newType)
         {
-            if (newType is null) return false;
+            if (newType is null || !SerializeReferenceWriter.CanHold(property, newType)) return false;
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
             if (!TryGetMissingReferenceId(property, out var referenceId)) return false;
 

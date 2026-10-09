@@ -87,7 +87,8 @@ public sealed class Armory : MonoBehaviour
   it is not a runtime null check.
 - `[Conditional("UNITY_EDITOR")]`: never read it at runtime.
 - In a runtime object's Inspector the picker omits types from editor-only assemblies (`UnityEditor`, Editor asmdefs and
-  folders): a player cannot resolve them. Editor windows and editor-only settings objects still offer every type.
+  folders), and Paste, templates, a dropped script, Link to Existing and Smart Fix refuse them: a player cannot resolve
+  them. Editor windows and editor-only settings objects still offer every type.
 - `[SerializeReference]`: the field type is the first constraint, only instantiable classes are offered, nested
   managed references get the selector automatically; `UnityEngine.Object` field types are invalid (`AFT0004`).
 - Renaming or moving a `[SerializeReference]` implementation turns its stored data into a missing type. Add

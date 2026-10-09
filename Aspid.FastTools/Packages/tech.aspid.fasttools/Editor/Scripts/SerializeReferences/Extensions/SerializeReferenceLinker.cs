@@ -94,20 +94,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return rids;
         }
 
-        public static bool LinkTo(SerializedProperty property, string sourcePath)
+        // A link shares one instance inside one object, so a multi-object selection has nothing to link.
+        public static bool LinkTo(SerializedProperty property, string sourcePath, SerializedProperty view = null)
         {
             if (property is null || string.IsNullOrEmpty(sourcePath)) return false;
+            if (property.serializedObject.isEditingMultipleObjects) return false;
 
             // Read and write through the SAME SerializedObject: a value pulled through a separate one deserializes a
             // fresh copy that gets a new rid on apply, so the two fields would not share one.
-            var serializedObject = property.serializedObject;
-            var value = serializedObject.FindProperty(sourcePath)?.managedReferenceValue;
+            var value = property.serializedObject.FindProperty(sourcePath)?.managedReferenceValue;
             if (value is null) return false;
 
-            property.managedReferenceValue = value;
-            serializedObject.ApplyModifiedProperties();
-            SerializeReferenceHelpers.InvalidateReferenceMemos();
-            return true;
+            return SerializeReferenceWriter.SetValue(property, value.GetType(), () => value, view);
         }
 
         private static bool IsDescendant(string candidate, string ancestor) =>
