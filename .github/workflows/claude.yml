@@ -59,7 +59,8 @@ jobs:
 
       - name: Prepare bubblewrap
         run: |
-          sudo apt-get install -y --no-install-recommends bubblewrap
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends bubblewrap socat
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Review PR
@@ -120,7 +121,8 @@ jobs:
 
       - name: Prepare bubblewrap
         run: |
-          sudo apt-get install -y --no-install-recommends bubblewrap
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends bubblewrap socat
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Run Claude
