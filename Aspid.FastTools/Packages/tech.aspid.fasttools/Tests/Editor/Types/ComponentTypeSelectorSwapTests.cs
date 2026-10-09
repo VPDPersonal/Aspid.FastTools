@@ -232,6 +232,21 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 "The source prefab owns the component, so its class can change there.");
         }
 
+        // The warning sends the user to the source prefab, and Prefab Mode is how they edit it.
+        [Test]
+        public void FindSwapConflict_ComponentInPrefabMode_IsNoConflict()
+        {
+            CreateBasePrefab(withComponent: true);
+            var contents = PrefabUtility.LoadPrefabContents(BasePrefabPath);
+
+            try
+            {
+                Assert.IsNull(ComponentTypeSelectorPropertyDrawer.FindSwapConflict(contents.GetComponent<ComponentSwapPlain>(), typeof(ComponentSwapSingle)),
+                    "The prefab contents are the source, so the class can change there.");
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+        }
+
         [Test]
         public void FindSwapConflict_ComponentAddedToPrefabInstance_IsNoConflict()
         {
