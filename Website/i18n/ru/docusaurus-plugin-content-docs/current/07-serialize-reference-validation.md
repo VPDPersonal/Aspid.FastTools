@@ -15,8 +15,8 @@
 | Режим | Сборка плеера | Отдельный CI-запуск |
 |---|---|---|
 | `Off` | Проверка пропускается | Ни поиска, ни отчёта, старый отчёт остаётся; код `0` |
-| `Warn` | Предупреждение, сборка продолжается | Отчёт и нарушения в журнале; код `0` |
-| `Fail` | Потерянные типы прерывают сборку | Отчёт; код `1` при нарушениях |
+| `Warn` | Предупреждение, сборка продолжается | Отчёт; нарушения в журнале как предупреждения; код `0` |
+| `Fail` | Потерянные типы прерывают сборку | Отчёт; нарушения в журнале как ошибки; код `1` при нарушениях |
 
 Сборка проверяет все ассеты под `Assets/`, а не только попадающие в неё: в режиме `Fail` её остановит и неиспользуемый префаб — исключите такие папки в [**Excluded scan folders**](#область-проверки).
 
@@ -61,7 +61,7 @@ Unity -batchmode -projectPath . \
   -srGateRequired -srGateFail
 ```
 
-Код выхода `2` означает сбой самой проверки.
+`RunCheck` работает только с `-batchmode`: без него он пишет предупреждение и ничего не проверяет. Код выхода `2` означает сбой самой проверки.
 
 ### Флаги запуска
 
@@ -71,10 +71,13 @@ Unity -batchmode -projectPath . \
 | `-srGateRequired` | Дополнительно проверить незаполненные поля с <code lang="csharp">Required = true</code> |
 | `-srGateFail` | Использовать `Fail` вместо режима проекта, даже `Off` |
 | `-srGateWarnOnly` | Использовать `Warn` вместо режима проекта, даже `Off`; важнее `-srGateFail`, если переданы оба |
+| `-srGateStrict` | Считать нарушениями файлы, которые не удалось проверить (нескачанные файлы Git LFS, двоичные ассеты, способные хранить ссылки); в режиме `Warn` код выхода остаётся `0` |
 
 ## Отчёт
 
-Отчёт содержит потерянные типы, незаполненные обязательные поля и пропущенные файлы. Пропущенные файлы не меняют код выхода.
+Отчёт содержит потерянные типы, незаполненные обязательные поля и пропущенные файлы. Пропущенные файлы не меняют код выхода, если не передан `-srGateStrict`.
+
+В журнале сборки плеера и CI-запуска видны первые 50 нарушений, остальные только подсчитаны. Полный список дают отчёт и **Scan Project**.
 
 <details>
 <summary>Формат отчёта</summary>
@@ -92,7 +95,7 @@ Unity -batchmode -projectPath . \
 Дальше — по строке на нарушение, поля разделены табуляцией:
 
 ```text
-KIND    assetPath    fileId    rid    className    fieldPath    origin
+KIND    assetPath    fileId    rid    className    fieldPath    origin    ns    asm
 ```
 
 | Поле | Содержимое |
@@ -104,6 +107,8 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 | `className` | Сохранённое имя класса для `MissingType`; сохранённое имя типа целиком для `MissingTypeName` |
 | `fieldPath` | Путь обязательного поля; поле обёртки для `MissingTypeName`; для `MissingType` из override — переопределённое поле; иначе пусто |
 | `origin` | `override` для типа, заданного override экземпляра префаба; иначе пусто |
+| `ns` | Сохранённое пространство имён для `MissingType`; иначе пусто |
+| `asm` | Сохранённая сборка для `MissingType`; иначе пусто |
 
 В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в карточке **Prefab instance overrides** в Project References. Строка `MissingTypeName` находится в своей группе **type name** в Project References.
 
@@ -111,6 +116,6 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 
 ## Пример в пакете
 
-Обязательное поле и потерянные типы для проверки есть в примере [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md).
+Обязательное поле и потерянные типы для проверки есть в примере [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md); если они не должны останавливать сборку в режиме `Fail`, добавьте папку примера в **Excluded scan folders**.
 
 ![Манекен получает урон в сцене SerializeReferences](../../../../tutorials/SerializeReferences/Images/demo.gif)

@@ -14,6 +14,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const int MaxListedPaths = 10;
 
+        // How many violations a log lists before it says how many more there are; the CI report lists them all.
+        public const int MaxListedViolations = 50;
+
         // How many files the required-field sweep loads before it releases the ones nothing references any more.
         // Not const so tests can lower it.
         internal static int UnloadEveryLoadedFiles = 64;
@@ -27,6 +30,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // script (deleted / non-MonoBehaviour) caches an empty set once instead of re-probing every object.
         private static readonly Dictionary<string, IReadOnlyList<RequiredFieldDescriptor>> _scriptRequiredFieldsCache =
             new(StringComparer.Ordinal);
+
+        // Prefab -> the scan-candidate prefabs that depend on it (its variants and the prefabs nesting it). Built by the
+        // first rescan after a project audit and kept until the next one, since GetDependencies of every prefab is
+        // slow and a rescan follows each fix. A nesting added after the audit shows up with the next Scan.
+        private static Dictionary<string, List<string>> _prefabDependents;
 
         // `unscanned` collects the candidates the YAML pass had to skip (binary files, LFS pointers): their missing
         // types, and a scene's required fields, were not checked. Prefabs and assets still get the object-load
@@ -42,6 +50,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _scriptRequiredFieldsCache.Clear();
             _constraintMapCache.Clear();
             MissingTypeNames.ClearCache();
+            ResetPrefabDependents();
 
             var loadedSinceUnload = 0;
 
@@ -112,23 +121,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string DescribeUnscanned(
             IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
         {
-            if (unscanned is null || unscanned.Count == 0) return null;
-
-            var forceText = serializationMode == SerializationMode.ForceText;
-
-            var pointers = unscanned
-                .Where(file => file.Format == AssetFileFormat.LfsPointer)
-                .Select(file => file.AssetPath)
-                .ToList();
-
-            var binaries = unscanned
-                .Where(file => file.Format == AssetFileFormat.Binary)
-                .Select(file => file.AssetPath)
-                .Where(path => !forceText || CanHoldManagedReferences(path))
-                .ToList();
-
+            var (pointers, binaries) = SplitUnscanned(unscanned, serializationMode);
             if (pointers.Count == 0 && binaries.Count == 0) return null;
 
+            var forceText = serializationMode == SerializationMode.ForceText;
             var builder = new StringBuilder();
             builder.AppendLine($"[Aspid FastTools] {pointers.Count + binaries.Count} file(s) were not checked for SerializeReference problems because they are not text YAML:");
 
@@ -149,6 +145,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return builder.ToString();
+        }
+
+        // How many skipped files DescribeUnscanned warns about: the ones whose problems the check could have missed.
+        public static int CountUnchecked(
+            IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            var (pointers, binaries) = SplitUnscanned(unscanned, serializationMode);
+            return pointers.Count + binaries.Count;
+        }
+
+        private static (List<string> Pointers, List<string> Binaries) SplitUnscanned(
+            IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            if (unscanned is null || unscanned.Count == 0) return (new List<string>(), new List<string>());
+
+            var forceText = serializationMode == SerializationMode.ForceText;
+
+            var pointers = unscanned
+                .Where(file => file.Format == AssetFileFormat.LfsPointer)
+                .Select(file => file.AssetPath)
+                .ToList();
+
+            var binaries = unscanned
+                .Where(file => file.Format == AssetFileFormat.Binary)
+                .Select(file => file.AssetPath)
+                .Where(path => !forceText || CanHoldManagedReferences(path))
+                .ToList();
+
+            return (pointers, binaries);
         }
 
         // Whether a binary file may hide managed references: a prefab or scene always may; an .asset when its main
@@ -206,16 +231,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // may have changed as well. Scenes store only their overrides of a prefab instance, so they are not affected.
         private static void AddDependentPrefabs(HashSet<string> paths)
         {
-            var editedPrefabs = new HashSet<string>(paths.Where(IsPrefab), StringComparer.Ordinal);
+            var editedPrefabs = paths.Where(IsPrefab).ToList();
             if (editedPrefabs.Count == 0) return;
+
+            _prefabDependents ??= BuildPrefabDependents();
+
+            foreach (var edited in editedPrefabs)
+            {
+                if (!_prefabDependents.TryGetValue(edited, out var dependents)) continue;
+
+                // The excluded folders may have changed since the map was built.
+                foreach (var dependent in dependents.Where(SerializeReferenceHelpers.IsScanCandidate))
+                    paths.Add(dependent);
+            }
+        }
+
+        internal static void ResetPrefabDependents() => _prefabDependents = null;
+
+        private static Dictionary<string, List<string>> BuildPrefabDependents()
+        {
+            var map = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
             foreach (var path in AssetDatabase.GetAllAssetPaths())
             {
-                if (!IsPrefab(path) || paths.Contains(path) || !SerializeReferenceHelpers.IsScanCandidate(path)) continue;
+                if (!IsPrefab(path) || !SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
-                if (AssetDatabase.GetDependencies(path, recursive: true).Any(editedPrefabs.Contains))
-                    paths.Add(path);
+                foreach (var dependency in AssetDatabase.GetDependencies(path, recursive: true))
+                {
+                    if (dependency == path || !IsPrefab(dependency)) continue;
+
+                    if (!map.TryGetValue(dependency, out var dependents))
+                        map[dependency] = dependents = new List<string>();
+
+                    dependents.Add(path);
+                }
             }
+
+            return map;
         }
 
         private static bool IsPrefab(string path) => path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase);
