@@ -21,9 +21,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             fullTypeName = null;
             if (baseType is null) return false;
 
+            // A base type that no script can derive from needs no file name. Whether the chosen folder can reach
+            // an internal base type is known only after the panel.
+            if (!TryCheckBaseType(baseType, sameAssembly: true, out _, out var baseTypeError))
+            {
+                EditorUtility.DisplayDialog("Cannot Create Script", baseTypeError, "OK");
+                return false;
+            }
+
             var path = EditorUtility.SaveFilePanelInProject(
                 "Create Managed-Reference Script", SuggestClassName(baseType), "cs",
-                $"Create a new class deriving from {baseType.Name}.");
+                $"Create a new class deriving from {TypeName(baseType)}.");
             if (string.IsNullOrEmpty(path)) return false;
 
             var className = Path.GetFileNameWithoutExtension(path);
@@ -39,7 +47,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var nspace = baseType.Namespace;
 
-            if (!TryGenerateStub(className, nspace, baseType, IsSameAssembly(path, baseType), out var stub, out var error))
+            if (!TryGenerateStub(className, nspace, baseType, sameAssembly: IsSameAssembly(path, baseType), out var stub, out var error))
             {
                 EditorUtility.DisplayDialog("Cannot Create Script", error, "OK");
                 return false;
@@ -77,20 +85,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             out string stub, out string error)
         {
             stub = null;
-            error = null;
-
-            // Also covers structs, enums and static classes.
-            if (baseType.IsSealed)
-            {
-                error = $"\"{baseType.Name}\" is sealed, so no class can derive from it.";
-                return false;
-            }
+            if (!TryCheckBaseType(baseType, sameAssembly: sameAssembly, out var accessibility, out error)) return false;
 
             var memberIndent = string.IsNullOrEmpty(nspace) ? "    " : "        ";
             var members = new StringBuilder();
 
             if (baseType.IsInterface) AppendInterfaceMembers(members, memberIndent, baseType);
-            else if (!TryAppendBaseClassMembers(members, memberIndent, className, baseType, sameAssembly, out error))
+            else if (!TryAppendBaseClassMembers(members, memberIndent, className, baseType, sameAssembly: sameAssembly, out error))
                 return false;
 
             var builder = new StringBuilder();
@@ -107,7 +108,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             builder.AppendLine($"{indent}[Serializable]");
-            builder.AppendLine($"{indent}public class {className} : {TypeName(baseType)}");
+            builder.AppendLine($"{indent}{accessibility} class {className} : {TypeName(baseType)}");
             builder.AppendLine($"{indent}{{");
             builder.Append(members);
             builder.AppendLine($"{indent}}}");
@@ -116,6 +117,56 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             stub = builder.ToString();
             return true;
+        }
+
+        // The stub is public when every script can see the base type, and internal when only its assembly can: a
+        // class cannot be more accessible than its base type. A private or protected nested type is out of reach.
+        internal static bool TryCheckBaseType(Type baseType, bool sameAssembly, out string accessibility, out string error)
+        {
+            accessibility = null;
+            error = null;
+
+            // Also covers structs, enums and static classes.
+            if (baseType.IsSealed)
+            {
+                error = $"\"{TypeName(baseType)}\" is sealed, so no class can derive from it.";
+                return false;
+            }
+
+            if (baseType.IsVisible)
+            {
+                accessibility = "public";
+                return true;
+            }
+
+            if (!IsReachableInAssembly(baseType))
+            {
+                error = $"\"{TypeName(baseType)}\" is private or protected, so no class in another script can derive from it.";
+                return false;
+            }
+
+            if (!sameAssembly)
+            {
+                error = $"\"{TypeName(baseType)}\" is not public, so only a script in the assembly " +
+                        $"\"{baseType.Assembly.GetName().Name}\" can derive from it.";
+                return false;
+            }
+
+            accessibility = "internal";
+            return true;
+        }
+
+        // Public and internal types, nested or used as a generic argument, are reachable from the whole assembly.
+        private static bool IsReachableInAssembly(Type type)
+        {
+            if (type.IsGenericParameter) return true;
+            if (type.HasElementType) return IsReachableInAssembly(type.GetElementType());
+
+            for (var current = type; current is not null; current = current.DeclaringType)
+                if (current.IsNestedPrivate || current.IsNestedFamily || current.IsNestedFamANDAssem)
+                    return false;
+
+            return !type.IsGenericType || type.GetGenericArguments().All(IsReachableInAssembly);
         }
 
         // The interface hierarchy is flattened, so the same signature can arrive from several branches. Each group
@@ -169,18 +220,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         if (property.GetIndexParameters().Length > 0 || property.PropertyType.IsByRef)
                         {
                             var write = setter is not null && !property.PropertyType.IsByRef;
-                            builder.AppendLine($"{indent}public {PropertyDeclaration(property, string.Empty)} {Accessors(read: true, write: write, initOnly: initOnly)}");
+                            builder.AppendLine($"{indent}public {PropertyDeclaration(property, qualifier: string.Empty)} {Accessors(read: true, write: write, initOnly: initOnly)}");
                             continue;
                         }
 
                         var set = setter is null ? string.Empty : initOnly ? " init;" : " set;";
-                        builder.AppendLine($"{indent}public {PropertyDeclaration(property, string.Empty)} {{ get;{set} }}");
+                        builder.AppendLine($"{indent}public {PropertyDeclaration(property, qualifier: string.Empty)} {{ get;{set} }}");
                         continue;
                     }
 
                     foreach (var property in typeGroup)
                     {
-                        var declaration = PropertyDeclaration(property, TypeName(property.DeclaringType) + ".");
+                        var declaration = PropertyDeclaration(property, qualifier: TypeName(property.DeclaringType) + ".");
                         builder.AppendLine($"{indent}{declaration} {Accessors(read: property.CanRead, write: property.CanWrite, initOnly: IsInitOnly(property))}");
                     }
                 }
@@ -197,12 +248,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     if (index is 0)
                     {
-                        builder.AppendLine($"{indent}{MethodDeclaration(returnGroup.First(), "public ", string.Empty, withConstraints: true)}");
+                        builder.AppendLine($"{indent}{MethodDeclaration(returnGroup.First(), modifiers: "public ", qualifier: string.Empty, withConstraints: true)}");
                         continue;
                     }
 
                     foreach (var method in returnGroup)
-                        builder.AppendLine($"{indent}{MethodDeclaration(method, string.Empty, TypeName(method.DeclaringType) + ".", withConstraints: false)}");
+                        builder.AppendLine($"{indent}{MethodDeclaration(method, modifiers: string.Empty, qualifier: TypeName(method.DeclaringType) + ".", withConstraints: false)}");
                 }
             }
         }
@@ -216,9 +267,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             error = null;
 
-            if (!TryAppendConstructor(builder, indent, className, baseType, sameAssembly))
+            if (!TryAppendConstructor(builder, indent, className, baseType, sameAssembly: sameAssembly))
             {
-                error = $"\"{baseType.Name}\" has no constructor that a derived class can call.";
+                error = $"\"{TypeName(baseType)}\" has no constructor that a derived class can call.";
                 return false;
             }
 
@@ -228,40 +279,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var method in baseType.GetMethods(flags).Where(method => method.IsAbstract && !method.IsSpecialName))
             {
-                var access = AccessKeyword(method, sameAssembly);
+                var access = AccessKeyword(method, sameAssembly: sameAssembly);
                 if (access is null) hidden.Add(method.Name);
-                else overrides.AppendLine($"{indent}{MethodDeclaration(method, $"{access} override ", string.Empty, withConstraints: false)}");
+                else overrides.AppendLine($"{indent}{MethodDeclaration(method, modifiers: $"{access} override ", qualifier: string.Empty, withConstraints: false)}");
             }
 
-            foreach (var property in baseType.GetProperties(flags).Where(IsAbstract))
+            foreach (var accessors in OpenPropertyAccessors(baseType, flags))
             {
-                var getter = property.GetMethod is { IsAbstract: true } ? property.GetMethod : null;
-                var setter = property.SetMethod is { IsAbstract: true } ? property.SetMethod : null;
+                var property = accessors.First().Property;
+                var getter = accessors.FirstOrDefault(entry => IsGetter(entry.Property, entry.Accessor)).Accessor;
+                var setter = accessors.FirstOrDefault(entry => !IsGetter(entry.Property, entry.Accessor)).Accessor;
 
-                var getAccess = getter is null ? null : AccessKeyword(getter, sameAssembly);
-                var setAccess = setter is null ? null : AccessKeyword(setter, sameAssembly);
+                var getAccess = getter is null ? null : AccessKeyword(getter, sameAssembly: sameAssembly);
+                var setAccess = setter is null ? null : AccessKeyword(setter, sameAssembly: sameAssembly);
                 if ((getter is not null && getAccess is null) || (setter is not null && setAccess is null))
                 {
                     hidden.Add(property.Name);
                     continue;
                 }
 
-                // The property takes the more visible accessor's keyword, and the other accessor repeats its own.
-                var access = getAccess is null ? setAccess
-                    : setAccess is null ? getAccess
-                    : Array.IndexOf(_accessByVisibility, getAccess) <= Array.IndexOf(_accessByVisibility, setAccess) ? getAccess : setAccess;
+                // The property takes the keyword of its most visible accessor, also of one that an intermediate class
+                // already overrides, and an accessor with another keyword repeats its own.
+                var access = MostVisibleAccess(
+                    accessors.SelectMany(entry => new[] { entry.Property.GetMethod, entry.Property.SetMethod }),
+                    sameAssembly: sameAssembly);
 
-                var accessors = Accessors(
+                var accessorList = Accessors(
                     read: getter is not null, write: setter is not null, initOnly: IsInitOnly(property),
                     readModifier: getAccess == access ? string.Empty : getAccess + " ",
                     writeModifier: setAccess == access ? string.Empty : setAccess + " ");
 
-                overrides.AppendLine($"{indent}{access} override {PropertyDeclaration(property, string.Empty)} {accessors}");
+                overrides.AppendLine($"{indent}{access} override {PropertyDeclaration(property, qualifier: string.Empty)} {accessorList}");
             }
 
             foreach (var @event in baseType.GetEvents(flags).Where(@event => @event.AddMethod is { IsAbstract: true }))
             {
-                var access = AccessKeyword(@event.AddMethod, sameAssembly);
+                var access = AccessKeyword(@event.AddMethod, sameAssembly: sameAssembly);
                 if (access is null) hidden.Add(@event.Name);
                 else overrides.AppendLine($"{indent}{access} override event {TypeName(@event.EventHandlerType)} {@event.Name};");
             }
@@ -273,22 +326,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return true;
             }
 
-            error = $"\"{baseType.Name}\" has abstract members that cannot be overridden from the new script's assembly: {string.Join(", ", hidden)}.";
+            error = $"\"{TypeName(baseType)}\" has abstract members that cannot be overridden from the new script's assembly: {string.Join(", ", hidden)}.";
             return false;
         }
 
-        // A constructor that takes no arguments needs no declaration: the implicit base() call binds to it. Without
-        // one, the stub declares a constructor that passes its arguments on to the one with the fewest parameters.
+        // A constructor that takes no arguments needs no declaration: the implicit base() call binds to it. That needs
+        // one best match, so either a constructor without parameters exists or only one constructor has all its
+        // parameters optional. Otherwise the stub declares a constructor that passes its arguments on to the one with
+        // the fewest parameters.
         private static bool TryAppendConstructor(StringBuilder builder, string indent, string className,
             Type baseType, bool sameAssembly)
         {
             var constructors = baseType
                 .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(constructor => AccessKeyword(constructor, sameAssembly) is not null)
+                .Where(constructor => AccessKeyword(constructor, sameAssembly: sameAssembly) is not null)
                 .ToArray();
 
             if (constructors.Length is 0) return false;
-            if (constructors.Any(constructor => constructor.GetParameters().All(IsOptionalParameter))) return true;
+
+            var callable = constructors.Where(constructor => constructor.GetParameters().All(IsOptionalParameter)).ToArray();
+            if (callable.Length is 1 || callable.Any(constructor => constructor.GetParameters().Length is 0)) return true;
 
             var parameters = constructors.Select(constructor => constructor.GetParameters()).OrderBy(list => list.Length).First();
             var arguments = string.Join(", ", parameters.Select(parameter => ParameterModifier(parameter) + ParameterName(parameter)));
@@ -309,8 +366,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static readonly string[] _accessByVisibility = { "public", "protected internal", "protected", "internal", "private protected" };
 
+        private static string MostVisibleAccess(IEnumerable<MethodBase> members, bool sameAssembly) =>
+            members
+                .Where(member => member is not null)
+                .Select(member => AccessKeyword(member, sameAssembly: sameAssembly))
+                .Where(access => access is not null)
+                .OrderBy(access => Array.IndexOf(_accessByVisibility, access))
+                .FirstOrDefault();
+
         private static bool IsAbstract(PropertyInfo property) =>
             property.GetMethod is { IsAbstract: true } || property.SetMethod is { IsAbstract: true };
+
+        // An intermediate class may override just one accessor of an abstract property, and reflection then lists only
+        // that override. The open accessors are therefore read from the methods and matched with the property that
+        // declares them, one group for each property.
+        private static IEnumerable<IGrouping<string, (PropertyInfo Property, MethodInfo Accessor)>> OpenPropertyAccessors(
+            Type baseType, BindingFlags flags) =>
+            baseType.GetMethods(flags)
+                .Where(method => method.IsAbstract && method.IsSpecialName)
+                .SelectMany(method => method.DeclaringType.GetProperties(flags | BindingFlags.DeclaredOnly)
+                    .Where(property => IsGetter(property, method) || property.SetMethod?.MetadataToken == method.MetadataToken)
+                    .Select(property => (Property: property, Accessor: method)))
+                .GroupBy(entry => PropertyKey(entry.Property));
+
+        private static bool IsGetter(PropertyInfo property, MethodInfo accessor) =>
+            property.GetMethod?.MetadataToken == accessor.MetadataToken;
 
         private static bool IsOptionalParameter(ParameterInfo parameter) =>
             parameter.IsOptional || parameter.IsDefined(typeof(ParamArrayAttribute), inherit: false);
@@ -399,10 +479,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         private static string ReturnTypeName(MethodInfo method) =>
-            RefReturnPrefix(method.ReturnType, method.ReturnParameter) + TypeName(method.ReturnType);
+            RefReturnPrefix(method.ReturnType, returnParameter: method.ReturnParameter) + TypeName(method.ReturnType);
 
         private static string PropertyTypeName(PropertyInfo property) =>
-            RefReturnPrefix(property.PropertyType, property.GetMethod?.ReturnParameter) + TypeName(property.PropertyType);
+            RefReturnPrefix(property.PropertyType, returnParameter: property.GetMethod?.ReturnParameter) + TypeName(property.PropertyType);
 
         // A readonly ref return carries the InAttribute modifier on its return parameter.
         private static string RefReturnPrefix(Type type, ParameterInfo returnParameter)
@@ -469,28 +549,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (type == typeof(void)) return "void";
 
             if (type.IsArray)
-                return $"{TypeName(type.GetElementType(), byPosition)}[{new string(',', type.GetArrayRank() - 1)}]";
+                return $"{TypeName(type.GetElementType(), byPosition: byPosition)}[{new string(',', type.GetArrayRank() - 1)}]";
 
             if (type.IsByRef || type.IsPointer)
-                return TypeName(type.GetElementType(), byPosition);
+                return TypeName(type.GetElementType(), byPosition: byPosition);
 
             if (type.IsGenericParameter)
                 return byPosition && type.DeclaringMethod is not null ? $"!!{type.GenericParameterPosition}" : type.Name;
 
-            if (type.IsGenericType)
-            {
-                var definition = type.GetGenericTypeDefinition();
-                var rawName = (definition.FullName ?? definition.Name).Replace('+', '.');
-
-                var tick = rawName.IndexOf('`');
-                if (tick >= 0) rawName = rawName.Substring(0, tick);
-
-                var arguments = string.Join(", ", type.GetGenericArguments().Select(argument => TypeName(argument, byPosition)));
-                return $"{rawName}<{arguments}>";
-            }
+            if (type.IsGenericType) return GenericTypeName(type, byPosition: byPosition);
 
             var name = type.FullName ?? type.Name;
             return name.Replace('+', '.');
+        }
+
+        // A type nested in a generic type lists the arguments of its declaring types first: the arguments of
+        // Outer<int>.Inner<string> are int, string. Each part of the name takes the arguments that it declares.
+        private static string GenericTypeName(Type type, bool byPosition)
+        {
+            var arguments = type.GetGenericArguments();
+
+            var parts = new List<Type>();
+            for (var part = type.GetGenericTypeDefinition(); part is not null; part = part.DeclaringType)
+                parts.Insert(0, part);
+
+            var builder = new StringBuilder();
+            if (!string.IsNullOrEmpty(parts[0].Namespace)) builder.Append(parts[0].Namespace).Append('.');
+
+            var used = 0;
+            for (var i = 0; i < parts.Count; i++)
+            {
+                var name = parts[i].Name;
+                var tick = name.IndexOf('`');
+                if (tick >= 0) name = name.Substring(0, tick);
+
+                if (i > 0) builder.Append('.');
+                builder.Append(name);
+
+                var declared = parts[i].GetGenericArguments().Length;
+                if (declared > used)
+                {
+                    var own = arguments.Skip(used).Take(declared - used).Select(argument => TypeName(argument, byPosition: byPosition));
+                    builder.Append('<').Append(string.Join(", ", own)).Append('>');
+                }
+
+                used = declared;
+            }
+
+            return builder.ToString();
         }
     }
 }
