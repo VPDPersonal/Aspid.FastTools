@@ -7,12 +7,16 @@ name: Claude
 # - mention: answers @claude comments in PRs and issues.
 #   A requested review also leaves inline comments.
 #   Comments from bots are ignored, so Claude's own replies do not start it again.
+#   Only the owner, members and collaborators can start it (author_association).
+#   The action checks write access too, but only after the job has taken a runner and a write token.
 #
 # Both jobs append .github/claude-review.md to the system prompt.
 # A step reads the file before the action switches to the PR branch:
 # older PR branches may not have the file yet.
 #
 # Auth: CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token` (Pro/Max subscription).
+# CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 hides that token from the Bash commands Claude runs.
+# GitHub tokens stay in their environment, so `gh` works; keep the permissions of each job narrow.
 
 on:
   pull_request:
@@ -33,6 +37,7 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       pull-requests: write
@@ -57,6 +62,7 @@ jobs:
         env:
           # The action reads this variable and appends it to the system prompt.
           APPEND_SYSTEM_PROMPT: ${{ steps.rules.outputs.text }}
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # No track_progress: the action would put the result into an edit of its progress comment.
@@ -74,11 +80,18 @@ jobs:
   mention:
     if: |
       github.event.sender.type != 'Bot' && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
+        (
+          (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment') &&
+          contains(github.event.comment.body, '@claude') &&
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+        ) || (
+          github.event_name == 'pull_request_review' &&
+          contains(github.event.review.body, '@claude') &&
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association)
+        )
       )
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
       pull-requests: write
@@ -105,6 +118,7 @@ jobs:
         env:
           # The action reads this variable and appends it to the system prompt.
           APPEND_SYSTEM_PROMPT: ${{ steps.rules.outputs.text }}
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The inline comment tool lets a requested review put issues on their lines.
