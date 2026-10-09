@@ -66,14 +66,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             ImportProbe();
 
             var established = SessionState.GetBool(SerializeReferenceBreakageDetector.EstablishedKey, false);
-            var baseline = SessionState.GetString(SerializeReferenceBreakageDetector.BaselineKey, string.Empty);
+            var baseline = SerializeReferenceBreakageDetector.ExportBaseline();
             var enabled = SerializeReferenceSettings.BreakageDetectionEnabled;
             try
             {
                 SerializeReferenceSettings.BreakageDetectionEnabled = true;
                 SerializeReferenceBreakageDetector.ResetForTests();
                 SessionState.EraseBool(SerializeReferenceBreakageDetector.EstablishedKey);
-                SessionState.EraseString(SerializeReferenceBreakageDetector.BaselineKey);
+                SerializeReferenceBreakageDetector.ImportBaseline(string.Empty);
 
                 WithColdIndex(() =>
                 {
@@ -89,7 +89,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 SerializeReferenceBreakageDetector.ResetForTests();
                 SerializeReferenceSettings.BreakageDetectionEnabled = enabled;
                 SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, established);
-                SessionState.SetString(SerializeReferenceBreakageDetector.BaselineKey, baseline);
+                SerializeReferenceBreakageDetector.ImportBaseline(baseline);
             }
         }
 

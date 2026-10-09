@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using UnityEditor;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
@@ -84,6 +85,73 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Third Party/" });
 
             Assert.AreEqual(1, fired, "A genuinely new excluded-folder set must raise ExcludedFoldersChanged exactly once.");
+        }
+
+        // Both detectors keep a baseline of the types that resolved in the scanned assets, so it follows the folders.
+        [Test]
+        public void ExcludedFolders_NewValue_ResetsBreakageBaselines()
+        {
+            SerializeReferenceSettings.ExcludedFolders = Array.Empty<string>();
+
+            WithBreakageBaselines(() =>
+            {
+                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Third Party/" };
+
+                Assert.IsFalse(SerializeReferenceBreakageDetector.IsEstablished);
+                Assert.IsFalse(TypeNameBreakageDetector.IsEstablished);
+                CollectionAssert.IsEmpty(SerializeReferenceBreakageDetector.GetBaselineKeys(BaselineProbePath));
+                CollectionAssert.IsEmpty(TypeNameBreakageDetector.GetBaselineKeys(BaselineProbePath));
+            });
+        }
+
+        [Test]
+        public void ExcludedFolders_SameValue_KeepsBreakageBaselines()
+        {
+            SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/" };
+
+            WithBreakageBaselines(() =>
+            {
+                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/" };
+
+                Assert.IsTrue(SerializeReferenceBreakageDetector.IsEstablished);
+                Assert.IsTrue(TypeNameBreakageDetector.IsEstablished);
+                CollectionAssert.AreEqual(new[] { "key" }, SerializeReferenceBreakageDetector.GetBaselineKeys(BaselineProbePath));
+                CollectionAssert.AreEqual(new[] { "key" }, TypeNameBreakageDetector.GetBaselineKeys(BaselineProbePath));
+            });
+        }
+
+        private const string BaselineProbePath = "Assets/__AspidSettingsBaselineProbe__.asset";
+
+        // Runs `body` with an established baseline holding one key in each detector, then puts the session's own back.
+        private static void WithBreakageBaselines(Action body)
+        {
+            var typesEstablished = SessionState.GetBool(SerializeReferenceBreakageDetector.EstablishedKey, false);
+            var typesBaseline = SerializeReferenceBreakageDetector.ExportBaseline();
+            var namesEstablished = SessionState.GetBool(TypeNameBreakageDetector.EstablishedKey, false);
+            var namesBaseline = TypeNameBreakageDetector.ExportBaseline();
+
+            try
+            {
+                SerializeReferenceBreakageDetector.ImportBaseline($"{BaselineProbePath}\tkey");
+                SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, true);
+                TypeNameBreakageDetector.ImportBaseline($"{BaselineProbePath}\tkey");
+                SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, true);
+
+                body();
+            }
+            finally
+            {
+                SerializeReferenceBreakageDetector.ResetForTests();
+                TypeNameBreakageDetector.ResetForTests();
+
+                SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, typesEstablished);
+                SerializeReferenceBreakageDetector.ImportBaseline(typesBaseline);
+                SerializeReferenceBreakageDetector.PersistBaseline();
+
+                SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, namesEstablished);
+                TypeNameBreakageDetector.ImportBaseline(namesBaseline);
+                TypeNameBreakageDetector.PersistBaseline();
+            }
         }
 
         [Test]

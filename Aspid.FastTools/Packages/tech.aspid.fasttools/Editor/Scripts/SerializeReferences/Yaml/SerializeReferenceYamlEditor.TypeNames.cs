@@ -35,6 +35,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool MayHoldTypeNames(string line) =>
             line.IndexOf(TypeNameKey, StringComparison.Ordinal) >= 0;
 
+        // MayHoldTypeNames for ReadLinesIfContainsAny, which searches the file as bytes.
+        public static readonly byte[][] TypeNameMarkers = { Encoding.ASCII.GetBytes(TypeNameKey) };
+
         public static List<StoredTypeNameEntry> FindStoredTypeNames(string assetPath, bool knownTextYaml = false) =>
             FindStoredTypeNames(SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml));
 

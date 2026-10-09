@@ -29,13 +29,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         internal const string EstablishedKey = "Aspid.FastTools.TypeNames.Breakage.BaselineEstablished";
         internal const string BaselineKey = "Aspid.FastTools.TypeNames.Breakage.Baseline";
-        private const char EntrySeparator = '\n';
-        private const char KeySeparator = '\t';
 
         // A key is the stored name and the script that also resolves a SerializableMonoScript: "<name>\u001f<guid>:<fileId>".
         private const char KeyPartSeparator = '\u001f';
         private const double SweepBudgetMilliseconds = 8;
 
+        private static readonly BreakageBaseline _baseline = new(BaselineKey);
         private static readonly Queue<string> _pending = new();
         private static readonly Dictionary<string, HashSet<string>> _swept = new(StringComparer.Ordinal);
         private static bool _establishing;
@@ -47,11 +46,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static bool IsEstablished => SessionState.GetBool(EstablishedKey, false);
 
         [InitializeOnLoadMethod]
-        private static void EstablishBaselineOnce() => EditorApplication.delayCall += () =>
+        private static void EstablishBaselineOnce() => EditorApplication.delayCall += EstablishBaseline;
+
+        private static void EstablishBaseline()
         {
             if (Application.isBatchMode || IsEstablished) return;
             Scan(changedAssets: null);
-        };
+        }
+
+        // The excluded folders decide which assets the baseline covers, so it starts over.
+        internal static void ResetBaseline()
+        {
+            CancelSweep();
+            _baseline.Clear();
+            SessionState.EraseBool(EstablishedKey);
+
+            EditorApplication.delayCall += EstablishBaseline;
+        }
 
         // changedAssets are the candidate assets imported, deleted or moved since the last scan.
         public static void Scan(IReadOnlyCollection<string> changedAssets)
@@ -90,7 +101,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static void ResetForTests() => CancelSweep();
 
         internal static IReadOnlyCollection<string> GetBaselineKeys(string assetPath) =>
-            LoadBaseline().TryGetValue(assetPath, out var keys) ? keys : Array.Empty<string>();
+            _baseline.Entries.TryGetValue(assetPath, out var keys) ? keys : Array.Empty<string>();
+
+        // Tests snapshot, seed and restore the session's own baseline through these, and read what reached SessionState.
+        internal static string ExportBaseline() => _baseline.Export();
+
+        internal static void ImportBaseline(string raw) => _baseline.Import(raw);
+
+        internal static void PersistBaseline() => _baseline.Persist();
 
         internal static string GetKey(StoredTypeNameEntry entry) =>
             $"{entry.TypeName}{KeyPartSeparator}{entry.ScriptGuid}:{entry.ScriptFileId}";
@@ -156,7 +174,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var baseline = _establishing
                 ? new Dictionary<string, HashSet<string>>(StringComparer.Ordinal)
-                : LoadBaseline();
+                : _baseline.Entries;
 
             foreach (var (path, keys) in _swept)
             {
@@ -165,7 +183,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             _swept.Clear();
-            SaveBaseline(baseline);
+            _baseline.Replace(baseline);
 
             if (_establishing)
             {
@@ -182,7 +200,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void ReportBrokenKeys()
         {
-            var baseline = LoadBaseline();
+            var baseline = _baseline.Entries;
             if (baseline.Count == 0) return;
 
             MissingTypeNames.ClearCache();
@@ -211,7 +229,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Reported once: a broken key leaves the baseline.
             foreach (var keys in baseline.Values) keys.ExceptWith(broken);
-            SaveBaseline(baseline);
+            _baseline.Replace(baseline);
 
             BreakageDetected?.Invoke(new TypeNameBreakageReport(new List<string>(names), files));
         }
@@ -222,8 +240,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var keys = new HashSet<string>(StringComparer.Ordinal);
             if (!SerializeReferenceHelpers.IsScanCandidate(path)) return keys;
 
-            var lines = SerializeReferenceYaml.ReadLines(path);
-            if (lines is null || !Array.Exists(lines, SerializeReferenceYamlEditor.MayHoldTypeNames)) return keys;
+            // A byte probe first: most assets store no type name and must not be decoded.
+            var lines = SerializeReferenceYaml.ReadLinesIfContainsAny(path, SerializeReferenceYamlEditor.TypeNameMarkers);
+            if (lines is null) return keys;
 
             foreach (var entry in SerializeReferenceYamlEditor.FindStoredTypeNames(lines))
             {
@@ -274,39 +293,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _pumping = false;
             EditorApplication.update -= Pump;
-        }
-
-        private static Dictionary<string, HashSet<string>> LoadBaseline()
-        {
-            var raw = SessionState.GetString(BaselineKey, string.Empty);
-            var baseline = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-            if (string.IsNullOrEmpty(raw)) return baseline;
-
-            foreach (var entry in raw.Split(EntrySeparator))
-            {
-                var parts = entry.Split(KeySeparator);
-                if (parts.Length < 2 || parts[0].Length == 0) continue;
-
-                if (!baseline.TryGetValue(parts[0], out var keys))
-                {
-                    keys = new HashSet<string>(StringComparer.Ordinal);
-                    baseline.Add(parts[0], keys);
-                }
-
-                for (var i = 1; i < parts.Length; i++)
-                    if (parts[i].Length > 0) keys.Add(parts[i]);
-            }
-
-            return baseline;
-        }
-
-        private static void SaveBaseline(Dictionary<string, HashSet<string>> baseline)
-        {
-            var entries = new List<string>(baseline.Count);
-            foreach (var (path, keys) in baseline)
-                if (keys.Count > 0) entries.Add(path + KeySeparator + string.Join(KeySeparator.ToString(), keys));
-
-            SessionState.SetString(BaselineKey, string.Join(EntrySeparator.ToString(), entries));
         }
     }
 }
