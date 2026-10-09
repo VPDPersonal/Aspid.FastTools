@@ -43,6 +43,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       # A deploy needs the full history: Docusaurus and sync-changelog read each page's "Last updated" date from git log,
       # which needs only commits and trees, so the blob filter skips the old DLLs and media.
@@ -74,6 +75,7 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write

@@ -27,6 +27,7 @@ jobs:
   dotnet-tests:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +40,14 @@ jobs:
           - name: YAML engine
             path: Aspid.FastTools.YamlTests
     steps:
+      # Only what the solutions read: docs/ and Website/ hold most of the repository's size.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools.Generators
+            Aspid.FastTools.Analyzers
+            Aspid.FastTools.YamlTests
+            Aspid.FastTools/Packages/tech.aspid.fasttools
 
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
@@ -60,6 +68,7 @@ jobs:
   unity-plan:
     name: Unity plan
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read
@@ -115,6 +124,8 @@ jobs:
     needs: unity-plan
     if: needs.unity-plan.outputs.run == 'true'
     runs-on: ubuntu-latest
+    # A run takes 3-5 minutes with a restored Library; the rest is room for a cold Library and the image pull.
+    timeout-minutes: 30
     permissions:
       contents: read
       checks: write
@@ -136,7 +147,13 @@ jobs:
             # it passed every run with a fresh Library. Check again when `latest` moves.
             library-cache: false
     steps:
+      # What the test project reads: the package, the dev project's version file and the script that builds the project.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Aspid.FastTools/ProjectSettings
+            scripts
 
       - name: Create the test project
         id: project
@@ -173,7 +190,8 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: unity-test-results-${{ steps.project.outputs.unity }}
+          # By matrix row, not by version: two rows can resolve to one Unity version, and a second upload of a name fails.
+          name: unity-test-results-${{ matrix.name }}
           path: unity-test-results
 
   # The one Unity check that the main ruleset requires. A skipped matrix job reports no per-version names,
@@ -183,6 +201,7 @@ jobs:
     needs: [unity-plan, unity-tests]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - env:
           PLAN: ${{ needs.unity-plan.result }}
