@@ -67,7 +67,8 @@ jobs:
   # a PR without the secrets (a fork PR, or a Dependabot PR, which reads its own secret store), a release (require-unity)
   # and a manual run fail the plan instead of skipping. A maintainer then reads the change and runs this workflow with
   # workflow_dispatch on a branch of this repository; for Dependabot PRs the owner can also add UNITY_EMAIL and
-  # UNITY_PASSWORD as Dependabot secrets. Only a push without the secrets (a fork's own push) skips with a notice.
+  # UNITY_PASSWORD as Dependabot secrets. The failed PR check stays red after a manual run: the maintainer merges with
+  # the bypass of the Main ruleset. Only a push without the secrets (a fork's own push) skips with a notice.
   # Secrets: UNITY_EMAIL and UNITY_PASSWORD of a Unity account with a Personal license; GameCI activates a seat with
   # them in each job. Do not add the .ulf from Unity Hub (UNITY_LICENSE): it is bound to the Hub machine, and on
   # 6000.0.53f1 GameCI keeps retrying it instead of falling back to the account.
@@ -115,7 +116,7 @@ jobs:
               echo "::error::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests must run here."
               exit 1
             elif [ "$EVENT" = pull_request ]; then
-              echo "::error::The Unity EditMode tests must run for this change, but this run has no Unity secrets (a fork or Dependabot PR). A maintainer must run them: push this commit to a branch of this repository and start the Tests workflow on that branch (Actions > Tests > Run workflow)."
+              echo "::error::The Unity EditMode tests must run for this change, but this run has no Unity secrets (a fork or Dependabot PR). A maintainer must run them after reading the change, because the Unity Editor executes its code with the Unity account secrets: push this commit to a branch of this repository and start the Tests workflow on that branch (Actions > Tests > Run workflow). If this check stays red after a green manual run, merge with the bypass of the Main ruleset."
               exit 1
             fi
             echo "::notice::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests are skipped."
