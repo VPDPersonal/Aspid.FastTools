@@ -20,6 +20,9 @@ Agent Skills for projects that consume the package in `skills/`.
   those package sources as-is (C# 9, Unity 6000.0's version) and stubs only `Debug.LogError` and
   `AssetDatabase.MakeEditable`, so a Unity API or a newer language feature added to that engine breaks this project
   first; tests that need the Editor are excluded in its csproj and run in the Unity job.
+- `Tests/Burst` (Burst jobs that call `this.Marker()`) compiles only where `com.unity.burst` is installed
+  (`versionDefines`): the dev project has it through URP, the project from `scripts/make-unity-test-project.sh`
+  does not, so CI skips it.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
   READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
   which the release workflow checks (`scripts/check-version.mjs`). The version also picks the channel, and the script
