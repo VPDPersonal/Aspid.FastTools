@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using NUnit.Framework;
@@ -16,13 +18,17 @@ namespace Aspid.FastTools.Editors.Tests
         private const string RuntimeAssembly = "Aspid.FastTools.dll";
         private const string MathAssembly = "Aspid.FastTools.VisualElements.Math.dll";
 
+        // tests.yml passes this argument to Unity. Without it, for example when a consumer project runs the package
+        // tests, a project that lacks player support or com.unity.mathematics ignores the test instead of failing it.
+        private const string StrictSetupArgument = "-aspidFastToolsStrictSetup";
+
         // A release and a development player define different symbols (DEBUG, DEVELOPMENT_BUILD), so both are compiled.
         [TestCase(ScriptCompilationOptions.None)]
         [TestCase(ScriptCompilationOptions.DevelopmentBuild)]
         public void Scripts_CompileForStandalonePlayer(ScriptCompilationOptions options)
         {
             var target = EditorUserBuildSettings.selectedStandaloneTarget;
-            Assert.IsTrue(
+            RequireSetup(
                 BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, target),
                 $"The Editor has no {target} player support to compile the scripts for.");
 
@@ -64,9 +70,17 @@ namespace Aspid.FastTools.Editors.Tests
             CollectionAssert.Contains(result.assemblies, RuntimeAssembly);
 
             // Without com.unity.mathematics its asmdef is skipped and nothing compiles it: the test project needs it.
-            CollectionAssert.Contains(
-                result.assemblies, MathAssembly,
+            RequireSetup(
+                result.assemblies.Contains(MathAssembly),
                 "Add com.unity.mathematics to the project that runs the tests.");
+        }
+
+        private static void RequireSetup(bool isReady, string message)
+        {
+            if (isReady) return;
+            if (Environment.GetCommandLineArgs().Contains(StrictSetupArgument)) Assert.Fail(message);
+
+            Assert.Ignore(message);
         }
     }
 }

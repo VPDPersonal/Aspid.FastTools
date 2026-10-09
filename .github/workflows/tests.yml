@@ -196,6 +196,8 @@ jobs:
           unityVersion: ${{ steps.project.outputs.unity }}
           projectPath: ci-unity-project
           testMode: editmode
+          # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
+          customParameters: -aspidFastToolsStrictSetup
           artifactsPath: unity-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ steps.project.outputs.unity }})
