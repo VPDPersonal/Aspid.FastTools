@@ -15,6 +15,7 @@ An <code lang="class-name">IWeapon</code> field offers concrete implementations 
 For extra constraints, required fields and list appearance, see [TypeSelector](03-type-selector.md).
 
 - <code lang="csharp">Allow</code> has no effect here: the types must be instantiable.
+- Classes derived from <code lang="class-name">UnityEngine.Object</code> are not offered: keep such an object in a plain field, without <code lang="csharp">[SerializeReference]</code>.
 - Generic arguments are inferred from the field type; when they cannot be, the picker asks for types Unity can serialize.
 
 ## Lists

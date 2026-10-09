@@ -23,6 +23,8 @@ The field offers only concrete two-handed weapons: classes derived from <code la
 | [Serializable Types](02-serializable-types.md) | Configures the wrapper's selection |
 | <code lang="csharp">[SerializeReference]</code> | Creates an instance of the selected implementation — see [SerializeReference Selector](04-serialize-reference-selector.md) |
 
+The field must be one Unity serializes: public, or marked <code lang="csharp">[SerializeField]</code> or <code lang="csharp">[SerializeReference]</code>.
+
 > [!WARNING]
 > In a player, a string field is resolved by name, like [Serializable Types](02-serializable-types.md#types-in-a-player-build): a class used only through this selection may be stripped at **Managed Stripping Level** Low or higher.
 

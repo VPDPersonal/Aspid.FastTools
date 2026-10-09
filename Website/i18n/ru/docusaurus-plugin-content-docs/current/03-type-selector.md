@@ -23,6 +23,8 @@
 | [Serializable Types](02-serializable-types.md) | Настраивается выбор обёртки |
 | <code lang="csharp">[SerializeReference]</code> | Создаётся экземпляр выбранной реализации — см. [SerializeReference Selector](04-serialize-reference-selector.md) |
 
+Поле должно сериализоваться Unity: быть публичным или отмеченным <code lang="csharp">[SerializeField]</code> либо <code lang="csharp">[SerializeReference]</code>.
+
 > [!WARNING]
 > В плеере строковое поле находит тип по имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): класс, который используется только через такой выбор, может быть вырезан при **Managed Stripping Level** Low и выше.
 
