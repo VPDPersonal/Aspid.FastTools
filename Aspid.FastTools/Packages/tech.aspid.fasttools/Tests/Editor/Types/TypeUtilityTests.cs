@@ -41,20 +41,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual("List<T>", TypeUtility.FormatGenericName(typeof(List<>)));
 
         [Test]
-        public void EnumerateDomainTypes_YieldsTypesFromTheLoadedAssemblies()
+        public void SweepDomainTypes_YieldsTypesFromTheLoadedAssemblies()
         {
-            var found = false;
+            var types = TypeUtility.SweepDomainTypes(AppDomain.CurrentDomain.GetAssemblies, out _);
 
-            foreach (var type in TypeUtility.EnumerateDomainTypes())
-            {
-                Assert.IsNotNull(type, "Unloadable entries must be filtered out, never yielded as null.");
-
-                if (type != typeof(TypeUtilityTests)) continue;
-                found = true;
-                break;
-            }
-
-            Assert.IsTrue(found, "A type of this very test assembly must be part of the domain sweep.");
+            CollectionAssert.AllItemsAreNotNull(types, "Unloadable entries must be filtered out, never yielded as null.");
+            CollectionAssert.Contains(types, typeof(TypeUtilityTests), "A type of this very test assembly must be part of the domain sweep.");
         }
 
         [TestCase(null)]
@@ -128,25 +120,30 @@ namespace Aspid.FastTools.Types.Editors.Tests
             TypeUtility.SweepDomainTypes(() =>
             {
                 passes++;
-                return Array.Empty<Type>();
+                return Array.Empty<Assembly>();
             }, out _);
 
             Assert.AreEqual(1, passes);
         }
 
         [Test]
-        public void SweepDomainTypes_AssemblyLoadedDuringAPass_RunsTheNextPass()
+        public void SweepDomainTypes_AssemblyLoadedDuringAPass_ReadsOnlyTheNewAssemblyInTheNextPass()
         {
             var passes = 0;
+            Type probe = null;
+            var own = typeof(TypeUtilityTests).Assembly;
 
             var types = TypeUtility.SweepDomainTypes(() =>
             {
-                if (passes++ == 0) LoadProbeAssembly();
-                return new[] { typeof(TypeUtilityTests) };
+                if (passes++ > 0) return new[] { own, probe.Assembly };
+
+                probe = LoadProbeAssembly();
+                return new[] { own };
             }, out _);
 
             Assert.AreEqual(2, passes, "The pass that loaded an assembly missed its types, so it must be repeated once.");
-            CollectionAssert.AreEqual(new[] { typeof(TypeUtilityTests) }, types);
+            CollectionAssert.Contains(types, probe, "The assembly found by the repeat pass must be read.");
+            CollectionAssert.AllItemsAreUnique(types, "A repeat pass must not read an assembly twice.");
         }
 
         [Test]
@@ -158,20 +155,21 @@ namespace Aspid.FastTools.Types.Editors.Tests
             {
                 passes++;
                 LoadProbeAssembly();
-                return Array.Empty<Type>();
+                return Array.Empty<Assembly>();
             }, out _);
 
             Assert.AreEqual(TypeUtility.MaxDomainSweeps, passes);
         }
 
-        // Defining a dynamic assembly raises AppDomain.AssemblyLoad, as loading a file does.
+        // Defining a dynamic assembly raises AppDomain.AssemblyLoad, as loading a file does. The assembly stays loaded
+        // for the Editor session, so the type gets a compiler-generated name that the type picker hides.
         private static Type LoadProbeAssembly()
         {
             var name = new AssemblyName($"Aspid.FastTools.LoadProbe.{Guid.NewGuid():N}");
             var module = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run)
                 .DefineDynamicModule(name.Name);
 
-            return module.DefineType("Aspid.FastTools.Types.Editors.Tests.LoadProbe", TypeAttributes.Public).CreateType();
+            return module.DefineType("<LoadProbe>", TypeAttributes.Public).CreateType();
         }
 
         // Type.GetType asks the domain for an assembly it cannot find, which tells how often a name is resolved.
