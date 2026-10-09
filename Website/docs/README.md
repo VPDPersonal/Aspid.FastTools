@@ -104,6 +104,17 @@ caster.GetDisplayNameWithIndex();
 // "Ability Caster (2)": the second AbilityCaster on the GameObject
 ```
 
+#### [Theme Override](14-theme-override.md)
+
+Recolors the FastTools windows and the type picker with a USS file from your project.
+
+```css
+:root {
+    --aspid-colors-bg-dark: rgb(22, 30, 52);
+    --aspid-colors-surface-card: rgba(32, 44, 72, 0.6);
+}
+```
+
 #### [Agent Skills](13-agent-skills.md)
 
 Teaches a coding agent to write code with FastTools: profiler markers, type selection, EnumValues and VisualElement Extensions.

@@ -104,6 +104,17 @@ caster.GetDisplayNameWithIndex();
 // "Ability Caster (2)": второй AbilityCaster на объекте
 ```
 
+#### [Theme Override](14-theme-override.md)
+
+Перекрашивает окна FastTools и окно выбора типа файлом USS из вашего проекта.
+
+```css
+:root {
+    --aspid-colors-bg-dark: rgb(22, 30, 52);
+    --aspid-colors-surface-card: rgba(32, 44, 72, 0.6);
+}
+```
+
 #### [Agent Skills](13-agent-skills.md)
 
 Учит coding-агента писать код с FastTools: маркеры профилировщика, выбор типов, EnumValues и VisualElement Extensions.

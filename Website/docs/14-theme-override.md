@@ -5,12 +5,12 @@ Your own colors for the FastTools windows and the type picker, without touching 
 ## Quick start
 
 1. Open **Tools → Aspid 🐍 → FastTools → Settings** and find **Appearance**. The same section is in **Preferences → Aspid.FastTools**.
-2. Click **Create template…** and pick a folder in the project. FastTools writes a `.uss` file there and assigns it as the **Theme override**.
+2. Click **Create template…** and choose where in the project to save the file. FastTools writes a `.uss` file there and assigns it as the **Theme override**.
 3. In the file, uncomment the tokens you want and change their values:
 
 ```css
 :root {
-    --aspid-colors-surface-canvas: rgb(14, 20, 34);
+    --aspid-colors-bg-dark: rgb(22, 30, 52);
     --aspid-colors-surface-card: rgba(32, 44, 72, 0.6);
 }
 ```
@@ -24,7 +24,7 @@ Assigning or clearing the **Theme override** recolors the open windows at once. 
 - the type picker.
 
 > [!NOTE]
-> Fields drawn in a regular Inspector always start from the dark palette, and part of their colors comes from Unity's editor theme. The tokens change them less than the windows.
+> Fields drawn in a regular Inspector start from the dark palette on both skins and take part of their colors from Unity's editor theme, so the tokens change only part of their look.
 
 ## Tokens
 
