@@ -42,11 +42,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ManagedTypeName stored,
             IReadOnlyCollection<string> storedFieldNames,
             Type baseConstraint,
+            int max = 3) =>
+            Rank(stored, storedFieldNames, new[] { baseConstraint ?? typeof(object) }, max);
+
+        // The same ranking for a reference that fields of different types share: a candidate must fit every type
+        // in constraints. Null constraints leave it unconstrained.
+        public static IReadOnlyList<RepairCandidate> Rank(
+            ManagedTypeName stored,
+            IReadOnlyCollection<string> storedFieldNames,
+            Type[] constraints,
             int max = 3)
         {
             if (stored.IsEmpty || max <= 0) return Array.Empty<RepairCandidate>();
 
-            var constraint = baseConstraint ?? typeof(object);
             var storedClass = SerializeReferenceMovedFromResolver.NormalizeClassName(stored.Class);
             if (string.IsNullOrEmpty(storedClass)) return Array.Empty<RepairCandidate>();
 
@@ -57,7 +65,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var scored = new List<RepairCandidate>();
 
-            foreach (var candidate in EnumerateCandidates(constraint))
+            foreach (var candidate in EnumerateCandidates(constraints))
             {
                 var baseScore = ScoreCandidate(stored, storedClass, candidate, out var reason);
                 if (baseScore <= 0f) continue;
@@ -89,8 +97,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The picker's own eligibility rules, so a suggestion can never be a type the field would refuse. Hidden
         // types are excluded even though the repair picker offers them: a suggestion is the package proposing a type,
         // and it does not get to volunteer one the author took out of circulation.
-        private static IEnumerable<Type> EnumerateCandidates(Type constraint)
+        private static IEnumerable<Type> EnumerateCandidates(Type[] constraints)
         {
+            var constraint = constraints?.FirstOrDefault(type => type is not null && type != typeof(object)) ?? typeof(object);
             var pool = constraint == typeof(object)
                 ? TypeCache.GetTypesDerivedFrom<object>()
                 : TypeCache.GetTypesDerivedFrom(constraint);
@@ -99,7 +108,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (!SerializeReferenceHelpers.IsAssignableManagedReference(type)) continue;
                 if (TypeSelectorHelpers.IsHiddenFromPicker(type)) continue;
-                if (constraint != typeof(object) && !constraint.IsAssignableFrom(type)) continue;
+                if (!SerializeReferenceHelpers.FitsConstraints(type, constraints)) continue;
                 yield return type;
             }
         }

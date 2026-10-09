@@ -20,7 +20,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
         // for assets whose unresolved entries carry a [MovedFrom] claim. Null marks an asset whose map failed to build.
-        private static readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintMapCache =
+        private static readonly Dictionary<string, Dictionary<(long fileId, long rid), Type[]>> _constraintMapCache =
             new(StringComparer.Ordinal);
 
         // Script guid -> required field descriptors of the C# type it resolves to. Keyed by guid so an unresolvable
@@ -234,10 +234,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (constraints is null) return true;
 
             return !constraints.TryGetValue((entry.FileId, entry.Rid), out var constraint) ||
-                constraint is null || constraint == typeof(object) || constraint.IsAssignableFrom(target);
+                SerializeReferenceHelpers.FitsConstraints(target, constraint);
         }
 
-        private static Dictionary<(long fileId, long rid), Type> ConstraintMapFor(string assetPath)
+        private static Dictionary<(long fileId, long rid), Type[]> ConstraintMapFor(string assetPath)
         {
             if (_constraintMapCache.TryGetValue(assetPath, out var map)) return map;
 

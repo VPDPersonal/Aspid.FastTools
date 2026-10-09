@@ -6,11 +6,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal sealed class SerializeReferenceConstraintCache
     {
-        private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _maps = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type[]>> _maps = new(StringComparer.Ordinal);
 
-        // Null (unconstrained) for an orphaned payload or an unresolvable field type. Keyed by exact (fileId, rid),
-        // since rids collide across documents.
-        public Type Resolve(string assetPath, long fileId, long rid)
+        // Null (unconstrained) for an orphaned payload or an unresolvable field type, and one type per field type
+        // when fields of different types share the rid. Keyed by exact (fileId, rid), since rids collide across
+        // documents.
+        public Type[] Resolve(string assetPath, long fileId, long rid)
         {
             if (!_maps.TryGetValue(assetPath, out var map))
             {

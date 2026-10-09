@@ -2,10 +2,13 @@ using System;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 using UnityEditor.SceneManagement;
 using Aspid.FastTools.Tests;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -336,5 +339,134 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.That(text, Does.Contain($"- rid: {referenceId}\n      type: {{class: {MissingClass},"));
             Assert.That(text, Does.Contain("x: 3"));
         }
+
+        // Unity reports every field on a missing type as empty, so the save that drops the replaced entry would
+        // write a field left on it as empty.
+        [Test]
+        public void FixInMemory_SharedMissingReference_RepairsEveryFieldAndKeepsThemShared()
+        {
+            TearDown();
+            OpenSceneWithMissingType(component =>
+            {
+                var payload = new InMemoryRepairPayload { x = 3 };
+                component.value = payload;
+                component.other = payload;
+            });
+
+            using var serializedObject = new SerializedObject(_component);
+            var property = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.value));
+
+            Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
+            Assert.IsInstanceOf<InMemoryRepairReplacement>(_component.other, "The other field on the missing rid must be repaired too.");
+            Assert.AreSame(_component.value, _component.other, "Both fields must keep sharing one instance.");
+
+            Assert.IsTrue(EditorSceneManager.SaveScene(_scene));
+
+            Assert.IsFalse(SerializationUtility.HasManagedReferencesWithMissingTypes(_component));
+            Assert.AreEqual(3, ((InMemoryRepairReplacement)_component.other).x);
+
+            var text = File.ReadAllText(ScenePath).Replace("\r\n", "\n");
+            Assert.That(text, Does.Not.Contain(MissingClass));
+            Assert.That(text, Does.Not.Contain("other:\n    rid: -2\n"), "The other field must not be saved empty.");
+        }
+
+        [Test]
+        public void FixInMemory_SharedMissingReference_RefusesTypeAnotherFieldCannotHold()
+        {
+            TearDown();
+            OpenSceneWithMissingType(component =>
+            {
+                var payload = new InMemoryRepairPayload { x = 3 };
+                component.value = payload;
+                component.shape = payload;
+            });
+
+            using var serializedObject = new SerializedObject(_component);
+            var property = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.value));
+
+            LogAssert.Expect(LogType.Warning, new Regex("does not fit 'shape'"));
+            Assert.IsFalse(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
+            Assert.IsNull(_component.value);
+            Assert.IsFalse(_scene.isDirty, "A refused fix must not touch the scene.");
+
+            Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairShapedReplacement)));
+            Assert.IsInstanceOf<InMemoryRepairShapedReplacement>(_component.shape);
+            Assert.AreSame(_component.value, _component.shape);
+            Assert.AreEqual(3, ((InMemoryRepairShapedReplacement)_component.shape).x);
+        }
+
+        // Unity hands the payload back as YAML: floats in exponent form, non-ASCII text in escaped double quotes and
+        // long text wrapped onto several lines must all reach the replacement.
+        [Test]
+        public void FixDirtyAssetInMemory_RecoversQuotedWrappedAndExponentScalars()
+        {
+            const string assetPath = "Assets/AspidInMemoryRecoveryTest.asset";
+            var asset = ScriptableObject.CreateInstance<InMemoryRepairTestObject>();
+            asset.value = new InMemoryRecoveryPayload();
+            AssetDatabase.CreateAsset(asset, assetPath);
+
+            try
+            {
+                var text = File.ReadAllText(assetPath);
+                File.WriteAllText(assetPath, text.Replace($"class: {nameof(InMemoryRecoveryPayload)},", $"class: {MissingClass},"));
+                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+                asset = AssetDatabase.LoadAssetAtPath<InMemoryRepairTestObject>(assetPath);
+                Assert.IsTrue(SerializationUtility.HasManagedReferencesWithMissingTypes(asset), "The fixture must load as a missing type.");
+                EditorUtility.SetDirty(asset);
+
+                using (var serializedObject = new SerializedObject(asset))
+                {
+                    var property = serializedObject.FindProperty(nameof(InMemoryRepairTestObject.value));
+                    Assert.IsTrue(SerializeReferenceHelpers.TryGetMissingReferenceId(property, out var referenceId));
+                    Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingTypeInMemory(property, typeof(InMemoryRecoveryReplacement), referenceId));
+                }
+
+                var expected = new InMemoryRecoveryPayload();
+                var recovered = (InMemoryRecoveryReplacement)asset.value;
+
+                Assert.AreEqual(expected.unicode, recovered.unicode);
+                Assert.AreEqual(expected.wrapped, recovered.wrapped);
+                Assert.AreEqual(expected.lines, recovered.lines);
+                Assert.AreEqual(expected.number, recovered.number, "A number-like string must stay text.");
+                Assert.AreEqual(expected.tiny, recovered.tiny);
+                Assert.AreEqual(expected.huge, recovered.huge);
+                Assert.AreEqual(expected.infinity, recovered.infinity);
+                Assert.AreEqual(expected.precise, recovered.precise);
+                Assert.AreEqual(expected.count, recovered.count);
+            }
+            finally
+            {
+                if (asset != null) Undo.ClearUndo(asset);
+                AssetDatabase.DeleteAsset(assetPath);
+            }
+        }
+    }
+
+    [Serializable]
+    public sealed class InMemoryRecoveryPayload
+    {
+        public string unicode = "Привет, мир";
+        public string wrapped = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.";
+        public string lines = "line one\nline two";
+        public string number = "1.5";
+        public float tiny = 9.99e-05f;
+        public float huge = 3.4e38f;
+        public float infinity = float.PositiveInfinity;
+        public double precise = 1e300;
+        public int count = 7;
+    }
+
+    [Serializable]
+    public sealed class InMemoryRecoveryReplacement
+    {
+        public string unicode;
+        public string wrapped;
+        public string lines;
+        public string number;
+        public float tiny;
+        public float huge;
+        public float infinity;
+        public double precise;
+        public int count;
     }
 }

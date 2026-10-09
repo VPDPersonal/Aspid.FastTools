@@ -10,17 +10,29 @@ namespace Aspid.FastTools.Tests
     {
         [SerializeReference] public object value;
         [SerializeReference] public List<object> list = new();
+
+        // Fields that can share a reference with value.
+        [SerializeReference] public object other;
+        [SerializeReference] public IInMemoryRepairShape shape;
     }
+
+    public interface IInMemoryRepairShape { }
 
     // Saved under this name, then renamed in the scene file so the reference loads as a missing type.
     [Serializable]
-    public sealed class InMemoryRepairPayload
+    public sealed class InMemoryRepairPayload : IInMemoryRepairShape
     {
         public int x;
     }
 
     [Serializable]
     public sealed class InMemoryRepairReplacement
+    {
+        public int x;
+    }
+
+    [Serializable]
+    public sealed class InMemoryRepairShapedReplacement : IInMemoryRepairShape
     {
         public int x;
     }
