@@ -7,6 +7,7 @@ using NUnit.Framework;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
+using System.Text.RegularExpressions;
 using Aspid.FastTools.SerializeReferences.Tests;
 using Object = UnityEngine.Object;
 
@@ -23,13 +24,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const string VariantPath = "Assets/__AspidPrefabInstanceVariant__.prefab";
         private const string VariantOfVariantPath = "Assets/__AspidPrefabInstanceVariantOfVariant__.prefab";
 
+        // The two errors Unity logs for an override whose type is gone. How many of them and in which order differs
+        // between Unity versions, so the tests let these through and fail on any other error.
+        private static readonly Regex UnappliedOverrideError = new(
+            @"^(Could not update a managed instance value at property path 'managedReferences\[\d+\]', with value '.*PrefabTestBowRemoved'"
+            + @"|The serialized array of \[SerializeReference\] objects is missing entry for Refid \d+)$");
+
+        private readonly List<string> _unexpectedErrors = new();
+
         [TearDown]
         public void TearDown()
         {
+            Application.logMessageReceived -= CollectUnexpectedError;
             AssetDatabase.DeleteAsset(VariantOfVariantPath);
             AssetDatabase.DeleteAsset(VariantPath);
             AssetDatabase.DeleteAsset(BasePath);
             ResetProbes();
+
+            var unexpected = _unexpectedErrors.ToArray();
+            _unexpectedErrors.Clear();
+            CollectionAssert.IsEmpty(unexpected, "Only the errors of the unapplied override may be logged.");
         }
 
         [Test]
@@ -77,7 +91,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     probe.requiredWeapon = new PrefabTestBow { arrows = 2 };
                 });
             // Unity logs an error for each override it cannot apply, at import and at load alike.
-            LogAssert.ignoreFailingMessages = true;
+            AllowUnappliedOverrideErrors();
             BreakType(VariantPath, "Tests.PrefabTestBow", "Tests.PrefabTestBowRemoved");
 
             using (var variant = new SerializedObject(LoadProbe(VariantPath)))
@@ -116,7 +130,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 onBase: probe => probe.weapon = new PrefabTestSword(),
                 onVariant: probe => probe.weapon = new PrefabTestBow { arrows = 5 });
             CreateVariant(VariantPath, VariantOfVariantPath, onVariant: null);
-            LogAssert.ignoreFailingMessages = true;
+            AllowUnappliedOverrideErrors();
             BreakType(VariantPath, "Tests.PrefabTestBow", "Tests.PrefabTestBowRemoved");
 
             using (var variantOfVariant = new SerializedObject(LoadProbe(VariantOfVariantPath)))
@@ -149,7 +163,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             CreateBaseAndVariant(
                 onBase: probe => probe.holder = new PrefabTestHolder { inner = new PrefabTestSword() },
                 onVariant: probe => ((PrefabTestHolder)probe.holder).inner = new PrefabTestBow { arrows = 1 });
-            LogAssert.ignoreFailingMessages = true;
+            AllowUnappliedOverrideErrors();
             BreakType(VariantPath, "Tests.PrefabTestBow", "Tests.PrefabTestBowRemoved");
 
             using var variant = new SerializedObject(LoadProbe(VariantPath));
@@ -240,6 +254,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 PrefabUtility.SaveAsPrefabAsset(instance, variantPath);
             }
             finally { Object.DestroyImmediate(instance); }
+        }
+
+        private void AllowUnappliedOverrideErrors()
+        {
+            Application.logMessageReceived += CollectUnexpectedError;
+            LogAssert.ignoreFailingMessages = true;
+        }
+
+        private void CollectUnexpectedError(string condition, string stackTrace, LogType type)
+        {
+            if (type is LogType.Log or LogType.Warning) return;
+            if (UnappliedOverrideError.IsMatch(condition)) return;
+
+            _unexpectedErrors.Add($"[{type}] {condition}");
         }
 
         // Renames the stored type in the file, the state a deleted or renamed class leaves behind.
