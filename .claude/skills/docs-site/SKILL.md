@@ -95,7 +95,8 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
 - **Every `.md` in the package needs a `.meta`** (`TextScriptImporter`) — Unity would otherwise generate one in the
   consumer's project. Copy an existing one and give it a fresh GUID. Site pages and images have none.
 - English is the source. A translation has the same file name under `Website/i18n/ru/docusaurus-plugin-content-docs/current/`
-  (docs) or `…/docusaurus-plugin-content-docs-tutorials/current/` (tutorials); missing pages fall back to English.
+  (docs) or `…/docusaurus-plugin-content-docs-tutorials/current/` (tutorials). Every English page needs its twin: the site
+  shows English where one is missing, so `check-translations` fails instead.
   A translated file links translated targets so GitHub stays in the same language
   (`../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md` from a doc,
   `../../../docusaurus-plugin-content-docs/current/03-type-selector.md` from a tutorial, `../EnumValues/README.md`
@@ -346,9 +347,12 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   After a change to `FeaturePreview`, the InstallPanel walk-through, the site theme or the install channel (the
   walk-through types its URL), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
   (`docs/media/readme-previews/README.md`), then run `sync-readme`.
-- `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
-  blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
-  may differ, so make every structural change in both languages.
+- `npm --prefix Website run check-translations` (CI) checks that every English page has a Russian twin and that the twin
+  has the heading levels, code blocks, images and link targets of its source. Only prose, `//` comments, text blocks
+  and same-page anchors may differ, so make every structural change in both languages. The twin is required for
+  `Website/docs/`, `Website/tutorials/` (`.md` and `.mdx`), the sample READMEs and `CHANGELOG.md`; the package README
+  and the root README have none. The two changelogs must also list the same releases (version and date) and the same
+  number of entries in every section.
 - `npm --prefix Website run check-selectors` (CI, after the build) looks in the built stylesheets for every Docusaurus
   class that the site selects by a name fragment (`[class*='docMainContainer_']`). A Docusaurus update can rename such
   a hashed class without failing the build. A new fragment in the site CSS or JS needs no list: the script reads the
