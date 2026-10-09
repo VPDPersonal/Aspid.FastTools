@@ -52,7 +52,10 @@ namespace UnityEngine
         .ToArray();
 
     // The wrappers open profiler markers, which the package compiles out under this scripting symbol.
-    private const string ProfilerDisabledSymbol = "ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED";
+    private const string ProfilerDisabledSymbol = "ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED";
+
+    // The pre-1.0 spelling, kept as an alias for one release.
+    private const string LegacyProfilerDisabledSymbol = "ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED";
 
     private static Task Verify(string code, params DiagnosticResult[] expected)
     {
@@ -1121,6 +1124,16 @@ class C { [{|#0:SerializeField|}, TypeSelector] private string _type; }",
         DiagnosticResult.CompilerError("CS0246").WithLocation(0).WithArguments("SerializeFieldAttribute"),
         DiagnosticResult.CompilerError("CS0246").WithLocation(0).WithArguments("SerializeField"));
 
+    // The package sources have no Marker() in this compilation, so they compile only when the symbol strips it.
+    [Theory]
+    [InlineData(ProfilerDisabledSymbol)]
+    [InlineData(LegacyProfilerDisabledSymbol)]
+    public Task ProfilerDisabledSymbol_CompilesMarkersOut(string symbol) => CreateTest(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+class C { [SerializeField, TypeSelector(typeof(System.Object))] private string _type; }",
+        profilerDisabledSymbol: symbol).RunAsync();
+
     private static Task VerifyWithReferencedProject(string code, string referencedProjectSource)
     {
         var test = CreateTest(code);
@@ -1130,7 +1143,7 @@ class C { [{|#0:SerializeField|}, TypeSelector] private string _type; }",
         return test.RunAsync();
     }
 
-    private static CSharpAnalyzerTest<AspidFastToolsAnalyzer, XUnitVerifier> CreateTest(string code)
+    private static CSharpAnalyzerTest<AspidFastToolsAnalyzer, XUnitVerifier> CreateTest(string code, string profilerDisabledSymbol = ProfilerDisabledSymbol)
     {
         var test = new CSharpAnalyzerTest<AspidFastToolsAnalyzer, XUnitVerifier>();
 
@@ -1142,7 +1155,7 @@ class C { [{|#0:SerializeField|}, TypeSelector] private string _type; }",
         test.SolutionTransforms.Add((solution, projectId) =>
         {
             var options = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
-            var symbols = options.PreprocessorSymbolNames.Append(ProfilerDisabledSymbol);
+            var symbols = options.PreprocessorSymbolNames.Append(profilerDisabledSymbol);
 
             return solution.WithProjectParseOptions(projectId, options.WithPreprocessorSymbols(symbols));
         });

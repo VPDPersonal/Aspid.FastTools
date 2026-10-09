@@ -122,7 +122,7 @@ entries, as long as Unity is not deserializing the table at the same time.
 </p>
 <p>
 Internal hot paths are wrapped in profiler markers; define the
-<code>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.
+<code>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.
 </p>
 
 ## Properties
