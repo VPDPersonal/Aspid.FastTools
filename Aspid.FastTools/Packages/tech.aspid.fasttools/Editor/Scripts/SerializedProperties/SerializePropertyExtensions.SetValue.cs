@@ -1,5 +1,7 @@
+using System;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -258,6 +260,121 @@ namespace Aspid.FastTools.Editors
         }
         #endregion
 
+        #region Byte
+        /// <inheritdoc cref="SetInt{T}"/>
+        public static T SetValue<T>(this T property, byte value)
+            where T : SerializedProperty
+        {
+            return property.SetInt(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApply{T}"/>
+        public static T SetValueAndApply<T>(this T property, byte value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, byte value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApplyWithoutUndo(value);
+        }
+        #endregion
+
+        #region Sbyte
+        /// <inheritdoc cref="SetInt{T}"/>
+        public static T SetValue<T>(this T property, sbyte value)
+            where T : SerializedProperty
+        {
+            return property.SetInt(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApply{T}"/>
+        public static T SetValueAndApply<T>(this T property, sbyte value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, sbyte value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApplyWithoutUndo(value);
+        }
+        #endregion
+
+        #region Short
+        /// <inheritdoc cref="SetInt{T}"/>
+        public static T SetValue<T>(this T property, short value)
+            where T : SerializedProperty
+        {
+            return property.SetInt(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApply{T}"/>
+        public static T SetValueAndApply<T>(this T property, short value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, short value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApplyWithoutUndo(value);
+        }
+        #endregion
+
+        #region Ushort
+        /// <inheritdoc cref="SetInt{T}"/>
+        public static T SetValue<T>(this T property, ushort value)
+            where T : SerializedProperty
+        {
+            return property.SetInt(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApply{T}"/>
+        public static T SetValueAndApply<T>(this T property, ushort value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, ushort value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApplyWithoutUndo(value);
+        }
+        #endregion
+
+        #region Char
+        /// <inheritdoc cref="SetInt{T}"/>
+        public static T SetValue<T>(this T property, char value)
+            where T : SerializedProperty
+        {
+            return property.SetInt(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApply{T}"/>
+        public static T SetValueAndApply<T>(this T property, char value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, char value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApplyWithoutUndo(value);
+        }
+        #endregion
+
         #region Float
         /// <inheritdoc cref="SetFloat{T}"/>
         public static T SetValue<T>(this T property, float value)
@@ -391,6 +508,7 @@ namespace Aspid.FastTools.Editors
         /// <remarks>
         /// There is no <c>SetValue&lt;T&gt;(int)</c> alias for enum flags because it would conflict with
         /// <see cref="SetInt{T}"/>. Call <see cref="SetEnumFlag{T}"/> explicitly.
+        /// To write an enum value instead of a raw <see cref="int"/>, use <see cref="SetEnum{T, TEnum}"/>.
         /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
@@ -433,8 +551,14 @@ namespace Aspid.FastTools.Editors
         /// Sets <see cref="SerializedProperty.enumValueIndex"/> and returns the property for chaining.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// Takes an index into <see cref="SerializedProperty.enumNames"/>, not the value of an enum entry:
+        /// for <c>Rare = 20</c> the index may be <c>1</c>. To write an enum value, use <see cref="SetEnum{T, TEnum}"/>.
+        /// </para>
+        /// <para>
         /// There is no <c>SetValue&lt;T&gt;(int)</c> alias for enum index because it would conflict with
         /// <see cref="SetInt{T}"/>. Call <see cref="SetEnumIndex{T}"/> explicitly.
+        /// </para>
         /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
@@ -471,6 +595,85 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetEnumIndex(value).ApplyModifiedPropertiesWithoutUndo();
+        }
+        #endregion
+
+        #region Enum
+        /// <inheritdoc cref="SetEnum{T, TEnum}"/>
+        public static T SetValue<T, TEnum>(this T property, TEnum value)
+            where T : SerializedProperty
+            where TEnum : struct, Enum
+        {
+            return property.SetEnum(value);
+        }
+
+        /// <inheritdoc cref="SetEnumAndApply{T, TEnum}"/>
+        public static T SetValueAndApply<T, TEnum>(this T property, TEnum value)
+            where T : SerializedProperty
+            where TEnum : struct, Enum
+        {
+            return property.SetEnumAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetEnumAndApplyWithoutUndo{T, TEnum}"/>
+        public static T SetValueAndApplyWithoutUndo<T, TEnum>(this T property, TEnum value)
+            where T : SerializedProperty
+            where TEnum : struct, Enum
+        {
+            return property.SetEnumAndApplyWithoutUndo(value);
+        }
+
+        /// <summary>
+        /// Sets the enum property to <paramref name="value"/> and returns the property for chaining.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Writes the value of the enum entry, not its index, so <c>SetEnum(Rarity.Rare)</c> does not depend on how
+        /// the entries are numbered. To write an index, use <see cref="SetEnumIndex{T}"/>.
+        /// </para>
+        /// <para>A combination of <see cref="FlagsAttribute"/> flags is written as is.</para>
+        /// </remarks>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <typeparam name="TEnum">The enum type of the field.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Enum value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetEnum<T, TEnum>(this T property, TEnum value)
+            where T : SerializedProperty
+            where TEnum : struct, Enum
+        {
+            property.intValue = unchecked((int)Convert.ToInt64(value));
+            return property;
+        }
+
+        /// <summary>
+        /// Sets the enum property to <paramref name="value"/> then applies modified properties.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <typeparam name="TEnum">The enum type of the field.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Enum value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetEnumAndApply<T, TEnum>(this T property, TEnum value)
+            where T : SerializedProperty
+            where TEnum : struct, Enum
+        {
+            return property.SetEnum(value).ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Sets the enum property to <paramref name="value"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <typeparam name="TEnum">The enum type of the field.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Enum value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetEnumAndApplyWithoutUndo<T, TEnum>(this T property, TEnum value)
+            where T : SerializedProperty
+            where TEnum : struct, Enum
+        {
+            return property.SetEnum(value).ApplyModifiedPropertiesWithoutUndo();
         }
         #endregion
 
@@ -1691,8 +1894,15 @@ namespace Aspid.FastTools.Editors
         /// Sets <see cref="SerializedProperty.exposedReferenceValue"/> and returns the property for chaining.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Without an <see cref="IExposedPropertyTable"/> context, Unity's setter applies the write itself and records Undo,
         /// so there are no <c>AndApply</c> or <c>AndApplyWithoutUndo</c> variants.
+        /// </para>
+        /// <para>
+        /// With a context, such as the one of a <c>PlayableDirector</c>, the reference is stored in the context table at once,
+        /// but the new exposed name stays a pending change. Call <see cref="ApplyModifiedProperties{T}"/> afterwards:
+        /// <see cref="Update{T}"/> or a domain reload discards the name and leaves the table entry orphaned.
+        /// </para>
         /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
@@ -1809,6 +2019,72 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetEntityId(value).ApplyModifiedPropertiesWithoutUndo();
+        }
+        #endregion
+#endif
+
+#if UNITY_6000_4_OR_NEWER
+        #region Guid
+        /// <inheritdoc cref="SetGuid{T}"/>
+        public static T SetValue<T>(this T property, GUID value)
+            where T : SerializedProperty
+        {
+            return property.SetGuid(value);
+        }
+
+        /// <inheritdoc cref="SetGuidAndApply{T}"/>
+        public static T SetValueAndApply<T>(this T property, GUID value)
+            where T : SerializedProperty
+        {
+            return property.SetGuidAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetGuidAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, GUID value)
+            where T : SerializedProperty
+        {
+            return property.SetGuidAndApplyWithoutUndo(value);
+        }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.guidValue"/> and returns the property for chaining.
+        /// </summary>
+        /// <remarks>Compiled only on Unity 6000.4 or newer.</remarks>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetGuid<T>(this T property, GUID value)
+            where T : SerializedProperty
+        {
+            property.guidValue = value;
+            return property;
+        }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.guidValue"/> then applies modified properties.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetGuidAndApply<T>(this T property, GUID value)
+            where T : SerializedProperty
+        {
+            return property.SetGuid(value).ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.guidValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetGuidAndApplyWithoutUndo<T>(this T property, GUID value)
+            where T : SerializedProperty
+        {
+            return property.SetGuid(value).ApplyModifiedPropertiesWithoutUndo();
         }
         #endregion
 #endif
