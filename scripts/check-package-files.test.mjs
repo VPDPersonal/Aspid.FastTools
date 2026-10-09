@@ -92,6 +92,19 @@ test('a sample path that is no folder of the package is reported', (t) => {
   }
 });
 
+test('a sample without a path is reported and does not crash the script', (t) => {
+  const manifest = JSON.stringify({ name: 'tech.aspid.fasttools', samples: [{ displayName: 'Demo' }] });
+  assertFails(check(t, { [`${PACKAGE}/package.json`]: manifest }), `${PACKAGE}/package.json`, /the sample "Demo" has no "path"/);
+});
+
+test('a folder that Unity ignores needs no .meta for its content, except Samples~', (t) => {
+  const doc = `${PACKAGE}/Documentation~/Guide.md`;
+  assert.equal(check(t, { [doc]: '# Guide' }).status, 0);
+  // Unity writes no .meta into Samples~ of the dev project, so the hint names the import instead.
+  const readme = `${PACKAGE}/Samples~/Demo/Readme.md`;
+  assertFails(check(t, { [`${readme}.meta`]: null }), readme, /no \.meta; import the sample into a project/);
+});
+
 test('an asmdef reference that is no assembly of the package is reported', (t) => {
   const editor = `${PACKAGE}/Editor/Aspid.FastTools.Editor.asmdef`;
   assertFails(check(t, { [editor]: asmdef('Aspid.FastTools.Editor', ['Aspid.FastTools.Typo']) }), editor, /the reference "Aspid\.FastTools\.Typo" is no asmdef/);

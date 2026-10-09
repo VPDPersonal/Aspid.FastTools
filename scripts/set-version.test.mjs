@@ -47,6 +47,9 @@ const UNSHIPPED = [
 const NOTES = '\n### Fixed\n\n- A note for the release.\n\n';
 
 // The tests start from the version that the repository has, a prerelease today and a stable one after 1.0.0.
+// The stable version that they set is one the repository never has: after the release 1.0.0 the real Shipped.md already
+// has its header, and set-version.sh would not ship the rule of the test again.
+const STABLE = '99.0.0';
 const current = JSON.parse(readFileSync(join(repository, PACKAGE, 'package.json'), 'utf8')).version;
 const [branch, label, otherBranch, otherLabel] = current.includes('-')
   ? ['upm-preview', 'Preview', 'upm', 'Release']
@@ -127,39 +130,39 @@ test('a prerelease moves the files to the preview channel', (t) => {
 
 test('a stable version moves the files to the release channel and ships the analyzer rules', (t) => {
   const dir = sandbox(t);
-  const result = setVersion(dir, '1.0.0');
+  const result = setVersion(dir, STABLE);
   assert.equal(result.status, 0, output(result));
-  assert.equal(version(dir), '1.0.0');
+  assert.equal(version(dir), STABLE);
   assertVersionChecked(dir);
   assert.equal(/The channel changed/.test(result.stdout), current.includes('-'), result.stdout);
 
   for (const file of [DOCS, RU_DOCS]) {
-    assert.match(read(dir, file), /\[!\[Release 1\.0\.0\]/, file);
+    assert.match(read(dir, file), /\[!\[Release 99\.0\.0\]/, file);
     assert.doesNotMatch(read(dir, file), /\[!\[Preview /, file);
     assert.deepEqual([...new Set(installBranches(read(dir, file)))], ['upm'], file);
   }
   assert.match(read(dir, BADGE), />Release<\/text>/);
   assert.deepEqual([...new Set(installBranches(read(dir, `${PACKAGE}/README.md`)))], ['upm']);
-  assert.match(read(dir, 'CHANGELOG.md'), /^## \[1\.0\.0\] — \d{4}-\d{2}-\d{2}$/m);
+  assert.match(read(dir, 'CHANGELOG.md'), /^## \[99\.0\.0\] — \d{4}-\d{2}-\d{2}$/m);
 
-  assert.ok(read(dir, `${ANALYZER_RELEASES}.Shipped.md`).includes('\n## Release 1.0.0\n'));
+  assert.ok(read(dir, `${ANALYZER_RELEASES}.Shipped.md`).includes(`\n## Release ${STABLE}\n`));
   assert.ok(read(dir, `${ANALYZER_RELEASES}.Shipped.md`).includes('AFT9999'));
   assert.ok(!read(dir, `${ANALYZER_RELEASES}.Unshipped.md`).includes('AFT9999'));
 });
 
 test('a second run with the same version repairs files and changes nothing else', (t) => {
   const dir = sandbox(t);
-  assert.equal(setVersion(dir, '1.0.0').status, 0);
+  assert.equal(setVersion(dir, STABLE).status, 0);
   const done = snapshot(dir);
-  const again = setVersion(dir, '1.0.0');
+  const again = setVersion(dir, STABLE);
   assert.equal(again.status, 0, output(again));
   assert.deepEqual(snapshot(dir), done);
 
   // A hand-edited package.json is repaired from the version that the run is given.
-  edit(dir, `${PACKAGE}/package.json`, (text) => text.replace('"version": "1.0.0"', '"version": "1.0.1"'));
+  edit(dir, `${PACKAGE}/package.json`, (text) => text.replace(`"version": "${STABLE}"`, '"version": "99.0.1"'));
   assert.notEqual(checkVersion(dir).status, 0);
-  assert.equal(setVersion(dir, '1.0.0').status, 0);
-  assert.equal(version(dir), '1.0.0');
+  assert.equal(setVersion(dir, STABLE).status, 0);
+  assert.equal(version(dir), STABLE);
 });
 
 test('a version that is not SemVer is refused before any file changes', (t) => {

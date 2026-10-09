@@ -2,8 +2,7 @@ name: Checks
 
 # Cheap checks of the repository that need no Unity. Each one catches a mistake that Unity hides locally and that
 # release.yml would otherwise find after the tag is public. No job has a path filter: a workflow skipped by a filter
-# reports nothing, and a required check that never reports blocks the pull request. Skills have their own check
-# (skills.yml); the Unity tests are in tests.yml.
+# reports nothing, and a required check that never reports blocks the pull request. The Unity tests are in tests.yml.
 
 on:
   pull_request:
@@ -58,6 +57,24 @@ jobs:
       - run: node scripts/check-version.mjs
       - run: node scripts/check-unity-minimum.mjs
 
+  # The frontmatter of every SKILL.md. skills.yml runs the same script, but only on a pull request that touches skills.
+  skills:
+    name: Skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            scripts
+            skills
+            .claude/skills
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm install --no-save --no-audit --no-fund js-yaml@4
+      - run: node scripts/check-skills.mjs
+
   # The tests of scripts/*.test.mjs. They run set-version.sh on a copy, and set-version.sh regenerates the root README
   # with the dependencies of Website/, so they install them.
   script-tests:
@@ -100,8 +117,11 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
+      # Delete them first: a build that stops copying a DLL into the package then shows as a deleted file in the diff,
+      # instead of leaving the committed one in place.
       - name: Rebuild both DLLs in Release
         run: |
+          rm -f Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Generators.dll Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Analyzers.dll
           dotnet build Aspid.FastTools.Generators/Aspid.FastTools.Generators -c Release --nologo
           dotnet build Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers -c Release --nologo
       - name: Compare with the committed DLLs

@@ -1,7 +1,8 @@
 // Check that the files scripts/set-version.sh writes carry the package.json version whole and its channel: a stable
 // version installs from `upm` under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one.
 // Both CHANGELOGs must have the version's section and its release link.
-// The version is matched whole, so 1.0.0 does not pass on a file that still says 1.0.0-rc.8. release.yml runs it:
+// The version is matched whole, so 1.0.0 does not pass on a file that still says 1.0.0-rc.8.
+// release.yml, checks.yml and scripts/set-version.sh run it:
 //   node scripts/check-version.mjs
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

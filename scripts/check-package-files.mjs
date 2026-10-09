@@ -8,6 +8,7 @@
 //  4. Every file and folder of the package and the dev tests has a .meta, and every .meta has its asset. Unity cannot
 //     write a .meta into an installed package: it ignores the file there and warns about a .meta without an asset.
 //     Samples~ is copied into the project on import, and its .meta files keep the GUIDs that its scenes refer to.
+//     Another folder that ends with "~" is ignored with its content.
 //  5. Every .meta has a guid, and no guid is used twice in the package and the dev tests.
 //  6. Every "path" in the "samples" of package.json is a folder of the package.
 //  7. Every reference of an asmdef of the package is an asmdef of the package, or an assembly of EXTERNAL_ASSEMBLIES.
@@ -38,19 +39,25 @@ const files = (dir) =>
     return entry.isDirectory() ? files(path) : [path];
   });
 
-// Files and folders. A hidden entry (a name that starts with a dot) is skipped with its content.
+// Unity imports no entry with these names, so it needs no .meta. Samples~ is one of them, but its content needs one:
+// Unity copies Samples~ into the project on import, and the scenes there refer to the GUIDs of its .meta files.
+const unityIgnores = (name) => name.endsWith('~') || name.endsWith('.tmp') || name.toLowerCase() === 'cvs';
+const isFolder = (path) => statSync(path, { throwIfNoEntry: false })?.isDirectory() ?? false;
+
+// Files and folders. A hidden entry (a name that starts with a dot) is skipped with its content, and so is a folder that
+// Unity ignores, except Samples~.
 const entries = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     if (entry.name.startsWith('.')) return [];
     const path = join(dir, entry.name);
-    return entry.isDirectory() ? [path, ...entries(path)] : [path];
+    if (!entry.isDirectory()) return [path];
+    return unityIgnores(entry.name) && entry.name !== 'Samples~' ? [path] : [path, ...entries(path)];
   });
 
-// Unity imports no entry with these names, so it needs no .meta. Samples~ is one of them, but its content needs one.
-const unityIgnores = (name) => name.endsWith('~') || name.endsWith('.tmp') || name.toLowerCase() === 'cvs';
-const isFolder = (path) => statSync(path, { throwIfNoEntry: false })?.isDirectory() ?? false;
-
 const samples = `${PACKAGE}/Samples~/`;
+// Unity does not import Samples~ in the dev project, so it writes no .meta there.
+const NO_META = 'no .meta; open the project in Unity once and commit the .meta it writes';
+const NO_SAMPLE_META = 'no .meta; import the sample into a project and copy the .meta it writes back, or write it by hand';
 
 // Samples~ is installed under Assets/Samples/, so the install-folder limit does not apply to it.
 for (const file of files(PACKAGE)) {
@@ -76,7 +83,7 @@ for (const root of [PACKAGE, DEV_TESTS]) {
   for (const path of all) {
     if (!path.endsWith('.meta')) {
       if (!unityIgnores(basename(path)) && !present.has(`${path}.meta`)) {
-        fail(path, 'no .meta; open the project in Unity once and commit the .meta it writes');
+        fail(path, path.startsWith(samples) ? NO_SAMPLE_META : NO_META);
       }
       continue;
     }
@@ -96,7 +103,9 @@ for (const root of [PACKAGE, DEV_TESTS]) {
 
 const manifestPath = `${PACKAGE}/package.json`;
 for (const sample of JSON.parse(readFileSync(manifestPath, 'utf8')).samples ?? []) {
-  if (!isFolder(join(PACKAGE, sample.path))) {
+  if (typeof sample.path !== 'string') {
+    fail(manifestPath, `the sample "${sample.displayName}" has no "path"`);
+  } else if (!isFolder(join(PACKAGE, sample.path))) {
     fail(manifestPath, `the path "${sample.path}" of the sample "${sample.displayName}" is not a folder of the package`);
   }
 }
