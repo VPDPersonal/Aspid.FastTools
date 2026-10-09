@@ -96,6 +96,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Excluded scan folders** accepts only `Assets` and folders under it, the only ones project scans walk; a folder under `Packages/` or elsewhere was saved but excluded nothing.
 - Type picker search no longer matches the assembly part of a type name: short queries such as `Key`, `Token`, `ver` or `null` used to match every type. Search compares the label, the type name and the full name with the namespace and declaring types (`Namespace.Outer.Name`).
 - Typing and Backspace in the type picker edit the query again after the Down arrow moves into the results; they used to be ignored until the search field was clicked.
+- Type picker search lists the exact type name first, then names that start with the query, then names that contain it, and last the types found only through their namespace; `Button` no longer sits behind `ButtonGroup`. Equal matches keep the namespace order.
+- Enter in the type picker's search field chooses the first result; it used to do nothing until the Down arrow moved into the list.
+- Left arrow in the type picker's search results no longer takes the picker up a level; Esc then opened the list in the wrong folder.
+- Type picker search results show the type name first and its namespace after it, dimmed, so a long namespace no longer pushes the name out of the row.
+- The Recent section of the type picker no longer goes empty after picks in other fields: the project keeps the last 20 picks, and the section shows the newest ones that the open picker offers, as many as the **Recent items** setting allows. It used to keep only that many picks across all fields.
 - On Unity 6000.6 and later, a search that shortens the type picker's list past the selected row no longer overflows the stack, which usually crashed the Editor: the list's refresh reported a selection change, and the picker answered it with another refresh.
 - For a missing type the type picker no longer highlights `<None>`, so Enter right after opening does not erase the stored name.
 - In a UI Toolkit Inspector, choosing `<None>` now clears a `SerializableMonoScript` whose type is missing; the field used to keep showing `<Missing …>`.

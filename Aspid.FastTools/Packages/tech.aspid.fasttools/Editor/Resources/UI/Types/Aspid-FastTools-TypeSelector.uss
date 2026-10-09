@@ -259,6 +259,23 @@ ToolbarSearchField TextElement {
     flex-grow:              1;
 }
 
+/* With a context after it, the title keeps its whole text and the context takes the rest of the row, clipped. */
+.aspid-fasttools-type-selector__item-title--with-context {
+    flex-grow:              0;
+    flex-shrink:            0;
+}
+
+.aspid-fasttools-type-selector__item-context {
+    margin-left:            6px;
+    flex-grow:              1;
+    flex-shrink:            1;
+    overflow:               hidden;
+    white-space:            nowrap;
+    text-overflow:          ellipsis;
+    font-size:              10px;
+    color:                  var(--aspid-colors-text-dark);
+}
+
 .aspid-fasttools-type-selector__item-check {
     margin-left:            4px;
     flex-shrink:            0;

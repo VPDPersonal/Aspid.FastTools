@@ -11,6 +11,12 @@ namespace Aspid.FastTools.Types.Editors
 
         internal string Caption { get; set; }
 
+        // The type's own row text. DisplayName of a leaf that collapsed with its namespace chain carries that chain too.
+        internal string Title { get; set; }
+
+        // What leads the title in Caption (the namespace or group path); only search results show it.
+        internal string Context { get; set; }
+
         internal string Tooltip { get; set; }
 
         internal List<TreeNode> Children { get; }
@@ -74,6 +80,25 @@ namespace Aspid.FastTools.Types.Editors
                 || Contains(SearchName, filter)
                 || Contains(QualifiedName, filter);
         }
+
+        // How well a leaf's name matches: 0 exact, 1 starts with, 2 contains; 3 when only the namespace or group
+        // path matched. Smaller ranks come first in the search results.
+        internal int GetMatchRank(string filter)
+        {
+            var title = Title ?? DisplayName;
+
+            if (IsExact(title, filter) || IsExact(SearchName, filter) || IsExact(QualifiedName, filter)) return 0;
+            if (StartsWith(title, filter) || StartsWith(SearchName, filter)) return 1;
+            if (Contains(title, filter) || Contains(SearchName, filter)) return 2;
+
+            return 3;
+        }
+
+        private static bool IsExact(string text, string filter) =>
+            string.Equals(text, filter, StringComparison.OrdinalIgnoreCase);
+
+        private static bool StartsWith(string text, string filter) =>
+            text is not null && text.StartsWith(filter, StringComparison.OrdinalIgnoreCase);
 
         private static bool Contains(string text, string filter) =>
             text is not null && text.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;

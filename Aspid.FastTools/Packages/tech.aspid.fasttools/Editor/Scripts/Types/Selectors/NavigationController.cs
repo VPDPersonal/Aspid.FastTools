@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -77,19 +78,27 @@ namespace Aspid.FastTools.Types.Editors
                 _searchResults.Clear();
                 var filter = query.Trim();
 
-                foreach (var node in EnumerateLeaves(_rootNode))
+                // OrderBy is stable, so equal ranks keep the namespace order of the hierarchy.
+                var matches = EnumerateLeaves(_rootNode)
+                    .Where(node => node.MatchesFilter(filter))
+                    .OrderBy(node => node.GetMatchRank(filter));
+
+                foreach (var node in matches)
                 {
-                    if (node.MatchesFilter(filter))
-                        _searchResults.Add(new TreeNode(
-                            displayName: node.Caption,
-                            node.AssemblyQualifiedName,
-                            node.Caption)
-                        {
-                            Tooltip = node.Tooltip,
-                            Icon = node.Icon,
-                            SearchName = node.SearchName,
-                            QualifiedName = node.QualifiedName,
-                        });
+                    var title = node.Title ?? node.Caption;
+
+                    _searchResults.Add(new TreeNode(
+                        displayName: title,
+                        node.AssemblyQualifiedName,
+                        node.Caption)
+                    {
+                        Title = title,
+                        Context = GetContext(node.Caption, title),
+                        Tooltip = node.Tooltip,
+                        Icon = node.Icon,
+                        SearchName = node.SearchName,
+                        QualifiedName = node.QualifiedName,
+                    });
                 }
             }
         }
@@ -162,7 +171,7 @@ namespace Aspid.FastTools.Types.Editors
             if (TypeSelectorSettings.ShowFavorites)
                 AppendSection(FavoritesSection, TypeSelectorPreferences.LoadFavorites());
 
-            AppendSection(RecentSection, TypeSelectorPreferences.LoadRecents());
+            AppendSection(RecentSection, TypeSelectorPreferences.LoadRecents(accepts: _typesByAqn.ContainsKey));
 
             foreach (var child in _rootNode.Children)
             {
@@ -218,6 +227,12 @@ namespace Aspid.FastTools.Types.Editors
             foreach (var child in node.Children)
                 IndexTypeLeaves(child);
         }
+
+        // The caption is the namespace or group path, a separator and the title; what leads the title is the context.
+        private static string GetContext(string caption, string title) =>
+            caption.Length > title.Length && caption.EndsWith(title, StringComparison.Ordinal)
+                ? caption[..^title.Length].TrimEnd('.', '/')
+                : string.Empty;
 
         private static IEnumerable<TreeNode> EnumerateLeaves(TreeNode node)
         {
