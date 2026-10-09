@@ -9,8 +9,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// Coverage for the two data-preservation copiers behind type switches and Make-unique:
     /// <list type="bullet">
     /// <item><see cref="SerializeReferenceHelpers.CreateInstancePreservingData"/> carries nested
-    /// <c>[SerializeReference]</c> children ACROSS a type switch by reference — JsonUtility alone drops them,
-    /// which silently reset every nested reference before this coverage existed;</item>
+    /// <c>[SerializeReference]</c> children ACROSS a type switch by reference — JsonUtility alone only makes
+    /// copies, so aliases onto the nested instances were lost on a type switch;</item>
     /// <item><see cref="SerializeReferenceHelpers.CloneManagedReferenceGraph"/> deep-copies for Make-unique /
     /// de-alias: children become independent, internal aliasing topology survives, cycles terminate.</item>
     /// </list>
@@ -77,6 +77,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 get => _hidden;
                 set => _hidden = value;
             }
+
+            [field: SerializeReference] public IPart Auto { get; set; }
         }
 
         [Serializable]
@@ -93,6 +95,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 get => _hidden;
                 set => _hidden = value;
             }
+
+            [field: SerializeReference] public IPart Auto { get; set; }
         }
 
         [Test]
@@ -220,26 +224,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void PrivateSerializeReferenceField_IsCarriedOnTypeSwitch()
         {
-            var previous = new Rig { Hidden = new Gem { power = 8 } };
+            var previous = new Rig { Hidden = new Gem { power = 8 }, Auto = new Gem { power = 9 } };
 
             var switched = (OtherRig)SerializeReferenceHelpers.CreateInstancePreservingData(
                 typeof(OtherRig), previous);
 
             Assert.AreSame(previous.Hidden, switched.Hidden,
                 "Unity serializes a private [SerializeReference] field without [SerializeField] too.");
+            Assert.AreSame(previous.Auto, switched.Auto,
+                "The backing field of a [field: SerializeReference] auto-property must carry over.");
         }
 
         [Test]
         public void PrivateSerializeReferenceField_IsClonedWithItsAliases()
         {
             var shared = new Gem { power = 8 };
-            var source = new Rig { gem = shared, Hidden = shared };
+            var source = new Rig { gem = shared, Hidden = shared, Auto = shared };
 
             var clone = (Rig)SerializeReferenceHelpers.CloneManagedReferenceGraph(source);
 
             AssertIndependentCopy(source.Hidden, clone.Hidden, where: "a private field");
             Assert.AreSame(clone.gem, clone.Hidden,
                 "A private field aliasing a public one must alias the same copy.");
+            Assert.AreSame(clone.gem, clone.Auto,
+                "An auto-property backing field aliasing a public one must alias the same copy.");
         }
 
         private static Rig CreateRig() => new()
