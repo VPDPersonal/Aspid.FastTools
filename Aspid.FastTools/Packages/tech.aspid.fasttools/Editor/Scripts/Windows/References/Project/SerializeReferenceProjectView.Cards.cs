@@ -14,6 +14,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal sealed partial class SerializeReferenceProjectView
     {
+        // A card builds this many rows, then offers Show more, so thousands of entries stay cheap to build.
+        private const int RowsPerPage = 200;
+
         private const string GroupClass = RootClass + "__group";
         private const string GroupMigrateClass = GroupClass + "--migrate";
         private const string GroupHeaderHoverClass = GroupClass + "--header-hover";
@@ -28,6 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupFixAllMigrateClass = GroupFixAllClass + "--migrate";
         private const string GroupActionClass = RootClass + "__group-action";
         private const string GroupActionInfoClass = GroupActionClass + "--info";
+        private const string GroupMoreClass = RootClass + "__group-more";
         private const string GroupEntryClass = RootClass + "__group-entry";
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
@@ -65,8 +69,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var action = BuildBulkActionRow(group, migration);
             if (action is not null) card.AddChild(action);
 
-            foreach (var entry in group.Entries)
-                card.AddChild(BuildGroupEntryRow(entry));
+            AddPagedRows(card, "missing|" + SerializeReferenceHelpers.StoredTypeKey(group.StoredType), group.Entries,
+                BuildGroupEntryRow);
 
             return card;
         }
@@ -107,19 +111,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     () => ApplyTypeNameFix(group, suggestion)));
             }
 
-            foreach (var entry in group.Entries)
-            {
-                var path = MakeSelectable(new Label(entry.AssetPath).AddClass(GroupEntryPathClass));
-                path.tooltip = entry.AssetPath;
-
-                var field = MakeSelectable(new Label(SerializeReferenceProjectSummary.DescribeTypeNameField(entry.Entry))
-                    .AddClass(GroupEntryFieldClass));
-                field.tooltip = entry.Entry.TypeName;
-
-                card.AddChild(BuildEntryRow(entry.AssetPath, path, field));
-            }
+            AddPagedRows(card, "name|" + MissingTypeNames.GroupKey(group.TypeName), group.Entries, BuildTypeNameEntryRow);
 
             return card;
+        }
+
+        private VisualElement BuildTypeNameEntryRow(MissingTypeNameLocation entry)
+        {
+            var path = MakeSelectable(new Label(entry.AssetPath).AddClass(GroupEntryPathClass));
+            path.tooltip = entry.AssetPath;
+
+            var field = MakeSelectable(new Label(SerializeReferenceProjectSummary.DescribeTypeNameField(entry.Entry))
+                .AddClass(GroupEntryFieldClass));
+            field.tooltip = entry.Entry.TypeName;
+
+            return BuildEntryRow(entry.AssetPath, path, field);
         }
 
         private VisualElement BuildBulkActionRow(MissingReferenceGroup group, MissingReferenceMigration migration)
@@ -156,6 +162,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return row;
         }
 
+        // The first rows of a card, then a Show more row for the rest. Show more rebuilds the list instead of
+        // appending, so keyboard navigation keeps the order of the rows on screen.
+        private void AddPagedRows<T>(
+            VisualElement card, string key, IReadOnlyList<T> entries, Func<T, VisualElement> buildRow)
+        {
+            var shown = Math.Min(entries.Count, _shownRows.GetValueOrDefault(key, RowsPerPage));
+
+            for (var i = 0; i < shown; i++)
+                card.AddChild(buildRow(entries[i]));
+
+            if (shown == entries.Count) return;
+
+            void ShowMore()
+            {
+                _shownRows[key] = shown + RowsPerPage;
+                RerenderAfterBulkEdit();
+            }
+
+            var more = new Label(SerializeReferenceProjectSummary.BuildShowMoreText(shown, entries.Count))
+                .AddClass(GroupMoreClass);
+            more.tooltip = $"Show the next {Math.Min(RowsPerPage, entries.Count - shown)} rows.";
+            more.RegisterCallback<ClickEvent>(_ => ShowMore());
+            RegisterNavTarget(more, ShowMore);
+
+            card.AddChild(more);
+        }
+
         private VisualElement BuildRequiredGroupCard(IReadOnlyList<GateViolation> violations)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -171,9 +204,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             AddGroupDivider(card, withSweep: false);
 
-            var labels = new ViolationFieldLabels();
-            foreach (var violation in violations)
-                card.AddChild(BuildRequiredViolationRow(violation, labels));
+            AddPagedRows(card, "required", violations, BuildRequiredViolationRow);
 
             return card;
         }
@@ -195,8 +226,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             AddGroupDivider(card, withSweep: false);
 
-            foreach (var entry in overrides)
-                card.AddChild(BuildOverrideEntryRow(entry));
+            AddPagedRows(card, "overrides", overrides, BuildOverrideEntryRow);
 
             return card;
         }
@@ -273,12 +303,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return BuildEntryRow(entry.AssetPath, path, rid);
         }
 
-        private VisualElement BuildRequiredViolationRow(GateViolation violation, ViolationFieldLabels labels)
+        private VisualElement BuildRequiredViolationRow(GateViolation violation)
         {
             var path = MakeSelectable(new Label(violation.AssetPath).AddClass(GroupEntryPathClass));
             path.tooltip = violation.AssetPath;
 
-            var field = MakeSelectable(new Label(labels.Describe(violation)).AddClass(GroupEntryFieldClass));
+            var field = MakeSelectable(new Label(violation.FieldLabel).AddClass(GroupEntryFieldClass));
 
             return BuildEntryRow(violation.AssetPath, path, field);
         }

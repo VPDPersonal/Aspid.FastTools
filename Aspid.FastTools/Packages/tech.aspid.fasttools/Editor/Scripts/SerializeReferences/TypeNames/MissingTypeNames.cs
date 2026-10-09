@@ -126,7 +126,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : Find(assetPath, lines);
         }
 
-        // Every scanned file under Assets/, apart from Excluded scan folders.
+        // Every scanned file under Assets/, apart from Excluded scan folders. Null when the progress bar is cancelled,
+        // since a partial list would pass for a complete one.
         public static List<MissingTypeNameLocation> ScanProject()
         {
             ClearCache();
@@ -138,10 +139,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 for (var i = 0; i < paths.Length; i++)
                 {
-                    EditorUtility.DisplayProgressBar(
-                        "Scanning Type Names",
-                        $"{paths[i]}  ({i + 1}/{paths.Length})",
-                        (float)i / Math.Max(1, paths.Length));
+                    if (EditorUtility.DisplayCancelableProgressBar(
+                            "Scanning Type Names",
+                            $"{paths[i]}  ({i + 1}/{paths.Length})",
+                            (float)i / Math.Max(1, paths.Length)))
+                    {
+                        return null;
+                    }
 
                     result.AddRange(FindInFile(paths[i]));
                 }

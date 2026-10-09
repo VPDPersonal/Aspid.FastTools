@@ -31,9 +31,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // `unscanned` collects the candidates the YAML pass had to skip (binary files, LFS pointers): their missing
         // types, and a scene's required fields, were not checked. Prefabs and assets still get the object-load
         // required check, which does not depend on the file format.
+        // `onProgress` runs before each file and returns true to stop; the result is then null, since a partial sweep
+        // would pass for a clean project.
         public static IReadOnlyList<GateViolation> Scan(
             GateOptions options,
-            Action<float, string> onProgress = null,
+            Func<float, string, bool> onProgress = null,
             ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
             var violations = new List<GateViolation>();
@@ -44,11 +46,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             MissingTypeNames.ClearCache();
 
             var loadedSinceUnload = 0;
+            var stopped = false;
 
             for (var i = 0; i < paths.Length; i++)
             {
                 var path = paths[i];
-                onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
+
+                if (onProgress is not null && onProgress((float)i / Math.Max(1, paths.Length), path))
+                {
+                    stopped = true;
+                    break;
+                }
 
                 var isScene = SerializeReferenceHelpers.IsScene(path);
 
@@ -101,7 +109,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (loadedSinceUnload > 0) EditorUtility.UnloadUnusedAssetsImmediate();
 
-            return violations;
+            return stopped ? null : violations;
         }
 
         // A warning for the log, or null when nothing worth one was skipped. Outside Force Text every binary file warns.
@@ -309,7 +317,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;
                     violations.Add(new GateViolation(assetPath, fileId, rid, default,
-                        GateViolationKind.RequiredUnset, TypeSelectorRequiredGate.GetFieldPath(iterator)));
+                        GateViolationKind.RequiredUnset, TypeSelectorRequiredGate.GetFieldPath(iterator),
+                        componentName: asset.GetType().Name));
                 }
                 while (iterator.Next(enterChildren));
             }

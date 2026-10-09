@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using UnityEditor;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
@@ -58,6 +59,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly ScrollView _scroll;
 
         private readonly NavRing _ring;
+
+        // Rows shown so far per card, by card key; a card that is not here shows its first page.
+        private readonly Dictionary<string, int> _shownRows = new(StringComparer.Ordinal);
 
         private readonly AuditPickerHost _picker;
 
@@ -198,13 +202,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_list is null) return;
 
             _picker.Close();
-            ClearSummaries();
 
-            _requiredCheckDisabled = SerializeReferenceSettings.BuildSeverity == GateSeverity.Off;
-            _requiredViolationsCache = CollectRequiredViolations();
+            // Each sweep has a cancelable progress bar. Cancelling keeps the earlier results, the summaries and their
+            // Undo, since a half-finished scan would pass for a clean project.
+            var requiredCheckDisabled = SerializeReferenceSettings.BuildSeverity == GateSeverity.Off;
+            var requiredViolations = CollectRequiredViolations(requiredCheckDisabled);
+            if (requiredViolations is null) return;
+
+            var typeNames = MissingTypeNames.ScanProject();
+            if (typeNames is null) return;
+
+            ClearSummaries();
+            _shownRows.Clear();
+            MissingReferenceGroup.ClearConstraintCache();
+
+            _requiredCheckDisabled = requiredCheckDisabled;
+            _requiredViolationsCache = requiredViolations;
             _requiredIsWarm = true;
 
-            _typeNamesCache = MissingTypeNames.ScanProject();
+            _typeNamesCache = typeNames;
             _typeNamesIsWarm = true;
 
             RenderWarmGroups();
@@ -218,10 +234,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
         }
 
-        private static IReadOnlyList<GateViolation> CollectRequiredViolations() =>
-            _requiredCheckDisabled
-                ? Array.Empty<GateViolation>()
-                : SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly);
+        // Null when the progress bar is cancelled.
+        private static IReadOnlyList<GateViolation> CollectRequiredViolations(bool checkDisabled)
+        {
+            if (checkDisabled) return Array.Empty<GateViolation>();
+
+            try
+            {
+                return SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (progress, path) =>
+                    EditorUtility.DisplayCancelableProgressBar("Scanning Required Fields", path, progress));
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
+        }
 
         // Keeps a warm audit current after a bulk edit by re-checking only the files it rewrote on disk.
         private static void RefreshRequiredViolations(IEnumerable<string> editedPaths)

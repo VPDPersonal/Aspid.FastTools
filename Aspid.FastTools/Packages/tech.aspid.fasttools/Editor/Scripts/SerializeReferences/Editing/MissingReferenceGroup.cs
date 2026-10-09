@@ -23,8 +23,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public readonly ManagedTypeName StoredType;
         public readonly List<MissingReferenceLocation> Entries = new();
 
+        // Shared by every group and kept across renders, since a render of the window reads the constraint of every
+        // entry. Import and Rescan clear it.
+        private static readonly SerializeReferenceConstraintCache _constraints = new();
+
         private readonly HashSet<string> _files = new(StringComparer.Ordinal);
-        private readonly SerializeReferenceConstraintCache _constraints = new();
 
         public MissingReferenceGroup(ManagedTypeName storedType)
         {
@@ -34,6 +37,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public int FileCount => _files.Count;
 
         public string DisplayName => StoredType.DisplayName;
+
+        public static void ClearConstraintCache() => _constraints.Clear();
 
         public static List<MissingReferenceGroup> CollectFromIndex()
         {

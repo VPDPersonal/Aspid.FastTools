@@ -516,6 +516,21 @@ Button.aspid-fasttools-serialize-reference__open-button {
     color:                                                 var(--aspid-colors-status-info-text-light);
 }
 
+.aspid-fasttools-repair-references__group-more {
+    padding:                                               2px 4px;
+    border-radius:                                         3px;
+    cursor:                                                link;
+    color:                                                 var(--aspid-colors-text-dark);
+    transition-property:                                   background-color, color;
+    transition-duration:                                   0.25s;
+    transition-timing-function:                            ease-out;
+}
+
+.aspid-fasttools-repair-references__group-more:hover {
+    background-color:                                      var(--aspid-colors-bg-dark);
+    color:                                                 var(--aspid-colors-text-light);
+}
+
 .aspid-fasttools-repair-references__group-entry {
     flex-direction:                                        row;
     align-items:                                           center;
@@ -571,6 +586,10 @@ Button.aspid-fasttools-serialize-reference__open-button {
 
 .aspid-fasttools-repair-references__group-action--info.aspid-fasttools-repair-references__nav-target--focused {
     color:                                                 var(--aspid-colors-status-info-text-light);
+}
+
+.aspid-fasttools-repair-references__group-more.aspid-fasttools-repair-references__nav-target--focused {
+    color:                                                 var(--aspid-colors-text-light);
 }
 
 .aspid-fasttools-serialize-reference--drop-target {

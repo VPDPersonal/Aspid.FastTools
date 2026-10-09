@@ -16,6 +16,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The stored assembly-qualified name of a MissingTypeName violation; empty otherwise.
         public readonly string TypeName;
 
+        // The class of the component or asset that holds a required field, read while the scan has it loaded so a
+        // window never loads the file again to label a row; empty for a scene and for the other kinds.
+        public readonly string ComponentName;
+
         public GateViolation(
             string assetPath,
             long fileId,
@@ -24,7 +28,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             GateViolationKind kind,
             string fieldPath,
             bool isOverride = false,
-            string typeName = null)
+            string typeName = null,
+            string componentName = null)
         {
             Rid = rid;
             Kind = kind;
@@ -34,11 +39,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             FieldPath = fieldPath;
             IsOverride = isOverride;
             TypeName = typeName ?? string.Empty;
+            ComponentName = componentName ?? string.Empty;
         }
 
         public static GateViolation ForTypeName(string assetPath, StoredTypeNameEntry entry) =>
             new(assetPath, entry.FileId, entry.Rid, default, GateViolationKind.MissingTypeName, entry.FieldPath,
                 entry.IsOverride, entry.TypeName);
+
+        // The row label of a field: "Component.field", or the bare path when the component is unknown.
+        public string FieldLabel => string.IsNullOrEmpty(ComponentName) ? FieldPath : $"{ComponentName}.{FieldPath}";
 
         // The report's stored-name column: the class of a managed reference, or the whole stored type name.
         public string StoredName => Kind == GateViolationKind.MissingTypeName ? TypeName : StoredType.Class ?? string.Empty;

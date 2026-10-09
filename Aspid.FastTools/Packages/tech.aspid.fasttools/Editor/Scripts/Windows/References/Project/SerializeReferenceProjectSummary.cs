@@ -75,6 +75,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{entryText} · {fileText}";
         }
 
+        public static string BuildShowMoreText(int shown, int total) =>
+            $"Show more ({shown} of {total} shown)";
+
         public static string BuildTypeNameCountText(MissingTypeNameGroup group)
         {
             var entries = group.Entries.Count;
