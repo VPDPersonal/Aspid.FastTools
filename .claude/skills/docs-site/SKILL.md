@@ -361,6 +361,11 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/` from the root `CHANGELOG*.md`. Because the
   copies are untracked, their "Last updated" date is stamped from the **source file's last commit**. Docs and tutorial
   pages are tracked, so Docusaurus reads their dates from git itself; an uncommitted page shows no date.
+- The remark plugins and the pure parts of the site scripts have tests in `Website/scripts/*.test.mjs`.
+  `intro-banner.test.mjs` runs the English and Russian introduction through `remarkIntroBanner` and expects the banner,
+  the status badges, the install panel, a card for each feature, the resource tiles and the support panel: when you
+  change the shape of the introduction, change the plugin in the same PR. Keep the pure transforms of a script in a
+  module of their own (`changelog-page.mjs`, `docfx-markdown.mjs`) so that a test can import them.
 
 ## Versioning
 
