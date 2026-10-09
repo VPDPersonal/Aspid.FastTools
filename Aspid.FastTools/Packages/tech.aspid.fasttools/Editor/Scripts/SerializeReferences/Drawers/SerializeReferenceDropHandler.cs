@@ -36,6 +36,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (property is null || type is null) return;
 
             var persistent = property.Persistent();
+            if (persistent is null) return;
+
+            using var serializedObject = persistent.serializedObject;
+
             var previous = persistent.managedReferenceValue;
 
             if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
