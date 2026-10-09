@@ -28,6 +28,7 @@ public sealed class DamageConfig : ScriptableObject
 - Rows are **not** created automatically. After adding a field, tell the user to set Default Value and add rows by
   hand or via right-click on the table header -> **Populate Missing Enum Members**. For enums without `[Flags]`,
   only members whose value differs from the default need a row. A flags row set to Default Value can override a partial match.
+  Populate skips `[Obsolete]` members and is unavailable while several objects are selected.
 - `foreach (var (key, value) in table)` yields rows in list order (struct enumerator, no allocation), never the
   default, and skips rows whose key no longer resolves.
 

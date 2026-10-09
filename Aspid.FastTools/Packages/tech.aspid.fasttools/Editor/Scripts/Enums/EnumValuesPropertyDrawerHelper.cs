@@ -214,7 +214,7 @@ namespace Aspid.FastTools.Enums.Editors
                 values.arraySize++;
 
                 var element = values.GetArrayElementAtIndex(values.arraySize - 1);
-                element.FindPropertyRelative("_key").stringValue = member.ToString();
+                element.FindPropertyRelative("_key").stringValue = GetMemberName(type, member);
                 CopyValue(defaultValue, element.FindPropertyRelative("_value"));
 
                 added = true;
@@ -239,6 +239,29 @@ namespace Aspid.FastTools.Enums.Editors
             return GetDistinctMembers(enumType).Where(member => !obsolete.Contains(EnumInfo.ToInt64(member)));
         }
 
+        // Enum.ToString() may name an [Obsolete] alias of a value that also has a live name: the key takes the live one.
+        private static string GetMemberName(Type enumType, Enum member)
+        {
+            var name = member.ToString();
+            const BindingFlags flags = BindingFlags.Public | BindingFlags.Static;
+
+            if (enumType.GetField(name, flags) is not { } named || !IsObsolete(named))
+                return name;
+
+            var key = EnumInfo.ToInt64(member);
+
+            foreach (var field in enumType.GetFields(flags))
+            {
+                if (!IsObsolete(field) && EnumInfo.ToInt64((Enum)field.GetValue(null)) == key)
+                    return field.Name;
+            }
+
+            return name;
+        }
+
+        private static bool IsObsolete(FieldInfo field) =>
+            field.IsDefined(typeof(ObsoleteAttribute), inherit: false);
+
         // A value is obsolete when every name it has is [Obsolete]: an alias without the attribute keeps it shown.
         private static HashSet<long> GetObsoleteValues(Type enumType)
         {
@@ -250,7 +273,7 @@ namespace Aspid.FastTools.Enums.Editors
             foreach (var field in enumType.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 var value = EnumInfo.ToInt64((Enum)field.GetValue(null));
-                (field.IsDefined(typeof(ObsoleteAttribute), inherit: false) ? obsolete : live).Add(value);
+                (IsObsolete(field) ? obsolete : live).Add(value);
             }
 
             obsolete.ExceptWith(live);

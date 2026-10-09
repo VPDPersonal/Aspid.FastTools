@@ -380,7 +380,7 @@ namespace Aspid.FastTools.Enums.Tests
 
             Populate("_ints");
 
-            Assert.AreEqual(2, GetKeys("_ints").Length);
+            CollectionAssert.AreEquivalent(new[] { "None", "New" }, GetKeys("_ints"));
             Assert.IsFalse(HasMissing("_ints"));
         }
 
