@@ -39,7 +39,8 @@ jobs:
             path: Aspid.FastTools.Generators
           - name: Analyzers
             path: Aspid.FastTools.Analyzers
-          # The SerializeReference YAML engine and its NUnit tests, compiled from the package sources without Unity.
+          # The SerializeReference YAML engine (on .NET Standard 2.1) and its NUnit tests, compiled from the package
+          # sources without Unity.
           - name: YAML engine
             path: Aspid.FastTools.YamlTests
     steps:
