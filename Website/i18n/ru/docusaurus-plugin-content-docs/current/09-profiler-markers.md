@@ -72,7 +72,8 @@ public void Step()
 
 ## Ограничения
 
-- Вызывайте <code lang="csharp">this.Marker()</code> внутри собственного типа. Вызовы на объекте другого типа, в статическом классе или вложенном <code lang="csharp">private</code>/<code lang="csharp">protected</code> типе ненадёжны: замер может отсутствовать или попасть в чужой маркер. <code lang="csharp">Marker()</code> объявлен без пространства имён: <code lang="csharp">using</code> не нужен, а автодополнение предлагает его у любого выражения, даже если вызов не получит маркер.
+- Вызывайте <code lang="csharp">this.Marker()</code> внутри собственного типа. Вызовы на объекте другого типа, в статическом классе или вложенном <code lang="csharp">private</code>/<code lang="csharp">protected</code> типе ненадёжны: замер может отсутствовать или попасть в чужой маркер.
+- <code lang="csharp">Marker()</code> объявлен без пространства имён, поэтому <code lang="csharp">using</code> не нужен, а автодополнение предлагает его у любого выражения, даже если вызов не получит маркер.
 - Используйте <code lang="csharp">using</code>. Отдельный вызов <code lang="csharp">this.Marker();</code> начинает замер и не завершает его.
 - Закрывайте <code lang="csharp">using</code> до <code lang="csharp">yield return</code> или <code lang="csharp">await</code>. Корутина или <code lang="csharp">async</code>-метод продолжают работу в другом кадре или потоке, поэтому незакрытый замер оставляет в Profiler несбалансированные сэмплы.
 

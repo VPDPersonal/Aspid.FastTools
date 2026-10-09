@@ -72,7 +72,8 @@ The package marks its own hot paths too, such as <code lang="class-name">EnumVal
 
 ## Limitations
 
-- Call <code lang="csharp">this.Marker()</code> inside its own type. Calls on another type’s instance, in a static class or in a <code lang="csharp">private</code>/<code lang="csharp">protected</code> nested type are unreliable: the measurement may be missing or use another call’s marker. <code lang="csharp">Marker()</code> is declared without a namespace: it needs no <code lang="csharp">using</code>, and code completion offers it on any expression, whether or not the call gets a marker.
+- Call <code lang="csharp">this.Marker()</code> inside its own type. Calls on another type’s instance, in a static class or in a <code lang="csharp">private</code>/<code lang="csharp">protected</code> nested type are unreliable: the measurement may be missing or use another call’s marker.
+- <code lang="csharp">Marker()</code> is declared without a namespace, so it needs no <code lang="csharp">using</code> and code completion offers it on any expression, even when the call gets no marker.
 - Use <code lang="csharp">using</code>. A standalone <code lang="csharp">this.Marker();</code> starts a measurement without ending it.
 - End the <code lang="csharp">using</code> before <code lang="csharp">yield return</code> or <code lang="csharp">await</code>. A coroutine or an <code lang="csharp">async</code> method resumes in a later frame or on another thread, so a measurement left open across them leaves the Profiler samples unbalanced.
 
