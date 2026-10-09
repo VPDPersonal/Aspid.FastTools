@@ -19,9 +19,10 @@ Agent Skills for projects that consume the package in `skills/`.
 - `Aspid.FastTools.YamlTests/` runs the package's SerializeReference YAML engine and its tests outside Unity: it compiles
   those package sources as-is (C# 9, Unity 6000.0's version; the engine against .NET Standard 2.1) and stubs only
   `Debug.LogError` and `AssetDatabase.MakeEditable`, so a Unity API, a newer language feature or a newer .NET API added
-  to that engine breaks this project first. `Aspid.FastTools.TypeTests/` runs `GenericTypeResolver` and its tests the
-  same way, without the .NET Standard check. A test that needs the Editor goes into its fixture's `*.Unity.cs` part,
-  which both projects leave out; the Unity job runs it.
+  to that engine breaks this project first. `Aspid.FastTools.TypeTests/` compiles `GenericTypeResolver`,
+  `GenericArgumentFilter` and `TypeUtility` with the resolver tests in the same way. It stubs only `UnityEngine.Object`
+  and `CompilationPipeline.GetAssemblies`, so a new Unity API in these three files breaks it. A test that needs the
+  Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
   READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
   which the release workflow checks (`scripts/check-version.mjs`). The version also picks the channel, and the script

@@ -43,7 +43,8 @@ jobs:
           # sources without Unity.
           - name: YAML engine
             path: Aspid.FastTools.YamlTests
-          # GenericTypeResolver and its NUnit tests, compiled from the package sources without Unity.
+          # GenericTypeResolver (on .NET Standard 2.1) and its NUnit tests, compiled from the package sources without
+          # Unity.
           - name: Generic type resolver
             path: Aspid.FastTools.TypeTests
     steps:
