@@ -2,7 +2,11 @@ name: Release
 
 # Publishes a release: a pushed v* tag, or a manual run on main. Everything is checked before anything is published:
 # first the cheap checks (preflight), then every test (tests.yml); the upm branch, the UPM tag and the release tag
-# then go out in one atomic push, and the GitHub release is created last.
+# then go out in one atomic push (release), and the GitHub release is created last, in its own job (github-release).
+# If a job fails, use "Re-run failed jobs", not "Re-run all jobs": the finished jobs are kept, and preflight would
+# refuse the UPM tag that the first run already published.
+# The "Release tags" ruleset lets only admins create, move or delete v* tags. A manual run pushes the tag with the
+# workflow token, which a personal repository cannot add to the bypass list, so it fails there: push the tag instead.
 
 on:
   push:
@@ -86,6 +90,18 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
+      # A v* tag can be pushed on any commit, for example one of an open PR. Only a commit that main already contains
+      # is published. This catches a mistake, not abuse: the workflow file comes from the tagged commit.
+      - name: Check the commit is in main
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --quiet origin +refs/heads/main:refs/remotes/origin/main
+          if ! git merge-base --is-ancestor HEAD refs/remotes/origin/main; then
+            echo "::error::Commit $(git rev-parse --short HEAD) is not in main. Delete the tag, merge the commit into main, then tag the merge commit."
+            exit 1
+          fi
+          echo "Commit $(git rev-parse --short HEAD) is in main."
 
       - name: Check tags do not already exist
         run: |
@@ -238,14 +254,26 @@ jobs:
           git push --atomic origin "${REFS[@]}"
           echo "Published $TAG, $UPM_TAG and the $UPM_BRANCH branch."
 
-      # The gh CLI instead of a third-party action, which would run with this job's contents: write token.
-      # If only this step fails, the tags are already out: create the release by hand with
-      #   gh release create v<version> --verify-tag --notes-file <the version's section of CHANGELOG.md>
+  # The gh CLI instead of a third-party action, which would run with this job's contents: write token.
+  # A separate job: the tags are out when it starts, so a failure here is repaired with "Re-run failed jobs",
+  # which runs only this job. Creating the release by hand works too:
+  #   gh release create v<version> --verify-tag --title v<version> --prerelease=<true|false> \
+  #     --notes-file <the version's section of CHANGELOG.md>
+  github-release:
+    name: GitHub release
+    needs: [preflight, release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.preflight.outputs.tag }}
+      PRERELEASE: ${{ needs.preflight.outputs.prerelease }}
+      NOTES: ${{ needs.preflight.outputs.notes }}
+
+    steps:
+      # No checkout: --verify-tag asks the GitHub API whether the tag is out.
       - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          NOTES: ${{ needs.preflight.outputs.notes }}
         run: |
           set -euo pipefail
           printf '%s\n' "$NOTES" > "$RUNNER_TEMP/release-notes.md"
-          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease="$PRERELEASE"
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease="$PRERELEASE"
