@@ -11,7 +11,7 @@
 1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **EnumValues**.
 2. Откройте `Scenes/EnumValues.unity` и войдите в Play Mode: на горячем металле персонаж ускоряется, на мокрых и мягких плитках замедляется, а след окрашивается в цвет поверхности.
 
-Нужен встроенный модуль Unity **Physics** — без него скрипты примера не компилируются.
+Нужен встроенный модуль Unity **Physics**: без него скрипты примера пропускаются, а сцена показывает Missing Script.
 
 ## Попробуйте
 
@@ -43,7 +43,7 @@ public Color GetFootprintColor(SurfaceType surface) =>
 
 ### 3. Enum выбран в инспекторе
 
-Выберите **Walker**. У таблицы **Speed By Terrain** в коде задан только тип значения, а enum <code lang="class-name">TerrainFlags</code> выбран в шапке таблицы. Строка может хранить несколько флагов: строка `Wet` + `Slippery` даёт `0.5`.
+Выберите **Walker**. В нём две таблицы. У **Color Sample Interval** enum <code lang="class-name">SurfaceType</code> задан в коде, как в шаге 1: строки задают интервал в секундах между замерами цвета следа на каждой поверхности. У **Speed By Terrain** в коде задан только тип значения, а enum <code lang="class-name">TerrainFlags</code> выбран в шапке таблицы. Строка может хранить несколько флагов: строка `Wet` + `Slippery` даёт `0.5`.
 
 ```csharp
 [SerializeField] private EnumValues<float> _speedByTerrain;
@@ -57,7 +57,7 @@ var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags)
 
 | Ключ | Строка | Множитель |
 |---|---|---|
-| `Wet, Slippery` (плитка Water) | точная строка `Wet` + `Slippery`, хотя есть строки `Wet` и `Slippery` | `0.5` |
+| `Wet, Slippery` (плитка Water и мокрая плитка Stone) | точная строка `Wet` + `Slippery`, хотя есть строки `Wet` и `Slippery` | `0.5` |
 | `Wet, Hot` | первая строка, все флаги которой есть в ключе: `Wet`, она выше `Hot` | `0.8` |
 | `None` | нет, **Default Value** таблицы | `1` |
 
@@ -65,9 +65,12 @@ var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags)
 
 ### 5. Перебор
 
-Правый клик **Walker → Log Tables**: <code lang="csharp">foreach</code> выдаёт настроенные строки в порядке списка, без значения по умолчанию.
+Правый клик **Walker → Log Tables**: выводятся обе таблицы, сначала **Color Sample Interval**. <code lang="csharp">foreach</code> выдаёт настроенные строки в порядке списка, без значения по умолчанию.
 
 ```csharp
+foreach (var (surface, interval) in _stepInterval)
+    Debug.Log($"Color sample interval {surface}: {interval:0.00}s", this);
+
 foreach (var (flags, multiplier) in _speedByTerrain)
     Debug.Log($"Speed x{multiplier:0.00} on [{flags}]", this);
 ```
