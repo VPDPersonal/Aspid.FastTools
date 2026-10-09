@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {definedClasses, fragmentsIn, hashedClasses, isSiteClass, matchingClasses} from './check-selectors.mjs';
+import {classifyFragments, definedClasses, fragmentsIn, hashedClasses, isSiteClass, matchingClasses} from './check-selectors.mjs';
 
 test('fragments are read from CSS and from selectors in JS strings', () => {
   const css = ".navbar__items--right > [class*='colorModeToggle_'] { order: 3; }\na[class^=\"nav\"], [class*=card_] {}";
@@ -14,6 +14,11 @@ test('only CSS-module classes with a four character hash count as built classes'
   const css = '.docMainContainer_q81F{flex:1}.navbar__item,.footer__item{margin:0}.card__body.sidebar_label{x:0}'
     + '.buttonGroup_w8dF>button:hover{x:0}a[href$=".woff2"]{x:0}';
   assert.deepEqual([...hashedClasses(css)].sort(), ['buttonGroup_w8dF', 'docMainContainer_q81F']);
+});
+
+test('a hash may contain an underscore', () => {
+  const css = '.navbarHideable_f_bj{x:0}.footerLogoLink_H9z_{x:0}.announcementBarContent_U_hK{x:0}.menu__link{x:0}.card__body{x:0}';
+  assert.deepEqual([...hashedClasses(css)].sort(), ['announcementBarContent_U_hK', 'footerLogoLink_H9z_', 'navbarHideable_f_bj']);
 });
 
 test('a fragment matches the hashed classes that contain it', () => {
@@ -34,6 +39,17 @@ test('a fragment that the site CSS modules also produce is the site\'s own', () 
   assert.ok(isSiteClass('docItemContainer_', locals));
   assert.ok(!isSiteClass('docMainContainer_', locals));
   assert.ok(!isSiteClass('sidebar_', locals));
+});
+
+test('fragments are sorted into matched, missing and left to the site', () => {
+  const built = new Set(['docMainContainer_q81F', 'navbarHideable_f_bj', 'card_Ihdi']);
+  const locals = new Set(['card']);
+  const fragments = new Set(['navbarHideable_', 'card_', 'docRoot_', 'docMainContainer_']);
+  assert.deepEqual(classifyFragments(fragments, locals, built), {
+    matched: ['docMainContainer_', 'navbarHideable_'],
+    missing: ['docRoot_'],
+    skipped: ['card_'],
+  });
 });
 
 test('the site sources still select Docusaurus classes by fragment', () => {

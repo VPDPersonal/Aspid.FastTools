@@ -353,10 +353,11 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   `Website/docs/`, `Website/tutorials/` (`.md` and `.mdx`), the sample READMEs and `CHANGELOG.md`; the package README
   and the root README have none. The two changelogs must also list the same releases (version and date) and the same
   number of entries in every section.
-- `npm --prefix Website run check-selectors` (CI, after the build) looks in the built stylesheets for every Docusaurus
-  class that the site selects by a name fragment (`[class*='docMainContainer_']`). A Docusaurus update can rename such
-  a hashed class without failing the build. A new fragment in the site CSS or JS needs no list: the script reads the
-  sources. Public names (`theme-*`, `menu__link`) have no hash and are not checked.
+- `npm --prefix Website run check-selectors` (CI, after the build) looks in the built stylesheets for a hashed class
+  for every name fragment that the site selects (`[class*='docMainContainer_']`). A Docusaurus update can rename such
+  a class without failing the build. A new fragment in the site CSS or JS needs no list: the script reads the sources.
+  A fragment that a class of the site's own CSS modules also produces (`card_`, `header_`) is listed as not checked,
+  because the build cannot tell the two apart. Public names (`theme-*`, `menu__link`) have no hash and are not checked.
 - `Website/scripts/sync-changelog.mjs` (also run by `prestart`/`prebuild`) builds `Website/changelog/` and
   `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/` from the root `CHANGELOG*.md`. Because the
   copies are untracked, their "Last updated" date is stamped from the **source file's last commit**. Docs and tutorial

@@ -6,8 +6,9 @@
  * layout breaks without a message. This script collects every fragment from `src/` and `docusaurus.config.js` and looks
  * for a hashed class that contains it in the stylesheets of `build/`. Run it after `npm run build`.
  *
- * Fragments that the site's own CSS modules also produce (`card_` ← `.card`, `docItemContainer_`) are skipped: the site
- * defines those classes itself. Public class names (`theme-*`, Infima's `menu__link`) have no hash and are not checked.
+ * Fragments that the site's own CSS modules also produce (`card_` ← `.card`, `docItemContainer_`) are skipped and listed:
+ * the build cannot tell the site's class from a Docusaurus one. Public class names (`theme-*`, Infima's `menu__link`)
+ * have no hash and are not checked.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -33,14 +34,28 @@ export function isSiteClass(fragment, localNames) {
   return [...localNames].some(name => `${name}_xxxx`.includes(fragment));
 }
 
-/** The CSS-module classes in the built stylesheets: `local_hash`, where the hash is four base64 characters. */
+/**
+ * The CSS-module classes in the built stylesheets: `local_hash`, where the hash is four base64url characters and
+ * may contain `_` (`navbarHideable_f_bj`). A BEM name such as `footer__col` also passes: the check only gets more lenient.
+ */
 export function hashedClasses(css) {
-  return new Set([...definedClasses(css)].filter(name => /[A-Za-z0-9]_[A-Za-z0-9-]{4}$/.test(name)));
+  return new Set([...definedClasses(css)].filter(name => /[A-Za-z0-9]_[A-Za-z0-9_-]{4}$/.test(name)));
 }
 
 /** The hashed class names that a fragment selects, in the order they are found. */
 export function matchingClasses(fragment, classes) {
   return [...classes].filter(name => name.includes(fragment));
+}
+
+/** Sort the fragments into the ones that match a built class, the unmatched ones and the ones left to the site's own CSS. */
+export function classifyFragments(fragments, localNames, builtClasses) {
+  const result = {matched: [], missing: [], skipped: []};
+  for (const fragment of [...fragments].sort()) {
+    if (isSiteClass(fragment, localNames)) result.skipped.push(fragment);
+    else if (matchingClasses(fragment, builtClasses).length) result.matched.push(fragment);
+    else result.missing.push(fragment);
+  }
+  return result;
 }
 
 function walk(dir, accept, found = []) {
@@ -67,17 +82,17 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const localNames = new Set(walk(path.join(siteDir, 'src'), name => name.endsWith('.module.css')).flatMap(file => [...definedClasses(read(file))]));
   const built = new Set(walk(buildDir, name => name.endsWith('.css')).flatMap(file => [...hashedClasses(read(file))]));
 
-  let missing = 0;
-  for (const fragment of [...fragments].sort()) {
-    if (isSiteClass(fragment, localNames) || matchingClasses(fragment, built).length) continue;
-    console.error(`[class*='${fragment}'] matches no class in ${path.relative(process.cwd(), buildDir) || '.'}`);
-    missing++;
+  const {matched, missing, skipped} = classifyFragments(fragments, localNames, built);
+  const where = path.relative(process.cwd(), buildDir) || '.';
+  for (const fragment of missing) console.error(`[class*='${fragment}'] matches no class in ${where}`);
+  if (skipped.length) {
+    console.log(`Not checked, the site's own CSS modules also define a class with that name: ${skipped.join(', ')}.`);
   }
-  if (missing) {
-    console.error(`\n${missing} selector(s) match nothing. A Docusaurus update probably renamed the class: find its new name in `
+  if (missing.length) {
+    console.error(`\n${missing.length} selector(s) match nothing. A Docusaurus update probably renamed the class: find its new name in `
       + 'node_modules/@docusaurus/theme-classic/lib/theme and update the site CSS and JS.');
     process.exitCode = 1;
   } else {
-    console.log(`Every one of the ${fragments.size} class fragments of the site matches a class in the build.`);
+    console.log(`${matched.length} of ${fragments.size} class fragments of the site match a class in the build.`);
   }
 }
