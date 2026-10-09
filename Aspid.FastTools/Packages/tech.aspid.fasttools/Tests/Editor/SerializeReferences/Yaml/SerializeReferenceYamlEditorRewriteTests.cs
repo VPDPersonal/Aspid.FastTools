@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 
 // ReSharper disable once CheckNamespace
@@ -13,6 +15,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceYamlEditorRewriteTests
     {
+        private static readonly ManagedTypeName Pistol = new(
+            "Aspid.FastTools.Samples.SerializeReferences",
+            "Aspid.FastTools.Samples.SerializeReferences",
+            "Pistol");
+
         private string _path;
 
         [SetUp]
@@ -182,5 +189,94 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 YamlFixtures.Delete(path);
             }
         }
+
+        // The first three line breaks use the other style; the writer re-emits every line with the dominant one.
+        [TestCase("\r\n", "\n")]
+        [TestCase("\n", "\r\n")]
+        public void TryRewriteType_MixedNewlines_WritesTheDominantStyle(string dominant, string other)
+        {
+            var lines = Lf(YamlFixtures.MissingTypePrefab).TrimEnd('\n').Split('\n');
+            var builder = new StringBuilder();
+            for (var i = 0; i < lines.Length; i++) builder.Append(lines[i]).Append(i < 3 ? other : dominant);
+
+            var path = YamlFixtures.WriteTemp(builder.ToString());
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol));
+
+                var expected = string.Join(dominant, lines).Replace("class: GhostPistol,", "class: Pistol,") + dominant;
+                Assert.AreEqual(expected, File.ReadAllText(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryRewriteType_WithoutTrailingNewline_AddsNone()
+        {
+            var yaml = Lf(YamlFixtures.MissingTypePrefab).TrimEnd('\n');
+            var path = YamlFixtures.WriteTemp(yaml);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol));
+
+                Assert.AreEqual(yaml.Replace("class: GhostPistol,", "class: Pistol,"), File.ReadAllText(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryRewriteType_NonAsciiText_KeepsEveryOtherByte()
+        {
+            var yaml = Lf(YamlFixtures.MissingTypePrefab)
+                .Replace("  m_Name: LoadoutMissingType", "  m_Name: Снаряжение 装备 🎯")
+                .Replace("        _magazineSize: 12\n", "        _magazineSize: 12\n        _label: Пистолет «Призрак» ✓\n");
+            var path = YamlFixtures.WriteTemp(yaml);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol));
+
+                var expected = new UTF8Encoding(false).GetBytes(yaml.Replace("class: GhostPistol,", "class: Pistol,"));
+                CollectionAssert.AreEqual(expected, File.ReadAllBytes(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        // Empty lists sit beside the fields and as the last line of the entry just before the removed one.
+        [Test]
+        public void TryRemoveEntry_EmptyLists_StayWithTheirOwners()
+        {
+            var yaml = Lf(YamlFixtures.MissingTypePrefab)
+                .Replace("  _onHitEffect:\n", "  _empty: []\n  _onHitEffect:\n")
+                .Replace("        _magazineSize: 12\n", "        _magazineSize: 12\n        _upgrades: []\n");
+            var path = YamlFixtures.WriteTemp(yaml);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRemoveEntry(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid));
+
+                var shotgun = yaml.IndexOf("    - rid: 1003\n", StringComparison.Ordinal);
+                var freeze = yaml.IndexOf("    - rid: 1004\n", StringComparison.Ordinal);
+                Assert.AreEqual(yaml.Remove(shotgun, freeze - shotgun), File.ReadAllText(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        private static string Lf(string yaml) =>
+            yaml.Replace("\r\n", "\n");
     }
 }

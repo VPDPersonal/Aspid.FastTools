@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 
 // ReSharper disable once CheckNamespace
@@ -203,6 +205,89 @@ MonoBehaviour:
             {
                 YamlFixtures.Delete(path);
             }
+        }
+
+        // ---- edit check: the writer re-scans an edit and refuses one that breaks other entries or documents ----------
+
+        [Test]
+        public void IsVerifiedEdit_ExactEntryRemoval_Passes()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RemoveLines(source, Array.IndexOf(source, "    - rid: 1002"), count: 5);
+
+            Assert.IsTrue(SerializeReferenceYamlEditor.IsVerifiedEdit(
+                source, result, YamlFixtures.MonoBehaviourFileId, removedRid: YamlFixtures.GhostPistolRid));
+        }
+
+        [Test]
+        public void IsVerifiedEdit_RemovalThatCutsIntoTheNextEntry_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RemoveLines(source, Array.IndexOf(source, "    - rid: 1002"), count: 6);
+
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(
+                source, result, YamlFixtures.MonoBehaviourFileId, removedRid: YamlFixtures.GhostPistolRid),
+                "The removal also took the header of rid 1003.");
+        }
+
+        [Test]
+        public void IsVerifiedEdit_RemovalThatLeavesTheEntry_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RemoveLines(source, Array.IndexOf(source, "        _magazineSize: 12"), count: 1);
+
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(
+                source, result, YamlFixtures.MonoBehaviourFileId, removedRid: YamlFixtures.GhostPistolRid));
+        }
+
+        [Test]
+        public void IsVerifiedEdit_RemovalThatLeavesPartOfTheEntry_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RemoveLines(source, Array.IndexOf(source, "    - rid: 1002"), count: 4);
+
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(
+                source, result, YamlFixtures.MonoBehaviourFileId, removedRid: YamlFixtures.GhostPistolRid),
+                "The last data line of rid 1002 is left behind and joins the entry above it.");
+        }
+
+        [Test]
+        public void IsVerifiedEdit_TypeRewriteOfAnotherEntry_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = (string[])source.Clone();
+            var shotgun = Array.FindIndex(source, line => line.Contains("class: Shotgun,"));
+            result[shotgun] = result[shotgun].Replace("class: Shotgun,", "class: Pistol,");
+
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(source, result, YamlFixtures.MonoBehaviourFileId,
+                removedRid: YamlFixtures.GhostPistolRid, addedRid: YamlFixtures.GhostPistolRid));
+        }
+
+        [Test]
+        public void IsVerifiedEdit_EditThatDropsADocumentHeader_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RemoveLines(source, Array.IndexOf(source, "--- !u!114 &6500000000000000003"), count: 1);
+
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(source, result, YamlFixtures.MonoBehaviourFileId));
+        }
+
+        [Test]
+        public void IsVerifiedEdit_EditThatDropsTheTagDirective_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RemoveLines(source, index: 1, count: 1);
+
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(source, result, YamlFixtures.MonoBehaviourFileId));
+        }
+
+        private static string[] Lines(string yaml) =>
+            yaml.Replace("\r\n", "\n").TrimEnd('\n').Split('\n');
+
+        private static string[] RemoveLines(string[] lines, int index, int count)
+        {
+            Assert.GreaterOrEqual(index, 0, "Fixture sanity: the line to remove must exist.");
+            return lines.Take(index).Concat(lines.Skip(index + count)).ToArray();
         }
     }
 }

@@ -19,6 +19,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // occurrence count is the number of sentinels in the file.
         private const string NullSentinelType = "type: {class: , ns: , asm: }";
 
+        private const long UserRidFieldsFileId = 11400000L;
+        private const long UserRidFieldsTarget = 1002L;
+
+        // Fields of the user's own named rid hold 1002, the rid being cleared: one beside the object's other fields, the
+        // first key of a list element, the last field of a struct, the first field of a managed reference, the last
+        // field of a struct inside it, and the only field of another managed reference. Only _weapon and _list[0]
+        // point at rid 1002.
+        private const string UserRidFieldsAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: UserRidFields
+  rid: 1002
+  _weapon:
+    rid: 1002
+  _list:
+  - rid: 1002
+  - rid: 1003
+  _records:
+  - rid: 1002
+    _name: first
+  _config:
+    _name: config
+    rid: 1002
+  references:
+    version: 2
+    RefIds:
+    - rid: 1002
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+    - rid: 1003
+      type: {class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        rid: 1002
+        _pellets: 8
+        _ammo:
+          _count: 4
+          rid: 1002
+    - rid: 1004
+      type: {class: Counter, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        rid: 1002
+";
+
         [Test]
         public void TryNullReference_ListElement_NullsPointer_RemovesEntry_AddsSentinel()
         {
@@ -193,6 +241,70 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 Assert.AreEqual(0, SerializeReferenceYamlEditor.CountPointersTo(
                     path, YamlFixtures.MonoBehaviourFileId, 987654));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryNullReference_UserFieldsNamedRid_KeepTheirValues()
+        {
+            var path = YamlFixtures.WriteTemp(UserRidFieldsAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(path, UserRidFieldsFileId, UserRidFieldsTarget));
+
+                var after = File.ReadAllText(path);
+                Assert.AreEqual(6, CountOccurrences(after, "rid: 1002"), "Every field of the user's own named rid must keep 1002.");
+                StringAssert.DoesNotContain("GhostPistol", after);
+                Assert.AreEqual(1, CountOccurrences(after, NullSentinelType));
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, UserRidFieldsFileId, "_weapon", out var weapon));
+                Assert.AreEqual(-2, weapon, "The field pointer must be nulled.");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, UserRidFieldsFileId, "_list.Array.data[0]", out var first));
+                Assert.AreEqual(-2, first, "The list element pointer must be nulled.");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, UserRidFieldsFileId, "_list.Array.data[1]", out var second));
+                Assert.AreEqual(1003, second);
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void CountPointersTo_UserFieldsNamedRid_CountsOnlyPointers()
+        {
+            var path = YamlFixtures.WriteTemp(UserRidFieldsAsset);
+            try
+            {
+                Assert.AreEqual(2, SerializeReferenceYamlEditor.CountPointersTo(path, UserRidFieldsFileId, UserRidFieldsTarget));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        // On CoreCLR, Swedish formats -2 with U+2212, which Unity cannot read.
+        [Test]
+        [SetCulture("sv-SE")]
+        public void TryNullReference_LocaleWithUnicodeMinus_WritesAsciiNullId()
+        {
+            var path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid));
+
+                Assert.AreEqual(2, CountOccurrences(File.ReadAllText(path), "- rid: -2"),
+                    "The nulled pointer and the null sentinel must use an ASCII minus.");
             }
             finally
             {

@@ -50,7 +50,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 for (var i = 0; i < lines.Length; i++)
                 {
                     var header = DocumentHeader.Match(lines[i]);
-                    if (!header.Success || !long.TryParse(header.Groups["id"].Value, out var fileId)) continue;
+                    if (!header.Success || !TryParseId(header.Groups["id"].Value, out var fileId)) continue;
 
                     var end = NextDocumentStart(lines, i + 1);
                     if (HoldsTypeName(lines, i + 1, end))
@@ -116,7 +116,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     edited.Insert(start, line);
                 }
 
-                if (!TryWritePreservingNewlines(assetPath, edited)) return 0;
+                if (!TryWritePreservingNewlines(assetPath, lines, edited)) return 0;
 
                 // Same-tick writes can leave the modification-time key unchanged, so bust the probe cache explicitly.
                 SerializeReferenceYamlProbeCache.ClearCache();
@@ -131,7 +131,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // An inline "{fileID: …, guid: …, type: 3}" mapping for a _script reference, or the null reference.
         public static string FormatScriptReference(long fileId, string guid) =>
-            string.IsNullOrEmpty(guid) ? "{fileID: 0}" : $"{{fileID: {fileId}, guid: {guid}, type: 3}}";
+            string.IsNullOrEmpty(guid) ? "{fileID: 0}" : $"{{fileID: {FormatId(fileId)}, guid: {guid}, type: 3}}";
 
         // Unity writes an assembly-qualified name as a plain scalar. One that YAML would read differently is quoted.
         public static string FormatTypeNameScalar(string typeName)
@@ -228,7 +228,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // A RefIds entry's "rid:" and "type:" name the reference whose data follows.
                     if (frames.Count > 0 && frames[^1] is { IsItem: true } entry && IsRefIdsEntry(frames, frames.Count - 1))
                     {
-                        if (key == "rid" && long.TryParse(value.Trim(), out var entryRid)) entry.Rid = entryRid;
+                        if (key == "rid" && TryParseId(value.Trim(), out var entryRid)) entry.Rid = entryRid;
                         else if (key == "type" && TryReadInlineTypeBody(value, out var body) && TryParseInlineType(body, out var type))
                             entry.ReferenceType = type;
                     }
@@ -409,7 +409,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (string.IsNullOrEmpty(reference)) return;
 
             var id = _referenceFileId.Match(reference);
-            if (id.Success) long.TryParse(id.Groups["id"].Value, out fileId);
+            if (id.Success) TryParseId(id.Groups["id"].Value, out fileId);
 
             // {fileID: 0} is the null reference.
             var match = _referenceGuid.Match(reference);
@@ -423,7 +423,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!_scriptGuidPattern.IsMatch(lines[i])) continue;
 
                 var id = _referenceFileId.Match(lines[i]);
-                return id.Success && long.TryParse(id.Groups["id"].Value, out var fileId) ? fileId : 0;
+                return id.Success && TryParseId(id.Groups["id"].Value, out var fileId) ? fileId : 0;
             }
 
             return 0;
