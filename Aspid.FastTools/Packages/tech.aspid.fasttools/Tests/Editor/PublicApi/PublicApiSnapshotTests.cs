@@ -17,9 +17,14 @@ namespace Aspid.FastTools.Editors.Tests
         private const string WriteVariable = "ASPID_FASTTOOLS_WRITE_PUBLIC_API";
         private const int MaxListedEntries = 50;
 
+        private const string BreakTitle =
+            "Removed or changed (breaks user code: keep the old member as [Obsolete], or record the break in " +
+            "CHANGELOG.md and CHANGELOG.ru.md and mark the PR title with '!'):";
+
         // UNITY_6000_4_OR_NEWER is the newest version guard around public API, so an older Editor compiles a part of
         // the baseline: there the test only checks that nothing outside the baseline appears.
-        // Move this guard together with the first public member under a newer one.
+        // Move this guard and WholeApiVersion together with the first public member under a newer one.
+        private const string WholeApiVersion = "6000.4";
 #if UNITY_6000_4_OR_NEWER
         private static readonly bool HasWholeApi = true;
 #else
@@ -47,7 +52,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             if (Environment.GetEnvironmentVariable(WriteVariable) == "1")
             {
-                Assert.IsTrue(HasWholeApi, "Write the baseline on Unity 6000.4 or newer: an older Editor lacks part of the API.");
+                Assert.IsTrue(HasWholeApi, $"Write the baseline on Unity {WholeApiVersion} or newer: an older Editor lacks part of the API.");
 
                 if (baseline is not null)
                 {
@@ -70,14 +75,14 @@ namespace Aspid.FastTools.Editors.Tests
 
             Assert.Fail(
                 $"The public API differs from {BaselinePath}.\n" +
-                FormatEntries("Removed or changed (breaks user code: keep the old member as [Obsolete], or record the break in CHANGELOG.md):", removed) +
+                FormatEntries(BreakTitle, removed) +
                 FormatEntries("Added:", added) +
                 UpdateHint);
         }
 
         private static string UpdateHint =>
-            $"If the change is intended, run this test with {WriteVariable}=1 on Unity 6000.4 or newer and commit " +
-            "the file (AGENTS.md shows the command).";
+            $"If the change is intended, run this test with {WriteVariable}=1 on Unity {WholeApiVersion} or newer " +
+            "and commit the file (AGENTS.md shows the command).";
 
         private static List<string> GetAssemblyNames(string packagePath) =>
             new[] { "Runtime", "Editor" }
