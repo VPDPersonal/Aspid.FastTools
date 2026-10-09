@@ -20,8 +20,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             " * Aspid FastTools window and settings pages on the light skin, Default-Light, so\n" +
             " * you only need to declare the tokens you want to change.\n" +
             " * Full token list: Packages/tech.aspid.fasttools/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss\n" +
-            " * Fields drawn inside a regular Inspector start from Default-Dark on both skins, and some of their\n" +
-            " * colors come from Unity's editor theme, so these tokens do not change them.\n" +
+            " * Fields drawn inside a regular Inspector start from Default-Dark on both skins and take part of their\n" +
+            " * colors from Unity's editor theme, so these tokens change only part of their look.\n" +
             " */\n" +
             ":root {\n" +
             "    /* Backgrounds (surface palette, dark → light) */\n" +

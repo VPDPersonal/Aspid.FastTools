@@ -7,6 +7,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 {
@@ -118,6 +119,54 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             AspidThemeSettings.OverrideStyleSheet = null;
             yield return null;
             Assert.AreEqual(builtIn, box.resolvedStyle.backgroundColor, "Clearing the override must bring the palette back.");
+        }
+
+        [UnityTest]
+        public IEnumerator Override_WinsOverLightPalette()
+        {
+            yield return null;
+
+            // The light class is set by hand: AddAspidThemeStyleSheets would remove it again on a dark editor skin.
+            // The palettes tie in specificity (:root and a class), so the sheet order must decide.
+            var host = _panel.Root
+                .AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet)
+                .AddStyleSheetFromResources(AspidStyles.LightStyleSheet);
+
+            var box = new VisualElement()
+                .AddClass("aspid-fasttools-background")
+                .AddClass("aspid-fasttools-theme--dark");
+            host.Add(box);
+            yield return null;
+            var dark = box.resolvedStyle.backgroundColor;
+
+            host.AddClass(AspidStyles.PaletteLightClass);
+            yield return null;
+            Assert.AreNotEqual(dark, box.resolvedStyle.backgroundColor, "The light class must switch the palette.");
+
+            host.AddStyleSheet(_override);
+            yield return null;
+            var overridden = new Color(1f / 255f, 2f / 255f, 3f / 255f);
+            Assert.AreEqual(overridden, box.resolvedStyle.backgroundColor, "The override must win over the light palette.");
+        }
+
+        [UnityTest]
+        public IEnumerator OverrideSheet_IsAddedAfterBothPalettes()
+        {
+            yield return null;
+
+            AspidThemeSettings.OverrideStyleSheet = _override;
+            var host = _panel.Root.AddAspidThemeStyleSheets();
+
+            var sheets = new List<StyleSheet>();
+            for (var index = 0; index < host.styleSheets.count; index++)
+                sheets.Add(host.styleSheets[index]);
+
+            var dark = Resources.Load<StyleSheet>(AspidStyles.DefaultStyleSheet);
+            var light = Resources.Load<StyleSheet>(AspidStyles.LightStyleSheet);
+            CollectionAssert.AreEqual(
+                new[] { dark, light, _override },
+                sheets,
+                "The override must come after both palettes, so it wins their ties.");
         }
 
         [Test]
