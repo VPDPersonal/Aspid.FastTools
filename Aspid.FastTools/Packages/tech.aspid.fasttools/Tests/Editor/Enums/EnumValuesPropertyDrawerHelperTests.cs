@@ -402,6 +402,49 @@ namespace Aspid.FastTools.Enums.Tests
             Assert.AreEqual(nameof(Sides.Right), EnumValuesPropertyDrawerHelper.ToKey(toggled));
         }
 
+        [Test]
+        public void SetKey_FlagsWithEveryBitSet_StoresTheDefinedBits()
+        {
+            // The Inspectors hand the field's result to SetKey: EditorGUI.EnumFlagsField returns -1 for Everything.
+            SetEnumType("_ints", typeof(Sides));
+            AddEntry("_ints", nameof(Sides.Left));
+
+            EnumValuesPropertyDrawerHelper.SetKey(GetKeyProperty("_ints"), (Sides)(-1));
+
+            Assert.AreEqual(nameof(Sides.Both), GetKeyProperty("_ints").stringValue);
+        }
+
+        [Test]
+        public void SetKey_FlagsWithEveryBitSet_KeyMatchesTheLookupValue()
+        {
+            SetEnumType("_ints", typeof(Sides));
+            AddEntry("_ints", nameof(Sides.None));
+
+            EnumValuesPropertyDrawerHelper.SetKey(GetKeyProperty("_ints"), (Sides)(-1));
+
+            var entry = _serializedObject.FindProperty("_ints._values").GetArrayElementAtIndex(0);
+            entry.FindPropertyRelative("_value").intValue = 9;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+
+            Assert.AreEqual(9, _host.Ints.GetValue(Sides.Left | Sides.Right));
+        }
+
+        [Test]
+        public void SetKey_RegularEnum_StoresTheMemberName()
+        {
+            SetEnumType("_ints", typeof(Season));
+            AddEntry("_ints", nameof(Season.Winter));
+
+            EnumValuesPropertyDrawerHelper.SetKey(GetKeyProperty("_ints"), Season.Autumn);
+
+            Assert.AreEqual(nameof(Season.Autumn), GetKeyProperty("_ints").stringValue);
+        }
+
+        private SerializedProperty GetKeyProperty(string field) => _serializedObject
+            .FindProperty($"{field}._values")
+            .GetArrayElementAtIndex(0)
+            .FindPropertyRelative("_key");
+
         private void SetEnumType(string field, Type enumType)
         {
             _serializedObject.FindProperty($"{field}._enumType").stringValue = enumType.AssemblyQualifiedName;

@@ -97,7 +97,7 @@ namespace Aspid.FastTools.Enums.Editors
                 : EditorGUI.EnumPopup(rect, enumValue);
 
             if (!Equals(selected, enumValue))
-                keyProperty.SetStringAndApply(selected.ToString());
+                EnumValuesPropertyDrawerHelper.SetKey(keyProperty, selected);
         }
     }
 }

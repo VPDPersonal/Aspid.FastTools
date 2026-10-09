@@ -68,9 +68,9 @@ namespace Aspid.FastTools.Enums.Editors
 
             return root;
 
-            void OnKeyChanged(Enum value) => serializedObject
-                .FindProperty(keyPath)
-                .SetStringAndApply(EnumValuesPropertyDrawerHelper.ToKey(value));
+            void OnKeyChanged(Enum value) => EnumValuesPropertyDrawerHelper.SetKey(
+                serializedObject.FindProperty(keyPath),
+                value);
 
             void UpdateValue()
             {

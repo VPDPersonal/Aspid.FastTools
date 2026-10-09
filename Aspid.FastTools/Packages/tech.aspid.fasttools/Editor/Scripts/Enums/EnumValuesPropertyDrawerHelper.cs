@@ -54,6 +54,10 @@ namespace Aspid.FastTools.Enums.Editors
             return Enum.ToObject(enumType, bits).ToString();
         }
 
+        // Every key write goes through here, so no Inspector can store a key with undefined bits.
+        public static void SetKey(SerializedProperty keyProperty, Enum value) =>
+            keyProperty.SetStringAndApply(ToKey(value));
+
         public static string GetKeyCaption(string key, Enum? enumValue)
         {
             if (enumValue is null)
@@ -111,9 +115,7 @@ namespace Aspid.FastTools.Enums.Editors
             menu.DropDown(rect);
 
             void AddKeyItem(string text, bool isChecked, Enum key) =>
-                menu.AddItem(new GUIContent(text), isChecked, () => serializedObject
-                    .FindProperty(keyPath)
-                    .SetStringAndApply(ToKey(key)));
+                menu.AddItem(new GUIContent(text), isChecked, () => SetKey(serializedObject.FindProperty(keyPath), key));
         }
 
         public static void SyncEntryEnumTypes(SerializedProperty values, SerializedProperty enumType)
