@@ -2,7 +2,7 @@ import React, {useEffect, useId, useMemo, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {useHistory, useLocation} from '@docusaurus/router';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import {prepareIndex, searchEntries} from '../../components/search';
+import {isSearchShortcut, prepareIndex, searchEntries} from '../../components/search';
 import styles from './styles.module.css';
 
 let indexPromise;
@@ -44,7 +44,7 @@ export default function SearchBar() {
     const self = {trigger};
     instances.push(self);
     const onKey = (event) => {
-      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return;
+      if (!isSearchShortcut(event)) return;
       // The first bar whose button is laid out owns the shortcut; a hidden one answers only when no bar is visible.
       const owner = instances.find((instance) => instance.trigger.current?.getClientRects().length) ?? instances[0];
       if (owner !== self) return;
