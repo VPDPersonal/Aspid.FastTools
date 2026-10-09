@@ -351,6 +351,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void UpdateExcludedFolders_Add_AfterExternalEdit_KeepsThePulledFolder()
+        {
+            SaveSharedDefaults();
+            EditSharedSettingsFile(@"_excludedFolders: \[\]", "_excludedFolders:\n  - Assets/Pulled");
+
+            // The facade still holds the empty list from before the edit, as the folders list does after a pull.
+            SerializeReferenceSettings.UpdateExcludedFolders(current => current.Append("Assets/Added").ToArray());
+
+            CollectionAssert.AreEqual(new[] { "Assets/Pulled", "Assets/Added" }, SerializeReferenceSettings.ExcludedFolders);
+            var saved = File.ReadAllText(SharedSettingsPath);
+            StringAssert.Contains("Assets/Pulled", saved, "The save must not drop the folder added by the external edit.");
+            StringAssert.Contains("Assets/Added", saved);
+        }
+
+        [Test]
+        public void UpdateExcludedFolders_Remove_AfterExternalEdit_KeepsThePulledFolder()
+        {
+            SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Removed" };
+            EditSharedSettingsFile("  - Assets/Removed", "  - Assets/Removed\n  - Assets/Pulled");
+
+            SerializeReferenceSettings.UpdateExcludedFolders(current => current.Where(f => f != "Assets/Removed").ToArray());
+
+            CollectionAssert.AreEqual(new[] { "Assets/Pulled" }, SerializeReferenceSettings.ExcludedFolders);
+            var saved = File.ReadAllText(SharedSettingsPath);
+            StringAssert.Contains("Assets/Pulled", saved, "The save must not drop the folder added by the external edit.");
+            StringAssert.DoesNotContain("Assets/Removed", saved);
+        }
+
+        [Test]
         public void BuildGate_AfterExternalEdit_ReadsTheEditedSeverity()
         {
             SaveSharedDefaults();

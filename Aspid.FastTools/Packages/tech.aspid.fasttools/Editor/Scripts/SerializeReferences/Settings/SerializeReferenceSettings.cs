@@ -100,6 +100,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (foldersChanged) ExcludedFoldersChanged?.Invoke();
         }
 
+        // Builds the new list from the file on disk. A caller that reads ExcludedFolders first and assigns later would
+        // write back the list from before a pull, which drops the folders the pull added.
+        public static void UpdateExcludedFolders(Func<string[], string[]> change)
+        {
+            ReloadShared();
+            ExcludedFolders = change(ExcludedFolders);
+        }
+
         public static void ResetSharedToDefaults()
         {
             AutoDeAliasEnabled = true;
