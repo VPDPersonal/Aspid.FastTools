@@ -134,7 +134,7 @@ body:
         - label: "The Editor that uploads is **6000.0.53f1** (the minimum in `package.json`), not the dev project's 6000.4: the store can record the uploading Editor as the minimum Unity version, which lists buyers on 6000.0–6000.3 as unsupported"
         - label: "The Local UPM Package entry shows in the Uploader: the active build target is Standalone, because `UNITY_ASTOOLS_EXPERIMENTAL` is set for the Standalone group only"
         - label: "`CHANGELOG.md` and its `.meta` are in the package folder before the export (`node scripts/package-changelog.mjs vX.Y.Z`, or the `upm/X.Y.Z` tag) and in the exported `.unitypackage`"
-        - label: "Validator (`Tools/Asset Store/Validator`) run on the package: no failures. The types-not-nested-under-a-namespace warnings are expected (`ProfilerMarkerExtensionsForGenerator`, which the generator finds by name; compiler-generated types of the generator DLL): mention them in the submission notes"
+        - label: "Validator (`Tools/Asset Store/Validator`) run on the package: no failures. One warning is expected, \"scripts contain types not nested under a namespace\", for `ProfilerMarkerExtensionsForGenerator` (the generator finds it by name): name that type in the submission notes. The Validator does not report the types of the Roslyn DLLs"
 
   - type: checkboxes
     id: final

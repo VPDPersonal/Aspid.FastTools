@@ -48,6 +48,8 @@ Do every step without questions. Stop at the first failure and report it.
 
    The Editor of `<minimum>` may not be installed (`ls /Applications/Unity/Hub/Editor`). Then use the oldest
    installed 6000.0.x as `<minimum>`. Write that version in the report. The `minimum` job of CI covers `<minimum>`.
+   No 6000.0.x Editor is installed → skip the minimum project. Write that in the report. The `minimum` job of CI
+   covers it.
 7. Run the checks that the release runs:
    - from `.github/workflows/tests.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
      `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` in the repository root;
@@ -71,20 +73,28 @@ Do every step without questions. Stop at the first failure and report it.
 
 1. Find the merge commit: `gh pr view chore/release-<version> --json state,mergeCommit`.
 2. The PR is not merged → say so and stop.
-3. Ask the user in one message: the version, the channel, the commit SHA and subject. Say that the tag starts the
-   Release workflow and that a published tag cannot be replaced.
-4. Wait for a clear yes. Any other answer → stop.
-5. Create the tag: `git tag -a v<version> -m "Release v<version>" <merge-sha>`.
-6. Push it: `git push origin v<version>`.
-7. Find the run of the tag:
+3. Check the consumer skills in the merge commit. The docs tell users to install them from the tag
+   (`npx skills add VPDPersonal/Aspid.FastTools#v<version>`), and a published tag cannot be replaced.
+   - `git ls-tree --name-only <merge-sha>:skills` lists the skill folders. An error or an empty list means that the
+     tag has no skills.
+   - Every folder has a `SKILL.md`: `git ls-tree -r --name-only <merge-sha>:skills | grep -c '/SKILL.md$'` gives the
+     number of folders.
+   - `git ls-tree --name-only origin/main:skills` lists more folders → a skill was merged after the release PR.
+     It is not in this tag.
+4. Ask the user in one message: the version, the channel, the commit SHA and subject, and the result of step 3.
+   Say that the tag starts the Release workflow and that a published tag cannot be replaced.
+5. Wait for a clear yes. Any other answer → stop.
+6. Create the tag: `git tag -a v<version> -m "Release v<version>" <merge-sha>`.
+7. Push it: `git push origin v<version>`.
+8. Find the run of the tag:
    `gh run list --workflow release.yml --branch v<version> --limit 1 --json databaseId,status,conclusion`.
    No run yet → wait 10 seconds and try again. After 6 tries, stop and report.
-8. Run `gh run watch <id> --exit-status` in the background. Go to "Phase 3" when it ends.
+9. Run `gh run watch <id> --exit-status` in the background. Go to "Phase 3" when it ends.
 
 ## Phase 3: check the publication
 
-1. Find the run of the tag as in "Phase 2" step 7.
-2. `status` is not `completed` → go to "Phase 2" step 8.
+1. Find the run of the tag as in "Phase 2" step 8.
+2. `status` is not `completed` → go to "Phase 2" step 9.
 3. `conclusion` is not `success` → go to "Release failed".
 4. Check the GitHub release: `gh release view v<version> --json url,isPrerelease`.
    `isPrerelease` must be true on `upm-preview` and false on `upm`.
@@ -94,10 +104,10 @@ Do every step without questions. Stop at the first failure and report it.
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/package.json?ref=<channel>' --jq .content | base64 -d`.
 7. Check that the package CHANGELOG on the channel has the version's section. The release generates that copy:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/CHANGELOG.md?ref=<channel>' --jq .content | base64 -d`.
-8. Check that the tag has the consumer skills. The docs tell users to install them from the tag
-   (`npx skills add VPDPersonal/Aspid.FastTools#v<version>`):
-   `diff <(git ls-tree --name-only v<version>:skills) <(git ls-tree --name-only origin/main:skills)`.
-   An error or a difference means that users get another set of skills. Put it into the report.
+8. Confirm that the published tag has the consumer skills that "Phase 2" step 3 listed:
+   `git fetch origin tag v<version>`, then `git ls-tree --name-only v<version>:skills`.
+   An error or an empty list means that `npx skills add` finds no skills in the tag. Put it into the report.
+   This step only reports: a published tag cannot be replaced.
 9. **Stable:** find the milestone. Its title is `<version>` or `v<version>`:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/milestones?state=open&per_page=100' --jq '.[] | select(.title == "<version>" or .title == "v<version>") | .number'`.
    No milestone → say so in the report and skip step 10.
@@ -112,7 +122,7 @@ Read the failed step: `gh run view <id> --log-failed`. Then:
 - **The infrastructure failed.** Examples: the Unity process was killed (exit code 137), a runner was lost, a download
   timed out. The log shows no error in the repository, and "Publish release tag and UPM subtree" did not run.
   1. Run `gh run rerun <id> --failed`. Keep the tag.
-  2. Go to "Phase 2" step 8.
+  2. Go to "Phase 2" step 9.
   3. The same step fails again → use the next case.
 - **A step before "Publish release tag and UPM subtree" failed.** Only the `v<version>` tag is out.
   1. Report the cause. A fix goes to `main` in a separate PR.
@@ -132,24 +142,30 @@ The upload is manual and belongs to a **Stable** release. The user signs in and 
     project, some of them changing its `ProjectSettings`.
   - "Pre-exported .unitypackage" is the fallback if Asset Store Tools removes the Local UPM Package entry.
 - **Symbol:** the entry exists only with `UNITY_ASTOOLS_EXPERIMENTAL`. The dev project sets it for the Standalone group
-  only (`Aspid.FastTools/ProjectSettings/ProjectSettings.asset`). Keep it there. The upload project needs the same
-  symbol, and its build target must stay Standalone: on Android or iOS the entry disappears without a message.
+  only (`Aspid.FastTools/ProjectSettings/ProjectSettings.asset`). Keep it there, so that the Uploader and the
+  Validator open in the dev project for a look. Never upload from the dev project: see "Editor". The upload project
+  needs the same symbol, and its build target must stay Standalone: on Android or iOS the entry disappears without a
+  message.
 - **Editor: 6000.0.53f1**, the minimum of `package.json` and `tests.yml`. Asset Store Tools sends the Editor version
   with every request, and the store can record it as the minimum Unity version. An upload from the dev project (6000.4)
-  can list buyers on 6000.0–6000.3 as unsupported. Do not open the dev project in another Editor.
+  can list buyers on 6000.0–6000.3 as unsupported. Do not open the dev project in 6000.0.53f1: it is a 6000.4
+  project, and the downgrade rewrites its files.
 - **Upload project:** a new project on 6000.0.53f1.
-  1. Put the package into `Packages/tech.aspid.fasttools`. Take it from the `upm/<version>` tag after "Phase 3"
-     (`git clone --depth 1 --branch upm/<version> <repository URL>`, then delete `.git`). The tag has the generated
-     `CHANGELOG.md`. Before the tag, run `node scripts/package-changelog.mjs v<version>` and copy the package folder.
+  1. Put the package into `Packages/tech.aspid.fasttools`. Take it from the `upm/<version>` tag after "Phase 3":
+     `git clone --depth 1 --branch upm/<version> https://github.com/VPDPersonal/Aspid.FastTools <upload project>/Packages/tech.aspid.fasttools`,
+     then delete the `.git` folder in it. The tag has the generated `CHANGELOG.md`. Before the tag, run
+     `node scripts/package-changelog.mjs v<version>` and copy the package folder.
   2. Copy `Aspid.FastTools/Packages/com.unity.asset-store-tools` into `Packages/`.
   3. Add `UNITY_ASTOOLS_EXPERIMENTAL` to the Standalone scripting define symbols.
   4. In the Uploader, pick the draft, "Local UPM Package" and `Packages/tech.aspid.fasttools/package.json`.
 - **Validator:** run `Tools/Asset Store/Validator` on the package before the upload. Fix every failure first.
-  The warning "types not nested under a namespace" is expected and stays:
-  - `ProfilerMarkerExtensionsForGenerator` has no namespace on purpose. The generator finds it by name. Do not move it.
-  - The generator DLL has compiler-generated types without a namespace.
+  One warning is expected and stays: "The following scripts contain types not nested under a namespace".
+  - It lists `ProfilerMarkerExtensionsForGenerator`. The type has no namespace on purpose, because the generator
+    finds it by name. Do not move it.
+  - The Validator does not report the types of the Roslyn DLLs. It reads only the DLLs that the Editor has loaded,
+    and it skips compiler-generated names.
 
-  Put both into the submission notes.
+  Put the warning into the submission notes and name that type.
 - **Check the export:** use "Export" and import the `.unitypackage` into a clean 6000.0.53f1 project. The package
   lands in `Packages/tech.aspid.fasttools`, and the Test Runner lists no FastTools tests.
 
