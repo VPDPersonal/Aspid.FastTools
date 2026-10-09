@@ -3,8 +3,8 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using Aspid.FastTools.Types;
-using UnityEngine.UIElements;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
@@ -198,7 +198,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TestCase(typeof(MixedPipelineDrawnEffect), null, true)]
         [TestCase(typeof(MixedPipelineDrawnEffect), typeof(OtherPipelineAsset), true)]
         public void HasDrawerFor_FollowsTheRenderPipelineOfTheDrawer(Type type, Type pipelineType, bool expected) =>
-            Assert.AreEqual(expected, CustomDrawerRegistry.HasDrawerFor(type, isManagedReference: true, pipelineType));
+            Assert.AreEqual(expected, CustomDrawerRegistry.HasDrawerFor(type, isManagedReference: true, pipelineType: pipelineType));
 
         [Test]
         public void DeclaresDrawnAttribute_DrawerMarkedForAnotherPipeline_IsIgnored()

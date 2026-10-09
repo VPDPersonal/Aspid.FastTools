@@ -27,7 +27,7 @@ namespace Aspid.FastTools.Editors
         // Mirrors Unity's lookup: the type and its base classes, then its interfaces, each also by generic definition.
         // An ancestor's drawer applies with useForChildren or, as Unity treats managed references, without it.
         internal static bool HasDrawerFor(Type type, bool isManagedReference = false) =>
-            HasDrawerFor(type, isManagedReference, CurrentPipelineType());
+            HasDrawerFor(type, isManagedReference, pipelineType: CurrentPipelineType());
 
         // pipelineType is the active RenderPipelineAsset type, null in the Built-in pipeline.
         internal static bool HasDrawerFor(Type type, bool isManagedReference, Type pipelineType)
@@ -38,18 +38,18 @@ namespace Aspid.FastTools.Editors
             // without one, so it is part of the key.
             var key = (type, isManagedReference, pipelineType);
             if (Cache.TryGetValue(key, out var hasDrawer)) return hasDrawer;
-            return Cache[key] = Lookup(type, isManagedReference, pipelineType);
+            return Cache[key] = Lookup(type, isManagedReference, pipelineType: pipelineType);
         }
 
         private static bool Lookup(Type type, bool isManagedReference, Type pipelineType)
         {
             for (var current = type; current is not null; current = current.BaseType)
-                if (Matches(current, requested: current == type, isManagedReference, pipelineType))
+                if (Matches(current, requested: current == type, isManagedReference, pipelineType: pipelineType))
                     return true;
 
             // An interface itself was checked above, so every interface listed here is an ancestor.
             foreach (var @interface in type.GetInterfaces())
-                if (Matches(@interface, requested: false, isManagedReference, pipelineType))
+                if (Matches(@interface, requested: false, isManagedReference, pipelineType: pipelineType))
                     return true;
 
             return false;
@@ -69,7 +69,7 @@ namespace Aspid.FastTools.Editors
             foreach (var attribute in field.GetCustomAttributes<PropertyAttribute>(inherit: true))
             {
                 if (attribute.applyToCollection ? isArrayElement : isCollection) continue;
-                if (HasDrawerFor(attribute.GetType(), isManagedReference, pipelineType)) return true;
+                if (HasDrawerFor(attribute.GetType(), isManagedReference, pipelineType: pipelineType)) return true;
             }
 
             return false;
@@ -82,7 +82,7 @@ namespace Aspid.FastTools.Editors
             foreach (var (target, useForChildren, pipelines) in Registrations)
             {
                 if (target != type && target != definition) continue;
-                if (!SupportsPipeline(pipelines, pipelineType)) continue;
+                if (!SupportsPipeline(pipelines, pipelineType: pipelineType)) continue;
                 if (requested || useForChildren || isManagedReference) return true;
             }
 
