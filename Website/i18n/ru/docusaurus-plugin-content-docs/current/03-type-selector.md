@@ -173,6 +173,33 @@ public sealed class Enchanted<T> : Weapon
 - Если все аргументы выводятся из типа поля, закрытый тип возвращается сразу.
 - Интерфейсы, абстрактные классы и скрытые типы в аргументах не предлагаются.
 
+## TypeField
+
+<code lang="class-name">TypeField</code> — поле типа из инспектора в виде элемента UI Toolkit для кастомного инспектора или окна редактора. Привязанное к свойству <code lang="csharp">string</code>, поле записывает assembly-qualified name выбранного типа и подхватывает правки, сделанные в другом месте:
+
+```csharp
+using Aspid.FastTools.Types.Editors;
+
+root.Add(new TypeField(serializedObject.FindProperty("_weaponName"))
+{
+    Types = new[] { typeof(Weapon) }
+});
+```
+
+Как и окно ниже, поле предлагает только конкретные типы, пока <code lang="csharp">Allow</code> не разрешит другие. <code lang="class-name">InspectorTypeField</code> — то же поле с подписью, выровненной по остальным строкам инспектора.
+
+Без свойства поле сообщает о выборе через событие изменения, а имя вы сохраняете сами:
+
+```csharp
+var field = new TypeField("Weapon") { Types = new[] { typeof(Weapon) } };
+field.SetValueFromAssemblyQualifiedNameWithoutNotify(_weaponName);
+field.RegisterValueChangedCallback(_ => _weaponName = field.AssemblyQualifiedName);
+```
+
+Сохранённое имя, по которому тип больше не находится, отображается как `<Missing …>`, а <code lang="csharp">AssemblyQualifiedName</code> возвращает его, пока не выбран другой тип.
+
+UXML создаёт непривязанное поле без базовых типов: привязанное или ограниченное поле создавайте в C#. Все свойства — в справочнике API: [TypeField](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeField).
+
 ## TypeSelectorWindow
 
 <code lang="class-name">TypeSelectorWindow</code> открывает то же окно из кастомного инспектора или окна редактора, например по кнопке UI Toolkit:

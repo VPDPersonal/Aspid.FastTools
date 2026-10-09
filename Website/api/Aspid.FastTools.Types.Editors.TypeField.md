@@ -436,6 +436,14 @@ IMixedValueSupport
 [VisualElementExtensions.ToggleClassesIf\<TypeField\>\(TypeField, bool, ReadOnlySpan\<string\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__),
 [VisualElementExtensions.UnbindFrom\<TypeField\>\(TypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_)
 
+## Remarks
+
+<p>
+UXML creates an unbound field: it ignores <code>binding-path</code>, and [`TypeField.Types`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Types) and [`TypeField.Predicate`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Predicate)
+have no UXML attributes. Create a bound or constrained field in C#.
+</p>
+<p>Not designed for inheritance outside the package.</p>
+
 ## Constructors
 
 ### TypeField\(\) {#Aspid_FastTools_Types_Editors_TypeField__ctor}
@@ -460,6 +468,16 @@ public TypeField(SerializedProperty property)
 
 A string property holding the assembly-qualified type name.
 
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
 ### TypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_UnityEditor_SerializedProperty_}
 
 Creates a bound field: the picked type's name is written to the property, and external edits are
@@ -479,12 +497,42 @@ The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-ref
 
 A string property holding the assembly-qualified type name.
 
+#### Remarks
+
+A pick writes the property before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent. Read the picked type from
+[`newValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1-newValue.html): the field writes through its own copy of the property, so the
+[`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code> still holds the old name.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
+### TypeField\(string\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_}
+
+Creates an unbound field without an initial type; the picked type is reported only through the change event.
+
+```csharp
+public TypeField(string label)
+```
+
+#### Parameters
+
+`label` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
+
 ### TypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_System_Type_}
 
 Creates an unbound field; the picked type is reported only through the change event.
 
 ```csharp
-public TypeField(string label, Type defaultValue = null)
+public TypeField(string label, Type defaultValue)
 ```
 
 #### Parameters
@@ -516,6 +564,37 @@ public TypeAllow Allow { get; set; }
 
 [`TypeAllow.None`](Aspid.FastTools.Types.TypeAllow.md) by default, so only concrete types are offered, unlike
 [`TypeSelectorAttribute.Allow`](Aspid.FastTools.Types.TypeSelectorAttribute.md#Aspid_FastTools_Types_TypeSelectorAttribute_Allow), which defaults to [`TypeAllow.All`](Aspid.FastTools.Types.TypeAllow.md).
+
+### AssemblyQualifiedName {#Aspid_FastTools_Types_Editors_TypeField_AssemblyQualifiedName}
+
+Gets the assembly-qualified name of the selected type, or the stored name of a missing type; an empty
+string when no type is selected.
+
+```csharp
+public string AssemblyQualifiedName { get; }
+```
+
+#### Property Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+### ExcludeEditorOnlyTypes {#Aspid_FastTools_Types_Editors_TypeField_ExcludeEditorOnlyTypes}
+
+Gets or sets a value indicating whether types from editor-only assemblies are left out, for a value that a
+player build must resolve.
+
+```csharp
+[UxmlAttribute]
+public bool ExcludeEditorOnlyTypes { get; set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+#### Remarks
+
+A bound field turns it on when its property belongs to an object of a runtime assembly.
 
 ### HideNoneOption {#Aspid_FastTools_Types_Editors_TypeField_HideNoneOption}
 
@@ -573,6 +652,11 @@ public Type[] Types { get; set; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
+
+#### Remarks
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are dropped. For a closed generic type such as <code>IHandler&lt;int&gt;</code>,
+the dropdown also offers the generic classes that close to it, such as <code>Handler&lt;int&gt;</code>.
 
 ### value {#Aspid_FastTools_Types_Editors_TypeField_value}
 

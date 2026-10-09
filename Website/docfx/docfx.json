@@ -11,6 +11,7 @@
         }
       ],
       "dest": "../api",
+      "filter": "filterConfig.yml",
       "outputFormat": "markdown",
       "includePrivateMembers": false,
       "disableGitFeatures": true,

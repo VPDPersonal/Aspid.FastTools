@@ -1,4 +1,36 @@
-# TypeSelectorWindow and ComponentTypeSelector
+# TypeField, TypeSelectorWindow and ComponentTypeSelector
+
+## TypeField (editor code)
+
+```csharp
+using Aspid.FastTools.Types;
+using Aspid.FastTools.Types.Editors;
+
+// Bound: writes the assembly-qualified name with Undo and follows outside edits.
+root.Add(new TypeField(serializedObject.FindProperty("_weaponName"))
+{
+    Types = new[] { typeof(Weapon) },             // assignable to ALL of them; null entries are dropped
+    Allow = TypeAllow.None,                       // the default: concrete types only
+});
+
+// Unbound: store the name yourself.
+var field = new TypeField("Weapon") { Types = new[] { typeof(Weapon) } };
+field.SetValueFromAssemblyQualifiedNameWithoutNotify(_weaponName);
+field.RegisterValueChangedCallback(_ => _weaponName = field.AssemblyQualifiedName);
+```
+
+- `InspectorTypeField` is the same field with its label aligned to the Inspector rows.
+- The bound constructors accept only a string property; any other property throws `ArgumentException`.
+- A pick writes the property first, then sends `ChangeEvent<Type>`. Read `evt.newValue`: the caller's
+  `SerializedObject` still holds the old name until `Update()`.
+- A stored name that no longer resolves shows `<Missing …>`. `value` is then `null`, but `AssemblyQualifiedName`
+  keeps the stored name: save `AssemblyQualifiedName`, not `value?.AssemblyQualifiedName`.
+- Other members: `Predicate`, `HideNoneOption`, `IsReadOnly`, `ExcludeEditorOnlyTypes` (a bound field sets it for
+  a property of a runtime object).
+- A closed generic base type (`IHandler<int>`) also offers the generic classes that close to it (`Handler<int>`).
+- On a prefab instance an overridden value gets a bold label and **Apply** / **Revert** in its context menu.
+- UXML creates an unbound field: `binding-path` does not bind it, and `Types` and `Predicate` have no UXML
+  attributes. Create a bound or constrained field in C#.
 
 ## TypeSelectorWindow (editor code)
 
