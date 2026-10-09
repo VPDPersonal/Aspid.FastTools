@@ -172,8 +172,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (lines is null) yield break;
 
-            // Data-only: resolving display names would load every asset.
-            foreach (var document in SerializeReferenceGraphScanner.Build(lines))
+            // Nodes only: resolving display names would load every asset, and field paths cost time per pointer.
+            foreach (var document in SerializeReferenceGraphScanner.BuildNodes(lines))
             {
                 foreach (var node in document.Nodes)
                 {

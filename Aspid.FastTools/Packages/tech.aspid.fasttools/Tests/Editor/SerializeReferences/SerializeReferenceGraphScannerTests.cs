@@ -1,5 +1,7 @@
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -141,6 +143,70 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsEmpty(document.Shared, "The shared -2 sentinel must not count as an aliased reference.");
             Assert.IsEmpty(document.Orphans, "There are no real nodes, so nothing can be orphaned.");
         }
+
+        // --- Nodes-only mode, for the project-wide usage index ------------------------------------------------------
+
+        [Test]
+        public void BuildNodes_ReturnsTheNodesOfBuild_WithoutRootsOrEdges()
+        {
+            var full = SingleDocument(_missingPath);
+
+            var documents = SerializeReferenceGraphScanner.BuildNodes(SerializeReferenceYaml.ReadLines(_missingPath));
+
+            Assert.AreEqual(1, documents.Count);
+            Assert.AreEqual(full.FileId, documents[0].FileId);
+            CollectionAssert.AreEqual(Describe(full), Describe(documents[0]));
+
+            Assert.IsEmpty(documents[0].Roots);
+            Assert.IsEmpty(documents[0].Edges);
+            Assert.IsEmpty(documents[0].Shared);
+            Assert.IsEmpty(documents[0].Orphans);
+        }
+
+        [Test]
+        public void BuildNodes_DocumentWithoutRealNodes_IsDropped()
+        {
+            // Build keeps this document for its empty root; the usage index has no node to list in it.
+            var documents = SerializeReferenceGraphScanner.BuildNodes(SerializeReferenceYaml.ReadLines(_allUnassignedPath));
+
+            Assert.IsEmpty(documents);
+        }
+
+        [Test]
+        public void BuildNodes_NullLines_ReturnsNoDocuments()
+        {
+            Assert.IsEmpty(SerializeReferenceGraphScanner.BuildNodes(lines: null));
+        }
+
+        // The roots and edges of a list of this size cost seconds, since each pointer counts its siblings to build a
+        // field path; nodes alone must not. The bound is far above the milliseconds a run takes.
+        [Test]
+        public void BuildNodes_LongList_ReadsEveryNodeWithoutBuildingPaths()
+        {
+            const int count = 8000;
+
+            var yaml = new StringBuilder("--- !u!114 &11400000\nMonoBehaviour:\n  _items:\n");
+            for (var i = 0; i < count; i++) yaml.Append("  - rid: ").Append(1000 + i).Append('\n');
+            yaml.Append("  references:\n    version: 2\n    RefIds:\n");
+            for (var i = 0; i < count; i++)
+            {
+                yaml.Append("    - rid: ").Append(1000 + i).Append('\n');
+                yaml.Append("      type: {class: Vector3, ns: UnityEngine, asm: UnityEngine.CoreModule}\n");
+                yaml.Append("      data:\n        _child:\n          rid: -2\n");
+            }
+
+            var lines = yaml.ToString().Split('\n');
+            var timer = Stopwatch.StartNew();
+            var documents = SerializeReferenceGraphScanner.BuildNodes(lines);
+            timer.Stop();
+
+            Assert.AreEqual(1, documents.Count);
+            Assert.AreEqual(count, documents[0].Nodes.Count);
+            Assert.Less(timer.ElapsedMilliseconds, 5000);
+        }
+
+        private static string[] Describe(ReferenceGraphDocument document) =>
+            document.Nodes.Select(node => $"{node.Rid} {node.StoredType.FullName} {node.Resolves}").ToArray();
 
         private static string LabelOfRoot(ReferenceGraphDocument document, long rid)
         {

@@ -29,7 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var lines = SerializeReferenceYaml.ReadLines(assetPath);
                 if (lines is null) return result;
 
-                AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, result);
+                AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, nodesOnly: false, result);
             }
             catch (Exception)
             {
@@ -39,14 +39,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Text-only, for a sweep that already read the file for another pass.
-        public static List<ReferenceGraphDocument> Build(string[] lines)
+        // Text-only and nodes-only, for a sweep that already read the file for another pass: the documents carry no
+        // roots, edges, shared or orphan sets. Those cost a field path per pointer, which grows with the list length.
+        public static List<ReferenceGraphDocument> BuildNodes(string[] lines)
         {
             var result = new List<ReferenceGraphDocument>();
 
             try
             {
-                if (lines is not null) AddDocuments(lines, typeNames: null, result);
+                if (lines is not null) AddDocuments(lines, typeNames: null, nodesOnly: true, result);
             }
             catch (Exception)
             {
@@ -56,7 +57,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        private static void AddDocuments(string[] lines, Dictionary<long, string> typeNames, List<ReferenceGraphDocument> result)
+        private static void AddDocuments(string[] lines, Dictionary<long, string> typeNames, bool nodesOnly, List<ReferenceGraphDocument> result)
         {
             var headers = CollectHeaders(lines);
 
@@ -65,7 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var (fileId, classId, start) = headers[h];
                 var end = SerializeReferenceYaml.FindDocumentEnd(lines, start + 1);
 
-                var document = BuildDocument(lines, fileId, start, end);
+                var document = BuildDocument(lines, fileId, start, end, nodesOnly);
                 if (document is null) continue;
 
                 document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
@@ -77,16 +78,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Documents without reference entries or field pointers contribute no graph.
-        private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end)
+        private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end, bool nodesOnly)
         {
-            var referencesStart = FindKey(lines, _referencesKey, start, end);
-            var bodyEnd = referencesStart >= 0 ? referencesStart : end;
-
             var refIdsStart = SerializeReferenceYaml.FindRefIdsStart(lines, start, end);
             if (refIdsStart < 0) return null;
 
             var document = new ReferenceGraphDocument { FileId = fileId };
             CollectNodes(lines, refIdsStart, end, document);
+
+            if (nodesOnly) return document.Nodes.Count > 0 ? document : null;
+
+            var referencesStart = FindKey(lines, _referencesKey, start, end);
+            var bodyEnd = referencesStart >= 0 ? referencesStart : end;
 
             var knownRids = new HashSet<long>();
             foreach (var node in document.Nodes) knownRids.Add(node.Rid);
@@ -258,7 +261,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var indent = SerializeReferenceYaml.IndentOf(lines[line]);
                 int next;
 
-                if (lines[line].TrimStart().StartsWith("- "))
+                if (lines[line].TrimStart().StartsWith("- ", StringComparison.Ordinal))
                 {
                     var elementKey = _mappingKey.Match(lines[line]);
                     if (elementKey.Success && !IsStructuralKey(elementKey.Groups["key"].Value))
@@ -273,7 +276,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         var jIndent = SerializeReferenceYaml.IndentOf(lines[j]);
                         if (jIndent > indent) continue;
                         if (jIndent < indent) break;
-                        if (lines[j].TrimStart().StartsWith("- ")) { index++; continue; }
+                        if (lines[j].TrimStart().StartsWith("- ", StringComparison.Ordinal)) { index++; continue; }
 
                         ownerLine = j;
                         break;
