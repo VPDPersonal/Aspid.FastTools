@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
@@ -118,6 +119,101 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual(typeof(IComparable), wrapper.BaseType, "BaseType must stay virtual through the base reference.");
             Assert.AreEqual(typeof(int), wrapper.Type);
             Assert.AreEqual(typeof(int), (Type)wrapper);
+        }
+
+        [Test]
+        public void Equals_SameStoredType_IsEqualWhateverTheConstraint()
+        {
+            var plain = new SerializableType(typeof(ArgumentException));
+            var constrained = new SerializableType<Exception>(typeof(ArgumentException));
+
+            Assert.IsTrue(plain.Equals(constrained));
+            Assert.IsTrue(constrained.Equals((object)plain));
+            Assert.AreEqual(plain.GetHashCode(), constrained.GetHashCode());
+        }
+
+        [Test]
+        public void Equals_DifferentTypes_IsNotEqual()
+        {
+            var wrapper = new SerializableType(typeof(ArgumentException));
+
+            Assert.IsFalse(wrapper.Equals(new SerializableType(typeof(Exception))));
+            Assert.IsFalse(wrapper.Equals(new SerializableType(null)));
+        }
+
+        [Test]
+        public void Equals_Null_IsNotEqual()
+        {
+            var wrapper = new SerializableType(typeof(Exception));
+
+            Assert.IsFalse(wrapper.Equals((SerializableTypeBase)null));
+            Assert.IsFalse(wrapper.Equals((object)null));
+            Assert.IsFalse(wrapper.Equals("not a wrapper"));
+        }
+
+        [Test]
+        public void Equals_EmptyWrappers_AreEqual()
+        {
+            var first = new SerializableType(null);
+            var second = new SerializableType<Exception>(null);
+
+            Assert.IsTrue(first.Equals(second));
+            Assert.AreEqual(first.GetHashCode(), second.GetHashCode());
+        }
+
+        [Test]
+        public void Equals_LoadedName_MatchesTheConstructedWrapper()
+        {
+            var holder = ScriptableObject.CreateInstance<Holder>();
+            try
+            {
+                LoadName(holder, typeof(Exception).AssemblyQualifiedName);
+
+                Assert.IsTrue(holder.wrapper.Equals(new SerializableType(typeof(Exception))));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(holder);
+            }
+        }
+
+        [Test]
+        public void Equals_UnresolvedNames_ComparesTheStoredName()
+        {
+            var first = ScriptableObject.CreateInstance<Holder>();
+            var second = ScriptableObject.CreateInstance<Holder>();
+            try
+            {
+                LoadName(first, $"Missing.Type, {MissingAssembly}");
+                LoadName(second, $"Other.Type, {MissingAssembly}");
+
+                Assert.IsFalse(first.wrapper.Equals(second.wrapper));
+
+                LoadName(second, $"Missing.Type, {MissingAssembly}");
+
+                Assert.IsTrue(first.wrapper.Equals(second.wrapper), "Equal names are equal even when no type resolves.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(first);
+                UnityEngine.Object.DestroyImmediate(second);
+            }
+        }
+
+        [Test]
+        public void Wrapper_WorksAsDictionaryAndHashSetKey()
+        {
+            var counts = new Dictionary<SerializableType, int> { [new SerializableType(typeof(Exception))] = 3 };
+            var unique = new HashSet<SerializableType>
+            {
+                new(typeof(Exception)),
+                new SerializableType<Exception>(typeof(Exception)),
+                new(typeof(ArgumentException)),
+            };
+
+            Assert.AreEqual(3, counts[new SerializableType<Exception>(typeof(Exception))]);
+            Assert.IsFalse(counts.ContainsKey(new SerializableType(typeof(ArgumentException))));
+            Assert.AreEqual(2, unique.Count);
         }
 
         [Test]

@@ -16,7 +16,7 @@ assembly-qualified name and resolves it lazily on first access.
 
 ```csharp
 [Serializable]
-public abstract class SerializableTypeBase : ISerializableType, ISerializationCallbackReceiver
+public abstract class SerializableTypeBase : ISerializableType, IEquatable<SerializableTypeBase>, ISerializationCallbackReceiver
 ```
 
 #### Inheritance
@@ -32,6 +32,7 @@ public abstract class SerializableTypeBase : ISerializableType, ISerializationCa
 #### Implements
 
 [ISerializableType](Aspid.FastTools.Types.ISerializableType.md),
+[IEquatable\<SerializableTypeBase\>](https://learn.microsoft.com/dotnet/api/system.iequatable-1),
 ISerializationCallbackReceiver
 
 
@@ -83,6 +84,11 @@ Managed Stripping Level Low up, a class referenced only by this name can be remo
 A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
 loaded later is not picked up before that.
 </p>
+<p>
+Two wrappers are equal when they store the same assembly-qualified name, whatever their wrapper class or
+constraint, so they work as dictionary keys. <code>==</code> still compares references. The hash code follows the
+stored name: do not change a wrapper that is a key, which includes deserializing it again.
+</p>
 
 ## Properties
 
@@ -131,6 +137,60 @@ public Type? Type { get; }
  [Type](https://learn.microsoft.com/dotnet/api/system.type)?
 
 ## Methods
+
+### Equals\(SerializableTypeBase?\) {#Aspid_FastTools_Types_SerializableTypeBase_Equals_Aspid_FastTools_Types_SerializableTypeBase_}
+
+Determines whether <code class="paramref">other</code> stores the same assembly-qualified name.
+
+```csharp
+public bool Equals(SerializableTypeBase? other)
+```
+
+#### Parameters
+
+`other` [SerializableTypeBase](Aspid.FastTools.Types.SerializableTypeBase.md)?
+
+The wrapper to compare with.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">other</code> is not <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> and stores the same
+name, also when neither stores a type; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+
+### Equals\(object?\) {#Aspid_FastTools_Types_SerializableTypeBase_Equals_System_Object_}
+
+Determines whether <code class="paramref">obj</code> is a wrapper that stores the same assembly-qualified name.
+
+```csharp
+public override bool Equals(object? obj)
+```
+
+#### Parameters
+
+`obj` [object](https://learn.microsoft.com/dotnet/api/system.object)?
+
+The object to compare with.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if [`SerializableTypeBase.Equals`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Equals_Aspid_FastTools_Types_SerializableTypeBase_) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> for
+<code class="paramref">obj</code>; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+
+### GetHashCode\(\) {#Aspid_FastTools_Types_SerializableTypeBase_GetHashCode}
+
+Returns a hash code of the stored assembly-qualified name.
+
+```csharp
+public override int GetHashCode()
+```
+
+#### Returns
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ### ToString\(\) {#Aspid_FastTools_Types_SerializableTypeBase_ToString}
 
