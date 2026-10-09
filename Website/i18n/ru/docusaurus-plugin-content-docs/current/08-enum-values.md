@@ -30,7 +30,8 @@
 | Чем отличаются | <code lang="class-name">EnumValues&lt;TEnum, TValue&gt;</code> | <code lang="class-name">EnumValues&lt;TValue&gt;</code> |
 |---|---|---|
 | Где выбирается enum | Аргумент <code lang="class-name">TEnum</code> | Заголовок таблицы в инспекторе |
-| Ключ в <code lang="function">GetValue</code> и <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
+| Ключ в <code lang="function">GetValue</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> или любой enum |
+| Ключ в <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
 | Ключ другого enum | Не компилируется | Возвращает **Default Value** |
 
 Значения таблицы задаются в инспекторе; из кода их можно только читать.
@@ -121,6 +122,8 @@ if (_multipliers.TryGetValue(
 ```
 
 Если подходящей строки нет, <code lang="csharp">multiplier</code> равен **Default Value**, как и у <code lang="function">GetValue</code>.
+
+В варианте <code lang="class-name">EnumValues&lt;TValue&gt;</code> аргумент конкретного enum, например <code lang="csharp">DamageType.Fire</code>, выбирает <code lang="csharp">GetValue&lt;TEnum&gt;()</code> и <code lang="csharp">TryGetValue&lt;TEnum&gt;()</code>: они не упаковывают ключ.
 
 ## Equals()
 

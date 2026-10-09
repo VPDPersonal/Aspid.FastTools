@@ -30,7 +30,8 @@ For <code lang="csharp">[Flags]</code>, only declared enum members are added aut
 | Difference | <code lang="class-name">EnumValues&lt;TEnum, TValue&gt;</code> | <code lang="class-name">EnumValues&lt;TValue&gt;</code> |
 |---|---|---|
 | Where the enum is picked | The <code lang="class-name">TEnum</code> argument | The table header in the Inspector |
-| Key in <code lang="function">GetValue</code> and <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
+| Key in <code lang="function">GetValue</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> or any enum type |
+| Key in <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
 | A key of another enum | Does not compile | Returns **Default Value** |
 
 Table values are configured in the Inspector and are read-only from code.
@@ -121,6 +122,8 @@ if (_multipliers.TryGetValue(
 ```
 
 When no row matches, <code lang="csharp">multiplier</code> is **Default Value**, as with <code lang="function">GetValue</code>.
+
+With <code lang="class-name">EnumValues&lt;TValue&gt;</code>, an argument of a concrete enum type, such as <code lang="csharp">DamageType.Fire</code>, binds to <code lang="csharp">GetValue&lt;TEnum&gt;()</code> and <code lang="csharp">TryGetValue&lt;TEnum&gt;()</code>, which do not box the key.
 
 ## Equals()
 

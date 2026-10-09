@@ -95,6 +95,12 @@ When the enum type is already known at compile time, prefer
 [`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md) — its Inspector type-picker is read-only.
 </p>
 <p>
+A player resolves the enum by the stored name only, which managed code stripping does not see: from
+Managed Stripping Level Low up, an enum referenced only by this name can be removed from the build.
+The table then logs an error and returns the default value. Keep such enums with <code>[Preserve]</code> or
+<code>link.xml</code>.
+</p>
+<p>
 For <code>[Flags]</code> enums [`EnumValues<T>.Equals`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_Equals_System_Enum_System_Enum_) uses flag-containment semantics
 with special handling for the zero (<code>None</code>) value — two values are considered equal
 only when both are zero or both are non-zero and the first (the lookup value) has all bits
