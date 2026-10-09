@@ -1,5 +1,13 @@
-using System.Threading.Tasks;
 using Xunit;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.CSharp.Testing;
+using Aspid.FastTools.Analyzers.Descriptions;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
     Aspid.FastTools.Analyzers.AspidFastToolsAnalyzer,
     Microsoft.CodeAnalysis.Testing.Verifiers.XUnitVerifier>;
@@ -8,40 +16,60 @@ namespace Aspid.FastTools.Analyzers.Tests;
 
 public class TypeSelectorAnalyzerTests
 {
-    // Minimal stand-ins for the attributes the analyzer matches by full name, so the tests need no Unity / package
-    // references. Appended after the test snippet (which carries the `using` directives) to keep usings at file top.
-    private const string Stubs = @"
+    // Stand-ins for the Unity API that the package sources and the test snippets use, so the tests need no Unity
+    // reference. The analyzer matches these types by full name.
+    private const string UnityStubs = @"
 namespace UnityEngine
 {
     public class Object { }
+    public sealed class SerializeField : System.Attribute { }
     public sealed class SerializeReference : System.Attribute { }
-}
-namespace Aspid.FastTools.Types
-{
-    [System.Flags] public enum TypeAllow { None = 0, Abstract = 1, Interface = 2, All = 3 }
 
-    public sealed class SerializableType { }
-    public sealed class SerializableType<T> { }
-    public sealed class SerializableMonoScript { }
-    public sealed class SerializableMonoScript<T> { }
-
-    public sealed class TypeSelectorAttribute : System.Attribute
+    public abstract class PropertyAttribute : System.Attribute
     {
-        public TypeSelectorAttribute() { }
-        public TypeSelectorAttribute(System.Type type) { }
-        public TypeSelectorAttribute(params System.Type[] types) { }
-        public TypeSelectorAttribute(string assemblyQualifiedName) { }
-        public TypeSelectorAttribute(params string[] assemblyQualifiedNames) { }
-        public TypeAllow Allow { get; set; }
+        protected PropertyAttribute() { }
+        protected PropertyAttribute(bool applyToCollection) { }
+    }
+
+    public sealed class TooltipAttribute : PropertyAttribute
+    {
+        public TooltipAttribute(string tooltip) { }
+    }
+
+    public interface ISerializationCallbackReceiver
+    {
+        void OnBeforeSerialize();
+        void OnAfterDeserialize();
     }
 }";
 
-    private static Task Verify(string code) => VerifyCS.VerifyAnalyzerAsync(code + "\n" + Stubs);
+    // The package's own TypeSelectorAttribute, TypeAllow and Type wrappers, embedded by the csproj: a rename or a
+    // namespace move there fails these tests instead of silently disabling the diagnostics in Unity.
+    private static readonly (string FileName, string Source)[] PackageSources = typeof(TypeSelectorAnalyzerTests).Assembly
+        .GetManifestResourceNames()
+        .Where(name => name.StartsWith("PackageSources/", StringComparison.Ordinal))
+        .Select(name => (Path.GetFileName(name), ReadResource(name)))
+        .ToArray();
+
+    // The wrappers open profiler markers, which the package compiles out under this scripting symbol.
+    private const string ProfilerDisabledSymbol = "ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED";
+
+    private static Task Verify(string code, params DiagnosticResult[] expected)
+    {
+        var test = CreateTest(code);
+        test.ExpectedDiagnostics.AddRange(expected);
+
+        return test.RunAsync();
+    }
+
+    private static DiagnosticResult NotSerialized(int location, string member, string reason) =>
+        VerifyCS.Diagnostic(DiagnosticRules.TypeSelectorNotSerializedRule).WithLocation(location).WithArguments(member, reason);
 
     [Fact]
     public Task StringField_TypeNamePicker_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector(typeof(System.Object))] private string _type; }");
+class C { [SerializeField, TypeSelector(typeof(System.Object))] private string _type; }");
 
     [Fact]
     public Task ManagedReferenceField_NoDiagnostic() => Verify(@"
@@ -62,40 +90,71 @@ class C { [SerializeReference, TypeSelector] private List<IFoo> _foos; }");
 
     [Fact]
     public Task SerializableTypeField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector] private SerializableType _type; }");
+class C { [SerializeField, TypeSelector] private SerializableType _type; }");
 
     [Fact]
     public Task SerializableTypeGenericField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Base { }
-class C { [TypeSelector(typeof(Base))] private SerializableType<Base> _type; }");
+class C { [SerializeField, TypeSelector(typeof(Base))] private SerializableType<Base> _type; }");
 
     [Fact]
     public Task SerializableMonoScriptField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Base { }
 class C
 {
-    [TypeSelector] private SerializableMonoScript _type;
-    [TypeSelector(typeof(Base))] private SerializableMonoScript<Base>[] _types;
+    [SerializeField, TypeSelector] private SerializableMonoScript _type;
+    [SerializeField, TypeSelector(typeof(Base))] private SerializableMonoScript<Base>[] _types;
 }");
 
     [Fact]
     public Task SerializableTypeList_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
-class C { [TypeSelector] private System.Collections.Generic.List<SerializableType> _types; }");
+class C { [SerializeField, TypeSelector] private System.Collections.Generic.List<SerializableType> _types; }");
 
     [Fact]
     public Task AllowOnSerializableTypeField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector(Allow = TypeAllow.None)] private SerializableType _type; }");
+class C { [SerializeField, TypeSelector(Allow = TypeAllow.None)] private SerializableType _type; }");
 
     [Fact]
     public Task UnsupportedFieldType_ReportsAFT0001() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [{|AFT0001:TypeSelector|}] private int _value; }");
+class C { [SerializeField, {|AFT0001:TypeSelector|}] private int _value; }");
+
+    // The drawer draws any SerializableType subclass, and a member reference reads any ISerializableType.
+
+    [Fact]
+    public Task SerializableTypeSubclass_NoDiagnostic() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+class Unrelated { }
+interface IWeapon { }
+class WeaponType : SerializableType { public WeaponType() : base(null) { } }
+class TaggedType<T> : SerializableType { public TaggedType() : base(null) { } }
+class C
+{
+    private WeaponType _base;
+    private ISerializableType _contract;
+    [SerializeField, TypeSelector] private WeaponType _type;
+    [SerializeField, TypeSelector(typeof(Unrelated))] private TaggedType<IWeapon>[] _tagged;
+    [SerializeField, TypeSelector(nameof(_base), nameof(_contract))] private string _name;
+}");
+
+    [Fact]
+    public Task AbstractWrapperBase_ReportsAFT0001() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+class C { [SerializeField, {|AFT0001:TypeSelector|}] private SerializableTypeBase _type; }");
 
     [Fact]
     public Task AllowOnManagedReference_ReportsAFT0002() => Verify(@"
@@ -115,8 +174,9 @@ class C { [SerializeReference, TypeSelector(Allow = TypeAllow.None)] private IFo
 
     [Fact]
     public Task AllowOnStringField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector(Allow = TypeAllow.Interface)] private string _type; }");
+class C { [SerializeField, TypeSelector(Allow = TypeAllow.Interface)] private string _type; }");
 
     [Fact]
     public Task DisjointBaseType_ReportsAFT0003() => Verify(@"
@@ -191,39 +251,44 @@ class C { [SerializeReference, TypeSelector(typeof(Pistol), {|AFT0009:typeof(Rif
 
     [Fact]
     public Task UnrelatedClassBases_OnStringField_ReportsAFT0009() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Pistol { }
 class Rifle { }
-class C { [TypeSelector(typeof(Pistol), {|AFT0009:typeof(Rifle)|})] private string _type; }");
+class C { [SerializeField, TypeSelector(typeof(Pistol), {|AFT0009:typeof(Rifle)|})] private string _type; }");
 
     [Fact]
     public Task SealedClassAndUnimplementedInterface_OnSerializableType_ReportsAFT0009() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 interface IMarker { }
 sealed class Leaf { }
-class C { [TypeSelector(typeof(IMarker), {|AFT0009:typeof(Leaf)|})] private SerializableType _type; }");
+class C { [SerializeField, TypeSelector(typeof(IMarker), {|AFT0009:typeof(Leaf)|})] private SerializableType _type; }");
 
     [Fact]
     public Task SeveralUnrelatedBases_ReportEachConflictingArgumentOnce() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class A { }
 class B { }
 class D { }
-class C { [TypeSelector(typeof(A), {|AFT0009:typeof(B)|}, {|AFT0009:typeof(D)|})] private string _type; }");
+class C { [SerializeField, TypeSelector(typeof(A), {|AFT0009:typeof(B)|}, {|AFT0009:typeof(D)|})] private string _type; }");
 
     [Fact]
     public Task TwoInterfaceBases_NoAFT0009() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 interface IMelee { }
 interface IRanged { }
-class C { [TypeSelector(typeof(IMelee), typeof(IRanged))] private string _type; }");
+class C { [SerializeField, TypeSelector(typeof(IMelee), typeof(IRanged))] private string _type; }");
 
     [Fact]
     public Task ClassAndItsSubclass_NoAFT0009() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Base { }
 class Derived : Base { }
-class C { [TypeSelector(typeof(Base), typeof(Derived))] private string _type; }");
+class C { [SerializeField, TypeSelector(typeof(Base), typeof(Derived))] private string _type; }");
 
     // AFT0004 — managed reference to a UnityEngine.Object-derived type
 
@@ -306,6 +371,30 @@ class Sword : IWeapon, IMelee { }
 class Glaive : IWeapon, IMelee, IRanged { }
 class C { [SerializeReference, TypeSelector(typeof(IMelee), typeof(IRanged))] private IWeapon _weapon; }");
 
+    // A concrete base is its own candidate only when it also fits the field type.
+
+    [Fact]
+    public Task ConcreteBaseNotFittingFieldType_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IShield { }
+class Sword { }
+class C { [SerializeReference, {|AFT0005:TypeSelector(typeof(Sword))|}] private IShield _shield; }");
+
+    [Fact]
+    public Task ConcreteBaseOrItsSubclassFittingFieldType_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IShield { }
+class Sword { }
+class ShieldSword : Sword, IShield { }
+class Buckler : IShield { }
+class C
+{
+    [SerializeReference, TypeSelector(typeof(Sword))] private IShield _sword;
+    [SerializeReference, TypeSelector(typeof(Buckler))] private IShield _buckler;
+}");
+
     // The candidate search only scans assemblies that can see the constraint types (perf: a Unity compilation
     // references hundreds of assemblies). These tests pin the reference-assembly path: a candidate living in a
     // referenced project must still be found, and its absence must still be reported.
@@ -337,38 +426,42 @@ namespace Contracts
 
     [Fact]
     public Task MemberReference_TypeField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private System.Type _base;
-    [TypeSelector(nameof(_base))] private string _type;
+    [SerializeField, TypeSelector(nameof(_base))] private string _type;
 }");
 
     [Fact]
     public Task MemberReference_TypeArrayProperty_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private System.Type[] Bases { get; set; }
-    [TypeSelector(""Bases"")] private string _type;
+    [SerializeField, TypeSelector(""Bases"")] private string _type;
 }");
 
     [Fact]
     public Task MemberReference_StringArrayField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private string[] _baseNames;
-    [TypeSelector(nameof(_baseNames))] private string _type;
+    [SerializeField, TypeSelector(nameof(_baseNames))] private string _type;
 }");
 
     [Fact]
     public Task MemberReference_InheritedField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Base { protected System.Type _base; }
 class C : Base
 {
-    [TypeSelector(nameof(_base))] private string _type;
+    [SerializeField, TypeSelector(nameof(_base))] private string _type;
 }");
 
     [Fact]
@@ -385,106 +478,145 @@ class C
 
     [Fact]
     public Task UnknownIdentifier_ReportsAFT0006() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector({|AFT0006:""_missing""|})] private string _type; }");
+class C { [SerializeField, TypeSelector({|AFT0006:""_missing""|})] private string _type; }");
 
     [Fact]
     public Task MemberIsMethod_ReportsAFT0007() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private System.Type GetBase() => null;
-    [TypeSelector({|AFT0007:nameof(GetBase)|})] private string _type;
+    [SerializeField, TypeSelector({|AFT0007:nameof(GetBase)|})] private string _type;
 }");
 
     [Fact]
     public Task StaticMember_ReportsAFT0007() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private static System.Type _base;
-    [TypeSelector({|AFT0007:nameof(_base)|})] private string _type;
+    [SerializeField, TypeSelector({|AFT0007:nameof(_base)|})] private string _type;
 }");
 
     [Fact]
     public Task WrongTypedMember_ReportsAFT0007() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private int _base;
-    [TypeSelector({|AFT0007:nameof(_base)|})] private string _type;
+    [SerializeField, TypeSelector({|AFT0007:nameof(_base)|})] private string _type;
 }");
 
     [Fact]
     public Task MemberReference_SerializableTypeField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private SerializableType _base;
-    [TypeSelector(nameof(_base))] private string _type;
+    [SerializeField, TypeSelector(nameof(_base))] private string _type;
 }");
 
     [Fact]
     public Task MemberReference_SerializableTypeGenericField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Base { }
 class C
 {
     private SerializableType<Base> _base;
-    [TypeSelector(nameof(_base))] private string _type;
+    [SerializeField, TypeSelector(nameof(_base))] private string _type;
 }");
 
     [Fact]
     public Task MemberReference_SerializableTypeArrayField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private SerializableType[] _bases;
-    [TypeSelector(nameof(_bases))] private string _type;
+    [SerializeField, TypeSelector(nameof(_bases))] private string _type;
 }");
 
     [Fact]
     public Task AssemblyQualifiedName_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector(""My.Namespace.IWeapon, MyAssembly"")] private string _type; }");
+class C { [SerializeField, TypeSelector(""My.Namespace.IWeapon, MyAssembly"")] private string _type; }");
 
     [Fact]
     public Task NamespaceQualifiedNameWithoutAssembly_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector(""System.Collections.IList"")] private string _type; }");
+class C { [SerializeField, TypeSelector(""System.Collections.IList"")] private string _type; }");
 
     [Fact]
     public Task NestedTypeName_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector(""My.Outer+Nested, MyAssembly"")] private string _type; }");
+class C { [SerializeField, TypeSelector(""My.Outer+Nested, MyAssembly"")] private string _type; }");
 
     [Fact]
     public Task GenericTypeNameWithBrackets_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector(""System.Collections.Generic.List`1[[System.Int32, mscorlib]], mscorlib"")] private string _type; }");
+class C { [SerializeField, TypeSelector(""System.Collections.Generic.List`1[[System.Int32, mscorlib]], mscorlib"")] private string _type; }");
 
     [Fact]
     public Task TrailingCommaTypeName_ReportsAFT0008() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector({|AFT0008:""My.Namespace.IWeapon, ""|})] private string _type; }");
+class C { [SerializeField, TypeSelector({|AFT0008:""My.Namespace.IWeapon, ""|})] private string _type; }");
 
     [Fact]
     public Task NameWithSpace_ReportsAFT0008() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector({|AFT0008:""My Class, MyAssembly""|})] private string _type; }");
+class C { [SerializeField, TypeSelector({|AFT0008:""My Class, MyAssembly""|})] private string _type; }");
+
+    // Without an assembly, Type.GetType finds only mscorlib types: any other name needs its assembly.
+
+    [Fact]
+    public Task ProjectTypeNameWithoutAssembly_ReportsAFT0008WithItsAssembly() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+namespace Game { interface IWeapon { } }
+class C { [SerializeField, TypeSelector({|#0:""Game.IWeapon""|})] private string _type; }",
+        VerifyCS.Diagnostic(DiagnosticRules.TypeSelectorTypeNameSyntaxRule).WithLocation(0).WithArguments(
+            "_type",
+            "Game.IWeapon",
+            "without an assembly Type.GetType finds only mscorlib types, write \"Game.IWeapon, TestProject\""));
+
+    [Fact]
+    public Task UnknownTypeNameWithoutAssembly_ReportsAFT0008() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+namespace Game { class Outer { public interface IInner { } } }
+class C
+{
+    [SerializeField, TypeSelector({|AFT0008:""Game.IMissing""|})] private string _missing;
+    [SerializeField, TypeSelector({|AFT0008:""Game.Outer+IInner""|})] private string _nested;
+}");
 
     [Fact]
     public Task EmptyString_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [TypeSelector("""")] private string _type; }");
+class C { [SerializeField, TypeSelector("""")] private string _type; }");
 
     [Fact]
     public Task ExplicitArrayArgument_ValidatesElements() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private System.Type _base;
-    [TypeSelector(new string[] { nameof(_base), {|AFT0006:""_missing""|} })] private string _type;
+    [SerializeField, TypeSelector(new string[] { nameof(_base), {|AFT0006:""_missing""|} })] private string _type;
 }");
 
     // Nullable annotations do not change which members the drawer accepts.
@@ -492,13 +624,14 @@ class C
     [Fact]
     public Task MemberReference_NullableTypeMembers_NoDiagnostic() => Verify(@"
 #nullable enable
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private System.Type? _base;
     private System.Type?[]? _bases;
-    [TypeSelector(nameof(_base))] private string _type = """";
-    [TypeSelector(nameof(_bases))] private string _other = """";
+    [SerializeField, TypeSelector(nameof(_base))] private string _type = """";
+    [SerializeField, TypeSelector(nameof(_bases))] private string _other = """";
 }");
 
     [Fact]
@@ -517,20 +650,22 @@ class C
 
     [Fact]
     public Task MemberReference_SetOnlyProperty_ReportsAFT0007() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private System.Type Base { set { } }
-    [TypeSelector({|AFT0007:nameof(Base)|})] private string _type;
+    [SerializeField, TypeSelector({|AFT0007:nameof(Base)|})] private string _type;
 }");
 
     [Fact]
     public Task MemberReference_SerializableMonoScriptField_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class C
 {
     private SerializableMonoScript[] _bases;
-    [TypeSelector(nameof(_bases))] private string _type;
+    [SerializeField, TypeSelector(nameof(_bases))] private string _type;
 }");
 
     // Generic base and field types: the drawer lists closed implementations and closes open ones.
@@ -686,7 +821,7 @@ sealed class Plain { }
 class C
 {
     [SerializeReference, TypeSelector({|AFT0003:typeof(IFoo<>)|})] private Plain _plain;
-    [TypeSelector(typeof(IFoo<>), {|AFT0009:typeof(Plain)|})] private string _type;
+    [SerializeField, TypeSelector(typeof(IFoo<>), {|AFT0009:typeof(Plain)|})] private string _type;
 }");
 
     [Fact]
@@ -698,7 +833,7 @@ sealed class IntFoo : IFoo<int> { }
 class C
 {
     [SerializeReference, TypeSelector({|AFT0003:typeof(IFoo<>)|})] private IntFoo _foo;
-    [TypeSelector(typeof(IFoo<>), {|AFT0009:typeof(IntFoo)|})] private string _type;
+    [SerializeField, TypeSelector(typeof(IFoo<>), {|AFT0009:typeof(IntFoo)|})] private string _type;
 }");
 
     [Fact]
@@ -741,34 +876,67 @@ class C
 
     [Fact]
     public Task DisjointBaseType_OnGenericWrappers_ReportsAFT0003() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Base { }
 class Unrelated { }
 class C
 {
-    [TypeSelector({|AFT0003:typeof(Unrelated)|})] private SerializableType<Base> _type;
-    [TypeSelector({|AFT0003:typeof(Unrelated)|})] private SerializableMonoScript<Base>[] _scripts;
+    [SerializeField, TypeSelector({|AFT0003:typeof(Unrelated)|})] private SerializableType<Base> _type;
+    [SerializeField, TypeSelector({|AFT0003:typeof(Unrelated)|})] private SerializableMonoScript<Base>[] _scripts;
 }");
 
     [Fact]
     public Task CompatibleBaseType_OnGenericWrappers_NoDiagnostic() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
 class Base { }
 class Derived : Base { }
 class Unrelated { }
 class C
 {
-    [TypeSelector(typeof(Derived))] private SerializableType<Base> _type;
-    [TypeSelector(typeof(Unrelated))] private SerializableType<object> _any;
-    [TypeSelector(typeof(Unrelated))] private SerializableType _plain;
+    [SerializeField, TypeSelector(typeof(Derived))] private SerializableType<Base> _type;
+    [SerializeField, TypeSelector(typeof(Unrelated))] private SerializableType<object> _any;
+    [SerializeField, TypeSelector(typeof(Unrelated))] private SerializableType _plain;
+}");
+
+    // A type the compiler cannot resolve reports CS0246 alone: a check against it would only add noise.
+
+    [Fact]
+    public Task UnresolvedFieldType_OnlyCompilerError() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+using System.Collections.Generic;
+interface IWeapon { }
+class Sword : IWeapon { }
+class C
+{
+    [SerializeReference, TypeSelector] private {|CS0246:IMissing|} _reference;
+    [SerializeReference, TypeSelector(typeof(Sword))] private List<{|CS0246:IMissing|}> _references;
+    [SerializeField, TypeSelector] private {|CS0246:IMissing|} _shape;
+}");
+
+    [Fact]
+    public Task UnresolvedTypeofArgument_OnlyCompilerError() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IWeapon { }
+class Sword : IWeapon { }
+sealed class Leaf { }
+class C
+{
+    [SerializeReference, TypeSelector(typeof({|CS0246:IMissing|}))] private Leaf _leaf;
+    [SerializeReference, TypeSelector(typeof(Sword), typeof({|CS0246:IMissing|}))] private IWeapon _weapon;
+    [SerializeField, TypeSelector(typeof({|CS0246:IMissing|}))] private SerializableType<Sword> _type;
 }");
 
     // [field: ...] on an auto-property targets its serialized backing field.
 
     [Fact]
     public Task FieldTargetedAutoProperty_UnsupportedType_ReportsAFT0001() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [field: {|AFT0001:TypeSelector|}] public int Value { get; set; } }");
+class C { [field: SerializeField, {|AFT0001:TypeSelector|}] public int Value { get; set; } }");
 
     [Fact]
     public Task FieldTargetedAutoProperty_ManagedReference_ReportsAFT0005() => Verify(@"
@@ -779,8 +947,9 @@ class C { [field: SerializeReference, {|AFT0005:TypeSelector|}] public IEmpty Va
 
     [Fact]
     public Task FieldTargetedAutoProperty_MemberReference_ReportsAFT0006() => Verify(@"
+using UnityEngine;
 using Aspid.FastTools.Types;
-class C { [field: TypeSelector({|AFT0006:""_missing""|})] public string Value { get; set; } }");
+class C { [field: SerializeField, TypeSelector({|AFT0006:""_missing""|})] public string Value { get; set; } }");
 
     [Fact]
     public Task FieldTargetedAutoProperty_ValidShapes_NoDiagnostic() => Verify(@"
@@ -790,20 +959,95 @@ interface IFoo { }
 class FooImpl : IFoo { }
 class C
 {
-    [field: TypeSelector] public string TypeName { get; set; }
+    [field: SerializeField, TypeSelector] public string TypeName { get; set; }
     [field: SerializeReference, TypeSelector] public IFoo Foo { get; set; }
-    [field: TypeSelector] public SerializableType Type { get; set; }
+    [field: SerializeField, TypeSelector] public SerializableType Type { get; set; }
 }");
+
+    // AFT0012 — Unity does not serialize the field, so the Inspector never draws it.
+
+    [Fact]
+    public Task NotSerializedFields_ReportAFT0012() => Verify(@"
+using System;
+using UnityEngine;
+using Aspid.FastTools.Types;
+class C
+{
+    [{|#0:TypeSelector|}] private string _private;
+    [{|#1:TypeSelector|}] internal string _internal;
+    [SerializeField, {|#2:TypeSelector|}] private static string _static;
+    [{|#3:TypeSelector|}] public const string Const = """";
+    [SerializeField, {|#4:TypeSelector|}] private readonly string _readonly;
+    [NonSerialized, {|#5:TypeSelector|}] public string _nonSerialized;
+    [field: {|#6:TypeSelector|}] public string Property { get; set; }
+    [field: SerializeField, {|#7:TypeSelector|}] public string GetOnly { get; }
+    [field: SerializeField, {|#8:TypeSelector|}] public static string Static { get; set; }
+}",
+        NotSerialized(0, "_private", "add [SerializeField] or make it public"),
+        NotSerialized(1, "_internal", "add [SerializeField] or make it public"),
+        NotSerialized(2, "_static", "a static field is never serialized"),
+        NotSerialized(3, "Const", "a const field is never serialized"),
+        NotSerialized(4, "_readonly", "a readonly field is never serialized"),
+        NotSerialized(5, "_nonSerialized", "remove [NonSerialized]"),
+        NotSerialized(6, "Property", "add [field: SerializeField]"),
+        NotSerialized(7, "GetOnly", "an auto-property without a set accessor has a readonly backing field, add 'private set;'"),
+        NotSerialized(8, "Static", "a static auto-property is never serialized"));
+
+    [Fact]
+    public Task SerializedFields_NoAFT0012() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo { }
+class FooImpl : IFoo { }
+class C
+{
+    [TypeSelector] public string _public;
+    [SerializeField, TypeSelector] protected string _protected;
+    [SerializeReference, TypeSelector] private IFoo _reference;
+    [field: SerializeField, TypeSelector] public string Property { get; private set; }
+}");
+
+    [Fact]
+    public Task UnresolvedAttribute_NoAFT0012() => Verify(@"
+using Aspid.FastTools.Types;
+class C { [{|#0:SerializeField|}, TypeSelector] private string _type; }",
+        DiagnosticResult.CompilerError("CS0246").WithLocation(0).WithArguments("SerializeFieldAttribute"),
+        DiagnosticResult.CompilerError("CS0246").WithLocation(0).WithArguments("SerializeField"));
 
     private static Task VerifyWithReferencedProject(string code, string referencedProjectSource)
     {
-        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<
-            AspidFastToolsAnalyzer, Microsoft.CodeAnalysis.Testing.Verifiers.XUnitVerifier>();
-
-        test.TestState.Sources.Add(code + "\n" + Stubs);
+        var test = CreateTest(code);
         test.TestState.AdditionalProjects["Contracts"].Sources.Add(referencedProjectSource);
         test.TestState.AdditionalProjectReferences.Add("Contracts");
 
         return test.RunAsync();
+    }
+
+    private static CSharpAnalyzerTest<AspidFastToolsAnalyzer, XUnitVerifier> CreateTest(string code)
+    {
+        var test = new CSharpAnalyzerTest<AspidFastToolsAnalyzer, XUnitVerifier>();
+
+        test.TestState.Sources.Add(code);
+        test.TestState.Sources.Add(("UnityStubs.cs", UnityStubs));
+        foreach (var (fileName, source) in PackageSources)
+            test.TestState.Sources.Add((fileName, source));
+
+        test.SolutionTransforms.Add((solution, projectId) =>
+        {
+            var options = (CSharpParseOptions)solution.GetProject(projectId)!.ParseOptions!;
+            var symbols = options.PreprocessorSymbolNames.Append(ProfilerDisabledSymbol);
+
+            return solution.WithProjectParseOptions(projectId, options.WithPreprocessorSymbols(symbols));
+        });
+
+        return test;
+    }
+
+    private static string ReadResource(string name)
+    {
+        using var stream = typeof(TypeSelectorAnalyzerTests).Assembly.GetManifestResourceStream(name)!;
+        using var reader = new StreamReader(stream);
+
+        return reader.ReadToEnd();
     }
 }

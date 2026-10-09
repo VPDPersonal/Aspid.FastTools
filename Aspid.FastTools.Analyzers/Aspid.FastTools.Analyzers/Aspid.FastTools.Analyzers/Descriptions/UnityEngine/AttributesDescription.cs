@@ -6,4 +6,7 @@ public static class AttributesDescription
     // (class SerializeReference : Attribute), so the symbol display string carries none either.
     public const string SerializeReference = nameof(SerializeReference);
     public const string SerializeReferenceFull = $"{NamespacesDescription.UnityEngine}.{SerializeReference}";
+
+    public const string SerializeField = nameof(SerializeField);
+    public const string SerializeFieldFull = $"{NamespacesDescription.UnityEngine}.{SerializeField}";
 }
