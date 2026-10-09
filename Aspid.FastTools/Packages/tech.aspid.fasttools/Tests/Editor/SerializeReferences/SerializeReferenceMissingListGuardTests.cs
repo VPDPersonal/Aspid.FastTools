@@ -10,11 +10,10 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    /// <summary>
-    /// Coverage for <see cref="SerializeReferenceMissingListGuard"/>: the pre-save snapshot and post-save restore of
-    /// missing list elements. Each test snapshots a <see cref="YamlFixtures.MissingTypePrefab"/> variant, overwrites the
-    /// file with what Unity would save after the user's edit, and checks whether the missing GhostPistol comes back.
-    /// </summary>
+    // Coverage for SerializeReferenceMissingListGuard: the pre-save snapshot, the post-save restore and the notes of
+    // replaced elements. Each test snapshots a YamlFixtures.MissingTypePrefab variant, overwrites the file with what Unity
+    // would save after the user's edit, and checks whether the missing GhostPistol comes back. The matching itself is
+    // covered by MissingListAlignmentTests.
     [TestFixture]
     internal sealed class SerializeReferenceMissingListGuardTests
     {
@@ -26,7 +25,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private string _path;
 
         [TearDown]
-        public void TearDown() => YamlFixtures.Delete(_path);
+        public void TearDown()
+        {
+            if (_path is not null) SerializeReferenceMissingListGuard.ForgetNotes(_path);
+            YamlFixtures.Delete(_path);
+        }
 
         [Test]
         public void DeletingTheMissingElement_DoesNotRestoreIt()
@@ -36,7 +39,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var snapshots = Snapshot(1002, -2);
             Save(-2);
 
-            Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
             AssertElements(-2);
         }
 
@@ -47,7 +50,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var snapshots = Snapshot(1003, 1002);
             Save(-2);
 
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
             AssertGhostPistolAt(0);
         }
 
@@ -58,7 +61,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var snapshots = Snapshot(1002, 1003);
             Save(-2, 1003);
 
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
             AssertGhostPistolAt(0);
         }
 
@@ -71,7 +74,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
             Save(-2, 1003);
 
-            Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
             AssertElements(-2, 1003);
         }
 
@@ -81,7 +84,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var snapshots = Snapshot(1002, 1003);
             Save(-2, 1003, -2);
 
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
             AssertGhostPistolAt(0);
         }
 
@@ -95,7 +98,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Save(-2, 1003, -2);
 
             Assert.AreEqual(0, snapshots.Count);
-            Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
         }
 
         [Test]
@@ -124,36 +127,144 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
+                SerializeReferenceMissingListGuard.ForgetNotes(assetPath);
                 AssetDatabase.DeleteAsset(assetPath);
             }
         }
 
         [Test]
-        public void NotedClear_IsConsumedByOneSave()
+        public void NotedClear_IsConsumedByASaveThatWrites()
         {
             Write(1002, 1003);
             SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
-            SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
-            var next = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
+            var pending = SerializeReferenceMissingListGuard.BeginSave(_path, Resolves);
+            File.WriteAllText(_path, WithSidearms(new long[] { 1002, 1003 }, keepGhostEntry: true) + "\n");
 
-            Assert.AreEqual(1, next.Count);
+            Assert.IsTrue(SerializeReferenceMissingListGuard.ConsumeIfWritten(_path, pending));
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
         }
 
         [Test]
-        public void NotedClear_IsDroppedByUndo()
+        public void NotedClear_OutlivesASaveThatWroteNothing()
         {
-            // An Undo after a <None> pick is taken as undoing it, so the element comes back after the save.
             Write(1002, 1003);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+
+            var pending = SerializeReferenceMissingListGuard.BeginSave(_path, Resolves);
+
+            Assert.IsFalse(SerializeReferenceMissingListGuard.ConsumeIfWritten(_path, pending));
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+        }
+
+        [Test]
+        public void NotedClear_SurvivesADomainReload()
+        {
+            Write(1002, 1003);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+
+            SerializeReferenceMissingListGuard.ReloadNotes();
+
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+        }
+
+        [Test]
+        public void NotedClear_SurvivesAnUndoOfALaterEdit()
+        {
+            Write(1002, 1003);
+            Undo.IncrementCurrentGroup();
             SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
             PerformUndo();
 
-            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
-            Save(-2, 1003);
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+        }
 
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
-            AssertGhostPistolAt(0);
+        [Test]
+        public void NotedClear_IsDroppedByUndoingItsGroup_AndBackOnRedo()
+        {
+            // An Undo of the <None> pick brings the element back, so the save keeps it; a Redo lets it go again.
+            Write(1002, 1003);
+            var probe = ScriptableObject.CreateInstance<ReferenceListTestObject>();
+
+            try
+            {
+                Undo.IncrementCurrentGroup();
+                SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+                Undo.RecordObject(probe, "Missing list guard test");
+                probe.name = "Changed";
+                Undo.FlushUndoRecordObjects();
+
+                Undo.PerformUndo();
+                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+
+                Undo.PerformRedo();
+                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+            }
+            finally
+            {
+                Undo.ClearUndo(probe);
+                UnityEngine.Object.DestroyImmediate(probe);
+            }
+        }
+
+        [Test]
+        public void Reorder_RestoresTheMovedElement()
+        {
+            // [GhostPistol, Shotgun] reordered: the old index 0 now holds Shotgun.
+            var snapshots = Snapshot(1002, 1003);
+            Save(1003, -2);
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
+            AssertGhostPistolAt(1);
+        }
+
+        [Test]
+        public void UnsavedEditAfterTheSave_IsKept()
+        {
+            const string assetPath = "Assets/__AspidMissingListGuardUnsavedEditProbe__.asset";
+            const long fileId = 11400000;
+            const string weapons = nameof(ReferenceListTestObject.weapons);
+
+            var probe = ScriptableObject.CreateInstance<ReferenceListTestObject>();
+            probe.weapons.Add(new TestSword { damage = 7 });
+
+            try
+            {
+                AssetDatabase.CreateAsset(probe, assetPath);
+
+                // The file stores a missing type while the loaded element reads as null, as a missing one does.
+                File.WriteAllText(assetPath, File.ReadAllText(assetPath).Replace("class: TestSword,", "class: GhostSword,"));
+                probe.weapons[0] = null;
+
+                var pending = SerializeReferenceMissingListGuard.BeginSave(assetPath, Resolves);
+                Assert.AreEqual(1, pending.Snapshots.Count);
+
+                // What the save wrote: the element as a null id, its entry gone.
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(assetPath, fileId, $"{weapons}.Array.data[0]", out var rid));
+                var lines = File.ReadAllLines(assetPath).ToList();
+                lines[lines.IndexOf($"  - rid: {rid}")] = "  - rid: -2";
+                lines.RemoveRange(lines.IndexOf($"    - rid: {rid}"), lines.Count - lines.IndexOf($"    - rid: {rid}"));
+                lines.Add("    - rid: -2");
+                lines.Add("      type: {class: , ns: , asm: }");
+                File.WriteAllText(assetPath, string.Join("\n", lines) + "\n");
+
+                // An edit made after the save, still only in memory.
+                probe.weapons.Add(new TestSword { damage = 9 });
+                EditorUtility.SetDirty(probe);
+
+                SerializeReferenceMissingListGuard.CompleteSave(assetPath, pending);
+
+                var text = File.ReadAllText(assetPath);
+                StringAssert.Contains("class: GhostSword,", text, "The missing element must come back.");
+                StringAssert.Contains("damage: 9", text, "The edit made after the save must not be lost.");
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadTopLevelArrayRids(assetPath, fileId, weapons, out var rids));
+                Assert.AreEqual(2, rids.Count);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(assetPath);
+            }
         }
 
         [Test]
@@ -163,7 +274,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var snapshots = Snapshot(1002, 1003, 1005);
             Save(-2, 5000);
 
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
             AssertGhostPistolAt(0);
         }
 
@@ -173,98 +284,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var snapshots = Snapshot(1002, 1003);
             Save(-2, 5000, -2);
 
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
             AssertGhostPistolAt(0);
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_RetypedMissingAndAppend_RestoresTheOtherInPlace()
-        {
-            // [Ghost1, Ghost2]: Ghost1 retyped through the picker (noted), then "+".
-            const long fileId = YamlFixtures.MonoBehaviourFileId;
-            var before = SerializeReferenceMissingListGuard.ArrayState.Build(new List<long> { 1002, 1004 }, fileId,
-                new HashSet<(long, long)> { (fileId, 1002), (fileId, 1004) }, new HashSet<(long, long)> { (fileId, 1002) });
-            var after = new long[] { 5000, -2, -2 };
-
-            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 0, out _));
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 1, out var target));
-            Assert.AreEqual(1, target);
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_DuplicatedSibling_FollowsTheShiftedElement()
-        {
-            // [Shotgun, GhostPistol], Shotgun duplicated and de-aliased: the copy has a new id.
-            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1003, 1002 }, new[] { false, true });
-
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { 1003, 5000, -2 }, 1, out var target));
-            Assert.AreEqual(2, target);
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_NoAlignment_FallsBackToTheOldSlot()
-        {
-            // [GhostPistol, Shotgun, 1005]: Shotgun deleted and 1005 set to <None> in one save.
-            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1002, 1003, 1005 }, new[] { true, false, false });
-
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { -2, -2 }, 0, out var target));
-            Assert.AreEqual(0, target);
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_InsertBefore_FollowsTheShiftedElement()
-        {
-            // [Shotgun, GhostPistol] with an element inserted at the front: index 1 now holds Shotgun.
-            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1003, 1002 }, new[] { false, true });
-
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { -2, 1003, -2 }, 1, out var target));
-            Assert.AreEqual(2, target);
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_AllMissingShrunk_KeepsTheFirstInOrder()
-        {
-            // Three missing elements, one deleted: the saved nulls do not say which, so the first two come back in order.
-            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1002, 1004, 1006 }, new[] { true, true, true });
-            var after = new long[] { -2, -2 };
-
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 0, out var first));
-            Assert.AreEqual(0, first);
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 1, out var second));
-            Assert.AreEqual(1, second);
-            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 2, out _));
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_MissingAmongNulls_KeepsTheNulls()
-        {
-            // [<None>, GhostPistol] with one element deleted saves [-2] either way; the guard keeps the <None>.
-            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { -2, 1002 }, new[] { false, true });
-
-            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { -2 }, 1, out _));
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_MixedRunShrunk_RestoresTheSurvivors()
-        {
-            // [Ghost, Ghost, Ghost, <None>, Shotgun] with the <None> or one Ghost deleted: two Ghosts still come back.
-            var before = new SerializeReferenceMissingListGuard.ArrayState(
-                new long[] { 1002, 1004, 1006, -2, 1003 }, new[] { true, true, true, false, false });
-            var after = new long[] { -2, -2, -2, 1003 };
-
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 0, out var first));
-            Assert.AreEqual(0, first);
-            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 1, out var second));
-            Assert.AreEqual(1, second);
-            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 2, out _));
-        }
-
-        [Test]
-        public void TryResolveRestoreIndex_ReassignedSlot_DoesNotRestore()
-        {
-            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1002, 1003 }, new[] { true, false });
-
-            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { 1007, 1003, -2 }, 0, out _));
         }
 
         [Test]
@@ -349,7 +370,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
-        private List<SerializeReferenceMissingListGuard.Snapshot> Snapshot(params long[] sidearms)
+        private List<MissingListSnapshot> Snapshot(params long[] sidearms)
         {
             Write(sidearms);
             return SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
