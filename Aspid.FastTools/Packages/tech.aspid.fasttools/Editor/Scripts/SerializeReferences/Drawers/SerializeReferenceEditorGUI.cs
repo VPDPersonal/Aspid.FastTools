@@ -19,6 +19,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Creates a UI Toolkit type picker with nested fields and managed-reference notices.
         /// </summary>
+        /// <remarks>A <c>[TypeSelector]</c> constraint on the field is resolved once, when the field is created.</remarks>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
         /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
         /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type and a <c>[TypeSelector]</c> on the field; <see langword="null"/> or an empty array adds none.</param>

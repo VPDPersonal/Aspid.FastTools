@@ -221,6 +221,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // fires; each field re-evaluates itself on undo/redo or a re-/un-aliased sibling would stay stale.
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 Undo.undoRedoPerformed += OnUndoRedo;
+                // Apply from the Overrides dropdown or another window drops the override but keeps the value, so
+                // TrackPropertyValue stays silent and the bold label would stay.
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -229,6 +233,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
                 _liveFields.Remove(this);
             });
         }
@@ -1039,6 +1044,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!IsPropertyAlive()) return;
             _property.serializedObject.Update();
             Refresh(forceRebuild: false);
+        }
+
+        internal void OnPrefabInstanceUpdated(GameObject instance)
+        {
+            if (!IsPropertyAlive()) return;
+            _property.serializedObject.Update();
+            EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
         }
 
         private void PasteFromClipboard()

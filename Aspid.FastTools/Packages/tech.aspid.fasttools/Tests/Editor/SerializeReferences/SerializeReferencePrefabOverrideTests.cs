@@ -14,6 +14,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class SerializeReferencePrefabOverrideTests
     {
         private const string BasePath = "Assets/__AspidPrefabOverrideMenuBase__.prefab";
+        private const string VariantPath = "Assets/__AspidPrefabOverrideMenuVariant__.prefab";
         private const string OverrideClass = "aspid-fasttools-serialize-reference--prefab-override";
 
         private GameObject _instance;
@@ -115,6 +116,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreSame(field, toggle.parent.parent);
         }
 
+        // The Overrides dropdown applies the whole instance: the value stays, the override goes, and
+        // TrackPropertyValue never fires, so the field listens to the prefab update itself.
+        [Test]
+        public void Field_ApplyDoneElsewhere_DropsTheBoldLabelOnPrefabInstanceUpdate()
+        {
+            Override(_probe, new PrefabTestBow { arrows = 3 });
+
+            using var serialized = new SerializedObject(_probe);
+            var field = (SerializeReferenceField)SerializeReferenceEditorGUI.CreateField(
+                serialized.FindProperty(nameof(PrefabReferenceProbe.weapon)));
+            Assert.IsTrue(field.ClassListContains(OverrideClass));
+
+            PrefabUtility.ApplyPrefabInstance(_instance, InteractionMode.AutomatedAction);
+            field.OnPrefabInstanceUpdated(_instance);
+
+            Assert.IsFalse(field.ClassListContains(OverrideClass));
+        }
+
         [Test]
         public void Revert_ReturnsTheClassAndDataOfThePrefab()
         {
@@ -152,6 +171,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             using (var serialized = new SerializedObject(_probe))
                 Assert.IsFalse(SerializeReferencePrefabOverride.IsOverridden(serialized.FindProperty(nameof(PrefabReferenceProbe.weapon))));
+        }
+
+        // Apply throws on an object that is an asset, so the menu must not offer it; Revert works there.
+        [Test]
+        public void VariantAsset_OverriddenField_OffersRevertButNotApply()
+        {
+            Override(_probe, new PrefabTestBow { arrows = 3 });
+            PrefabUtility.SaveAsPrefabAsset(_instance, VariantPath);
+
+            try
+            {
+                var variantProbe = AssetDatabase.LoadAssetAtPath<GameObject>(VariantPath).GetComponent<PrefabReferenceProbe>();
+
+                using var serialized = new SerializedObject(variantProbe);
+                var weapon = serialized.FindProperty(nameof(PrefabReferenceProbe.weapon));
+
+                Assert.IsTrue(SerializeReferencePrefabOverride.IsOverridden(weapon));
+                Assert.IsFalse(SerializeReferencePrefabOverride.TryGetApplyTarget(weapon, out _));
+
+                SerializeReferencePrefabOverride.Revert(weapon);
+                serialized.Update();
+
+                Assert.IsFalse(SerializeReferencePrefabOverride.IsOverridden(weapon));
+            }
+            finally { AssetDatabase.DeleteAsset(VariantPath); }
         }
 
         [Test]

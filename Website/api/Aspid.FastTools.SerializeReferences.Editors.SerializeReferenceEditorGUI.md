@@ -58,6 +58,10 @@ Extra base types every candidate must be assignable to besides the field type an
 
 The field to add to the inspector's visual tree.
 
+#### Remarks
+
+A <code>[TypeSelector]</code> constraint on the field is resolved once, when the field is created.
+
 #### Exceptions
 
  [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)

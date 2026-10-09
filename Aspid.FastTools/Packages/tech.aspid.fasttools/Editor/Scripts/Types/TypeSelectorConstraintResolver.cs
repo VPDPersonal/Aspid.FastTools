@@ -18,8 +18,8 @@ namespace Aspid.FastTools.Types.Editors
                 attributedProperty.GetDeclaringInstance() ?? attributedProperty.serializedObject.targetObject,
                 assemblyQualifiedNames);
 
-        // For a field or list drawn through an API that takes its own constraints: [TypeSelector] on a collection
-        // applies to the collection, so its elements no longer resolve the attribute themselves.
+        // CreateField, CreateList and DrawFieldLayout bypass TypeSelectorPropertyDrawer, so the [TypeSelector] on the
+        // field is resolved here. On a collection it applies to the collection, not to its elements.
         internal static Type[] AppendFieldConstraints(SerializedProperty fieldProperty, Type[] baseTypes)
         {
             var selector = fieldProperty.GetFieldInfo()?.GetCustomAttribute<TypeSelectorAttribute>(inherit: true);

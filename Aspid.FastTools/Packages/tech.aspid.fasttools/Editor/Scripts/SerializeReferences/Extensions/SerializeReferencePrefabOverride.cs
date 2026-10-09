@@ -13,12 +13,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             property.isInstantiatedPrefab &&
             property.prefabOverride;
 
-        // The prefab asset the instance was created from. False for an object that has no source, such as a component
-        // added on the instance.
+        // The prefab asset the instance was created from. False when Unity cannot apply there: an object with no
+        // source (a component added on the instance), an object that is itself an asset (a prefab variant selected in
+        // the Project window; Apply throws on it) and a source Unity keeps read-only (a model or a package prefab).
         public static bool TryGetApplyTarget(SerializedProperty property, out string assetPath)
         {
-            var source = PrefabUtility.GetCorrespondingObjectFromSource(property.serializedObject.targetObject);
-            assetPath = source == null ? null : AssetDatabase.GetAssetPath(source);
+            var target = property.serializedObject.targetObject;
+            var source = EditorUtility.IsPersistent(target) ? null : PrefabUtility.GetCorrespondingObjectFromSource(target);
+
+            assetPath = source == null || PrefabUtility.IsPartOfImmutablePrefab(source)
+                ? null
+                : AssetDatabase.GetAssetPath(source);
 
             return !string.IsNullOrEmpty(assetPath);
         }
