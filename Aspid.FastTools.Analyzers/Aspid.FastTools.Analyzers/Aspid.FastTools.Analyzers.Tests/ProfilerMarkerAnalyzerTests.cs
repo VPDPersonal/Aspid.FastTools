@@ -1,7 +1,10 @@
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.CSharp.Testing;
 using Aspid.FastTools.Analyzers.Descriptions;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
     Aspid.FastTools.Analyzers.ProfilerMarkerAnalyzer,
     Microsoft.CodeAnalysis.Testing.Verifiers.XUnitVerifier>;
@@ -40,11 +43,27 @@ public static class ProfilerMarkerExtensionsForGenerator
     private static Task Verify(string code, params DiagnosticResult[] expected) =>
         VerifyCS.VerifyAnalyzerAsync(code + "\n" + Stubs, expected);
 
+    private static Task Verify(LanguageVersion languageVersion, string code, params DiagnosticResult[] expected)
+    {
+        var test = new CSharpAnalyzerTest<ProfilerMarkerAnalyzer, XUnitVerifier> { TestCode = code + "\n" + Stubs };
+        test.SolutionTransforms.Add((solution, projectId) =>
+            solution.WithProjectParseOptions(projectId, new CSharpParseOptions(languageVersion)));
+        test.ExpectedDiagnostics.AddRange(expected);
+
+        return test.RunAsync();
+    }
+
     private static DiagnosticResult Unsupported(int location, string reason) =>
         VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule).WithLocation(location).WithArguments(reason);
 
     private static DiagnosticResult Discarded(int location) =>
         VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerScopeDiscardedRule).WithLocation(location);
+
+    private static DiagnosticResult Suspended(int location, string keyword) =>
+        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerScopeSuspendedRule).WithLocation(location).WithArguments(keyword);
+
+    private static DiagnosticResult NotConstant(int location) =>
+        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerNameNotConstantRule).WithLocation(location);
 
     [Fact]
     public Task PublicType_NoDiagnostic() => Verify(@"
@@ -188,6 +207,88 @@ class Foo
     void Lambda() { System.Action a = () => this.{|#4:Marker|}(); }
 }",
         Discarded(0), Discarded(1), Discarded(2), Discarded(3), Discarded(4));
+
+    [Fact]
+    public Task ScopeAcrossYieldOrAwait_Reports() => Verify(@"
+using System.Collections;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+class Foo
+{
+    IEnumerator Statement() { using (this.{|#0:Marker|}()) { Step(); yield return null; } }
+    IEnumerator Declaration() { using var _ = this.{|#1:Marker|}(); Step(); if (true) yield return null; }
+    IEnumerator Named() { using (var scope = (this.{|#2:Marker|}()).WithName(""Load"")) yield return null; }
+    async Task Awaited() { using (this.{|#3:Marker|}()) await Task.Yield(); }
+    async Task AwaitForeach(IAsyncEnumerable<int> items) { using var _ = this.{|#4:Marker|}(); await foreach (var item in items) Step(); }
+    void Step() { }
+}",
+        Suspended(0, "yield return"), Suspended(1, "yield return"), Suspended(2, "yield return"), Suspended(3, "await"), Suspended(4, "await"));
+
+    [Fact]
+    public Task ScopeEndingBeforeYieldOrAwait_NoDiagnostic() => Verify(@"
+using System.Collections;
+using System.Threading.Tasks;
+class Foo
+{
+    IEnumerator Coroutine()
+    {
+        using (this.Marker()) Step();
+        yield return null;
+        {
+            using var _ = this.Marker();
+            Step();
+        }
+        yield return null;
+    }
+
+    async Task Run()
+    {
+        using (this.Marker()) Step();
+        await Task.Yield();
+        using var _ = this.Marker();
+        System.Func<Task> later = async () => await Task.Yield();
+        Step();
+    }
+
+    IEnumerator Nested()
+    {
+        using var _ = this.Marker();
+        IEnumerator Local() { yield return null; }
+        async Task LocalAsync() { await Task.Yield(); }
+        Step();
+        yield break;
+    }
+
+    void Step() { }
+}");
+
+    // Unity compiles C# 9, where an interpolated string is never a constant, so its parts are read one by one.
+    [Theory]
+    [InlineData(LanguageVersion.CSharp9)]
+    [InlineData(LanguageVersion.Latest)]
+    public Task ConstantName_NoDiagnostic(LanguageVersion languageVersion) => Verify(languageVersion, @"
+class Foo
+{
+    const string Prefix = ""Load"";
+    void Literal() { using var _ = this.Marker().WithName(""X""); }
+    void Const() { using var _ = this.Marker().WithName(Prefix); }
+    void NameOf() { using var _ = this.Marker().WithName(nameof(Literal)); }
+    void Concatenation() { using var _ = this.Marker().WithName(Prefix + "".Assets""); }
+    void Interpolated() { using var _ = this.Marker().WithName($""{Prefix}.{nameof(Const)}""); }
+}");
+
+    [Fact]
+    public Task NameKnownOnlyAtRunTime_Reports() => Verify(@"
+class Foo
+{
+    static readonly string Field = ""X"";
+    void Variable(string name) { using var _ = this.Marker().WithName({|#0:name|}); }
+    void ReadonlyField() { using var _ = this.Marker().WithName({|#1:Field|}); }
+    void Hole(int i) { using var _ = this.Marker().WithName({|#2:$""X{i}""|}); }
+    void Aligned() { using var _ = this.Marker().WithName({|#3:$""{nameof(Aligned),8}""|}); }
+    void Null() { using var _ = this.Marker().WithName({|#4:null|}); }
+}",
+        NotConstant(0), NotConstant(1), NotConstant(2), NotConstant(3), NotConstant(4));
 
     [Fact]
     public Task DiscardedScopeOfUnsupportedCall_ReportsOnlyUnsupported() => Verify(@"
