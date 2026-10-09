@@ -1,6 +1,9 @@
 using System;
 using UnityEngine;
 
+// Serialized fields are read by the Inspector only.
+#pragma warning disable CS0414
+
 // ReSharper disable once CheckNamespace
 namespace Game.Weapons
 {
@@ -38,3 +41,4 @@ namespace Game.Weapons
         [SerializeField] private int _damage = 12;
     }
 }
+#pragma warning restore CS0414
