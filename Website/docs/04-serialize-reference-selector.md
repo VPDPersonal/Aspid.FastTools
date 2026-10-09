@@ -67,6 +67,8 @@ Fields that point at one instance are marked **Shared reference #N**; **Make uni
 
 A duplicated list element gets its own instance instead of a reference to the same one. The **Auto de-alias duplicated list elements** setting under **Tools → Aspid 🐍 → FastTools → Settings** controls this and is on by default; it is [shared by the team](07-serialize-reference-validation.md#scan-scope).
 
+This works for lists whose elements are references, such as <code lang="class-name">List&lt;IWeapon&gt;</code>. In a list of structs or classes that hold a <code lang="csharp">[SerializeReference]</code> field or list, **Duplicate Array Element** copies the reference too, so both elements share one instance until **Make unique** separates them.
+
 ## Missing type
 
 After a class is renamed, moved or deleted, the field shows `<Missing …>` with a **Missing type** notice under it. The field's data stays in the asset.

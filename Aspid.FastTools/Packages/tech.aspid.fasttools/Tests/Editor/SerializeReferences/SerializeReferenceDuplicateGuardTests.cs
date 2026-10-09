@@ -7,9 +7,16 @@ using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
+    [System.Serializable]
+    internal sealed class DuplicateGuardLoadout
+    {
+        [SerializeReference] public List<ITestWeapon> weapons = new();
+    }
+
     internal sealed class DuplicateGuardTestObject : ScriptableObject
     {
         [SerializeReference] public List<ITestWeapon> weapons = new();
+        public List<DuplicateGuardLoadout> loadouts = new();
     }
 
     /// <summary>
@@ -21,6 +28,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class SerializeReferenceDuplicateGuardTests
     {
         private const string ListPath = "weapons";
+        private const string LoadoutsPath = "loadouts";
 
         // The guard defers its fix to delayCall, which the batch-mode test runner can hold back for hundreds of ticks.
         private const double DelayCallTimeoutSeconds = 10;
@@ -79,6 +87,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TryFindFreshDuplicate_ExistingAliasPlusNewValue_IsNotADuplicate()
         {
             Assert.IsFalse(SerializeReferenceDuplicateGuard.TryFindFreshDuplicate(Map(10, 10), Map(10, 10, 30), out _));
+        }
+
+        [Test]
+        public void TryFindFreshDuplicate_ListOfAnotherParent_IsNotADuplicate()
+        {
+            // The array path names a position: after an outer element is deleted it holds the next parent's list.
+            Assert.IsFalse(SerializeReferenceDuplicateGuard.TryFindFreshDuplicate(Map(10, 11), Map(20, 20, 21), out _),
+                "Another list that merely has one element more is not an insertion into the recorded one.");
+            Assert.IsFalse(SerializeReferenceDuplicateGuard.TryFindFreshDuplicate(Map(10), Map(20, 20), out _));
+        }
+
+        [Test]
+        public void TryFindFreshDuplicate_CopyBetweenElementsWithoutId_ShiftsOnlyTheTail()
+        {
+            // An element without a valid id has no entry in the map, so the inserted copy leaves a hole behind it.
+            var previous = new Dictionary<int, long> { [0] = 10, [2] = 20 };
+            var current = new Dictionary<int, long> { [0] = 10, [1] = 10, [3] = 20 };
+
+            Assert.IsTrue(SerializeReferenceDuplicateGuard.TryFindFreshDuplicate(previous, current, out var index));
+            Assert.AreEqual(1, index);
         }
 
         [UnityTest]
@@ -156,6 +184,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(Observe(1), "An undo drops the baseline, so the restored alias is only re-recorded.");
         }
 
+        [UnityTest]
+        public IEnumerator Observe_NestedListElementAddedAsCopy_GetsItsOwnInstance()
+        {
+            AssignNested(0, 0, new TestSword { damage = 3 });
+            Assert.IsFalse(ObserveNested(0, 0));
+
+            DuplicateNested(0);
+            Assert.AreEqual(NestedRid(0, 0), NestedRid(0, 1), "Precondition: duplicating an element copies its reference id.");
+            Assert.IsTrue(ObserveNested(0, 1), "A list nested in a by-value array element is guarded as well.");
+
+            yield return FlushDelayCalls();
+
+            Assert.AreNotEqual(NestedRid(0, 0), NestedRid(0, 1));
+            Assert.AreEqual(3, ((TestSword)NestedElement(0, 1).managedReferenceValue).damage);
+        }
+
+        [UnityTest]
+        public IEnumerator Observe_OuterElementDeleted_KeepsTheAliasOfTheListThatTookItsPlace()
+        {
+            AssignNested(0, 0, new TestSword { damage = 1 });
+            AssignNested(1, 0, new TestSword { damage = 2 });
+            DuplicateNested(1);
+            Assert.AreEqual(NestedRid(1, 0), NestedRid(1, 1), "Precondition: the second loadout holds an intentional alias.");
+            Assert.IsFalse(ObserveNested(0, 0), "The first sight of the first loadout's list only records its layout.");
+
+            var loadouts = _serialized.FindProperty(LoadoutsPath);
+            loadouts.DeleteArrayElementAtIndex(0);
+            _serialized.ApplyModifiedProperties();
+            _serialized.Update();
+            Assert.AreEqual(NestedRid(0, 0), NestedRid(0, 1), "Precondition: the alias moved into the first loadout.");
+
+            Assert.IsFalse(ObserveNested(0, 0), "The path now holds another list: that is not an insertion.");
+
+            yield return FlushDelayCalls();
+
+            Assert.AreEqual(NestedRid(0, 0), NestedRid(0, 1), "The deleted loadout must not make the next one lose its link.");
+        }
+
         // Index to rid, the shape the guard builds from a list.
         private static Dictionary<int, long> Map(params long[] rids)
         {
@@ -185,6 +251,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private void DuplicateLast()
         {
             var list = _serialized.FindProperty(ListPath);
+            list.InsertArrayElementAtIndex(list.arraySize - 1);
+            _serialized.ApplyModifiedProperties();
+            _serialized.Update();
+        }
+
+        private SerializedProperty NestedElement(int loadout, int index) =>
+            _serialized.FindProperty($"{LoadoutsPath}.Array.data[{loadout}].weapons").GetArrayElementAtIndex(index);
+
+        private long NestedRid(int loadout, int index) => NestedElement(loadout, index).managedReferenceId;
+
+        private bool ObserveNested(int loadout, int index) => SerializeReferenceDuplicateGuard.Observe(NestedElement(loadout, index));
+
+        private void AssignNested(int loadout, int index, ITestWeapon value)
+        {
+            var loadouts = _serialized.FindProperty(LoadoutsPath);
+            if (loadouts.arraySize <= loadout) loadouts.arraySize = loadout + 1;
+            _serialized.ApplyModifiedProperties();
+            _serialized.Update();
+
+            var list = _serialized.FindProperty($"{LoadoutsPath}.Array.data[{loadout}].weapons");
+            if (list.arraySize <= index) list.arraySize = index + 1;
+
+            list.GetArrayElementAtIndex(index).managedReferenceValue = value;
+            _serialized.ApplyModifiedProperties();
+            _serialized.Update();
+        }
+
+        private void DuplicateNested(int loadout)
+        {
+            var list = _serialized.FindProperty($"{LoadoutsPath}.Array.data[{loadout}].weapons");
             list.InsertArrayElementAtIndex(list.arraySize - 1);
             _serialized.ApplyModifiedProperties();
             _serialized.Update();
