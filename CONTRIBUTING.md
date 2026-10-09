@@ -27,7 +27,7 @@ By sending a pull request you agree to license your contribution under the [MIT 
 
 1. Install the Unity version in `Aspid.FastTools/ProjectSettings/ProjectVersion.txt` and open the `Aspid.FastTools/` folder as a project.
 2. Install the .NET SDK that `global.json` pins. It allows no other version. The test projects target `net6.0`, so install the .NET 6 runtime too.
-3. Install Node.js 22 and run `npm --prefix Website ci`. Only the documentation site needs it.
+3. Install Node.js 22 and run `npm --prefix Website ci`. The documentation site and the repository scripts need it.
 
 ## Code rules
 
@@ -78,7 +78,7 @@ A change to `Runtime/`, `Editor/`, `Samples~/` (except `Documentation`) or the p
 - The root `README.md` is generated. Edit `Website/docs/README.md` and run `npm --prefix Website run sync-readme`.
 - Build the site with `npm --prefix Website run build`.
 - A change to public API or to its XML docs regenerates the API reference with `npm run api` in `Website/` and commits `Website/api/`. It needs a Unity install and DocFX. Without them, say in the pull request that the reference still needs regenerating.
-- A skill in `skills/` that describes API you changed is updated in the same pull request. Check skill files with `node scripts/check-skills.mjs`.
+- A skill in `skills/` that describes API you changed is updated in the same pull request. Check skill files with `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`, and do not commit the resulting `node_modules`.
 
 ## Pull request
 

@@ -14,7 +14,7 @@ A confirmed vulnerability is fixed in a new release and published as a GitHub se
 
 ## Supported versions
 
-Only the latest release receives security fixes. Older releases and release candidates are not patched: update to the latest version, which the [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) section of the documentation describes.
+Only the latest version receives security fixes: the newest stable release, or the newest release candidate while no stable release exists. Older versions are not patched: update to the latest one, as the [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) section of the documentation describes.
 
 ## What to report
 
