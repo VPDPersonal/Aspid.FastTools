@@ -52,6 +52,9 @@
 
 Остальные методы стилей работают по схожему принципу. Полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.VisualElementExtensions).
 
+> [!NOTE]
+> Позиционные аргументы следуют в порядке top, right, bottom, left, поэтому <code lang="csharp">SetPadding(8, 4)</code> задаёт верхнюю и правую стороны, а не пары по вертикали и горизонтали. Для пар есть <code lang="function">SetPaddingY</code> и <code lang="function">SetPaddingX</code>. Так же работают <code lang="function">SetMargin</code>, <code lang="function">SetBorderWidth</code> и <code lang="function">SetBorderColor</code>.
+
 ### Цвет из строки и ассеты из Resources
 
 | До — Unity API | После — FastTools |

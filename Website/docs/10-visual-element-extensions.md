@@ -52,6 +52,9 @@ All of these methods have a variant with the suffix <code lang="csharp">If</code
 
 Other style methods follow the same pattern. See the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.VisualElementExtensions) for the full list.
 
+> [!NOTE]
+> Positional arguments follow the order top, right, bottom, left, so <code lang="csharp">SetPadding(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs. For pairs use <code lang="function">SetPaddingY</code> and <code lang="function">SetPaddingX</code>. <code lang="function">SetMargin</code>, <code lang="function">SetBorderWidth</code> and <code lang="function">SetBorderColor</code> work the same way.
+
 ### Colors from strings and assets from Resources
 
 | Before — Unity API | After — FastTools |

@@ -1774,6 +1774,9 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.entityIdValue"/> and returns the property for chaining.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.2 and newer.
+        /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
         /// <param name="value">Value to assign.</param>
@@ -1788,6 +1791,9 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.entityIdValue"/> then applies modified properties.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.2 and newer.
+        /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
         /// <param name="value">Value to assign.</param>
@@ -1801,6 +1807,9 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.entityIdValue"/> then applies modified properties without recording Undo.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.2 and newer.
+        /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
         /// <param name="value">Value to assign.</param>

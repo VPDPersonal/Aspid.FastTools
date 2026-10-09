@@ -53,5 +53,37 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.AreEqual(-10, slider.lowValue);
             Assert.AreEqual(10, slider.highValue);
         }
+
+        [Test]
+        public void SetValue_AfterRange_KeepsValue()
+        {
+            var slider = new Slider().SetHighValue(100f).SetValue(50f);
+
+            Assert.AreEqual(50f, slider.value);
+        }
+
+        [Test]
+        public void SetValue_BeforeRange_IsClampedToDefaultRange()
+        {
+            var slider = new Slider().SetValue(50f).SetHighValue(100f);
+
+            Assert.AreEqual(10f, slider.value);
+        }
+
+        [Test]
+        public void SetValue_AfterRange_KeepsValueOfSliderInt()
+        {
+            var slider = new SliderInt().SetHighValue(100).SetValue(50);
+
+            Assert.AreEqual(50, slider.value);
+        }
+
+        [Test]
+        public void SetValue_BeforeRange_IsClampedToDefaultRangeOfSliderInt()
+        {
+            var slider = new SliderInt().SetValue(50).SetHighValue(100);
+
+            Assert.AreEqual(10, slider.value);
+        }
     }
 }

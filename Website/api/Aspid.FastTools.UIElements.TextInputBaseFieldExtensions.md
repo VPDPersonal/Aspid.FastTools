@@ -195,6 +195,10 @@ The field type.
 
 The value type held by the field.
 
+#### Remarks
+
+Available in Unity 6000.4 and newer.
+
 ### SetKeyboardType\<TField, TValue\>\(TField, TouchScreenKeyboardType\) {#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetKeyboardType__2___0_UnityEngine_TouchScreenKeyboardType_}
 
 Sets [`keyboardType`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-keyboardType.html).

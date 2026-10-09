@@ -90,6 +90,12 @@ The element, for chaining.
 
 The element type.
 
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### AddChildIf\<T\>\(T, bool, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
 
 Conditionally adds an element to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -124,6 +130,12 @@ The element, for chaining.
 
 The element type.
 
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### AddChildren\<T\>\(T, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_UnityEngine_UIElements_VisualElement___}
 
 Adds an array of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -154,6 +166,12 @@ The element, for chaining.
 
 The element type.
 
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### AddChildren\<T\>\(T, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
 Adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -183,6 +201,12 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildren\<T\>\(T, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
@@ -219,6 +243,12 @@ The element type.
 <code class="paramref">children</code> is copied before the first change, so it may be the live
 [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of this or another element.
 
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### AddChildren\<T\>\(T, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
 Adds a read-only span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -248,6 +278,12 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildrenIf\<T\>\(T, bool, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
 
@@ -283,6 +319,12 @@ The element, for chaining.
 
 The element type.
 
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### AddChildrenIf\<T\>\(T, bool, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
 Conditionally adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -316,6 +358,12 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
@@ -356,6 +404,12 @@ The element type.
 <code class="paramref">children</code> is copied before the first change, so it may be the live
 [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of this or another element.
 
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### AddChildrenIf\<T\>\(T, bool, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
 Conditionally adds a read-only span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -389,6 +443,12 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Exceptions
+
+ [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
+
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddClass\<T\>\(T, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClass__1___0_System_String_}
 
@@ -1461,6 +1521,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### ClearChildrenIf\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearChildrenIf__1___0_System_Boolean_}
 
 Conditionally removes all children from the element.
@@ -1490,6 +1554,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### ClearClasses\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearClasses__1___0_}
 
@@ -2767,6 +2835,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### InsertChildIf\<T\>\(T, bool, int, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement_}
 
 Conditionally inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -2805,6 +2877,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### InsertChildren\<T\>\(T, int, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_UnityEngine_UIElements_VisualElement___}
 
 Inserts an array of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -2839,6 +2915,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### InsertChildren\<T\>\(T, int, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
 Inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -2872,6 +2952,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildren\<T\>\(T, int, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
@@ -2909,8 +2993,13 @@ The element type.
 
 #### Remarks
 
+<p>
 <code class="paramref">children</code> is copied before the first change, so it may be the live
 [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.
+</p>
+<p>
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+</p>
 
 ### InsertChildren\<T\>\(T, int, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
@@ -2945,6 +3034,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildrenIf\<T\>\(T, bool, int, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement___}
 
@@ -2984,6 +3077,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### InsertChildrenIf\<T\>\(T, bool, int, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
 Conditionally inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
@@ -3021,6 +3118,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildrenIf\<T\>\(T, bool, int, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
@@ -3062,8 +3163,13 @@ The element type.
 
 #### Remarks
 
+<p>
 <code class="paramref">children</code> is copied before the first change, so it may be the live
 [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.
+</p>
+<p>
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+</p>
 
 ### InsertChildrenIf\<T\>\(T, bool, int, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
@@ -3102,6 +3208,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertStyleSheet\<T\>\(T, int, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheet__1___0_System_Int32_UnityEngine_UIElements_StyleSheet_}
 
@@ -4008,6 +4118,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
 ### RemoveChildAtIf\<T\>\(T, bool, int\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildAtIf__1___0_System_Boolean_System_Int32_}
 
 Conditionally removes the child at the specified index from the element.
@@ -4041,6 +4155,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### RemoveChildIf\<T\>\(T, bool, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
 
@@ -5597,6 +5715,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### SetBackgroundColor\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_UnityEngine_UIElements_StyleColor_}
 
 Sets [`backgroundColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundColor.html).
@@ -6016,6 +6138,12 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetBorderColor(Color.red, Color.blue)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`VisualElementExtensions.SetBorderColorY<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorY__1___0_UnityEngine_UIElements_StyleColor_) and [`VisualElementExtensions.SetBorderColorX<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorX__1___0_UnityEngine_UIElements_StyleColor_) for pairs.
 
 ### SetBorderColorBottom\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorBottom__1___0_UnityEngine_UIElements_StyleColor_}
 
@@ -6789,6 +6917,12 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetBorderWidth(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`VisualElementExtensions.SetBorderWidthY<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthY__1___0_UnityEngine_UIElements_StyleFloat_) and [`VisualElementExtensions.SetBorderWidthX<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthX__1___0_UnityEngine_UIElements_StyleFloat_) for pairs.
+
 ### SetBorderWidthBottom\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthBottom__1___0_UnityEngine_UIElements_StyleFloat_}
 
 Sets [`borderBottomWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html).
@@ -7471,6 +7605,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### SetFlexBasis\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexBasis__1___0_UnityEngine_UIElements_StyleLength_}
 
 Sets [`flexBasis`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexBasis.html).
@@ -7964,6 +8102,12 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetMargin(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`VisualElementExtensions.SetMarginY<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginY__1___0_UnityEngine_UIElements_StyleLength_) and [`VisualElementExtensions.SetMarginX<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginX__1___0_UnityEngine_UIElements_StyleLength_) for pairs.
 
 ### SetMarginBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
@@ -8616,6 +8760,12 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetPadding(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`VisualElementExtensions.SetPaddingY<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingY__1___0_UnityEngine_UIElements_StyleLength_) and [`VisualElementExtensions.SetPaddingX<T>`](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingX__1___0_UnityEngine_UIElements_StyleLength_) for pairs.
 
 ### SetPaddingBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
@@ -9645,6 +9795,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### SetUnityOverflowClipBox\<T\>\(T, StyleEnum\<OverflowClipBox\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityOverflowClipBox__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_OverflowClipBox__}
 
 Sets [`unityOverflowClipBox`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityOverflowClipBox.html).
@@ -10168,6 +10322,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Available in Unity 6000.2 and newer.
 
 ### SetUnityTextGenerator\<T\>\(T, StyleEnum\<TextGeneratorType\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextGenerator__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_TextGeneratorType__}
 

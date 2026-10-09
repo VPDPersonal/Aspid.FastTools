@@ -1164,6 +1164,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetEntityIdAndApply\<T\>\(T, EntityId\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEntityIdAndApply__1___0_UnityEngine_EntityId_}
 
 Sets [`entityIdValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-entityIdValue.html) then applies modified properties.
@@ -1194,6 +1198,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetEntityIdAndApplyWithoutUndo\<T\>\(T, EntityId\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEntityIdAndApplyWithoutUndo__1___0_UnityEngine_EntityId_}
 
 Sets [`entityIdValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-entityIdValue.html) then applies modified properties without recording Undo.
@@ -1223,6 +1231,10 @@ The same <code class="paramref">property</code> instance.
 `T` 
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
+
+#### Remarks
+
+Available in Unity 6000.2 and newer.
 
 ### SetEnumFlag\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumFlag__1___0_System_Int32_}
 
@@ -3309,6 +3321,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetValueAndApply\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApply__1___0_System_Int32_}
 
 Sets [`intValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-intValue.html) then applies modified properties.
@@ -3999,6 +4015,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetValueAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_Int32_}
 
 Sets [`intValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-intValue.html) then applies modified properties without recording Undo.
@@ -4688,6 +4708,10 @@ The same <code class="paramref">property</code> instance.
 `T` 
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
+
+#### Remarks
+
+Available in Unity 6000.2 and newer.
 
 ### SetVector2\<T\>\(T, Vector2\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector2__1___0_UnityEngine_Vector2_}
 

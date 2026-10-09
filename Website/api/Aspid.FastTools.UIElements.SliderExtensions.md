@@ -23,6 +23,13 @@ public static class SliderExtensions
 [SliderExtensions](Aspid.FastTools.UIElements.SliderExtensions.md)
 
 
+## Remarks
+
+A slider clamps its value to its range, which is 0 to 10 for a new [`Slider`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Slider.html) or [`SliderInt`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.SliderInt.html).
+Set the range with <code>SetLowValue</code> and <code>SetHighValue</code> before <code>SetValue</code>:
+<code>new Slider().SetValue(50f).SetHighValue(100f)</code> ends at 10,
+while <code>new Slider().SetHighValue(100f).SetValue(50f)</code> ends at 50.
+
 ## Methods
 
 ### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}

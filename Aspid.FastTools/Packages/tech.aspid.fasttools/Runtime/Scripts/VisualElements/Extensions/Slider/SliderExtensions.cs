@@ -7,6 +7,12 @@ namespace Aspid.FastTools.UIElements
     /// <summary>
     /// Provides extension methods for <see cref="BaseSlider{TValueType}"/>.
     /// </summary>
+    /// <remarks>
+    /// A slider clamps its value to its range, which is 0 to 10 for a new <see cref="Slider"/> or <see cref="SliderInt"/>.
+    /// Set the range with <c>SetLowValue</c> and <c>SetHighValue</c> before <c>SetValue</c>:
+    /// <c>new Slider().SetValue(50f).SetHighValue(100f)</c> ends at 10,
+    /// while <c>new Slider().SetHighValue(100f).SetValue(50f)</c> ends at 50.
+    /// </remarks>
     public static partial class SliderExtensions
     {
         /// <summary>

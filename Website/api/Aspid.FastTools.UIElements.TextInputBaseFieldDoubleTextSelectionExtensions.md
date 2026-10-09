@@ -55,6 +55,10 @@ The element, for chaining.
 
 The field type.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### AddOnSelectIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_TextInputBaseFieldDoubleTextSelectionExtensions_AddOnSelectIndexChange__1___0_System_Action_}
 
 Subscribes to the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event of [`textSelection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-textSelection.html).
@@ -84,6 +88,10 @@ The element, for chaining.
 `T` 
 
 The field type.
+
+#### Remarks
+
+Available in Unity 6000.3 and newer.
 
 ### RemoveOnCursorIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_TextInputBaseFieldDoubleTextSelectionExtensions_RemoveOnCursorIndexChange__1___0_System_Action_}
 
@@ -115,6 +123,10 @@ The element, for chaining.
 
 The field type.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### RemoveOnSelectIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_TextInputBaseFieldDoubleTextSelectionExtensions_RemoveOnSelectIndexChange__1___0_System_Action_}
 
 Unsubscribes from the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event of [`textSelection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-textSelection.html).
@@ -144,6 +156,10 @@ The element, for chaining.
 `T` 
 
 The field type.
+
+#### Remarks
+
+Available in Unity 6000.3 and newer.
 
 ### SetCursorIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_TextInputBaseFieldDoubleTextSelectionExtensions_SetCursorIndex__1___0_System_Int32_}
 

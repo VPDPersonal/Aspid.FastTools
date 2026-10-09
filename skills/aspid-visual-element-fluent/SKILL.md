@@ -86,6 +86,18 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   `SetBackgroundImage` only `StyleBackground`, transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
   Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
+- Positional arguments of `SetPadding`, `SetMargin`, `SetBorderWidth` and `SetBorderColor` run top, right, bottom, left:
+  `SetPadding(8, 4)` sets the top and the right side, not vertical and horizontal. For pairs use
+  `SetPaddingY(8).SetPaddingX(4)`, or name the arguments.
+- `SetValue(v)` raises the change event only when the element is in a panel and `v` differs from the current value;
+  `notify: true` does not force it.
+- A slider clamps its value to its range, `0..10` for a new `Slider` or `SliderInt`. Call `SetLowValue` and `SetHighValue`
+  before `SetValue`: `new Slider().SetValue(50f).SetHighValue(100f)` ends at 10.
+- `RemoveValueChanged` removes only an equal delegate: pass a method group or a delegate kept in a field. An inline lambda
+  cannot be removed, so a `bindItem` handler that calls `AddValueChanged` adds one more callback on every bind.
+- `ListView`, `TreeView` and their multi-column variants have no content container. `AddChild` and `AddChildren` throw
+  `InvalidOperationException` for a non-null child; `InsertChild`, `RemoveChildAt` and `ClearChildren` do nothing.
+  Fill them with `SetItemsSource`.
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
