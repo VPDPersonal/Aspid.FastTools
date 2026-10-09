@@ -56,24 +56,81 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             // need a check, so their fields are not visited at all.
             if (compilationContext.Compilation.GetTypesByMetadataName(AspidAttributes.TypeSelectorFull).IsEmpty) return;
 
+            // Binding the attributes of every field is the cost in a large assembly that does reference the package,
+            // so a field is bound only when an attribute carries a name [TypeSelector] can be written with.
+            var typeSelectorNames = CollectTypeSelectorNames(compilationContext.Compilation, compilationContext.CancellationToken);
+
             // One cache per compilation: the AFT0005 candidate search walks assembly metadata, so its results are
             // memoised per (base type, field element type) pair and the walk itself is limited to assemblies that
             // can actually contain a candidate (see CandidateSearch).
             var candidateSearch = new CandidateSearch(compilationContext.Compilation);
 
             compilationContext.RegisterSyntaxNodeAction(
-                ctx => AnalyzeField(ctx, candidateSearch),
+                ctx => AnalyzeField(ctx, candidateSearch, typeSelectorNames),
                 SyntaxKind.FieldDeclaration);
 
             compilationContext.RegisterSyntaxNodeAction(
-                ctx => AnalyzeAutoProperty(ctx, candidateSearch),
+                ctx => AnalyzeAutoProperty(ctx, candidateSearch, typeSelectorNames),
                 SyntaxKind.PropertyDeclaration);
         });
     }
 
-    private static void AnalyzeField(SyntaxNodeAnalysisContext context, CandidateSearch candidateSearch)
+    private const string AttributeSuffix = "Attribute";
+
+    // The rightmost names [TypeSelector] can be written with: its own name with and without the Attribute suffix, and
+    // the same for every using alias to TypeSelectorAttribute. Aliases are collected from every file, because a global
+    // using alias reaches all of them; only compilation-unit and namespace members are visited.
+    private static ImmutableHashSet<string> CollectTypeSelectorNames(Compilation compilation, CancellationToken cancellationToken)
+    {
+        var names = ImmutableHashSet.CreateBuilder<string>(StringComparer.Ordinal);
+        AddName(AspidAttributes.TypeSelector);
+
+        foreach (var tree in compilation.SyntaxTrees)
+        {
+            var directives = tree.GetRoot(cancellationToken)
+                .DescendantNodes(descendIntoChildren: node => node is CompilationUnitSyntax or BaseNamespaceDeclarationSyntax)
+                .OfType<UsingDirectiveSyntax>();
+
+            foreach (var directive in directives)
+            {
+                if (directive.Alias is null || directive.Name is not { } target) continue;
+                if (GetRightmostName(target) == AspidAttributes.TypeSelector) AddName(directive.Alias.Name.Identifier.ValueText);
+            }
+        }
+
+        return names.ToImmutable();
+
+        void AddName(string name)
+        {
+            names.Add(name);
+            if (name.Length > AttributeSuffix.Length && name.EndsWith(AttributeSuffix, StringComparison.Ordinal))
+                names.Add(name.Substring(0, name.Length - AttributeSuffix.Length));
+        }
+    }
+
+    private static bool HasTypeSelectorName(SyntaxList<AttributeListSyntax> attributeLists, ImmutableHashSet<string> typeSelectorNames)
+    {
+        foreach (var list in attributeLists)
+            foreach (var attribute in list.Attributes)
+                if (typeSelectorNames.Contains(GetRightmostName(attribute.Name))) return true;
+
+        return false;
+    }
+
+    private static string GetRightmostName(NameSyntax name) => name switch
+    {
+        QualifiedNameSyntax qualified => qualified.Right.Identifier.ValueText,
+        AliasQualifiedNameSyntax aliasQualified => aliasQualified.Name.Identifier.ValueText,
+        SimpleNameSyntax simple => simple.Identifier.ValueText,
+        _ => string.Empty
+    };
+
+    private static void AnalyzeField(
+        SyntaxNodeAnalysisContext context, CandidateSearch candidateSearch, ImmutableHashSet<string> typeSelectorNames)
     {
         var field = (FieldDeclarationSyntax)context.Node;
+        if (!HasTypeSelectorName(field.AttributeLists, typeSelectorNames)) return;
+
         var attributes = field.AttributeLists.SelectMany(list => list.Attributes).ToImmutableArray();
 
         var typeSelector = FindAttribute(attributes, context.SemanticModel, AspidAttributes.TypeSelectorFull);
@@ -87,9 +144,12 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
 
     // [field: SerializeReference, TypeSelector] on an auto-property lands on its backing field, which Unity
     // serializes like any other field; only the field-targeted attribute lists apply to it.
-    private static void AnalyzeAutoProperty(SyntaxNodeAnalysisContext context, CandidateSearch candidateSearch)
+    private static void AnalyzeAutoProperty(
+        SyntaxNodeAnalysisContext context, CandidateSearch candidateSearch, ImmutableHashSet<string> typeSelectorNames)
     {
         var property = (PropertyDeclarationSyntax)context.Node;
+        if (!HasTypeSelectorName(property.AttributeLists, typeSelectorNames)) return;
+
         var attributes = property.AttributeLists
             .Where(list => list.Target?.Identifier.IsKind(SyntaxKind.FieldKeyword) == true)
             .SelectMany(list => list.Attributes)
@@ -528,11 +588,17 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
 
         if (candidateSearch.HasVisibleCandidate(bases, elementType, context.CancellationToken)) return;
 
+        // The field type is a constraint of its own, named too, unless a base already derives from it.
+        var constraints = elementType.SpecialType == SpecialType.System_Object ||
+            bases.Any(baseType => IsAssignableTo(baseType, elementType, context.Compilation))
+                ? bases
+                : bases.Add(elementType);
+
         context.ReportDiagnostic(Diagnostic.Create(
             DiagnosticRules.TypeSelectorNoConcreteImplementationRule,
             typeSelector.GetLocation(),
             fieldName,
-            string.Join(" and ", bases.Select(baseType => $"'{baseType.Name}'"))));
+            string.Join(" and ", constraints.Select(constraint => $"'{constraint.Name}'"))));
     }
 
     /// <summary>
@@ -782,17 +848,28 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     // drawer also draws a user subclass of SerializableType; List<>/array are already unwrapped by the caller.
     private static bool IsSerializableType(ITypeSymbol type)
     {
-        for (var current = type as INamedTypeSymbol; current is not null; current = current.BaseType)
-        {
-            var definition = current.OriginalDefinition.ToDisplayString(FullNameFormat);
-            if (definition == AspidClasses.SerializableTypeFull ||
-                definition == AspidClasses.SerializableTypeGenericFull ||
-                definition == AspidClasses.SerializableMonoScriptFull ||
-                definition == AspidClasses.SerializableMonoScriptGenericFull)
-                return true;
-        }
+        if (type is not INamedTypeSymbol named) return false;
+        if (IsWrapper(named)) return true;
+
+        // A subclass is drawn only when Unity serializes the field, which needs its own [Serializable] (the attribute
+        // is not inherited), and when the drawer can read its BaseType from an instance: Activator.CreateInstance
+        // needs a parameterless constructor, public or not, on a non-abstract class.
+        if (!named.IsSerializable || named.IsAbstract) return false;
+        if (!named.InstanceConstructors.Any(constructor => constructor.Parameters.IsEmpty)) return false;
+
+        for (var current = named.BaseType; current is not null; current = current.BaseType)
+            if (IsWrapper(current)) return true;
 
         return false;
+
+        static bool IsWrapper(INamedTypeSymbol candidate)
+        {
+            var definition = candidate.OriginalDefinition.ToDisplayString(FullNameFormat);
+            return definition == AspidClasses.SerializableTypeFull ||
+                definition == AspidClasses.SerializableTypeGenericFull ||
+                definition == AspidClasses.SerializableMonoScriptFull ||
+                definition == AspidClasses.SerializableMonoScriptGenericFull;
+        }
     }
 
     // Two non-interface types with no inheritance relationship can share no concrete instance (single inheritance),
@@ -842,15 +919,33 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
 
     private static bool IsUnbound(ITypeSymbol type) => type is INamedTypeSymbol { IsUnboundGenericType: true };
 
-    // True for a type the compiler cannot resolve (a missing asmdef reference, a class not written yet) and for a type
-    // built from one (IMissing[], List<IMissing>, a type nested in Outer<IMissing>). The type arguments of an unbound
-    // typeof(Foo<>) are error-type placeholders, not unresolved types.
-    private static bool IsErroneous(ITypeSymbol type) => type switch
+    // True for a type the compiler cannot resolve (a missing asmdef reference, a class not written yet), for a type
+    // built from one (IMissing[], List<IMissing>, a type nested in Outer<IMissing>), and for a type with one among its
+    // base classes or interfaces (class Sword : MissingBase): which types such a type meets is unknown.
+    private static bool IsErroneous(ITypeSymbol type)
+    {
+        if (IsUnresolved(type)) return true;
+
+        var element = type;
+        while (element is IArrayTypeSymbol array) element = array.ElementType;
+
+        // Walked on the definition: its supertypes are built from its own type parameters, not from the error-type
+        // placeholders of an unbound typeof(Foo<>).
+        var definition = element.OriginalDefinition;
+        for (var current = definition.BaseType; current is not null; current = current.BaseType)
+            if (IsUnresolved(current)) return true;
+
+        return definition.AllInterfaces.Any(IsUnresolved);
+    }
+
+    // The type itself or a type it is built from is unresolved. The type arguments of an unbound typeof(Foo<>) are
+    // error-type placeholders, not unresolved types.
+    private static bool IsUnresolved(ITypeSymbol type) => type switch
     {
         IErrorTypeSymbol => true,
-        IArrayTypeSymbol array => IsErroneous(array.ElementType),
-        INamedTypeSymbol named => (!named.IsUnboundGenericType && named.TypeArguments.Any(IsErroneous)) ||
-            (named.ContainingType is { } containing && IsErroneous(containing)),
+        IArrayTypeSymbol array => IsUnresolved(array.ElementType),
+        INamedTypeSymbol named => (!named.IsUnboundGenericType && named.TypeArguments.Any(IsUnresolved)) ||
+            (named.ContainingType is { } containing && IsUnresolved(containing)),
         _ => false
     };
 

@@ -131,24 +131,74 @@ using UnityEngine;
 using Aspid.FastTools.Types;
 class C { [SerializeField, {|AFT0001:TypeSelector|}] private int _value; }");
 
-    // The drawer draws any SerializableType subclass, and a member reference reads any ISerializableType.
+    // The drawer draws a [Serializable], non-abstract SerializableType subclass that has a parameterless constructor
+    // (public or not), and a member reference reads any ISerializableType.
 
     [Fact]
     public Task SerializableTypeSubclass_NoDiagnostic() => Verify(@"
+using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
 class Unrelated { }
 interface IWeapon { }
-class WeaponType : SerializableType { public WeaponType() : base(null) { } }
-class TaggedType<T> : SerializableType { public TaggedType() : base(null) { } }
+[Serializable] class WeaponType : SerializableType { public WeaponType() : base(null) { } }
+[Serializable] class TaggedType<T> : SerializableType { public TaggedType() : base(null) { } }
+[Serializable] class HiddenType : SerializableType { private HiddenType() : base(null) { } }
 class C
 {
     private WeaponType _base;
     private ISerializableType _contract;
     [SerializeField, TypeSelector] private WeaponType _type;
+    [SerializeField, TypeSelector] private HiddenType _hidden;
     [SerializeField, TypeSelector(typeof(Unrelated))] private TaggedType<IWeapon>[] _tagged;
     [SerializeField, TypeSelector(nameof(_base), nameof(_contract))] private string _name;
 }");
+
+    // Unity does not serialize a subclass without its own [Serializable] (the attribute is not inherited), and the
+    // drawer cannot instantiate an abstract one or one without a parameterless constructor.
+    [Fact]
+    public Task UndrawableSerializableTypeSubclass_ReportsAFT0001() => Verify(@"
+using System;
+using UnityEngine;
+using Aspid.FastTools.Types;
+class PlainType : SerializableType { public PlainType() : base(null) { } }
+[Serializable] class TypedOnlyType : SerializableType { public TypedOnlyType(Type type) : base(type) { } }
+[Serializable] abstract class AbstractType : SerializableType { protected AbstractType() : base(null) { } }
+class C
+{
+    [SerializeField, {|AFT0001:TypeSelector|}] private PlainType _plain;
+    [SerializeField, {|AFT0001:TypeSelector|}] private TypedOnlyType _typedOnly;
+    [SerializeField, {|AFT0001:TypeSelector|}] private AbstractType[] _abstract;
+}");
+
+    // Only a field with an attribute named like [TypeSelector] is bound, so every way to write that name must count.
+    [Fact]
+    public Task TypeSelectorUnderOtherNames_ReportsAFT0001() => Verify(@"
+using UnityEngine;
+using Pick = Aspid.FastTools.Types.TypeSelectorAttribute;
+namespace Game
+{
+    using ChooserAttribute = Aspid.FastTools.Types.TypeSelectorAttribute;
+    class C
+    {
+        [SerializeField, {|AFT0001:Pick|}] private int _alias;
+        [SerializeField, {|AFT0001:Chooser|}] private int _suffixedAlias;
+        [SerializeField, {|AFT0001:Aspid.FastTools.Types.TypeSelector|}] private int _qualified;
+        [SerializeField, {|AFT0001:global::Aspid.FastTools.Types.TypeSelectorAttribute|}] private int _global;
+        [field: SerializeField, {|AFT0001:Pick|}] public int Property { get; set; }
+    }
+}");
+
+    [Fact]
+    public Task TypeSelectorThroughGlobalAliasInOtherFile_ReportsAFT0001()
+    {
+        var test = CreateTest(@"
+using UnityEngine;
+class C { [SerializeField, {|AFT0001:Pick|}] private int _value; }");
+        test.TestState.Sources.Add(("GlobalUsings.cs", "global using Pick = Aspid.FastTools.Types.TypeSelectorAttribute;"));
+
+        return test.RunAsync();
+    }
 
     [Fact]
     public Task AbstractWrapperBase_ReportsAFT0001() => Verify(@"
@@ -371,7 +421,7 @@ class Sword : IWeapon, IMelee { }
 class Glaive : IWeapon, IMelee, IRanged { }
 class C { [SerializeReference, TypeSelector(typeof(IMelee), typeof(IRanged))] private IWeapon _weapon; }");
 
-    // A concrete base is its own candidate only when it also fits the field type.
+    // A concrete base is its own candidate only when it also fits the field type, which the message then names too.
 
     [Fact]
     public Task ConcreteBaseNotFittingFieldType_ReportsAFT0005() => Verify(@"
@@ -379,7 +429,20 @@ using UnityEngine;
 using Aspid.FastTools.Types;
 interface IShield { }
 class Sword { }
-class C { [SerializeReference, {|AFT0005:TypeSelector(typeof(Sword))|}] private IShield _shield; }");
+class C { [SerializeReference, {|#0:TypeSelector(typeof(Sword))|}] private IShield _shield; }",
+        VerifyCS.Diagnostic(DiagnosticRules.TypeSelectorNoConcreteImplementationRule).WithLocation(0).WithArguments(
+            "_shield", "'Sword' and 'IShield'"));
+
+    // A field type every base already derives from adds no constraint, so the message leaves it out.
+    [Fact]
+    public Task FieldTypeImpliedByBase_AFT0005NamesOnlyBase() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IBase { }
+interface IDerived : IBase { }
+class C { [SerializeReference, {|#0:TypeSelector(typeof(IDerived))|}] private IBase _value; }",
+        VerifyCS.Diagnostic(DiagnosticRules.TypeSelectorNoConcreteImplementationRule).WithLocation(0).WithArguments(
+            "_value", "'IDerived'"));
 
     [Fact]
     public Task ConcreteBaseOrItsSubclassFittingFieldType_NoAFT0005() => Verify(@"
@@ -928,6 +991,25 @@ class C
     [SerializeReference, TypeSelector(typeof({|CS0246:IMissing|}))] private Leaf _leaf;
     [SerializeReference, TypeSelector(typeof(Sword), typeof({|CS0246:IMissing|}))] private IWeapon _weapon;
     [SerializeField, TypeSelector(typeof({|CS0246:IMissing|}))] private SerializableType<Sword> _type;
+}");
+
+    // An unresolved base class or interface hides which types a class meets, as an unresolved class itself does.
+    [Fact]
+    public Task UnresolvedBaseOfFieldOrTypeofType_OnlyCompilerError() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IWeapon { }
+class Weapon { }
+class Sword : {|CS0246:MissingBase|} { }
+class Dagger : Sword { }
+sealed class Leaf : Weapon, {|CS0246:IMissing|} { }
+class C
+{
+    [SerializeReference, TypeSelector(typeof(Weapon))] private Dagger _dagger;
+    [SerializeReference, TypeSelector(typeof(IWeapon))] private Sword _sword;
+    [SerializeReference, TypeSelector(typeof(IWeapon))] private Leaf _leaf;
+    [SerializeReference, TypeSelector(typeof(Weapon), typeof(Sword))] private object _pair;
+    [SerializeField, TypeSelector] private Sword _shape;
 }");
 
     // [field: ...] on an auto-property targets its serialized backing field.

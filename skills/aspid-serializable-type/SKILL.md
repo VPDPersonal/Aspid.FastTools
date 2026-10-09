@@ -75,6 +75,8 @@ public sealed class Armory : MonoBehaviour
 ## [TypeSelector]
 
 - Valid on `string`, the wrappers, `[SerializeReference]` fields and arrays/`List<T>` of these (else `AFT0001`).
+  A `SerializableType` subclass counts as a wrapper only when it is `[Serializable]`, not abstract and has a
+  parameterless constructor (public or not).
 - The field must be serialized: public, `[SerializeField]` or `[SerializeReference]`, not `static`/`readonly`
   (else `AFT0012`); on an auto-property use `[field: SerializeField, TypeSelector]` with a setter.
 - Constructors: `()`, `(params Type[])`, `(params string[])`; no mixing of `Type` and `string` in one attribute.
