@@ -66,7 +66,7 @@ EditorWindow ←
 Opens the selector as a dropdown anchored to <code class="paramref">screenRect</code>.
 
 ```csharp
-public static void Show(Rect screenRect, TypeSelectorFilter filter = default, string currentAqn = "", Action<string> onSelected = null)
+public static void Show(Rect screenRect, TypeSelectorFilter filter = default, string assemblyQualifiedName = "", Action<string> onSelected = null)
 ```
 
 #### Parameters
@@ -79,9 +79,9 @@ Screen-space rectangle the dropdown is anchored to.
 
 Which types the selector offers.
 
-`currentAqn` [string](https://learn.microsoft.com/dotnet/api/system.string)
+`assemblyQualifiedName` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-The current type name; empty selects the empty row, while <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the selection unset.
+The assembly-qualified name of the current type; empty selects the empty row, while <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the selection unset.
 
 `onSelected` [Action](https://learn.microsoft.com/dotnet/api/system.action-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
 

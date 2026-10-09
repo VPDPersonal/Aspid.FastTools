@@ -84,7 +84,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // Any runtime object in the selection ships the new element in a build, so its types must be too.
                     ExcludeEditorOnly = Array.Exists(targets, TypeSelectorHelpers.IsRuntimeObject),
                 },
-                currentAqn: null, // a "+" append has no current value — nothing (not even <None>) wears the check
+                assemblyQualifiedName: null, // a "+" append has no current value — nothing (not even <None>) wears the check
                 onSelected: aqn => Append(targets, arrayPath, aqn));
         }
 

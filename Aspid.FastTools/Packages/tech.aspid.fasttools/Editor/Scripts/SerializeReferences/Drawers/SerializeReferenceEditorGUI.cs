@@ -60,7 +60,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Draws a managed-reference type picker and its nested fields in an IMGUI layout.
         /// </summary>
-        /// <remarks>Lists use <see cref="SerializeReferenceIMGUIList.Draw"/>.</remarks>
+        /// <remarks>Lists use <see cref="SerializeReferenceIMGUIList.Draw(SerializedProperty, GUIContent, Type[])"/>.</remarks>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
         /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
         /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type; <see langword="null"/> or an empty array adds none.</param>

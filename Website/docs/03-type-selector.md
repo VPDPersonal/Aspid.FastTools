@@ -187,7 +187,7 @@ button.clicked += () => TypeSelectorWindow.Show(
     {
         Types = new[] { typeof(Weapon) }
     },
-    currentAqn: selectedTypeName,
+    assemblyQualifiedName: selectedTypeName,
     onSelected: aqn => selectedTypeName = aqn);
 ```
 

@@ -109,7 +109,7 @@ namespace Aspid.FastTools.Types.Editors
                 screenRect: GUIUtility.GUIToScreenRect(rect),
                 filter: CreateFilter(allow: allow, types: types,
                     excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(persistent), hideNoneOption: repair),
-                currentAqn: repair ? null : currentAqn,
+                assemblyQualifiedName: repair ? null : currentAqn,
                 onSelected: picked => SerializableMonoScriptUtility.Assign(persistent, TypeUtility.GetTypeOrNull(picked)));
         }
 

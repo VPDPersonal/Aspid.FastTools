@@ -45,14 +45,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <exception cref="ArgumentException"><paramref name="listProperty"/> is not a managed-reference array.</exception>
         public static void Draw(SerializedProperty listProperty, GUIContent label, Type elementType, params Type[] baseTypes)
         {
-            if (listProperty is null) throw new ArgumentNullException(nameof(listProperty));
-            if (!SerializeReferenceHelpers.IsManagedReferenceArray(listProperty))
-                throw new ArgumentException("Draw expects an array/list property whose elements are [SerializeReference] managed references.", nameof(listProperty));
+            ThrowIfNotManagedReferenceList(listProperty);
 
             label ??= new GUIContent(listProperty.displayName);
             baseTypes = TypeSelectorConstraintResolver.AppendFieldConstraints(listProperty, baseTypes);
 
             GetOrCreate(listProperty, label, elementType, baseTypes, depth: 0).DoLayoutList();
+        }
+
+        /// <summary>
+        /// Draws a managed-reference list whose add button selects a type and appends an independent instance, taking the element type from the field declaration.
+        /// </summary>
+        /// <remarks>
+        /// When the list is empty and its field cannot be found by reflection, the element type falls back to <see cref="object"/>; pass it to the overload with <c>elementType</c> then.
+        /// </remarks>
+        /// <param name="listProperty">An array/list property whose elements are managed references.</param>
+        /// <param name="label">The list header; <see langword="null"/> uses the display name of <paramref name="listProperty"/>, <see cref="GUIContent.none"/> displays no label.</param>
+        /// <param name="baseTypes">Additional constraints below the element type; <see langword="null"/> or an empty array adds none.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="listProperty"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="listProperty"/> is not a managed-reference array.</exception>
+        public static void Draw(SerializedProperty listProperty, GUIContent label = null, Type[] baseTypes = null)
+        {
+            ThrowIfNotManagedReferenceList(listProperty);
+
+            Draw(listProperty, label, SerializeReferenceHelpers.GetArrayElementType(listProperty), baseTypes);
         }
 
         // Fixed-rect twin of Draw, for a list nested inside a managed reference the drawer is already laying out —
@@ -144,6 +160,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
 
             return list;
+        }
+
+        private static void ThrowIfNotManagedReferenceList(SerializedProperty listProperty)
+        {
+            if (listProperty is null) throw new ArgumentNullException(nameof(listProperty));
+            if (!SerializeReferenceHelpers.IsManagedReferenceArray(listProperty))
+                throw new ArgumentException("Draw expects an array/list property whose elements are [SerializeReference] managed references.", nameof(listProperty));
         }
 
         // Every target, so "+" under a multi-object selection appends to each object, not only the first.

@@ -320,6 +320,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        [Test]
+        public void IMGUIListDraw_WithoutElementType_NullProperty_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+                SerializeReferenceIMGUIList.Draw(null, GUIContent.none));
+        }
+
+        [Test]
+        public void IMGUIListDraw_WithoutElementType_NotAManagedReferenceArray_Throws()
+        {
+            var obj = ScriptableObject.CreateInstance<ListAddTestObject>();
+            try
+            {
+                var serialized = new SerializedObject(obj);
+
+                Assert.Throws<ArgumentException>(() =>
+                    SerializeReferenceIMGUIList.Draw(serialized.FindProperty("counts"), GUIContent.none),
+                    "A list of plain values must be rejected before the element type is inferred.");
+
+                Assert.Throws<ArgumentException>(() =>
+                    SerializeReferenceIMGUIList.Draw(serialized.FindProperty("loadouts"), GUIContent.none),
+                    "A list of by-value structs must be rejected before the element type is inferred.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
         private static ListView FindList(VisualElement root, string bindingPath)
         {
             var listView = root.Query<ListView>().Where(view => view.bindingPath == bindingPath).First();
