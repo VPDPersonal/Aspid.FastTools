@@ -79,7 +79,7 @@ namespace Aspid.FastTools.Types.Editors
             _argumentFilter = filter.ArgumentFilter;
             _inferredArgumentFilter = filter.InferredArgumentFilter;
             _currentAqn = currentAqn;
-            _fieldTypes = types;
+            _fieldTypes = GetRootValidationTypes(types, filter.NarrowingTypes);
             _includeHidden = filter.IncludeHidden;
             _excludeEditorOnly = filter.ExcludeEditorOnly;
 
@@ -103,6 +103,19 @@ namespace Aspid.FastTools.Types.Editors
 
             RefreshView();
             PreselectCurrent();
+        }
+
+        // What a generic closed on the root page must be assignable to. An unbound narrowing type such as
+        // typeof(Base<>) is no assignment target, and the open rows were already matched against it, so it stays out.
+        private static Type[] GetRootValidationTypes(Type[] types, Type[] narrowingTypes)
+        {
+            if (narrowingTypes is null) return types;
+
+            var result = new List<Type>(types);
+            foreach (var narrowingType in narrowingTypes)
+                if (narrowingType is not null && !narrowingType.ContainsGenericParameters) result.Add(narrowingType);
+
+            return result.ToArray();
         }
 
         // Prefer the current value or None so an immediate Enter cannot commit an arbitrary first row; null

@@ -391,6 +391,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
+                    NarrowingTypes = baseTypes,
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
                 currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(property, currentType),

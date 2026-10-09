@@ -81,6 +81,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
+                    NarrowingTypes = baseTypes,
                     // Any runtime object in the selection ships the new element in a build, so its types must be too.
                     ExcludeEditorOnly = Array.Exists(targets, TypeSelectorHelpers.IsRuntimeObject),
                 },

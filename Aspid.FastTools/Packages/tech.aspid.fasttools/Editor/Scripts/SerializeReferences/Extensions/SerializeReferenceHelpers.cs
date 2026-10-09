@@ -933,6 +933,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
                     ArgumentFilter = IsValidGenericArgument,
                     InferredArgumentFilter = IsAcceptableGenericArgument,
+                    NarrowingTypes = baseTypes,
                     IncludeHidden = true,
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
