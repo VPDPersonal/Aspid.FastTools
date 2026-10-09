@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Tick every box before publishing. Anything left unchecked in **§1 Blockers** must be resolved first.
-        Replace `X.Y.Z` in the title with the target version. Automatable checks: `dotnet test` in both Roslyn solutions and in `Aspid.FastTools.YamlTests` (§4), `node scripts/check-version.mjs` (the version files carry the version and its channel, §1) and `npm --prefix Website run check-readme` (§9).
+        Replace `X.Y.Z` in the title with the target version. Automatable checks: `dotnet test` in both Roslyn solutions and in `Aspid.FastTools.YamlTests` and `Aspid.FastTools.TypeTests` (§4), `node scripts/check-version.mjs` (the version files carry the version and its channel, §1) and `npm --prefix Website run check-readme` (§9).
 
   - type: input
     id: version
@@ -70,7 +70,7 @@ body:
     attributes:
       label: 4. Source generators
       options:
-        - label: "`dotnet test` green in `Aspid.FastTools.Generators` (incl. `IncrementalCacheTests`), `Aspid.FastTools.Analyzers` and `Aspid.FastTools.YamlTests`"
+        - label: "`dotnet test` green in `Aspid.FastTools.Generators` (incl. `IncrementalCacheTests`), `Aspid.FastTools.Analyzers`, `Aspid.FastTools.YamlTests` and `Aspid.FastTools.TypeTests`"
         - label: "ProfilerMarkersGenerator — unique marker per (type, method, line); `.WithName(literal)` & `$\"...\"` work; same-line dedup"
         - label: Incremental cache intact — editing an unrelated file does not trigger regeneration
 

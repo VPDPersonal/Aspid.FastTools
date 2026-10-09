@@ -47,7 +47,8 @@ Do every step without questions. Stop at the first failure and report it.
    `scripts/make-unity-test-project.sh` for both projects, in the background.
 7. Run the checks that the release runs:
    - from `.github/workflows/tests.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
-     `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` in the repository root;
+     `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` and
+     `dotnet test Aspid.FastTools.TypeTests --nologo` in the repository root;
    - from the `preflight` job of `.github/workflows/release.yml`: the two Release builds of the step
      "Verify committed Roslyn DLLs match sources", then its `git diff`.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.

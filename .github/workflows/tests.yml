@@ -43,6 +43,9 @@ jobs:
           # sources without Unity.
           - name: YAML engine
             path: Aspid.FastTools.YamlTests
+          # GenericTypeResolver and its NUnit tests, compiled from the package sources without Unity.
+          - name: Generic type resolver
+            path: Aspid.FastTools.TypeTests
     steps:
       # Only what the solutions read: docs/ and Website/ hold most of the repository's size.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,6 +54,7 @@ jobs:
             Aspid.FastTools.Generators
             Aspid.FastTools.Analyzers
             Aspid.FastTools.YamlTests
+            Aspid.FastTools.TypeTests
             Aspid.FastTools/Packages/tech.aspid.fasttools
 
       # The test projects target net6.0; the SDK pinned in global.json builds them,

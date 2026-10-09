@@ -47,6 +47,7 @@ jobs:
               ['Aspid.FastTools.Generators/', 'area: generator'],
               ['Aspid.FastTools.Analyzers/', 'area: analyzer'],
               ['Aspid.FastTools.YamlTests/', 'area: editor'],
+              ['Aspid.FastTools.TypeTests/', 'area: editor'],
               ['Aspid.FastTools/Assets/DevTests/', 'area: editor'],
               ['Website/', 'area: website'],
               ['Website/docs/', 'area: docs'],
