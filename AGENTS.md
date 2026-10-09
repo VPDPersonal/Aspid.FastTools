@@ -15,7 +15,8 @@ Agent Skills for projects that consume the package in `skills/`.
 ## Not obvious
 
 - A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
-  `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run.
+  `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run. Commit the rebuilt DLL:
+  `checks.yml` fails when a committed DLL differs from a Release build of its sources.
 - `Aspid.FastTools.YamlTests/` runs the package's SerializeReference YAML engine and its tests outside Unity: it compiles
   those package sources as-is (C# 9, Unity 6000.0's version; the engine against .NET Standard 2.1) and stubs only
   `Debug.LogError` and `AssetDatabase.MakeEditable`, so a Unity API, a newer language feature or a newer .NET API added
@@ -25,9 +26,10 @@ Agent Skills for projects that consume the package in `skills/`.
   Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
   READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
-  which the release workflow checks (`scripts/check-version.mjs`). The version also picks the channel, and the script
-  switches it: a prerelease installs from `#upm-preview` under a Preview badge, a stable version from `#upm` under a
-  Release one; the site derives `UPM_BRANCH` from the version. `/asp-ft-release <version>` runs the whole release.
+  which the release workflow and `checks.yml` check (`scripts/check-version.mjs`). The version also picks the channel,
+  and the script switches it: a prerelease installs from `#upm-preview` under a Preview badge, a stable version from
+  `#upm` under a Release one; the site derives `UPM_BRANCH` from the version. `/asp-ft-release <version>` runs the whole
+  release.
 - `skills/` is for **consumers** of the package and is installed with `npx skills add VPDPersonal/Aspid.FastTools`;
   skills for working on this repo live in `.claude/skills/` and carry `metadata.internal: true` so that command does
   not offer them. `scripts/check-skills.mjs` (CI, on every PR) checks every `SKILL.md` in the repository: a file outside
@@ -38,6 +40,17 @@ Agent Skills for projects that consume the package in `skills/`.
   limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, and
   on a `.uss.meta` with importer id 12388. Unity writes the full block into every new `.cs.meta`, and a reserialize adds
   it to old ones, so the check keeps all of them in one format. Unity rewrites id 12388 to 12385 when it imports a sample.
+  It also fails on a file or folder without a `.meta` (`Samples~` content too), a `.meta` without an asset, a GUID used
+  twice, a sample path of `package.json` that is no folder, and an asmdef reference that is no asmdef of the package.
+  Unity repairs these in a local package and ignores or breaks them in an installed one. An asmdef that needs an assembly
+  from another package lists it in `EXTERNAL_ASSEMBLIES` of the script.
+- The minimum Unity version is `unity` and `unityRelease` in `package.json`. It is also written by hand in this file,
+  `.github/claude-review.md`, `.github/ISSUE_TEMPLATE/release_checklist.yml`, `skills/aspid-visual-element-fluent/SKILL.md`
+  and the `minimum` row of `.github/workflows/tests.yml`; `scripts/check-unity-minimum.mjs` (CI) fails when one differs.
+- `.github/workflows/checks.yml` has no path filter, so each of its jobs can be a required check. It runs
+  `check-package-files.mjs`, `check-version.mjs` and `check-unity-minimum.mjs`, compares the committed Roslyn DLLs with a
+  Release build, and runs `node --test scripts/*.test.mjs`. Those tests run `set-version.sh` on a copy of the repository
+  and need `npm --prefix Website ci`.
 - `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
   environment. Allow there only commands that cannot run code or read the environment; put the rest in
   `.claude/settings.local.json`.
