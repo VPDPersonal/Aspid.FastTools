@@ -5,6 +5,8 @@ name: Release
 # then go out in one atomic push (release), and the GitHub release is created last, in its own job (github-release).
 # If a job fails, use "Re-run failed jobs", not "Re-run all jobs": the finished jobs are kept, and preflight would
 # refuse the UPM tag that the first run already published.
+# The "Release tags" ruleset lets only admins create, move or delete v* tags. A manual run pushes the tag with the
+# workflow token, which a personal repository cannot add to the bypass list, so it fails there: push the tag instead.
 
 on:
   push:
