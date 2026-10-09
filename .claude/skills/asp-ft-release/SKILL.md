@@ -45,6 +45,9 @@ Do every step without questions. Stop at the first failure and report it.
 
    The `unity-verify` agent is user-level. Without it, run the batch command from the header of
    `scripts/make-unity-test-project.sh` for both projects, in the background.
+
+   The Editor of `<minimum>` may not be installed (`ls /Applications/Unity/Hub/Editor`). Then use the oldest
+   installed 6000.0.x as `<minimum>`. Write that version in the report. The `minimum` job of CI covers `<minimum>`.
 7. Run the checks that the release runs:
    - from `.github/workflows/tests.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
      `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` in the repository root;
@@ -91,19 +94,64 @@ Do every step without questions. Stop at the first failure and report it.
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/package.json?ref=<channel>' --jq .content | base64 -d`.
 7. Check that the package CHANGELOG on the channel has the version's section. The release generates that copy:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/CHANGELOG.md?ref=<channel>' --jq .content | base64 -d`.
-8. **Stable:** ask before you close the milestone `v<version>`. Then close it with `gh api -X PATCH`.
-9. Send the final report: the release URL, the channel, the open items from the Phase 1 report.
+8. Check that the tag has the consumer skills. The docs tell users to install them from the tag
+   (`npx skills add VPDPersonal/Aspid.FastTools#v<version>`):
+   `diff <(git ls-tree --name-only v<version>:skills) <(git ls-tree --name-only origin/main:skills)`.
+   An error or a difference means that users get another set of skills. Put it into the report.
+9. **Stable:** find the milestone. Its title is `<version>` or `v<version>`:
+   `gh api 'repos/VPDPersonal/Aspid.FastTools/milestones?state=open&per_page=100' --jq '.[] | select(.title == "<version>" or .title == "v<version>") | .number'`.
+   No milestone → say so in the report and skip step 10.
+10. **Stable:** ask before you close the milestone. Then close it:
+    `gh api -X PATCH repos/VPDPersonal/Aspid.FastTools/milestones/<number> -f state=closed`.
+11. Send the final report: the release URL, the channel, the open items from the Phase 1 report.
 
 ## Release failed
 
 Read the failed step: `gh run view <id> --log-failed`. Then:
 
+- **The infrastructure failed.** Examples: the Unity process was killed (exit code 137), a runner was lost, a download
+  timed out. The log shows no error in the repository, and "Publish release tag and UPM subtree" did not run.
+  1. Run `gh run rerun <id> --failed`. Keep the tag.
+  2. Go to "Phase 2" step 8.
+  3. The same step fails again → use the next case.
 - **A step before "Publish release tag and UPM subtree" failed.** Only the `v<version>` tag is out.
   1. Report the cause. A fix goes to `main` in a separate PR.
   2. After the fix, ask before you delete the tag: `git push origin :refs/tags/v<version>`, `git tag -d v<version>`.
   3. Go to "Phase 2" step 3 with the merge commit of the fix PR.
 - **Only "Create GitHub release" failed.** The tags and the channel branch are out.
   1. Ask, then create the release by hand. The command is in the comment above that step in `release.yml`.
+
+## Asset Store upload
+
+The upload is manual and belongs to a **Stable** release. The user signs in and uploads. These decisions are fixed.
+
+- **Upload form: Local UPM Package** of Asset Store Tools (`Tools/Asset Store/Uploader`, "Upload type").
+  - The package stays a UPM package in `Packages/`. Its tests compile only for a package in `Assets/` or in
+    `testables`, so a buyer does not run them.
+  - Do not use "From Assets Folder". The package would land in `Assets/`, and about 30 tests would run in the buyer's
+    project, some of them changing its `ProjectSettings`.
+  - "Pre-exported .unitypackage" is the fallback if Asset Store Tools removes the Local UPM Package entry.
+- **Symbol:** the entry exists only with `UNITY_ASTOOLS_EXPERIMENTAL`. The dev project sets it for the Standalone group
+  only (`Aspid.FastTools/ProjectSettings/ProjectSettings.asset`). Keep it there. The upload project needs the same
+  symbol, and its build target must stay Standalone: on Android or iOS the entry disappears without a message.
+- **Editor: 6000.0.53f1**, the minimum of `package.json` and `tests.yml`. Asset Store Tools sends the Editor version
+  with every request, and the store can record it as the minimum Unity version. An upload from the dev project (6000.4)
+  can list buyers on 6000.0–6000.3 as unsupported. Do not open the dev project in another Editor.
+- **Upload project:** a new project on 6000.0.53f1.
+  1. Put the package into `Packages/tech.aspid.fasttools`. Take it from the `upm/<version>` tag after "Phase 3"
+     (`git clone --depth 1 --branch upm/<version> <repository URL>`, then delete `.git`). The tag has the generated
+     `CHANGELOG.md`. Before the tag, run `node scripts/package-changelog.mjs v<version>` and copy the package folder.
+  2. Copy `Aspid.FastTools/Packages/com.unity.asset-store-tools` into `Packages/`.
+  3. Add `UNITY_ASTOOLS_EXPERIMENTAL` to the Standalone scripting define symbols.
+  4. In the Uploader, pick the draft, "Local UPM Package" and `Packages/tech.aspid.fasttools/package.json`.
+- **Validator:** run `Tools/Asset Store/Validator` on the package before the upload. Fix every failure first.
+  The warning "types not nested under a namespace" is expected and stays:
+  - `ProfilerMarkerExtensionsForGenerator` has no namespace on purpose. The generator finds it by name. Do not move it.
+  - The generator DLL has compiler-generated types without a namespace.
+
+  Put both into the submission notes.
+- **Check the export:** use "Export" and import the `.unitypackage` into a clean 6000.0.53f1 project. The package
+  lands in `Packages/tech.aspid.fasttools`, and the Test Runner lists no FastTools tests.
 
 ## Not done by this skill
 
@@ -113,7 +161,8 @@ Put these items into the Phase 1 report. Do not do them without a request.
   without Unity says that the reference still needs regenerating. Ask if such a PR is merged since the last release.
 - "The channel changed" from `set-version.sh` → re-record the README install walk-through in a separate PR
   (`docs/media/readme-previews/README.md`).
-- **Stable:** the manual QA of `.github/ISSUE_TEMPLATE/release_checklist.yml`: player builds, Asset Store.
+- **Stable:** the manual QA of `.github/ISSUE_TEMPLATE/release_checklist.yml`: player builds, and the Asset Store
+  upload as in "Asset Store upload".
 
 ## Report format
 

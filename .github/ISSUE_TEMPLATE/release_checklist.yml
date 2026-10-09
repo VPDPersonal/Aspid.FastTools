@@ -38,7 +38,7 @@ body:
       options:
         - label: Clean project on minimum Unity **6000.0.53f1** — imports with 0 errors / 0 warnings
         - label: Project on latest LTS / 6.1+ — no API drift
-        - label: Installed from `.unitypackage` (Asset Store distribution form)
+        - label: "Installed from the `.unitypackage` that the Local UPM Package upload exports (Asset Store distribution form): the package lands in `Packages/tech.aspid.fasttools` and the Test Runner lists no FastTools tests"
         - label: Installed via UPM `upm` git tag (stable)
         - label: Installed via UPM `upm-preview` branch (preview) — README badge links resolve
         - label: Tested **with** and **without** `com.unity.mathematics` present
@@ -125,9 +125,21 @@ body:
         - label: Asset Store card screenshots proofread (no typos)
 
   - type: checkboxes
+    id: assetstore
+    attributes:
+      label: 10. Asset Store upload
+      description: The upload form and the Editor are fixed in the `asp-ft-release` skill, section "Asset Store upload".
+      options:
+        - label: "Upload form is **Local UPM Package** (`Tools/Asset Store/Uploader`, Upload type), not From Assets Folder: the package must stay in `Packages/`, because its tests compile only for a package in `Assets/` or in `testables`"
+        - label: "The Editor that uploads is **6000.0.53f1** (the minimum in `package.json`), not the dev project's 6000.4: the store can record the uploading Editor as the minimum Unity version, which lists buyers on 6000.0–6000.3 as unsupported"
+        - label: "The Local UPM Package entry shows in the Uploader: the active build target is Standalone, because `UNITY_ASTOOLS_EXPERIMENTAL` is set for the Standalone group only"
+        - label: "`CHANGELOG.md` and its `.meta` are in the package folder before the export (`node scripts/package-changelog.mjs vX.Y.Z`, or the `upm/X.Y.Z` tag) and in the exported `.unitypackage`"
+        - label: "Validator (`Tools/Asset Store/Validator`) run on the package: no failures. The types-not-nested-under-a-namespace warnings are expected (`ProfilerMarkerExtensionsForGenerator`, which the generator finds by name; compiler-generated types of the generator DLL): mention them in the submission notes"
+
+  - type: checkboxes
     id: final
     attributes:
-      label: 10. Final smoke before upload
+      label: 11. Final smoke before upload
       options:
         - label: Fresh `.unitypackage` import into an empty project — clean console, one sample imports and runs
         - label: "Asset Store card (version, Unity compatibility, category, license, tags) matches the package"
