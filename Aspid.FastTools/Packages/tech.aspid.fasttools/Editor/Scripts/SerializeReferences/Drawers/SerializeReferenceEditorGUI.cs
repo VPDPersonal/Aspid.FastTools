@@ -21,7 +21,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
         /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
-        /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type; <see langword="null"/> or an empty array adds none.</param>
+        /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type and a <c>[TypeSelector]</c> on the field; <see langword="null"/> or an empty array adds none.</param>
         /// <returns>The field to add to the inspector's visual tree.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed reference.</exception>
@@ -32,7 +32,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return property.propertyType is not SerializedPropertyType.ManagedReference
                 ? throw new ArgumentException("CreateField expects a [SerializeReference] managed-reference property; for a list/array of them use CreateList.", nameof(property))
-                : new SerializeReferenceField(label ?? property.displayName, property, baseTypes);
+                : new SerializeReferenceField(
+                    label ?? property.displayName,
+                    property,
+                    TypeSelectorConstraintResolver.AppendFieldConstraints(property, baseTypes));
         }
 
         /// <summary>
@@ -63,7 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <remarks>Lists use <see cref="SerializeReferenceIMGUIList.Draw"/>.</remarks>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
         /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
-        /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type; <see langword="null"/> or an empty array adds none.</param>
+        /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type and a <c>[TypeSelector]</c> on the field; <see langword="null"/> or an empty array adds none.</param>
         /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed reference.</exception>
         public static void DrawFieldLayout(SerializedProperty property, GUIContent label = null, params Type[] baseTypes)
@@ -73,6 +76,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 throw new ArgumentException("DrawFieldLayout expects a [SerializeReference] managed-reference property; for a list/array of them use SerializeReferenceIMGUIList.Draw.", nameof(property));
 
             label ??= new GUIContent(property.displayName);
+            baseTypes = TypeSelectorConstraintResolver.AppendFieldConstraints(property, baseTypes);
 
             var height = SerializeReferenceIMGUIPropertyDrawer.GetHeight(property);
             var rect = EditorGUILayout.GetControlRect(hasLabel: true, height);

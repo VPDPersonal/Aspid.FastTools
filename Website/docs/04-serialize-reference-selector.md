@@ -46,6 +46,8 @@ Right-click the field header:
 
 | Item | What it does |
 |---|---|
+| **Revert** | On a prefab instance, returns an overridden field to the prefab's class and data; the label of such a field is bold |
+| **Apply to Prefab 'Player'** | On a prefab instance, writes an overridden field into the prefab |
 | **Copy Serialize Reference** | Copies the field's class and data; the copy lasts until the next domain reload |
 | **Paste Serialize Reference** | Pastes the copy into a field of a compatible type; a copied empty field clears it |
 | **Find Usages of Pistol** | Searches the project for the class through Unity Search |
