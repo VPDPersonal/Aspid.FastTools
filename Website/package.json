@@ -17,6 +17,7 @@
     "sync-readme": "node scripts/sync-readme.mjs",
     "check-readme": "node scripts/sync-readme.mjs --check",
     "check-translations": "node scripts/check-translations.mjs",
+    "check-selectors": "node scripts/check-selectors.mjs",
     "test": "node --test scripts/*.test.mjs",
     "prestart:ru": "npm run sync-readme && npm run sync-changelog"
   },

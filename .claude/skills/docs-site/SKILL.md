@@ -349,6 +349,10 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
 - `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
   blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
   may differ, so make every structural change in both languages.
+- `npm --prefix Website run check-selectors` (CI, after the build) looks in the built stylesheets for every Docusaurus
+  class that the site selects by a name fragment (`[class*='docMainContainer_']`). A Docusaurus update can rename such
+  a hashed class without failing the build. A new fragment in the site CSS or JS needs no list: the script reads the
+  sources. Public names (`theme-*`, `menu__link`) have no hash and are not checked.
 - `Website/scripts/sync-changelog.mjs` (also run by `prestart`/`prebuild`) builds `Website/changelog/` and
   `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/` from the root `CHANGELOG*.md`. Because the
   copies are untracked, their "Last updated" date is stamped from the **source file's last commit**. Docs and tutorial
@@ -392,4 +396,4 @@ The cards on the Introduction page (layout, captures, previews, clip recipes) ha
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package README, `package.json`
 or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md`, `docs/images/readme-previews/` or `CHANGELOG*.md`, and on PRs (build only); it runs
-`check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
+`check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build and `check-selectors` after it. Pages source must be set to "GitHub Actions" once in the repository settings.
