@@ -49,6 +49,20 @@ namespace Aspid.FastTools.Types.Editors
             TypeAllow allow = TypeAllow.All,
             params Type[] types)
         {
+            // Gives a value overridden on a prefab instance its bold label and Unity's Apply and Revert menu.
+            label = EditorGUI.BeginProperty(totalPosition: position, label: label, property: property);
+            try
+            {
+                DrawRow(position: position, label: label, property: property, allow: allow, types: types);
+            }
+            finally
+            {
+                EditorGUI.EndProperty();
+            }
+        }
+
+        private static void DrawRow(Rect position, GUIContent label, SerializedProperty property, TypeAllow allow, Type[] types)
+        {
             var isMissing = TypeMissingRepair.IsMissing(property: property);
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;

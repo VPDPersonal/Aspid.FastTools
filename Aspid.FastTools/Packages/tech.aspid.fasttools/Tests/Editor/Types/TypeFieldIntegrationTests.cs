@@ -21,6 +21,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
         public SerializableType<ScriptableObject> scriptType;
     }
 
+    internal sealed class TypeFieldHandlerTestObject : ScriptableObject
+    {
+        public string typeName;
+        public int count;
+    }
+
     // TypeField as consumers use it: from UXML, inside a PropertyField, on a prefab instance, through its change event
     // and its picker filter. A runtime panel dispatches the events without a graphics device.
     internal sealed class TypeFieldIntegrationTests
@@ -162,20 +168,65 @@ namespace Aspid.FastTools.Types.Editors.Tests
             CollectionAssert.AreEqual(new[] { ((Type)null, typeof(string)) }, changes);
         }
 
+        // The picker window picks inside its own event, so the panel queues ChangeEvent until the pick returns.
+        // A pick from another element's change event gives the same order here.
+        [TestCase(false)]
+        [TestCase(true)]
+        public void BoundPick_ChangeHandlerReadsThePickedName_AndKeepsItsOwnEdits(bool insideAnotherEvent)
+        {
+            var picked = typeof(string).AssemblyQualifiedName;
+            var target = ScriptableObject.CreateInstance<TypeFieldHandlerTestObject>();
+            target.typeName = typeof(int).AssemblyQualifiedName;
+            target.count = 1;
+            try
+            {
+                using var serialized = new SerializedObject(target);
+                var typeName = serialized.FindProperty(nameof(TypeFieldHandlerTestObject.typeName));
+                var field = Add(new TypeField(property: typeName));
+
+                string readByHandler = null;
+                field.RegisterValueChangedCallback(_ =>
+                {
+                    readByHandler = typeName.stringValue;
+                    serialized.FindProperty(nameof(TypeFieldHandlerTestObject.count)).intValue = 5;
+                    serialized.ApplyModifiedProperties();
+                });
+
+                if (insideAnotherEvent)
+                {
+                    var trigger = Add(new Toggle());
+                    trigger.RegisterValueChangedCallback(_ => field.ApplyPicked(assemblyQualifiedName: picked));
+                    trigger.value = true;
+                }
+                else
+                {
+                    field.ApplyPicked(assemblyQualifiedName: picked);
+                }
+
+                Assert.AreEqual(picked, readByHandler, "The handler reads the pick from the caller's own property.");
+                Assert.AreEqual(picked, target.typeName, "The handler's apply does not write the old name back.");
+                Assert.AreEqual(5, target.count);
+            }
+            finally
+            {
+                Object.DestroyImmediate(target);
+            }
+        }
+
         [Test]
-        public void BoundPick_WritesThePropertyBeforeTheChangeEvent()
+        public void BoundPick_AfterTheCallersSerializedObjectIsDisposed_StillWritesTheProperty()
         {
             var target = ScriptableObject.CreateInstance<TypeFieldTestObject>();
             try
             {
-                using var serialized = new SerializedObject(target);
-                var field = Add(new TypeField(property: serialized.FindProperty(nameof(TypeFieldTestObject.typeName))));
-                string storedWhenNotified = null;
-                field.RegisterValueChangedCallback(_ => storedWhenNotified = target.typeName);
+                TypeField field;
+                using (var serialized = new SerializedObject(target))
+                    field = Add(new TypeField(property: serialized.FindProperty(nameof(TypeFieldTestObject.typeName))));
 
                 field.ApplyPicked(assemblyQualifiedName: typeof(string).AssemblyQualifiedName);
 
-                Assert.AreEqual(typeof(string).AssemblyQualifiedName, storedWhenNotified);
+                Assert.AreEqual(typeof(string).AssemblyQualifiedName, target.typeName);
+                Assert.AreEqual(typeof(string), field.value);
             }
             finally
             {

@@ -499,9 +499,10 @@ A string property holding the assembly-qualified type name.
 
 #### Remarks
 
-A pick writes the property before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent. Read the picked type from
-[`newValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1-newValue.html): the field writes through its own copy of the property, so the
-[`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code> still holds the old name.
+Before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent, a pick writes the property and calls
+[`Update`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.Update.html) on the [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code>:
+a change handler reads the picked name from <code class="paramref">property</code>, and edits it applies through that
+object keep the pick. Changes not yet applied to that object are lost.
 
 #### Exceptions
 

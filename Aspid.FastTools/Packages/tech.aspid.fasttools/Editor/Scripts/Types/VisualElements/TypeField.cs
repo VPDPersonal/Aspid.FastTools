@@ -37,6 +37,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly TextElement _textElement;
         private readonly VisualElement _visualInput;
         private readonly SerializedProperty _property;
+        private readonly SerializedObject _sourceSerializedObject;
 
         private bool _isReadOnly;
         private string _shownPropertyValue;
@@ -140,9 +141,10 @@ namespace Aspid.FastTools.Types.Editors
         /// reflected back into the field.
         /// </summary>
         /// <remarks>
-        /// A pick writes the property before <see cref="ChangeEvent{T}"/> is sent. Read the picked type from
-        /// <see cref="ChangeEvent{T}.newValue"/>: the field writes through its own copy of the property, so the
-        /// <see cref="SerializedObject"/> of <paramref name="property"/> still holds the old name.
+        /// Before <see cref="ChangeEvent{T}"/> is sent, a pick writes the property and calls
+        /// <see cref="SerializedObject.Update"/> on the <see cref="SerializedObject"/> of <paramref name="property"/>:
+        /// a change handler reads the picked name from <paramref name="property"/>, and edits it applies through that
+        /// object keep the pick. Changes not yet applied to that object are lost.
         /// </remarks>
         /// <param name="label">The field label; <see langword="null"/> for none.</param>
         /// <param name="property">A string property holding the assembly-qualified type name.</param>
@@ -162,6 +164,7 @@ namespace Aspid.FastTools.Types.Editors
 
             _property = property.Persistent() ?? throw new ArgumentException(
                 $"The property path \"{property.propertyPath}\" no longer exists on its targets.", nameof(property));
+            _sourceSerializedObject = property.serializedObject;
 
             ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(_property);
             RefreshProperty(property: _property);
@@ -390,15 +393,33 @@ namespace Aspid.FastTools.Types.Editors
 
         internal void ApplyPicked(string assemblyQualifiedName)
         {
-            // The property goes first, so a change handler that reads the target sees the picked name.
+            // The property goes first. The picker window picks inside its own event, so Unity queues ChangeEvent until
+            // this method returns, whatever the order here. The caller's SerializedObject is updated too, so a change
+            // handler that applies it does not write the old name back.
             if (_property is not null)
             {
+                var serializedObject = _property.serializedObject;
+                serializedObject.Update();
                 _property.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
-                _property.serializedObject.Update();
+                serializedObject.Update();
+
+                UpdateSourceSerializedObject();
                 EnableInClassList(className: BindingExtensions.prefabOverrideUssClassName, enable: IsPrefabOverride(_property));
             }
 
             value = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
+        }
+
+        private void UpdateSourceSerializedObject()
+        {
+            try
+            {
+                _sourceSerializedObject.Update();
+            }
+            catch (NullReferenceException)
+            {
+                // The caller disposed it: a disposed SerializedObject throws on access, and nothing reads it any more.
+            }
         }
 
         // Unity's own fields draw the override for one target only, also when the whole component is an addition.

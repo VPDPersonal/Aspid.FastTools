@@ -39,9 +39,10 @@ namespace Aspid.FastTools.Types.Editors
         /// Creates an Inspector-aligned field bound to a type-name property.
         /// </summary>
         /// <remarks>
-        /// A pick writes the property before <see cref="ChangeEvent{T}"/> is sent. Read the picked type from
-        /// <see cref="ChangeEvent{T}.newValue"/>: the field writes through its own copy of the property, so the
-        /// <see cref="SerializedObject"/> of <paramref name="property"/> still holds the old name.
+        /// Before <see cref="ChangeEvent{T}"/> is sent, a pick writes the property and calls
+        /// <see cref="SerializedObject.Update"/> on the <see cref="SerializedObject"/> of <paramref name="property"/>:
+        /// a change handler reads the picked name from <paramref name="property"/>, and edits it applies through that
+        /// object keep the pick. Changes not yet applied to that object are lost.
         /// </remarks>
         /// <param name="label">The field label, or <see langword="null"/> for no label.</param>
         /// <param name="property">The string property storing the assembly-qualified type name.</param>

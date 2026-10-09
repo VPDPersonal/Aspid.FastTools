@@ -21,8 +21,9 @@ field.RegisterValueChangedCallback(_ => _weaponName = field.AssemblyQualifiedNam
 
 - `InspectorTypeField` is the same field with its label aligned to the Inspector rows.
 - The bound constructors accept only a string property; any other property throws `ArgumentException`.
-- A pick writes the property first, then sends `ChangeEvent<Type>`. Read `evt.newValue`: the caller's
-  `SerializedObject` still holds the old name until `Update()`.
+- A pick writes the property and calls `Update()` on the caller's `SerializedObject`, then sends
+  `ChangeEvent<Type>`: a handler can read the property and apply its own edits through that object. Edits not yet
+  applied to it are lost.
 - A stored name that no longer resolves shows `<Missing …>`. `value` is then `null`, but `AssemblyQualifiedName`
   keeps the stored name: save `AssemblyQualifiedName`, not `value?.AssemblyQualifiedName`.
 - Other members: `Predicate`, `HideNoneOption`, `IsReadOnly`, `ExcludeEditorOnlyTypes` (a bound field sets it for
