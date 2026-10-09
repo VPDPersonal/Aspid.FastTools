@@ -70,7 +70,7 @@ A wrapper's <code lang="class-name">T</code> and a <code lang="csharp">[Serializ
 | Property | Default | Behaviour |
 |---|---|---|
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Lets abstract classes (<code lang="csharp">Abstract</code>), interfaces (<code lang="csharp">Interface</code>), both or neither into the list. Ignored on <code lang="csharp">[SerializeReference]</code> |
-| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Warns about an empty type name in a <code lang="csharp">string</code> or <code lang="class-name">SerializableType</code> field, or a <code lang="csharp">null</code> in a <code lang="csharp">[SerializeReference]</code> field |
+| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Warns about an empty type name in a <code lang="csharp">string</code> field or a [Serializable Types](02-serializable-types.md) wrapper, or a <code lang="csharp">null</code> in a <code lang="csharp">[SerializeReference]</code> field |
 
 ## Required field
 

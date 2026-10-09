@@ -70,7 +70,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 | Свойство | По умолчанию | Поведение |
 |---|---|---|
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Пускает в список абстрактные классы (<code lang="csharp">Abstract</code>), интерфейсы (<code lang="csharp">Interface</code>), оба вида или ни один. На <code lang="csharp">[SerializeReference]</code> игнорируется |
-| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает, если у поля <code lang="csharp">string</code> или <code lang="class-name">SerializableType</code> пустое имя типа, а у <code lang="csharp">[SerializeReference]</code> — <code lang="csharp">null</code> |
+| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает, если у поля <code lang="csharp">string</code> или обёртки из [Serializable Types](02-serializable-types.md) пустое имя типа, а у <code lang="csharp">[SerializeReference]</code> — <code lang="csharp">null</code> |
 
 ## Обязательное поле
 
