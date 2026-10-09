@@ -102,14 +102,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var rewritten = MissingTypeNameRepair.Rewrite(entries, newType, "Repairing Type Names");
             RefreshTypeNames(entries.Select(entry => entry.AssetPath));
 
-            var summaryTitle = rewritten == 1 ? "Rewrote 1 type name" : $"Rewrote {rewritten} type names";
-            var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
-            if (skipped > 0)
-                summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
-            if (rewritten < entries.Count)
-                summaryBody += " " + SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten);
+            // A fix that changed nothing has no replacement to report and nothing to undo.
+            var summaryTitle = rewritten == 0 ? "Nothing was rewritten"
+                : rewritten == 1 ? "Rewrote 1 type name"
+                : $"Rewrote {rewritten} type names";
+            var summaryBody = SerializeReferenceProjectSummary.JoinSentences(
+                rewritten == 0 ? null : $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.",
+                skipped > 0 ? $"Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes." : null,
+                rewritten < entries.Count ? SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten) : null);
 
-            var receipt = new TypeNameReceipt(entries, newName, group.DisplayName, newType.FullName);
+            var receipt = rewritten == 0 ? null : new TypeNameReceipt(entries, newName, group.DisplayName, newType.FullName);
 
             RerenderAfterBulkEdit();
             AddSummary(new RepairSummary(summaryTitle, summaryBody, receipt));
@@ -213,14 +215,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            var summaryTitle = rewritten == 1 ? "Rewrote 1 reference" : $"Rewrote {rewritten} references";
-            var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
-            if (skipped > 0)
-                summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
-            if (rewritten < entries.Count)
-                summaryBody += " " + SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten);
+            // A fix that changed nothing has no replacement to report and nothing to undo.
+            var summaryTitle = rewritten == 0 ? "Nothing was rewritten"
+                : rewritten == 1 ? "Rewrote 1 reference"
+                : $"Rewrote {rewritten} references";
+            var summaryBody = SerializeReferenceProjectSummary.JoinSentences(
+                rewritten == 0 ? null : $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.",
+                skipped > 0 ? $"Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes." : null,
+                rewritten < entries.Count ? SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten) : null);
 
-            var receipt = new RepairReceipt(entries, group.StoredType, managedType, group.DisplayName, newType.FullName);
+            var receipt = rewritten == 0 ? null : new RepairReceipt(entries, group.StoredType, managedType, group.DisplayName, newType.FullName);
 
             RerenderAfterBulkEdit();
             AddSummary(new RepairSummary(summaryTitle, summaryBody, receipt));
@@ -265,6 +269,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (_scanButton is not null) _scanButton.Text = RescanLabel;
                 RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
+
+                AddSummary(new RepairSummary(
+                    "Nothing was cleared",
+                    SerializeReferenceProjectSummary.BuildNotRewrittenText(total, verb: "cleared"),
+                    receipt: null));
                 return;
             }
 

@@ -102,6 +102,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreNotEqual("Project clean", title);
             StringAssert.StartsWith("No missing managed references found", message);
             StringAssert.DoesNotContain("or type names", message);
+            StringAssert.DoesNotContain("anywhere under Assets/", message);
+            StringAssert.Contains("in the files that could be read", message);
             StringAssert.Contains("Type names and required fields have not been checked", message);
             StringAssert.Contains("Rescan", message);
         }
@@ -157,6 +159,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             StringAssert.DoesNotContain("confirm it's clean", hint);
             StringAssert.Contains("4 binary or Git LFS files were not checked", hint);
         }
+
+        // The rows that stay listed after a repair are those of the last scan, as in the results hint.
+        [Test]
+        public void BuildMissingReferencesCleanHintText_RequiredViolations_SaysTheyAreAsOfTheLastScan()
+        {
+            var hint = SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, true);
+
+            StringAssert.StartsWith("Click a required-violation row", hint);
+            StringAssert.Contains("as of the last scan", hint);
+        }
+
+        [Test]
+        public void BuildMissingReferencesCleanHintText_NoRequiredViolations_DoesNotMentionTheLastScan() =>
+            StringAssert.DoesNotContain("last scan",
+                SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, false));
 
         [Test]
         public void BuildMissingReferencesCleanHintText_TypeNamesNotScanned_SaysToRescan()
@@ -221,12 +238,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             StringAssert.EndsWith("2 binary or Git LFS files were not checked — see the Console.",
                 SerializeReferenceProjectSummary.BuildResultsHintText(false, RequiredAuditState.Checked, unreadFileCount: 2));
 
+        // A read-only file is logged; an entry that changed since the scan is not, so the text names both causes.
         [Test]
-        public void BuildNotRewrittenText_NamesTheCountAndTheConsole()
+        public void BuildNotRewrittenText_NamesTheCountAndBothCauses()
         {
-            Assert.AreEqual("3 could not be rewritten — see the Console.", SerializeReferenceProjectSummary.BuildNotRewrittenText(3));
-            Assert.AreEqual("2 could not be cleared — see the Console.",
-                SerializeReferenceProjectSummary.BuildNotRewrittenText(2, verb: "cleared"));
+            var rewritten = SerializeReferenceProjectSummary.BuildNotRewrittenText(3);
+            var cleared = SerializeReferenceProjectSummary.BuildNotRewrittenText(2, verb: "cleared");
+
+            StringAssert.StartsWith("3 could not be rewritten", rewritten);
+            StringAssert.StartsWith("2 could not be cleared", cleared);
+
+            foreach (var text in new[] { rewritten, cleared })
+            {
+                StringAssert.Contains("read-only or locked (see the Console)", text);
+                StringAssert.Contains("changed since the scan", text);
+            }
+        }
+
+        [Test]
+        public void JoinSentences_LeavesOutNullAndEmptyParts()
+        {
+            Assert.AreEqual("A. B.", SerializeReferenceProjectSummary.JoinSentences("A.", null, string.Empty, "B."));
+            Assert.AreEqual("B.", SerializeReferenceProjectSummary.JoinSentences(null, "B."));
+            Assert.AreEqual(string.Empty, SerializeReferenceProjectSummary.JoinSentences(null, string.Empty));
         }
     }
 }

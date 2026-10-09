@@ -279,17 +279,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 SerializeReferenceProjectSummary.BuildResultsHeaderText(
                     missingCount - migrationCount - TypeNamesForRender.Count, migrationCount, requiredCount, TypeNamesForRender.Count),
                 StatusStyle.Type.Warning);
+
+            // Only these cards have a Fix all; a renamed type has Reassign all and Migrate all instead.
+            var hasBrokenGroups = groups.Count > migrations.Count || typeNameGroups.Count > 0;
             _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(
                 requiredCount > 0,
                 RequiredAudit,
                 overrides.Count > 0,
-                hasBrokenGroups: groups.Count > 0 || typeNameGroups.Count > 0,
+                hasBrokenGroups: hasBrokenGroups,
                 hasTypeNames: typeNameGroups.Count > 0,
                 typeNamesScanned: _typeNamesIsWarm,
                 unreadFileCount: _unreadFileCount);
 
-            var hasAmber = groups.Count > migrations.Count || requiredCount > 0 || overrides.Count > pendingOverrides ||
-                           typeNameGroups.Count > 0;
+            var hasAmber = hasBrokenGroups || requiredCount > 0 || overrides.Count > pendingOverrides;
             _legend.EnableInClassList(LegendHiddenClass, migrationCount == 0 || !hasAmber);
 
             if (overrides.Count > 0)

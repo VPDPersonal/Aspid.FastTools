@@ -228,6 +228,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return;
                 }
 
+                if (SerializeReferenceGateScanner.TryGetUnreadFormat(assetPath, EditorSettings.serializationMode, out var unreadFormat))
+                {
+                    ShowEmpty("Not scanned", SerializeReferenceGraphSummary.BuildUnreadAssetMessage(unreadFormat));
+                    return;
+                }
+
                 ShowEmpty(
                     "No managed references",
                     "This asset has no [SerializeReference] managed references to map.");

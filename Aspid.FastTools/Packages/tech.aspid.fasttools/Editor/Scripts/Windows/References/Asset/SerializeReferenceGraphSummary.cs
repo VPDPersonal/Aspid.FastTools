@@ -6,6 +6,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceGraphSummary
     {
+        // A binary file or an unfetched LFS pointer is never read, which is not the same as holding no references.
+        public static string BuildUnreadAssetMessage(AssetFileFormat format) =>
+            format == AssetFileFormat.LfsPointer
+                ? "This asset is a Git LFS pointer, so its managed references were not read. Fetch the LFS objects to map them."
+                : "This asset is not stored as text YAML, so its managed references were not read. " +
+                  "Set Asset Serialization → Mode to Force Text and save the asset again to map them.";
+
         public static string BuildOverviewTitle(int broken, int orphans, int migrations, int required)
         {
             var parts = new List<string>(4);

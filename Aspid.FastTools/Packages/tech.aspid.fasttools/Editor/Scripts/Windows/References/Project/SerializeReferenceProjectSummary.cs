@@ -1,4 +1,5 @@
 using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
@@ -36,9 +37,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string BuildUnreadFilesText(int count) =>
             $"{(count == 1 ? "1 binary or Git LFS file was" : $"{count} binary or Git LFS files were")} not checked — see the Console.";
 
-        // A read-only file logs its reason to the Console; an entry that changed since the scan is left alone.
+        // A read-only or locked file logs its reason to the Console; an entry that changed since the scan is left
+        // alone without a log, so the text names both causes.
         public static string BuildNotRewrittenText(int count, string verb = "rewritten") =>
-            $"{count} could not be {verb} — see the Console.";
+            $"{count} could not be {verb} — a file is read-only or locked (see the Console), or the entry changed since the scan.";
+
+        // The parts of a summary body that apply, in one paragraph; a part that is null or empty is left out.
+        public static string JoinSentences(params string[] sentences) =>
+            string.Join(" ", sentences.Where(sentence => !string.IsNullOrEmpty(sentence)));
 
         // Only a sweep that read every file and checked every kind of problem can call the project clean.
         private static bool IsFullyChecked(RequiredAuditState state, bool typeNamesScanned, int unreadFileCount) =>
@@ -56,7 +62,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? "No missing managed references or type names"
                     : "No missing managed references";
 
-            var message = $"{found} found {(unreadFileCount > 0 ? "in the files that could be read" : "anywhere under Assets/")}.";
+            // Without Scan Project the number of unread files is unknown, so "anywhere under Assets/" would claim too much.
+            var wherever = unreadFileCount > 0 || !typeNamesScanned ? "in the files that could be read" : "anywhere under Assets/";
+            var message = $"{found} found {wherever}.";
 
             if (state != RequiredAuditState.Checked || !typeNamesScanned)
                 message += " " + BuildNotCheckedText(state, typeNamesScanned);
@@ -81,6 +89,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : hasRequiredViolations ? "Click a required-violation row to jump to its asset."
                 : unreadFileCount > 0 ? "Nothing left to repair in the files that were read."
                 : "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+
+            if (typeNamesScanned && hasRequiredViolations)
+                hint += " " + StaleScanDataText;
 
             return unreadFileCount > 0 ? hint + " " + BuildUnreadFilesText(unreadFileCount) : hint;
         }
