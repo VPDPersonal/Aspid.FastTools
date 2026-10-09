@@ -340,6 +340,31 @@ class Base { }
 class Derived : Base { }
 class C { [SerializeField, TypeSelector(typeof(Base), typeof(Derived))] private string _type; }");
 
+    // Two closed types of one generic differ only in their type arguments, so messages keep them and the namespace.
+    [Fact]
+    public Task GenericTypes_MessagesNameTypeArguments() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+namespace Game
+{
+    sealed class Slot<T> { }
+    sealed class Sword { }
+    sealed class Axe { }
+    interface IShield<T> { }
+    class C
+    {
+        [SerializeReference, TypeSelector({|#0:typeof(Slot<Axe>)|})] private Slot<Sword> _slot;
+        [SerializeField, TypeSelector(typeof(Slot<Sword>), {|#1:typeof(Slot<Axe>)|})] private string _type;
+        [SerializeReference, {|#2:TypeSelector|}] private IShield<int> _shield;
+    }
+}",
+        VerifyCS.Diagnostic(DiagnosticRules.TypeSelectorBaseTypeRule).WithLocation(0)
+            .WithArguments("Game.Slot<Game.Axe>", "Game.Slot<Game.Sword>"),
+        VerifyCS.Diagnostic(DiagnosticRules.TypeSelectorDisjointBaseTypesRule).WithLocation(1)
+            .WithArguments("Game.Slot<Game.Sword>", "Game.Slot<Game.Axe>"),
+        VerifyCS.Diagnostic(DiagnosticRules.TypeSelectorNoConcreteImplementationRule).WithLocation(2)
+            .WithArguments("_shield", "'Game.IShield<int>'"));
+
     // AFT0004 — managed reference to a UnityEngine.Object-derived type
 
     [Fact]

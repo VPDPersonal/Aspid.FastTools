@@ -28,7 +28,8 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     private const string ListDefinition = "System.Collections.Generic.List<T>";
 
     // The default display format without the '?' of an annotated reference type, so a match by full name does not
-    // depend on the nullable context the member is declared in.
+    // depend on the nullable context the member is declared in. Messages use it too, so they name a type with its
+    // namespace and type arguments: 'Game.Slot<Game.Sword>', not 'Slot'.
     private static readonly SymbolDisplayFormat FullNameFormat = SymbolDisplayFormat.CSharpErrorMessageFormat
         .RemoveMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
@@ -327,7 +328,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticRules.TypeSelectorMemberNotFoundRule, expression.GetLocation(),
-                    memberName, name, containingType.Name));
+                    memberName, name, containingType.ToDisplayString(FullNameFormat)));
             }
             else if (!IsSuitableConstraintSource(member))
             {
@@ -481,7 +482,8 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             if (!AreProvablyDisjoint(baseType, fieldElementType, context.Compilation)) continue;
 
             context.ReportDiagnostic(Diagnostic.Create(
-                DiagnosticRules.TypeSelectorBaseTypeRule, typeOf.GetLocation(), baseType.Name, fieldElementType.Name));
+                DiagnosticRules.TypeSelectorBaseTypeRule, typeOf.GetLocation(),
+                baseType.ToDisplayString(FullNameFormat), fieldElementType.ToDisplayString(FullNameFormat)));
             reported = true;
         }
 
@@ -505,8 +507,8 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticRules.TypeSelectorDisjointBaseTypesRule,
                     bases[later].TypeOf.GetLocation(),
-                    bases[earlier].Type.Name,
-                    bases[later].Type.Name));
+                    bases[earlier].Type.ToDisplayString(FullNameFormat),
+                    bases[later].Type.ToDisplayString(FullNameFormat)));
                 reported = true;
                 break;
             }
@@ -549,7 +551,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             DiagnosticRules.TypeSelectorObjectDerivedRule,
             typeSelector.GetLocation(),
             fieldName,
-            elementType.Name));
+            elementType.ToDisplayString(FullNameFormat)));
 
         return true;
     }
@@ -598,7 +600,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             DiagnosticRules.TypeSelectorNoConcreteImplementationRule,
             typeSelector.GetLocation(),
             fieldName,
-            string.Join(" and ", constraints.Select(constraint => $"'{constraint.Name}'"))));
+            string.Join(" and ", constraints.Select(constraint => $"'{constraint.ToDisplayString(FullNameFormat)}'"))));
     }
 
     /// <summary>

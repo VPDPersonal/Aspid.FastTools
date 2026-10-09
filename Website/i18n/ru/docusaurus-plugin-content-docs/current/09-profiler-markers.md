@@ -57,8 +57,7 @@ public void Step()
 }
 ```
 
-> [!NOTE]
-> Задавайте имя строковым литералом прямо в <code lang="function">WithName</code>. Переменные, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> и строки с подстановками не меняют имя маркера; аргумент при этом вычисляется при каждом вызове.
+Имя должно быть константой: строковым литералом, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> или строкой, собранной из них. Имя, известное только во время выполнения, оставляет имя метода.
 
 ## В Profiler
 
@@ -70,6 +69,7 @@ public void Step()
 
 - Вызывайте <code lang="csharp">this.Marker()</code> внутри собственного типа. Вызовы на объекте другого типа, в статическом классе или вложенном <code lang="csharp">private</code>/<code lang="csharp">protected</code> типе ненадёжны: замер может отсутствовать или попасть в чужой маркер.
 - Используйте <code lang="csharp">using</code>. Отдельный вызов <code lang="csharp">this.Marker();</code> начинает замер и не завершает его.
+- Закрывайте <code lang="csharp">using</code> до <code lang="csharp">yield return</code> или <code lang="csharp">await</code>. Корутина или <code lang="csharp">async</code>-метод продолжают работу в другом кадре или потоке, поэтому незакрытый замер оставляет в Profiler несбалансированные сэмплы.
 
 > [!WARNING]
 > Вызовы внутри одного типа с одинаковым номером строки делят один маркер, даже если находятся в разных файлах <code lang="csharp">partial</code>. Давайте каждой точке замера свой номер строки, иначе замеры объединятся под именем первого вызова.

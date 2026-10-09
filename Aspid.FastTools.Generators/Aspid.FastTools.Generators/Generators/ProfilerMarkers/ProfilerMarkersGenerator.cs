@@ -46,8 +46,11 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         // Unsupported calls get no overload: they bind to the fallback and compile, and AFT0010 reports them.
         if (MarkerCallRules.GetUnsupportedReason(invocation, access, type, model, ct) is not null) return null;
 
+        // A WithName() name known only at run time keeps the member name, and AFT0014 reports it.
         var markerName = ResolveMarkerName(member);
-        var label = TryGetWithName(invocation, model, ct) ?? markerName;
+        var label = MarkerCallRules.FindWithNameArgument(invocation, model, ct) is { } nameArgument
+            ? MarkerCallRules.GetConstantName(nameArgument, model, ct) ?? markerName
+            : markerName;
         var line = MarkerCallRules.GetCallerLine(invocation);
 
         return new MarkerCall(
@@ -57,23 +60,6 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             label,
             invocation.SyntaxTree.FilePath,
             MarkerCallRules.GetCallerColumn(invocation));
-    }
-
-    // .WithName("...") chained directly on the call, bound to the package's WithName.
-    private static string? TryGetWithName(InvocationExpressionSyntax invocation, SemanticModel model, CancellationToken ct)
-    {
-        // Walk past any parentheses so `(this.Marker()).WithName("x")` is still recognised.
-        SyntaxNode outer = invocation;
-        while (outer.Parent is ParenthesizedExpressionSyntax paren)
-            outer = paren;
-
-        if (outer.Parent is not MemberAccessExpressionSyntax { Name: IdentifierNameSyntax { Identifier.ValueText: "WithName" } } access
-            || access.Parent is not InvocationExpressionSyntax { ArgumentList.Arguments: { Count: 1 } arguments } withName)
-            return null;
-
-        if (!MarkerCallRules.IsPackageMethod(model.GetSymbolInfo(withName, ct).Symbol as IMethodSymbol)) return null;
-
-        return TryExtractStringLiteral(arguments[0].Expression);
     }
 
     private static TypeData BuildTypeData(INamedTypeSymbol symbol)
@@ -144,30 +130,6 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         builder.Append(type.Name);
         if (type.Arity > 0) builder.Append('_').Append(type.Arity);
         return builder;
-    }
-
-    private static string? TryExtractStringLiteral(ExpressionSyntax expr)
-    {
-        switch (expr)
-        {
-            case LiteralExpressionSyntax lit when lit.Token.IsKind(SyntaxKind.StringLiteralToken):
-                return lit.Token.ValueText;
-
-            case InterpolatedStringExpressionSyntax interp:
-            {
-                var sb = new StringBuilder();
-                foreach (var content in interp.Contents)
-                {
-                    if (content is not InterpolatedStringTextSyntax text) return null;
-
-                    // The text token keeps the {{ and }} escapes of an interpolated string.
-                    sb.Append(text.TextToken.ValueText.Replace("{{", "{").Replace("}}", "}"));
-                }
-                return sb.ToString();
-            }
-        }
-
-        return null;
     }
 
     private static string ResolveMarkerName(ISymbol member)

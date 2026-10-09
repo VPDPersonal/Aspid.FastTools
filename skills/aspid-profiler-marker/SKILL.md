@@ -25,7 +25,8 @@ public void Step()
 ```
 
 Profiler nesting follows `using` nesting. Markers in loops, lambdas and local functions are fine. A scope held
-across `yield return` or `await` measures only the part before it — put the marker inside each synchronous step.
+across `yield return` or `await` resumes in a later frame or on another thread and leaves the samples unbalanced —
+warning `AFT0013`; put the marker inside each synchronous step.
 
 ## Names
 
@@ -40,10 +41,10 @@ across `yield return` or `await` measures only the part before it — put the ma
 - generic class -> one marker per closed type (`Worker<List<Int32>>.Run (line)`); generic struct -> one marker for all
   (`Job<T>.Execute (line)`), so Burst can compile it.
 
-`WithName("X")` replaces only the member part (`FlockSimulation.X (line)`). It is read from source at compile time:
-only a literal `"X"`, `@"X"` or a hole-free `$"X"` chained directly on `this.Marker()` counts. Variables, `const`,
-`nameof`, concatenation and interpolation holes are ignored (the member name stays). For runtime-computed names use a
-hand-written `static readonly ProfilerMarker`.
+`WithName("X")` replaces only the member part (`FlockSimulation.X (line)`). It is read from source at compile time,
+chained directly on `this.Marker()`: a literal, a `const`, `nameof(...)`, or a concatenation or interpolation of them
+counts. Any other value (a variable, a `static readonly` field, a format or alignment in a hole) keeps the member name —
+warning `AFT0014`. For runtime-computed names use a hand-written `static readonly ProfilerMarker`.
 
 ## Pitfalls
 
