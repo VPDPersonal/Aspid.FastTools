@@ -35,10 +35,13 @@ Agent Skills for projects that consume the package in `skills/`.
 - `Aspid.FastTools/Packages/com.unity.asset-store-tools/` is Unity's Asset Store Tools (the package validator and uploader),
   embedded in the dev project. It is third-party code with CRLF line endings, so do not edit, reformat or delete it. It
   stays outside `Aspid.FastTools/Packages/tech.aspid.fasttools/`, so the `upm` branches do not contain it.
+- The dev project uses the legacy Input Manager on purpose (`activeInputHandler: 0`, no `com.unity.inputsystem`).
+  `com.unity.pipeline` compiles its input commands only when `ENABLE_INPUT_SYSTEM` is defined, and then it needs the
+  package. The CLI input commands (`simulate_key` and the pointer commands) report as unavailable.
 
 ## Checks
 
-Run what applies before you open a PR. CI runs the same checks (`tests.yml`, `docs.yml`, `skills.yml`).
+Run what applies before you open a PR. CI runs most of these (`tests.yml`, `docs.yml`, `skills.yml`).
 
 - Generators and analyzers: `dotnet test` in `Aspid.FastTools.Generators/` or `Aspid.FastTools.Analyzers/`.
 - YAML engine: `dotnet test Aspid.FastTools.YamlTests`.
@@ -46,7 +49,8 @@ Run what applies before you open a PR. CI runs the same checks (`tests.yml`, `do
   for the errors. It needs `com.unity.pipeline`, which the dev project manifest lists.
 - EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]` builds a throwaway
   project, and its header shows the `-runTests` command. CI runs five versions.
-- Site, in `Website/`: `npm run check-readme`, `npm run check-translations`, `npm test` and `npm run build`.
+- Site, in `Website/`: `npm ci` first (a fresh worktree has no `node_modules`), then `npm run check-readme`,
+  `npm run check-translations`, `npm test` and `npm run build`.
 - Skills: `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
 
 ## C# style beyond `.editorconfig`

@@ -41,7 +41,7 @@ The `docs-verifier` agent is not in this repository. Without it, do the check yo
 3. Read the declarations, not the usages. A code sample must compile: check every call and every argument.
 4. For a feature list, grep the public types and compare them with the list on the page.
 5. Compare the English and Russian pages section by section.
-6. Report each mismatch as `<page>:<line> — <claim> → <what the code says> (<file>:<line>)`.
+6. Note each mismatch as `<page>:<line> — <claim> → <what the code says> (<file>:<line>)`. Use the notes in the review (step 8).
 
 ## Review format
 
