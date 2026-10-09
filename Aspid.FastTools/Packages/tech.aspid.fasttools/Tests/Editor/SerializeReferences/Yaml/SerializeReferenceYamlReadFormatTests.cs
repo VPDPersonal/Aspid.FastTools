@@ -109,6 +109,33 @@ MonoBehaviour:
   _count: 1
 ";
 
+        // A struct field named "references" whose first field is an int "version", in the object and in a RefIds data
+        // block. Only the document's own registry, version 2 here, counts.
+        private const string NestedReferencesFieldAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name: Links
+  _links:
+    references:
+      version: 7
+      _count: 1
+  _weapon:
+    rid: 2001
+  references:
+    version: 2
+    RefIds:
+    - rid: 2001
+      type: {class: GhostPistol, ns: Game, asm: Assembly-CSharp}
+      data:
+        references:
+          version: 7
+          _count: 1
+";
+
         private string _path;
 
         [TearDown]
@@ -211,6 +238,10 @@ MonoBehaviour:
         [Test]
         public void HasUnsupportedReferencesVersion_UserFieldNamedReferences_IsFalse() =>
             Assert.IsFalse(SerializeReferenceYaml.HasUnsupportedReferencesVersion(Lines(ReferencesFieldAsset)));
+
+        [Test]
+        public void HasUnsupportedReferencesVersion_NestedFieldNamedReferences_IsFalse() =>
+            Assert.IsFalse(SerializeReferenceYaml.HasUnsupportedReferencesVersion(Lines(NestedReferencesFieldAsset)));
 
         [Test]
         public void HasUnsupportedReferencesVersion_NoLines_IsFalse() =>

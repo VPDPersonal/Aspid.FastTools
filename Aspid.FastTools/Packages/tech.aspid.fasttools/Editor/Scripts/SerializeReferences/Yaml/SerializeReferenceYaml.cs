@@ -32,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // only layout the scanners read.
         private const string SupportedReferencesVersion = "2";
 
-        private static readonly Regex _referencesKey = new(@"^(?<indent>\s*)references:\s*$", RegexOptions.Compiled);
+        private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
 
         private static readonly Regex _referencesVersion = new(@"^(?<indent>\s*)version:\s*(?<version>\d+)\s*$", RegexOptions.Compiled);
 
@@ -213,10 +213,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (lines is null) return false;
 
+            // Unity writes the registry as a top-level field of the document, at the indent of the document's first
+            // field. A deeper "references:" is a user field, also inside a RefIds data block.
+            var fieldIndent = -1;
+
             for (var i = 0; i < lines.Length; i++)
             {
-                var key = _referencesKey.Match(lines[i]);
-                if (!key.Success) continue;
+                var line = lines[i];
+
+                if (IsDocumentStart(line))
+                {
+                    fieldIndent = -1;
+                    continue;
+                }
+
+                var indent = IndentOf(line);
+                if (indent == line.Length) continue;
+
+                if (fieldIndent < 0 && indent > 0) fieldIndent = indent;
+                if (indent != fieldIndent || !_referencesKey.IsMatch(line)) continue;
 
                 var next = i + 1;
                 while (next < lines.Length && lines[next].Trim().Length == 0)
@@ -226,7 +241,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 // The registry opens with its version; a user field named "references" does not.
                 var version = _referencesVersion.Match(lines[next]);
-                if (!version.Success || version.Groups["indent"].Length <= key.Groups["indent"].Length) continue;
+                if (!version.Success || version.Groups["indent"].Length <= indent) continue;
 
                 if (version.Groups["version"].Value != SupportedReferencesVersion) return true;
             }

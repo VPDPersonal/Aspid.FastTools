@@ -8,5 +8,5 @@ internal sealed class DeleteGuardPistol { }
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     [Serializable]
-    internal sealed class ОружиеDeleteGuard { }
+    internal sealed class ОружиеDeleteGuard : ITestWeapon { }
 }

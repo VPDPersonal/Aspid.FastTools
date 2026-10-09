@@ -389,13 +389,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var lines = SerializeReferenceYaml.ReadLines(path);
             if (lines is null) return null;
 
+            // Unity writes a character outside printable ASCII as a YAML escape ("\u041F"), so a non-ASCII class name
+            // never appears as written: any line with an escape may name it.
+            var namesEscaped = classTokens.Any(token => token.Any(c => c < ' ' || c > '~'));
+
             var mayHoldUsages = false;
             var namesType = false;
 
             foreach (var line in lines)
             {
                 mayHoldUsages = mayHoldUsages || SerializeReferenceTypeUsageIndex.MayHoldUsages(line);
-                namesType = namesType || classTokens.Any(token => line.IndexOf(token, StringComparison.Ordinal) >= 0);
+                namesType = namesType ||
+                    (namesEscaped && line.IndexOf('\\') >= 0) ||
+                    classTokens.Any(token => line.IndexOf(token, StringComparison.Ordinal) >= 0);
 
                 if (mayHoldUsages && namesType) return lines;
             }
