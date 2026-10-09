@@ -126,7 +126,12 @@ jobs:
               (f.startsWith(PKG + 'Samples~/') && !f.includes('/Documentation/')) ||
               (f.startsWith(PKG) && /^(?:[^/]+\.dll|package\.json)$/.test(f.slice(PKG.length))));
             if (!shipped.length) return core.info('No shipped package code changed.');
-            if (files.includes('CHANGELOG.md')) return core.info('CHANGELOG updated.');
+            if (files.includes('CHANGELOG.md')) {
+              // The Russian twin is not required (outside contributors), but set-version.sh needs it at release.
+              if (!files.includes('CHANGELOG.ru.md'))
+                core.warning('CHANGELOG.md changed but CHANGELOG.ru.md did not; add the Russian entry before the release.');
+              return core.info('CHANGELOG updated.');
+            }
 
             const list = `${shipped.slice(0, 3).join(', ')}${shipped.length > 3 ? ', …' : ''}`;
             if (files.includes('CHANGELOG.ru.md'))
