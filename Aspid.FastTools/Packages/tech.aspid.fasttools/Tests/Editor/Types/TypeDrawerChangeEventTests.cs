@@ -106,6 +106,23 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual(StringName, second.typeName);
         }
 
+        [Test]
+        public void DisplayTextChangeFromInsideTheDrawer_DoesNotReachTheParent()
+        {
+            var target = CreateTarget(StringName);
+            using var serialized = new SerializedObject(target);
+            var changes = new List<(string previous, string current)>();
+            var field = Draw(serialized.FindProperty(nameof(TypeFieldTestObject.typeName)), changes);
+            var caption = field.Q<TextElement>(className: EnumField.textUssClassName);
+            Assert.IsNotNull(caption, "Precondition: the field has a caption.");
+
+            using var evt = ChangeEvent<string>.GetPooled(previousValue: "Before", newValue: "After");
+            evt.target = caption;
+            caption.SendEvent(evt);
+
+            Assert.IsEmpty(changes);
+        }
+
         private TypeFieldTestObject CreateTarget(string typeName)
         {
             var target = ScriptableObject.CreateInstance<TypeFieldTestObject>();

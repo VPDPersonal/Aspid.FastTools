@@ -46,14 +46,14 @@ namespace Aspid.FastTools.Types.Editors
                 .SetPickingMode(PickingMode.Ignore);
             InspectorNotice notice = null;
 
-            TypeUIToolkitPropertyDrawer.IsolateNameChanges(container);
+            TypeUIToolkitPropertyDrawer.IsolateNameChanges(root: container);
             Refresh(persistent);
 
             typeField.TrackPropertyValue(persistent, Refresh);
             container.TrackSerializedObjectValue(wrapperProperty.serializedObject,
                 _ => container.schedule.Execute(RefreshFromObject));
-            typeField.RegisterValueChangedCallback(evt => Assign(evt.newValue));
-            RegisterDragAndDrop(typeField, Assign);
+            typeField.RegisterValueChangedCallback(evt => Assign(type: evt.newValue));
+            RegisterDragAndDrop(field: typeField, assign: Assign);
 
             return container;
 
@@ -62,7 +62,7 @@ namespace Aspid.FastTools.Types.Editors
             {
                 persistent.serializedObject.Update();
                 persistent.serializedObject.SetIsDifferentCacheDirty();
-                var previousName = SerializableTypeUtility.GetBackingProperty(persistent).stringValue;
+                var previousName = SerializableTypeUtility.GetBackingProperty(wrapperProperty: persistent).stringValue;
                 var wasMixed = SerializableMonoScriptUtility.HasMultipleDifferentValues(wrapperProperty: persistent);
 
                 SerializableMonoScriptUtility.Assign(wrapperProperty: persistent, type: type);

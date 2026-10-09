@@ -44,7 +44,7 @@ namespace Aspid.FastTools.Types.Editors
             var stripe = new VisualElement().AddClass(StripeClass).SetPickingMode(PickingMode.Ignore);
             InspectorNotice notice = null;
 
-            IsolateNameChanges(container);
+            IsolateNameChanges(root: container);
             container.TrackSerializedObjectValue(property.serializedObject,
                 _ => container.schedule.Execute(RefreshFromObject));
             typeField.RegisterValueChangedCallback(_ => container.schedule.Execute(RefreshFromObject));
@@ -61,7 +61,7 @@ namespace Aspid.FastTools.Types.Editors
                 if (current is null) return;
 
                 using var owner = current.serializedObject;
-                Refresh(current);
+                Refresh(current: current);
             }
 
             void Refresh(SerializedProperty current)
