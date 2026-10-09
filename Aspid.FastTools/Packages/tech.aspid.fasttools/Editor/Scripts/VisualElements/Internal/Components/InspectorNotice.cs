@@ -1,6 +1,8 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
@@ -26,8 +28,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const string InfoModifierClass = NoticeClass + "--info";
 
         private const string SharedModifierClass = NoticeClass + "--shared";
-
-        private const float ActionHoverLighten = 0.35f;
 
         private readonly Label _message;
         private readonly Label _action;
@@ -58,7 +58,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _message.RegisterCallback<PointerEnterEvent>(_ =>
             {
                 if (_onNavigate is not null && _sharedColor.HasValue)
-                    _message.style.color = Color.Lerp(_sharedColor.Value, Color.white, ActionHoverLighten);
+                    _message.style.color = SharedHoverColor(_sharedColor.Value);
             });
             _message.RegisterCallback<PointerLeaveEvent>(_ =>
             {
@@ -69,7 +69,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _action.RegisterCallback<ClickEvent>(_ => _onAction?.Invoke());
             _action.RegisterCallback<PointerEnterEvent>(_ =>
             {
-                if (_sharedColor.HasValue) _action.style.color = Color.Lerp(_sharedColor.Value, Color.white, ActionHoverLighten);
+                if (_sharedColor.HasValue) _action.style.color = SharedHoverColor(_sharedColor.Value);
             });
             _action.RegisterCallback<PointerLeaveEvent>(_ =>
             {
@@ -138,16 +138,19 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             ClearSuggestion();
         }
 
+        // The dot keeps the given color; the text takes a variant that reads on the current skin.
         private void ApplySharedColor(Color? color)
         {
-            _sharedColor = color;
+            _sharedColor = color.HasValue
+                ? InspectorNoticeGUI.SharedTextColor(color.Value, lightSkin: !EditorGUIUtility.isProSkin)
+                : null;
 
             if (color.HasValue)
             {
                 _dot.EnableInClassList(DotVisibleClass, true);
                 _dot.style.backgroundColor = color.Value;
-                _message.style.color = color.Value;
-                _action.style.color = color.Value;
+                _message.style.color = _sharedColor.Value;
+                _action.style.color = _sharedColor.Value;
             }
             else
             {
@@ -177,6 +180,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _suggestion.EnableInClassList(SuggestionVisibleClass, false);
             _suggestionSeparator.EnableInClassList(SuggestionSeparatorVisibleClass, false);
         }
+
+        private static Color SharedHoverColor(Color textColor) =>
+            InspectorNoticeGUI.SharedHoverColor(textColor, lightSkin: !EditorGUIUtility.isProSkin);
 
         // USS has no text-decoration property; rich text supplies the action underline.
         private static string Underline(string text) =>

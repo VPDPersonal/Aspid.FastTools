@@ -333,20 +333,21 @@ ToolbarSearchField TextElement {
     margin-left:            6px;
 }
 
-/* The dropdown sits on Unity's popup background, so on the light skin it takes Unity's light colours and the palette's
-   darker text shades; embedded in an Aspid window the picker takes the window's palette. */
+/* The dropdown sits on Unity's popup background, so on the light skin it takes Unity's light colours, the palette's
+   darker text shades and its light-skin tokens; embedded in an Aspid window the picker takes the window's palette. */
 .aspid-fasttools-type-selector--dropdown.aspid-fasttools-skin--light {
     --aspid-colors-bg-dark:                         var(--unity-colors-dropdown-background);
     --aspid-colors-shade-darkness:                  var(--unity-colors-dropdown-border);
     --aspid-colors-text-lightness:                  var(--unity-colors-default-text);
     --aspid-colors-text-light:                      var(--unity-colors-label-text);
-    --aspid-colors-text-dark:                       var(--aspid-colors-text-darkness);
+    --aspid-colors-text-dark:                       var(--aspid-colors-light-skin-text-dark);
+    --aspid-colors-text-darkness:                   var(--aspid-colors-light-skin-text-darkness);
     --aspid-colors-status-info-shade-darkness:      var(--aspid-colors-status-info-tint-lightness);
     --aspid-colors-status-info-shade-dark:          var(--aspid-colors-status-info-tint-light);
     --aspid-colors-status-info-text-light:          var(--aspid-colors-status-info-text-dark);
     --aspid-colors-status-info-text-lightness:      var(--aspid-colors-status-info-text-darkness);
     --aspid-colors-status-success-text-dark:        var(--aspid-colors-status-success-text-darkness);
-    --aspid-colors-status-warning-text-light:       var(--aspid-colors-status-warning-text-dark);
+    --aspid-colors-status-warning-text-light:       var(--aspid-colors-light-skin-status-warning-text);
     --aspid-colors-status-warning-text-lightness:   var(--aspid-colors-status-warning-text-darkness);
     --aspid-colors-status-error-text-light:         var(--aspid-colors-status-error-text-darkness);
 }

@@ -65,12 +65,12 @@
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
 }
 
-/* Unity's light-skin warning text is near black, so a hovered link turns a lighter brown instead. */
+/* Unity's light-skin warning text is near black, so a hovered link turns a dark brown that still reads at 4.5:1. */
 .aspid-fasttools-inspector-notice.aspid-fasttools-skin--light
     .aspid-fasttools-inspector-notice__action:hover,
 .aspid-fasttools-inspector-notice.aspid-fasttools-skin--light
     .aspid-fasttools-inspector-notice__suggestion:hover {
-    color:                                                 var(--aspid-colors-status-warning-text-darkness);
+    color:                                                 var(--aspid-colors-status-warning-shade-dark);
 }
 
 .aspid-fasttools-inspector-notice__dot {

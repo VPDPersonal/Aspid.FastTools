@@ -8,20 +8,25 @@ namespace Aspid.FastTools.Editors
     internal static class InspectorNoticeGUI
     {
         // Keep these colors aligned with the UI Toolkit notice: --unity-colors-warning-text, the hover tokens
-        // --aspid-colors-status-warning-text-lightness / -darkness, and --unity-colors-helpbox-text.
+        // --aspid-colors-status-warning-text-lightness / --aspid-colors-status-warning-shade-dark, and
+        // --unity-colors-helpbox-text.
         internal static Color NoticeColor => EditorGUIUtility.isProSkin
             ? new Color32(244, 188, 2, 255)
             : new Color32(51, 51, 8, 255);
 
         internal static Color NoticeColorHover => EditorGUIUtility.isProSkin
             ? new Color32(255, 235, 175, 255)
-            : new Color32(120, 85, 35, 255);
+            : new Color32(90, 65, 30, 255);
 
         internal static Color InfoNoticeColor => EditorGUIUtility.isProSkin
             ? new Color32(189, 189, 189, 255)
             : new Color32(22, 22, 22, 255);
 
         private const float ActionHoverLighten = 0.35f;
+
+        // Unity's light-skin inspector background (--unity-colors-window-background); text needs 4.5:1, plus a margin.
+        private static readonly Color LightSkinBackground = new Color32(200, 200, 200, 255);
+        private const float MinTextContrast = 4.6f;
 
         private const float DotSize = 8f;
 
@@ -48,8 +53,9 @@ namespace Aspid.FastTools.Editors
             Color? ridColor = null, Action onMessageClick = null)
         {
             var shared = ridColor.HasValue;
-            var baseColor = shared ? ridColor.Value : NoticeColor;
-            var hoverColor = shared ? Color.Lerp(baseColor, Color.white, ActionHoverLighten) : NoticeColorHover;
+            var lightSkin = !EditorGUIUtility.isProSkin;
+            var baseColor = shared ? SharedTextColor(ridColor.Value, lightSkin) : NoticeColor;
+            var hoverColor = shared ? SharedHoverColor(baseColor, lightSkin) : NoticeColorHover;
 
             _messageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
             _actionStyle ??= new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold };
@@ -58,7 +64,7 @@ namespace Aspid.FastTools.Editors
             float messageX;
             if (shared)
             {
-                DrawDot(rect.x, rect, baseColor);
+                DrawDot(rect.x, rect, ridColor.Value);
                 messageX = rect.x + DotSize + 6f;
             }
             else
@@ -123,6 +129,25 @@ namespace Aspid.FastTools.Editors
         internal static void DrawRequiredNotice(Rect rect, string message, string detail) =>
             DrawNotice(rect, message, actionText: string.Empty, detail: detail, onClick: null);
 
+        // Rid colors are tuned for the dark skin. On the light skin the dot and stripe keep the rid color, while the
+        // text and its link darken, keeping the hue, until they read against the inspector background.
+        internal static Color SharedTextColor(Color ridColor, bool lightSkin)
+        {
+            if (!lightSkin) return ridColor;
+
+            var maxLuminance = (Luminance(LightSkinBackground) + 0.05f) / MinTextContrast - 0.05f;
+            var luminance = Luminance(ridColor);
+            if (luminance <= maxLuminance) return ridColor;
+
+            var scale = maxLuminance / luminance;
+            var linear = ridColor.linear;
+            return new Color(linear.r * scale, linear.g * scale, linear.b * scale, ridColor.a).gamma;
+        }
+
+        // A hovered link moves away from the background: lighter on the dark skin, darker on the light one.
+        internal static Color SharedHoverColor(Color textColor, bool lightSkin) =>
+            Color.Lerp(textColor, lightSkin ? Color.black : Color.white, ActionHoverLighten);
+
         private static void DrawLink(Rect linkRect, GUIContent content, Color color, Color hoverColor, Action onClick)
         {
             var hover = linkRect.Contains(Event.current.mousePosition);
@@ -136,6 +161,12 @@ namespace Aspid.FastTools.Editors
             EditorGUI.DrawRect(new Rect(linkRect.x + 1f, linkRect.yMax - 3f, linkRect.width - 2f, 1f), drawColor);
 
             if (GUI.Button(linkRect, content, _actionStyle)) onClick();
+        }
+
+        private static float Luminance(Color color)
+        {
+            var linear = color.linear;
+            return 0.2126f * linear.r + 0.7152f * linear.g + 0.0722f * linear.b;
         }
 
         // IMGUI has no circle primitive; round a tinted white texture instead.
