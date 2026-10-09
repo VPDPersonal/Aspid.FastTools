@@ -22,7 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Empty when the field has no [Tooltip].
         internal string Tooltip { get; }
 
-        // [Space] and [Header] only, in the order Unity draws them.
+        // [Space] and [Header] only, by ascending `order`; equal orders keep the declaration order.
         internal IReadOnlyList<PropertyAttribute> Items { get; }
 
         private SerializeReferenceDecorators(string tooltip, IReadOnlyList<PropertyAttribute> items)
@@ -67,7 +67,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : new SerializeReferenceDecorators(tooltip: tooltip, items: items.ToArray());
         }
 
-        // Unity orders them the same way: by ascending `order`, equal orders as the runtime lists them.
+        // OrderBy is stable. Unity's own sort may place equal orders differently when `order` values are mixed.
         private static IEnumerable<PropertyAttribute> OrderedAttributes(FieldInfo field) => field
             .GetCustomAttributes<PropertyAttribute>(inherit: true)
             .OrderBy(attribute => attribute.order);

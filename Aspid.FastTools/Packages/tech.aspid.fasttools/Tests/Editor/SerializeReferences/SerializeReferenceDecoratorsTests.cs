@@ -33,6 +33,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     }
 
     [Serializable]
+    internal sealed class HeadedParent
+    {
+        [Header("Title")] [SerializeReference] public object child;
+        [SerializeReference] public object other;
+    }
+
+    [Serializable]
+    internal sealed class MultiLineHeadedParent
+    {
+        [Header("Title\nSecond line")] [SerializeReference] public object child;
+        [SerializeReference] public object other;
+    }
+
+    [Serializable]
     internal sealed class UnspacedParent
     {
         [SerializeReference] public object child;
@@ -46,6 +60,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeReference] public object parent = new DecoratedParent();
         [SerializeReference] public object spaced = new SpacedParent();
         [SerializeReference] public object unspaced = new UnspacedParent();
+        [SerializeReference] public object headed = new HeadedParent();
+        [SerializeReference] public object multiLineHeaded = new MultiLineHeadedParent();
     }
 
     // A nested reference is drawn by the package, which skips Unity's decorator drawers, so [Tooltip], [Header] and
@@ -151,6 +167,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                         SerializeReferenceIMGUIPropertyDrawer.GetHeight(unspaced);
 
             Assert.AreEqual(10f, extra, 0.001f, "Space(7) and Space(3) add their heights to the rows they precede.");
+        }
+
+        [Test]
+        public void GetHeight_NestedReferenceWithHeader_ReservesOneAndAHalfLinesAboveIt()
+        {
+            var headed = _serializedObject.FindProperty("headed");
+            var unspaced = _serializedObject.FindProperty("unspaced");
+            headed.isExpanded = true;
+            unspaced.isExpanded = true;
+
+            var extra = SerializeReferenceIMGUIPropertyDrawer.GetHeight(headed) -
+                        SerializeReferenceIMGUIPropertyDrawer.GetHeight(unspaced);
+
+            Assert.AreEqual(EditorGUIUtility.singleLineHeight * 1.5f, extra, 0.001f,
+                "A one-line [Header] takes the 1.5 lines Unity's HeaderDrawer reserves.");
+        }
+
+        [Test]
+        public void GetHeight_NestedReferenceWithMultiLineHeader_AddsTheFurtherLines()
+        {
+            if (!HasEditorStyles()) Assert.Ignore("Needs EditorStyles, which the Editor does not build without a graphics device.");
+
+            var headed = _serializedObject.FindProperty("headed");
+            var multiLine = _serializedObject.FindProperty("multiLineHeaded");
+            headed.isExpanded = true;
+            multiLine.isExpanded = true;
+
+            var furtherLines = SerializeReferenceIMGUIPropertyDrawer.GetHeight(multiLine) -
+                               SerializeReferenceIMGUIPropertyDrawer.GetHeight(headed);
+
+            var twoLines = EditorStyles.boldLabel.CalcHeight(new GUIContent("Title\nSecond line"), width: 1f);
+            Assert.AreEqual(twoLines / 2f, furtherLines, 0.001f, "The second line of the [Header] text adds one line.");
+        }
+
+        private static bool HasEditorStyles()
+        {
+            try { return EditorStyles.boldLabel is not null; }
+            catch (NullReferenceException) { return false; }
         }
     }
 }

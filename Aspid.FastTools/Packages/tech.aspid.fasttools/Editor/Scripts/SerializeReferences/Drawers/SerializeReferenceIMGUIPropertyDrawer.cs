@@ -409,9 +409,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
+            var height = EditorGUIUtility.singleLineHeight * 1.5f;
+            if (lines == 1) return height;
+
             _measureContent.text = header.header;
             var lineHeight = EditorStyles.boldLabel.CalcHeight(_measureContent, width: 1f) / lines;
-            return EditorGUIUtility.singleLineHeight * 1.5f + lineHeight * (lines - 1);
+            return height + lineHeight * (lines - 1);
         }
 
         private static void DrawDecorators(Rect position, SerializeReferenceDecorators decorators)
