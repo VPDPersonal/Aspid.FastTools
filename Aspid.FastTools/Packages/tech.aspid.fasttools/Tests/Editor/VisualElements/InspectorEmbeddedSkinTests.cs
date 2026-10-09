@@ -86,7 +86,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator SerializeReference_MissingType_UsesUnityWarningColor()
         {
-            var caption = new TextElement().AddClass("unity-enum-field__text");
+            var caption = new TextElement().AddClass(EnumField.textUssClassName);
             var stripe = new VisualElement()
                 .AddClass("aspid-fasttools-serialize-reference__stripe")
                 .AddClass("aspid-fasttools-serialize-reference__stripe--warning");

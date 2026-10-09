@@ -49,17 +49,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Applied to the header while a compatible MonoScript is dragged over the field.
         private const string DropTargetClass = BlockClass + "--drop-target";
 
-        // Unity's mixed-value class — gives the dropdown the standard "—" treatment under a mixed multi-object selection.
-        private const string MixedValueClass = "unity-base-field--show-mixed-value";
-
         private const string MixedCaption = "—";
 
-        // Unity's BaseField input class — applied to the dropdown's inner input so it picks up the
-        // same flex/indent the EnumField theme rules target on a real field's visualInput.
-        private const string BaseFieldInputClass = "unity-base-field__input";
-
         // Unity's own [Header] decorator class, reused verbatim by the re-emitted header (see WithDecorators) so a
-        // header above a nested reference is indistinguishable from one Unity drew.
+        // header above a nested reference is indistinguishable from one Unity drew. Unity has no public constant for it.
         private const string HeaderClass = "unity-header-drawer__label";
 
         // No prefab-override treatment anywhere in this field. Unity records an override inside a managed reference
@@ -156,9 +149,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Mirror SerializableType's TypeField: an enum-field "root" wrapping a separate "__input" child —
             // Unity's theme indents the caption through descendant selectors that only match when the input
-            // is a child of the field.
+            // is a child of the field. The input also carries BaseField's input class, which those rules target
+            // on a real field's visualInput.
             var dropdownInput = new VisualElement()
-                .AddClass(BaseFieldInputClass)
+                .AddClass(BaseField<object>.inputUssClassName)
                 .AddClass(EnumField.inputUssClassName)
                 .AddChild(_caption)
                 .AddChild(new VisualElement()
@@ -289,8 +283,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
+            // Unity puts its mixed-value class on the caption of a real EnumField, which tints the "—".
+            _caption.EnableInClassList(BaseField<object>.mixedValueLabelUssClassName, mixedTypes);
             _dropdown.EnableInClassList(DropdownMissingClass, !missingType.IsEmpty);
-            _dropdown.EnableInClassList(MixedValueClass, mixedTypes);
             EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
             _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);
 
