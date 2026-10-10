@@ -7,6 +7,6 @@
 1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **EnumValues**.
 2. Откройте `Scenes/EnumValues.unity` и войдите в Play Mode: на горячем металле персонаж ускоряется, на мокрых и мягких плитках замедляется, а след окрашивается в цвет поверхности.
 
-Нужен встроенный модуль Unity **Physics** — без него скрипты примера не компилируются.
+Нужен встроенный модуль Unity **Physics**: без него скрипты примера пропускаются, а сцена показывает Missing Script.
 
 Полное руководство — что попробовать в примере и куда смотреть в его коде — на сайте: [пример EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/enum-values).

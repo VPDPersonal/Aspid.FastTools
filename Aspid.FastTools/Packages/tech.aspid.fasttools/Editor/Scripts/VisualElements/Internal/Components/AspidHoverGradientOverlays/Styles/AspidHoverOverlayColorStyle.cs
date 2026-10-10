@@ -5,13 +5,13 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    internal readonly struct AspidHoverGradientOverlayColorStyle
+    internal readonly struct AspidHoverOverlayColorStyle
     {
         public static readonly CustomStyleProperty<Color> StyleProperty = new("--aspid-fasttools-colors-hover_overlay");
 
         private readonly InlineStyle<Color> _value;
 
-        public AspidHoverGradientOverlayColorStyle(VisualElement element, Color value, Action onChanged = null)
+        public AspidHoverOverlayColorStyle(VisualElement element, Color value, Action onChanged = null)
         {
             _value = new InlineStyle<Color>(value, (oldValue, newValue) =>
             {
