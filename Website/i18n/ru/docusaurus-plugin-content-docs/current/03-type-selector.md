@@ -24,6 +24,8 @@
 | <code lang="csharp">[SerializeReference]</code> | Создаётся экземпляр выбранной реализации — см. [SerializeReference Selector](04-serialize-reference-selector.md) |
 | Массив или <code lang="class-name">List&lt;T&gt;</code> из этих полей | У каждого элемента свой селектор; для <code lang="csharp">[SerializeReference]</code> см. [Списки](04-serialize-reference-selector.md#списки) |
 
+Поле должно сериализоваться Unity: быть публичным или отмеченным <code lang="csharp">[SerializeField]</code> либо <code lang="csharp">[SerializeReference]</code>.
+
 > [!WARNING]
 > В плеере строковое поле находит тип по имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): класс, который используется только через такой выбор, может быть вырезан при **Managed Stripping Level** Low и выше.
 

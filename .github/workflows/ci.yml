@@ -183,7 +183,8 @@ jobs:
           - name: Generic type resolver
             path: Aspid.FastTools.TypeTests
     steps:
-      # Only what the solutions read: docs/ and Website/ hold most of the repository's size.
+      # Only what the solutions read: docs/ and Website/ hold most of the repository's size. The analyzer tests embed
+      # the docs pages to check the help-link anchors of every AFT rule.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
@@ -192,6 +193,7 @@ jobs:
             Aspid.FastTools.YamlTests
             Aspid.FastTools.TypeTests
             Aspid.FastTools/Packages/tech.aspid.fasttools
+            Website/docs
 
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
