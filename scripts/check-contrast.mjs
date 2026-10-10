@@ -3,8 +3,9 @@
 // overrides on either skin. Text needs 4.5:1; large text, glyph icons and UI borders need 3:1.
 //   node scripts/check-contrast.mjs [--all]
 // Pairs come from two sources: the list below, for a background and a text set in different rules (a component box and
-// the labels in it), and every package rule that sets both `color` and `background-color`. A pair with a `baseline` is
-// known to be below the minimum: it passes while it stays at that ratio and fails if it drops lower.
+// the labels in it), and every package rule that sets both `color` and `background-color`, checked in the contexts its
+// sheet is drawn in. A pair with a `baseline` is known to be below the minimum: it passes while it stays at that ratio and
+// fails if it drops lower.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +17,7 @@ const UI = join(PACKAGE, 'Editor/Resources/UI');
 const DARK_SHEET = join(UI, 'Aspid-FastTools-Default-Dark.uss');
 const LIGHT_SHEET = join(UI, 'Aspid-FastTools-Default-Light.uss');
 const TYPE_SELECTOR_SHEET = join(UI, 'Types/Aspid-FastTools-TypeSelector.uss');
+const INSPECTOR_NOTICE_SHEET = join(UI, 'Components/Aspid-FastTools-InspectorNotice.uss');
 const DROPDOWN_SELECTOR = '.aspid-fasttools-type-selector.aspid-fasttools-type-selector--dropdown';
 const LIGHT_DROPDOWN_SELECTOR = '.aspid-fasttools-type-selector--dropdown.aspid-fasttools-skin--light';
 
@@ -46,7 +48,7 @@ const UNITY = {
 
 const STATUSES = ['success', 'warning', 'error', 'info'];
 
-// A background is one colour or a list composited bottom-up; a colour is a token without its "--aspid-colors-"
+// A background is one colour or a list composited bottom-up; a colour here is a token without its "--aspid-colors-"
 // prefix, a Unity variable or a literal. `fg` and `baseline` may differ per context.
 const CARD = ['surface-canvas', 'surface-card'];
 const WINDOW = ['dark', 'light-window'];
@@ -144,11 +146,21 @@ function resolve(value, context, seen = new Set()) {
     return resolve(context[ref[1]], context, new Set(seen).add(ref[1]));
   }
   if (value.startsWith('--')) return resolve(`var(${value})`, context, seen);
-  if (!value.startsWith('#') && !value.startsWith('rgb')) return resolve(`var(--aspid-colors-${value})`, context, seen);
   return parse(value);
 }
 
+// The PAIRS list names palette tokens without their prefix; a USS rule writes them in full.
+const expand = value =>
+  /^(#|rgb|var\(|--)/.test(value) || value in NAMED ? value : `--aspid-colors-${value}`;
+
+// The CSS colour keywords a USS rule is likely to use.
+const NAMED = {
+  transparent: 'rgba(0, 0, 0, 0)', black: '#000000', white: '#FFFFFF', gray: '#808080', grey: '#808080',
+  red: '#FF0000', green: '#008000', blue: '#0000FF', yellow: '#FFFF00', cyan: '#00FFFF', magenta: '#FF00FF',
+};
+
 function parse(value) {
+  if (value in NAMED) return parse(NAMED[value]);
   let m = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (m) {
     const hex = m[1].length === 3 ? [...m[1]].map(c => c + c).join('') : m[1];
@@ -167,8 +179,8 @@ const over = (top, bottom) => ({
   a: 1,
 });
 
-function layers(bg, context) {
-  const list = (Array.isArray(bg) ? bg : [bg]).map(v => resolve(v, context));
+function layers(bg, context, name = v => v) {
+  const list = (Array.isArray(bg) ? bg : [bg]).map(v => resolve(name(v), context));
   return list.reduce((below, top) => over(top, below), { r: 0, g: 0, b: 0, a: 1 });
 }
 
@@ -192,15 +204,23 @@ function sheets(dir) {
   });
 }
 
+// The type picker dropdown and the inspector notices sit on Unity's own background; every other sheet styles a window.
+const SHEET_PLACES = {
+  [TYPE_SELECTOR_SHEET]: { base: [LIST_BG], in: DROPDOWN },
+  [INSPECTOR_NOTICE_SHEET]: { base: [LIST_BG], in: INSPECTOR },
+};
+const WINDOW_PLACE = { base: CARD.map(expand), in: WINDOW };
+
 const ruleChecks = sheets(join(PACKAGE, 'Editor')).flatMap(file => rules(file)
   .filter(r => r.declarations['color'] && r.declarations['background-color'])
   .filter(r => isOpaque(r.declarations['background-color']))
   .map(r => ({
     where: `${relative(UI, file)} ${r.selector}`,
     fg: r.declarations['color'],
-    bg: [...CARD, r.declarations['background-color']],
+    bg: [...(SHEET_PLACES[file] ?? WINDOW_PLACE).base, r.declarations['background-color']],
     min: TEXT,
-    in: WINDOW,
+    in: (SHEET_PLACES[file] ?? WINDOW_PLACE).in,
+    fromRule: true,
   })));
 
 // A transparent background only clears Unity's default fill; an unresolved one is reported by the check itself.
@@ -224,9 +244,10 @@ for (const check of checks) {
   const fg = typeof check.fg === 'object' ? check.fg[check.name] : check.fg;
   const baseline = check.baseline?.[check.name];
   let value, error;
+  const name = check.fromRule ? v => v : expand;
   try {
-    const bg = layers(check.bg, context);
-    value = ratio(over(resolve(fg, context), bg), bg);
+    const bg = layers(check.bg, context, name);
+    value = ratio(over(resolve(name(fg), context), bg), bg);
   } catch (e) {
     error = e.message;
   }
