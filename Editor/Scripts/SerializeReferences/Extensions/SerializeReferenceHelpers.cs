@@ -550,6 +550,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static object CreateInstancePreservingData(Type newType, object previous)
         {
+            var instance = CreateInstanceWithPlainData(newType, previous);
+            if (instance is null || previous is null) return instance;
+
+            // JsonUtility does not keep [SerializeReference] instances, so they are carried by reflection, and aliases
+            // onto them survive the type switch.
+            try
+            {
+                TransferManagedReferences(previous, instance, map: value => value, depth: 0);
+            }
+            catch (Exception)
+            {
+                // Same best-effort contract as the JSON pass.
+            }
+
+            return instance;
+        }
+
+        private static object CreateInstanceWithPlainData(Type newType, object previous)
+        {
             var instance = CreateInstance(newType);
             if (instance is null || previous is null) return instance;
 
@@ -564,39 +583,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Best effort: incompatible layouts just mean nothing is carried over.
             }
 
-            // JsonUtility skips [SerializeReference] fields, so nested references are carried by reflection — the
-            // very instances, not copies, so aliases onto them survive the type switch.
-            try
-            {
-                CarryManagedReferences(previous, instance);
-            }
-            catch (Exception)
-            {
-                // Same best-effort contract as the JSON pass.
-            }
-
             return instance;
-        }
-
-        private static void CarryManagedReferences(object previous, object instance)
-        {
-            Dictionary<string, FieldInfo> targets = null;
-
-            foreach (var field in EnumerateManagedReferenceFields(previous.GetType()))
-            {
-                if (targets is null)
-                {
-                    targets = new Dictionary<string, FieldInfo>(StringComparer.Ordinal);
-                    foreach (var target in EnumerateManagedReferenceFields(instance.GetType()))
-                        targets[target.Name] = target;
-                }
-
-                if (!targets.TryGetValue(field.Name, out var into)) continue;
-
-                var value = field.GetValue(previous);
-                if (value is null || into.FieldType.IsInstanceOfType(value))
-                    into.SetValue(instance, value);
-            }
         }
 
         // Register each clone before cloning its children to preserve aliases and terminate cycles.
@@ -608,12 +595,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (source is null) return null;
             if (clones.TryGetValue(source, out var existing)) return existing;
 
-            var clone = CreateInstancePreservingData(source.GetType(), source);
+            var clone = CreateInstanceWithPlainData(source.GetType(), source);
             if (clone is null) return null;
             clones[source] = clone;
 
-            foreach (var field in EnumerateManagedReferenceFields(source.GetType()))
-                field.SetValue(clone, CloneManagedReferenceValue(field.GetValue(source), clones));
+            TransferManagedReferences(source, clone,
+                map: value => CloneManagedReferenceValue(value, clones), depth: 0);
 
             return clone;
         }
@@ -646,7 +633,155 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static IEnumerable<FieldInfo> EnumerateManagedReferenceFields(Type type)
+        // Writes each [SerializeReference] value of source, passed through map, into the same-named field of target.
+        // The walk enters the by-value data the JSON pass copied: structs, serializable classes, arrays and lists.
+        private static void TransferManagedReferences(object source, object target, Func<object, object> map, int depth)
+        {
+            var sameType = source.GetType() == target.GetType();
+            Dictionary<string, FieldInfo> targets = null;
+
+            foreach (var field in EnumerateSerializedFields(source.GetType()))
+            {
+                var isReference = field.IsDefined(typeof(SerializeReference), inherit: false);
+                if (!isReference && !CanHoldManagedReferences(field.FieldType)) continue;
+
+                var into = field;
+                if (!sameType)
+                {
+                    targets ??= MapSerializedFields(target.GetType());
+                    if (!targets.TryGetValue(field.Name, out into)) continue;
+                    if (into.IsDefined(typeof(SerializeReference), inherit: false) != isReference) continue;
+                    if (!isReference && !CanHoldManagedReferences(into.FieldType)) continue;
+                }
+
+                if (isReference)
+                {
+                    var value = map(field.GetValue(source));
+                    if (value is null || into.FieldType.IsInstanceOfType(value))
+                        into.SetValue(target, value);
+
+                    continue;
+                }
+
+                if (depth >= MaxByValueDepth) continue;
+
+                var from = field.GetValue(source);
+                var to = into.GetValue(target);
+                if (from is null || to is null || ReferenceEquals(from, to)) continue;
+
+                var isCollection = IsSerializedCollection(field.FieldType);
+                if (isCollection != IsSerializedCollection(into.FieldType)) continue;
+
+                if (isCollection)
+                {
+                    TransferManagedReferenceItems((IList)from, (IList)to, map, depth: depth + 1);
+                    continue;
+                }
+
+                TransferManagedReferences(from, to, map, depth: depth + 1);
+
+                // GetValue boxed a struct, so the updated copy goes back into the field.
+                if (to.GetType().IsValueType) into.SetValue(target, to);
+            }
+        }
+
+        private static void TransferManagedReferenceItems(
+            IList source, IList target, Func<object, object> map, int depth)
+        {
+            var count = Math.Min(source.Count, target.Count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var from = source[i];
+                var to = target[i];
+                if (from is null || to is null || ReferenceEquals(from, to)) continue;
+
+                TransferManagedReferences(from, to, map, depth);
+                if (to.GetType().IsValueType) target[i] = to;
+            }
+        }
+
+        // Unity stops serializing by-value data at this depth; the cap also ends a cyclic graph of by-value classes.
+        private const int MaxByValueDepth = 10;
+
+        // Per-type memo, so the walk skips by-value data without managed references, such as long arrays of plain
+        // structs. The reflected field set is stable until a domain reload clears statics.
+        private static readonly Dictionary<Type, bool> ByValueReferenceHolders = new();
+
+        // The types on the current walk with their depth, and the smallest depth at which the walk below the current
+        // type cut a cycle.
+        private static readonly Dictionary<Type, int> ByValueTypesInProgress = new();
+        private static int _shallowestCycleCut = int.MaxValue;
+
+        // A serializable struct or class, or an array or a list of one, whose fields reach a [SerializeReference].
+        private static bool CanHoldManagedReferences(Type type)
+        {
+            if (IsSerializedCollection(type))
+                type = type.IsArray ? type.GetElementType() : type.GetGenericArguments()[0];
+
+            if (!IsByValueComposite(type)) return false;
+            if (ByValueReferenceHolders.TryGetValue(type, out var holds)) return holds;
+
+            // A type already on the walk adds no new path, and by-value types may be cyclic.
+            if (ByValueTypesInProgress.TryGetValue(type, out var cutDepth))
+            {
+                _shallowestCycleCut = Math.Min(_shallowestCycleCut, cutDepth);
+                return false;
+            }
+
+            var depth = ByValueTypesInProgress.Count;
+            var outerCycleCut = _shallowestCycleCut;
+            _shallowestCycleCut = int.MaxValue;
+            ByValueTypesInProgress.Add(type, depth);
+
+            try
+            {
+                foreach (var field in EnumerateSerializedFields(type))
+                {
+                    if (!field.IsDefined(typeof(SerializeReference), inherit: false) &&
+                        !CanHoldManagedReferences(field.FieldType)) continue;
+
+                    holds = true;
+                    break;
+                }
+            }
+            finally
+            {
+                ByValueTypesInProgress.Remove(type);
+            }
+
+            // A negative answer is exact unless the walk below cut a cycle at a type further up, whose answer is not
+            // known yet; a cycle back to this type adds no field it has not seen.
+            var cycleCut = _shallowestCycleCut;
+            if (holds || cycleCut >= depth) ByValueReferenceHolders[type] = holds;
+
+            _shallowestCycleCut = depth == 0 ? int.MaxValue : Math.Min(outerCycleCut, cycleCut);
+            return holds;
+        }
+
+        private static bool IsByValueComposite(Type type) =>
+            type is { IsPrimitive: false, IsEnum: false, IsArray: false, IsAbstract: false } &&
+            type.IsSerializable &&
+            type != typeof(string) &&
+            !IsSerializedCollection(type) &&
+            !typeof(Object).IsAssignableFrom(type) &&
+            !typeof(Delegate).IsAssignableFrom(type);
+
+        private static bool IsSerializedCollection(Type type) =>
+            (type.IsArray && type.GetArrayRank() == 1) ||
+            (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>));
+
+        private static Dictionary<string, FieldInfo> MapSerializedFields(Type type)
+        {
+            var fields = new Dictionary<string, FieldInfo>(StringComparer.Ordinal);
+            foreach (var field in EnumerateSerializedFields(type))
+                fields[field.Name] = field;
+
+            return fields;
+        }
+
+        // [SerializeReference] alone makes a private field serialized, as [SerializeField] does.
+        private static IEnumerable<FieldInfo> EnumerateSerializedFields(Type type)
         {
             const BindingFlags flags =
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
@@ -655,8 +790,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var field in current.GetFields(flags))
                 {
                     if (field.IsStatic || field.IsInitOnly || field.IsNotSerialized) continue;
-                    if (!field.IsPublic && !field.IsDefined(typeof(SerializeField), inherit: false)) continue;
-                    if (field.IsDefined(typeof(SerializeReference), inherit: false)) yield return field;
+
+                    if (field.IsPublic ||
+                        field.IsDefined(typeof(SerializeField), inherit: false) ||
+                        field.IsDefined(typeof(SerializeReference), inherit: false))
+                        yield return field;
                 }
         }
 
