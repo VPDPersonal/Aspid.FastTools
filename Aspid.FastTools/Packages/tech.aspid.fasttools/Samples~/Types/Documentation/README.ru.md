@@ -7,4 +7,6 @@
 1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **Types**.
 2. Откройте `Scenes/Types.unity` и войдите в Play Mode: каждые шесть секунд по кругу появляются восемь врагов, каждый четвёртый — `ArmoredGrunt`, и идут к центру.
 
+Коллайдеры сцены требуют встроенного модуля Unity **Physics**; скрипты примера компилируются и без него.
+
 Полное руководство — что попробовать в примере и куда смотреть в его коде — на сайте: [пример Types](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/types).

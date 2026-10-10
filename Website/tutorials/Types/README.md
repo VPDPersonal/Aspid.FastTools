@@ -11,6 +11,8 @@ A wave of regular and elite enemies moves toward the center.
 1. Import the sample: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** on **Types**.
 2. Open `Scenes/Types.unity` and enter Play Mode: every six seconds eight enemies appear in a circle, every fourth one an <code lang="class-name">ArmoredGrunt</code>, and walk to the center.
 
+The scene's colliders need Unity's built-in **Physics** module; the sample scripts compile without it.
+
 ## Try
 
 Exit Play Mode and select **Enemy Spawner**.

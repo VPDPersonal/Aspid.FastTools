@@ -32,7 +32,8 @@ namespace Aspid.FastTools.Samples.Types
         protected override void Move(float deltaTime)
         {
             var position = Vector3.MoveTowards(transform.position, Vector3.zero, Speed * 0.5f * deltaTime);
-            position.y = 1f + Mathf.Abs(Mathf.Sin(Time.time * 4f)) * _stompHeight;
+            // A capsule is 2 units tall, so its center sits lossyScale.y above the ground.
+            position.y = transform.lossyScale.y + Mathf.Abs(Mathf.Sin(Time.time * 4f)) * _stompHeight;
             transform.position = position;
         }
     }
