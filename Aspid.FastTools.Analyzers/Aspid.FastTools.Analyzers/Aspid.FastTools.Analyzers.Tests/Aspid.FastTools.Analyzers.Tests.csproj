@@ -23,4 +23,15 @@
         <ProjectReference Include="..\Aspid.FastTools.Analyzers\Aspid.FastTools.Analyzers.csproj"/>
     </ItemGroup>
 
+    <PropertyGroup>
+        <_PackageTypes>$(MSBuildThisFileDirectory)../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Runtime/Scripts/Types/</_PackageTypes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The package types the TypeSelector analyzer matches by full name. The tests compile these sources as-is, so
+             a rename or a namespace move fails them, as it would silence the diagnostics in Unity. -->
+        <EmbeddedResource Include="$(_PackageTypes)ISerializableType.cs;$(_PackageTypes)SerializableMonoScript.cs;$(_PackageTypes)SerializableType.cs;$(_PackageTypes)SerializableTypeBase.cs;$(_PackageTypes)TypeAllow.cs;$(_PackageTypes)TypeSelectorAttribute.cs"
+                          LogicalName="PackageSources/%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>

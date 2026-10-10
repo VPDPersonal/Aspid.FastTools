@@ -9,7 +9,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // Documents with a negative "&-N" anchor (sub-assets, prefab components) are documents of their own: scans report
     // them under their own fileID, and reads and writes addressed to one document never reach its neighbour.
     [TestFixture]
-    internal sealed class SerializeReferenceYamlNegativeAnchorTests
+    internal sealed partial class SerializeReferenceYamlNegativeAnchorTests
     {
         private string _path;
 
@@ -58,35 +58,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(1, changed.Length);
             StringAssert.Contains("GhostNode", before[changed[0]]);
             Assert.IsTrue(after.Any(line => line.Contains("class: HealthyNode")), "The main object keeps its type.");
-        }
-
-        [Test]
-        public void GraphScanner_SubAssetBeforeMain_BuildsBothDocuments()
-        {
-            _path = YamlFixtures.WriteTemp(YamlFixtures.NegativeSubAssetBeforeMainAsset);
-
-            var fileIds = SerializeReferenceGraphScanner.Build(_path, resolveTypeNames: false).Select(document => document.FileId);
-
-            CollectionAssert.AreEqual(
-                new[] { YamlFixtures.NegativeSubAssetFileId, YamlFixtures.NegativeMainFileId }, fileIds.ToArray());
-        }
-
-        [Test]
-        public void GraphScanner_NegativeComponentAfterPositive_KeepsDocumentsApart()
-        {
-            _path = YamlFixtures.WriteTemp(YamlFixtures.NegativeComponentAfterPositivePrefab);
-
-            var documents = SerializeReferenceGraphScanner.Build(_path, resolveTypeNames: false);
-            Assert.AreEqual(2, documents.Count);
-
-            var first = documents.Single(document => document.FileId == YamlFixtures.NegativePrefabFirstFileId);
-            CollectionAssert.AreEqual(new[] { 1000L }, first.Nodes.Select(node => node.Rid).ToArray());
-            CollectionAssert.IsEmpty(first.Orphans, "The second component's entries must not look orphaned here.");
-
-            var second = documents.Single(document => document.FileId == YamlFixtures.NegativePrefabSecondFileId);
-            CollectionAssert.AreEqual(new[] { YamlFixtures.NegativePrefabPayloadRid, YamlFixtures.NegativePrefabGhostRid },
-                second.Nodes.Select(node => node.Rid).ToArray());
-            CollectionAssert.IsEmpty(second.Orphans);
         }
 
         [Test]

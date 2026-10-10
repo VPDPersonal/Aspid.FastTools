@@ -104,6 +104,11 @@ namespace Aspid.FastTools.Types.Editors
                     evt.StopPropagation();
                     break;
 
+                case KeyCode.Return:
+                case KeyCode.KeypadEnter:
+                    if (HandleEnterKey()) evt.StopPropagation();
+                    break;
+
                 case KeyCode.Space:
                     if (!IsSearchFocused(focusController?.focusedElement))
                     {
@@ -243,6 +248,22 @@ namespace Aspid.FastTools.Types.Editors
             _onDismiss?.Invoke();
         }
 
+        // The field has no list selection for Enter to submit, so it chooses the first result. In the list, Enter
+        // stays the ListView's own submit.
+        private bool HandleEnterKey()
+        {
+            if (!Nav.IsSearching || !IsSearchFocused(focusController?.focusedElement)) return false;
+
+            var first = FirstResult();
+            if (first is null) return false;
+
+            ActivateNode(first);
+            return true;
+        }
+
+        private TreeNode FirstResult() =>
+            Nav.CurrentItems.FirstOrDefault(node => node.IsSelectable);
+
         private bool HandleRightArrow()
         {
             var node = SelectedNode();
@@ -266,6 +287,9 @@ namespace Aspid.FastTools.Types.Editors
 
         private bool HandleLeftArrow()
         {
+            // The results are a flat list with no level to leave; going back would change the page that Esc returns to.
+            if (Nav.IsSearching) return false;
+
             if (SelectedNode() is { IsSectionTitle: true } section)
             {
                 if (Nav.IsSectionCollapsed(section.SectionKey)) return false;
