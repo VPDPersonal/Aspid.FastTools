@@ -1,4 +1,4 @@
-# TypeSelectorWindow and ComponentTypeSelector
+# TypeSelectorWindow, ComponentTypeSelector and the CI gate
 
 ## TypeSelectorWindow (editor code)
 
@@ -36,3 +36,23 @@ keeping the fields both classes share. Each subclass must live in its own file n
 switch is skipped with a Console warning. The switch adds the new class's `[RequireComponent]` components and is
 refused (with a warning) when it would duplicate a `[DisallowMultipleComponent]` class, drop a class another
 component requires, or need a component that cannot be added (an abstract class such as `Collider`).
+
+## CI gate
+
+Fails a CI job on missing types (`[SerializeReference]`, `SerializableType`, `SerializableMonoScript`) and, with
+`-srGateRequired`, on empty `Required = true` fields. Use this exact call. Do not invent another `-executeMethod`.
+
+```bash
+Unity -batchmode -projectPath . \
+  -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck \
+  -srGateReport SerializeReferenceGateReport.txt -srGateRequired -srGateFail
+```
+
+- `-batchmode` is required; without it the call is ignored.
+- `-srGateFail` fails on violations with exit code `1`. `-srGateWarnOnly` only logs them, exit code `0`. Without
+  either flag the **Build / CI gate** mode of the project settings applies, and `Off` skips the check.
+- Exit code `2` means the check itself failed.
+- `-srGateReport <path>` (default `SerializeReferenceGateReport.txt`; the folder must exist) gets one tab-separated
+  line per violation: `KIND assetPath fileId rid className fieldPath origin`. The report starts with `#` comment
+  lines (counts and files not scanned); parse only the lines that do not start with `#`.
+- Details: [Build and CI checks](https://vpdpersonal.github.io/Aspid.FastTools/docs/serialize-reference-validation).
