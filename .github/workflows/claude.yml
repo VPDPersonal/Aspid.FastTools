@@ -42,13 +42,16 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
+    # The mention job repeats these steps and the action env through the YAML anchors below.
     steps:
-      - name: Checkout repository
+      - &checkout
+        name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - name: Read review rules
+      - &rules
+        name: Read review rules
         id: rules
         run: |
           {
@@ -57,7 +60,8 @@ jobs:
             echo 'CLAUDE_RULES_EOF'
           } >> "$GITHUB_OUTPUT"
 
-      - name: Prepare bubblewrap
+      - &bubblewrap
+        name: Prepare bubblewrap
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends bubblewrap socat
@@ -65,7 +69,7 @@ jobs:
 
       - name: Review PR
         uses: anthropics/claude-code-action@2dca132ff0e0c4094ce6048b422c6915a071210b # v1.0.247
-        env:
+        env: &claude-env
           # The action reads this variable and appends it to the system prompt.
           APPEND_SYSTEM_PROMPT: ${{ steps.rules.outputs.text }}
           CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
@@ -105,32 +109,13 @@ jobs:
       id-token: write
       actions: read # lets Claude read CI results on PRs
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 1
-
-      - name: Read review rules
-        id: rules
-        run: |
-          {
-            echo 'text<<CLAUDE_RULES_EOF'
-            cat .github/claude-review.md
-            echo 'CLAUDE_RULES_EOF'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Prepare bubblewrap
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends bubblewrap socat
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - *checkout
+      - *rules
+      - *bubblewrap
 
       - name: Run Claude
         uses: anthropics/claude-code-action@2dca132ff0e0c4094ce6048b422c6915a071210b # v1.0.247
-        env:
-          # The action reads this variable and appends it to the system prompt.
-          APPEND_SYSTEM_PROMPT: ${{ steps.rules.outputs.text }}
-          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
+        env: *claude-env
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The inline comment tool lets a requested review put issues on their lines.

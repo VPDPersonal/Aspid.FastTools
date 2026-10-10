@@ -4,7 +4,8 @@ name: PR checks
 # It never checks out the PR's code — everything below reads the PR through the API only.
 on:
   pull_request_target:
-    types: [opened, edited, reopened, synchronize, ready_for_review, labeled, unlabeled]
+    # No ready_for_review: neither job depends on the draft state.
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled]
 
 permissions:
   pull-requests: write
