@@ -21,8 +21,10 @@ export function plainText(markdown) {
     .replace(/^\s*(?:-{3,}|\*{3,})\s*$/gm, ' ')
     .replace(/```[^\n]*\n/g, ' ').replace(/```/g, ' ')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    // A badge is a link around an image: the image is gone above, the empty link is dropped here.
+    .replace(/\[\]\([^)]*\)/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/<\/?(?:img|a|div|span|p|br|details|summary|table|thead|tbody|tr|td|th|pre|code|ol|ul|li|b|i|em|strong|small|kbd|sup|sub)\b[^>]*>/gi, ' ')
+    .replace(/<\/?(?:img|picture|source|a|div|span|p|br|details|summary|table|thead|tbody|tr|td|th|pre|code|ol|ul|li|b|i|em|strong|small|kbd|sup|sub)\b[^>]*>/gi, ' ')
     .replace(/\\([<>_{}])/g, '$1')
     .replace(/\{#[^}]+\}/g, '')
     .replace(/^\s*(?:#{1,6}|>)\s+/gm, ' ')

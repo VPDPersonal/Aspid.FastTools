@@ -129,7 +129,8 @@ const config = {
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
-  onBrokenAnchors: 'warn',
+  // CI fails on a mistyped #anchor; a local build only warns, so a draft page can still be previewed.
+  onBrokenAnchors: process.env.CI ? 'throw' : 'warn',
   markdown: {
     // The shared introduction uses a banner instead of a heading; retain its page metadata.
     async parseFrontMatter({filePath, fileContent, defaultParseFrontMatter}) {

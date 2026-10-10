@@ -22,6 +22,7 @@
 | <code lang="csharp">string</code> | Записывается assembly-qualified name |
 | [Serializable Types](02-serializable-types.md) | Настраивается выбор обёртки |
 | <code lang="csharp">[SerializeReference]</code> | Создаётся экземпляр выбранной реализации — см. [SerializeReference Selector](04-serialize-reference-selector.md) |
+| Массив или <code lang="class-name">List&lt;T&gt;</code> из этих полей | У каждого элемента свой селектор; для <code lang="csharp">[SerializeReference]</code> см. [Списки](04-serialize-reference-selector.md#списки) |
 
 > [!WARNING]
 > В плеере строковое поле находит тип по имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): класс, который используется только через такой выбор, может быть вырезан при **Managed Stripping Level** Low и выше.
@@ -69,7 +70,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 | Свойство | По умолчанию | Поведение |
 |---|---|---|
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Пускает в список абстрактные классы (<code lang="csharp">Abstract</code>), интерфейсы (<code lang="csharp">Interface</code>), оба вида или ни один. На <code lang="csharp">[SerializeReference]</code> игнорируется |
-| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает о пустом имени типа или <code lang="csharp">null</code> в managed-ссылке |
+| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает, если у поля <code lang="csharp">string</code> или обёртки из [Serializable Types](02-serializable-types.md) пустое имя типа, а у <code lang="csharp">[SerializeReference]</code> — <code lang="csharp">null</code> |
 
 ## Обязательное поле
 
