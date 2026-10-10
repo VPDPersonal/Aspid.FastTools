@@ -141,6 +141,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_mixedTargetTicks is not null) Array.Fill(_mixedTargetTicks, -1);
         }
 
+        // A new selection drops the per-target SerializedObjects of the last multi-object one; they hold native memory
+        // until disposed.
+        [InitializeOnLoadMethod]
+        private static void ReleaseMixedSelectionOnSelectionChange() => Selection.selectionChanged += ReleaseMixedSelection;
+
+        private static void ReleaseMixedSelection()
+        {
+            if (_mixedTargetObjects is not null)
+            {
+                foreach (var serializedObject in _mixedTargetObjects)
+                    serializedObject?.Dispose();
+            }
+
+            _mixedResults.Clear();
+            _mixedTargets = null;
+            _mixedTargetObjects = null;
+            _mixedTargetTicks = null;
+        }
+
         private static bool MixedTargetsMatch(UnityEngine.Object[] targets)
         {
             if (_mixedTargets is null || _mixedTargets.Length != targets.Length) return false;
@@ -153,13 +172,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void ResetMixedSelection(UnityEngine.Object[] targets)
         {
-            if (_mixedTargetObjects is not null)
-            {
-                foreach (var serializedObject in _mixedTargetObjects)
-                    serializedObject?.Dispose();
-            }
-
-            _mixedResults.Clear();
+            ReleaseMixedSelection();
             _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
             _mixedTargetObjects = new SerializedObject[targets.Length];
             _mixedTargetTicks = new long[targets.Length];
