@@ -1,0 +1,334 @@
+name: CI
+
+# Every required check of the Main ruleset except the PR title and CHANGELOG checks (pr-checks.yml): cheap repository
+# checks, the .NET tests and the Unity EditMode tests. No job has a path filter: a workflow skipped by a filter reports
+# nothing, and a required check that never reports blocks the pull request. The Unity plan job reads the changed files
+# itself and still reports.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # A maintainer starts it on a branch of this repository, for a commit whose PR cannot run the Unity tests itself
+  # (a fork or Dependabot PR without Unity secrets). Here the Unity tests always run and are not skipped.
+  workflow_dispatch:
+  # release.yml runs every check and test on the commit it publishes; there the Unity tests may not be skipped.
+  workflow_call:
+    inputs:
+      require-unity:
+        description: 'Fail instead of skipping the Unity tests when the Unity account secrets are unavailable.'
+        type: boolean
+        default: false
+    secrets:
+      UNITY_EMAIL:
+        required: false
+      UNITY_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+# PR runs share one group per branch and cancel each other. A push to main or a release (workflow_call) gets one group
+# per commit: a group keeps only one pending run, so a shared group would cancel the run of a commit in the middle.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # A file without a .meta, a guid used twice, a sample or asmdef reference that leads nowhere: Unity repairs these in a
+  # local package and ignores or breaks them in the installed one.
+  package-files:
+    name: Package files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            scripts
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Aspid.FastTools/Assets/DevTests
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: node scripts/check-package-files.mjs
+
+  # The version files that scripts/set-version.sh writes (release.yml runs this job too), and the minimum
+  # Unity version that the files with a hand-written copy still agree on.
+  versions:
+    name: Version files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            .github
+            scripts
+            skills
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Website/docs/Images
+            Website/i18n/ru/docusaurus-plugin-content-docs/current
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: node scripts/check-version.mjs
+      - run: node scripts/check-unity-minimum.mjs
+
+  # The tests of scripts/*.test.mjs. They run set-version.sh on a copy, and set-version.sh regenerates the root README
+  # with the dependencies of Website/, so they install them.
+  script-tests:
+    name: Script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            scripts
+            Aspid.FastTools.Analyzers
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Website/scripts
+            Website/docs/Images
+            Website/i18n/ru/docusaurus-plugin-content-docs/current
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Website/package-lock.json
+      - run: npm ci
+        working-directory: Website
+      - run: node --test scripts/*.test.mjs
+
+  # A change to a generator or an analyzer reaches Unity only through the DLL in the package. A Release build rewrites
+  # both DLLs there (Directory.Build.targets); a clean `git diff` shows that the committed ones come from these sources.
+  roslyn-dlls:
+    name: Roslyn DLLs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools.Generators
+            Aspid.FastTools.Analyzers
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+      # The SDK pinned in global.json built the committed DLLs.
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      # Delete them first: a build that stops copying a DLL into the package then shows as a deleted file in the diff,
+      # instead of leaving the committed one in place.
+      - name: Rebuild both DLLs in Release
+        run: |
+          rm -f Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Generators.dll Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Analyzers.dll
+          dotnet build Aspid.FastTools.Generators/Aspid.FastTools.Generators -c Release --nologo
+          dotnet build Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers -c Release --nologo
+      - name: Compare with the committed DLLs
+        run: |
+          if ! git diff --exit-code -- 'Aspid.FastTools/Packages/tech.aspid.fasttools/*.dll'; then
+            echo "::error::A committed Roslyn DLL differs from a Release build of its sources. Run 'dotnet build -c Release' in Aspid.FastTools.Generators and Aspid.FastTools.Analyzers with the SDK of global.json, then commit the DLLs."
+            exit 1
+          fi
+
+  # Every SKILL.md of the repository: frontmatter, `metadata.internal` outside skills/, AFT codes, namespaces.
+  # A PR that removes an analyzer code but touches no skill must still be checked against the skills.
+  skills:
+    name: SKILL.md files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Not sparse: the check reads every SKILL.md, the analyzer sources and the package sources.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm install --no-save --no-audit --no-fund js-yaml@4
+      - run: node scripts/check-skills.mjs
+
+  dotnet-tests:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Generators
+            path: Aspid.FastTools.Generators
+          - name: Analyzers
+            path: Aspid.FastTools.Analyzers
+          # The SerializeReference YAML engine (on .NET Standard 2.1) and its NUnit tests, compiled from the package
+          # sources without Unity.
+          - name: YAML engine
+            path: Aspid.FastTools.YamlTests
+          # GenericTypeResolver (on .NET Standard 2.1) and its NUnit tests, compiled from the package sources without
+          # Unity.
+          - name: Generic type resolver
+            path: Aspid.FastTools.TypeTests
+    steps:
+      # Only what the solutions read: docs/ and Website/ hold most of the repository's size.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools.Generators
+            Aspid.FastTools.Analyzers
+            Aspid.FastTools.YamlTests
+            Aspid.FastTools.TypeTests
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+
+      # The test projects target net6.0; the SDK pinned in global.json builds them,
+      # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+          dotnet-version: 6.0.x
+
+      - name: Run ${{ matrix.name }} tests
+        run: dotnet test "${{ matrix.path }}" --nologo
+
+  # Runs the Unity tests only for a change that can affect them and only with a license to run them.
+  # The required "Unity" check must not be green when a change that reaches the Unity tests was not run through them:
+  # a PR without the secrets (a fork PR, or a Dependabot PR, which reads its own secret store), a release (require-unity)
+  # and a manual run fail the plan instead of skipping. A maintainer then reads the change and runs this workflow with
+  # workflow_dispatch on a branch of this repository; for Dependabot PRs the owner can also add UNITY_EMAIL and
+  # UNITY_PASSWORD as Dependabot secrets. The failed PR check stays red after a manual run: the maintainer merges with
+  # the bypass of the Main ruleset. Only a push without the secrets (a fork's own push) skips with a notice.
+  # Secrets: UNITY_EMAIL and UNITY_PASSWORD of a Unity account with a Personal license; GameCI activates a seat with
+  # them in each job. Do not add the .ulf from Unity Hub (UNITY_LICENSE): it is bound to the Hub machine, and on
+  # 6000.0.53f1 GameCI keeps retrying it instead of falling back to the account.
+  unity-plan:
+    name: Unity plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+    steps:
+      - id: plan
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          REQUIRE_UNITY: ${{ inputs.require-unity }}
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          # What the Unity jobs read: the package except its Markdown, and their own setup.
+          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|scripts/make-unity-test-project\.sh$|\.github/workflows/ci\.yml$)'
+
+          # "all" when the changed files are unknown: a release, a new branch, a failed API call, a truncated list.
+          files=all
+          if [ "$REQUIRE_UNITY" != true ]; then
+            if [ "$EVENT" = pull_request ]; then
+              files="$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename')" || files=all
+            elif [ "$EVENT" = push ] && [ -n "${BEFORE//0/}" ]; then
+              # The compare API lists at most 300 files.
+              files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$GITHUB_SHA" --jq '.files[].filename')" || files=all
+              [ "$(wc -l <<<"$files")" -lt 300 ] || files=all
+            fi
+          fi
+
+          code="$(grep -vE '\.md(\.meta)?$' <<<"$files" || true)"
+          if [ "$files" != all ] && ! grep -qE "$relevant" <<<"$code"; then
+            echo "No change reaches the Unity tests; they are skipped."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+            if [ "$REQUIRE_UNITY" = true ] || [ "$EVENT" = workflow_dispatch ]; then
+              echo "::error::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests must run here."
+              exit 1
+            elif [ "$EVENT" = pull_request ]; then
+              echo "::error::The Unity EditMode tests must run for this change, but this run has no Unity secrets (a fork or Dependabot PR). A maintainer must run them after reading the change, because the Unity Editor executes its code with the Unity account secrets: push this commit to a branch of this repository and start the CI workflow on that branch (Actions > CI > Run workflow). If this check stays red after a green manual run, merge with the bypass of the Main ruleset."
+              exit 1
+            fi
+            echo "::notice::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests are skipped."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Compiles the package, its tests, its Math assembly and all samples in a throwaway project and runs the EditMode
+  # tests on every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
+  # A line without a version is not tested: Unity changes APIs and behaviour without a define (see #319 and #325).
+  # Each version needs a GameCI image (unityci/editor). Add a version when a new Unity line ships.
+  # The tests include PlayerCompilationTests, which compiles every script for a standalone player: the Editor compile
+  # alone accepts a UnityEditor call in Runtime/ that breaks the user's player build. The job is part of the required
+  # "Unity" check below.
+  # There is no Library cache: it saves at most the first import (25-50 s), and 6000.6 was SIGKILLed with a restored one.
+  unity-tests:
+    name: Unity EditMode (${{ matrix.unity }})
+    needs: unity-plan
+    if: needs.unity-plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    # A run takes 4-5 minutes; the rest is room for a slow image pull.
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
+        unity: [6000.0.53f1, 6000.1.17f1, 6000.2.15f1, 6000.3.26f1, 6000.4.12f1, 6000.5.11f1, 6000.6.5f1]
+    steps:
+      # What the test project reads: the package and the script that builds the project.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            scripts
+
+      - name: Create the test project
+        env:
+          UNITY: ${{ matrix.unity }}
+        run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY"
+
+      - uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
+        env:
+          # The action asks the GitHub API for the latest game-ci CLI release; without a token, the shared runner IP
+          # hits the anonymous rate limit (403).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: ${{ matrix.unity }}
+          projectPath: ci-unity-project
+          testMode: editmode
+          # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
+          customParameters: -aspidFastToolsStrictSetup
+          artifactsPath: unity-test-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity EditMode results (${{ matrix.unity }})
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: unity-test-results-${{ matrix.unity }}
+          path: unity-test-results
+
+  # The one Unity check that the main ruleset requires. A skipped matrix job reports no per-version names,
+  # so a required "Unity EditMode (…)" check would wait forever; this job always reports.
+  unity:
+    name: Unity
+    needs: [unity-plan, unity-tests]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          PLAN: ${{ needs.unity-plan.result }}
+          RUN: ${{ needs.unity-plan.outputs.run }}
+          TESTS: ${{ needs.unity-tests.result }}
+        run: |
+          if [ "$PLAN" != success ]; then
+            echo "::error::Unity plan: $PLAN."
+            exit 1
+          fi
+          if [ "$RUN" = true ] && [ "$TESTS" != success ]; then
+            echo "::error::Unity EditMode: $TESTS."
+            exit 1
+          fi
+          echo "Unity EditMode: $TESTS."

@@ -322,7 +322,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var path = pair.Key;
                 var repairable = !string.IsNullOrEmpty(path) && !path.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
 
-                Dictionary<(long fileId, long rid), Type> constraints = null;
+                Dictionary<(long fileId, long rid), Type[]> constraints = null;
                 if (repairable)
                 {
                     try
@@ -347,7 +347,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SerializeReferenceTypeUsageIndex.Usage usage,
             string path,
             bool repairable,
-            Dictionary<(long fileId, long rid), Type> constraints)
+            Dictionary<(long fileId, long rid), Type[]> constraints)
         {
             SerializeReferenceRepairSuggestions.RepairCandidate? top = null;
             if (repairable)
@@ -355,11 +355,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 try
                 {
                     var fieldNames = SerializeReferenceYamlEditor.GetReferenceFieldNames(path, usage.FileId, usage.Rid);
-                    Type constraint = null;
+                    Type[] constraint = null;
                     constraints?.TryGetValue((usage.FileId, usage.Rid), out constraint);
 
                     var ranked = SerializeReferenceRepairSuggestions.GetCached(path, usage.FileId, usage.Rid,
-                        () => SerializeReferenceRepairSuggestions.Rank(usage.StoredType, fieldNames, constraint ?? typeof(object), 5));
+                        () => SerializeReferenceRepairSuggestions.Rank(usage.StoredType, fieldNames, constraint, 5));
 
                     if (ranked.Count > 0) top = ranked[0];
                 }
