@@ -29,7 +29,7 @@ namespace Aspid.FastTools.Types.Editors
             {
                 value = TypeSelectorSettings.RecentsCapacity,
                 showInputField = true,
-                tooltip = "How many picks the picker's Recent section keeps (most recent first).\n"
+                tooltip = "How many picks the picker's Recent section shows (most recent first).\n"
                     + "0 hides the section and pauses recording without wiping the already-collected history.\n"
                     + "Per-user setting — stored locally, never committed.",
             };

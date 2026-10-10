@@ -38,11 +38,16 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (_footerHint is null) return;
 
+            var searchFocused = IsSearchFocused(focusController?.focusedElement);
+
+            // Enter in the focused field chooses the first result, so the hint describes that row.
             var node = SelectedNode();
+            if (node is null && searchFocused && Nav.IsSearching) node = FirstResult();
+
             var sectionCollapsed = node is { IsSectionTitle: true } && Nav.IsSectionCollapsed(node.SectionKey);
 
             _footerHint.text = TypeSelectorFooterHint.Build(
-                searchFocused: IsSearchFocused(focusController?.focusedElement),
+                searchFocused: searchFocused,
                 selected: node,
                 isSelectedSectionCollapsed: sectionCollapsed,
                 isSearching: Nav.IsSearching,

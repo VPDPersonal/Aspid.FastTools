@@ -24,10 +24,14 @@ namespace Aspid.FastTools.Types.Editors.Tests
         private sealed class SecondViewProbe : IViewProbe { }
 
         private EditorWindow _window;
+        private string _recentsJson;
 
         [SetUp]
         public void SetUp()
         {
+            // Choosing a type records a recent pick; keep the developer's real list.
+            _recentsJson = EditorPrefs.GetString(TypeSelectorPreferences.RecentsKey, string.Empty);
+
             _window = ScriptableObject.CreateInstance<EditorWindow>();
             _window.ShowUtility();
         }
@@ -36,6 +40,10 @@ namespace Aspid.FastTools.Types.Editors.Tests
         public void TearDown()
         {
             if (_window) Object.DestroyImmediate(_window);
+
+            TypeSelectorPreferences.ClearRecents();
+            if (!string.IsNullOrEmpty(_recentsJson))
+                EditorPrefs.SetString(TypeSelectorPreferences.RecentsKey, _recentsJson);
         }
 
         [UnityTest]
@@ -82,6 +90,75 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             SendKey(list, '\0', KeyCode.Backspace);
             Assert.AreEqual("ViewProbe", search.value, "Backspace on the results must delete from the query.");
+        }
+
+        [UnityTest]
+        public IEnumerator EnterInTheSearchField_ChoosesTheFirstResult()
+        {
+            string chosen = null;
+            var view = AddView(string.Empty, aqn => chosen = aqn);
+            yield return null;
+
+            var search = view.Q<ToolbarSearchField>();
+            search.value = "FirstViewProbe";
+            yield return null;
+
+            search.Focus();
+            yield return null;
+            Assert.IsTrue(IsFocusedWithin(view, search), "Setup: the search field must hold the focus before Enter.");
+
+            SendKey(search, '\n', KeyCode.Return);
+
+            Assert.AreEqual(typeof(FirstViewProbe).AssemblyQualifiedName, chosen,
+                "Enter in the search field must choose the first result.");
+        }
+
+        [UnityTest]
+        public IEnumerator EnterInTheSearchField_WithoutResults_ChoosesNothing()
+        {
+            var chosen = false;
+            var view = AddView(string.Empty, _ => chosen = true);
+            yield return null;
+
+            var search = view.Q<ToolbarSearchField>();
+            search.value = "NoSuchViewProbe";
+            yield return null;
+
+            search.Focus();
+            yield return null;
+            Assert.IsTrue(IsFocusedWithin(view, search), "Setup: the search field must hold the focus before Enter.");
+
+            SendKey(search, '\n', KeyCode.Return);
+
+            Assert.IsFalse(chosen, "Enter with no result must not pick a type, nor <None>.");
+        }
+
+        [UnityTest]
+        public IEnumerator LeftArrowInTheResults_KeepsTheLevelTheSearchStartedIn()
+        {
+            var view = AddView(string.Empty);
+            yield return null;
+
+            var list = view.Q<ListView>();
+            var items = (List<TreeNode>)list.itemsSource;
+            var folder = items.FindIndex(node => node.HasChildren && !node.IsType && !node.IsSectionTitle);
+            Assert.GreaterOrEqual(folder, 0, "The root must list the probes' namespace as a folder.");
+
+            list.selectedIndex = folder;
+            SendKey(list, '\0', KeyCode.RightArrow);
+            var crumbsInside = Crumbs(view).Count;
+            Assert.Greater(crumbsInside, 1, "Sanity: the picker must be inside the folder.");
+
+            var search = view.Q<ToolbarSearchField>();
+            search.value = "ViewProbe";
+            yield return null;
+
+            list.selectedIndex = 0;
+            SendKey(list, '\0', KeyCode.LeftArrow);
+
+            search.value = string.Empty;
+            Assert.AreEqual(crumbsInside, Crumbs(view).Count,
+                "Left arrow in the results must not take the picker up a level.");
         }
 
         [UnityTest]
@@ -142,15 +219,22 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual(TypeSelectorHelpers.NoneOption, field.Q<TextElement>(className: EnumField.textUssClassName).text);
         }
 
-        private TypeSelectorView AddView(string currentAqn)
+        private TypeSelectorView AddView(string currentAqn, Action<string> onSelected = null)
         {
             var view = new TypeSelectorView(
                 new TypeSelectorFilter { Types = new[] { typeof(IViewProbe) } },
-                currentAqn);
+                currentAqn,
+                onSelected);
 
             _window.rootVisualElement.Add(view);
             return view;
         }
+
+        private static bool IsFocusedWithin(TypeSelectorView view, VisualElement element) =>
+            view.focusController?.focusedElement is VisualElement focused && (focused == element || element.Contains(focused));
+
+        private static List<Label> Crumbs(TypeSelectorView view) =>
+            view.Query<Label>(className: "aspid-fasttools-type-selector__breadcrumb").ToList();
 
         private static Texture RowIcon(ListView list, int index)
         {

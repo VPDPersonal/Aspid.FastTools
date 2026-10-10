@@ -26,10 +26,15 @@ namespace Aspid.FastTools.Types.Editors
 
         private static HashSet<string> Favorites => _favorites ??= new HashSet<string>(LoadRaw(FavoritesKey));
 
-        internal static List<string> LoadRecents()
+        // The capacity applies after accepts: the store holds picks of every field, and only those the open picker
+        // offers may use up the visible slots.
+        internal static List<string> LoadRecents(Predicate<string> accepts = null)
         {
             var resolved = LoadResolved(RecentsKey);
             var capacity = TypeSelectorSettings.RecentsCapacity;
+
+            if (accepts is not null)
+                resolved.RemoveAll(aqn => !accepts(aqn));
 
             if (resolved.Count > capacity)
                 resolved.RemoveRange(capacity, resolved.Count - capacity);
@@ -92,8 +97,11 @@ namespace Aspid.FastTools.Types.Editors
             entries.Remove(assemblyQualifiedName);
             entries.Insert(0, assemblyQualifiedName);
 
-            if (entries.Count > capacity)
-                entries.RemoveRange(capacity, entries.Count - capacity);
+            // Trimmed to the maximum, not the capacity: picks of other fields would push out the ones this
+            // picker can still show.
+            const int max = TypeSelectorSettings.MaxRecentsCapacity;
+            if (entries.Count > max)
+                entries.RemoveRange(max, entries.Count - max);
 
             Save(RecentsKey, entries);
         }

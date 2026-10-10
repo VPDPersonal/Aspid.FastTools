@@ -123,7 +123,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         // -----------------------------------------------------------------------------------------------------
 
         [Test]
-        public void RecordRecent_TrimsToCapacity_InMruOrder()
+        public void LoadRecents_ShowsTheNewestUpToCapacity_InMruOrder()
         {
             TypeSelectorSettings.RecentsCapacity = 3;
 
@@ -133,9 +133,42 @@ namespace Aspid.FastTools.Types.Editors.Tests
             TypeSelectorPreferences.RecordRecent(typeof(double).AssemblyQualifiedName);
 
             var recents = TypeSelectorPreferences.LoadRecents();
-            Assert.AreEqual(3, recents.Count, "Recording past the capacity must trim the list to the capacity.");
+            Assert.AreEqual(3, recents.Count, "The list must show no more than the capacity.");
             Assert.AreEqual(typeof(double).AssemblyQualifiedName, recents[0], "The most recent pick must come first (MRU).");
-            Assert.IsFalse(recents.Contains(typeof(int).AssemblyQualifiedName), "The oldest pick must have been trimmed away.");
+            Assert.IsFalse(recents.Contains(typeof(int).AssemblyQualifiedName), "The oldest pick must not be shown.");
+        }
+
+        [Test]
+        public void RecordRecent_KeepsUpToTheMaximum_WhateverTheCapacity()
+        {
+            TypeSelectorSettings.RecentsCapacity = 2;
+
+            var count = TypeSelectorSettings.MaxRecentsCapacity + 3;
+            for (var i = 0; i < count; i++)
+                TypeSelectorPreferences.RecordRecent($"Probe.Type{i}");
+
+            Assert.AreEqual(TypeSelectorSettings.MaxRecentsCapacity, TypeSelectorPreferences.RecentsCount,
+                "The store must keep more than the capacity, so picks of other fields do not push out this picker's.");
+        }
+
+        [Test]
+        public void LoadRecents_AppliesTheCapacityAfterTheFilter()
+        {
+            TypeSelectorSettings.RecentsCapacity = 2;
+
+            var kept = new[] { typeof(int).AssemblyQualifiedName, typeof(string).AssemblyQualifiedName };
+            foreach (var aqn in kept)
+                TypeSelectorPreferences.RecordRecent(aqn);
+
+            // Newer picks that the picker does not offer must not use up its slots.
+            TypeSelectorPreferences.RecordRecent(typeof(float).AssemblyQualifiedName);
+            TypeSelectorPreferences.RecordRecent(typeof(double).AssemblyQualifiedName);
+            TypeSelectorPreferences.RecordRecent(typeof(bool).AssemblyQualifiedName);
+
+            var recents = TypeSelectorPreferences.LoadRecents(accepts: aqn => kept.Contains(aqn));
+
+            CollectionAssert.AreEqual(new[] { kept[1], kept[0] }, recents,
+                "The older picks the picker offers must show, newest first.");
         }
 
         [Test]
@@ -173,7 +206,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.AreEqual(1, recents.Count, "Lowering the capacity must hide the surplus immediately.");
             Assert.AreEqual(typeof(float).AssemblyQualifiedName, recents[0], "The kept entry must be the most recent pick.");
             Assert.AreEqual(3, TypeSelectorPreferences.RecentsCount,
-                "The surplus stays stored (trimmed only by the next RecordRecent), so raising the capacity restores it.");
+                "The surplus stays stored, so raising the capacity restores it.");
         }
 
         [Test]
@@ -230,6 +263,21 @@ namespace Aspid.FastTools.Types.Editors.Tests
             TypeSelectorSettings.RecentsCapacity = 0;
             Assert.IsFalse(HasSection(BuildController(aqn), NavigationController.RecentSection),
                 "Capacity 0 is the Recent section's off switch — the section must not be composed.");
+        }
+
+        [Test]
+        public void NavigationController_ComposesRecent_FromPicksTheCapacityWouldPushOut()
+        {
+            var aqn = typeof(int).AssemblyQualifiedName;
+            TypeSelectorSettings.RecentsCapacity = 2;
+
+            TypeSelectorPreferences.RecordRecent(aqn);
+            TypeSelectorPreferences.RecordRecent(typeof(string).AssemblyQualifiedName);
+            TypeSelectorPreferences.RecordRecent(typeof(float).AssemblyQualifiedName);
+            TypeSelectorPreferences.RecordRecent(typeof(double).AssemblyQualifiedName);
+
+            Assert.IsTrue(HasSection(BuildController(aqn), NavigationController.RecentSection),
+                "Picks in other fields must not hide the picker's own pick that is still stored.");
         }
 
         [Test]
