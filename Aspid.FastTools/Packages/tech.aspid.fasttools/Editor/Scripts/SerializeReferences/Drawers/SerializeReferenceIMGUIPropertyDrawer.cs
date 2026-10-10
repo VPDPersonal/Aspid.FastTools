@@ -14,6 +14,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Re-tinted on every use so the cached style survives editor-theme changes.
         private static GUIStyle _missingCaptionStyle;
 
+        // Bold twin of the foldout style for a field overridden on a prefab instance; rebuilt on a skin change so its
+        // arrow textures follow the theme.
+        private static GUIStyle _overriddenFoldoutStyle;
+        private static bool _overriddenFoldoutStylePro;
+
         // Space the foldout arrow reserves left of the label; notices pull back by it to line up under the arrow.
         private const float FoldoutArrowIndent = 11f;
 
@@ -116,16 +121,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var expandable = hasValue && SerializeReferenceNesting.HasVisibleChildren(property);
 
+            // Unity draws a prefab instance override in bold; its own fields do it, this header has to do it by hand.
+            var overridden = SerializeReferencePrefabOverride.IsOverridden(property);
+
             var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth, line.height);
             if (expandable)
             {
-                property.isExpanded = EditorGUI.Foldout(labelRect, property.isExpanded, label, toggleOnLabelClick: true);
+                property.isExpanded = EditorGUI.Foldout(labelRect, property.isExpanded, label, toggleOnLabelClick: true,
+                    overridden ? GetOverriddenFoldoutStyle() : EditorStyles.foldout);
             }
             else
             {
                 var labelPull = flat ? FoldoutArrowIndent : 0f;
                 EditorGUI.LabelField(new Rect(labelRect.x - labelPull, labelRect.y,
-                    labelRect.width + labelPull, labelRect.height), label);
+                    labelRect.width + labelPull, labelRect.height), label,
+                    overridden ? EditorStyles.boldLabel : EditorStyles.label);
             }
 
             var dropdownRect = new Rect(
@@ -430,6 +440,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var filter = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes);
             var menu = new GenericMenu();
 
+            if (SerializeReferencePrefabOverride.IsOverridden(property))
+            {
+                menu.AddItem(new GUIContent("Revert"), false, () =>
+                {
+                    SerializeReferencePrefabOverride.Revert(persistent);
+                    SerializeReferenceHelpers.InvalidateReferenceMemos();
+                });
+
+                if (SerializeReferencePrefabOverride.TryGetApplyTarget(property, out var applyPath))
+                {
+                    menu.AddItem(new GUIContent(SerializeReferencePrefabOverride.GetApplyLabel(applyPath)), false, () =>
+                    {
+                        SerializeReferencePrefabOverride.Apply(persistent, applyPath);
+                        SerializeReferenceHelpers.InvalidateReferenceMemos();
+                    });
+                }
+
+                menu.AddSeparator(string.Empty);
+            }
+
             // Copy reads the first target's value, Unity's convention; paste applies an independent instance per
             // target so the result is never aliased.
             menu.AddItem(new GUIContent("Copy Serialize Reference"), false,
@@ -564,6 +594,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 missingTooltip = $"Missing type: {missingType.FullName}";
 
             return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingType.DisplayName);
+        }
+
+        private static GUIStyle GetOverriddenFoldoutStyle()
+        {
+            if (_overriddenFoldoutStyle is null || _overriddenFoldoutStylePro != EditorGUIUtility.isProSkin)
+            {
+                _overriddenFoldoutStyle = new GUIStyle(EditorStyles.foldout) { fontStyle = FontStyle.Bold };
+                _overriddenFoldoutStylePro = EditorGUIUtility.isProSkin;
+            }
+
+            return _overriddenFoldoutStyle;
         }
 
         private static GUIStyle GetMissingCaptionStyle()

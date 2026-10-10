@@ -10,6 +10,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         [SerializeReference] public ITestWeapon a;
         [SerializeReference] public ITestWeapon b;
+
+        // A plain string field: the target of the required-type route the open-copy tests drive.
+        public string requiredName = string.Empty;
     }
 
     // A sequence the in-memory recovery skips, so only the lossless file route keeps it.

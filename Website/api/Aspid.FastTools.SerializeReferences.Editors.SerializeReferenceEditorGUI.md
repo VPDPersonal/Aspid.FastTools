@@ -50,13 +50,17 @@ A managed-reference property of the editor's [`SerializedObject`](https://docs.u
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Extra base types every candidate must be assignable to besides the field type; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
+Extra base types every candidate must be assignable to besides the field type and a <code>[TypeSelector]</code> on the field; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
 
 #### Returns
 
  VisualElement
 
 The field to add to the inspector's visual tree.
+
+#### Remarks
+
+A <code>[TypeSelector]</code> constraint on the field is resolved once, when the field is created.
 
 #### Exceptions
 
@@ -126,7 +130,7 @@ A managed-reference property of the editor's [`SerializedObject`](https://docs.u
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Extra base types every candidate must be assignable to besides the field type; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
+Extra base types every candidate must be assignable to besides the field type and a <code>[TypeSelector]</code> on the field; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
 
 #### Remarks
 

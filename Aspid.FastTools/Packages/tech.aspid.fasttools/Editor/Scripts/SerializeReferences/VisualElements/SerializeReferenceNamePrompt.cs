@@ -20,10 +20,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window._value = initial ?? string.Empty;
             window._onConfirm = onConfirm;
             var size = new Vector2(340f, 96f);
-            window.position = new Rect(Screen.currentResolution.width / 2f - size.x / 2f, Screen.currentResolution.height / 2f - size.y / 2f, size.x, size.y);
+            window.position = CenterOn(EditorGUIUtility.GetMainWindowPosition(), size);
             window.minSize = window.maxSize = size;
             window.ShowModalUtility();
         }
+
+        // Centred on the editor window: the primary display's resolution is in pixels and misses the editor on a
+        // second monitor.
+        internal static Rect CenterOn(Rect owner, Vector2 size) =>
+            new(Mathf.Round(owner.center.x - size.x / 2f), Mathf.Round(owner.center.y - size.y / 2f), size.x, size.y);
 
         private void OnGUI()
         {

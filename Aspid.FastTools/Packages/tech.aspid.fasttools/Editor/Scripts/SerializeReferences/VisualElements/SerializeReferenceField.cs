@@ -62,10 +62,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // header above a nested reference is indistinguishable from one Unity drew.
         private const string HeaderClass = "unity-header-drawer__label";
 
-        // No prefab-override treatment anywhere in this field. Unity records an override inside a managed reference
-        // under "managedReferences[rid].<field>", which no property path in the subtree matches, so prefabOverride
-        // reports false for every property under a [SerializeReference] — verified on 6000.4. Unity's own binding
-        // reads that same flag, so showing the bar would mean matching the modification list by rid ourselves.
+        // Bolds the label of a field overridden on a prefab instance, as Unity's binding does for a bound field; this
+        // header is not bound. The flag is read from the header's own pointer (checked on 6000.4 for a field, a nested
+        // reference and a list element). The blue bar belongs to the inspector element and is out of reach.
+        private const string PrefabOverrideClass = BlockClass + "--prefab-override";
 
         private const float DropdownGap = 2f;
 
@@ -221,6 +221,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // fires; each field re-evaluates itself on undo/redo or a re-/un-aliased sibling would stay stale.
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 Undo.undoRedoPerformed += OnUndoRedo;
+                // Apply from the Overrides dropdown or another window drops the override but keeps the value, so
+                // TrackPropertyValue stays silent and the bold label would stay.
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -229,6 +233,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
                 _liveFields.Remove(this);
             });
         }
@@ -292,6 +297,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _dropdown.EnableInClassList(DropdownMissingClass, !missingType.IsEmpty);
             _dropdown.EnableInClassList(MixedValueClass, mixedTypes);
             EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
+            EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
             _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);
 
             UpdateMissingBox();
@@ -858,6 +864,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void BuildContextMenu(ContextualMenuPopulateEvent evt)
         {
+            if (SerializeReferencePrefabOverride.IsOverridden(_property))
+            {
+                evt.menu.AppendAction("Revert", _ =>
+                {
+                    SerializeReferencePrefabOverride.Revert(_property);
+                    ApplyReferenceChange();
+                });
+
+                if (SerializeReferencePrefabOverride.TryGetApplyTarget(_property, out var applyPath))
+                {
+                    evt.menu.AppendAction(SerializeReferencePrefabOverride.GetApplyLabel(applyPath), _ =>
+                    {
+                        SerializeReferencePrefabOverride.Apply(_property, applyPath);
+                        ApplyReferenceChange();
+                    });
+                }
+
+                evt.menu.AppendSeparator();
+            }
+
             // Copy reads the first target's value (Unity's own convention for a multi-selection menu). Paste then
             // applies an independent instance PER target, so the pasted reference is never aliased across objects.
             evt.menu.AppendAction("Copy Serialize Reference",
@@ -1018,6 +1044,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!IsPropertyAlive()) return;
             _property.serializedObject.Update();
             Refresh(forceRebuild: false);
+        }
+
+        internal void OnPrefabInstanceUpdated(GameObject instance)
+        {
+            if (!IsPropertyAlive()) return;
+            _property.serializedObject.Update();
+            EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
         }
 
         private void PasteFromClipboard()
