@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    internal readonly struct AspidAnimatedDotsBackgroundSizeStyle
+    internal readonly struct AspidAnimatedDotsSizeStyle
     {
         public static readonly CustomStyleProperty<float> DotRadiusProperty = new("--aspid-fasttools-metrics-dot_radius");
         public static readonly CustomStyleProperty<float> DotSpacingProperty = new("--aspid-fasttools-metrics-dot_spacing");
@@ -14,7 +14,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly InlineStyle<float> _dotSpacing;
         private readonly InlineStyle<float> _scaleReference;
 
-        public AspidAnimatedDotsBackgroundSizeStyle(
+        public AspidAnimatedDotsSizeStyle(
             VisualElement element,
             float dotRadius,
             float dotSpacing,
