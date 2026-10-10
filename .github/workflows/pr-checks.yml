@@ -104,8 +104,8 @@ jobs:
 
             if (errors.length) core.setFailed(errors.join('\n'));
 
-  # User-visible package code changed → an entry in the English root CHANGELOG.md, or the `no-changelog` label.
-  # CHANGELOG.ru.md alone is not enough: the package copy and the release notes are built from the English file.
+  # User-visible package code changed → the same entry in CHANGELOG.md and CHANGELOG.ru.md, or the `no-changelog` label.
+  # The package copy and the release notes are built from the English file; the docs check needs both files to match.
   changelog:
     name: CHANGELOG
     runs-on: ubuntu-latest
@@ -126,19 +126,19 @@ jobs:
               (f.startsWith(PKG + 'Samples~/') && !f.includes('/Documentation/')) ||
               (f.startsWith(PKG) && /^(?:[^/]+\.dll|package\.json)$/.test(f.slice(PKG.length))));
             if (!shipped.length) return core.info('No shipped package code changed.');
-            if (files.includes('CHANGELOG.md')) {
-              // The Russian twin is not required (outside contributors), but set-version.sh needs it at release.
-              if (!files.includes('CHANGELOG.ru.md'))
-                core.warning('CHANGELOG.md changed but CHANGELOG.ru.md did not; add the Russian entry before the release.');
-              return core.info('CHANGELOG updated.');
-            }
+            const english = files.includes('CHANGELOG.md'), russian = files.includes('CHANGELOG.ru.md');
+            if (english && russian) return core.info('CHANGELOG updated.');
 
             const list = `${shipped.slice(0, 3).join(', ')}${shipped.length > 3 ? ', …' : ''}`;
-            if (files.includes('CHANGELOG.ru.md'))
+            if (english)
+              core.setFailed(
+                `Package code changed (${list}) and CHANGELOG.md did, but CHANGELOG.ru.md did not. ` +
+                'Add the same entry under [Unreleased] in CHANGELOG.ru.md: the docs check needs both changelogs to match.');
+            else if (russian)
               core.setFailed(
                 `Package code changed (${list}) and CHANGELOG.ru.md did, but the English CHANGELOG.md did not. ` +
                 'Add the same entry under [Unreleased] in CHANGELOG.md: scripts/set-version.sh and the package changelog read it.');
             else
               core.setFailed(
-                `Package code changed (${list}) but CHANGELOG.md did not. ` +
-                'Add an entry under [Unreleased], or the `no-changelog` label if users see no change.');
+                `Package code changed (${list}) but neither CHANGELOG.md nor CHANGELOG.ru.md did. ` +
+                'Add the same entry under [Unreleased] in both, or the `no-changelog` label if users see no change.');
