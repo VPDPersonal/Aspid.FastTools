@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -41,21 +42,25 @@ namespace Aspid.FastTools.Types.Editors
             var index = argsSoFar.Length;
             var parameter = parameters[index];
 
-            var page = BuildParamPage(openDefinition, argsSoFar, index, parameter, picked =>
+            var page = BuildParamPage(openDefinition, validationFieldTypes, argsSoFar, index, parameter, picked =>
                 PickParam(openDefinition, validationFieldTypes, Append(argsSoFar, picked), startDepth, onClosed));
 
             PushPage(page);
         }
 
-        private PickerPage BuildParamPage(Type openDefinition, Type[] argsSoFar, int index, Type parameter, Action<Type> onPicked)
+        private PickerPage BuildParamPage(Type openDefinition, Type[] validationFieldTypes, Type[] argsSoFar, int index,
+            Type parameter, Action<Type> onPicked)
         {
             var baseTypes = GenericTypeResolver.GetConstraintBaseTypes(parameter);
             var constraintType = baseTypes.Length == 1 ? baseTypes[0] : typeof(object);
+            var checkArguments = GenericTypeResolver.NeedsArgumentCheck(openDefinition, validationFieldTypes);
 
             // Open definitions are offered as arguments too, so generics can nest; picking one resolves its own
             // arguments first. Every constraint base type goes in, not just the collapsed one, so a multi-constraint
             // parameter narrows the nested definitions up front instead of offering ones that fail every later pick.
-            var nested = GenericTypeResolver.GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter);
+            var nested = GenericTypeResolver
+                .GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter)
+                .Where(FitsArguments);
             var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, (Func<Type, bool>)Filter, nested,
                 includeNoneOption: false, includeHidden: _includeHidden, excludeEditorOnly: _excludeEditorOnly);
 
@@ -70,7 +75,15 @@ namespace Aspid.FastTools.Types.Editors
 
             bool Filter(Type candidate) =>
                 GenericTypeResolver.SatisfiesSpecialConstraints(parameter, candidate)
-                && (_argumentFilter?.Invoke(candidate) ?? true);
+                && (_argumentFilter?.Invoke(candidate) ?? true)
+                && FitsArguments(candidate);
+
+            // Checks constraints that name parameters, and the field types, so the page does not offer a candidate
+            // that can only end in the construction error. Nested open definitions are checked by their shape.
+            bool FitsArguments(Type candidate) =>
+                !checkArguments ||
+                GenericTypeResolver.CanCloseWithArguments(openDefinition, Append(argsSoFar, candidate),
+                    validationFieldTypes);
         }
 
         private void PushPage(PickerPage page)
