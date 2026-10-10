@@ -1042,9 +1042,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Refresh(forceRebuild: false);
         }
 
+        // An Apply only removes overrides, so a field that shows none has nothing to update.
         internal void OnPrefabInstanceUpdated(GameObject instance)
         {
-            if (!IsPropertyAlive()) return;
+            if (!ClassListContains(PrefabOverrideClass) || !IsPropertyAlive()) return;
             _property.serializedObject.Update();
             EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
         }
