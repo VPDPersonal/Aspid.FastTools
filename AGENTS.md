@@ -34,6 +34,10 @@ Agent Skills for projects that consume the package in `skills/`.
   `skills/` must be internal, because the installer scans about 30 agent folders, an `AFT` code in a skill must be
   reported by an analyzer, and a namespace or assembly in a consumer skill must exist in the package. A skill that
   describes public API is updated in the same PR as that API.
+- `scripts/check-package-files.mjs` (CI) fails on a package path longer than 123 characters (the Asset Store Validator
+  limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, and
+  on a `.uss.meta` with importer id 12388. Unity writes the full block into every new `.cs.meta`, and a reserialize adds
+  it to old ones, so the check keeps all of them in one format. Unity rewrites id 12388 to 12385 when it imports a sample.
 - `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
   environment. Allow there only commands that cannot run code or read the environment; put the rest in
   `.claude/settings.local.json`.

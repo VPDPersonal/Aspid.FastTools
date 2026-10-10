@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    internal readonly struct AspidHoverGradientOverlayMetricsStyle
+    internal readonly struct AspidHoverOverlayMetricsStyle
     {
         public static readonly CustomStyleProperty<int> StepsProperty = new("--aspid-fasttools-metrics-hover_overlay_steps");
         public static readonly CustomStyleProperty<float> LerpRateProperty = new("--aspid-fasttools-metrics-hover_overlay_lerp_rate");
@@ -14,7 +14,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly InlineStyle<float> _lerpRate;
         private readonly InlineStyle<float> _alphaScale;
 
-        public AspidHoverGradientOverlayMetricsStyle(
+        public AspidHoverOverlayMetricsStyle(
             VisualElement element,
             int steps,
             float lerpRate,
