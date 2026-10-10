@@ -37,6 +37,7 @@ The sheet is layered on top of the built-in palette, so declare only the tokens 
 | `--aspid-colors-bg-*` | Boxes, buttons, help boxes and the picker, in four steps: `darkness`, `dark`, `light`, `lightness` |
 | `--aspid-colors-text-*` | Text, from the most prominent `lightness` to the dimmest `darkness` |
 | `--aspid-colors-shade-*` | Borders and dividing lines, in the same four steps |
+| `--aspid-colors-control-border` | Borders of input fields and the slider track on the settings pages |
 | `--aspid-colors-overlay-*`, `--aspid-colors-slider-handle` | Hover and control fills, scrollbars and slider handles |
 | `--aspid-colors-status-success-*`, `-warning-*`, `-error-*`, `-info-*` | Status backgrounds, texts (`-text-`), borders (`-shade-`), tints (`-tint`) and the dots (`-blob`) |
 | `--aspid-colors-switch-accent`, `-track-border`, `-handle`, `-handle-shadow` | Switches. They are not set by default, so switches follow the editor skin |
