@@ -1,7 +1,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using System.Reflection;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
@@ -377,24 +376,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Unity would silently cost it the dropdown instead.
         private static VisualElement WithDecorators(SerializedProperty property, VisualElement field)
         {
-            var info = property.GetFieldInfo();
-            if (info is null) return field;
+            var decorators = SerializeReferenceDecorators.For(property);
 
-            if (info.GetCustomAttribute<TooltipAttribute>(inherit: true) is { } tooltip)
-                field.tooltip = tooltip.tooltip;
+            if (decorators.Tooltip.Length != 0)
+                field.tooltip = decorators.Tooltip;
 
-            var header = info.GetCustomAttribute<HeaderAttribute>(inherit: true);
-            var space = info.GetCustomAttribute<SpaceAttribute>(inherit: true);
-
-            if (header is null && space is null) return field;
+            if (decorators.Items.Count == 0) return field;
 
             var group = new VisualElement();
 
-            if (space is not null)
-                group.AddChild(new VisualElement().SetHeight(space.height));
-
-            if (header is not null)
-                group.AddChild(new Label(header.header).AddClass(HeaderClass));
+            foreach (var decorator in decorators.Items)
+            {
+                if (decorator is SpaceAttribute space)
+                    group.AddChild(new VisualElement().SetHeight(space.height));
+                else if (decorator is HeaderAttribute header)
+                    group.AddChild(new Label(header.header).AddClass(HeaderClass));
+            }
 
             return group.AddChild(field);
         }
