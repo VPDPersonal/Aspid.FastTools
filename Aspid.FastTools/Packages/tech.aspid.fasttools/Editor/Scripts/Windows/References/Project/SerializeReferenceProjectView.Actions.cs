@@ -18,7 +18,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly AuditPickerHost.PickerClasses _pickerClassSet =
             new(PickerClass, PickerAttachedClass, GroupPickingClass);
 
-        private void ToggleGroupPicker(MissingReferenceGroup group, Type constraint, AspidGradientButton button)
+        private void ToggleGroupPicker(MissingReferenceGroup group, Type[] constraint, AspidGradientButton button)
         {
             if (_picker.ToggleClosed(button)) return;
 
