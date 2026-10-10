@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -23,12 +22,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public readonly HashSet<long> Orphans = new();
 
+        // A lookup per card must not scan every node, so the index is built on first use and again if Nodes has grown.
+        private Dictionary<long, int> _nodeIndex;
+        private int _indexedCount = -1;
+
         public ReferenceGraphNode? FindNode(long rid)
         {
-            foreach (var node in Nodes.Where(node => node.Rid == rid))
-                return node;
+            if (_indexedCount != Nodes.Count)
+            {
+                _nodeIndex = new Dictionary<long, int>(Nodes.Count);
+                for (var i = 0; i < Nodes.Count; i++) _nodeIndex.TryAdd(Nodes[i].Rid, i);
+                _indexedCount = Nodes.Count;
+            }
 
-            return null;
+            return _nodeIndex.TryGetValue(rid, out var index) ? Nodes[index] : null;
         }
 
         public IReadOnlyList<ReferenceGraphEdge> ChildrenOf(long rid) =>

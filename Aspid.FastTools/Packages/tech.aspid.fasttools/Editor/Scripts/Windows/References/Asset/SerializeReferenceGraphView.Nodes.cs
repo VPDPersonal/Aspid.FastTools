@@ -49,7 +49,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string EmptySlotText = TypeSelectorHelpers.NoneOption;
 
-        private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, bool isOrphan)
+        // A repeat is a reference whose children sit on another card: this card keeps its own field path, but does not draw them again.
+        private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, bool isOrphan, bool isRepeat)
         {
             var missing = node is { Resolves: false, StoredType: { IsEmpty: false } };
 
@@ -117,7 +118,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 AddBandDivider(card, band: null, sweepModifier: null);
             }
 
-            var meta = BuildFooter(pathLabel, $"rid {rid}");
+            var meta = BuildFooter(pathLabel, isRepeat ? $"rid {rid} · children on another card" : $"rid {rid}");
 
             if (isOrphan)
             {

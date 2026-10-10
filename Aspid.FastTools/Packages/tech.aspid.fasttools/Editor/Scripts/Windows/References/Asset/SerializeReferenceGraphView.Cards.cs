@@ -1,8 +1,8 @@
 using System;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
-using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
+using CardKind = Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceGraphPlan.CardKind;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -23,8 +23,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string DocumentChevronExpanded = "▼";
         private const string DocumentChevronCollapsed = "▶";
 
-        private VisualElement BuildDocument(string assetPath, ReferenceGraphDocument document, bool showHeader)
+        private VisualElement BuildDocument(string assetPath, SerializeReferenceGraphPlan plan, bool showHeader)
         {
+            var document = plan.Document;
             var (broken, migrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
             var hasIssues = document.Orphans.Count > 0 || broken > 0;
 
@@ -32,25 +33,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var header = showHeader ? BuildDocumentHeader(document, body, hasIssues, broken, migrations) : null;
 
-            foreach (var root in document.Roots)
+            VisualElement orphans = null;
+            foreach (var card in plan.Cards)
             {
-                if (root.IsEmpty || !SerializeReferenceGraphAnalysis.RootIsMissing(document, root.Rid)) continue;
-                AppendNode(body, assetPath, document, root.Rid, root.Label, new HashSet<long>());
-            }
-
-            foreach (var root in document.Roots)
-            {
-                if (root.IsEmpty)
+                switch (card.Kind)
                 {
-                    body.AddChild(BuildEmptySlotCard(assetPath, document.FileId, root.Label));
-                    continue;
+                    case CardKind.Node:
+                    case CardKind.Repeat:
+                        body.AddChild(BuildNodeCard(assetPath, document, document.FindNode(card.Rid), card.Rid, card.Path,
+                            isOrphan: false, isRepeat: card.Kind == CardKind.Repeat));
+                        break;
+                    case CardKind.BackEdge:
+                        body.AddChild(BuildBackEdgeCard(card.Rid));
+                        break;
+                    case CardKind.Empty:
+                        body.AddChild(BuildEmptySlotCard(assetPath, document.FileId, card.Path));
+                        break;
+                    case CardKind.Orphan:
+                        orphans ??= BuildOrphanGroup();
+                        orphans.AddChild(BuildNodeCard(assetPath, document, document.FindNode(card.Rid), card.Rid,
+                            pathLabel: null, isOrphan: true, isRepeat: false));
+                        break;
                 }
-
-                if (SerializeReferenceGraphAnalysis.RootIsMissing(document, root.Rid)) continue;
-                AppendNode(body, assetPath, document, root.Rid, root.Label, new HashSet<long>());
             }
 
-            var orphans = BuildOrphanGroup(assetPath, document);
             if (orphans is not null) body.AddChild(orphans);
 
             if (header is null)
@@ -94,50 +100,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return header;
         }
 
-        private void AppendNode(VisualElement container, string assetPath, ReferenceGraphDocument document, long rid, string pathLabel, HashSet<long> visited)
+        private static VisualElement BuildOrphanGroup()
         {
-            if (!visited.Add(rid))
-            {
-                container.AddChild(BuildBackEdgeCard(rid));
-                return;
-            }
-
-            var node = document.FindNode(rid);
-            container.AddChild(BuildNodeCard(assetPath, document, node, rid, pathLabel, isOrphan: false));
-
-            foreach (var edge in document.ChildrenOf(rid))
-            {
-                var childPath = SerializeReferenceGraphAnalysis.CombinePath(pathLabel, edge.Label);
-                if (edge.IsEmpty)
-                    container.AddChild(BuildEmptySlotCard(assetPath, document.FileId, childPath));
-                else
-                    AppendNode(container, assetPath, document, edge.Rid, childPath, visited);
-            }
-
-            // Remove only the current path: sibling subtrees may legitimately share this reference.
-            visited.Remove(rid);
-        }
-
-        private VisualElement BuildOrphanGroup(string assetPath, ReferenceGraphDocument document)
-        {
-            if (document.Orphans.Count == 0) return null;
-
             var group = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(OrphanGroupClass);
 
-            group.AddChild(new AspidLabel("Orphaned", AspidLabelPreset.Default
+            return group.AddChild(new AspidLabel("Orphaned", AspidLabelPreset.Default
                     .SetLabelStatus(StatusStyle.Type.Warning)
                     .SetLabelSize(AspidLabelSizeStyle.Type.H5)
                     .SetLineSize(AspidDividingLineSizeStyle.Type.None))
                 .AddClass(OrphanGroupHeaderClass));
+        }
 
-            foreach (var node in document.Nodes)
-            {
-                if (!document.Orphans.Contains(node.Rid)) continue;
-                group.AddChild(BuildNodeCard(assetPath, document, node, node.Rid, pathLabel: null, isOrphan: true));
-            }
-
-            return group;
+        private static VisualElement BuildHiddenNotice(int hidden)
+        {
+            var cards = hidden == 1 ? "1 more card is" : $"{hidden} more cards are";
+            return new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
+                .SetMessage($"{cards} not shown: the window draws at most {SerializeReferenceGraphPlan.MaxCards} reference cards. " +
+                            "Project References repairs missing types without that limit.");
         }
     }
 }

@@ -202,7 +202,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     continue;
 
                 var indent = IndentOf(lines[j]);
-                if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")))
+                if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ", StringComparison.Ordinal)))
                     return j;
             }
 

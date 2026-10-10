@@ -265,12 +265,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var empties = 0;
             var migrations = 0;
 
-            var emptySlotPaths = SerializeReferenceGraphAnalysis.CollectEmptySlotPaths(documents);
+            // The card budget is shared, so a scene with many documents is bounded as a whole.
+            var plans = SerializeReferenceGraphPlan.BuildAll(documents, SerializeReferenceGraphPlan.MaxCards);
+            var emptySlotPaths = SerializeReferenceGraphAnalysis.CollectEmptySlotPaths(plans);
+
+            var hidden = 0;
+            var hiddenEmpties = 0;
+            var drawn = 0;
 
             var showHeaders = documents.Count > 1;
-            foreach (var document in documents)
+            foreach (var plan in plans)
             {
-                _list.AddChild(BuildDocument(assetPath, document, showHeaders));
+                var document = plan.Document;
+
+                // A document that got no card would be a header over nothing, so only the notice speaks for it.
+                if (plan.Cards.Count > 0 || plan.Hidden == 0)
+                    _list.AddChild(BuildDocument(assetPath, plan, showHeaders));
+
+                drawn += plan.Cards.Count;
+                hidden += plan.Hidden;
+                hiddenEmpties += plan.HiddenEmpty;
 
                 total += document.Nodes.Count;
                 var (broken, documentMigrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
@@ -288,15 +302,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var required = _requiredViolations.Count;
             var graphedRequired = required - ungraphedRequired.Count;
 
+            var requiredCards = SerializeReferenceGraphAnalysis.SelectRequiredCards(
+                ungraphedRequired, SerializeReferenceGraphPlan.MaxCards - drawn, out var hiddenRequired);
+
+            // A required field whose slot the plans left out is already in the hidden count and in the unassigned count,
+            // so it is taken out of them once. The plans keep no paths past the budget, so this counts by number.
+            var hiddenSlots = Math.Min(hiddenRequired, hiddenEmpties);
+            graphedRequired += hiddenSlots;
+            hidden += hiddenRequired - hiddenSlots;
+
             var status = SerializeReferenceAuditUI.ResolveStatus(missing - migrations, orphans, required, migrations);
             ShowOverview(status, total, missing, orphans, Math.Max(0, empties - graphedRequired), migrations, required);
 
-            if (ungraphedRequired.Count > 0)
+            if (requiredCards.Count > 0)
             {
                 var labels = new ViolationFieldLabels();
-                foreach (var violation in ungraphedRequired)
+                foreach (var violation in requiredCards)
                     _list.AddChild(BuildRequiredOnlyCard(violation, labels));
             }
+
+            if (hidden > 0) _list.AddChild(BuildHiddenNotice(hidden));
 
             _onCanvasStatus?.Invoke(status);
         }

@@ -13,22 +13,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.IsNullOrEmpty(parent) ? child : $"{parent}.{child}";
         }
 
-        public static HashSet<(long fileId, string path)> CollectEmptySlotPaths(List<ReferenceGraphDocument> documents)
+        // Only the empty slots that the plans draw, so a required field counts as graphed only when its card exists.
+        public static HashSet<(long fileId, string path)> CollectEmptySlotPaths(List<SerializeReferenceGraphPlan> plans)
         {
             var paths = new HashSet<(long, string)>();
 
-            foreach (var document in documents)
+            foreach (var plan in plans)
             {
-                foreach (var root in document.Roots)
+                foreach (var card in plan.Cards)
                 {
-                    if (root.IsEmpty)
-                        paths.Add((document.FileId, SerializeReferenceGraphEditor.ToSerializedPropertyPath(root.Label)));
-                    else
-                        WalkForEmptySlots(document, root.Rid, root.Label, new HashSet<long>(), paths);
+                    if (card.Kind != SerializeReferenceGraphPlan.CardKind.Empty) continue;
+                    paths.Add((plan.Document.FileId, SerializeReferenceGraphEditor.ToSerializedPropertyPath(card.Path)));
                 }
             }
 
             return paths;
+        }
+
+        // The violations that get their own required-field card. A required string field has no node in the graph, so it
+        // always gets one; a required reference only while the budget lasts, like the cards of the plans.
+        public static List<GateViolation> SelectRequiredCards(List<GateViolation> violations, int budget, out int hidden)
+        {
+            var cards = new List<GateViolation>();
+            hidden = 0;
+
+            foreach (var violation in violations)
+            {
+                if (violation.Rid != 0 && budget <= 0)
+                {
+                    hidden++;
+                    continue;
+                }
+
+                cards.Add(violation);
+                budget--;
+            }
+
+            return cards;
         }
 
         public static int CountEmptySlots(ReferenceGraphDocument document)
@@ -99,23 +120,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 return false;
             }
-        }
-
-        private static void WalkForEmptySlots(ReferenceGraphDocument document, long rid, string pathLabel,
-            HashSet<long> visited, HashSet<(long fileId, string path)> paths)
-        {
-            if (!visited.Add(rid)) return;
-
-            foreach (var edge in document.ChildrenOf(rid))
-            {
-                var childPath = CombinePath(pathLabel, edge.Label);
-                if (edge.IsEmpty)
-                    paths.Add((document.FileId, SerializeReferenceGraphEditor.ToSerializedPropertyPath(childPath)));
-                else
-                    WalkForEmptySlots(document, edge.Rid, childPath, visited, paths);
-            }
-
-            visited.Remove(rid);
         }
     }
 }
