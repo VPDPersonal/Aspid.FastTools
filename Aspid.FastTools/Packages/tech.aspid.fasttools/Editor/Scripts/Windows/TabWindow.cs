@@ -28,7 +28,7 @@ namespace Aspid.FastTools.Editors
 
         private const string WindowStyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
-        private const string WindowIconPath = "Icons/aspid_icon_window_tab_green_1022x1011";
+        private const string WindowIconPath = "Icons/aspid_icon_window_tab_green_64x64";
 
         private static readonly Vector2 _minWindowSize = new(480f, 360f);
 

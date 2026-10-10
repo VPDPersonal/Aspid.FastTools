@@ -31,8 +31,9 @@ owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` 
 
 ## Rules
 
-- `[UxmlElement(libraryPath = "Aspid/FastTools")] internal sealed partial class`; a parameterless constructor for
-  UXML; all constructors chain to `(…, Aspid<Name>Preset preset)`.
+- `[UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)] internal sealed partial class`
+  (hidden, so the element does not show in the UI Builder Library of a consumer project); a parameterless constructor
+  for UXML; all constructors chain to `(…, Aspid<Name>Preset preset)`.
 - Load only the component's own sheet: `this.AddStyleSheetFromResources(StyleSheetPath)`. The palette and
   `.aspid-fasttools-background*` come from the host root's `AddAspidThemeStyleSheets()`; only standalone roots
   (`AspidWindowFooter`, `InspectorNotice`) call it themselves. A themed background = `.AddClass(AspidStyles.BackgroundStyle)
