@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Aspid.FastTools.Types.Editors;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -12,7 +11,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // The file-format sniff and the scanners that rely on it: a binary asset or an LFS pointer is skipped without being
     // parsed, even when its bytes happen to contain text that looks like managed-reference entries.
     [TestFixture]
-    internal sealed class SerializeReferenceYamlFileFormatTests
+    internal sealed partial class SerializeReferenceYamlFileFormatTests
     {
         private const string LfsPointer =
             "version https://git-lfs.github.com/spec/v1\n" +
@@ -73,18 +72,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(0, missing.Count);
         }
 
-        [Test]
-        public void FindUnsetRequiredFields_NotTextYaml_IsSkipped()
-        {
-            var path = Write(StripPreamble(YamlFixtures.RequiredSceneUnset));
-            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(path, guid =>
-                guid == YamlFixtures.RequiredSceneScriptGuid
-                    ? TypeSelectorRequiredGate.GetRequiredFields(typeof(RequiredTestObject))
-                    : Array.Empty<RequiredFieldDescriptor>());
-
-            Assert.AreEqual(0, violations.Count);
-        }
-
         // The gate's Scan sniffs each file once and passes knownTextYaml, so the scanner must not sniff again: the same
         // preamble-less body is parsed instead of skipped.
         [Test]
@@ -98,41 +85,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void FindUnsetRequiredFields_KnownTextYaml_SkipsSniff()
-        {
-            var path = Write(StripPreamble(YamlFixtures.RequiredSceneUnset));
-            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(path, guid =>
-                guid == YamlFixtures.RequiredSceneScriptGuid
-                    ? TypeSelectorRequiredGate.GetRequiredFields(typeof(RequiredTestObject))
-                    : Array.Empty<RequiredFieldDescriptor>(), knownTextYaml: true);
-
-            Assert.AreNotEqual(0, violations.Count);
-        }
-
-        [Test]
-        public void GraphScannerBuild_NotTextYaml_IsSkipped()
-        {
-            var path = Write(StripPreamble(YamlFixtures.MissingTypePrefab));
-            Assert.AreEqual(0, SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false).Count);
-        }
-
-        [Test]
         public void FindPrefabOverrideReferences_NotTextYaml_IsSkipped()
         {
             var path = Write(StripPreamble(SerializeReferenceYamlPrefabOverrideTests.VariantPrefab));
             Assert.AreEqual(0, SerializeReferenceYamlEditor.FindPrefabOverrideReferences(path).Count);
-        }
-
-        // The usage index and both delete-guard sweeps read through CollectUsages: its RefIds pass (the prefab) and
-        // its override pass (the variant) share one read, which skips the preamble-less body before either runs.
-        [TestCase(false)]
-        [TestCase(true)]
-        public void CollectUsages_NotTextYaml_IsSkipped(bool variant)
-        {
-            var yaml = variant ? SerializeReferenceYamlPrefabOverrideTests.VariantPrefab : YamlFixtures.MissingTypePrefab;
-
-            Assert.IsNotEmpty(SerializeReferenceTypeUsageIndex.CollectUsages(Write(yaml), guid: null).ToList());
-            Assert.IsEmpty(SerializeReferenceTypeUsageIndex.CollectUsages(Write(StripPreamble(yaml)), guid: null).ToList());
         }
 
         private static string StripPreamble(string yaml) =>
