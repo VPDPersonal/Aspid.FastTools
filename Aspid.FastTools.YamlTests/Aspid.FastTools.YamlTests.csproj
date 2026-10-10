@@ -1,33 +1,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <!-- Runs the SerializeReference YAML engine's NUnit tests outside Unity. The engine and its tests are compiled from
-         the package sources as-is; Stubs/ stands in for the two Unity APIs the engine calls (Debug.LogError,
-         AssetDatabase.MakeEditable). -->
+    <!-- Runs the SerializeReference YAML engine's NUnit tests outside Unity. The tests are compiled from the package
+         sources as-is against the engine in Engine/, an assembly of its own as in Unity; Stubs/ reproduces the Test
+         Runner's failure on an unexpected error log. -->
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <!-- The C# version of Unity 6000.0, so a newer language feature fails here as it would in Unity. -->
         <LangVersion>9.0</LangVersion>
         <Nullable>disable</Nullable>
         <IsPackable>false</IsPackable>
+        <!-- The name of the Unity test assembly, which the engine's InternalsVisibleTo lets in. -->
+        <AssemblyName>Aspid.FastTools.Editor.SerializeReferences.Tests</AssemblyName>
         <RootNamespace>Aspid.FastTools.SerializeReferences.Editors.Tests</RootNamespace>
+        <!-- Engine/ is a project of its own. -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);Engine/**</DefaultItemExcludes>
     </PropertyGroup>
 
     <PropertyGroup>
-        <_Package>$(MSBuildThisFileDirectory)../Aspid.FastTools/Packages/tech.aspid.fasttools/</_Package>
-        <_YamlSources>$(_Package)Editor/Scripts/SerializeReferences/Yaml/</_YamlSources>
-        <_YamlTests>$(_Package)Tests/Editor/SerializeReferences/Yaml/</_YamlTests>
+        <_YamlTests>$(MSBuildThisFileDirectory)../Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/SerializeReferences/Yaml/</_YamlTests>
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- The invalidator hooks the AssetDatabase and is the only file that needs UnityEditor. -->
-        <Compile Include="$(_YamlSources)*.cs"
-                 Exclude="$(_YamlSources)SerializeReferenceYamlProbeCacheInvalidator.cs"
-                 Link="Yaml/%(Filename)%(Extension)" />
-        <!-- These need UnityEditor or the Test Framework (the graph scanner, the type usage index, the required gate,
-             AssetDatabase, LogAssert); the Unity job runs them. -->
+        <!-- A *.Unity.cs part holds the tests of its fixture that need UnityEditor, the Test Framework or other package
+             assemblies (the graph scanner, the type usage index, the required gate, AssetDatabase, LogAssert); the
+             Unity job runs them. -->
         <Compile Include="$(_YamlTests)*.cs"
-                 Exclude="$(_YamlTests)SerializeReferenceYamlNestedEntryTests.cs;$(_YamlTests)SerializeReferenceYamlNegativeAnchorTests.cs;$(_YamlTests)SerializeReferenceYamlEditorWriteTests.cs;$(_YamlTests)SerializeReferenceYamlFileFormatTests.cs;$(_YamlTests)SerializeReferenceYamlPrefabOverrideTests.cs"
+                 Exclude="$(_YamlTests)*.Unity.cs"
                  Link="Tests/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="Engine/Aspid.FastTools.YamlEngine.csproj" />
     </ItemGroup>
 
     <ItemGroup>
