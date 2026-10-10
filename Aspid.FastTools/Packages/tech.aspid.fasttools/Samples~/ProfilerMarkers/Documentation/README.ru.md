@@ -8,6 +8,6 @@
 2. Откройте `Scenes/ProfilerMarkers.unity` и **Window → Analysis → Profiler**, войдите в Play Mode и выберите кадр в модуле CPU.
 3. В режиме **Hierarchy** разверните `PlayerLoop` до строки `Flock.Update (74)` — она лежит под строкой Unity `Flock.Update() [Invoke]`.
 
-Нужен встроенный модуль Unity **Physics** — без него скрипты примера не компилируются.
+Нужен встроенный модуль Unity **Physics**: без него скрипты примера пропускаются, а сцена показывает Missing Script.
 
 Полное руководство — что попробовать в примере и куда смотреть в его коде — на сайте: [пример ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/profiler-markers).

@@ -40,7 +40,7 @@ Do every step without questions. Stop at the first failure and report it.
 5. Run `scripts/set-version.sh <version>`. Keep the "channel changed" line if the script prints it.
 6. Start two `unity-verify` agents in the background, with EditMode tests and no filter:
    - a project from `scripts/make-unity-test-project.sh <scratchpad>/unity-min <minimum>`, where `<minimum>` is the
-     `minimum` entry of `.github/workflows/tests.yml`;
+     first version of the `unity` matrix in `.github/workflows/ci.yml`;
    - the dev project `Aspid.FastTools/` of this checkout.
 
    The `unity-verify` agent is user-level. Without it, run the batch command from the header of
@@ -50,11 +50,12 @@ Do every step without questions. Stop at the first failure and report it.
    installed 6000.0.x as `<minimum>`. Write that version in the report. The `minimum` job of CI covers `<minimum>`.
    No 6000.0.x Editor is installed → skip the minimum project. Write that in the report. The `minimum` job of CI
    covers it.
-7. Run the checks that the release runs:
-   - from `.github/workflows/tests.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
-     `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` in the repository root;
-   - from the `preflight` job of `.github/workflows/release.yml`: the two Release builds of the step
-     "Verify committed Roslyn DLLs match sources", then its `git diff`.
+7. Run the .NET checks of `.github/workflows/ci.yml`. The release PR runs the other `ci.yml` checks:
+   - the `dotnet-tests` jobs: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
+     `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` and
+     `dotnet test Aspid.FastTools.TypeTests --nologo` in the repository root;
+   - the `roslyn-dlls` job: the two Release builds of the step
+     "Rebuild both DLLs in Release", then the `git diff` of the next step.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.
 9. Run `npm --prefix Website run check-readme`.
 10. Find the old version in prose:
@@ -119,17 +120,20 @@ Do every step without questions. Stop at the first failure and report it.
 
 Read the failed step: `gh run view <id> --log-failed`. Then:
 
-- **The infrastructure failed.** Examples: the Unity process was killed (exit code 137), a runner was lost, a download
-  timed out. The log shows no error in the repository, and "Publish release tag and UPM subtree" did not run.
-  1. Run `gh run rerun <id> --failed`. Keep the tag.
-  2. Go to "Phase 2" step 9.
-  3. The same step fails again → use the next case.
-- **A step before "Publish release tag and UPM subtree" failed.** Only the `v<version>` tag is out.
-  1. Report the cause. A fix goes to `main` in a separate PR.
-  2. After the fix, ask before you delete the tag: `git push origin :refs/tags/v<version>`, `git tag -d v<version>`.
-  3. Go to "Phase 2" step 3 with the merge commit of the fix PR.
-- **Only "Create GitHub release" failed.** The tags and the channel branch are out.
-  1. Ask, then create the release by hand. The command is in the comment above that step in `release.yml`.
+- **The job `Preflight`, a `CI / …` job or `release` failed.** Only the `v<version>` tag is out: the push of the tags is atomic.
+  1. Report the cause.
+  2. A transient cause (network, Unity license): ask, then run `gh run rerun <id> --failed`.
+     It keeps the finished jobs. Go to "Phase 3" when the run ends.
+  3. Preflight says the commit is not in `main`: there is nothing to fix in `main`. The tag is on the wrong commit.
+     Merge that commit into `main` with a PR. Then go to step 5 with the merge commit.
+  4. Any other cause: the fix goes to `main` in a separate PR.
+  5. After the fix, ask before you delete the tag: `git push origin :refs/tags/v<version>`, `git tag -d v<version>`.
+  6. Go to "Phase 2" step 3 with the merge commit of that PR.
+- **Only the job `GitHub release` failed.** The tags and the channel branch are out.
+  1. Run `gh run rerun <id> --failed`. It runs only that job. Go to "Phase 3" when the run ends.
+     Do not rerun the whole run: preflight would refuse the UPM tag that the first run already published.
+  2. It fails again → ask, then create the release by hand.
+     The command is in the comment above the job in `release.yml`.
 
 ## Asset Store upload
 
@@ -146,7 +150,7 @@ The upload is manual and belongs to a **Stable** release. The user signs in and 
   Validator open in the dev project for a look. Never upload from the dev project: see "Editor". The upload project
   needs the same symbol, and its build target must stay Standalone: on Android or iOS the entry disappears without a
   message.
-- **Editor: 6000.0.53f1**, the minimum of `package.json` and `tests.yml`. Asset Store Tools sends the Editor version
+- **Editor: 6000.0.53f1**, the minimum of `package.json` and of the `ci.yml` matrix. Asset Store Tools sends the Editor version
   with every request, and the store can record it as the minimum Unity version. An upload from the dev project (6000.4)
   can list buyers on 6000.0–6000.3 as unsupported. Do not open the dev project in 6000.0.53f1: it is a 6000.4
   project, and the downgrade rewrites its files.
