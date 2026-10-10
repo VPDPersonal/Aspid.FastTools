@@ -7,7 +7,8 @@ description: "Aspid.FastTools chainable UI Toolkit extensions (namespace Aspid.F
 
 `using Aspid.FastTools.UIElements;` (editor helpers: also `using Aspid.FastTools.UIElements.Editors;`). If the user's
 scripts have an `.asmdef`, reference `Aspid.FastTools` (editor code: also `Aspid.FastTools.Editor`; `Unity.Mathematics`
-overloads: `Aspid.FastTools.VisualElements.Math`, enabled automatically when `com.unity.mathematics` is installed).
+overloads: `Aspid.FastTools.VisualElements.Math`, enabled automatically when `com.unity.mathematics` is installed
+or on Unity 6000.5+, where the types ship in the engine).
 
 Before using a method you have not seen in this file, confirm its exact name, parameters and receiver constraint in
 the installed package source. Do not guess. The package is `Packages/tech.aspid.fasttools` (embedded or local) or
