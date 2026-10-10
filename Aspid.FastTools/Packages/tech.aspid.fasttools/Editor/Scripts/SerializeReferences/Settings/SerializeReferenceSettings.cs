@@ -101,11 +101,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Builds the new list from the file on disk. A caller that reads ExcludedFolders first and assigns later would
-        // write back the list from before a pull, which drops the folders the pull added.
+        // write back the list from before a pull, which drops the folders the pull added. The change is applied again
+        // after the checkout, which may bring a newer revision.
         public static void UpdateExcludedFolders(Func<string[], string[]> change)
         {
             ReloadShared();
-            ExcludedFolders = change(ExcludedFolders);
+            if (FoldersEqual(ExcludedFolders, change(ExcludedFolders)) || !PrepareSharedWrite()) return;
+
+            var next = change(ExcludedFolders) ?? Array.Empty<string>();
+            if (FoldersEqual(ExcludedFolders, next)) return;
+
+            SerializeReferenceSharedSettings.instance.ExcludedFolders = next;
+            Changed?.Invoke();
+            ExcludedFoldersChanged?.Invoke();
         }
 
         public static void ResetSharedToDefaults()
