@@ -17,6 +17,7 @@
 .aspid-fasttools-welcome__logo {
     width: 100px;
     height: 100px;
+    cursor: link;
     flex-shrink: 1;
     margin-right: 15px;
 }

@@ -21,9 +21,7 @@ namespace Aspid.FastTools.Editors
         private const float ToastCursorOffset = 16f;
 
         private const string PackageName = "tech.aspid.fasttools";
-        private const string PackageRootPath = "Assets/Aspid/FastTools";
 
-        private const string SamplesPath = PackageRootPath + "/Samples";
         private const string AssetStoreUrl = "https://assetstore.unity.com/packages/slug/365584";
         private const string GitHubUrl = "https://github.com/VPDPersonal/Aspid.FastTools";
         private const string DocumentationUrl = "https://vpdpersonal.github.io/Aspid.FastTools/";
@@ -187,7 +185,7 @@ namespace Aspid.FastTools.Editors
             {
                 var package = PackageInfo.FindForPackageName(PackageName);
                 if (package is not null) AddUpmSamples(package);
-                else if (AssetDatabase.IsValidFolder(SamplesPath)) AddLocalSamples();
+                else AddLocalSamples();
             });
         }
 
@@ -313,7 +311,13 @@ namespace Aspid.FastTools.Editors
 
         private void AddLocalSamples()
         {
-            foreach (var subfolder in AssetDatabase.GetSubFolders(SamplesPath))
+            var packagePath = AspidPackage.RootPath;
+            if (string.IsNullOrEmpty(packagePath)) return;
+
+            var samplesPath = packagePath + "/Samples";
+            if (!AssetDatabase.IsValidFolder(samplesPath)) return;
+
+            foreach (var subfolder in AssetDatabase.GetSubFolders(samplesPath))
             {
                 var fileName = Path.GetFileName(subfolder);
                 if (string.IsNullOrEmpty(fileName)) continue;
