@@ -1,5 +1,6 @@
 # Weekly, one grouped PR per ecosystem, titled `chore(deps): …` so it passes the PR title check.
 # NuGet is left out on purpose: Roslyn versions in the generator/analyzer projects are pinned to what Unity ships.
+# Actions are pinned by full commit SHA with a `# vX.Y.Z` comment; Dependabot moves both. Pin a new action the same way.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -13,6 +14,10 @@ updates:
       actions:
         patterns: ['*']
 
+  # "overrides" in Website/package.json force patched tinypool, serialize-javascript, postcss-selector-parser
+  # and uuid (under sockjs). Remove an override once Docusaurus itself requires a patched range.
+  # This site does not run the tinypool code (future.faster.ssgWorkerThreads) or the sockjs one: those two
+  # overrides only clear audit alerts. Test tinypool 2 before enabling ssgWorkerThreads.
   - package-ecosystem: npm
     directory: /Website
     schedule:

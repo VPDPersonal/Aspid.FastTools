@@ -86,6 +86,91 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
+        public void EmptyWrapper_IsEmpty_AndNotMissing()
+        {
+            var wrapper = new SerializableType(null);
+
+            Assert.IsTrue(wrapper.IsEmpty);
+            Assert.IsFalse(wrapper.IsMissing);
+            Assert.IsTrue(new SerializableType<Exception>(null).IsEmpty);
+        }
+
+        [Test]
+        public void ResolvedWrapper_IsNeitherEmptyNorMissing()
+        {
+            var wrapper = new SerializableType(typeof(Exception));
+
+            Assert.IsFalse(wrapper.IsEmpty);
+            Assert.IsFalse(wrapper.IsMissing);
+            Assert.IsNotNull(wrapper.Type);
+        }
+
+        [Test]
+        public void UnresolvedName_IsMissing_AndNotEmpty()
+        {
+            var holder = ScriptableObject.CreateInstance<Holder>();
+            try
+            {
+                LoadName(holder, $"Missing.Type, {MissingAssembly}");
+
+                Assert.IsTrue(holder.wrapper.IsMissing);
+                Assert.IsFalse(holder.wrapper.IsEmpty);
+                Assert.IsNull(holder.wrapper.Type);
+                Assert.AreEqual($"Missing.Type, {MissingAssembly}", holder.wrapper.AssemblyQualifiedName);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void BlankName_IsEmpty_AndNotMissing()
+        {
+            var holder = ScriptableObject.CreateInstance<Holder>();
+            try
+            {
+                LoadName(holder, "  ");
+
+                Assert.IsTrue(holder.wrapper.IsEmpty);
+                Assert.IsFalse(holder.wrapper.IsMissing);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void State_FollowsTheStoredName_WhenItChanges()
+        {
+            var holder = ScriptableObject.CreateInstance<Holder>();
+            try
+            {
+                LoadName(holder, $"Missing.Type, {MissingAssembly}");
+                Assert.IsTrue(holder.wrapper.IsMissing, "Precondition: the name is unresolved and cached.");
+
+                LoadName(holder, typeof(Exception).AssemblyQualifiedName);
+                Assert.IsFalse(holder.wrapper.IsMissing);
+                Assert.IsFalse(holder.wrapper.IsEmpty);
+
+                LoadName(holder, string.Empty);
+                Assert.IsTrue(holder.wrapper.IsEmpty);
+                Assert.IsFalse(holder.wrapper.IsMissing);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void UnsetField_IsNotNull_ButIsEmpty()
+        {
+            var holder = ScriptableObject.CreateInstance<Holder>();
+            try
+            {
+                // Unity creates the wrapper when it serializes the object, never earlier.
+                new UnityEditor.SerializedObject(holder).Update();
+
+                Assert.IsFalse(holder.wrapper == null, "Once Unity has serialized the object it fills the field, so a null check does not see it empty.");
+                Assert.IsTrue(holder.wrapper.IsEmpty);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
         public void Constructor_StoresTheTypeAndItsAssemblyQualifiedName()
         {
             var wrapper = new SerializableType(typeof(Exception));

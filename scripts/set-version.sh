@@ -1,9 +1,9 @@
 #!/bin/sh
 # Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text,
-# release link and install URLs in both README translations (Website/docs, Website/i18n/ru), the install URL in the
-# package README. The root README is regenerated from the English one; on a
-# stable version the unshipped analyzer rules move to AnalyzerReleases.Shipped.md. The [Unreleased] notes of
-# CHANGELOG.md and CHANGELOG.ru.md become the version's section, dated today, with its release link.
+# release link and install URLs in both README translations (Website/docs, Website/i18n/ru). The root README is
+# regenerated from the English one; on a stable version the unshipped analyzer rules move to
+# AnalyzerReleases.Shipped.md. The [Unreleased] notes of CHANGELOG.md and CHANGELOG.ru.md become the version's
+# section, dated today, with its release link.
 # The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
 # from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one.
 # Running it again with the version already set repairs files that drifted (a hand-edited package.json, say).
@@ -45,8 +45,6 @@ for f in "$DOCS/README.md" "$RU_DOCS/README.md"; do
     s/the latest (?:preview|release);/the $ENV{EN};/;
     s/на последнюю (?:preview-)?версию;/на $ENV{RU};/' "$f"
 done
-# The package README carries only the install URL.
-perl -pi -e 's/\.git#upm(?:-preview)?\b/.git#$ENV{BRANCH}/g' "$PKG/README.md"
 # The badge is as wide as its version text: an estimated 13px glyph width per character, plus 14px of padding,
 # which keeps 1.0.0-rc.8 at the original 162.
 perl -0pi -e 'my ($old) = /aria-label="(?:Preview|Release) ([^"]+)"/; '"$WHOLE"';

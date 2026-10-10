@@ -11,6 +11,8 @@
 1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **Types**.
 2. Откройте `Scenes/Types.unity` и войдите в Play Mode: каждые шесть секунд по кругу появляются восемь врагов, каждый четвёртый — <code lang="class-name">ArmoredGrunt</code>, и идут к центру.
 
+Коллайдеры сцены требуют встроенного модуля Unity **Physics**; скрипты примера компилируются и без него.
+
 ## Попробуйте
 
 Выйдите из Play Mode и выберите **Enemy Spawner**.
