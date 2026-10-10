@@ -755,11 +755,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var fieldType = GetFieldType(property);
             var pickerFilter = BuildAssignableFilter(baseTypes);
 
+            // A Fix retypes every field on the rid, so the suggestion must fit the types of all of them.
             var ranked = SerializeReferenceRepairSuggestions.GetCached(assetPath, fileId, referenceId,
                 () => SerializeReferenceRepairSuggestions.Rank(
                     storedType,
                     GetMissingFieldNames(property, assetPath, fileId, referenceId, inMemory),
-                    fieldType));
+                    AppendAliasFieldTypes(new[] { fieldType }, FindMissingReferenceAliases(property, referenceId))));
 
             foreach (var candidate in ranked)
             {
@@ -923,6 +924,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null)
         {
             var fieldType = GetFieldType(property);
+            if (TryGetMissingReferenceId(property, out var referenceId))
+                baseTypes = AppendAliasFieldTypes(baseTypes, FindMissingReferenceAliases(property, referenceId));
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
@@ -970,7 +973,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
-                repaired = SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
+                // The rewrite retypes the shared entry itself, so a field that cannot hold the type would load empty.
+                repaired = FitsAliases(FindMissingReferenceAliases(property, referenceId), newType) &&
+                           SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
                 // ForceUpdate invalidates the live SerializedObject, so the property must not be touched afterwards.
                 if (repaired) AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             }
@@ -1088,7 +1093,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // An asset has no scene or prefab save to wait for, so its entry is cleared at once and the fix has no Undo.
         public static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
         {
-            var target = property.serializedObject.targetObject;
+            var serializedObject = property.serializedObject;
+            var target = serializedObject.targetObject;
+
+            // Every field on the missing rid takes the new instance: the save that drops the replaced entry would
+            // write a field left on it as empty.
+            var aliases = FindMissingReferenceAliases(property, referenceId);
+            if (!FitsAliases(aliases, newType)) return false;
+
             var instance = CreateInstance(newType);
             if (instance is null) return false;
 
@@ -1099,9 +1111,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 break;
             }
 
-            property.SetManagedReferenceAndApply(instance);
+            property.managedReferenceValue = instance;
+            foreach (var alias in aliases)
+                serializedObject.FindProperty(alias.Path).managedReferenceValue = instance;
+
+            serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(target);
-            property.serializedObject.Update();
+            serializedObject.Update();
 
             var scene = GetOwningScene(target);
             if (!scene.IsValid())
@@ -1120,6 +1136,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             EditorSceneManager.MarkSceneDirty(scene);
 
             return true;
+        }
+
+        // Unity reports a field on a missing type as empty, so the other fields on the same rid are found in the
+        // document. Empty when the object has no readable document.
+        private static List<(string Path, Type FieldType)> FindMissingReferenceAliases(SerializedProperty property, long referenceId)
+        {
+            var aliases = new List<(string Path, Type FieldType)>();
+            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _)) return aliases;
+
+            var selfPath = property.propertyPath;
+            TraverseManagedReferences(property.serializedObject, other =>
+            {
+                if (other.managedReferenceValue is null && other.propertyPath != selfPath &&
+                    SerializeReferenceYamlEditor.TryReadReferenceId(assetPath, fileId, other.propertyPath, out var rid) &&
+                    rid == referenceId)
+                {
+                    aliases.Add((other.propertyPath, GetFieldType(other)));
+                }
+
+                return false;
+            });
+
+            return aliases;
+        }
+
+        private static bool FitsAliases(List<(string Path, Type FieldType)> aliases, Type type)
+        {
+            foreach (var alias in aliases)
+            {
+                if (alias.FieldType.IsAssignableFrom(type)) continue;
+
+                Debug.LogWarning($"Fix Missing Type: '{type.FullName}' does not fit '{alias.Path}', which shares the missing reference.");
+                return false;
+            }
+
+            return true;
+        }
+
+        // A Fix retypes every field on the missing rid, so the picker narrows to the types of all of them.
+        private static Type[] AppendAliasFieldTypes(Type[] baseTypes, List<(string Path, Type FieldType)> aliases)
+        {
+            if (aliases.Count == 0) return baseTypes;
+
+            var types = baseTypes is null ? new List<Type>() : new List<Type>(baseTypes);
+            foreach (var alias in aliases)
+                types.Add(alias.FieldType);
+
+            return types.ToArray();
         }
 
         // The in-memory counterpart of the YAML clear, used when a file rewrite would be clobbered by the open copy
@@ -1253,63 +1317,59 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // overwritten onto the instance. Nested mappings and sequences stay at the new type's defaults.
         private static void RecoverManagedReferenceData(string serializedData, object instance)
         {
-            if (string.IsNullOrEmpty(serializedData)) return;
+            var type = instance.GetType();
+            var scalars = SerializeReferenceYamlEditor.ReadPayloadScalarsAsJson(serializedData, key => IsStringField(type, key));
+            if (scalars.Count == 0) return;
 
+            if (TryOverwriteFromJson(scalars, instance)) return;
+
+            // JsonUtility rejects the whole object for one bad value, so each scalar gets its own try.
+            foreach (var scalar in scalars)
+                TryOverwriteFromJson(scalars: new[] { scalar }, instance);
+        }
+
+        private static bool TryOverwriteFromJson(IEnumerable<KeyValuePair<string, string>> scalars, object instance)
+        {
             try
             {
-                var json = new StringBuilder("{");
-                var first = true;
-
-                foreach (var raw in serializedData.Split('\n'))
-                {
-                    var line = raw.TrimEnd('\r');
-                    if (line.Length == 0 || char.IsWhiteSpace(line[0]) || line[0] == '-') continue;
-
-                    var separator = line.IndexOf(':');
-                    if (separator <= 0) continue;
-
-                    var key = line[..separator].Trim();
-                    var value = line[(separator + 1)..].Trim();
-
-                    // An empty value is a mapping or array header, and a flow value is not a flat scalar.
-                    if (key.Length == 0 || value.Length == 0 || value[0] is '{' or '[') continue;
-
-                    if (!first) json.Append(',');
-                    first = false;
-
-                    json.Append('"').Append(key).Append("\":");
-                    json.Append(IsJsonNumber(value) ? value : Quote(UnquoteYaml(value)));
-                }
-
-                json.Append('}');
-                if (!first) JsonUtility.FromJsonOverwrite(json.ToString(), instance);
+                JsonUtility.FromJsonOverwrite(SerializeReferenceYamlEditor.BuildJsonObject(scalars), instance);
+                return true;
             }
             catch (Exception)
             {
-                // Best effort: an unparseable payload simply leaves the new instance at its defaults.
+                // Best effort: a value the new type cannot take leaves its field at the default.
+                return false;
             }
         }
 
-        private static bool IsJsonNumber(string value) => Regex.IsMatch(value, @"^-?\d+(\.\d+)?$");
+        // A payload scalar carries no type, and JsonUtility writes a number into a string field as 1.500000.
+        private static bool IsStringField(Type type, string name)
+        {
+            const BindingFlags flags =
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
-        private static string UnquoteYaml(string value) =>
-            value.Length >= 2 && value[0] == '\'' && value[^1] == '\''
-                ? value[1..^1].Replace("''", "'")
-                : value;
+            for (var current = type; current is not null && current != typeof(object); current = current.BaseType)
+            {
+                if (current.GetField(name, flags) is { } field)
+                    return field.FieldType == typeof(string);
+            }
 
-        private static string Quote(string value) =>
-            $"\"{value.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+            return false;
+        }
         #endregion
 
         #region Constraint map
         // Combine declared live field types with YAML IDs; missing parents and orphaned entries remain unconstrained.
-        public static Dictionary<(long fileId, long rid), Type> BuildConstraintMap(string assetPath)
+        // A rid that fields of different types share must fit each of them, so it maps to all of their types.
+        public static Dictionary<(long fileId, long rid), Type[]> BuildConstraintMap(string assetPath)
         {
-            var map = new Dictionary<(long, long), Type>();
+            var map = new Dictionary<(long, long), Type[]>();
             if (string.IsNullOrEmpty(assetPath)) return map;
 
             // Scenes cannot be read through LoadAllAssetsAtPath, so an unconstrained picker is the fallback.
             if (IsScene(assetPath)) return map;
+
+            var fieldTypes = new Dictionary<(long, long), List<Type>>();
 
             // A cyclic graph would loop the walk forever. Cleared per document, since rids are document-scoped.
             var visited = new HashSet<long>();
@@ -1343,11 +1403,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var fieldType = GetFieldType(iterator);
                     if (fieldType is null || fieldType == typeof(object)) continue;
 
-                    map[(fileId, rid)] = fieldType;
+                    AddConstraint(fieldTypes, (fileId, rid), fieldType);
                 }
             }
 
+            foreach (var pair in fieldTypes)
+                map.Add(pair.Key, pair.Value.ToArray());
+
             return map;
+        }
+
+        // A type that another field type already implies adds nothing, so only the narrowest types are kept.
+        private static void AddConstraint(Dictionary<(long, long), List<Type>> fieldTypes, (long, long) key, Type fieldType)
+        {
+            if (!fieldTypes.TryGetValue(key, out var types))
+            {
+                fieldTypes.Add(key, new List<Type> { fieldType });
+                return;
+            }
+
+            if (types.Exists(type => fieldType.IsAssignableFrom(type))) return;
+
+            types.RemoveAll(type => type.IsAssignableFrom(fieldType));
+            types.Add(fieldType);
+        }
+
+        // True when the type fits every constraint. Null constraints leave it unconstrained.
+        public static bool FitsConstraints(Type type, Type[] constraints)
+        {
+            if (constraints is null) return true;
+
+            foreach (var constraint in constraints)
+            {
+                if (constraint is not null && !constraint.IsAssignableFrom(type))
+                    return false;
+            }
+
+            return true;
         }
         #endregion
 
