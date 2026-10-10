@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEditor.Compilation;
@@ -11,29 +12,86 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeUtility
     {
+        // Most passes SweepDomainTypes makes, so a steady stream of assembly loads cannot loop it forever.
+        internal const int MaxDomainSweeps = 8;
+
+        // Counts assembly loads. A cache built at an older count can miss a type that exists now.
+        private static int _assemblyLoads;
+
+        private static int _domainTypesLoads;
+        private static int _resolvedTypesLoads;
         private static IReadOnlyList<Type> _domainTypes;
         private static Dictionary<string, bool> _compiledAssemblies;
+        private static readonly Dictionary<string, Type> _resolvedTypes = new(StringComparer.Ordinal);
         private static readonly Dictionary<Assembly, bool> _editorOnlyAssemblies = new();
 
         static TypeUtility()
         {
-            AppDomain.CurrentDomain.AssemblyLoad += (_, _) => _domainTypes = null;
+            AppDomain.CurrentDomain.AssemblyLoad += (_, _) => Interlocked.Increment(ref _assemblyLoads);
         }
 
-        internal static IReadOnlyList<Type> DomainTypes => _domainTypes ??= EnumerateDomainTypes().ToArray();
+        internal static IReadOnlyList<Type> DomainTypes
+        {
+            get
+            {
+                if (_domainTypes is not null && _domainTypesLoads == Volatile.Read(ref _assemblyLoads))
+                    return _domainTypes;
 
+                _domainTypes = SweepDomainTypes(AppDomain.CurrentDomain.GetAssemblies, out _domainTypesLoads);
+                return _domainTypes;
+            }
+        }
+
+        // Walking the types can load another assembly, and the walk then misses its types. The walk repeats until a
+        // pass loads nothing; a repeat pass reads only the assemblies that no pass read yet. loads is the count the
+        // last pass started at, so a walk cut off by the cap is redone later.
+        internal static Type[] SweepDomainTypes(Func<Assembly[]> getAssemblies, out int loads)
+        {
+            var sweeps = 0;
+            var types = new List<Type>();
+            var swept = new HashSet<Assembly>();
+
+            do
+            {
+                loads = Volatile.Read(ref _assemblyLoads);
+
+                foreach (var assembly in getAssemblies())
+                    if (swept.Add(assembly)) types.AddRange(GetAssemblyTypes(assembly));
+            }
+            while (loads != Volatile.Read(ref _assemblyLoads) && ++sweeps < MaxDomainSweeps);
+
+            return types.ToArray();
+        }
+
+        // IMGUI asks for the same stored name several times per field on every event. Each name is resolved once, a
+        // missing type too; an assembly load can change the answer, so it drops the results.
         internal static Type GetTypeOrNull(string assemblyQualifiedName)
         {
             if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) return null;
 
+            var loads = Volatile.Read(ref _assemblyLoads);
+
+            if (_resolvedTypesLoads != loads)
+            {
+                _resolvedTypes.Clear();
+                _resolvedTypesLoads = loads;
+            }
+
+            if (_resolvedTypes.TryGetValue(assemblyQualifiedName, out var cached)) return cached;
+
+            Type type;
+
             try
             {
-                return Type.GetType(assemblyQualifiedName, throwOnError: false);
+                type = Type.GetType(assemblyQualifiedName, throwOnError: false);
             }
             catch (Exception)
             {
-                return null;
+                type = null;
             }
+
+            _resolvedTypes[assemblyQualifiedName] = type;
+            return type;
         }
 
         // Whether a player build leaves the assembly out, so a type from it cannot be resolved there. Assemblies Unity
@@ -83,23 +141,15 @@ namespace Aspid.FastTools.Types.Editors
             return $"{baseName}<{arguments}>";
         }
 
-        internal static IEnumerable<Type> EnumerateDomainTypes()
+        private static Type[] GetAssemblyTypes(Assembly assembly)
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            try
             {
-                Type[] types;
-
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException exception)
-                {
-                    types = exception.Types.Where(type => type is not null).ToArray();
-                }
-
-                foreach (var type in types)
-                    yield return type;
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException exception)
+            {
+                return exception.Types.Where(type => type is not null).ToArray();
             }
         }
     }
