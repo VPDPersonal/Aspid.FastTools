@@ -7,5 +7,8 @@ namespace Aspid.FastTools.Tests
     public sealed class InMemoryRepairTestObject : ScriptableObject
     {
         [SerializeReference] public object value;
+
+        // A field that can share a reference with value.
+        [SerializeReference] public IInMemoryRepairShape shape;
     }
 }
