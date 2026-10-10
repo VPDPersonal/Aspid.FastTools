@@ -132,9 +132,9 @@ jobs:
           fi
 
   # Compiles the package, its tests, its Math assembly and all samples in a throwaway project and runs the EditMode
-  # tests: on the minimum Unity that package.json promises, on each line the code branches on
-  # (UNITY_6000_2/3/4_OR_NEWER), and on the newest line, which removes APIs first. Each version needs a GameCI image
-  # (unityci/editor); move `latest` to a new Unity line when it ships.
+  # tests on every Unity 6000.x line: the minimum that package.json promises, then one patch of each later line.
+  # A line without a row is not tested: Unity changes APIs and behaviour without a define (see #319 and #325).
+  # Each version needs a GameCI image (unityci/editor). Add a row and move `latest` when a new Unity line ships.
   # The tests include PlayerCompilationTests, which compiles every script for a standalone player: the Editor compile
   # alone accepts a UnityEditor call in Runtime/ that breaks the user's player build. The job is part of the required
   # "Unity" check below.
@@ -154,12 +154,16 @@ jobs:
         include:
           - name: minimum
             unity: 6000.0.53f1
+          - name: '6000.1'
+            unity: 6000.1.17f1
           - name: '6000.2'
             unity: 6000.2.15f1
           - name: '6000.3'
             unity: 6000.3.25f1
           - name: dev project
             unity: project
+          - name: '6000.5'
+            unity: 6000.5.11f1
           - name: latest
             unity: 6000.6.4f1
             # 6000.6.4f1 is often SIGKILLed (exit 137) in its first assembly reload from a restored Library;
