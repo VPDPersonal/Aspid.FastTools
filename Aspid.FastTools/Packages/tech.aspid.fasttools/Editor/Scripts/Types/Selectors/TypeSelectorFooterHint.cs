@@ -5,6 +5,9 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeSelectorFooterHint
     {
+        // One line without wrapping: the longest hint, for a type row on a sub-page, must fit the footer of a picker
+        // at TypeSelectorWindow.MinWidth, or the ellipsis cuts the keys at its end. So the arrows, which everyone
+        // knows, stay out, and the favorite key is spelled by its star.
         internal static string Build(
             bool searchFocused,
             TreeNode selected,
@@ -14,7 +17,7 @@ namespace Aspid.FastTools.Types.Editors
             bool canNavigateBack,
             bool hasParentPage)
         {
-            var parts = new List<string> { "↑↓ Navigate" };
+            var parts = new List<string>();
 
             if (!searchFocused && selected is { IsSectionTitle: true })
                 parts.Add(isSelectedSectionCollapsed ? "→ Expand" : "← Collapse");
@@ -26,8 +29,8 @@ namespace Aspid.FastTools.Types.Editors
             if (!searchFocused && selected is { IsType: true })
             {
                 parts.Add(TypeSelectorPreferences.IsFavorite(selected.AssemblyQualifiedName)
-                    ? TypeSelectorHelpers.StarFilled + " Space Unfavorite"
-                    : TypeSelectorHelpers.StarEmpty + " Space Favorite");
+                    ? "Space " + TypeSelectorHelpers.StarFilled
+                    : "Space " + TypeSelectorHelpers.StarEmpty);
             }
 
             if (isSearching)
