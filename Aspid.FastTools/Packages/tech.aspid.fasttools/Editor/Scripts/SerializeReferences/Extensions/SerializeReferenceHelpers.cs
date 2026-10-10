@@ -1309,11 +1309,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else
             {
                 // The rewrite retypes the shared entry itself, so a field that cannot hold the type would load empty.
-                repaired = FitsAliases(FindMissingReferenceAliases(property, referenceId), newType) &&
+                var fits = FitsAliases(FindMissingReferenceAliases(property, referenceId), newType);
+                repaired = fits &&
                            SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
                 // ForceUpdate invalidates the live SerializedObject, so the property must not be touched afterwards.
                 if (repaired) AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
-                else if (savesFirst && retryAfterSave) RetryFixAfterSave(property, newType);
+                // A type that does not fit fails the same way after the save, so only a failed rewrite is retried.
+                else if (fits && savesFirst && retryAfterSave) RetryFixAfterSave(property, newType);
             }
 
             // An IMGUI repaint can land in the same frame as this click, so the frame-keyed memos must go too.
