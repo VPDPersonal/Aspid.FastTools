@@ -62,8 +62,8 @@ public static class ProfilerMarkerExtensionsForGenerator
     private static DiagnosticResult Suspended(int location, string keyword) =>
         VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerScopeSuspendedRule).WithLocation(location).WithArguments(keyword);
 
-    private static DiagnosticResult NotConstant(int location) =>
-        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerNameNotConstantRule).WithLocation(location);
+    private static DiagnosticResult NotConstant(int location, string reason = "this name is known only at run time") =>
+        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerNameNotConstantRule).WithLocation(location).WithArguments(reason);
 
     [Fact]
     public Task PublicType_NoDiagnostic() => Verify(@"
@@ -287,8 +287,11 @@ class Foo
     void Hole(int i) { using var _ = this.Marker().WithName({|#2:$""X{i}""|}); }
     void Aligned() { using var _ = this.Marker().WithName({|#3:$""{nameof(Aligned),8}""|}); }
     void Null() { using var _ = this.Marker().WithName({|#4:null|}); }
+    const string Missing = null;
+    void NullConst() { using var _ = this.Marker().WithName({|#5:Missing|}); }
 }",
-        NotConstant(0), NotConstant(1), NotConstant(2), NotConstant(3), NotConstant(4));
+        NotConstant(0), NotConstant(1), NotConstant(2), NotConstant(3),
+        NotConstant(4, "this name is null"), NotConstant(5, "this name is null"));
 
     [Fact]
     public Task DiscardedScopeOfUnsupportedCall_ReportsOnlyUnsupported() => Verify(@"

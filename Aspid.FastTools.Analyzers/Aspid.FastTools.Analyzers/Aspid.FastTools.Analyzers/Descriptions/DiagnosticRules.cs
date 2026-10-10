@@ -146,7 +146,7 @@ public static class DiagnosticRules
     public static readonly Descriptor ProfilerMarkerNameNotConstantRule = new(
         id: "AFT0014",
         title: "WithName() name is not a compile-time constant",
-        messageFormat: "WithName() is read at compile time, but this name is known only at run time, so the marker keeps the member name — pass a string literal, a const or nameof(...)",
+        messageFormat: "WithName() is read at compile time, but {0}, so the marker keeps the member name — pass a string literal, a const or nameof(...)",
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true,

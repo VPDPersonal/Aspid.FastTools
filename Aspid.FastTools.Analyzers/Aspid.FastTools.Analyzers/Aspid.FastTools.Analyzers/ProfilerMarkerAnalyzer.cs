@@ -73,7 +73,14 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
 
         if (MarkerCallRules.FindWithNameArgument(invocation, model, ct) is { } nameArgument
             && MarkerCallRules.GetConstantName(nameArgument, model, ct) is null)
-            context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerNameNotConstantRule, nameArgument.GetLocation()));
+        {
+            // A null literal or a const that holds null is a constant too, but it names nothing.
+            var nameIssue = model.GetConstantValue(nameArgument, ct) is { HasValue: true, Value: null }
+                ? "this name is null"
+                : "this name is known only at run time";
+
+            context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerNameNotConstantRule, nameArgument.GetLocation(), nameIssue));
+        }
 
         var scope = WithNameChain(invocation);
         if (IsDiscarded(scope, model, context))
@@ -157,7 +164,8 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
     }
 
     // The statements a using of the scope covers: the body of `using (scope)` or `using (var s = scope)`,
-    // or the rest of the block after `using var s = scope;`. Empty when no using disposes the scope.
+    // or the rest of the block after `using var s = scope;` (C# allows no using declaration directly in a switch
+    // section, CS8647). Empty when no using disposes the scope.
     private static IEnumerable<StatementSyntax> GetUsingRegion(SyntaxNode scope)
     {
         var outer = scope;
