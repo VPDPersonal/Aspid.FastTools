@@ -15,10 +15,11 @@ namespace Aspid.FastTools.Editors
     internal sealed class WelcomeView : VisualElement
     {
         private const string UssClassPrefix = "aspid-fasttools-welcome__";
-        // The template and the style sheet share a name: each load asks for its own type. A .unitypackage update
-        // replaces a file only at its old path, so a renamed template would stay next to the old one.
+        // The template keeps its path: a .unitypackage update replaces a file only there, so a renamed template would
+        // stay next to the old one. The style sheet needs a name of its own, since the template's inline sheet answers
+        // a StyleSheet load of the template's name.
         private const string UxmlResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
-        private const string StyleSheetResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
+        private const string StyleSheetResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome-Style";
 
         private const long ToastVisibleDurationMs = 2500;
         private const float ToastEdgeMargin = 8f;
@@ -278,8 +279,8 @@ namespace Aspid.FastTools.Editors
 
             return EditorUtility.DisplayDialog(
                 $"Update “{displayName}”",
-                "This replaces the copy from an older package version with the current one, " +
-                $"discarding any local changes to the old copy:\n{list}\n\nContinue?",
+                "This replaces the copies from other package versions with the current one, " +
+                $"discarding any local changes to them:\n{list}\n\nContinue?",
                 "Update",
                 "Cancel");
         }
