@@ -177,8 +177,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (shown == entries.Count) return;
 
-            // A click leaves the keyboard focus alone. Enter on the row moves it to the first row the page adds, so
-            // the next arrow key continues from there instead of from the Scan button.
+            // Enter on the row moves the keyboard focus to the first row the page adds, so the next arrow key continues
+            // from there. A click rebuilds the rows without restoring a focused row, so the next arrow key starts again
+            // from the Scan button.
             void ShowMore(bool focusFirstNewRow)
             {
                 _shownRows[key] = SerializeReferenceProjectSummary.GetNextShownRows(shown);
