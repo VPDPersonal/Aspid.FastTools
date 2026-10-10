@@ -63,12 +63,13 @@ public sealed class Armory : MonoBehaviour
   else `.Type` is `null` in the build. Same for `[TypeSelector]` strings.
 - Create in code: `new SerializableType<Weapon>(typeof(Sword))` (throws `ArgumentException` if not assignable;
   `null` = empty). `SerializableMonoScript` has no public constructor.
-- `SerializableMonoScript` accepts only top-level non-generic classes in a file of the same name; the user can drag
-  the `.cs` file onto the field. Only it follows renames (in the editor it falls back to the script's class until the
-  asset is re-saved): for `SerializableType` and strings a renamed class or namespace makes `.Type` return `null`.
-  The Inspector then shows **Missing type** with **Fix**. **Project References → Scan Project**, the build / CI gate
-  (`MissingTypeName` rows) and breakage detection find such wrapper names project-wide; `[TypeSelector]` strings are
-  checked only in the Inspector.
+- `SerializableMonoScript` accepts only top-level non-generic classes: one in a file of the same name, or a
+  `MonoBehaviour` / `ScriptableObject` class from a DLL. The user can drag the `.cs` file onto the field. Only it
+  follows renames of a script class (in the editor it falls back to the script's class until the asset is re-saved);
+  renaming a DLL class or its namespace breaks the link. For `SerializableType` and strings a renamed class or
+  namespace makes `.Type` return `null`. The Inspector then shows **Missing type** with **Fix**.
+  **Project References → Scan Project**, the build / CI gate (`MissingTypeName` rows) and breakage detection find such
+  wrapper names project-wide; `[TypeSelector]` strings are checked only in the Inspector.
 - Declare the generic variant on the field: Unity serializes by the declared type, so a `SerializableType` field
   loses `T`.
 
@@ -94,7 +95,7 @@ public sealed class Armory : MonoBehaviour
   `[MovedFrom(true, sourceNamespace: "Old.Ns", sourceAssembly: "OldAsm", sourceClassName: "OldName")]`
   (`UnityEngine.Scripting.APIUpdating`; pass only what changed), then **Tools → Aspid 🐍 → FastTools → Project
   References → Scan Project → Migrate all**; keep the attribute until every asset is migrated. Already missing types:
-  **Fix all** in that window, or **Fix** / **Smart Fix** in the Inspector. See
+  **Fix all** in that window, or **Fix** and the suggestion button (**→ TypeName**) in the Inspector. See
   [SerializeReference repair](https://vpdpersonal.github.io/Aspid.FastTools/docs/serialize-reference-tooling#migrations-with-movedfrom).
 
 ## [TypeSelectorDisplay]
