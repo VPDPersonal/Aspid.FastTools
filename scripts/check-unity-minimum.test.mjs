@@ -41,7 +41,7 @@ function check(t, changes = {}) {
 test('files that all name the minimum of package.json pass', (t) => {
   const result = check(t);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /minimum Unity 6000\.0\.53f1 is the same in 5 files/);
+  assert.match(result.stdout, /minimum Unity 6000\.0\.53f1 is the same in 6 files/);
 });
 
 test('a file that names another minimum is reported', (t) => {
