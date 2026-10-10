@@ -44,17 +44,17 @@ namespace Aspid.FastTools.Types.Editors
 
                 if (member is not null)
                 {
-                    var count = types.Count;
-                    if (IsSuitableMember(member))
-                        AddTypesFromMember(targetObject, member, types);
-                    var isAdded = types.Count > count;
-
-                    if (!isAdded && !IsSuitableMember(member))
+                    if (!IsSuitableMember(member))
                     {
                         (warnings ??= new List<string>()).Add(
                             $"Member '{name}' cannot supply base types — it must be an instance field or property " +
                             "of type Type, Type[], string, string[], SerializableType or SerializableMonoScript (plain or <T>); " +
                             "properties must be readable and cannot be indexers.");
+                    }
+                    else if (!TryAddTypesFromMember(targetObject, member, types, out var failure))
+                    {
+                        (warnings ??= new List<string>()).Add(
+                            $"Member '{name}' threw {failure.GetType().Name} while supplying base types: {failure.Message}");
                     }
 
                     continue;
@@ -93,6 +93,25 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             return null;
+        }
+
+        // A member getter is user code: when it throws, the picker draws without this constraint and a warning explains why.
+        private static bool TryAddTypesFromMember(object targetObject, MemberInfo member, List<Type> types, out Exception failure)
+        {
+            var count = types.Count;
+
+            try
+            {
+                AddTypesFromMember(targetObject, member, types);
+                failure = null;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                types.RemoveRange(index: count, count: types.Count - count);
+                failure = exception is TargetInvocationException { InnerException: { } inner } ? inner : exception;
+                return false;
+            }
         }
 
         private static void AddTypesFromMember(object targetObject, MemberInfo member, List<Type> types)
