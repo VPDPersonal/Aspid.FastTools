@@ -43,7 +43,7 @@
 - сохранённые `.prefab`, `.asset` и `.unity` под `Assets/`, кроме **Excluded scan folders**;
 - <code lang="csharp">[SerializeReference]</code> и имена в полях <code lang="class-name">SerializableType</code> и <code lang="class-name">SerializableMonoScript</code>; строки с <code lang="csharp">[TypeSelector]</code> не проверяются;
 - ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) потерянными не считаются;
-- двоичные ассеты и нескачанные файлы Git LFS не проверяются, CI перечисляет их в отчёте; для полного сканирования включите **Asset Serialization → Mode → Force Text** и скачайте файлы LFS.
+- двоичные ассеты и нескачанные файлы Git LFS не проверяются: Scan Project и проверка сборки предупреждают о них в Console, CI перечисляет их в отчёте; для полного сканирования включите **Asset Serialization → Mode → Force Text** и скачайте файлы LFS.
 
 **Excluded scan folders** исключает папки из Project References, проверки сборки, CI и обнаружения новых поломок.
 

@@ -55,6 +55,8 @@ Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset Refere
 | Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Pistol** — apply the suggested class; the tooltip gives the reason |
 | Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
 
+The **Fix all**, **Reassign all** and **Migrate all** labels show the number of entries in the group, for example **Fix all (4) ▼** and **Migrate all (4) → Crossbow**.
+
 Every action asks for **Rewrite**. `<None>` in the class picker clears the group's references and deletes their data, fields sharing the same `rid` included; it asks for **Clear** and has no Undo. In open and unsaved files it clears the references in memory, until you save.
 
 ### What repair preserves
@@ -128,7 +130,7 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 |---|---|
 | Open scenes, Prefab Mode, unsaved and locked files | Fix all, Smart Fix and Migrate all skip them: save and close the file, or use [Fix in the Inspector](#fix-in-the-inspector) with its data-transfer limitations |
 | Scenes and fields under a missing parent reference | Asset References changes only missing types |
-| Binary assets and unfetched Git LFS files | Not scanned: use **Force Text** and fetch LFS files |
+| Binary assets and unfetched Git LFS files | Not scanned: Scan Project counts them and the Console lists them, Asset References shows **Not scanned**; use **Force Text** and fetch LFS files |
 
 ## Package sample
 

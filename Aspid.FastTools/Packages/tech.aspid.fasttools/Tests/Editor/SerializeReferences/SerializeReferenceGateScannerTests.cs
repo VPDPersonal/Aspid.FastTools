@@ -21,6 +21,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         private const string ProbeAssetPath = "Assets/__AspidGateScannerRequiredProbe__.asset";
         private const string EngineAssetPath = "Assets/__AspidGateScannerEngineProbe__.asset";
+        private const string UnreadProbePath = "Assets/__AspidGateScannerUnreadProbe__.prefab";
         private const string ExcludedFolderPath = "Assets/__AspidGateScannerExcluded__";
         private const string ExcludedProbePath = ExcludedFolderPath + "/Probe.asset";
         private const string SharedSettingsPath = "ProjectSettings/SerializeReferenceSharedSettings.asset";
@@ -337,6 +338,95 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 AssetDatabase.DeleteAsset(EngineAssetPath);
             }
         }
+
+        // The Project References window counts the files DescribeUnscanned names, so a binary engine asset under Force
+        // Text does not turn its summary into a warning.
+        [Test]
+        public void CountReportableUnscanned_CountsWhatDescribeUnscannedNames()
+        {
+            try
+            {
+                AssetDatabase.CreateAsset(new Mesh(), EngineAssetPath);
+
+                var unscanned = new[]
+                {
+                    (EngineAssetPath, AssetFileFormat.Binary),
+                    ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Binary),
+                    ("Assets/Weapons/Rifle.prefab", AssetFileFormat.LfsPointer),
+                };
+
+                Assert.AreEqual(2, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.ForceText));
+                Assert.AreEqual(3, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.Mixed));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(EngineAssetPath);
+            }
+        }
+
+        [Test]
+        public void CountReportableUnscanned_Nothing_IsZero() =>
+            Assert.AreEqual(0, SerializeReferenceGateScanner.CountReportableUnscanned(
+                Array.Empty<(string, AssetFileFormat)>(), SerializationMode.ForceBinary));
+
+        // Asset References reads one picked asset: a binary prefab or an LFS pointer is not a prefab without references.
+        [TestCase("version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n", AssetFileFormat.LfsPointer)]
+        [TestCase("\u0001\u0002binary", AssetFileFormat.Binary)]
+        public void TryGetUnreadFormat_FileThatIsNotTextYaml_ReturnsItsFormat(string content, AssetFileFormat expected)
+        {
+            try
+            {
+                File.WriteAllText(UnreadProbePath, content);
+
+                Assert.IsTrue(SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out var format));
+                Assert.AreEqual(expected, format);
+            }
+            finally
+            {
+                File.Delete(UnreadProbePath);
+            }
+        }
+
+        [Test]
+        public void TryGetUnreadFormat_TextYaml_IsReadable()
+        {
+            try
+            {
+                File.WriteAllText(UnreadProbePath, "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n");
+
+                Assert.IsFalse(SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out _));
+            }
+            finally
+            {
+                File.Delete(UnreadProbePath);
+            }
+        }
+
+        [Test]
+        public void TryGetUnreadFormat_MissingFile_IsNotUnread() =>
+            Assert.IsFalse(SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out _));
+
+        [Test]
+        public void TryGetUnreadFormat_ExtensionTheScansNeverRead_IsNotUnread()
+        {
+            const string path = "Assets/__AspidGateScannerUnreadProbe__.bytes";
+
+            try
+            {
+                File.WriteAllText(path, "\u0001\u0002binary");
+
+                Assert.IsFalse(SerializeReferenceGateScanner.TryGetUnreadFormat(path, SerializationMode.ForceText, out _));
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        [TestCase(AssetFileFormat.LfsPointer, "Git LFS pointer")]
+        [TestCase(AssetFileFormat.Binary, "Force Text")]
+        public void BuildUnreadAssetMessage_NamesTheCauseAndTheWayOut(AssetFileFormat format, string expected) =>
+            StringAssert.Contains(expected, SerializeReferenceGraphSummary.BuildUnreadAssetMessage(format));
 
         [Test]
         public void DescribeUnscanned_Nothing_IsSilent() =>
