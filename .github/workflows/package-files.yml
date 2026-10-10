@@ -12,6 +12,8 @@ on:
     paths:
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/**'
       - 'Aspid.FastTools/Assets/DevTests/**'
+      - 'scripts/check-package-files.mjs'
+      - '.github/workflows/package-files.yml'
 
 jobs:
   files:
