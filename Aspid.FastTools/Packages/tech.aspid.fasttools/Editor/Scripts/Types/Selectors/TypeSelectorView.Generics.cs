@@ -1,40 +1,52 @@
 using System;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
     internal sealed partial class TypeSelectorView
     {
-        private void BeginResolveGeneric(Type openDefinition, Type primaryFieldType, Type[] validationFieldTypes, Action<Type> onClosed)
+        private void BeginResolveGeneric(Type openDefinition, Type[] validationFieldTypes, Func<Type, string> validate,
+            Action<Type> onClosed)
         {
             // Inference bypasses the argument pages, so the closed type must also satisfy every narrowing
-            // constraint.
-            if (GenericTypeResolver.TryInferFromFieldType(primaryFieldType, openDefinition, out var inferred, _inferredArgumentFilter) &&
-                GenericTypeResolver.IsAssignableToFieldTypes(inferred, validationFieldTypes))
+            // constraint and the page's own check. A narrowing type can pin arguments the field type leaves open.
+            foreach (var fieldType in validationFieldTypes)
             {
+                if (!GenericTypeResolver.TryInferFromFieldType(fieldType, openDefinition, out var inferred, _inferredArgumentFilter)) continue;
+                if (!GenericTypeResolver.IsAssignableToFieldTypes(inferred, validationFieldTypes)) continue;
+                if (validate?.Invoke(inferred) is not null) continue;
+
                 onClosed(inferred);
                 return;
             }
 
-            PickParam(openDefinition, validationFieldTypes, Array.Empty<Type>(), _pages.Count, onClosed);
+            PickParam(openDefinition, validationFieldTypes, validate, Array.Empty<Type>(), _pages.Count, onClosed);
         }
 
-        private void PickParam(Type openDefinition, Type[] validationFieldTypes, Type[] argsSoFar, int startDepth, Action<Type> onClosed)
+        private void PickParam(Type openDefinition, Type[] validationFieldTypes, Func<Type, string> validate,
+            Type[] argsSoFar, int startDepth, Action<Type> onClosed)
         {
             var parameters = openDefinition.GetGenericArguments();
 
             if (argsSoFar.Length == parameters.Length)
             {
-                if (GenericTypeResolver.TryConstruct(openDefinition, argsSoFar, validationFieldTypes, out var closed, out var error))
-                {
-                    PopToDepth(startDepth);
-                    onClosed(closed);
-                }
-                else
+                if (!GenericTypeResolver.TryConstruct(openDefinition, argsSoFar, validationFieldTypes, out var closed, out var error))
                 {
                     ShowError(error);
+                    return;
                 }
 
+                // Checked before the pages close, so a rejected type leaves the user where the last argument was picked.
+                var rejection = validate?.Invoke(closed);
+                if (rejection is not null)
+                {
+                    ShowError(rejection);
+                    return;
+                }
+
+                PopToDepth(startDepth);
+                onClosed(closed);
                 return;
             }
 
@@ -42,7 +54,7 @@ namespace Aspid.FastTools.Types.Editors
             var parameter = parameters[index];
 
             var page = BuildParamPage(openDefinition, argsSoFar, index, parameter, picked =>
-                PickParam(openDefinition, validationFieldTypes, Append(argsSoFar, picked), startDepth, onClosed));
+                PickParam(openDefinition, validationFieldTypes, validate, Append(argsSoFar, picked), startDepth, onClosed));
 
             PushPage(page);
         }
@@ -55,7 +67,15 @@ namespace Aspid.FastTools.Types.Editors
             // Open definitions are offered as arguments too, so generics can nest; picking one resolves its own
             // arguments first. Every constraint base type goes in, not just the collapsed one, so a multi-constraint
             // parameter narrows the nested definitions up front instead of offering ones that fail every later pick.
-            var nested = GenericTypeResolver.GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter);
+            // The argument filter cannot judge an open definition, so here it meets only the special constraints and
+            // the definition filter; Validate checks the type it closes to.
+            var nested = GenericTypeResolver
+                .GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter, includeValueTypes: true)
+                .Where(candidate => candidate.IsGenericTypeDefinition
+                    ? GenericTypeResolver.SatisfiesSpecialConstraints(parameter, candidate)
+                      && (_genericDefinitionFilter?.Invoke(candidate) ?? true)
+                    : Filter(candidate));
+
             var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, (Func<Type, bool>)Filter, nested,
                 includeNoneOption: false, includeHidden: _includeHidden, excludeEditorOnly: _excludeEditorOnly);
 
@@ -65,6 +85,9 @@ namespace Aspid.FastTools.Types.Editors
                 TitlePrefix = $"{FormatBuilding(openDefinition, argsSoFar, index)}  ▸  {parameter.Name}",
                 ConstraintType = constraintType,
                 OnPicked = onPicked,
+                Validate = closed => Filter(closed)
+                    ? null
+                    : $"{TypeSelectorHelpers.GetTypeSelectorTitle(closed)} is not allowed as {parameter.Name}.",
                 IsBase = false,
             };
 
@@ -149,6 +172,10 @@ namespace Aspid.FastTools.Types.Editors
             public string TitlePrefix;
             public Type ConstraintType;
             public Action<Type> OnPicked;
+
+            // Why a generic closed from this page's list cannot be picked, or null when it can.
+            public Func<Type, string> Validate;
+
             public bool IsBase;
         }
     }
