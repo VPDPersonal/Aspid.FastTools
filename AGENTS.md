@@ -17,9 +17,12 @@ Agent Skills for projects that consume the package in `skills/`.
 - A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
   `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run.
 - `Aspid.FastTools.YamlTests/` runs the package's SerializeReference YAML engine and its tests outside Unity: it compiles
-  those package sources as-is (C# 9, Unity 6000.0's version) and stubs only `Debug.LogError` and
-  `AssetDatabase.MakeEditable`, so a Unity API or a newer language feature added to that engine breaks this project
-  first; tests that need the Editor are excluded in its csproj and run in the Unity job.
+  those package sources as-is (C# 9, Unity 6000.0's version; the engine against .NET Standard 2.1) and stubs only
+  `Debug.LogError` and `AssetDatabase.MakeEditable`, so a Unity API, a newer language feature or a newer .NET API added
+  to that engine breaks this project first. `Aspid.FastTools.TypeTests/` compiles `GenericTypeResolver`,
+  `GenericArgumentFilter` and `TypeUtility` with the resolver tests in the same way. It stubs only `UnityEngine.Object`
+  and `CompilationPipeline.GetAssemblies`, so a new Unity API in these three files breaks it. A test that needs the
+  Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
   READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
   which the release workflow checks (`scripts/check-version.mjs`). The version also picks the channel, and the script
@@ -27,12 +30,17 @@ Agent Skills for projects that consume the package in `skills/`.
   Release one; the site derives `UPM_BRANCH` from the version. `/asp-ft-release <version>` runs the whole release.
 - `skills/` is for **consumers** of the package and is installed with `npx skills add VPDPersonal/Aspid.FastTools`;
   skills for working on this repo live in `.claude/skills/` and carry `metadata.internal: true` so that command does
-  not offer them; `scripts/check-skills.mjs` (CI) checks both. A skill that describes public API is updated in the same PR
-  as that API.
+  not offer them. `scripts/check-skills.mjs` (CI, on every PR) checks every `SKILL.md` in the repository: a file outside
+  `skills/` must be internal, because the installer scans about 30 agent folders, an `AFT` code in a skill must be
+  reported by an analyzer, and a namespace or assembly in a consumer skill must exist in the package. A skill that
+  describes public API is updated in the same PR as that API.
 - `scripts/check-package-files.mjs` (CI) fails on a package path longer than 123 characters (the Asset Store Validator
   limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, and
   on a `.uss.meta` with importer id 12388. Unity writes the full block into every new `.cs.meta`, and a reserialize adds
   it to old ones, so the check keeps all of them in one format. Unity rewrites id 12388 to 12385 when it imports a sample.
+- `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
+  environment. Allow there only commands that cannot run code or read the environment; put the rest in
+  `.claude/settings.local.json`.
 
 ## C# style beyond `.editorconfig`
 

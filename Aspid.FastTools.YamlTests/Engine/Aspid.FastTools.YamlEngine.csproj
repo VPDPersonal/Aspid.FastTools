@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- The SerializeReference YAML engine as its own assembly, as its asmdef makes it in Unity. It is compiled from the
+         package sources as-is against .NET Standard 2.1, which Unity's Mono profile provides in full, so a call that
+         only a newer .NET has fails here and not first in the Unity job. Stubs/ stands in for the two Unity APIs the
+         engine calls (Debug.LogError, AssetDatabase.MakeEditable). -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <!-- The C# version of Unity 6000.0, so a newer language feature fails here as it would in Unity. -->
+        <LangVersion>9.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <IsPackable>false</IsPackable>
+        <AssemblyName>Aspid.FastTools.Editor.SerializeReferences.Yaml</AssemblyName>
+        <RootNamespace>Aspid.FastTools.SerializeReferences.Editors</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <_YamlSources>$(MSBuildThisFileDirectory)../../Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/Scripts/SerializeReferences/Yaml/</_YamlSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The invalidator hooks the AssetDatabase and is the only file that needs UnityEditor. -->
+        <Compile Include="$(_YamlSources)*.cs"
+                 Exclude="$(_YamlSources)SerializeReferenceYamlProbeCacheInvalidator.cs"
+                 Link="Yaml/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+</Project>

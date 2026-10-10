@@ -4,6 +4,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # A maintainer starts it on a branch of this repository, for a commit whose PR cannot run the Unity tests itself
+  # (a fork or Dependabot PR has no Unity secrets). Here the Unity tests always run and are not skipped.
+  workflow_dispatch:
   # release.yml runs every test on the commit it publishes; there the Unity tests may not be skipped.
   workflow_call:
     inputs:
@@ -27,6 +30,7 @@ jobs:
   dotnet-tests:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -35,15 +39,28 @@ jobs:
             path: Aspid.FastTools.Generators
           - name: Analyzers
             path: Aspid.FastTools.Analyzers
-          # The SerializeReference YAML engine and its NUnit tests, compiled from the package sources without Unity.
+          # The SerializeReference YAML engine (on .NET Standard 2.1) and its NUnit tests, compiled from the package
+          # sources without Unity.
           - name: YAML engine
             path: Aspid.FastTools.YamlTests
+          # GenericTypeResolver (on .NET Standard 2.1) and its NUnit tests, compiled from the package sources without
+          # Unity.
+          - name: Generic type resolver
+            path: Aspid.FastTools.TypeTests
     steps:
-      - uses: actions/checkout@v7
+      # Only what the solutions read: docs/ and Website/ hold most of the repository's size.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools.Generators
+            Aspid.FastTools.Analyzers
+            Aspid.FastTools.YamlTests
+            Aspid.FastTools.TypeTests
+            Aspid.FastTools/Packages/tech.aspid.fasttools
 
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
-      - uses: actions/setup-dotnet@v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
           dotnet-version: 6.0.x
@@ -52,14 +69,19 @@ jobs:
         run: dotnet test "${{ matrix.path }}" --nologo
 
   # Runs the Unity tests only for a change that can affect them and only with a license to run them.
-  # Secrets are unavailable to fork PRs and until the owner adds them; the Unity tests are then skipped, not failed,
-  # except under require-unity.
+  # The required "Unity" check must not be green when a change that reaches the Unity tests was not run through them:
+  # a PR without the secrets (a fork PR, or a Dependabot PR, which reads its own secret store), a release (require-unity)
+  # and a manual run fail the plan instead of skipping. A maintainer then reads the change and runs this workflow with
+  # workflow_dispatch on a branch of this repository; for Dependabot PRs the owner can also add UNITY_EMAIL and
+  # UNITY_PASSWORD as Dependabot secrets. The failed PR check stays red after a manual run: the maintainer merges with
+  # the bypass of the Main ruleset. Only a push without the secrets (a fork's own push) skips with a notice.
   # Secrets: UNITY_EMAIL and UNITY_PASSWORD of a Unity account with a Personal license; GameCI activates a seat with
   # them in each job. Do not add the .ulf from Unity Hub (UNITY_LICENSE): it is bound to the Hub machine, and on
   # 6000.0.53f1 GameCI keeps retrying it instead of falling back to the account.
   unity-plan:
     name: Unity plan
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read
@@ -96,8 +118,11 @@ jobs:
             echo "No change reaches the Unity tests; they are skipped."
             echo "run=false" >> "$GITHUB_OUTPUT"
           elif [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
-            if [ "$REQUIRE_UNITY" = true ]; then
+            if [ "$REQUIRE_UNITY" = true ] || [ "$EVENT" = workflow_dispatch ]; then
               echo "::error::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests must run here."
+              exit 1
+            elif [ "$EVENT" = pull_request ]; then
+              echo "::error::The Unity EditMode tests must run for this change, but this run has no Unity secrets (a fork or Dependabot PR). A maintainer must run them after reading the change, because the Unity Editor executes its code with the Unity account secrets: push this commit to a branch of this repository and start the Tests workflow on that branch (Actions > Tests > Run workflow). If this check stays red after a green manual run, merge with the bypass of the Main ruleset."
               exit 1
             fi
             echo "::notice::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests are skipped."
@@ -106,15 +131,20 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-  # Compiles the package, its tests and all samples in a throwaway project and runs the EditMode tests: on the
-  # minimum Unity that package.json promises, on each line the code branches on (UNITY_6000_2/3/4_OR_NEWER),
-  # and on the newest line, which removes APIs first. Each version needs a GameCI image (unityci/editor);
-  # move `latest` to a new Unity line when it ships.
+  # Compiles the package, its tests, its Math assembly and all samples in a throwaway project and runs the EditMode
+  # tests: on the minimum Unity that package.json promises, on each line the code branches on
+  # (UNITY_6000_2/3/4_OR_NEWER), and on the newest line, which removes APIs first. Each version needs a GameCI image
+  # (unityci/editor); move `latest` to a new Unity line when it ships.
+  # The tests include PlayerCompilationTests, which compiles every script for a standalone player: the Editor compile
+  # alone accepts a UnityEditor call in Runtime/ that breaks the user's player build. The job is part of the required
+  # "Unity" check below.
   unity-tests:
     name: Unity EditMode (${{ matrix.name }})
     needs: unity-plan
     if: needs.unity-plan.outputs.run == 'true'
     runs-on: ubuntu-latest
+    # A run takes 3-5 minutes with a restored Library; the rest is room for a cold Library and the image pull.
+    timeout-minutes: 30
     permissions:
       contents: read
       checks: write
@@ -136,7 +166,13 @@ jobs:
             # it passed every run with a fresh Library. Check again when `latest` moves.
             library-cache: false
     steps:
-      - uses: actions/checkout@v7
+      # What the test project reads: the package, the dev project's version file and the script that builds the project.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Aspid.FastTools/ProjectSettings
+            scripts
 
       - name: Create the test project
         id: project
@@ -148,14 +184,14 @@ jobs:
           [ -n "$version" ] || { echo "::error::make-unity-test-project.sh printed no Unity version"; exit 1; }
           echo "unity=$version" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v6
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         if: matrix.library-cache != false
         with:
           path: ci-unity-project/Library
           key: unity-library-${{ steps.project.outputs.unity }}-${{ hashFiles('Aspid.FastTools/Packages/tech.aspid.fasttools/**') }}
           restore-keys: unity-library-${{ steps.project.outputs.unity }}-
 
-      - uses: game-ci/unity-test-runner@v4
+      - uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
         env:
           # The action asks the GitHub API for the latest game-ci CLI release; without a token, the shared runner IP
           # hits the anonymous rate limit (403).
@@ -166,14 +202,17 @@ jobs:
           unityVersion: ${{ steps.project.outputs.unity }}
           projectPath: ci-unity-project
           testMode: editmode
+          # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
+          customParameters: -aspidFastToolsStrictSetup
           artifactsPath: unity-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ steps.project.outputs.unity }})
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: unity-test-results-${{ steps.project.outputs.unity }}
+          # By matrix row, not by version: two rows can resolve to one Unity version, and a second upload of a name fails.
+          name: unity-test-results-${{ matrix.name }}
           path: unity-test-results
 
   # The one Unity check that the main ruleset requires. A skipped matrix job reports no per-version names,
@@ -183,6 +222,7 @@ jobs:
     needs: [unity-plan, unity-tests]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - env:
           PLAN: ${{ needs.unity-plan.result }}
