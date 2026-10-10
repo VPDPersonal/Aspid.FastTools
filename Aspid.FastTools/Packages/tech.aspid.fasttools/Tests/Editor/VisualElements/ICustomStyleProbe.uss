@@ -1,0 +1,16 @@
+/* Custom properties that the TryGetByEnum tests resolve on probe elements. */
+.aspid-fasttools-test-custom-style--upper-case {
+    --aspid-fasttools-test-font-style:                     BOLDANDITALIC;
+}
+
+.aspid-fasttools-test-custom-style--lower-case {
+    --aspid-fasttools-test-font-style:                     italic;
+}
+
+.aspid-fasttools-test-custom-style--unknown {
+    --aspid-fasttools-test-font-style:                     nonsense;
+}
+
+.aspid-fasttools-test-custom-style--other {
+    --aspid-fasttools-test-other:                          bold;
+}
