@@ -37,6 +37,7 @@
 | `--aspid-colors-bg-*` | Блоки, кнопки, подсказки и окно выбора, четыре ступени: `darkness`, `dark`, `light`, `lightness` |
 | `--aspid-colors-text-*` | Текст, от самого яркого `lightness` до самого тусклого `darkness` |
 | `--aspid-colors-shade-*` | Рамки и разделительные линии, те же четыре ступени |
+| `--aspid-colors-control-border` | Рамки полей ввода и дорожка ползунка на страницах настроек |
 | `--aspid-colors-overlay-*`, `--aspid-colors-slider-handle` | Заливки при наведении, заливки элементов управления, полосы прокрутки, ползунки |
 | `--aspid-colors-status-success-*`, `-warning-*`, `-error-*`, `-info-*` | Фоны статусов, тексты (`-text-`), рамки (`-shade-`), подкраски (`-tint`) и точки (`-blob`) |
 | `--aspid-colors-switch-accent`, `-track-border`, `-handle`, `-handle-shadow` | Переключатели. По умолчанию не заданы, поэтому переключатели следуют теме редактора |

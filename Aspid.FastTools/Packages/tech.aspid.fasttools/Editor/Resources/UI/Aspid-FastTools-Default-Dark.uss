@@ -32,6 +32,7 @@
     --aspid-colors-overlay-scrollbar:               rgba(255, 255, 255, 0.12);
     --aspid-colors-overlay-scrollbar-hover:         rgba(255, 255, 255, 0.28);
     --aspid-colors-slider-handle:                   rgba(189, 189, 196, 0.85);
+    --aspid-colors-control-border:                  rgb(110, 110, 110);
 
     --aspid-colors-status-success-darkness:         rgb(8, 40, 20);
     --aspid-colors-status-success-dark:             rgb(12, 65, 30);

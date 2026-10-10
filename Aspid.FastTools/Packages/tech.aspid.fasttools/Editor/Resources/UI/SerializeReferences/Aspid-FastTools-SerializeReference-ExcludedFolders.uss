@@ -2,13 +2,16 @@
     margin-bottom:                                        2px;
 }
 
+/* The transparent border reserves the space of the keyboard focus border, so the rows do not shift on focus. */
 .aspid-fasttools-excluded-folders__header {
 
     margin-left:                                          9px;
     flex-direction:                                       row;
     align-items:                                          center;
     min-height:                                           26px;
-    padding:                                              2px 4px 2px 8px;
+    padding:                                              1px 3px 1px 7px;
+    border-width:                                         1px;
+    border-color:                                         rgba(0, 0, 0, 0);
     border-radius:                                        8px;
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
@@ -56,7 +59,9 @@
     flex-direction:                                       row;
     align-items:                                          center;
     min-height:                                           22px;
-    padding:                                              2px 4px 2px 20px;
+    padding:                                              1px 3px 1px 19px;
+    border-width:                                         1px;
+    border-color:                                         rgba(0, 0, 0, 0);
     border-radius:                                        8px;
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
