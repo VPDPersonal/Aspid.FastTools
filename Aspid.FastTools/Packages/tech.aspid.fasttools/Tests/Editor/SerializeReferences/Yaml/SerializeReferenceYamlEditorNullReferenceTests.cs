@@ -19,6 +19,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // occurrence count is the number of sentinels in the file.
         private const string NullSentinelType = "type: {class: , ns: , asm: }";
 
+        private const long MixedIndentFileId = 11400000L;
+        private const long TabIndentedRid = 1001L;
+        private const long SpaceIndentedRid = 1002L;
+
+        // rid 1001 has a tab-indented data line, so nulling it bails after its pointer is already nulled in memory;
+        // rid 1002 is a normal space-indented entry. Built with explicit \t and \n so the indentation is unambiguous.
+        private const string MixedIndentAsset =
+            "%YAML 1.1\n" +
+            "%TAG !u! tag:unity3d.com,2011:\n" +
+            "--- !u!114 &11400000\n" +
+            "MonoBehaviour:\n" +
+            "  m_ObjectHideFlags: 0\n" +
+            "  m_Name: MixedIndentAsset\n" +
+            "  _first:\n" +
+            "    rid: 1001\n" +
+            "  _second:\n" +
+            "    rid: 1002\n" +
+            "  references:\n" +
+            "    version: 2\n" +
+            "    RefIds:\n" +
+            "    - rid: 1001\n" +
+            "      type: {class: GhostFirst, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}\n" +
+            "      data:\n" +
+            "\t\t\t\t\t\t\t\t_damage: 10\n" +
+            "    - rid: 1002\n" +
+            "      type: {class: GhostSecond, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}\n" +
+            "      data:\n" +
+            "        _damage: 20\n";
+
         [Test]
         public void TryNullReference_ListElement_NullsPointer_RemovesEntry_AddsSentinel()
         {
@@ -117,6 +146,92 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 StringAssert.DoesNotContain("GhostPistol", after);
                 Assert.AreEqual(1, CountOccurrences(after, NullSentinelType),
                     "Two nulled aliases still share Unity's single null sentinel.");
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void NullReferences_SeveralEntries_WritesWhatOneNullPerEntryWrites()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.FreezeEffectRid, storedType: default),
+            };
+
+            var path = YamlFixtures.WriteTemp(YamlFixtures.AliasedMissingTypePrefab);
+            var expectedPath = YamlFixtures.WriteTemp(YamlFixtures.AliasedMissingTypePrefab);
+            try
+            {
+                foreach (var entry in entries)
+                    Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(expectedPath, entry.FileId, entry.Rid));
+
+                Assert.AreEqual(entries.Length, SerializeReferenceYamlEditor.NullReferences(path, entries));
+
+                var after = File.ReadAllText(path);
+                Assert.AreEqual(File.ReadAllText(expectedPath), after,
+                    "One write for all entries must give the same file as one write per entry.");
+                Assert.AreEqual(1, CountOccurrences(after, NullSentinelType),
+                    "Every nulled entry shares Unity's single null sentinel.");
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+                YamlFixtures.Delete(expectedPath);
+            }
+        }
+
+        [Test]
+        public void NullReferences_EntryThatBails_KeepsItsPointer_AndTheOthersAreNulled()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(MixedIndentFileId, TabIndentedRid, storedType: default),
+                new MissingReferenceEntry(MixedIndentFileId, SpaceIndentedRid, storedType: default),
+            };
+
+            var path = YamlFixtures.WriteTemp(MixedIndentAsset);
+            try
+            {
+                Assert.AreEqual(1, SerializeReferenceYamlEditor.NullReferences(path, entries),
+                    "The tab-indented entry must bail; the space-indented one must still be nulled.");
+
+                // The bailed entry nulled its pointer before the indent check; that edit must not reach the file.
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, MixedIndentFileId, "_first", out var first));
+                Assert.AreEqual(TabIndentedRid, first, "The pointer of an entry that bailed must stay unchanged.");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, MixedIndentFileId, "_second", out var second));
+                Assert.AreEqual(-2, second);
+
+                var after = File.ReadAllText(path);
+                StringAssert.Contains("GhostFirst", after);
+                StringAssert.DoesNotContain("GhostSecond", after);
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void NullReferences_EveryEntryStale_ReturnsZero_AndLeavesFileUnchanged()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, rid: 987654, storedType: default),
+                new MissingReferenceEntry(fileId: 424242, YamlFixtures.GhostPistolRid, storedType: default),
+            };
+
+            var path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
+            try
+            {
+                var before = File.ReadAllText(path);
+                Assert.AreEqual(0, SerializeReferenceYamlEditor.NullReferences(path, entries));
+                Assert.AreEqual(before, File.ReadAllText(path), "A batch with nothing to null must not write the file.");
             }
             finally
             {
