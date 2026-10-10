@@ -9,4 +9,6 @@ A turret whose weapons and their effects are picked in the Inspector, plus asset
 
 The assets in `Presets/` and `Prefabs/` are broken on purpose. The build check reports them: before a build with **Build / CI gate** on `Fail`, repair them, delete the sample or add its folder to **Excluded scan folders**.
 
+The scene's colliders need Unity's built-in **Physics** module; the sample scripts compile without it.
+
 The full tutorial, with what to try in the sample and where to look in its code, is on the site: [SerializeReferences sample](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references).

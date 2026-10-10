@@ -9,4 +9,6 @@
 
 Ассеты в `Presets/` и `Prefabs/` сломаны нарочно. Проверка сборки их находит: перед сборкой при **Build / CI gate** = `Fail` почините их, удалите пример или добавьте его папку в **Excluded scan folders**.
 
+Коллайдеры сцены требуют встроенного модуля Unity **Physics**; скрипты примера компилируются и без него.
+
 Полное руководство — что попробовать в примере и куда смотреть в его коде — на сайте: [пример SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/serialize-references).

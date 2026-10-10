@@ -94,7 +94,7 @@ the dark theme's colours are bright enough to serve every role and are left alon
 
 - `--venom-accent`: text (links, the picked item) — the mark hue darkened only to 4.5:1 on white;
 - `--venom-canvas-accent`: text on the grey canvas (the sidebar's active item, the TOC) — 4.5:1 there;
-- `--venom-accent-mark`: marks and tints (frame bars, underlines, outlines, focus rings, dots, `--venom-glow*`) — 3:1;
+- `--venom-accent-mark`: marks and tints (frame bars, underlines, outlines, focus rings, dots, `--venom-glow*`) and the underline of article links at rest — 3:1;
 - `--venom-accent-fill` / `-fill-ink`: filled surfaces with text (the primary button, the active install step) —
   the text accent with white ink, except yellow (bright amber with dark ink) and mono (a mid grey).
 
@@ -110,3 +110,9 @@ keys, Enter and Esc. `node --test scripts/*.test.mjs` in `Website/` (`npm test`)
 `src/components/DotRipple` draws the click ripples on the dot background; the number of waves is unlimited, and
 `waves.js` culls, per grid row, the waves whose ring misses it. `node --test scripts/dot-ripple.test.mjs` checks
 that no dot of a ring is dropped.
+
+`DotAmbient` creates its canvases only where dots show: a docs page, and below 997 px only the introduction's banner.
+It follows the root's class, the width and the banner, and runs no frames elsewhere. `DotSpotlight` and `DotRipple`
+create theirs on first use (the first hover, the first click) and keep them, idle, until the page reloads. A page
+loaded without dots (the 404 page, a narrow page without the banner) holds none. The canvases are stacked by `z-index`
+in `custom.css` (-3 glow, -2 spotlight, -1 ripples), not by the order they were created in.
