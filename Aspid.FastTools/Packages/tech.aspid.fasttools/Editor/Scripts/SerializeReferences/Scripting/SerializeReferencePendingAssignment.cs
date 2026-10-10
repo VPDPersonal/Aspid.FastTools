@@ -124,7 +124,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var type = ResolveType(entry.FullTypeName);
             if (type is null) return ApplyOutcome.PendingUnresolved;
 
-            var serializedObject = new SerializedObject(target);
+            using var serializedObject = new SerializedObject(target);
             var property = serializedObject.FindProperty(entry.PropertyPath);
             if (property is null || property.propertyType != SerializedPropertyType.ManagedReference) return ApplyOutcome.Dead;
 
