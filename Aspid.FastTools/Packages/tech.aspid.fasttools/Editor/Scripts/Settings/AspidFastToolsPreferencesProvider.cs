@@ -1,7 +1,6 @@
 using UnityEditor;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.SerializeReferences.Editors;
-using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -35,6 +34,7 @@ namespace Aspid.FastTools.Editors
                 "Override",
                 "Welcome",
                 "Dropdown",
+                "Animated",
             },
         };
 
@@ -75,9 +75,13 @@ namespace Aspid.FastTools.Editors
                 activateHandler = static (_, root) => AspidSettingsUI.BuildAreaProviderPage(
                     root,
                     title: "Appearance",
-                    AspidThemeSettingsUI.BuildControls),
+                    AspidAppearanceSettingsUI.BuildControls),
 
-                keywords = new[] { "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Override" },
+                keywords = new[]
+                {
+                    "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Override",
+                    "Animated", "Animation", "Background",
+                },
             };
 
         [SettingsProvider]

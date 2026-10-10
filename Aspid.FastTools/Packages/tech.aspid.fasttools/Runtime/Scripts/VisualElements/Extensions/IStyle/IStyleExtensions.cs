@@ -564,6 +564,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="IStyle.unityTextAutoSize"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.2 and newer.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="value">The text auto size settings to set.</param>
@@ -869,6 +872,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="IStyle.aspectRatio"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.3 and newer.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="value">The aspect ratio to set.</param>
@@ -889,6 +895,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="IStyle.filter"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.3 and newer.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="value">The filter effects to set.</param>
@@ -953,6 +962,11 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopColor"/>, <see cref="IStyle.borderRightColor"/>,
         /// <see cref="IStyle.borderBottomColor"/> and <see cref="IStyle.borderLeftColor"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top, right, bottom, left, so
+        /// <c>SetBorderColor(Color.red, Color.blue)</c> sets the top and the right side, not the vertical and horizontal pairs.
+        /// Name the arguments, or use <see cref="SetBorderColorY{T}(T, StyleColor)"/> and <see cref="SetBorderColorX{T}(T, StyleColor)"/> for pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="top">The top border color, or <see langword="null"/> to leave unchanged.</param>
@@ -1238,6 +1252,10 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderTopRightRadius"/>,
         /// <see cref="IStyle.borderBottomRightRadius"/> and <see cref="IStyle.borderBottomLeftRadius"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top-left, top-right, bottom-right, bottom-left, so
+        /// <c>SetBorderRadius(8, 4)</c> sets the top-left and the top-right corner, not the diagonal pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="topLeft">The top-left radius, or <see langword="null"/> to leave unchanged.</param>
@@ -1413,6 +1431,11 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopWidth"/>, <see cref="IStyle.borderRightWidth"/>,
         /// <see cref="IStyle.borderBottomWidth"/> and <see cref="IStyle.borderLeftWidth"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top, right, bottom, left, so
+        /// <c>SetBorderWidth(8, 4)</c> sets the top and the right side, not the vertical and horizontal pairs.
+        /// Name the arguments, or use <see cref="SetBorderWidthY{T}(T, StyleFloat)"/> and <see cref="SetBorderWidthX{T}(T, StyleFloat)"/> for pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="top">The top border width, or <see langword="null"/> to leave unchanged.</param>
@@ -1570,6 +1593,11 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.marginTop"/>, <see cref="IStyle.marginRight"/>,
         /// <see cref="IStyle.marginBottom"/> and <see cref="IStyle.marginLeft"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top, right, bottom, left, so
+        /// <c>SetMargin(8, 4)</c> sets the top and the right side, not the vertical and horizontal pairs.
+        /// Name the arguments, or use <see cref="SetMarginY{T}(T, StyleLength)"/> and <see cref="SetMarginX{T}(T, StyleLength)"/> for pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="top">The top margin, or <see langword="null"/> to leave unchanged.</param>
@@ -1713,6 +1741,11 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.paddingTop"/>, <see cref="IStyle.paddingRight"/>,
         /// <see cref="IStyle.paddingBottom"/> and <see cref="IStyle.paddingLeft"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top, right, bottom, left, so
+        /// <c>SetPadding(8, 4)</c> sets the top and the right side, not the vertical and horizontal pairs.
+        /// Name the arguments, or use <see cref="SetPaddingY{T}(T, StyleLength)"/> and <see cref="SetPaddingX{T}(T, StyleLength)"/> for pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="top">The top padding, or <see langword="null"/> to leave unchanged.</param>
@@ -1956,6 +1989,11 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.top"/>, <see cref="IStyle.right"/>,
         /// <see cref="IStyle.bottom"/> and <see cref="IStyle.left"/>.
         /// </summary>
+        /// <remarks>
+        /// Positional arguments follow the order top, right, bottom, left, so
+        /// <c>SetDistance(8, 4)</c> sets the top and the right offset, not the vertical and horizontal pairs.
+        /// Name the arguments, or use <see cref="SetDistanceY{T}(T, StyleLength)"/> and <see cref="SetDistanceX{T}(T, StyleLength)"/> for pairs.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="top">The top offset, or <see langword="null"/> to leave unchanged.</param>
@@ -2079,6 +2117,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="IStyle.unityMaterial"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.3 and newer.
+        /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <param name="value">The material to set.</param>

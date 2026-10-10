@@ -6,7 +6,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     // Where a type parameter lands decides what its argument has to be. The fixtures below are the same class
     // written over and over, differing only in that.
-#pragma warning disable CS0169, CS0649
+#pragma warning disable CS0169, CS0649, UAC1005, UAC1006
     internal interface IRequirementItem<T> { }
 
     // The case the whole walk exists for: T is only ever behind a managed reference, so nothing of it is stored.
@@ -84,7 +84,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     }
 
     internal sealed class InheritsAByValueField<T> : ByValueBase<T> { }
-#pragma warning restore CS0169, CS0649
+#pragma warning restore CS0169, CS0649, UAC1005, UAC1006
 
     /// <summary>
     /// Coverage for <see cref="GenericArgumentRequirement"/> and the contextual argument filter beside it. Getting

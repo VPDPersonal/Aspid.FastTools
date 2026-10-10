@@ -39,7 +39,7 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 
 ![The missing Game.Combat.Spear type with the Fix and → Spear buttons](Images/serializable-type-missing.png)
 
-**Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**.
+**Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**. The notice compares class names and does not read <code lang="csharp">[MovedFrom]</code>, so a class renamed with that attribute gets no suggestion: choose the new class with **Fix**.
 
 [Project References](06-serialize-reference-tooling.md#type-names) finds every missing name in the project and repairs them in groups. The [build check](07-serialize-reference-validation.md) and [breakage detection](07-serialize-reference-validation.md#detecting-new-breakages) report new ones.
 

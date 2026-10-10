@@ -43,11 +43,10 @@ public Color GetFootprintColor(SurfaceType surface) =>
 
 ### 3. Enum выбран в инспекторе
 
-Выберите **Walker**. В нём две таблицы. У **Color Sample Interval** enum <code lang="class-name">SurfaceType</code> задан в коде, как в шаге 1: строки задают интервал в секундах между замерами цвета следа на каждой поверхности. У **Speed By Terrain** в коде задан только тип значения, а enum <code lang="class-name">TerrainFlags</code> выбран в шапке таблицы. Строка может хранить несколько флагов: строка `Wet` + `Slippery` даёт `0.5`.
+Выберите **Walker**. В нём две таблицы. У **Step Interval** enum <code lang="class-name">SurfaceType</code> задан в коде, как в шаге 1: строки задают интервал в секундах между замерами цвета следа на каждой поверхности. У **Speed By Terrain** в коде задан только тип значения, а enum <code lang="class-name">TerrainFlags</code> выбран в шапке таблицы. Строка может хранить несколько флагов: строка `Wet` + `Slippery` даёт `0.5`.
 
 ```csharp
-[SerializeField, InspectorName("Color Sample Interval")]
-private EnumValues<SurfaceType, float> _stepInterval;
+[SerializeField] private EnumValues<SurfaceType, float> _stepInterval;
 
 [SerializeField] private EnumValues<float> _speedByTerrain;
 
@@ -68,11 +67,11 @@ var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags)
 
 ### 5. Перебор
 
-Правый клик **Walker → Log Tables**: выводятся обе таблицы, сначала **Color Sample Interval**. <code lang="csharp">foreach</code> выдаёт настроенные строки в порядке списка, без значения по умолчанию.
+Правый клик **Walker → Log Tables**: выводятся обе таблицы, сначала **Step Interval**. <code lang="csharp">foreach</code> выдаёт настроенные строки в порядке списка, без значения по умолчанию.
 
 ```csharp
 foreach (var (surface, interval) in _stepInterval)
-    Debug.Log($"Color sample interval {surface}: {interval:0.00}s", this);
+    Debug.Log($"Step interval {surface}: {interval:0.00}s", this);
 
 foreach (var (flags, multiplier) in _speedByTerrain)
     Debug.Log($"Speed x{multiplier:0.00} on [{flags}]", this);
