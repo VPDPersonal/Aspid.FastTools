@@ -72,16 +72,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // stays). Unity writes its YAML with LF on every platform; File.WriteAllLines would re-emit Environment.NewLine
         // (CRLF on Windows) and churn the whole file for a one-line edit. Returns false, with the reason logged, when
         // the asset cannot be made editable; nothing is written then.
-        private static bool TryWritePreservingNewlines(string assetPath, IReadOnlyList<string> lines)
-        {
-            var original = ReadAllText(assetPath, out var encoding);
+        private static bool TryWritePreservingNewlines(string assetPath, IReadOnlyList<string> lines) =>
+            TryWritePreservingNewlines(assetPath, lines, ReadAllText(assetPath, out var encoding), encoding);
 
+        // original is the text the edit was computed from. A batch passes the text it read before its first entry, so a
+        // change made on disk while the batch was computed is caught as well.
+        private static bool TryWritePreservingNewlines(string assetPath, IReadOnlyList<string> lines, string original, Encoding encoding)
+        {
             if (!TryMakeEditable(assetPath)) return false;
 
             // A checkout may fetch a newer revision; the edit was computed from the old one, so it must not be applied.
             if (ReadAllText(assetPath, out _) != original)
             {
-                Debug.LogError($"[Aspid FastTools] '{assetPath}' changed on disk while it was checked out; it was not changed. Retry the fix.");
+                Debug.LogError($"[Aspid FastTools] '{assetPath}' changed on disk while it was being edited; it was not changed. Retry the fix.");
                 return false;
             }
 
@@ -127,6 +130,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var text = reader.ReadToEnd();
             encoding = reader.CurrentEncoding;
             return text;
+        }
+
+        // Splits the text the way File.ReadAllLines does and keeps it for TryWritePreservingNewlines.
+        private static string[] ReadAllLines(string path, out string text, out Encoding encoding)
+        {
+            text = ReadAllText(path, out encoding);
+
+            var lines = new List<string>();
+            using var reader = new StringReader(text);
+            for (var line = reader.ReadLine(); line is not null; line = reader.ReadLine())
+                lines.Add(line);
+
+            return lines.ToArray();
         }
 
         // File.WriteAllText truncates the asset first, so a failed write (full disk, killed process) would leave it cut
