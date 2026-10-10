@@ -194,6 +194,7 @@ namespace Aspid.FastTools.Types.Editors
                 node.DisplayName = $"{node.DisplayName}.{onlyChild.DisplayName}";
                 node.AssemblyQualifiedName = onlyChild.AssemblyQualifiedName;
                 node.Caption = onlyChild.Caption;
+                node.Title = onlyChild.Title;
                 node.Tooltip = onlyChild.Tooltip;
                 node.Icon = onlyChild.Icon;
                 node.SearchName = onlyChild.SearchName;
@@ -237,6 +238,7 @@ namespace Aspid.FastTools.Types.Editors
 
         private static TreeNode CreateLeaf(TypeInfo type, string displayName, string caption = null) => new(displayName, type.AssemblyQualifiedName, caption ?? displayName)
         {
+            Title = displayName,
             Tooltip = type.Tooltip,
             Icon = type.Icon,
             SearchName = type.Name,
