@@ -1,6 +1,7 @@
 using UnityEditor;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.SerializeReferences.Editors;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -25,6 +26,13 @@ namespace Aspid.FastTools.Editors
                 "Favorites",
                 "Recent",
                 "Breakage",
+                "Appearance",
+                "Theme",
+                "Style",
+                "USS",
+                "Color",
+                "Palette",
+                "Override",
                 "Welcome",
                 "Dropdown",
             },
@@ -56,6 +64,20 @@ namespace Aspid.FastTools.Editors
                     TypeSelectorSettingsView.BuildControls),
 
                 keywords = new[] { "Aspid", "FastTools", "Type Selector", "Favorites", "Recent", "Dropdown" },
+            };
+
+        [SettingsProvider]
+        public static SettingsProvider CreateAppearance() =>
+            new(SettingsPath + "/Appearance", SettingsScope.User)
+            {
+                label = "Appearance",
+
+                activateHandler = static (_, root) => AspidSettingsUI.BuildAreaProviderPage(
+                    root,
+                    title: "Appearance",
+                    AspidThemeSettingsUI.BuildControls),
+
+                keywords = new[] { "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Override" },
             };
 
         [SettingsProvider]
