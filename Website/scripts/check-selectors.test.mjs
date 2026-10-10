@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {classifyFragments, definedClasses, fragmentsIn, hashedClasses, isSiteClass, matchingClasses} from './check-selectors.mjs';
+import {classifyFragments, definedClasses, fragmentsIn, hashedClasses, isSiteClass, isUnhashedName, matchingClasses} from './check-selectors.mjs';
 
 test('fragments are read from CSS and from selectors in JS strings', () => {
   const css = ".navbar__items--right > [class*='colorModeToggle_'] { order: 3; }\na[class^=\"nav\"], [class*=card_] {}";
@@ -41,14 +41,23 @@ test('a fragment that the site CSS modules also produce is the site\'s own', () 
   assert.ok(!isSiteClass('sidebar_', locals));
 });
 
-test('fragments are sorted into matched, missing and left to the site', () => {
+test('public class names have no hash', () => {
+  assert.ok(isUnhashedName('theme-doc-sidebar-menu'));
+  assert.ok(isUnhashedName('menu__link'));
+  assert.ok(isUnhashedName('button--primary'));
+  assert.ok(!isUnhashedName('docMainContainer_'));
+  assert.ok(!isUnhashedName('navbarHideable_f_bj'));
+});
+
+test('fragments are sorted into matched, missing, left to the site and unhashed', () => {
   const built = new Set(['docMainContainer_q81F', 'navbarHideable_f_bj', 'card_Ihdi']);
   const locals = new Set(['card']);
-  const fragments = new Set(['navbarHideable_', 'card_', 'docRoot_', 'docMainContainer_']);
+  const fragments = new Set(['navbarHideable_', 'card_', 'docRoot_', 'docMainContainer_', 'theme-doc-sidebar-menu', 'menu__link']);
   assert.deepEqual(classifyFragments(fragments, locals, built), {
     matched: ['docMainContainer_', 'navbarHideable_'],
     missing: ['docRoot_'],
     skipped: ['card_'],
+    unhashed: ['menu__link', 'theme-doc-sidebar-menu'],
   });
 });
 
