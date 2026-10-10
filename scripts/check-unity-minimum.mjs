@@ -8,14 +8,15 @@ import { fileURLToPath } from 'node:url';
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
 const PACKAGE_JSON = 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json';
-// Files that name the minimum in prose.
+// Files that name the minimum in prose. Every full Unity version in them (6000.0.53f1) states the minimum, so a
+// second mention left on the old value fails too.
 const MENTIONS = [
   'AGENTS.md',
   '.github/claude-review.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',
 ];
-// The CI matrix must test the minimum, not only mention it.
+// The CI matrix must test the minimum, not only mention it: its `minimum` row, not any row that has that version.
 const MATRIX = '.github/workflows/tests.yml';
 
 const { unity, unityRelease } = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8'));
@@ -34,10 +35,18 @@ const fail = (file, what) => {
 };
 
 for (const file of MENTIONS) {
-  if (!readFileSync(file, 'utf8').includes(minimum)) fail(file, `mention of the minimum Unity ${minimum}`);
+  const text = readFileSync(file, 'utf8');
+  if (!text.includes(minimum)) fail(file, `mention of the minimum Unity ${minimum}`);
+  // Without unityRelease the minimum is a minor version (6000.0), and a full version in the text may be any patch of it.
+  if (!unityRelease) continue;
+  const versions = text.match(/\b\d{4}\.\d+\.\d+[abfp]\d+\b/g) ?? [];
+  for (const version of new Set(versions.filter((version) => version !== minimum))) {
+    console.log(`::error file=${file}::names Unity ${version}; ${PACKAGE_JSON} says the minimum is ${minimum}. Update the file by hand.`);
+    errors++;
+  }
 }
-if (!new RegExp(`^\\s+unity: ${escape(minimum)}\\s*$`, 'm').test(readFileSync(MATRIX, 'utf8'))) {
-  fail(MATRIX, `matrix row "unity: ${minimum}"`);
+if (!new RegExp(`^\\s+- name: minimum\\r?\\n\\s+unity: ${escape(minimum)}\\s*$`, 'm').test(readFileSync(MATRIX, 'utf8'))) {
+  fail(MATRIX, `matrix row "name: minimum" with "unity: ${minimum}"`);
 }
 
 if (errors) process.exit(1);
