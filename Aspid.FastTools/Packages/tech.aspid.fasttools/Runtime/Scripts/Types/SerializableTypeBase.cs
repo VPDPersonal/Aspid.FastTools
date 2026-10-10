@@ -24,10 +24,16 @@ namespace Aspid.FastTools.Types
     /// A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
     /// loaded later is not picked up before that.
     /// </para>
+    /// <para>
+    /// Two wrappers are equal when they store the same assembly-qualified name, whatever their wrapper class or
+    /// constraint, so they work as dictionary keys. <c>==</c> still compares references. The hash code follows the
+    /// stored name: do not change a wrapper that is a key, which includes deserializing it again.
+    /// </para>
     /// </remarks>
     [Serializable]
     public abstract class SerializableTypeBase :
         ISerializableType,
+        IEquatable<SerializableTypeBase>,
         ISerializationCallbackReceiver
     {
         [Tooltip("The selected type, stored by its assembly-qualified name.")]
@@ -87,6 +93,34 @@ namespace Aspid.FastTools.Types
         /// </summary>
         public override string ToString() =>
             Type?.Name ?? AssemblyQualifiedName;
+
+        /// <summary>
+        /// Determines whether <paramref name="other"/> stores the same assembly-qualified name.
+        /// </summary>
+        /// <param name="other">The wrapper to compare with.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="other"/> is not <see langword="null"/> and stores the same
+        /// name, also when neither stores a type; otherwise, <see langword="false"/>.
+        /// </returns>
+        public bool Equals(SerializableTypeBase? other) =>
+            other is not null && AssemblyQualifiedName == other.AssemblyQualifiedName;
+
+        /// <summary>
+        /// Determines whether <paramref name="obj"/> is a wrapper that stores the same assembly-qualified name.
+        /// </summary>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="Equals(SerializableTypeBase)"/> is <see langword="true"/> for
+        /// <paramref name="obj"/>; otherwise, <see langword="false"/>.
+        /// </returns>
+        public override bool Equals(object? obj) =>
+            Equals(obj as SerializableTypeBase);
+
+        /// <summary>
+        /// Returns a hash code of the stored assembly-qualified name.
+        /// </summary>
+        public override int GetHashCode() =>
+            AssemblyQualifiedName.GetHashCode();
 
         private protected void SetAssemblyQualifiedName(string? assemblyQualifiedName)
         {

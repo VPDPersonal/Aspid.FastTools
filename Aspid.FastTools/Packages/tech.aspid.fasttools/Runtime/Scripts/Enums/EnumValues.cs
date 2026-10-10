@@ -20,13 +20,19 @@ namespace Aspid.FastTools.Enums
     /// <see cref="EnumValues{TEnum,TValue}"/> — its Inspector type-picker is read-only.
     /// </para>
     /// <para>
+    /// A player resolves the enum by the stored name only, which managed code stripping does not see: from
+    /// Managed Stripping Level Low up, an enum referenced only by this name can be removed from the build.
+    /// The table then logs an error and returns the default value. Keep such enums with <c>[Preserve]</c> or
+    /// <c>link.xml</c>.
+    /// </para>
+    /// <para>
     /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses flag-containment semantics
     /// with special handling for the zero (<c>None</c>) value — two values are considered equal
     /// only when both are zero or both are non-zero and the first (the lookup value) has all bits
     /// of the second (the stored key) set.
     /// </para>
     /// <para>
-    /// <see cref="GetValue"/> returns the configured default value when no entry matches the lookup key.
+    /// <see cref="GetValue(Enum)"/> returns the configured default value when no entry matches the lookup key.
     /// For <c>[Flags]</c> enums multiple entries may match a single lookup value; an exact-key entry
     /// always wins first, and only if none exists does the first entry (in serialized order) whose
     /// bits are all contained in the lookup value win.
@@ -34,6 +40,10 @@ namespace Aspid.FastTools.Enums
     /// <para>
     /// Iteration via <see cref="GetEnumerator"/> yields only the explicitly configured entries and
     /// does <b>not</b> include the default value.
+    /// </para>
+    /// <para>
+    /// Lookups and iteration may run on any thread, including the first access that initializes the
+    /// entries, as long as Unity is not deserializing the table at the same time.
     /// </para>
     /// <para>
     /// Internal hot paths are wrapped in profiler markers; define the
@@ -55,11 +65,11 @@ namespace Aspid.FastTools.Enums
     /// </example>
     [Serializable]
     public sealed class EnumValues<TValue> :
-        IEnumerable<KeyValuePair<Enum, TValue?>>,
+        IReadOnlyCollection<KeyValuePair<Enum, TValue?>>,
         ISerializationCallbackReceiver
     {
         [Tooltip("The enum whose members the entries are keyed by.")]
-        [TypeSelector(typeof(Enum), Required = true)]
+        [TypeSelector(typeof(Enum), Allow = TypeAllow.None, Required = true)]
         [SerializeField] private string _enumType = string.Empty;
 
         [Tooltip("The value returned when no entry matches the lookup key.")]
@@ -69,8 +79,24 @@ namespace Aspid.FastTools.Enums
         [SerializeField] private EnumValue<TValue>[] _values = Array.Empty<EnumValue<TValue>>();
 
         private Type? _type;
+        private int _count;
         private bool _isFlags;
-        private bool _isInitialized;
+
+        // Volatile: a thread that sees the flag must also see the data written before it.
+        private volatile bool _isInitialized;
+
+        /// <summary>
+        /// Gets the number of entries <see cref="GetEnumerator"/> yields: the rows whose key resolved to an
+        /// enum member, duplicate keys included. The default value is not counted.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                Initialize();
+                return _count;
+            }
+        }
 
         private void Initialize()
         {
@@ -107,10 +133,15 @@ namespace Aspid.FastTools.Enums
                     return;
                 }
 
+                var count = 0;
                 foreach (var value in _values)
+                {
                     value.Initialize(type);
+                    if (value.IsResolved) count++;
+                }
 
                 _type = type;
+                _count = count;
                 _isFlags = EnumInfo.IsFlags(type);
                 _isInitialized = true;
             }
@@ -124,6 +155,7 @@ namespace Aspid.FastTools.Enums
                 value.Reset();
 
             _type = null;
+            _count = 0;
             _isFlags = false;
             _isInitialized = true;
         }
@@ -152,6 +184,95 @@ namespace Aspid.FastTools.Enums
 
                 var lookup = EnumInfo.ToInt64(enumValue);
                 return EnumValueLookup.Find(_values, lookup, _isFlags, _defaultValue);
+            }
+        }
+
+        /// <summary>
+        /// Returns the value mapped to <paramref name="enumValue"/> like <see cref="GetValue(Enum)"/>,
+        /// without boxing the key.
+        /// </summary>
+        /// <typeparam name="TEnum">The enum type of <paramref name="enumValue"/>.</typeparam>
+        /// <param name="enumValue">The enum member to look up.</param>
+        /// <returns>
+        /// The mapped value, or the default value when no entry matches. A <typeparamref name="TEnum"/>
+        /// other than the configured enum type never matches.
+        /// </returns>
+        public TValue? GetValue<TEnum>(TEnum enumValue)
+            where TEnum : struct, Enum
+        {
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+            using (this.Marker())
+#endif
+            {
+                Initialize();
+
+                // Another enum type could collide numerically.
+                if (_type != typeof(TEnum))
+                    return _defaultValue;
+
+                var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
+                return EnumValueLookup.Find(_values, lookup, _isFlags, _defaultValue);
+            }
+        }
+
+        /// <summary>
+        /// Looks up the value mapped to <paramref name="enumValue"/> and reports whether an entry matched.
+        /// </summary>
+        /// <param name="enumValue">The enum member to look up.</param>
+        /// <param name="value">
+        /// The mapped value, or the default value when no entry matches, as <see cref="GetValue(Enum)"/> returns it.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.
+        /// A <see langword="null"/> key, or a key of a different enum type than the configured one, never matches.
+        /// </returns>
+        public bool TryGetValue(Enum enumValue, out TValue? value)
+        {
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+            using (this.Marker())
+#endif
+            {
+                Initialize();
+
+                // Another enum type could collide numerically.
+                if (enumValue is not null && _type is not null && enumValue.GetType() == _type &&
+                    EnumValueLookup.TryFind(_values, EnumInfo.ToInt64(enumValue), _isFlags, out value))
+                    return true;
+
+                value = _defaultValue;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Looks up the value mapped to <paramref name="enumValue"/> like <see cref="TryGetValue(Enum,out TValue)"/>,
+        /// without boxing the key.
+        /// </summary>
+        /// <typeparam name="TEnum">The enum type of <paramref name="enumValue"/>.</typeparam>
+        /// <param name="enumValue">The enum member to look up.</param>
+        /// <param name="value">
+        /// The mapped value, or the default value when no entry matches, as <see cref="GetValue{TEnum}(TEnum)"/> returns it.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.
+        /// A <typeparamref name="TEnum"/> other than the configured enum type never matches.
+        /// </returns>
+        public bool TryGetValue<TEnum>(TEnum enumValue, out TValue? value)
+            where TEnum : struct, Enum
+        {
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+            using (this.Marker())
+#endif
+            {
+                Initialize();
+
+                // Another enum type could collide numerically.
+                if (_type == typeof(TEnum) &&
+                    EnumValueLookup.TryFind(_values, EnumInfo<TEnum>.ToInt64(enumValue), _isFlags, out value))
+                    return true;
+
+                value = _defaultValue;
+                return false;
             }
         }
 
@@ -222,7 +343,7 @@ namespace Aspid.FastTools.Enums
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Lookup semantics (including <c>[Flags]</c> handling) are identical to
+    /// Lookup semantics (including <c>[Flags]</c> handling) and thread safety are identical to
     /// <see cref="EnumValues{TValue}"/> — see its remarks for details. Steady-state
     /// <see cref="GetValue"/>, <see cref="Equals(TEnum,TEnum)"/> and <see langword="foreach"/> (which binds to the struct
     /// <see cref="EnumValuesEnumerator{TKey,TValue}"/>) never allocate.
@@ -256,7 +377,7 @@ namespace Aspid.FastTools.Enums
     /// </example>
     [Serializable]
     public sealed class EnumValues<TEnum, TValue> :
-        IEnumerable<KeyValuePair<TEnum, TValue?>>,
+        IReadOnlyCollection<KeyValuePair<TEnum, TValue?>>,
         ISerializationCallbackReceiver
         where TEnum : struct, Enum
     {
@@ -274,7 +395,23 @@ namespace Aspid.FastTools.Enums
         [Tooltip("The configured entries, searched in this order.")]
         [SerializeField] private EnumValue<TValue>[] _values = Array.Empty<EnumValue<TValue>>();
 
-        private bool _isInitialized;
+        private int _count;
+
+        // Volatile: a thread that sees the flag must also see the data written before it.
+        private volatile bool _isInitialized;
+
+        /// <summary>
+        /// Gets the number of entries <see cref="GetEnumerator"/> yields: the rows whose key resolved to an
+        /// enum member, duplicate keys included. The default value is not counted.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                Initialize();
+                return _count;
+            }
+        }
 
         private void Initialize()
         {
@@ -284,9 +421,14 @@ namespace Aspid.FastTools.Enums
             using (this.Marker())
 #endif
             {
+                var count = 0;
                 foreach (var value in _values)
+                {
                     value.Initialize(typeof(TEnum));
+                    if (value.IsResolved) count++;
+                }
 
+                _count = count;
                 _isInitialized = true;
             }
         }
@@ -310,6 +452,31 @@ namespace Aspid.FastTools.Enums
 
                 var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
                 return EnumValueLookup.Find(_values, lookup, EnumInfo<TEnum>.IsFlags, _defaultValue);
+            }
+        }
+
+        /// <summary>
+        /// Looks up the value mapped to <paramref name="enumValue"/> and reports whether an entry matched.
+        /// </summary>
+        /// <param name="enumValue">The enum member to look up.</param>
+        /// <param name="value">
+        /// The mapped value, or the default value when no entry matches, as <see cref="GetValue"/> returns it.
+        /// </param>
+        /// <returns><see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.</returns>
+        public bool TryGetValue(TEnum enumValue, out TValue? value)
+        {
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+            using (this.Marker())
+#endif
+            {
+                Initialize();
+
+                var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
+                if (EnumValueLookup.TryFind(_values, lookup, EnumInfo<TEnum>.IsFlags, out value))
+                    return true;
+
+                value = _defaultValue;
+                return false;
             }
         }
 

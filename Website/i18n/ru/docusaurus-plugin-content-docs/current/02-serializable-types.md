@@ -30,6 +30,8 @@
 private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 ```
 
+Обёртки с одним именем типа равны между собой, поэтому подходят в ключи <code lang="class-name">Dictionary</code> и <code lang="class-name">HashSet</code>. Так же ведёт себя <code lang="class-name">SerializableMonoScript</code>; оператор <code lang="csharp">==</code> сравнивает ссылки.
+
 ### Потерянный тип
 
 После переименования класса, namespace или сборки сохранённое имя больше не находится: поле показывает `<Missing …>`, а под ним появляется **Missing type**. В подписи указано имя типа без сборки, во всплывающей подсказке — сохранённое имя целиком.
