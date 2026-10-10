@@ -44,6 +44,8 @@
 
 Чтобы пройти ремонт заново, импортируйте пример повторно с перезаписью файлов.
 
+Проверка сборки читает и эти ассеты: при **Build / CI gate** = `Warn` она печатает их сводку перед сборкой, а при `Fail` останавливает сборку. Чтобы этого избежать, почините ассеты, удалите пример или добавьте его папку в **Excluded scan folders** ([область проверки](../../../docusaurus-plugin-content-docs/current/07-serialize-reference-validation.md#область-проверки)).
+
 ## IMGUI-инспектор
 
 У <code lang="class-name">WeaponPreset</code> инспектор на IMGUI — `Scripts/Editor/WeaponPresetEditor.cs`: поле и список рисуют обычные вызовы <code lang="csharp">EditorGUILayout.PropertyField()</code>, а окно выбора, **Fix** и **+** списка работают как в UI Toolkit. Поля без <code lang="csharp">[TypeSelector]</code> — в разделе [Собственный инспектор](../../../docusaurus-plugin-content-docs/current/04-serialize-reference-selector.md#собственный-инспектор).

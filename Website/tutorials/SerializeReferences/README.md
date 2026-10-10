@@ -44,6 +44,8 @@ The assets in `Presets/` and `Prefabs/` store types that are missing or out of d
 
 To repeat the repair, import the sample again and overwrite its files.
 
+The build check reads these assets too: with **Build / CI gate** on `Warn` it prints a summary of them before a build, and on `Fail` it stops the build. To avoid that, repair the assets, delete the sample or add its folder to **Excluded scan folders** ([scan scope](../../docs/07-serialize-reference-validation.md#scan-scope)).
+
 ## IMGUI inspector
 
 <code lang="class-name">WeaponPreset</code> has an IMGUI inspector, `Scripts/Editor/WeaponPresetEditor.cs`: plain <code lang="csharp">EditorGUILayout.PropertyField()</code> calls draw the field and the list, with the picker, **Fix** and the list's **+** working as in UI Toolkit. For fields without <code lang="csharp">[TypeSelector]</code>, see [Custom inspector](../../docs/04-serialize-reference-selector.md#custom-inspector).

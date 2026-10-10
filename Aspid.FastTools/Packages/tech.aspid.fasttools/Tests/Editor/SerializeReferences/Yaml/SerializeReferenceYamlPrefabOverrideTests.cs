@@ -492,8 +492,8 @@ PrefabInstance:
 
             var rows = report.Split('\n').Select(line => line.TrimEnd('\r')).Where(line => line.StartsWith("MissingType")).ToArray();
             Assert.AreEqual(2, rows.Length);
-            Assert.AreEqual($"MissingType\tAssets/Variant.prefab\t{VariantInstanceFileId}\t{BowRid}\tBow\tweapon\toverride", rows[0]);
-            Assert.AreEqual($"MissingType\tAssets/Base.prefab\t{HolderFileId}\t{BowRid}\tBow\t\t", rows[1]);
+            Assert.AreEqual($"MissingType\tAssets/Variant.prefab\t{VariantInstanceFileId}\t{BowRid}\tBow\tweapon\toverride\tP05.Game\tAssembly-CSharp", rows[0]);
+            Assert.AreEqual($"MissingType\tAssets/Base.prefab\t{HolderFileId}\t{BowRid}\tBow\t\t\tP05.Game\tAssembly-CSharp", rows[1]);
         }
 
         [Test]
@@ -503,7 +503,7 @@ PrefabInstance:
                 new ManagedTypeName("Assembly-CSharp", "P05.Game", "Bow"), GateViolationKind.MissingType, "weapon",
                 isOverride: true);
 
-            Assert.AreEqual("Assets/Variant.prefab : weapon -> missing type Bow (prefab instance override)", violation.ToString());
+            Assert.AreEqual("Assets/Variant.prefab : weapon -> missing type P05.Game.Bow (prefab instance override)", violation.ToString());
         }
 
         private static void AssertType(ManagedTypeName type, string assembly, string ns, string className)

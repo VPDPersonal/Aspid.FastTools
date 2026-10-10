@@ -43,6 +43,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The report's stored-name column: the class of a managed reference, or the whole stored type name.
         public string StoredName => Kind == GateViolationKind.MissingTypeName ? TypeName : StoredType.Class ?? string.Empty;
 
+        // The report's trailing columns: where the stored class of a MissingType row lived; empty for the other kinds.
+        public string StoredNamespace => StoredType.Namespace ?? string.Empty;
+
+        public string StoredAssembly => StoredType.Assembly ?? string.Empty;
+
         public override string ToString()
         {
             var where = string.IsNullOrEmpty(FieldPath) ? $"rid {Rid}" : FieldPath;
@@ -50,7 +55,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var what = Kind switch
             {
-                GateViolationKind.MissingType => $"missing type {StoredType.Class}",
+                GateViolationKind.MissingType => $"missing type {StoredType.DisplayName}",
                 GateViolationKind.MissingTypeName => $"missing type name {MissingTypeNames.FullName(TypeName)}",
                 _ => "required value not set",
             };

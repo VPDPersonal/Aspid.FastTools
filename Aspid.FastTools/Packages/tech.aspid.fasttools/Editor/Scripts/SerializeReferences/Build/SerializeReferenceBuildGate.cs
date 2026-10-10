@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -12,13 +13,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         public int callbackOrder => 0;
 
-        public void OnPreprocessBuild(BuildReport report)
+        public void OnPreprocessBuild(BuildReport report) =>
+            Check(
+                SerializeReferenceSettings.BuildSeverity,
+                unscanned => SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned));
+
+        // The scan is injected so tests can drive each severity without scanning the project.
+        internal static void Check(
+            GateSeverity severity,
+            Func<ICollection<(string AssetPath, AssetFileFormat Format)>, IReadOnlyList<GateViolation>> scan)
         {
-            var severity = SerializeReferenceSettings.BuildSeverity;
             if (severity == GateSeverity.Off) return;
 
             var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
-            var violations = SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+            var violations = scan(unscanned);
 
             var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, EditorSettings.serializationMode);
             if (notice is not null) Debug.LogWarning(notice);
@@ -30,10 +38,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (severity == GateSeverity.Fail)
                 throw new BuildFailedException(summary);
 
-            Debug.LogWarning(summary);
+            // The list is the message, so the stack of the build callback adds only noise.
+            Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, context: null, "{0}", summary);
         }
 
-        private static string BuildSummary(IReadOnlyList<GateViolation> violations)
+        internal static string BuildSummary(IReadOnlyList<GateViolation> violations)
         {
             var files = new HashSet<string>();
             var types = new HashSet<string>();
@@ -63,8 +72,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var builder = new StringBuilder();
             builder.AppendLine($"[Aspid FastTools] {counts} across {files.Count} file(s), {types.Count} broken type(s):");
 
-            foreach (var violation in violations)
-                builder.AppendLine($"  {violation}");
+            var listed = Math.Min(violations.Count, SerializeReferenceGateScanner.MaxListedViolations);
+            for (var i = 0; i < listed; i++)
+                builder.AppendLine($"  {violations[i]}");
+
+            if (violations.Count > listed)
+                builder.AppendLine($"  … and {violations.Count - listed} more; Project References → Scan Project lists them all.");
 
             return builder.ToString();
         }
