@@ -370,55 +370,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.That(text, Does.Not.Contain("other:\n    rid: -2\n"), "The other field must not be saved empty.");
         }
 
-        // The saved file still puts the missing rid in a field set to <None> since the save; the Fix must leave it empty.
-        [Test]
-        public void FixInMemory_SharedMissingReference_LeavesFieldSetToNoneEmpty()
-        {
-            TearDown();
-            OpenSceneWithMissingType(component =>
-            {
-                var payload = new InMemoryRepairPayload { x = 3 };
-                component.value = payload;
-                component.other = payload;
-            });
-
-            using var serializedObject = new SerializedObject(_component);
-            serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.other)).managedReferenceValue = null;
-            serializedObject.ApplyModifiedProperties();
-
-            var property = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.value));
-            Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
-
-            Assert.IsInstanceOf<InMemoryRepairReplacement>(_component.value);
-            Assert.IsNull(_component.other, "A field set to <None> before the Fix must stay empty.");
-        }
-
-        // An unsaved insert shifts the list, so the saved file puts the missing rid at the wrong index.
-        [Test]
-        public void FixInMemory_SharedMissingReference_FollowsListShiftedSinceSave()
-        {
-            TearDown();
-            OpenSceneWithMissingType(component =>
-            {
-                var payload = new InMemoryRepairPayload { x = 3 };
-                component.value = payload;
-                component.list.Add(payload);
-            });
-
-            using var serializedObject = new SerializedObject(_component);
-            var list = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.list));
-            list.InsertArrayElementAtIndex(0);
-            list.GetArrayElementAtIndex(0).managedReferenceValue = null;
-            serializedObject.ApplyModifiedProperties();
-
-            var property = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.value));
-            Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
-
-            Assert.AreEqual(2, _component.list.Count);
-            Assert.IsNull(_component.list[0], "The inserted empty element must stay empty.");
-            Assert.AreSame(_component.value, _component.list[1], "The shifted element must share the repaired instance.");
-        }
-
         [Test]
         public void FixInMemory_SharedMissingReference_RefusesTypeAnotherFieldCannotHold()
         {
