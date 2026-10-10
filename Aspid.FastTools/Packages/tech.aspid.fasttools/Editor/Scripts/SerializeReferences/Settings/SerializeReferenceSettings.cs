@@ -32,10 +32,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             get => SerializeReferenceSharedSettings.instance.AutoDeAlias;
             set
             {
-                var shared = SerializeReferenceSharedSettings.instance;
-                if (shared.AutoDeAlias == value) return;
+                ReloadShared();
+                if (AutoDeAliasEnabled == value || !PrepareSharedWrite()) return;
 
-                shared.AutoDeAlias = value;
+                SerializeReferenceSharedSettings.instance.AutoDeAlias = value;
                 Changed?.Invoke();
             }
         }
@@ -58,10 +58,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             set
             {
                 var next = value ?? Array.Empty<string>();
-                var shared = SerializeReferenceSharedSettings.instance;
-                if (FoldersEqual(shared.ExcludedFolders, next)) return;
+                ReloadShared();
+                if (FoldersEqual(ExcludedFolders, next) || !PrepareSharedWrite()) return;
 
-                shared.ExcludedFolders = next;
+                SerializeReferenceSharedSettings.instance.ExcludedFolders = next;
                 Changed?.Invoke();
                 ExcludedFoldersChanged?.Invoke();
             }
@@ -73,12 +73,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             get => SerializeReferenceSharedSettings.instance.BuildSeverity;
             set
             {
-                var shared = SerializeReferenceSharedSettings.instance;
-                if (shared.BuildSeverity == value) return;
+                ReloadShared();
+                if (BuildSeverity == value || !PrepareSharedWrite()) return;
 
-                shared.BuildSeverity = value;
+                SerializeReferenceSharedSettings.instance.BuildSeverity = value;
                 Changed?.Invoke();
             }
+        }
+
+        // Re-reads the committed settings: a pull or a checkout rewrites the file while the Editor is open. Raises the
+        // change events when a value moved, so the controls and the usage index follow.
+        public static void ReloadShared()
+        {
+            var before = SerializeReferenceSharedSettings.instance;
+            var autoDeAlias = before.AutoDeAlias;
+            var buildSeverity = before.BuildSeverity;
+            var excludedFolders = before.ExcludedFolders;
+
+            SerializeReferenceSharedSettings.Reload();
+
+            var after = SerializeReferenceSharedSettings.instance;
+            var foldersChanged = !FoldersEqual(excludedFolders, after.ExcludedFolders);
+            if (!foldersChanged && autoDeAlias == after.AutoDeAlias && buildSeverity == after.BuildSeverity) return;
+
+            Changed?.Invoke();
+            if (foldersChanged) ExcludedFoldersChanged?.Invoke();
+        }
+
+        // Builds the new list from the file on disk. A caller that reads ExcludedFolders first and assigns later would
+        // write back the list from before a pull, which drops the folders the pull added.
+        public static void UpdateExcludedFolders(Func<string[], string[]> change)
+        {
+            ReloadShared();
+            ExcludedFolders = change(ExcludedFolders);
         }
 
         public static void ResetSharedToDefaults()
@@ -106,6 +133,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return false;
+        }
+
+        // Checks the file out first, then re-reads it in case the checkout brought a newer revision. When the file stays
+        // read-only the value is not changed; Changed puts the controls back to the stored value.
+        private static bool PrepareSharedWrite()
+        {
+            if (!SerializeReferenceSharedSettings.TryMakeEditable())
+            {
+                Changed?.Invoke();
+                return false;
+            }
+
+            ReloadShared();
+            return true;
         }
 
         private static bool FoldersEqual(string[] a, string[] b)

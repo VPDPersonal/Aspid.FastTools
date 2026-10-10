@@ -143,10 +143,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var relative = PickProjectFolder("Exclude folder from scan", "Assets");
             if (relative == null) return;
 
-            var current = SerializeReferenceSettings.ExcludedFolders;
-            if (current.Contains(relative)) return;
-
-            SerializeReferenceSettings.ExcludedFolders = current.Append(relative).ToArray();
+            SerializeReferenceSettings.UpdateExcludedFolders(current =>
+                current.Contains(relative) ? current : current.Append(relative).ToArray());
         }
 
         private void Edit(string folder)
@@ -154,10 +152,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var relative = PickProjectFolder("Edit excluded folder", folder);
             if (relative == null || string.Equals(relative, folder, StringComparison.Ordinal)) return;
 
-            SerializeReferenceSettings.ExcludedFolders = SerializeReferenceSettings.ExcludedFolders
+            SerializeReferenceSettings.UpdateExcludedFolders(current => current
                 .Select(f => string.Equals(f, folder, StringComparison.Ordinal) ? relative : f)
                 .Distinct()
-                .ToArray();
+                .ToArray());
         }
 
         private static string PickProjectFolder(string title, string startFolder)
@@ -181,8 +179,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             (relative?.StartsWith("Assets/", StringComparison.Ordinal) ?? false);
 
         private void Remove(string folder) =>
-            SerializeReferenceSettings.ExcludedFolders = SerializeReferenceSettings.ExcludedFolders
+            SerializeReferenceSettings.UpdateExcludedFolders(current => current
                 .Where(f => !string.Equals(f, folder, StringComparison.Ordinal))
-                .ToArray();
+                .ToArray());
     }
 }

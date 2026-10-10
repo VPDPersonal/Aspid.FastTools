@@ -14,6 +14,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public void OnPreprocessBuild(BuildReport report)
         {
+            // A pull may have changed the committed severity and excluded folders since the Editor loaded them.
+            SerializeReferenceSettings.ReloadShared();
+
             var severity = SerializeReferenceSettings.BuildSeverity;
             if (severity == GateSeverity.Off) return;
 
