@@ -94,7 +94,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 contextEvent.Use();
             }
 
-            if ((contextEvent.type == EventType.DragUpdated || contextEvent.type == EventType.DragPerform) &&
+            // A disabled field takes no drop, as Unity's own fields.
+            if (GUI.enabled &&
+                (contextEvent.type == EventType.DragUpdated || contextEvent.type == EventType.DragPerform) &&
                 line.Contains(contextEvent.mousePosition))
             {
                 if (SerializeReferenceDropHandler.TryResolveDroppedType(fieldType, baseTypes, out var droppedType))
