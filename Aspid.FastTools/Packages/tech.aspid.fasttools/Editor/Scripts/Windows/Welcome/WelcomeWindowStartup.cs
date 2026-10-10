@@ -43,14 +43,20 @@ namespace Aspid.FastTools.Editors
             if (SessionState.GetBool(SessionKey, false)) return;
             SessionState.SetBool(SessionKey, true);
 
+            // A CI or build Editor reads nothing at startup, as before the decision moved into ShouldShow.
             if (Application.isBatchMode) return;
 
-            if (!WelcomeSettings.AutoShowEnabled) return;
-            if (HasBeenSeen) return;
-            if (HasOpenWindow()) return;
+            var shouldShow = ShouldShow(
+                isBatchMode: false,
+                autoShowEnabled: WelcomeSettings.AutoShowEnabled,
+                hasBeenSeen: HasBeenSeen,
+                hasOpenWindow: HasOpenWindow());
 
-            TabWindow.OpenWelcome();
+            if (shouldShow) TabWindow.OpenWelcome();
         }
+
+        internal static bool ShouldShow(bool isBatchMode, bool autoShowEnabled, bool hasBeenSeen, bool hasOpenWindow) =>
+            !isBatchMode && autoShowEnabled && !hasBeenSeen && !hasOpenWindow;
 
         private static bool HasOpenWindow()
         {
