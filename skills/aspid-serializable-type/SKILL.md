@@ -1,12 +1,12 @@
 ---
 name: aspid-serializable-type
-description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, analyzers AFT0001-AFT0009. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, or fixing these analyzer warnings."
+description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, the TypeField element and TypeSelectorWindow for editor code, analyzers AFT0001-AFT0009. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, adding a type dropdown to a custom inspector or editor window, or fixing these analyzer warnings."
 ---
 
 # Serializable types and [TypeSelector]
 
 Namespace `Aspid.FastTools.Types`. If the user's scripts have an `.asmdef`, it must reference `Aspid.FastTools`
-(editor code using `TypeSelectorWindow` also `Aspid.FastTools.Editor`).
+(editor code using `TypeField` or `TypeSelectorWindow` also `Aspid.FastTools.Editor`).
 
 | Need | Use |
 |---|---|
@@ -15,6 +15,7 @@ Namespace `Aspid.FastTools.Types`. If the user's scripts have an `.asmdef`, it m
 | Picker on a `string` (stores the assembly-qualified name) or extra constraints | `[TypeSelector]` |
 | Store an instance with data of a chosen implementation | `[TypeSelector]` + `[SerializeReference]` |
 | Switch a MonoBehaviour/ScriptableObject to a sibling subclass | `ComponentTypeSelector`, see [references/more.md](references/more.md) |
+| Type dropdown in a custom inspector or editor window | `TypeField`, see [references/more.md](references/more.md) |
 | Open the picker from custom editor code | `TypeSelectorWindow.Show`, see [references/more.md](references/more.md) |
 
 ```csharp

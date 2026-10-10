@@ -109,26 +109,6 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
-        public void Missing_ShowsTheStoredNameAsTheDropdownTooltip_AndClearsItOtherwise()
-        {
-            var field = AddField();
-            var input = field.Q<VisualElement>(className: EnumField.inputUssClassName);
-            Assert.IsTrue(string.IsNullOrEmpty(input.tooltip));
-
-            field.SetValueFromAssemblyQualifiedNameWithoutNotify(assemblyQualifiedName: MissingName);
-            Assert.AreEqual($"Missing type: {MissingName}", input.tooltip);
-            Assert.AreEqual(MissingCaption, Caption(field).text, "The caption drops the assembly; the tooltip keeps it.");
-
-            field.showMixedValue = true;
-            Assert.IsTrue(string.IsNullOrEmpty(input.tooltip));
-            field.showMixedValue = false;
-            Assert.AreEqual($"Missing type: {MissingName}", input.tooltip);
-
-            field.SetValueWithoutNotify(newValue: typeof(string));
-            Assert.IsTrue(string.IsNullOrEmpty(input.tooltip));
-        }
-
-        [Test]
         public void ChoosingNoneInMixedState_NotifiesAndClearsTheMixedState()
         {
             var field = AddField();

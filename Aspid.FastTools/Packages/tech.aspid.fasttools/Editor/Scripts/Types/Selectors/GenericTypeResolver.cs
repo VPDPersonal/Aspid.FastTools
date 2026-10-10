@@ -31,6 +31,15 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
+        // The generic classes for a picker whose base types include a closed generic, such as Handler<int> for
+        // IHandler<int>: an open definition is never assignable to a closed type, so the ordinary scan misses them.
+        // Null when no base type is a closed generic.
+        internal static IEnumerable<Type> GetClosableGenericDefinitions(Type[] types)
+        {
+            var closed = types?.FirstOrDefault(type => type is { IsConstructedGenericType: true });
+            return closed is null ? null : GetAssignableGenericDefinitions(closed, types);
+        }
+
         // Unify generic views rather than copying positional arguments; inferred arguments must pass the same
         // checks as manual selections.
         internal static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed,

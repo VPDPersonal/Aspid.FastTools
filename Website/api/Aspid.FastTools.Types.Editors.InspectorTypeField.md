@@ -457,6 +457,16 @@ public InspectorTypeField(SerializedProperty property)
 
 The string property storing the assembly-qualified type name.
 
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
 ### InspectorTypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_UnityEditor_SerializedProperty_}
 
 Creates an Inspector-aligned field bound to a type-name property.
@@ -475,12 +485,43 @@ The field label, or <a href="https://learn.microsoft.com/dotnet/csharp/language-
 
 The string property storing the assembly-qualified type name.
 
+#### Remarks
+
+Before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent, a pick writes the property and calls
+[`Update`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.Update.html) on the [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code>:
+a change handler reads the picked name from <code class="paramref">property</code>, and edits it applies through that
+object keep the pick. Changes not yet applied to that object are lost.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
+### InspectorTypeField\(string\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_}
+
+Creates an unbound Inspector-aligned field without an initial type.
+
+```csharp
+public InspectorTypeField(string label)
+```
+
+#### Parameters
+
+`label` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The field label, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for no label.
+
 ### InspectorTypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_System_Type_}
 
 Creates an unbound Inspector-aligned field with an initial type.
 
 ```csharp
-public InspectorTypeField(string label, Type defaultValue = null)
+public InspectorTypeField(string label, Type defaultValue)
 ```
 
 #### Parameters
