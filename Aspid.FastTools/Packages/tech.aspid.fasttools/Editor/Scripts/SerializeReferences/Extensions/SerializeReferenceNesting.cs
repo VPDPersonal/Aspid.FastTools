@@ -49,9 +49,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // managed-reference property.
             if (CustomDrawerRegistry.DeclaresDrawnAttribute(
                     field,
-                    isManagedReference: !child.isArray,
+                    isManagedReference: !isArray,
                     isArrayElement: isArrayElement,
-                    isCollection: child.isArray))
+                    isCollection: isArray))
                 return true;
 
             // Unity applies a type drawer to each element, never to the list, so the list keeps the picker-backed add.
