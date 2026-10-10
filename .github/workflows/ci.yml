@@ -1,13 +1,18 @@
-name: Tests
+name: CI
+
+# Every required check of the Main ruleset except the PR title and CHANGELOG checks (pr-checks.yml): cheap repository
+# checks, the .NET tests and the Unity EditMode tests. No job has a path filter: a workflow skipped by a filter reports
+# nothing, and a required check that never reports blocks the pull request. The Unity plan job reads the changed files
+# itself and still reports.
 
 on:
   pull_request:
   push:
     branches: [main]
   # A maintainer starts it on a branch of this repository, for a commit whose PR cannot run the Unity tests itself
-  # (a fork or Dependabot PR has no Unity secrets). Here the Unity tests always run and are not skipped.
+  # (a fork or Dependabot PR without Unity secrets). Here the Unity tests always run and are not skipped.
   workflow_dispatch:
-  # release.yml runs every test on the commit it publishes; there the Unity tests may not be skipped.
+  # release.yml runs every check and test on the commit it publishes; there the Unity tests may not be skipped.
   workflow_call:
     inputs:
       require-unity:
@@ -20,6 +25,9 @@ on:
       UNITY_PASSWORD:
         required: false
 
+permissions:
+  contents: read
+
 # PR runs share one group per branch and cancel each other. A push to main or a release (workflow_call) gets one group
 # per commit: a group keeps only one pending run, so a shared group would cancel the run of a commit in the middle.
 concurrency:
@@ -27,6 +35,117 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # A file without a .meta, a guid used twice, a sample or asmdef reference that leads nowhere: Unity repairs these in a
+  # local package and ignores or breaks them in the installed one.
+  package-files:
+    name: Package files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            scripts
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Aspid.FastTools/Assets/DevTests
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: node scripts/check-package-files.mjs
+
+  # The version files that scripts/set-version.sh writes (release.yml runs this job too), and the minimum
+  # Unity version that the files with a hand-written copy still agree on.
+  versions:
+    name: Version files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            .github
+            scripts
+            skills
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Website/docs/Images
+            Website/i18n/ru/docusaurus-plugin-content-docs/current
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: node scripts/check-version.mjs
+      - run: node scripts/check-unity-minimum.mjs
+
+  # The tests of scripts/*.test.mjs. They run set-version.sh on a copy, and set-version.sh regenerates the root README
+  # with the dependencies of Website/, so they install them.
+  script-tests:
+    name: Script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            scripts
+            Aspid.FastTools.Analyzers
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            Website/scripts
+            Website/docs/Images
+            Website/i18n/ru/docusaurus-plugin-content-docs/current
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Website/package-lock.json
+      - run: npm ci
+        working-directory: Website
+      - run: node --test scripts/*.test.mjs
+
+  # A change to a generator or an analyzer reaches Unity only through the DLL in the package. A Release build rewrites
+  # both DLLs there (Directory.Build.targets); a clean `git diff` shows that the committed ones come from these sources.
+  roslyn-dlls:
+    name: Roslyn DLLs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools.Generators
+            Aspid.FastTools.Analyzers
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+      # The SDK pinned in global.json built the committed DLLs.
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      # Delete them first: a build that stops copying a DLL into the package then shows as a deleted file in the diff,
+      # instead of leaving the committed one in place.
+      - name: Rebuild both DLLs in Release
+        run: |
+          rm -f Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Generators.dll Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Analyzers.dll
+          dotnet build Aspid.FastTools.Generators/Aspid.FastTools.Generators -c Release --nologo
+          dotnet build Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers -c Release --nologo
+      - name: Compare with the committed DLLs
+        run: |
+          if ! git diff --exit-code -- 'Aspid.FastTools/Packages/tech.aspid.fasttools/*.dll'; then
+            echo "::error::A committed Roslyn DLL differs from a Release build of its sources. Run 'dotnet build -c Release' in Aspid.FastTools.Generators and Aspid.FastTools.Analyzers with the SDK of global.json, then commit the DLLs."
+            exit 1
+          fi
+
+  # Every SKILL.md of the repository: frontmatter, `metadata.internal` outside skills/, AFT codes, namespaces.
+  # A PR that removes an analyzer code but touches no skill must still be checked against the skills.
+  skills:
+    name: SKILL.md files
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Not sparse: the check reads every SKILL.md, the analyzer sources and the package sources.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm install --no-save --no-audit --no-fund js-yaml@4
+      - run: node scripts/check-skills.mjs
+
   dotnet-tests:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -99,7 +218,7 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: |
           # What the Unity jobs read: the package except its Markdown, and their own setup.
-          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|scripts/make-unity-test-project\.sh$|\.github/workflows/tests\.yml$)'
+          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|scripts/make-unity-test-project\.sh$|\.github/workflows/ci\.yml$)'
 
           # "all" when the changed files are unknown: a release, a new branch, a failed API call, a truncated list.
           files=all
@@ -122,7 +241,7 @@ jobs:
               echo "::error::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests must run here."
               exit 1
             elif [ "$EVENT" = pull_request ]; then
-              echo "::error::The Unity EditMode tests must run for this change, but this run has no Unity secrets (a fork or Dependabot PR). A maintainer must run them after reading the change, because the Unity Editor executes its code with the Unity account secrets: push this commit to a branch of this repository and start the Tests workflow on that branch (Actions > Tests > Run workflow). If this check stays red after a green manual run, merge with the bypass of the Main ruleset."
+              echo "::error::The Unity EditMode tests must run for this change, but this run has no Unity secrets (a fork or Dependabot PR). A maintainer must run them after reading the change, because the Unity Editor executes its code with the Unity account secrets: push this commit to a branch of this repository and start the CI workflow on that branch (Actions > CI > Run workflow). If this check stays red after a green manual run, merge with the bypass of the Main ruleset."
               exit 1
             fi
             echo "::notice::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests are skipped."

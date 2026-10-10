@@ -1,5 +1,5 @@
 // Tests of scripts/set-version.sh and scripts/check-version.mjs. Both find the repository from their own location and
-// change its files, so each test runs them on a copy of the files they read. checks.yml runs it:
+// change its files, so each test runs them on a copy of the files they read. ci.yml runs it:
 //   node --test scripts/*.test.mjs
 // set-version.sh regenerates the root README with the dependencies of Website/, so run `npm --prefix Website ci` first.
 import assert from 'node:assert/strict';

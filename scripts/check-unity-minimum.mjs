@@ -1,6 +1,6 @@
 // Check that every hand-written copy of the minimum Unity version agrees with package.json, where it is split into
 // "unity" (6000.0) and "unityRelease" (53f1): 6000.0.53f1. A raised minimum that misses one place leaves an agent, the
-// review bot or the CI matrix on the old version. checks.yml runs it:
+// review bot or the CI matrix on the old version. ci.yml runs it:
 //   node scripts/check-unity-minimum.mjs
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -17,7 +17,7 @@ const MENTIONS = [
   'skills/aspid-visual-element-fluent/SKILL.md',
 ];
 // The CI matrix must test the minimum, not only mention it: the first version of its `unity` list, not any version.
-const MATRIX = '.github/workflows/tests.yml';
+const MATRIX = '.github/workflows/ci.yml';
 
 const { unity, unityRelease } = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8'));
 if (!unity) {
