@@ -74,8 +74,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (!SerializeReferenceMovedFromResolver.TryResolve(storedType, out target)) return false;
 
-            var constraint = constraints.Resolve(assetPath, fileId, rid);
-            return constraint is null || constraint == typeof(object) || constraint.IsAssignableFrom(target);
+            return SerializeReferenceHelpers.FitsConstraints(target, constraints.Resolve(assetPath, fileId, rid));
         }
 
         public static bool TryGetSuggestion(string assetPath, long fileId, long rid, ManagedTypeName storedType,
@@ -86,7 +85,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             try
             {
                 var fieldNames = SerializeReferenceYamlEditor.GetReferenceFieldNames(assetPath, fileId, rid);
-                var constraint = constraints.Resolve(assetPath, fileId, rid) ?? typeof(object);
+                var constraint = constraints.Resolve(assetPath, fileId, rid);
 
                 var ranked = SerializeReferenceRepairSuggestions.GetCached(assetPath, fileId, rid,
                     () => SerializeReferenceRepairSuggestions.Rank(storedType, fieldNames, constraint));
