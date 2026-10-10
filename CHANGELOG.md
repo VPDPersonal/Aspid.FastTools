@@ -174,7 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Types sample: `Brute` no longer sinks halfway into the platform; its height now follows its scale.
 - SerializeReferences sample: no more CS0414 warning on import, and deleting the Training Dummy in Play Mode no longer throws `MissingReferenceException` on every shot.
 - EditorTools sample: the Ability Catalog window follows assets created or deleted in the Project window, and **Create** selects the new asset even while a search is active.
-- EditorTools sample: the Ability Catalog window keeps its search text after a script recompilation; it used to clear it.
+- EditorTools sample: the Ability Catalog window keeps its search text in the saved window layout, so it survives an Editor restart.
 - EnumValues and ProfilerMarkers samples no longer break compilation of a project without the built-in Physics module; their scripts are skipped there, and the sample descriptions say they need it.
 - EnumValues sample: the Walker no longer puts `[InspectorName]` on fields, where Unity ignores it (it reads the attribute only on enum values); its Inspector labels are **Step Interval** and **Footprint Lifetime**, and **Log Tables** prints the same label.
 - Types and SerializeReferences samples: the descriptions and READMEs say that the colliders of their scenes need the built-in Physics module.

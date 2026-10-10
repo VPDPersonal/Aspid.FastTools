@@ -43,11 +43,10 @@ Right-click the table → **Populate Missing Enum Members** adds the `Stone` row
 
 ### 3. Enum picked in the Inspector
 
-Select **Walker**. It has two tables. **Color Sample Interval** takes <code lang="class-name">SurfaceType</code> from the code, as in step 1: its rows set the seconds between trail color samples on each surface. **Speed By Terrain** declares only its value type, and the <code lang="class-name">TerrainFlags</code> enum is picked in the table header. A row can hold several flags: the `Wet` + `Slippery` row gives `0.5`.
+Select **Walker**. It has two tables. **Step Interval** takes <code lang="class-name">SurfaceType</code> from the code, as in step 1: its rows set the seconds between trail color samples on each surface. **Speed By Terrain** declares only its value type, and the <code lang="class-name">TerrainFlags</code> enum is picked in the table header. A row can hold several flags: the `Wet` + `Slippery` row gives `0.5`.
 
 ```csharp
-[SerializeField, InspectorName("Color Sample Interval")]
-private EnumValues<SurfaceType, float> _stepInterval;
+[SerializeField] private EnumValues<SurfaceType, float> _stepInterval;
 
 [SerializeField] private EnumValues<float> _speedByTerrain;
 
@@ -68,11 +67,11 @@ Multipliers of several matching rows are never added or multiplied.
 
 ### 5. Iteration
 
-Right-click **Walker → Log Tables**: it prints both tables, **Color Sample Interval** first. <code lang="csharp">foreach</code> yields the configured rows in list order, without the default value.
+Right-click **Walker → Log Tables**: it prints both tables, **Step Interval** first. <code lang="csharp">foreach</code> yields the configured rows in list order, without the default value.
 
 ```csharp
 foreach (var (surface, interval) in _stepInterval)
-    Debug.Log($"Color sample interval {surface}: {interval:0.00}s", this);
+    Debug.Log($"Step interval {surface}: {interval:0.00}s", this);
 
 foreach (var (flags, multiplier) in _speedByTerrain)
     Debug.Log($"Speed x{multiplier:0.00} on [{flags}]", this);
