@@ -1,6 +1,6 @@
 ---
 name: aspid-serializable-type
-description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, analyzers AFT0001-AFT0009. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, or fixing these analyzer warnings."
+description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, analyzers AFT0001-AFT0009 and AFT0012. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, or fixing these analyzer warnings."
 ---
 
 # Serializable types and [TypeSelector]
@@ -75,6 +75,10 @@ public sealed class Armory : MonoBehaviour
 ## [TypeSelector]
 
 - Valid on `string`, the wrappers, `[SerializeReference]` fields and arrays/`List<T>` of these (else `AFT0001`).
+  A `SerializableType` subclass counts as a wrapper only when it is `[Serializable]`, not abstract and has a
+  parameterless constructor (public or not).
+- The field must be serialized: public, `[SerializeField]` or `[SerializeReference]`, not `static`/`readonly`
+  (else `AFT0012`); on an auto-property use `[field: SerializeField, TypeSelector]` with a setter.
 - Constructors: `()`, `(params Type[])`, `(params string[])`; no mixing of `Type` and `string` in one attribute.
 - Several types mean assignable to **all** of them. Alternative classes (`typeof(Sword), typeof(Axe)`) leave the picker
   empty (`AFT0009`): pass their common base or interface.
@@ -82,7 +86,8 @@ public sealed class Armory : MonoBehaviour
   whenever the type will be instantiated. Ignored on `[SerializeReference]` (`AFT0002`).
 - A string argument is first looked up as an instance field/property of the declaring class (`Type`, `string`, a
   wrapper, or an array of these; inside a `[Serializable]` class or list element, on that instance), else parsed as
-  `"Namespace.Type, Assembly"`. Always use `nameof(...)`. An empty source adds no constraint.
+  `"Namespace.Type, Assembly"`; without the assembly only mscorlib types resolve (`AFT0008`). Always use
+  `nameof(...)`. An empty source adds no constraint.
 - `Required = true` shows an inline warning when empty and feeds the package's Project References scan and CI gate;
   it is not a runtime null check.
 - `[Conditional("UNITY_EDITOR")]`: never read it at runtime.
@@ -108,4 +113,5 @@ still matches the real type name.
 Fix the code, do not suppress: `AFT0001` unsupported field; `AFT0002` `Allow` on `[SerializeReference]`; `AFT0003`
 base type shares no concrete type with the field; `AFT0004` managed reference to a `UnityEngine.Object` type; `AFT0005`
 no concrete implementation; `AFT0006` string is neither a member nor a type name; `AFT0007` member cannot supply base
-types; `AFT0008` invalid type-name syntax; `AFT0009` base types have no type in common.
+types; `AFT0008` invalid type name or no assembly in it; `AFT0009` base types have no type in common; `AFT0012`
+field not serialized.
