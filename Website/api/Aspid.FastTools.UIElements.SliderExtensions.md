@@ -23,6 +23,14 @@ public static class SliderExtensions
 [SliderExtensions](Aspid.FastTools.UIElements.SliderExtensions.md)
 
 
+## Remarks
+
+A slider clamps its value to its range, which is 0 to 10 for a new [`Slider`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Slider.html) or [`SliderInt`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.SliderInt.html).
+Set the range with [`SliderExtensions.SetLowValue<T1, T2>`](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_) and [`SliderExtensions.SetHighValue<T1, T2>`](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_)
+before <code>SetValue</code>:
+<code>new Slider().SetValue(50f).SetHighValue(100f)</code> ends at 10,
+while <code>new Slider().SetHighValue(100f).SetValue(50f)</code> ends at 50.
+
 ## Methods
 
 ### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}
@@ -115,6 +123,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetHighValue\<T\>\(T, sbyte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_SByte_}
 
 Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
@@ -144,6 +156,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetHighValue\<T\>\(T, double\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Double_}
 
@@ -175,6 +191,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetHighValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Single_}
 
 Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
@@ -204,6 +224,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetHighValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int32_}
 
@@ -235,6 +259,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetHighValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt32_}
 
 Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
@@ -264,6 +292,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetHighValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int64_}
 
@@ -295,6 +327,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetHighValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt64_}
 
 Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
@@ -324,6 +360,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetHighValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int16_}
 
@@ -355,6 +395,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetHighValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt16_}
 
 Sets [`highValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
@@ -384,6 +428,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetHighValue\<T, TValue\>\(T, TValue\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_}
 
@@ -418,6 +466,10 @@ The element type.
 `TValue` 
 
 The value type of the element.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetInverted\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetInverted__1___0_System_Boolean_}
 
@@ -479,6 +531,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetLowValue\<T\>\(T, sbyte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_SByte_}
 
 Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
@@ -508,6 +564,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetLowValue\<T\>\(T, double\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Double_}
 
@@ -539,6 +599,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetLowValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Single_}
 
 Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
@@ -568,6 +632,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetLowValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int32_}
 
@@ -599,6 +667,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetLowValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt32_}
 
 Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
@@ -628,6 +700,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetLowValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int64_}
 
@@ -659,6 +735,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetLowValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt64_}
 
 Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
@@ -688,6 +768,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetLowValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int16_}
 
@@ -719,6 +803,10 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
+
 ### SetLowValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt16_}
 
 Sets [`lowValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
@@ -748,6 +836,10 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetLowValue\<T, TValue\>\(T, TValue\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_}
 
@@ -782,6 +874,10 @@ The element type.
 `TValue` 
 
 The value type of the element.
+
+#### Remarks
+
+Call before <code>SetValue</code>: a slider clamps its value to the range.
 
 ### SetPageSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetPageSize__1___0_System_Single_}
 

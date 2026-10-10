@@ -6,17 +6,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     internal struct AspidHelpBoxPreset
     {
+        // Both texts take the most prominent shade: on a status fill the other shades drop below 4.5:1.
         public static AspidHelpBoxPreset Default => new AspidHelpBoxPreset()
             .SetTitle(new AspidLabelPreset()
                 .SetSelectable()
                 .SetLineTheme(ThemeStyle.Type.Light)
-                .SetLabelTheme(ThemeStyle.Type.Light)
+                .SetLabelTheme(ThemeStyle.Type.Lightness)
                 .SetLineSize(AspidDividingLineSizeStyle.Type.Thin)
                 .SetLabelSize(AspidLabelSizeStyle.Type.H5)
                 .SetFontStyle(FontStyle.Bold))
             .SetMessage(new AspidLabelPreset()
                 .SetSelectable()
-                .SetLabelTheme(ThemeStyle.Type.Dark)
+                .SetLabelTheme(ThemeStyle.Type.Lightness)
                 .SetLineSize(AspidDividingLineSizeStyle.Type.None)
                 .SetLabelSize(AspidLabelSizeStyle.Type.H7));
 

@@ -125,6 +125,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="ITextEdition.hideSoftKeyboard"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.4 and newer.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">When <see langword="true"/>, the soft keyboard is not shown.</param>
