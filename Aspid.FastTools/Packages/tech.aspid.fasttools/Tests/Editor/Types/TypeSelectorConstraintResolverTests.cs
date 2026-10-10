@@ -21,6 +21,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
             public Type Type { get; set; }
         }
 
+        private sealed class ThrowingSerializableType : ISerializableType
+        {
+            public Type BaseType => typeof(object);
+            public Type Type => throw new InvalidOperationException("Element failed.");
+        }
+
         // The host's fields are read only through reflection (by the resolver under test), so the compiler cannot
         // see them being used — silence the resulting "assigned but never used" / "never used" warnings.
 #pragma warning disable CS0169, CS0414, CS0649
@@ -41,6 +47,11 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 new FakeSerializableType { Type = typeof(int) },
                 new FakeSerializableType { Type = typeof(long) }
             };
+            private ISerializableType[] _partiallyThrowingWrappers =
+            {
+                new FakeSerializableType { Type = typeof(int) },
+                new ThrowingSerializableType()
+            };
             private ISerializableType _unsetWrapper = new FakeSerializableType { Type = null };
             private Type _nullType = null;
             private int _count = 3;
@@ -49,6 +60,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             private Type WeaponProperty => typeof(int);
             private Type WriteOnlyProperty { set { } }
             private int UnsupportedProperty => throw new InvalidOperationException("Getter must not run.");
+            private Type ThrowingProperty => throw new InvalidOperationException("Getter failed.");
             public Type this[int index] => throw new InvalidOperationException("Indexer must not run.");
         }
 #pragma warning restore CS0169, CS0414, CS0649
@@ -145,6 +157,36 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var result = Resolve(memberName, new Host());
 
             CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
+        }
+
+        [Test]
+        public void ThrowingGetter_AddsAWarningWithTheCauseAndNoType()
+        {
+            var result = Resolve("ThrowingProperty", new Host());
+
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
+            StringAssert.Contains("Getter failed.", result.Warnings[0]);
+        }
+
+        [Test]
+        public void ThrowingGetter_AfterSomeTypesWereAdded_DropsThem()
+        {
+            var result = Resolve("_partiallyThrowingWrappers", new Host());
+
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
+            StringAssert.Contains("Element failed.", result.Warnings[0]);
+        }
+
+        [Test]
+        public void ThrowingGetter_DoesNotHideTheOtherArguments()
+        {
+            var result = TypeSelectorConstraintResolver.Resolve(
+                new Host(), new[] { "ThrowingProperty", "_weaponType" });
+
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, result.Types);
             Assert.AreEqual(1, result.Warnings.Count);
         }
 

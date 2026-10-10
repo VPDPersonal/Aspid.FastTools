@@ -1164,6 +1164,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetEntityIdAndApply\<T\>\(T, EntityId\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEntityIdAndApply__1___0_UnityEngine_EntityId_}
 
 Sets [`entityIdValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-entityIdValue.html) then applies modified properties.
@@ -1194,6 +1198,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetEntityIdAndApplyWithoutUndo\<T\>\(T, EntityId\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEntityIdAndApplyWithoutUndo__1___0_UnityEngine_EntityId_}
 
 Sets [`entityIdValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-entityIdValue.html) then applies modified properties without recording Undo.
@@ -1223,6 +1231,10 @@ The same <code class="paramref">property</code> instance.
 `T` 
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
+
+#### Remarks
+
+Available in Unity 6000.2 and newer.
 
 ### SetEnum\<T, TEnum\>\(T, TEnum\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnum__2___0___1_}
 
@@ -3719,6 +3731,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetValue\<T\>\(T, GUID\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValue__1___0_UnityEngine_GUID_}
 
 Sets [`guidValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-guidValue.html) and returns the property for chaining.
@@ -4627,6 +4643,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
 
+#### Remarks
+
+Available in Unity 6000.2 and newer.
+
 ### SetValueAndApply\<T\>\(T, GUID\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApply__1___0_UnityEngine_GUID_}
 
 Sets [`guidValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-guidValue.html) then applies modified properties.
@@ -5530,6 +5550,10 @@ The same <code class="paramref">property</code> instance.
 `T` 
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) type.
+
+#### Remarks
+
+Available in Unity 6000.2 and newer.
 
 ### SetValueAndApplyWithoutUndo\<T\>\(T, GUID\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_GUID_}
 
