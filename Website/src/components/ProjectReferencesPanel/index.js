@@ -71,7 +71,7 @@ function FastToolsWindow({frame, sizer = false}) {
         {!scanned && (
           <div className={styles.empty}>
             <strong>Project not scanned</strong>
-            <span>Run Scan Project to map every broken [SerializeReference] type across your assets — then repair each missing type in bulk.</span>
+            <span>Run Scan Project to map every broken [SerializeReference] type and SerializableType name across your assets — then repair each missing type in bulk.</span>
           </div>
         )}
         {scanned && (

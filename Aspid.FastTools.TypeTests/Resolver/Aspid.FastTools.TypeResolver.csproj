@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- GenericTypeResolver, the GenericArgumentFilter it takes and the TypeUtility it reads, as an assembly of their own.
+         They are compiled from the package sources as-is against .NET Standard 2.1, which Unity's Mono profile provides
+         in full, so a call that only a newer .NET has fails here and not first in the Unity job. Stubs/ stands in for
+         the Unity types they name (UnityEngine.Object and the CompilationPipeline API of TypeUtility). -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <!-- The C# version of Unity 6000.0, so a newer language feature fails here as it would in Unity. -->
+        <LangVersion>9.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <IsPackable>false</IsPackable>
+        <AssemblyName>Aspid.FastTools.TypeResolver</AssemblyName>
+        <RootNamespace>Aspid.FastTools.Types.Editors</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <_TypeSources>$(MSBuildThisFileDirectory)../../Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/Scripts/Types/</_TypeSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="$(_TypeSources)TypeUtility.cs;
+                          $(_TypeSources)Selectors/GenericTypeResolver.cs;
+                          $(_TypeSources)Selectors/GenericArgumentFilter.cs"
+                 Link="Types/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- In Unity the package's AssemblyInfo.cs lets the Editor test assembly in; here the test project. -->
+        <InternalsVisibleTo Include="Aspid.FastTools.TypeTests" />
+    </ItemGroup>
+
+</Project>
