@@ -27,7 +27,7 @@ body:
         - label: "`package.json` `version` bumped to the release version with `scripts/set-version.sh X.Y.Z` (no `-rc`/`-preview` suffix for a stable release)"
         - label: "Stable release: the badge reads `Release X.Y.Z` and the install URLs use `#upm` (`scripts/set-version.sh` switches them from `Preview` / `#upm-preview`; the Release workflow checks it)"
         - label: "`CHANGELOG.md` `[Unreleased]` section closed into `[X.Y.Z]` with a date (`scripts/set-version.sh` does it)"
-        - label: "Everything merged into `main`; the Release workflow publishes the `v` and `upm*/` tags and the GitHub release from a pushed `vX.Y.Z` tag or a manual run on `main`"
+        - label: "Everything merged into `main`; a pushed `vX.Y.Z` tag starts the Release workflow, which publishes the `upm*/` tag and the GitHub release"
         - label: Working tree clean (`git status`)
 
   - type: checkboxes

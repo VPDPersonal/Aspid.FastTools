@@ -99,12 +99,20 @@ Do every step without questions. Stop at the first failure and report it.
 
 Read the failed step: `gh run view <id> --log-failed`. Then:
 
-- **A step before "Publish release tag and UPM subtree" failed.** Only the `v<version>` tag is out.
-  1. Report the cause. A fix goes to `main` in a separate PR.
-  2. After the fix, ask before you delete the tag: `git push origin :refs/tags/v<version>`, `git tag -d v<version>`.
-  3. Go to "Phase 2" step 3 with the merge commit of the fix PR.
-- **Only "Create GitHub release" failed.** The tags and the channel branch are out.
-  1. Ask, then create the release by hand. The command is in the comment above that step in `release.yml`.
+- **The job `Preflight`, `Tests` or `release` failed.** Only the `v<version>` tag is out: the push of the tags is atomic.
+  1. Report the cause.
+  2. A transient cause (network, Unity license): ask, then run `gh run rerun <id> --failed`.
+     It keeps the finished jobs. Go to "Phase 3" when the run ends.
+  3. Preflight says the commit is not in `main`: there is nothing to fix in `main`. The tag is on the wrong commit.
+     Merge that commit into `main` with a PR. Then go to step 5 with the merge commit.
+  4. Any other cause: the fix goes to `main` in a separate PR.
+  5. After the fix, ask before you delete the tag: `git push origin :refs/tags/v<version>`, `git tag -d v<version>`.
+  6. Go to "Phase 2" step 3 with the merge commit of that PR.
+- **Only the job `GitHub release` failed.** The tags and the channel branch are out.
+  1. Run `gh run rerun <id> --failed`. It runs only that job. Go to "Phase 3" when the run ends.
+     Do not rerun the whole run: preflight would refuse the UPM tag that the first run already published.
+  2. It fails again → ask, then create the release by hand.
+     The command is in the comment above the job in `release.yml`.
 
 ## Not done by this skill
 
