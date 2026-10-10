@@ -116,6 +116,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void Restore_BothSlotsReplacedAfterAnUnsavedDelete_RestoresNothing()
+        {
+            // The same file and delete, then both slots of [Ghost, Ghost] were set to <None>: each note takes its own slot.
+            _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { ShotgunRid, GhostRid, GhostRid }, backups: new[] { N }, ghostEntry: true));
+            var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 0), (FileId, GhostRid, "_sidearms", 1) };
+
+            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots));
+        }
+
+        [Test]
         public void Restore_Reorder_RestoresTheMovedElement()
         {
             var report = SaveAndRestore(new[] { GhostRid, ShotgunRid }, new[] { ShotgunRid, N });

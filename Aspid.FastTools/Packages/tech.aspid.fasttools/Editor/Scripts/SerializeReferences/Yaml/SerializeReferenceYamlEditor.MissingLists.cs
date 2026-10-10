@@ -21,7 +21,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The lists a save may shrink: each top-level list that holds a missing element, with the RefIds entry of every
         // missing element in it. replaced holds the missing elements the user replaced since the last save; they count
         // as nulls. replacedSlots holds the ones replaced in a single list slot: only that slot counts as a null, or the
-        // slot of the rid nearest to it when it no longer holds the rid. A file without a RefIds block is not parsed.
+        // nearest free slot of the rid when it no longer holds the rid. A file without a RefIds block is not parsed.
         public static List<MissingListSnapshot> SnapshotMissingLists(string assetPath, Func<ManagedTypeName, bool> resolves,
             ICollection<(long fileId, long rid)> replaced,
             IReadOnlyList<(long fileId, long rid, string field, int index)> replacedSlots = null)
@@ -79,10 +79,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var lists = new List<(string field, MissingListState before)>();
             var wanted = new HashSet<long>();
+            var notedSlots = FindNotedSlots(fileId, found, replacedSlots);
 
             foreach (var (field, rids) in found)
             {
-                var isReplaced = FindReplacedSlots(fileId, field, rids, found, replaced, replacedSlots);
+                var isReplaced = FindReplacedSlots(fileId, field, rids, replaced, notedSlots);
                 var before = MissingListState.Build(rids, fileId, missingRids, isReplaced);
                 if (!before.HasMissing) continue;
 
@@ -107,42 +108,49 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Which slots of a list the user replaced. A note without a slot replaces every slot of its rid. A note with a slot
-        // replaces only one slot: the noted one while it still holds the rid, otherwise the slot of the rid nearest to it,
-        // since an unsaved edit can shift the in-memory index the note took from the file's.
+        // Which slots of a list the user replaced: every slot of a rid in replaced, and the slots notedSlots holds.
         private static bool[] FindReplacedSlots(long fileId, string field, List<long> rids,
-            List<(string field, List<long> rids)> lists, ICollection<(long fileId, long rid)> replaced,
-            IReadOnlyList<(long fileId, long rid, string field, int index)> replacedSlots)
+            ICollection<(long fileId, long rid)> replaced, HashSet<(string field, int index)> notedSlots)
         {
             var result = new bool[rids.Count];
 
             for (var i = 0; i < rids.Count; i++)
-            {
-                var rid = rids[i];
-                if (replaced is not null && replaced.Contains((fileId, rid)))
-                {
-                    result[i] = true;
-                    continue;
-                }
-
-                if (replacedSlots is null) continue;
-
-                foreach (var note in replacedSlots)
-                {
-                    if (note.fileId != fileId || note.rid != rid) continue;
-
-                    var slot = FindNotedSlot(lists, note.field, note.index, rid);
-                    if (slot.field == field && slot.index == i) result[i] = true;
-                }
-            }
+                result[i] = (replaced is not null && replaced.Contains((fileId, rids[i]))) || notedSlots.Contains((field, i));
 
             return result;
         }
 
-        // The slot a note replaced: the noted one when it holds the rid, otherwise the slot of the rid nearest to it in
-        // the noted list, otherwise the first slot of the rid in any list.
-        private static (string field, int index) FindNotedSlot(List<(string field, List<long> rids)> lists, string field,
-            int index, long rid)
+        // The file slots the notes of one object replaced, one distinct slot per note. A note takes its noted slot while
+        // that slot holds the rid; since an unsaved edit can shift the in-memory index the note took from the file's,
+        // the other notes then take the free slot of their rid nearest to it in the noted list, or the first free one
+        // in any list.
+        private static HashSet<(string field, int index)> FindNotedSlots(long fileId,
+            List<(string field, List<long> rids)> lists,
+            IReadOnlyList<(long fileId, long rid, string field, int index)> replacedSlots)
+        {
+            var taken = new HashSet<(string field, int index)>();
+            if (replacedSlots is null) return taken;
+
+            var shifted = new List<(long rid, string field, int index)>();
+            foreach (var note in replacedSlots)
+            {
+                if (note.fileId != fileId) continue;
+
+                if (HoldsRid(lists, note.field, note.index, note.rid)) taken.Add((note.field, note.index));
+                else shifted.Add((note.rid, note.field, note.index));
+            }
+
+            foreach (var (rid, field, index) in shifted)
+            {
+                var slot = FindFreeSlot(lists, taken, rid, field, index);
+                if (slot.index >= 0) taken.Add(slot);
+            }
+
+            return taken;
+        }
+
+        private static (string field, int index) FindFreeSlot(List<(string field, List<long> rids)> lists,
+            HashSet<(string field, int index)> taken, long rid, string field, int index)
         {
             foreach (var list in lists)
             {
@@ -151,7 +159,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var nearest = -1;
                 for (var i = 0; i < list.rids.Count; i++)
                 {
-                    if (list.rids[i] != rid) continue;
+                    if (list.rids[i] != rid || taken.Contains((field, i))) continue;
                     if (nearest < 0 || Math.Abs(i - index) < Math.Abs(nearest - index)) nearest = i;
                 }
 
@@ -159,12 +167,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             foreach (var list in lists)
-            {
-                var first = list.rids.IndexOf(rid);
-                if (first >= 0) return (list.field, first);
-            }
+                for (var i = 0; i < list.rids.Count; i++)
+                    if (list.rids[i] == rid && !taken.Contains((list.field, i))) return (list.field, i);
 
             return (null, -1);
+        }
+
+        private static bool HoldsRid(List<(string field, List<long> rids)> lists, string field, int index, long rid)
+        {
+            foreach (var list in lists)
+                if (list.field == field) return index >= 0 && index < list.rids.Count && list.rids[index] == rid;
+
+            return false;
         }
 
         // Puts back the missing elements a save dropped from the lists of the snapshots. Each list is matched with the
