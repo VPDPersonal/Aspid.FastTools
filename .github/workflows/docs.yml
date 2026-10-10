@@ -66,6 +66,8 @@ jobs:
         working-directory: Website
       - run: npm run build
         working-directory: Website
+      - run: npm run check-selectors
+        working-directory: Website
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.event_name != 'pull_request'
         with:
