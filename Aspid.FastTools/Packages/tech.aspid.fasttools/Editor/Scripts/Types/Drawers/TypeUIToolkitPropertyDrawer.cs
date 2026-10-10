@@ -44,13 +44,25 @@ namespace Aspid.FastTools.Types.Editors
             var stripe = new VisualElement().AddClass(StripeClass).SetPickingMode(PickingMode.Ignore);
             InspectorNotice notice = null;
 
+            IsolateNameChanges(root: container);
             container.TrackSerializedObjectValue(property.serializedObject,
-                _ => container.schedule.Execute(() => Refresh(property.Persistent())));
-            typeField.RegisterValueChangedCallback(
-                _ => container.schedule.Execute(() => Refresh(property.Persistent())));
-            Refresh(property.Persistent());
+                _ => container.schedule.Execute(RefreshFromObject));
+            typeField.RegisterValueChangedCallback(_ => container.schedule.Execute(RefreshFromObject));
+            typeField.NameWritten += (previousName, newName) =>
+                SendNameChanged(root: container, previousName: previousName, newName: newName);
+            RefreshFromObject();
 
             return container;
+
+            // Each refresh reads a fresh copy of the object and releases it; no copy means the property is gone.
+            void RefreshFromObject()
+            {
+                var current = property.Persistent();
+                if (current is null) return;
+
+                using var owner = current.serializedObject;
+                Refresh(current: current);
+            }
 
             void Refresh(SerializedProperty current)
             {
@@ -66,7 +78,7 @@ namespace Aspid.FastTools.Types.Editors
                         suggestion: TypeMissingRepair.GetSuggestion(storedName: current.stringValue,
                             types: typeField.Types, allow: typeField.Allow,
                             excludeEditorOnly: typeField.ExcludeEditorOnlyTypes),
-                        onSuggestionApplied: () => Refresh(property.Persistent()));
+                        onSuggestionApplied: RefreshFromObject);
                     return;
                 }
 
@@ -87,6 +99,25 @@ namespace Aspid.FastTools.Types.Editors
                 if (notice.parent is null) container.AddChild(notice);
             }
         }
+
+        // A bound string field reports an edit as ChangeEvent<string>; the drawer's root does the same, so a PropertyField
+        // around the drawer notifies its listeners.
+        internal static void SendNameChanged(VisualElement root, string previousName, string newName)
+        {
+            if (root.panel is null) return;
+
+            using var evt = ChangeEvent<string>.GetPooled(previousValue: previousName, newValue: newName);
+            evt.target = root;
+            root.SendEvent(evt);
+        }
+
+        // The root speaks for the drawer with the event above. Text elements in the drawer (the caption, a notice)
+        // send their own ChangeEvent<string> on Unity 6; it carries display text and must not reach a PropertyField.
+        internal static void IsolateNameChanges(VisualElement root) =>
+            root.RegisterCallback<ChangeEvent<string>>(evt =>
+            {
+                if (evt.target != root) evt.StopPropagation();
+            });
 
         // Fix and the suggestion both repair through the field: a bound field writes its property, and a wrapper
         // field leaves the write to its change handler.

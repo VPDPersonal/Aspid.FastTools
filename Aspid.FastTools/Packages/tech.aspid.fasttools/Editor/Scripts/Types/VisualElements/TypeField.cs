@@ -286,10 +286,20 @@ namespace Aspid.FastTools.Types.Editors
                 _visualInput.worldBound.height);
         }
 
+        // Raised after a bound field has written a new name to its property: (previous name, new name).
+        internal event Action<string, string> NameWritten;
+
         internal void ApplyPicked(string assemblyQualifiedName)
         {
+            var name = assemblyQualifiedName ?? string.Empty;
+            var previousName = _property?.stringValue ?? string.Empty;
+            var wasMixed = showMixedValue;
+
             value = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
-            _property?.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
+            if (_property is null) return;
+
+            _property.SetStringAndApply(name);
+            if (wasMixed || previousName != name) NameWritten?.Invoke(previousName, name);
         }
     }
 }

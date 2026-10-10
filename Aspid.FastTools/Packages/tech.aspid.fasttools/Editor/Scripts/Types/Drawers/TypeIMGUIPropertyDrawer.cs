@@ -67,7 +67,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var dropdownRect = fieldRect;
             var currentType = TypeUtility.GetTypeOrNull(property.stringValue);
-            var hasValidType = currentType is not null;
+            var hasValidType = currentType is not null && !property.hasMultipleDifferentValues;
 
             if (hasValidType)
                 dropdownRect.width -= openButtonSize + 1f;

@@ -4,7 +4,9 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.SerializeReferences.Editors;
+using Aspid.FastTools.UIElements.Editors.Internal.Tests;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
@@ -48,6 +50,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
         // The script reference is a private editor-only field, so a test reads it the way the drawers do.
         private static MonoScript ScriptOf(SerializedProperty wrapperProperty) =>
             wrapperProperty.FindPropertyRelative(SerializableMonoScriptUtility.ScriptFieldName).objectReferenceValue as MonoScript;
+
+        private static Type ScriptClassOf(Holder holder)
+        {
+            using var serialized = new SerializedObject(holder);
+            return ScriptOf(serialized.FindProperty(nameof(Holder.wrapper)))?.GetClass();
+        }
 
         // FromJsonOverwrite only deserializes, like loading an asset not saved since a class rename: the wrapper's
         // OnBeforeSerialize gets no chance to re-sync the name.
@@ -402,6 +410,130 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 UnityEngine.Object.DestroyImmediate(window);
                 UnityEngine.Object.DestroyImmediate(holder);
             }
+        }
+
+        [Test]
+        public void Pick_ReportsTheNameChangeToTheParent()
+        {
+            var holder = CreateHolder();
+            using var panel = new TestPanel();
+            try
+            {
+                using var serialized = new SerializedObject(holder);
+                var changes = new List<(string previous, string current)>();
+                var field = Draw(panel, serialized, changes);
+
+                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+
+                CollectionAssert.AreEqual(new[] { (string.Empty, ScriptedType.AssemblyQualifiedName) }, changes);
+                Assert.AreEqual(ScriptedType, ScriptClassOf(holder));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void PickingTheStoredType_ReportsNothing()
+        {
+            var holder = CreateHolder();
+            using var panel = new TestPanel();
+            try
+            {
+                using (var assign = new SerializedObject(holder))
+                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), ScriptedType);
+
+                using var serialized = new SerializedObject(holder);
+                var changes = new List<(string previous, string current)>();
+                var field = Draw(panel, serialized, changes);
+
+                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+
+                Assert.IsEmpty(changes);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void Drop_ReportsTheNameChangeToTheParent()
+        {
+            var holder = CreateHolder();
+            using var panel = new TestPanel();
+            try
+            {
+                Assert.IsTrue(SerializableMonoScriptUtility.TryGetScript(ScriptedType, out var script));
+
+                using var serialized = new SerializedObject(holder);
+                var changes = new List<(string previous, string current)>();
+                var field = Draw(panel, serialized, changes);
+
+                DragAndDrop.PrepareStartDrag();
+                DragAndDrop.objectReferences = new UnityEngine.Object[] { script };
+                using (var drop = DragPerformEvent.GetPooled())
+                {
+                    drop.target = field;
+                    field.SendEvent(drop);
+                }
+
+                CollectionAssert.AreEqual(new[] { (string.Empty, ScriptedType.AssemblyQualifiedName) }, changes);
+                Assert.AreEqual(ScriptedType, ScriptClassOf(holder));
+            }
+            finally
+            {
+                DragAndDrop.PrepareStartDrag();
+                UnityEngine.Object.DestroyImmediate(holder);
+            }
+        }
+
+        [Test]
+        public void MixedSelection_ShowsTheMixedCaption_AndAPickOfTheShownTypeWritesEveryTarget()
+        {
+            var first = CreateHolder();
+            var second = CreateHolder();
+            using var panel = new TestPanel();
+            try
+            {
+                using (var assign = new SerializedObject(first))
+                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), ScriptedType);
+                using (var assign = new SerializedObject(second))
+                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), ConstrainedType);
+
+                using var serialized = new SerializedObject(new UnityEngine.Object[] { first, second });
+                var changes = new List<(string previous, string current)>();
+                var field = Draw(panel, serialized, changes);
+
+                Assert.IsTrue(field.showMixedValue);
+                Assert.AreEqual("—", field.Q<TextElement>(className: EnumField.textUssClassName).text);
+                Assert.AreEqual(DisplayStyle.None,
+                    field.Q<Button>(className: "aspid-fasttools-type-field__open-button").style.display.value);
+
+                // The shown type is the first target's: picking it changes only the other targets.
+                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+
+                Assert.AreEqual(1, changes.Count);
+                Assert.IsFalse(field.showMixedValue);
+                Assert.AreEqual(ScriptedType, ScriptClassOf(first));
+                Assert.AreEqual(ScriptedType, ScriptClassOf(second));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(first);
+                UnityEngine.Object.DestroyImmediate(second);
+            }
+        }
+
+        // The drawer root sits under a plain parent, as it does under a PropertyField.
+        private static InspectorTypeField Draw(TestPanel panel, SerializedObject serialized,
+            List<(string previous, string current)> changes)
+        {
+            var root = MonoScriptUIToolkitPropertyDrawer.Draw(label: "Type",
+                wrapperProperty: serialized.FindProperty(nameof(Holder.wrapper)),
+                allow: TypeAllow.All, types: new[] { typeof(object) }, out var field);
+
+            var parent = new VisualElement();
+            parent.RegisterCallback<ChangeEvent<string>>(evt => changes.Add((evt.previousValue, evt.newValue)));
+            parent.Add(root);
+            panel.Root.Add(parent);
+
+            return field;
         }
 
         // The Asset References "Assign Required" picker must offer a script-backed wrapper the same types as its

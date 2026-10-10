@@ -45,15 +45,18 @@ namespace Aspid.FastTools.Types.Editors
 
             var dropdownRect = fieldRect;
             var currentType = SerializableMonoScriptUtility.GetCurrentType(wrapperProperty, out var assemblyQualifiedName);
-            var hasValidType = currentType is not null;
+            var isMixed = SerializableMonoScriptUtility.HasMultipleDifferentValues(wrapperProperty: wrapperProperty);
+            var hasValidType = currentType is not null && !isMixed;
 
             if (hasValidType)
                 dropdownRect.width -= openButtonSize + 1f;
 
             HandleDrop(dropdownRect, wrapperProperty, allow, types);
 
-            var caption = TypeSelectorHelpers.GetTypeSelectorTitle(currentType,
-                assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(assemblyQualifiedName));
+            var caption = isMixed
+                ? "—"
+                : TypeSelectorHelpers.GetTypeSelectorTitle(currentType,
+                    assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(assemblyQualifiedName));
             var captionStyle = EditorStyles.miniPullDown;
             if (isMissing)
             {
@@ -67,7 +70,7 @@ namespace Aspid.FastTools.Types.Editors
             if (EditorGUI.DropdownButton(position: dropdownRect, content: captionContent,
                     focusType: FocusType.Passive, style: captionStyle))
                 ShowSelector(wrapperProperty: wrapperProperty, rect: dropdownRect, allow: allow, types: types,
-                    currentAqn: currentType?.AssemblyQualifiedName ?? assemblyQualifiedName);
+                    currentAqn: isMixed ? null : currentType?.AssemblyQualifiedName ?? assemblyQualifiedName);
 
             if (hasValidType)
             {
@@ -128,6 +131,8 @@ namespace Aspid.FastTools.Types.Editors
 
         private static void HandleDrop(Rect rect, SerializedProperty wrapperProperty, TypeAllow allow, Type[] types)
         {
+            if (!GUI.enabled) return;
+
             var current = Event.current;
             if (current.type is not (EventType.DragUpdated or EventType.DragPerform)) return;
             if (!rect.Contains(current.mousePosition)) return;
