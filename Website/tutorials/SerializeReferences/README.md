@@ -11,6 +11,8 @@ The dummy changes color and shrinks as the configured weapons and effects deal d
 1. Import the sample: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** on **SerializeReferences**.
 2. Open `Scenes/SerializeReferences.unity` and enter Play Mode: the primary weapon and the sidearms take turns hitting the dummy, and the Console reports every hit.
 
+The scene's colliders need Unity's built-in **Physics** module; the sample scripts compile without it.
+
 ## Try
 
 Exit Play Mode and select **Loadout**.
