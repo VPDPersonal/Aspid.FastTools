@@ -45,10 +45,36 @@ namespace Aspid.FastTools.Enums.Tests
         High = 1u << 30,
     }
 
+    // Unity's enum fields leave out Axe, so a key on it reads blank there.
+    internal enum LegacyWeapon
+    {
+        Sword,
+        [Obsolete] Axe,
+        Bow,
+    }
+
+    [Flags]
+    internal enum LegacyFlags
+    {
+        None = 0,
+        Fire = 1,
+        [Obsolete] Ice = 2,
+    }
+
+    // Old and New share a value: New has no attribute, so the value stays visible in Unity's enum fields.
+    internal enum RenamedMode
+    {
+        None = 0,
+        [Obsolete] Old = 1,
+        New = 1,
+    }
+
     /// <summary>
-    /// Coverage for <see cref="EnumValuesPropertyDrawerHelper"/> and the UI Toolkit drawers: drawing a row never
-    /// rewrites its key, the header shows the given label, Populate Missing Enum Members compares numeric values
-    /// and copies collection values, and flags beyond a signed 32-bit mask are toggled without truncation.
+    /// Coverage for <see cref="EnumValuesPropertyDrawerHelper"/> and the UI Toolkit drawers: drawing never writes
+    /// to the asset, a row takes its enum from the table that owns it, the header shows the given label,
+    /// Populate Missing Enum Members compares numeric values, copies collection values, skips obsolete members
+    /// and stays off for several selected objects, a key on an obsolete member is named, and flags beyond
+    /// a signed 32-bit mask are toggled without truncation.
     /// </summary>
     [TestFixture]
     internal sealed class EnumValuesPropertyDrawerHelperTests
@@ -58,6 +84,17 @@ namespace Aspid.FastTools.Enums.Tests
             [SerializeField] private EnumValues<int> _ints = new();
             [SerializeField] private EnumValues<int[]> _arrays = new();
             [SerializeField] private EnumValues<List<string>> _lists = new();
+            [SerializeField] private EnumValues<EnumValues<int>> _nested = new();
+        }
+
+        private sealed class TypedFields
+        {
+            public readonly EnumValues<Season, int> Single = new();
+            public readonly List<EnumValues<Season, int>> List = new();
+            public readonly EnumValues<Season, int>[] Array = System.Array.Empty<EnumValues<Season, int>>();
+
+            public readonly EnumValues<int> Untyped = new();
+            public readonly EnumValues<int>[] UntypedArray = System.Array.Empty<EnumValues<int>>();
         }
 
         private Host _host;
@@ -212,6 +249,202 @@ namespace Aspid.FastTools.Enums.Tests
         }
 
         [Test]
+        public void Row_StoresNoEnumTypeOfItsOwn()
+        {
+            SetEnumType("_ints", typeof(Season));
+            AddEntry("_ints", nameof(Season.Summer));
+
+            var row = _serializedObject.FindProperty("_ints._values").GetArrayElementAtIndex(0);
+
+            Assert.IsNull(row.FindPropertyRelative("_enumType"));
+        }
+
+        [Test]
+        public void FindEnumTypeProperty_ReturnsTheEnumTypeOfTheTableThatOwnsTheRow()
+        {
+            SetEnumType("_ints", typeof(Season));
+            SetEnumType("_lists", typeof(Sides));
+            AddEntry("_ints", nameof(Season.Summer));
+            AddEntry("_lists", nameof(Sides.Left));
+
+            Assert.AreEqual("_ints._enumType", FindEnumType("_ints._values.Array.data[0]").propertyPath);
+            Assert.AreEqual("_lists._enumType", FindEnumType("_lists._values.Array.data[0]").propertyPath);
+        }
+
+        [Test]
+        public void FindEnumTypeProperty_RowInsideAnotherRow_ReturnsTheInnerTable()
+        {
+            SetEnumType("_nested", typeof(Season));
+            AddEntry("_nested", nameof(Season.Summer));
+
+            var inner = "_nested._values.Array.data[0]._value";
+            _serializedObject.FindProperty($"{inner}._enumType").stringValue = typeof(Sides).AssemblyQualifiedName;
+            _serializedObject.FindProperty($"{inner}._values").arraySize = 2;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+
+            Assert.AreEqual(
+                $"{inner}._enumType",
+                FindEnumType($"{inner}._values.Array.data[1]").propertyPath);
+
+            Assert.AreEqual(
+                typeof(Sides),
+                EnumValuesPropertyDrawerHelper.GetEnumType(FindEnumType($"{inner}._values.Array.data[1]")));
+        }
+
+        [Test]
+        public void Draw_TableWithRows_WritesNothingToTheAsset()
+        {
+            SetEnumType("_ints", typeof(Season));
+            AddEntry("_ints", nameof(Season.Summer));
+            AddEntry("_ints", nameof(Season.Autumn));
+
+            var dirtyCount = EditorUtility.GetDirtyCount(_host);
+
+            var root = EnumValuesUIToolkitPropertyDrawer.Draw(
+                _serializedObject.FindProperty("_ints"), "Ints", isTyped: false);
+
+            Assert.IsNotNull(root);
+            Assert.IsFalse(_serializedObject.hasModifiedProperties);
+            Assert.AreEqual(dirtyCount, EditorUtility.GetDirtyCount(_host));
+        }
+
+        [Test]
+        public void RowKey_FollowsTheEnumOfTheTable()
+        {
+            SetEnumType("_ints", typeof(Sides));
+            AddEntry("_ints", nameof(Sides.Right));
+
+            var row = DrawRowsWithoutWrites("_ints")[0];
+
+            Assert.AreEqual(Sides.Right, row.Q<EnumFlagsField>().value);
+            Assert.AreEqual(DisplayStyle.Flex, row.Q<EnumFlagsField>().style.display.value);
+        }
+
+        [Test]
+        public void Populate_SeveralObjectsSelected_IsDisabledAndAddsNothing()
+        {
+            var other = ScriptableObject.CreateInstance<Host>();
+
+            try
+            {
+                using var both = new SerializedObject(new UnityEngine.Object[] { _host, other });
+                using var single = new SerializedObject(other);
+                both.FindProperty("_ints._enumType").stringValue = typeof(Season).AssemblyQualifiedName;
+                both.ApplyModifiedPropertiesWithoutUndo();
+
+                var values = both.FindProperty("_ints._values");
+                var enumType = both.FindProperty("_ints._enumType");
+                var defaultValue = both.FindProperty("_ints._defaultValue");
+
+                Assert.IsTrue(both.isEditingMultipleObjects);
+                Assert.IsTrue(EnumValuesPropertyDrawerHelper.HasMissingMembers(values, enumType));
+                Assert.IsFalse(EnumValuesPropertyDrawerHelper.CanPopulate(values, enumType));
+
+                EnumValuesPropertyDrawerHelper.PopulateMissing(values, enumType, defaultValue);
+
+                Assert.AreEqual(0, values.arraySize);
+                Assert.IsFalse(both.hasModifiedProperties);
+                Assert.AreEqual(0, single.FindProperty("_ints._values").arraySize);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(other);
+            }
+        }
+
+        [Test]
+        public void Populate_OneObjectSelected_IsEnabledWhileMembersAreMissing()
+        {
+            SetEnumType("_ints", typeof(Season));
+            Assert.IsTrue(CanPopulate("_ints"));
+
+            Populate("_ints");
+            Assert.IsFalse(CanPopulate("_ints"));
+        }
+
+        [Test]
+        public void Populate_ObsoleteMember_IsNotAdded()
+        {
+            SetEnumType("_ints", typeof(LegacyWeapon));
+
+            Populate("_ints");
+
+            CollectionAssert.AreEquivalent(new[] { "Sword", "Bow" }, GetKeys("_ints"));
+            Assert.IsFalse(HasMissing("_ints"));
+        }
+
+        [Test]
+        public void Populate_ObsoleteMemberWithALiveAlias_AddsTheValueOnce()
+        {
+            SetEnumType("_ints", typeof(RenamedMode));
+
+            Populate("_ints");
+
+            CollectionAssert.AreEquivalent(new[] { "None", "New" }, GetKeys("_ints"));
+            Assert.IsFalse(HasMissing("_ints"));
+        }
+
+        [Test]
+        public void ObsoleteKey_ShowsItsNameInTheMenuFieldWithoutWriting()
+        {
+            SetEnumType("_ints", typeof(LegacyWeapon));
+            AddEntry("_ints", "Axe");
+
+            var row = DrawRowsWithoutWrites("_ints")[0];
+
+            var menuField = row.Q<BaseField<string>>(className: EnumField.ussClassName);
+            Assert.AreEqual(DisplayStyle.Flex, menuField.style.display.value);
+            Assert.AreEqual("Axe", menuField.Q<TextElement>(className: EnumField.textUssClassName).text);
+            Assert.AreEqual(DisplayStyle.None, row.Q<EnumField>().style.display.value);
+            CollectionAssert.AreEqual(new[] { "Axe" }, GetKeys("_ints"));
+        }
+
+        [Test]
+        public void LiveKey_NextToObsoleteMembers_KeepsTheEnumField()
+        {
+            SetEnumType("_ints", typeof(LegacyWeapon));
+            AddEntry("_ints", nameof(LegacyWeapon.Bow));
+
+            var row = DrawRowsWithoutWrites("_ints")[0];
+
+            Assert.AreEqual(DisplayStyle.Flex, row.Q<EnumField>().style.display.value);
+            Assert.AreEqual(LegacyWeapon.Bow, row.Q<EnumField>().value);
+        }
+
+        [TestCase(typeof(LegacyWeapon), "Axe", true)]
+        [TestCase(typeof(LegacyWeapon), "Sword", false)]
+        [TestCase(typeof(LegacyWeapon), "Bow", false)]
+        [TestCase(typeof(RenamedMode), "Old", false)]
+        [TestCase(typeof(RenamedMode), "None", false)]
+        [TestCase(typeof(LegacyFlags), "Ice", true)]
+        [TestCase(typeof(LegacyFlags), "Fire, Ice", true)]
+        [TestCase(typeof(LegacyFlags), "Fire", false)]
+        [TestCase(typeof(LegacyFlags), "None", false)]
+        [TestCase(typeof(Season), "Summer", false)]
+        public void HasObsoleteMember_IsTrueOnlyWhenAValueHasNoLiveName(Type enumType, string key, bool expected)
+        {
+            var value = (Enum)Enum.Parse(enumType, key);
+
+            Assert.AreEqual(expected, EnumValuesPropertyDrawerHelper.HasObsoleteMember(enumType, value));
+        }
+
+        [TestCase(nameof(TypedFields.Single), true)]
+        [TestCase(nameof(TypedFields.List), true)]
+        [TestCase(nameof(TypedFields.Array), true)]
+        [TestCase(nameof(TypedFields.Untyped), false)]
+        [TestCase(nameof(TypedFields.UntypedArray), false)]
+        public void IsTypedVariant_LooksThroughArraysAndLists(string field, bool expected)
+        {
+            var fieldInfo = typeof(TypedFields).GetField(field);
+
+            Assert.AreEqual(expected, EnumValuesPropertyDrawer.IsTypedVariant(fieldInfo));
+        }
+
+        [Test]
+        public void IsTypedVariant_WithoutAField_IsFalse() =>
+            Assert.IsFalse(EnumValuesPropertyDrawer.IsTypedVariant(null));
+
+        [Test]
         public void GetKeyCaption_DescribesUnresolvedAndEmptyKeys()
         {
             Assert.AreEqual("<None>", EnumValuesPropertyDrawerHelper.GetKeyCaption(string.Empty, null));
@@ -355,10 +588,6 @@ namespace Aspid.FastTools.Enums.Tests
         {
             _serializedObject.FindProperty($"{field}._enumType").stringValue = enumType.AssemblyQualifiedName;
             _serializedObject.ApplyModifiedPropertiesWithoutUndo();
-
-            EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(
-                _serializedObject.FindProperty($"{field}._values"),
-                _serializedObject.FindProperty($"{field}._enumType"));
         }
 
         private void AddEntry(string field, string key)
@@ -368,8 +597,6 @@ namespace Aspid.FastTools.Enums.Tests
 
             var element = values.GetArrayElementAtIndex(values.arraySize - 1);
             element.FindPropertyRelative("_key").stringValue = key;
-            element.FindPropertyRelative("_enumType").stringValue =
-                _serializedObject.FindProperty($"{field}._enumType").stringValue;
 
             _serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -395,7 +622,8 @@ namespace Aspid.FastTools.Enums.Tests
         {
             var element = _serializedObject.FindProperty($"{field}._values").GetArrayElementAtIndex(index);
             var key = element.FindPropertyRelative("_key").stringValue;
-            var enumType = EnumValuesPropertyDrawerHelper.GetEnumType(element.FindPropertyRelative("_enumType"));
+            var enumType = EnumValuesPropertyDrawerHelper.GetEnumType(
+                EnumValuesPropertyDrawerHelper.FindEnumTypeProperty(element));
 
             return EnumValuesPropertyDrawerHelper.GetKeyCaption(
                 key,
@@ -416,6 +644,13 @@ namespace Aspid.FastTools.Enums.Tests
             _serializedObject.FindProperty($"{field}._values"),
             _serializedObject.FindProperty($"{field}._enumType"),
             _serializedObject.FindProperty($"{field}._defaultValue"));
+
+        private SerializedProperty FindEnumType(string rowPath) =>
+            EnumValuesPropertyDrawerHelper.FindEnumTypeProperty(_serializedObject.FindProperty(rowPath));
+
+        private bool CanPopulate(string field) => EnumValuesPropertyDrawerHelper.CanPopulate(
+            _serializedObject.FindProperty($"{field}._values"),
+            _serializedObject.FindProperty($"{field}._enumType"));
 
         private bool HasMissing(string field) => EnumValuesPropertyDrawerHelper.HasMissingMembers(
             _serializedObject.FindProperty($"{field}._values"),

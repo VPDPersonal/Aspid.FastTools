@@ -25,8 +25,6 @@ namespace Aspid.FastTools.Enums.Editors
             var enumTypePath = property.FindPropertyRelative("_enumType").propertyPath;
             var defaultValuePath = property.FindPropertyRelative("_defaultValue").propertyPath;
 
-            UpdateValues();
-
             var header = new VisualElement()
                 .AddClass(HeaderClass)
                 .AddChild(new Label(label));
@@ -51,21 +49,11 @@ namespace Aspid.FastTools.Enums.Editors
                 .AddChild(header)
                 .AddChild(new VisualElement()
                     .AddClass(ContainerClass)
-                    .AddChild(new PropertyField(serializedObject.FindProperty(valuesPath))
-                        .AddValueChanged(_ => UpdateValues())
-                    )
+                    .AddChild(new PropertyField(serializedObject.FindProperty(valuesPath)))
                     .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath)))
                 );
 
-            // Track the serialized property because direct writes do not notify PropertyField change callbacks.
-            if (!isTyped)
-                root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
-
             return root;
-
-            void UpdateValues() => EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(
-                serializedObject.FindProperty(valuesPath),
-                serializedObject.FindProperty(enumTypePath));
         }
     }
 }
