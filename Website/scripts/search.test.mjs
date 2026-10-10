@@ -32,6 +32,22 @@ test('index decodes entities and drops table rules and MDX machinery', () => {
   assert.equal(plainText("import SamplesGallery from '@site/src/components/SamplesGallery';\n\n<SamplesGallery />\n\nUse <None> or List<float>."), 'Use <None> or List<float>.');
   assert.equal(plainText('<ol className="enum-lookup-flow"><li><b>Exact</b> match</li></ol>'), 'Exact match');
 });
+test('index drops the banner picture and the empty links of image badges', () => {
+  const banner = [
+    '<picture>',
+    '  <source media="(prefers-color-scheme: dark)" srcset="banner_dark.webp" />',
+    '  <img src="banner.png" alt="Aspid.FastTools" />',
+    '</picture>',
+    '',
+    '[![Unity 6.0+](Images/badge.svg)](https://example.com/unity)',
+    '[![MIT License](Images/license.svg)](https://example.com/license)',
+    '',
+    'Aspid.FastTools is a Unity package.',
+    '',
+    '[Documentation](https://example.com/docs)',
+  ].join('\n');
+  assert.equal(plainText(banner), 'Aspid.FastTools is a Unity package. Documentation');
+});
 test('empty queries suggest documentation and samples', () => {
   assert.equal(searchEntries(entries, '  ').length, 3);
   assert.ok(searchEntries(entries, '').every((entry) => entry.section !== 'API'));
