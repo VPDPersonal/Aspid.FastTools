@@ -113,12 +113,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static List<MissingTypeNameLocation> FilterWritable(IReadOnlyList<MissingTypeNameLocation> source, out int skipped)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();
+            var verdicts = new Dictionary<string, bool>(StringComparer.Ordinal);
             var writable = new List<MissingTypeNameLocation>(source.Count);
             skipped = 0;
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) writable.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) writable.Add(entry);
                 else skipped++;
             }
 
