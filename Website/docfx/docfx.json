@@ -6,7 +6,8 @@
           "src": "projects",
           "files": [
             "Aspid.FastTools.csproj",
-            "Aspid.FastTools.Editor.csproj"
+            "Aspid.FastTools.Editor.csproj",
+            "Aspid.FastTools.VisualElements.Math.csproj"
           ]
         }
       ],

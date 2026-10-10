@@ -199,6 +199,10 @@ Provides extension methods for [`IMixedValueSupport`](https://docs.unity3d.com/6
 
 Provides extension methods for [`INotifyValueChanged<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.html).
 
+ [INotifyValueChangedMathExtensions](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md)
+
+Provides extension methods for [`INotifyValueChanged<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.html) of <code>Unity.Mathematics</code> types.
+
  [IStyleExtensions](Aspid.FastTools.UIElements.IStyleExtensions.md)
 
 Provides extension methods for [`IStyle`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle.html).

@@ -17,20 +17,23 @@ checkout before `npm run api`. Run these from the worktree root (macOS):
 
 1. Clone the Library: `cp -c -R <main>/Aspid.FastTools/Library Aspid.FastTools/Library`. On APFS, `-c` makes a
    clone in seconds; GNU `cp` reads `-c` differently.
-2. Copy `Aspid.FastTools.csproj` and `Aspid.FastTools.Editor.csproj` into `Aspid.FastTools/`. Replace the main
-   checkout path in them with the worktree path, so the analyzers come from the worktree.
+2. Copy `Aspid.FastTools.csproj`, `Aspid.FastTools.Editor.csproj` and `Aspid.FastTools.VisualElements.Math.csproj`
+   into `Aspid.FastTools/`. Replace the main checkout path in them with the worktree path, so the analyzers come
+   from the worktree. Unity writes the Math csproj only while `com.unity.mathematics` is installed in the dev
+   project, today as a transitive dependency (depth 2 in `packages-lock.json`, not in `manifest.json`).
 3. Link `Website/node_modules` to the main checkout's folder. Remove the link before you stage anything:
    `Website/.gitignore` ignores a `node_modules/` directory, not a symlink.
 
 The cloned `Library/ScriptAssemblies` holds DLLs built from the main checkout. A PR that changes an asmdef outside
-the documented assemblies (for example the Math satellite) needs a Unity compile of the worktree first.
+the documented assemblies needs a Unity compile of the worktree first.
 
 `npm run api` deletes `Website/api/` and runs three steps (`Website/scripts/docfx-*.mjs`,
 `Website/docfx/docfx.json`) — if DocFX fails midway, the directory stays empty and the site build breaks, so
 regenerate or `git checkout Website/api` before building:
 
-1. `docfx-projects.mjs` writes SDK-style projects for `Aspid.FastTools` and `Aspid.FastTools.Editor` under
-   `Website/docfx/projects/` (gitignored, absolute paths). Sources come from each asmdef folder (so a stale
+1. `docfx-projects.mjs` writes SDK-style projects for `Aspid.FastTools`, `Aspid.FastTools.Editor` and the Math
+   satellite `Aspid.FastTools.VisualElements.Math` under `Website/docfx/projects/` (gitignored, absolute paths).
+   Sources come from each asmdef folder (so a stale
    csproj `<Compile>` list does not matter); references, defines and the source generators come from the
    Unity-generated `.csproj`, and other Unity assemblies are referenced from
    `Library/ScriptAssemblies` — open the project in Unity once so both exist and are fresh.
@@ -48,6 +51,5 @@ regenerate or `git checkout Website/api` before building:
 `Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
 prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the
 postprocess script and regenerate. Translations are not generated; the `ru` locale falls back to the English
-pages. The Math satellite assembly (`Aspid.FastTools.VisualElements.Math`, `INotifyValueChangedMathExtensions`) is
-not in `/api` only because `ASSEMBLIES` in `docfx-projects.mjs` does not list it; it compiles in this project
-(`com.unity.mathematics` comes in transitively), so documenting it means adding it there.
+pages. A new assembly appears in `/api` once `ASSEMBLIES` in `docfx-projects.mjs` and `docfx.json` list it, as they do
+for the Math satellite (`INotifyValueChangedMathExtensions`); its csproj joins the copy in step 2 above.

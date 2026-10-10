@@ -8,7 +8,7 @@ UI Toolkit interfaces in one call chain — no separate line per property and st
 |---|---|
 | <pre lang="csharp"><code>var title = new Label("Ability Config");&#10;title.style.fontSize = 14;&#10;&#10;var header = new VisualElement();&#10;header.style.paddingLeft = 12;&#10;header.style.paddingRight = 12;&#10;header.style.paddingTop = 10;&#10;header.style.paddingBottom = 10;&#10;header.Add(title);</code></pre> | <pre lang="csharp"><code>var header = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(10)&#10;    .AddChild(new Label("Ability Config")&#10;        .SetFontSize(14));</code></pre> |
 
-Configuration methods return the original element, preserving its type.
+Configuration methods return the original element, preserving its type. All extensions except the [Editor extensions](#editor-extensions) also work in a player build.
 
 ## Element properties
 
@@ -17,8 +17,15 @@ Configuration methods return the original element, preserving its type.
 | <code lang="csharp">tooltip = "Mana cost"</code> | <code lang="csharp">SetTooltip("Mana cost")</code> |
 | <code lang="csharp">isDelayed = true</code> | <code lang="csharp">SetDelayed(true)</code> |
 | <code lang="csharp">bindItem = BindRow</code> | <code lang="csharp">SetBindItem(BindRow)</code> |
+| <code lang="csharp">text = "Ability Config"</code> | <code lang="csharp">SetTextSelf("Ability Config")</code> |
+| <code lang="csharp">SetEnabled(false)</code> | <code lang="csharp">SetEnabledSelf(false)</code> |
+
+The suffix <code lang="csharp">Self</code> marks a name that Unity uses, or may start to use, for a method that returns <code lang="csharp">void</code>. Such a method takes precedence over an extension, so a chain through it does not compile; the FastTools method returns the element instead.
 
 The full list of extensions is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements).
+
+> [!NOTE]
+> <code lang="class-name">VisualElementExtensions</code> and <code lang="class-name">INotifyValueChangedExtensions</code> have the same names as classes of <code lang="csharp">UnityEngine.UIElements</code>. Extension calls are not affected; a call through the class name needs the namespace: <code lang="csharp">Aspid.FastTools.UIElements.VisualElementExtensions.SetName(title, "Title")</code>.
 
 ## Children
 
@@ -111,8 +118,11 @@ All of these methods have a variant with the suffix <code lang="csharp">If</code
 | <code lang="csharp">RegisterValueChangedCallback(OnChanged)</code> | <code lang="csharp">AddValueChanged(OnChanged)</code> |
 | <code lang="csharp">UnregisterValueChangedCallback(OnChanged)</code> | <code lang="csharp">RemoveValueChanged(OnChanged)</code> |
 | <code lang="csharp">clicked += Refresh</code> | <code lang="csharp">AddClicked(Refresh)</code> |
+| <code lang="csharp">clicked -= Refresh</code> | <code lang="csharp">RemoveClicked(Refresh)</code> |
 
 For custom value types, use the generic <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> and <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
+
+For <code lang="csharp">Unity.Mathematics</code> types (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>), <code lang="function">SetValue</code> and <code lang="function">AddValueChanged</code> need no type arguments. The overloads are in the separate assembly `Aspid.FastTools.VisualElements.Math` ([API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), which compiles when the `com.unity.mathematics` package is installed.
 
 ## Focus
 
@@ -124,6 +134,9 @@ For custom value types, use the generic <code lang="csharp">SetValue&lt;T, TValu
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>if (manaCost.focusController?&#10;        .focusedElement == manaCost)&#10;    Refresh();</code></pre> | <pre lang="csharp"><code>if (manaCost.IsFocused())&#10;    Refresh();</code></pre> |
+
+> [!NOTE]
+> <code lang="csharp">IsFocused()</code> returns <code lang="csharp">false</code> for a field inside another field (a <code lang="class-name">FloatField</code> of a <code lang="class-name">Vector3Field</code>) or in a list row. Track such a field with <code lang="class-name">FocusInEvent</code> and <code lang="class-name">FocusOutEvent</code>.
 
 ## Manipulators
 

@@ -27,6 +27,7 @@ const outDir = path.join(siteDir, 'docfx', 'projects');
 const ASSEMBLIES = {
   'Aspid.FastTools': 'Runtime/Scripts',
   'Aspid.FastTools.Editor': 'Editor/Scripts',
+  'Aspid.FastTools.VisualElements.Math': 'Runtime/Scripts/VisualElements/Extensions/INotifyValueChanged/Math',
 };
 
 function attr(xml, tag, name) {
@@ -58,7 +59,11 @@ fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 
 for (const [assembly, folder] of Object.entries(ASSEMBLIES)) {
-  const xml = fs.readFileSync(path.join(unityDir, `${assembly}.csproj`), 'utf8');
+  const csproj = path.join(unityDir, `${assembly}.csproj`);
+  if (!fs.existsSync(csproj)) {
+    throw new Error(`${csproj} not found: open the project in Unity once. The Math assembly also needs com.unity.mathematics.`);
+  }
+  const xml = fs.readFileSync(csproj, 'utf8');
 
   const compile = sources(path.join(packageDir, folder));
   const references = hintPaths(xml).map((hint) => (path.isAbsolute(hint) ? hint : path.join(unityDir, hint)));

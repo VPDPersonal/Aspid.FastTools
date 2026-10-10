@@ -47,7 +47,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf` |
+| method Unity already defines | `...Self` on the same receiver as the Unity method - `SetEnabledSelf`, `AddManipulatorSelf`, `RemoveManipulatorSelf` (`VisualElement`), `FocusSelf`, `BlurSelf` (`Focusable`), `SetTextSelf` (`TextElement`), `MarkDirtyLayoutSelf` (`IMGUIContainer` only), `SetRootItemsSelf` (`BaseTreeView`) |
 
 | Unity API | FastTools |
 |---|---|
