@@ -1,5 +1,5 @@
 // Tests of scripts/check-package-files.mjs. The script finds the repository from its own location, so each test copies
-// it into a small package of fixture files, breaks that package in one way and reads the verdict. checks.yml runs it:
+// it into a small package of fixture files, breaks that package in one way and reads the verdict. ci.yml runs it:
 //   node --test scripts/*.test.mjs
 import assert from 'node:assert/strict';
 import { test } from 'node:test';

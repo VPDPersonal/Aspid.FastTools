@@ -12,7 +12,7 @@
 //  5. Every .meta has a guid, and no guid is used twice in the package and the dev tests.
 //  6. Every "path" in the "samples" of package.json is a folder of the package.
 //  7. Every reference of an asmdef of the package is an asmdef of the package, or an assembly of EXTERNAL_ASSEMBLIES.
-// checks.yml runs it. It has no dependencies:
+// ci.yml runs it. It has no dependencies:
 //   node scripts/check-package-files.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';

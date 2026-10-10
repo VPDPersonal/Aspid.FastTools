@@ -1,8 +1,9 @@
 name: Release
 
 # Publishes a release for a pushed v* tag. Everything is checked before anything is published:
-# first the cheap checks (preflight), then every test (tests.yml); the upm branch and the UPM tag
-# then go out in one atomic push (release), and the GitHub release is created last, in its own job (github-release).
+# first the checks of the tag (preflight), then every check and test of a pull request (ci.yml, Unity not skipped);
+# the upm branch and the UPM tag then go out in one atomic push (release), and the GitHub release is created last,
+# in its own job (github-release).
 # If a job fails, use "Re-run failed jobs", not "Re-run all jobs": the finished jobs are kept, and preflight would
 # refuse the UPM tag that the first run already published.
 # There is no manual run: the "Release tags" ruleset lets only admins create, move or delete v* tags, and a personal
@@ -19,11 +20,10 @@ permissions:
 env:
   PACKAGE_PATH: Aspid.FastTools/Packages/tech.aspid.fasttools
   CHANGELOG_PATH: CHANGELOG.md
-  GENERATORS_SOLUTION_DIR: Aspid.FastTools.Generators
-  ANALYZERS_SOLUTION_DIR: Aspid.FastTools.Analyzers
 
 jobs:
-  # The cheap checks run first, so a wrong ref, version, CHANGELOG or stale DLL fails before the Unity matrix starts.
+  # The tag checks run first, so a wrong ref, version or CHANGELOG fails before CI starts. The version files and the
+  # committed DLLs are checked in CI, as in every pull request.
   preflight:
     name: Preflight
     runs-on: ubuntu-latest
@@ -110,15 +110,6 @@ jobs:
           fi
           echo "package.json version matches: $PKG_VERSION"
 
-      - name: Set up Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
-
-      # The version files must carry the whole version and its channel (badge label, #upm or #upm-preview URLs).
-      - name: Validate documentation version
-        run: node scripts/check-version.mjs
-
       - name: Extract CHANGELOG section
         id: notes
         run: |
@@ -144,33 +135,11 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "CHANGELOG section for $VERSION extracted ($(echo "$NOTES" | wc -l) lines)."
 
-      # The SDK pinned in global.json builds the DLLs, the same one that built the committed ones.
-      - name: Set up .NET
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          global-json-file: global.json
-
-      # Rebuilding in Release re-deploys both DLLs into the package checkout
-      # (Directory.Build.targets); a clean `git diff` then proves the committed
-      # DLLs were built from the sources being released.
-      - name: Verify committed Roslyn DLLs match sources
-        run: |
-          set -euo pipefail
-          dotnet build "$GENERATORS_SOLUTION_DIR/Aspid.FastTools.Generators" -c Release --nologo
-          dotnet build "$ANALYZERS_SOLUTION_DIR/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers" -c Release --nologo
-          GENERATORS_DLL="$PACKAGE_PATH/Aspid.FastTools.Generators.dll"
-          ANALYZERS_DLL="$PACKAGE_PATH/Aspid.FastTools.Analyzers.dll"
-          if ! git diff --exit-code -- "$GENERATORS_DLL" "$ANALYZERS_DLL"; then
-            echo "::error::Committed Roslyn DLLs do not match a fresh Release build of the sources. Rebuild with the SDK pinned in global.json ('dotnet build -c Release' in $GENERATORS_SOLUTION_DIR and $ANALYZERS_SOLUTION_DIR) and commit the updated DLLs before releasing."
-            exit 1
-          fi
-          echo "Committed Roslyn DLLs match a fresh Release build."
-
-  # Every test of Tests on the commit being released; here missing Unity secrets fail instead of skipping Unity.
-  tests:
-    name: Tests
+  # Every check and test of CI on the commit being released; here missing Unity secrets fail instead of skipping Unity.
+  ci:
+    name: CI
     needs: preflight
-    uses: ./.github/workflows/tests.yml
+    uses: ./.github/workflows/ci.yml
     with:
       require-unity: true
     secrets:
@@ -182,7 +151,7 @@ jobs:
       checks: write
 
   release:
-    needs: [preflight, tests]
+    needs: [preflight, ci]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:

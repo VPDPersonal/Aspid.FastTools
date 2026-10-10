@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Creates a throwaway Unity project that compiles the package, its tests, its optional Unity.Mathematics assembly and
 # every sample, for running the package's EditMode tests on any Unity version (the dev project itself is pinned to one).
-# CI (tests.yml) and local runs use it.
+# CI (ci.yml) and local runs use it.
 #
 # Usage: scripts/make-unity-test-project.sh <project-dir> [unity-version | project]
 #   unity-version  e.g. 6000.0.64f1; "project" (the default) takes the dev project's version.

@@ -18,7 +18,7 @@ namespace Aspid.FastTools.Editors.Tests
         private const string RuntimeAssembly = "Aspid.FastTools.dll";
         private const string MathAssembly = "Aspid.FastTools.VisualElements.Math.dll";
 
-        // tests.yml passes this argument to Unity. Without it, for example when a consumer project runs the package
+        // ci.yml passes this argument to Unity. Without it, for example when a consumer project runs the package
         // tests, a project that lacks player support or com.unity.mathematics ignores the test instead of failing it.
         private const string StrictSetupArgument = "-aspidFastToolsStrictSetup";
 

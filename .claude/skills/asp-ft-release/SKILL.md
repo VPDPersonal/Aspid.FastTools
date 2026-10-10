@@ -40,17 +40,17 @@ Do every step without questions. Stop at the first failure and report it.
 5. Run `scripts/set-version.sh <version>`. Keep the "channel changed" line if the script prints it.
 6. Start two `unity-verify` agents in the background, with EditMode tests and no filter:
    - a project from `scripts/make-unity-test-project.sh <scratchpad>/unity-min <minimum>`, where `<minimum>` is the
-     first version of the `unity` matrix in `.github/workflows/tests.yml`;
+     first version of the `unity` matrix in `.github/workflows/ci.yml`;
    - the dev project `Aspid.FastTools/` of this checkout.
 
    The `unity-verify` agent is user-level. Without it, run the batch command from the header of
    `scripts/make-unity-test-project.sh` for both projects, in the background.
 7. Run the checks that the release runs:
-   - from `.github/workflows/tests.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
+   - from `.github/workflows/ci.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
      `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` and
      `dotnet test Aspid.FastTools.TypeTests --nologo` in the repository root;
-   - from the `preflight` job of `.github/workflows/release.yml`: the two Release builds of the step
-     "Verify committed Roslyn DLLs match sources", then its `git diff`.
+   - from the `roslyn-dlls` job of `.github/workflows/ci.yml`: the two Release builds of the step
+     "Rebuild both DLLs in Release", then the `git diff` of the next step.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.
 9. Run `npm --prefix Website run check-readme`.
 10. Find the old version in prose:

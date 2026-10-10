@@ -1,5 +1,5 @@
 // Tests of scripts/check-unity-minimum.mjs. The script finds the repository from its own location, so each test copies
-// it next to fixture files. checks.yml runs it:
+// it next to fixture files. ci.yml runs it:
 //   node --test scripts/*.test.mjs
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
@@ -11,7 +11,7 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 
 const script = fileURLToPath(new URL('check-unity-minimum.mjs', import.meta.url));
 const PACKAGE_JSON = 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json';
-const MATRIX = '.github/workflows/tests.yml';
+const MATRIX = '.github/workflows/ci.yml';
 const MENTIONS = [
   'AGENTS.md',
   '.github/claude-review.md',
