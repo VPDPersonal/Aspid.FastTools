@@ -707,7 +707,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Per-type memo, so the walk skips by-value data without managed references, such as long arrays of plain
         // structs. The reflected field set is stable until a domain reload clears statics.
         private static readonly Dictionary<Type, bool> ByValueReferenceHolders = new();
-        private static readonly HashSet<Type> ByValueTypesInProgress = new();
+
+        // The types on the current walk with their depth, and the smallest depth at which the walk below the current
+        // type cut a cycle.
+        private static readonly Dictionary<Type, int> ByValueTypesInProgress = new();
+        private static int _shallowestCycleCut = int.MaxValue;
 
         // A serializable struct or class, or an array or a list of one, whose fields reach a [SerializeReference].
         private static bool CanHoldManagedReferences(Type type)
@@ -719,7 +723,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (ByValueReferenceHolders.TryGetValue(type, out var holds)) return holds;
 
             // A type already on the walk adds no new path, and by-value types may be cyclic.
-            if (!ByValueTypesInProgress.Add(type)) return false;
+            if (ByValueTypesInProgress.TryGetValue(type, out var cutDepth))
+            {
+                _shallowestCycleCut = Math.Min(_shallowestCycleCut, cutDepth);
+                return false;
+            }
+
+            var depth = ByValueTypesInProgress.Count;
+            var outerCycleCut = _shallowestCycleCut;
+            _shallowestCycleCut = int.MaxValue;
+            ByValueTypesInProgress.Add(type, depth);
 
             try
             {
@@ -737,8 +750,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ByValueTypesInProgress.Remove(type);
             }
 
-            // A negative answer under a cut cycle may be wrong for this type, so only the outermost one is kept.
-            if (holds || ByValueTypesInProgress.Count == 0) ByValueReferenceHolders[type] = holds;
+            // A negative answer is exact unless the walk below cut a cycle at a type further up, whose answer is not
+            // known yet; a cycle back to this type adds no field it has not seen.
+            var cycleCut = _shallowestCycleCut;
+            if (holds || cycleCut >= depth) ByValueReferenceHolders[type] = holds;
+
+            _shallowestCycleCut = depth == 0 ? int.MaxValue : Math.Min(outerCycleCut, cycleCut);
             return holds;
         }
 

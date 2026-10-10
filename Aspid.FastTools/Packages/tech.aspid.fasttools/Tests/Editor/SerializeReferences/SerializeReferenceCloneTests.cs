@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using NUnit.Framework;
+using System.Reflection;
 using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -249,6 +250,69 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreSame(clone.gem, clone.Auto,
                 "An auto-property backing field aliasing a public one must alias the same copy.");
         }
+
+        [Serializable]
+        private sealed class PlainOuter
+        {
+            public PlainMiddle first = new();
+            public PlainMiddle second = new();
+        }
+
+        [Serializable]
+        private sealed class PlainMiddle
+        {
+            public PlainLeaf first = new();
+            public PlainLeaf second = new();
+        }
+
+        [Serializable]
+        private sealed class PlainLeaf
+        {
+            public int value;
+        }
+
+        // A by-value cycle: CycleInner reaches a reference only through CycleOuter.
+        [Serializable]
+        private sealed class CycleOuter
+        {
+            public CycleInner inner;
+            [SerializeReference] public IPart part;
+        }
+
+        [Serializable]
+        private sealed class CycleInner
+        {
+            public CycleOuter back;
+        }
+
+        [Test]
+        public void ByValueTypesWithoutReferences_AreMemoizedOnTheFirstWalk()
+        {
+            Assert.IsFalse(CanHoldManagedReferences(typeof(PlainOuter)));
+
+            var memo = ByValueReferenceHolders();
+            Assert.IsTrue(memo.TryGetValue(typeof(PlainMiddle), out var middle) && !middle,
+                "A nested type without references must be memoized, or every path to it walks it again.");
+            Assert.IsTrue(memo.TryGetValue(typeof(PlainLeaf), out var leaf) && !leaf);
+        }
+
+        [Test]
+        public void ByValueTypeBelowACutCycle_IsNotMemoizedAsHoldingNoReferences()
+        {
+            Assert.IsTrue(CanHoldManagedReferences(typeof(CycleOuter)));
+
+            Assert.IsFalse(ByValueReferenceHolders().ContainsKey(typeof(CycleInner)),
+                "A negative answer found while the walk cut its cycle at CycleOuter must not be kept.");
+            Assert.IsTrue(CanHoldManagedReferences(typeof(CycleInner)), "CycleInner reaches a reference through CycleOuter.");
+        }
+
+        private static bool CanHoldManagedReferences(Type type) => (bool)typeof(SerializeReferenceHelpers)
+            .GetMethod(nameof(CanHoldManagedReferences), BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(obj: null, new object[] { type });
+
+        private static Dictionary<Type, bool> ByValueReferenceHolders() => (Dictionary<Type, bool>)typeof(SerializeReferenceHelpers)
+            .GetField(nameof(ByValueReferenceHolders), BindingFlags.NonPublic | BindingFlags.Static)!
+            .GetValue(obj: null);
 
         private static Rig CreateRig() => new()
         {
