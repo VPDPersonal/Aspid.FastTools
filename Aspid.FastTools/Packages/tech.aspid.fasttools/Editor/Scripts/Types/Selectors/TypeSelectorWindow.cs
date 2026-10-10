@@ -11,6 +11,9 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     public sealed class TypeSelectorWindow : EditorWindow
     {
+        // The narrowest dropdown; a caller that places the window by its width reads it from here.
+        internal const float MinWidth = 400f;
+
         /// <summary>
         /// Opens the selector as a dropdown anchored to <paramref name="screenRect"/>.
         /// </summary>
@@ -31,7 +34,7 @@ namespace Aspid.FastTools.Types.Editors
 
             window.rootVisualElement.AddChild(view);
 
-            var size = new Vector2(Mathf.Max(400, screenRect.width), 320);
+            var size = new Vector2(Mathf.Max(MinWidth, screenRect.width), 320);
             window.ShowAsDropDown(screenRect, size);
 
             view.FocusPicker();

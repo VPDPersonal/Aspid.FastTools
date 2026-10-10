@@ -54,17 +54,12 @@ namespace Aspid.FastTools.Types.Editors
                 icon.StartsWith("Packages/", StringComparison.Ordinal))
                 return AssetDatabase.LoadAssetAtPath<Texture>(icon);
 
-            if (icon.Contains('/'))
-            {
-                var resource = Resources.Load<Texture>(icon);
-                if (resource is not null) return resource;
+            // Resources first: IconContent logs "Unable to load the icon" for a name it does not know, which a
+            // Resources icon such as "SwordIcon" is.
+            var resource = Resources.Load<Texture>(icon);
+            if (resource is not null) return resource;
 
-                var pathContent = EditorGUIUtility.IconContent(icon);
-                return pathContent?.image;
-            }
-
-            var content = EditorGUIUtility.IconContent(icon);
-            return content?.image ?? Resources.Load<Texture>(icon);
+            return EditorGUIUtility.IconContent(icon)?.image;
         }
 
         private static Texture LoadTypeFallbackIcon(string assemblyQualifiedName)
