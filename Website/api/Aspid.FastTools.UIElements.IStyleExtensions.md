@@ -469,6 +469,66 @@ The style, for chaining.
 
 The style type.
 
+### SetBackgroundImage\<T\>\(T, Sprite\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBackgroundImage__1___0_UnityEngine_Sprite_}
+
+Sets [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`Sprite`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Sprite.html).
+
+```csharp
+public static T SetBackgroundImage<T>(this T style, Sprite value) where T : IStyle
+```
+
+#### Parameters
+
+`style` T
+
+The style to modify.
+
+`value` Sprite
+
+The sprite to use as the background image.
+
+#### Returns
+
+ T
+
+The style, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The style type.
+
+### SetBackgroundImage\<T\>\(T, VectorImage\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_VectorImage_}
+
+Sets [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`VectorImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VectorImage.html).
+
+```csharp
+public static T SetBackgroundImage<T>(this T style, VectorImage value) where T : IStyle
+```
+
+#### Parameters
+
+`style` T
+
+The style to modify.
+
+`value` VectorImage
+
+The vector image to use as the background image.
+
+#### Returns
+
+ T
+
+The style, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The style type.
+
 ### SetBackgroundImageFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBackgroundImageFromResources__1___0_System_String_}
 
 Loads a [`Texture2D`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Texture2D.html) from Resources and sets the [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) property.

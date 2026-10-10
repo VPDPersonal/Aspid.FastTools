@@ -2209,6 +2209,38 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets <see cref="IStyle.backgroundImage"/> to a <see cref="Sprite"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The sprite to use as the background image.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBackgroundImage<T>(
+            this T element,
+            Sprite value)
+            where T : VisualElement
+        {
+            element.style.SetBackgroundImage(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.backgroundImage"/> to a <see cref="VectorImage"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The vector image to use as the background image.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBackgroundImage<T>(
+            this T element,
+            VectorImage value)
+            where T : VisualElement
+        {
+            element.style.SetBackgroundImage(value);
+            return element;
+        }
+
+        /// <summary>
         /// Loads a <see cref="Texture2D"/> from Resources and sets the <see cref="IStyle.backgroundImage"/> property.
         /// </summary>
         /// <remarks>
