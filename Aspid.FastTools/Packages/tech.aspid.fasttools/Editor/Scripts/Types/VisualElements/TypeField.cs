@@ -442,7 +442,8 @@ namespace Aspid.FastTools.Types.Editors
 
         private void OnPrefabInstanceUpdated(GameObject instance)
         {
-            if (_property is null || !ClassListContains(BindingExtensions.prefabOverrideUssClassName)) return;
+            // An undo of an Apply brings the override back without a value change, so the label is set here too.
+            if (_property is null) return;
 
             try
             {
