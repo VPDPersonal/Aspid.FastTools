@@ -164,5 +164,19 @@ namespace Aspid.FastTools.UIElements
             element.keyboardType = value;
             return element;
         }
+
+        /// <summary>
+        /// Sets <see cref="TextValueField{TValueType}.formatString"/>.
+        /// </summary>
+        /// <typeparam name="T">The field type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The format string applied when the value is displayed.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetFormatString<T>(this T element, string value)
+            where T : TextValueField<ulong>
+        {
+            element.formatString = value;
+            return element;
+        }
     }
 }

@@ -74,6 +74,10 @@ Provides [`BaseFieldFloatExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.Bas
 
 Provides [`BaseFieldGradientExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldGradientExtensions.md#Aspid_FastTools_UIElements_BaseFieldGradientExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`Gradient`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Gradient.html).
 
+ [BaseFieldGuidExtensions](Aspid.FastTools.UIElements.BaseFieldGuidExtensions.md)
+
+Provides [`BaseFieldGuidExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldGuidExtensions.md#Aspid_FastTools_UIElements_BaseFieldGuidExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`GUID`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/GUID.html).
+
  [BaseFieldHash128Extensions](Aspid.FastTools.UIElements.BaseFieldHash128Extensions.md)
 
 Provides [`BaseFieldHash128Extensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldHash128Extensions.md#Aspid_FastTools_UIElements_BaseFieldHash128Extensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`Hash128`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Hash128.html).
@@ -166,6 +170,10 @@ Provides extension methods for [`BaseVerticalCollectionView`](https://docs.unity
 
 Provides extension methods for [`Button`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Button.html).
 
+ [DropdownFieldExtensions](Aspid.FastTools.UIElements.DropdownFieldExtensions.md)
+
+Provides extension methods for [`DropdownField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.DropdownField.html).
+
  [EnumFieldExtensions](Aspid.FastTools.UIElements.EnumFieldExtensions.md)
 
 Provides extension methods for [`EnumField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.EnumField.html).
@@ -223,6 +231,10 @@ Provides extension methods for [`ListView`](https://docs.unity3d.com/6000.4/Docu
 
 Provides extension methods that attach manipulators to a [`VisualElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.html).
 
+ [MinMaxSliderExtensions](Aspid.FastTools.UIElements.MinMaxSliderExtensions.md)
+
+Provides extension methods for [`MinMaxSlider`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MinMaxSlider.html).
+
  [MultiColumnListViewExtensions](Aspid.FastTools.UIElements.MultiColumnListViewExtensions.md)
 
 Provides extension methods for [`MultiColumnListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnListView.html).
@@ -230,6 +242,14 @@ Provides extension methods for [`MultiColumnListView`](https://docs.unity3d.com/
  [MultiColumnTreeViewExtensions](Aspid.FastTools.UIElements.MultiColumnTreeViewExtensions.md)
 
 Provides extension methods for [`MultiColumnTreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnTreeView.html).
+
+ [PopupFieldExtensions](Aspid.FastTools.UIElements.PopupFieldExtensions.md)
+
+Provides extension methods for [`PopupField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PopupField_1.html).
+
+ [RadioButtonGroupExtensions](Aspid.FastTools.UIElements.RadioButtonGroupExtensions.md)
+
+Provides extension methods for [`RadioButtonGroup`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.RadioButtonGroup.html).
 
  [SliderExtensions](Aspid.FastTools.UIElements.SliderExtensions.md)
 
@@ -242,6 +262,10 @@ Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.4
  [TextElementExtensions](Aspid.FastTools.UIElements.TextElementExtensions.md)
 
 Provides extension methods for [`TextElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextElement.html).
+
+ [TextFieldExtensions](Aspid.FastTools.UIElements.TextFieldExtensions.md)
+
+Provides extension methods for [`TextField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextField.html).
 
  [TextInputBaseFieldDoubleExtensions](Aspid.FastTools.UIElements.TextInputBaseFieldDoubleExtensions.md)
 
@@ -262,6 +286,14 @@ Provides extension methods for [`TextInputBaseField<T>`](https://docs.unity3d.co
  [TextInputBaseFieldFloatTextSelectionExtensions](Aspid.FastTools.UIElements.TextInputBaseFieldFloatTextSelectionExtensions.md)
 
 Provides text-selection extension methods for [`TextInputBaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1.html) of [`Single`](https://learn.microsoft.com/dotnet/api/system.single).
+
+ [TextInputBaseFieldGuidExtensions](Aspid.FastTools.UIElements.TextInputBaseFieldGuidExtensions.md)
+
+Provides extension methods for [`TextInputBaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1.html) of [`GUID`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/GUID.html).
+
+ [TextInputBaseFieldGuidTextSelectionExtensions](Aspid.FastTools.UIElements.TextInputBaseFieldGuidTextSelectionExtensions.md)
+
+Provides text-selection extension methods for [`TextInputBaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1.html) of [`GUID`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/GUID.html).
 
  [TextInputBaseFieldHash128Extensions](Aspid.FastTools.UIElements.TextInputBaseFieldHash128Extensions.md)
 
