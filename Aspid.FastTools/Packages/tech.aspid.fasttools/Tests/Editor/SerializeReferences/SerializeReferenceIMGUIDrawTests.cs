@@ -332,11 +332,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.Greater(report.Passes, 0, "Precondition: the IMGUI container must be painted.");
             Assert.IsNull(report.Error, report.Error?.ToString());
             Assert.IsTrue(report.StateBalanced, "Painting must restore the indent level, the mixed-value flag and GUI.enabled.");
+
+            // The repaint-only code (notices, GUIStyle.Draw, the navigation pulse) ran only with a repaint pass; without
+            // one the test shows up as ignored instead of passing on the layout pass alone.
+            if (report.Repaints == 0) Assert.Ignore("No repaint pass reached the IMGUI container; only the layout pass ran.");
         }
 
         // Runs the draw in an IMGUIContainer and waits until the window has run it, ideally for a layout pass and a
         // paint pass. The container leaves again before the caller disposes what the draw reads.
-        // A repaint is not asserted: a batch-mode window may never send one, and then the tests check the layout pass only.
+        // A batch-mode window may never send a repaint; AssertPainted then reports the test as ignored.
         private IEnumerator Paint(PaintReport report, Action draw)
         {
             _window.rootVisualElement.Add(new IMGUIContainer(() =>
