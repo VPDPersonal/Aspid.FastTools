@@ -17,6 +17,7 @@
     "sync-readme": "node scripts/sync-readme.mjs",
     "check-readme": "node scripts/sync-readme.mjs --check",
     "check-translations": "node scripts/check-translations.mjs",
+    "check-selectors": "node scripts/check-selectors.mjs",
     "test": "node --test scripts/*.test.mjs",
     "prestart:ru": "npm run sync-readme && npm run sync-changelog"
   },
@@ -33,6 +34,7 @@
     "@docusaurus/module-type-aliases": "^3.9.1",
     "@docusaurus/types": "^3.9.1",
     "remark-gfm": "^4.0.1",
+    "remark-mdx": "^3.1.1",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "unified": "^11.0.5"
