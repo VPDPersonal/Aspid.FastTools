@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Buffers;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -27,6 +28,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const int FormatSniffLength = 64;
 
+        internal const int MarkerProbeChunkSize = 32 * 1024;
+
         private const string LfsPointerPrefix = "version https://git-lfs.github.com/spec/";
 
         // Reads only the first bytes, so a scanner can skip a binary asset (LightingData, NavMesh, anything in a
@@ -40,16 +43,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             try
             {
                 using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-                int count;
-                while (read < buffer.Length && (count = stream.Read(buffer, read, buffer.Length - read)) > 0)
-                    read += count;
+                read = ReadFully(stream, buffer, offset: 0, buffer.Length);
             }
             catch (Exception)
             {
                 return AssetFileFormat.Binary;
             }
 
+            return ClassifyHead(buffer, read);
+        }
+
+        private static AssetFileFormat ClassifyHead(byte[] buffer, int read)
+        {
             var offset = read >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF ? 3 : 0;
             var head = Encoding.ASCII.GetString(buffer, offset, read - offset).TrimStart();
 
@@ -82,6 +87,79 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Best effort, like the scanners: an unreadable file has nothing to scan.
                 return null;
             }
+        }
+
+        // Like ReadLines, for a sweep that needs only the assets holding one of the ASCII markers. The file is searched
+        // as bytes in fixed-size chunks and decoded only after a marker is found, so an asset without one allocates no
+        // text and no lines. The result is null for such an asset, as for an unreadable one.
+        public static string[] ReadLinesIfContainsAny(string assetPath, byte[][] markers)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return null;
+                if (!ContainsAnyMarker(assetPath, markers)) return null;
+
+                return File.ReadAllLines(assetPath);
+            }
+            catch (Exception)
+            {
+                // Best effort, like ReadLines: an unreadable file has nothing to scan.
+                return null;
+            }
+        }
+
+        private static bool ContainsAnyMarker(string assetPath, byte[][] markers)
+        {
+            // A marker may straddle two chunks, so the tail of one chunk starts the next.
+            var overlap = 0;
+            foreach (var marker in markers)
+                overlap = Math.Max(overlap, marker.Length - 1);
+
+            var buffer = ArrayPool<byte>.Shared.Rent(MarkerProbeChunkSize + overlap);
+
+            try
+            {
+                using var stream = new FileStream(assetPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                var kept = 0;
+                var isFirstChunk = true;
+
+                while (true)
+                {
+                    var read = ReadFully(stream, buffer, kept, MarkerProbeChunkSize);
+                    if (read == 0) return false;
+
+                    var length = kept + read;
+                    if (isFirstChunk)
+                    {
+                        isFirstChunk = false;
+                        if (ClassifyHead(buffer, Math.Min(length, FormatSniffLength)) != AssetFileFormat.TextYaml)
+                            return false;
+                    }
+
+                    var chunk = new ReadOnlySpan<byte>(buffer, 0, length);
+                    foreach (var marker in markers)
+                        if (chunk.IndexOf(marker) >= 0) return true;
+
+                    kept = Math.Min(overlap, length);
+                    Buffer.BlockCopy(buffer, length - kept, buffer, 0, kept);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+
+        private static int ReadFully(Stream stream, byte[] buffer, int offset, int count)
+        {
+            var read = 0;
+
+            int chunk;
+            while (read < count && (chunk = stream.Read(buffer, offset + read, count - read)) > 0)
+                read += chunk;
+
+            return read;
         }
 
         public static bool TryParseInlineType(string body, out ManagedTypeName type)

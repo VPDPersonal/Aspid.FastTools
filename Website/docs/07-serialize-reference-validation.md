@@ -36,7 +36,7 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 
 ## Detecting new breakages
 
-**Breakage detection** reports newly missing references and type names right after script or asset changes, with a notification as well as in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is a per-user setting: every team member has their own.
+**Breakage detection** reports newly missing references and type names right after script, assembly or asset changes, with a notification as well as in the Console. It is on by default, under **Tools → Aspid 🐍 → FastTools → Settings** and **Preferences → Aspid.FastTools → SerializeReference**. It is a per-user setting: every team member has their own.
 
 ## Scan scope
 

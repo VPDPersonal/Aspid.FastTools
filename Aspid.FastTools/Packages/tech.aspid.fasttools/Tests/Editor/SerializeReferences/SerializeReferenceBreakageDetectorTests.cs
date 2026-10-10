@@ -32,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // Snapshot the session's real baseline so the assertions below can rebuild it freely.
             _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
             _established = SessionState.GetBool(SerializeReferenceBreakageDetector.EstablishedKey, false);
-            _baseline = SessionState.GetString(SerializeReferenceBreakageDetector.BaselineKey, string.Empty);
+            _baseline = SerializeReferenceBreakageDetector.ExportBaseline();
 
             // A sweep the session started before the probe existed must not finish in its place.
             SerializeReferenceBreakageDetector.ResetForTests();
@@ -44,7 +44,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             SerializeReferenceSettings.BreakageDetectionEnabled = true;
             SessionState.EraseBool(SerializeReferenceBreakageDetector.EstablishedKey);
-            SessionState.EraseString(SerializeReferenceBreakageDetector.BaselineKey);
+            SerializeReferenceBreakageDetector.ImportBaseline(string.Empty);
         }
 
         [TearDown]
@@ -57,7 +57,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
             SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, _established);
-            SessionState.SetString(SerializeReferenceBreakageDetector.BaselineKey, _baseline);
+            SerializeReferenceBreakageDetector.ImportBaseline(_baseline);
+            SerializeReferenceBreakageDetector.PersistBaseline();
         }
 
         [Test]
@@ -119,12 +120,73 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             CollectionAssert.IsEmpty(SerializeReferenceBreakageDetector.GetBaselineKeys(ProbeAssetPath));
         }
 
+        // The baseline changes on every save, so it stays in memory and reaches SessionState once, before a reload.
+        [Test]
+        public void Scan_ChangedAsset_WritesSessionStateOnlyWhenPersisted()
+        {
+            SaveProbe(new TestSword());
+            SerializeReferenceBreakageDetector.Scan();
+            SerializeReferenceBreakageDetector.CompleteSweep();
+
+            SaveProbe(new DeleteGuardPistol());
+            SerializeReferenceBreakageDetector.Scan(new[] { ProbeAssetPath });
+            SerializeReferenceBreakageDetector.CompleteSweep();
+
+            StringAssert.DoesNotContain(ProbeAssetPath, SessionState.GetString(SerializeReferenceBreakageDetector.BaselineKey, string.Empty));
+
+            SerializeReferenceBreakageDetector.PersistBaseline();
+
+            StringAssert.Contains($"{ProbeAssetPath}\t{KeyOf<DeleteGuardPistol>()}",
+                SessionState.GetString(SerializeReferenceBreakageDetector.BaselineKey, string.Empty));
+        }
+
+        [Test]
+        public void PersistBaseline_Unchanged_LeavesSessionStateAlone()
+        {
+            SerializeReferenceBreakageDetector.PersistBaseline();
+            SessionState.SetString(SerializeReferenceBreakageDetector.BaselineKey, "kept");
+
+            SerializeReferenceBreakageDetector.PersistBaseline();
+            SerializeReferenceBreakageDetector.PersistBaseline();
+
+            Assert.AreEqual("kept", SessionState.GetString(SerializeReferenceBreakageDetector.BaselineKey, string.Empty));
+        }
+
+        [Test]
+        public void ResetBaseline_DropsBaselineAndEstablishedFlag()
+        {
+            SaveProbe(new TestSword());
+            SerializeReferenceBreakageDetector.Scan();
+            SerializeReferenceBreakageDetector.CompleteSweep();
+            Assert.IsTrue(SerializeReferenceBreakageDetector.IsEstablished);
+
+            SerializeReferenceBreakageDetector.ResetBaseline();
+
+            Assert.IsFalse(SerializeReferenceBreakageDetector.IsEstablished);
+            CollectionAssert.IsEmpty(SerializeReferenceBreakageDetector.GetBaselineKeys(ProbeAssetPath));
+        }
+
+        [Test]
+        public void ResetBaseline_AssetsScannedAgain_RebuildsBaseline()
+        {
+            SaveProbe(new TestSword());
+            SeedBaseline(BrokenKey);
+
+            SerializeReferenceBreakageDetector.ResetBaseline();
+            SerializeReferenceBreakageDetector.Scan();
+            SerializeReferenceBreakageDetector.CompleteSweep();
+
+            CollectionAssert.IsEmpty(_reports);
+            CollectionAssert.AreEquivalent(new[] { KeyOf<TestSword>() },
+                SerializeReferenceBreakageDetector.GetBaselineKeys(ProbeAssetPath));
+        }
+
         // A stored type no assembly declares, as after a rename.
         private const string BrokenKey = "Assembly-CSharp|Aspid.BreakageDetectorProbe|RenamedAway";
 
         private static void SeedBaseline(string key)
         {
-            SessionState.SetString(SerializeReferenceBreakageDetector.BaselineKey, $"{ProbeAssetPath}\t{key}");
+            SerializeReferenceBreakageDetector.ImportBaseline($"{ProbeAssetPath}\t{key}");
             SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, true);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using UnityEditor;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
@@ -29,11 +30,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private string[] _excludedFolders;
         private GateSeverity _buildSeverity;
         private byte[] _sharedSettingsFile;
+        private BreakageBaselineSnapshot _baselines;
 
         [SetUp]
         public void SetUp()
         {
             // Snapshot the project's real settings so the assertions below can mutate them freely and restore on teardown.
+            _baselines = new BreakageBaselineSnapshot();
             _autoDeAlias = SerializeReferenceSettings.AutoDeAliasEnabled;
             _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
             _excludedFolders = SerializeReferenceSettings.ExcludedFolders;
@@ -53,6 +56,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
+                // Putting the excluded folders back resets the detector baselines, so they are restored after it.
+                _baselines.Restore();
+
                 // The values above already match the snapshot in memory; this puts the file back byte for byte,
                 // even if one of the setters threw.
                 if (_sharedSettingsFile is null) File.Delete(SharedSettingsPath);
@@ -84,6 +90,61 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Third Party/" });
 
             Assert.AreEqual(1, fired, "A genuinely new excluded-folder set must raise ExcludedFoldersChanged exactly once.");
+        }
+
+        // Both detectors keep a baseline of the types that resolved in the scanned assets, so it follows the folders.
+        [Test]
+        public void ExcludedFolders_NewValue_ResetsBreakageBaselines()
+        {
+            SerializeReferenceSettings.ExcludedFolders = Array.Empty<string>();
+
+            WithBreakageBaselines(() =>
+            {
+                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Third Party/" };
+
+                Assert.IsFalse(SerializeReferenceBreakageDetector.IsEstablished);
+                Assert.IsFalse(TypeNameBreakageDetector.IsEstablished);
+                CollectionAssert.IsEmpty(SerializeReferenceBreakageDetector.GetBaselineKeys(BaselineProbePath));
+                CollectionAssert.IsEmpty(TypeNameBreakageDetector.GetBaselineKeys(BaselineProbePath));
+            });
+        }
+
+        [Test]
+        public void ExcludedFolders_SameValue_KeepsBreakageBaselines()
+        {
+            SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/" };
+
+            WithBreakageBaselines(() =>
+            {
+                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/" };
+
+                Assert.IsTrue(SerializeReferenceBreakageDetector.IsEstablished);
+                Assert.IsTrue(TypeNameBreakageDetector.IsEstablished);
+                CollectionAssert.AreEqual(new[] { "key" }, SerializeReferenceBreakageDetector.GetBaselineKeys(BaselineProbePath));
+                CollectionAssert.AreEqual(new[] { "key" }, TypeNameBreakageDetector.GetBaselineKeys(BaselineProbePath));
+            });
+        }
+
+        private const string BaselineProbePath = "Assets/__AspidSettingsBaselineProbe__.asset";
+
+        // Runs `body` with an established baseline holding one key in each detector, then puts the session's own back.
+        private static void WithBreakageBaselines(Action body)
+        {
+            var snapshot = new BreakageBaselineSnapshot();
+
+            try
+            {
+                SerializeReferenceBreakageDetector.ImportBaseline($"{BaselineProbePath}\tkey");
+                SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, true);
+                TypeNameBreakageDetector.ImportBaseline($"{BaselineProbePath}\tkey");
+                SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, true);
+
+                body();
+            }
+            finally
+            {
+                snapshot.Restore();
+            }
         }
 
         [Test]

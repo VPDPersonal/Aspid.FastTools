@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using System.Collections.Generic;
 
@@ -49,6 +50,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 (((Guid.GetHashCode() * 397 ^ FileId.GetHashCode()) * 397 ^ Rid.GetHashCode()) * 397 ^
                     TargetFileId.GetHashCode()) * 397 ^ TargetGuid.GetHashCode());
         }
+
+        private const string RefIdsMarker = "RefIds:";
+        private const string ManagedReferencesMarker = "managedReferences[";
 
         private static Dictionary<string, HashSet<Usage>> _index;
 
@@ -108,15 +112,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static void ClearCache() => Reset();
 
-        public static void RebuildAsset(string path)
+        // Removing usages walks every usage set, so a batch drops its old usages in one walk instead of one per asset.
+        public static void RebuildAssets(IReadOnlyCollection<string> paths)
         {
-            if (_index is null) return;
+            if (_index is null || paths.Count == 0) return;
 
-            var guid = AssetDatabase.AssetPathToGUID(path);
-            if (string.IsNullOrEmpty(guid)) return;
+            var assets = new List<(string path, string guid)>(paths.Count);
+            var guids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var path in paths)
+            {
+                var guid = AssetDatabase.AssetPathToGUID(path);
+                if (string.IsNullOrEmpty(guid)) continue;
 
-            RemoveGuid(guid);
-            AddAsset(path, guid);
+                assets.Add((path, guid));
+                guids.Add(guid);
+            }
+
+            if (assets.Count == 0) return;
+
+            RemoveGuids(guids);
+            foreach (var (path, guid) in assets) AddAsset(path, guid);
+        }
+
+        // Drops the usages of assets that were deleted or are no longer scanned; a path that was just deleted still maps
+        // to its guid. False when a path has no guid, so the caller cannot tell which usages to drop.
+        public static bool RemoveAssets(IReadOnlyCollection<string> paths)
+        {
+            if (_index is null || paths.Count == 0) return true;
+
+            var guids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var path in paths)
+            {
+                var guid = AssetDatabase.AssetPathToGUID(path);
+                if (string.IsNullOrEmpty(guid)) return false;
+
+                guids.Add(guid);
+            }
+
+            RemoveGuids(guids);
+            return true;
         }
 
         private static void EnsureBuilt()
@@ -192,8 +226,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A cheap probe a sweep may run before CollectUsages: a file with no such line holds no usage at all.
         public static bool MayHoldUsages(string line) =>
-            line.IndexOf("RefIds:", StringComparison.Ordinal) >= 0 ||
-            line.IndexOf("managedReferences[", StringComparison.Ordinal) >= 0;
+            line.IndexOf(RefIdsMarker, StringComparison.Ordinal) >= 0 ||
+            line.IndexOf(ManagedReferencesMarker, StringComparison.Ordinal) >= 0;
+
+        // MayHoldUsages for ReadLinesIfContainsAny, which searches the file as bytes.
+        public static readonly byte[][] UsageMarkers =
+        {
+            Encoding.ASCII.GetBytes(RefIdsMarker),
+            Encoding.ASCII.GetBytes(ManagedReferencesMarker),
+        };
 
         private static void AddUsage(string key, Usage usage)
         {
@@ -207,12 +248,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             set.Add(usage);
         }
 
-        private static void RemoveGuid(string guid)
+        private static void RemoveGuids(HashSet<string> guids)
         {
             List<string> emptied = null;
             foreach (var (key, set) in _index)
             {
-                if (set.RemoveWhere(u => string.Equals(u.Guid, guid, StringComparison.Ordinal)) > 0 && set.Count == 0)
+                if (set.RemoveWhere(u => guids.Contains(u.Guid)) > 0 && set.Count == 0)
                     (emptied ??= new List<string>()).Add(key);
             }
 

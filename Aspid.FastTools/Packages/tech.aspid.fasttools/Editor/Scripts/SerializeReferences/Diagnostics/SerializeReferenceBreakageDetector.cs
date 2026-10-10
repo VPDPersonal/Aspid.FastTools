@@ -13,10 +13,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // asset replaces its entry and a type whose last usage is gone drops out instead of alarming on a later rename.
         internal const string EstablishedKey = "Aspid.FastTools.SerializeReferences.Breakage.AssetBaselineEstablished";
         internal const string BaselineKey = "Aspid.FastTools.SerializeReferences.Breakage.AssetBaseline";
-        private const char EntrySeparator = '\n';
-        private const char KeySeparator = '\t';
         private const double SweepBudgetMilliseconds = 8;
 
+        private static readonly BreakageBaseline _baseline = new(BaselineKey);
         private static readonly Queue<string> _pending = new();
         private static readonly Dictionary<string, HashSet<string>> _swept = new(StringComparer.Ordinal);
         private static bool _establishing;
@@ -28,13 +27,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static bool IsEstablished => SessionState.GetBool(EstablishedKey, false);
 
         [InitializeOnLoadMethod]
-        private static void EstablishBaselineOnce() => EditorApplication.delayCall += () =>
+        private static void EstablishBaselineOnce() => EditorApplication.delayCall += EstablishBaseline;
+
+        private static void EstablishBaseline()
         {
             if (Application.isBatchMode) return;
             if (IsEstablished) return;
 
             RunDetection(report: false, changedAssets: null);
-        };
+        }
+
+        // The excluded folders decide which assets the baseline covers: a type that only an excluded folder holds must
+        // stop alarming, and a folder that is no longer excluded must be covered, so the baseline starts over.
+        internal static void ResetBaseline()
+        {
+            CancelSweep();
+            _baseline.Clear();
+            SessionState.EraseBool(EstablishedKey);
+
+            EditorApplication.delayCall += EstablishBaseline;
+        }
 
         // changedAssets are the candidate assets imported, deleted or moved since the last scan; their baseline entries
         // are re-read, so a type first assigned during the session is covered too.
@@ -83,11 +95,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             BreakageReport result = default;
             if (IsEstablished && report)
-                result = BuildReport(unresolved, CollectKeys(LoadBaseline()));
+                result = BuildReport(unresolved, CollectKeys(_baseline.Entries));
 
             // The warm index already reflects every pending asset, so a text sweep still in flight is redundant.
             CancelSweep();
-            SaveBaseline(resolvable);
+            _baseline.Replace(resolvable);
             SessionState.SetBool(EstablishedKey, true);
 
             if (result.HasAny) BreakageDetected?.Invoke(result);
@@ -117,7 +129,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void ReportBrokenBaselineTypes()
         {
-            var baseline = LoadBaseline();
+            var baseline = _baseline.Entries;
             if (baseline.Count == 0) return;
 
             var entries = new List<BreakageEntry>();
@@ -139,7 +151,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Reported once: a broken key leaves the baseline, including the results of a sweep still in flight.
             RemoveKeys(baseline, brokenTypes);
             RemoveKeys(_swept, brokenTypes);
-            SaveBaseline(baseline);
+            _baseline.Replace(baseline);
 
             BreakageDetected?.Invoke(new BreakageReport(entries, brokenTypes.Count));
         }
@@ -208,7 +220,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var baseline = _establishing
                 ? new Dictionary<string, HashSet<string>>(StringComparer.Ordinal)
-                : LoadBaseline();
+                : _baseline.Entries;
 
             foreach (var (path, keys) in _swept)
             {
@@ -217,7 +229,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             _swept.Clear();
-            SaveBaseline(baseline);
+            _baseline.Replace(baseline);
 
             if (_establishing)
             {
@@ -265,18 +277,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return keys;
         }
 
-        // A line probe before the parse, since most assets hold no managed references at all. Returns the lines for the
-        // parse, so each asset is read once, or null when the asset can be skipped.
-        private static string[] ReadIfMayHoldReferences(string path)
-        {
-            var lines = SerializeReferenceYaml.ReadLines(path);
-            if (lines is null) return null;
-
-            foreach (var line in lines)
-                if (SerializeReferenceTypeUsageIndex.MayHoldUsages(line)) return lines;
-
-            return null;
-        }
+        // A byte probe before the parse, since most assets hold no managed references at all and must not be decoded.
+        // Returns the lines for the parse, so a matching asset is decoded once, or null when the asset can be skipped.
+        private static string[] ReadIfMayHoldReferences(string path) =>
+            SerializeReferenceYaml.ReadLinesIfContainsAny(path, SerializeReferenceTypeUsageIndex.UsageMarkers);
 
         private static bool TryParseStoredTypeKey(string key, out ManagedTypeName storedType)
         {
@@ -374,35 +378,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         internal static IReadOnlyCollection<string> GetBaselineKeys(string assetPath) =>
-            LoadBaseline().TryGetValue(assetPath, out var keys) ? keys : Array.Empty<string>();
+            _baseline.Entries.TryGetValue(assetPath, out var keys) ? keys : Array.Empty<string>();
 
-        private static Dictionary<string, HashSet<string>> LoadBaseline()
-        {
-            var raw = SessionState.GetString(BaselineKey, string.Empty);
-            var baseline = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-            if (string.IsNullOrEmpty(raw)) return baseline;
+        // Tests snapshot, seed and restore the session's own baseline through these, and read what reached SessionState.
+        internal static string ExportBaseline() => _baseline.Export();
 
-            foreach (var entry in raw.Split(EntrySeparator))
-            {
-                var parts = entry.Split(KeySeparator);
-                if (parts.Length < 2 || parts[0].Length == 0) continue;
+        internal static void ImportBaseline(string raw) => _baseline.Import(raw);
 
-                var keys = GetOrAdd(baseline, parts[0]);
-                for (var i = 1; i < parts.Length; i++)
-                    if (parts[i].Length > 0) keys.Add(parts[i]);
-            }
-
-            return baseline;
-        }
-
-        private static void SaveBaseline(Dictionary<string, HashSet<string>> baseline)
-        {
-            var entries = new List<string>(baseline.Count);
-            foreach (var (path, keys) in baseline)
-                if (keys.Count > 0) entries.Add(path + KeySeparator + string.Join(KeySeparator.ToString(), keys));
-
-            SessionState.SetString(BaselineKey, string.Join(EntrySeparator.ToString(), entries));
-        }
+        internal static void PersistBaseline() => _baseline.Persist();
 
         private static HashSet<string> CollectKeys(Dictionary<string, HashSet<string>> baseline)
         {
