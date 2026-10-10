@@ -14,6 +14,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
+            // The delete guard keeps the assets with managed references for one editor tick; a changed one makes that stale.
+            if (HasCandidate(imported) || HasCandidate(deleted) || HasCandidate(moved))
+                SerializeReferenceDeleteGuard.InvalidateSweep();
+
             // An in-place class rename reimports the .cs without touching any asset YAML, so no per-asset patch runs
             // and only a coarse reset re-evaluates the stale Resolves entries.
             if (HasCandidate(deleted) || HasCandidate(moved) || HasScript(imported))

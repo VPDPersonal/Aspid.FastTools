@@ -38,6 +38,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             @"//[^\n]*|/\*.*?\*/|(?:@\$?|\$@)""(?:[^""]|"""")*""|\$?""(?:\\.|[^\\""\n])*""|'(?:\\.|[^\\'\n])*'",
             RegexOptions.Compiled | RegexOptions.Singleline);
 
+        // What a cold sweep learned about the project, kept until the end of the editor tick. Unity calls the guard once
+        // per deleted script or folder, so a delete of many scripts would sweep the whole project once for each of them.
+        // The later calls read only the assets that held managed references, or stop at once when the user cancelled.
+        // An asset that is imported, moved or deleted in the meantime drops the list (see InvalidateSweep).
+        private static List<string> _referencePaths;
+        private static bool _isSweepCancelled;
+
         private static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions options)
         {
             if (Application.isBatchMode) return AssetDeleteResult.DidNotDelete;
@@ -53,7 +60,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (types.Count == 0) return AssetDeleteResult.DidNotDelete;
 
             var sample = new SortedSet<string>(StringComparer.Ordinal);
-            var counts = CountUsages(types, sample);
+            var counts = CountUsages(types, sample, reuseSweep: true);
             if (counts is null) return AssetDeleteResult.FailedDelete;
 
             var used = types.Where(type => counts[type] > 0).ToList();
@@ -84,7 +91,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var types = ResolveCandidateTypes(scriptPaths);
             if (types.Count == 0) return AssetDeleteResult.DidNotDelete;
 
-            var counts = CountUsages(types, samplePaths: null);
+            var counts = CountUsages(types, samplePaths: null, reuseSweep: true);
             if (counts is null) return AssetDeleteResult.FailedDelete;
 
             var affected = new List<string>();
@@ -307,8 +314,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Null when the user cancels the sweep, which cancels the delete too: its outcome was never shown. samplePaths,
-        // when given, collects up to SamplePathCount asset paths that hold a usage.
-        internal static Dictionary<Type, int> CountUsages(IReadOnlyList<Type> types, ICollection<string> samplePaths)
+        // when given, collects up to SamplePathCount asset paths that hold a usage. reuseSweep shares the project sweep
+        // with the other calls of the same editor tick (see _referencePaths); leave it off for a call that is not part
+        // of a delete.
+        internal static Dictionary<Type, int> CountUsages(
+            IReadOnlyList<Type> types,
+            ICollection<string> samplePaths,
+            bool reuseSweep = false)
         {
             var counts = types.ToDictionary(type => type, _ => 0);
 
@@ -326,6 +338,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return counts;
             }
 
+            if (reuseSweep && _isSweepCancelled) return null;
+
             // A cold index is never warmed just to answer one delete, since that is a modal full-project build; one
             // text sweep matches every type's open key (so a generic script matches its closed keys) instead.
             var typesByKey = new Dictionary<string, Type>(StringComparer.Ordinal);
@@ -339,26 +353,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 classTokens.Add(key[(key.LastIndexOf('|') + 1)..]);
             }
 
-            var paths = AssetDatabase.GetAllAssetPaths().Where(SerializeReferenceHelpers.IsScanCandidate).ToArray();
+            var knownPaths = reuseSweep ? _referencePaths : null;
+            var referencePaths = reuseSweep && knownPaths is null ? new List<string>() : null;
+
+            IReadOnlyList<string> paths = knownPaths;
+            paths ??= AssetDatabase.GetAllAssetPaths().Where(SerializeReferenceHelpers.IsScanCandidate).ToArray();
+
             var stopwatch = Stopwatch.StartNew();
 
             try
             {
-                for (var i = 0; i < paths.Length; i++)
+                for (var i = 0; i < paths.Count; i++)
                 {
                     var path = paths[i];
 
                     if (stopwatch.ElapsedMilliseconds >= ProgressDelayMilliseconds &&
                         EditorUtility.DisplayCancelableProgressBar(
                             "Checking Managed References",
-                            $"{path}  ({i + 1}/{paths.Length})",
-                            (float)i / paths.Length))
+                            $"{path}  ({i + 1}/{paths.Count})",
+                            (float)i / paths.Count))
                     {
+                        if (reuseSweep) KeepSweepUntilTickEnds(cancelled: true);
                         return null;
                     }
 
-                    var lines = ReadIfMayHoldUsages(path, classTokens);
-                    if (lines is null) continue;
+                    var lines = SerializeReferenceYaml.ReadLines(path);
+                    if (lines is null || !MayHoldUsages(lines)) continue;
+
+                    referencePaths?.Add(path);
+                    if (!NamesAnyClass(lines, classTokens)) continue;
 
                     var usedHere = false;
                     // A pure text pass rather than an asset load; prefab instance overrides count like RefIds entries.
@@ -378,29 +401,60 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 EditorUtility.ClearProgressBar();
             }
 
+            if (referencePaths is not null)
+            {
+                _referencePaths = referencePaths;
+                KeepSweepUntilTickEnds(cancelled: false);
+            }
+
             return counts;
         }
 
-        // A line probe before the parse: most assets hold no managed references at all, and the rest rarely name the
-        // class being deleted. Returns the lines for the parse, so each asset is read once, or null when the asset can
-        // be skipped.
-        private static string[] ReadIfMayHoldUsages(string path, HashSet<string> classTokens)
+        // The assets the shared sweep found to hold managed references, or null when no sweep is kept.
+        internal static IReadOnlyList<string> SweptReferencePaths => _referencePaths;
+
+        internal static void ResetSweep()
         {
-            var lines = SerializeReferenceYaml.ReadLines(path);
-            if (lines is null) return null;
+            _referencePaths = null;
+            _isSweepCancelled = false;
+        }
 
-            var mayHoldUsages = false;
-            var namesType = false;
+        // A changed asset can add a reference the kept list lacks. The cancel flag stays: the user's answer outlives it.
+        internal static void InvalidateSweep() => _referencePaths = null;
 
+        internal static void KeepSweepUntilTickEnds(bool cancelled)
+        {
+            _isSweepCancelled = cancelled;
+
+            // Removed first, so that a second sweep in the same tick does not queue the reset twice.
+            EditorApplication.delayCall -= ResetSweep;
+            EditorApplication.delayCall += ResetSweep;
+        }
+
+        // The probes below run on lines already read, so each asset is read once. The cheap managed-reference probe goes
+        // first: most assets hold no managed references at all, and it rejects them before any class name is searched.
+        private static bool MayHoldUsages(string[] lines)
+        {
             foreach (var line in lines)
             {
-                mayHoldUsages = mayHoldUsages || SerializeReferenceTypeUsageIndex.MayHoldUsages(line);
-                namesType = namesType || classTokens.Any(token => line.IndexOf(token, StringComparison.Ordinal) >= 0);
-
-                if (mayHoldUsages && namesType) return lines;
+                if (SerializeReferenceTypeUsageIndex.MayHoldUsages(line)) return true;
             }
 
-            return null;
+            return false;
+        }
+
+        // The assets that do hold managed references rarely name the classes being deleted.
+        private static bool NamesAnyClass(string[] lines, HashSet<string> classTokens)
+        {
+            foreach (var line in lines)
+            {
+                foreach (var token in classTokens)
+                {
+                    if (line.IndexOf(token, StringComparison.Ordinal) >= 0) return true;
+                }
+            }
+
+            return false;
         }
 
         private static void AddSample(ICollection<string> samplePaths, string path)
