@@ -274,7 +274,7 @@ namespace Aspid.FastTools.Types.Editors
             TypeSelectorWindow.Show(
                 screenRect: GetScreenRect(),
                 filter: filter,
-                currentAqn: repair || showMixedValue ? null : value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
+                assemblyQualifiedName: repair || showMixedValue ? null : value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
                 onSelected: ApplyPicked);
 
             return;

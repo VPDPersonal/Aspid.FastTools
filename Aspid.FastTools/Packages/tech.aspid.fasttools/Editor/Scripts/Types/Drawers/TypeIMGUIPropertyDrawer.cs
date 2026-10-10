@@ -127,7 +127,7 @@ namespace Aspid.FastTools.Types.Editors
                     HideNoneOption = repair,
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
-                currentAqn: repair || property.hasMultipleDifferentValues ? null : property.stringValue ?? string.Empty,
+                assemblyQualifiedName: repair || property.hasMultipleDifferentValues ? null : property.stringValue ?? string.Empty,
                 onSelected: assemblyQualifiedName => persistent.SetStringAndApply(value: assemblyQualifiedName ?? string.Empty));
         }
 

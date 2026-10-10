@@ -393,7 +393,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
-                currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(property, currentType),
+                assemblyQualifiedName: SerializeReferenceHelpers.GetSelectorCurrentAqn(property, currentType),
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
                     : Type.GetType(assemblyQualifiedName, throwOnError: false)));

@@ -9,13 +9,13 @@ using Aspid.FastTools.Types.Editors;
 TypeSelectorWindow.Show(
     screenRect,                                   // button rect in SCREEN coordinates
     new TypeSelectorFilter { Types = new[] { typeof(Weapon) }, Allow = TypeAllow.None },
-    currentAqn: selectedTypeName,
+    assemblyQualifiedName: selectedTypeName,
     onSelected: aqn => selectedTypeName = aqn);   // null for <None>; not called when dismissed
 ```
 
 - `TypeSelectorFilter` is a struct whose default `Allow` is `None` (the attribute's default is `All`). Other members:
   `Predicate`, `AdditionalTypes`, `ArgumentFilter`, `InferredArgumentFilter`, `IncludeHidden`, `HideNoneOption`.
-- `currentAqn: ""` (default) marks `<None>` as current; `null` marks nothing.
+- `assemblyQualifiedName: ""` (default) marks `<None>` as current; `null` marks nothing.
 - Picking an open generic type walks the user through its arguments and returns the closed type's name.
 
 ## ComponentTypeSelector
