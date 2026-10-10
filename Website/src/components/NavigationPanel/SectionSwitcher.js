@@ -2,6 +2,7 @@ import React from 'react';
 import {useLocation} from '@docusaurus/router';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import {useThemeConfig} from '@docusaurus/theme-common';
+import {translate} from '@docusaurus/Translate';
 import {useActivePlugin, useAllDocsData} from '@docusaurus/plugin-content-docs/client';
 import Dropdown from './Dropdown';
 import styles from './styles.module.css';
@@ -31,7 +32,7 @@ export default function SectionSwitcher() {
   const current = sections.find((section) => section.path === activePath) ?? sections[0];
   const items = sections.map((section) => ({key: section.path, label: section.label, to: section.to, active: section === current}));
   return (
-    <Dropdown items={items} buttonClassName={styles.switcherButton}>
+    <Dropdown items={items} buttonClassName={styles.switcherButton} aria-label={`${translate({id: 'section.label', message: 'Section'})}: ${current.label}`}>
       <span>{current.label}</span>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
     </Dropdown>

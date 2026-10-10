@@ -14,6 +14,8 @@ namespace Aspid.FastTools.Types.Editors
         private const string ItemIconClass = BlockClass + "__item-icon";
         private const string ItemGlyphClass = BlockClass + "__item-glyph";
         private const string ItemTitleClass = BlockClass + "__item-title";
+        private const string ItemContextClass = BlockClass + "__item-context";
+        private const string ItemTitleWithContextModifier = ItemTitleClass + "--with-context";
         private const string ItemCheckClass = BlockClass + "__item-check";
         private const string ItemCountClass = BlockClass + "__item-count";
         private const string ItemArrowClass = BlockClass + "__item-arrow";
@@ -52,6 +54,10 @@ namespace Aspid.FastTools.Types.Editors
             var label = new Label()
                 .AddClass(ItemTitleClass);
 
+            var context = new Label()
+                .AddClass(ItemContextClass)
+                .SetPickingMode(PickingMode.Ignore);
+
             var check = new Label(TypeSelectorHelpers.Check)
                 .AddClass(ItemCheckClass)
                 .SetPickingMode(PickingMode.Ignore);
@@ -72,6 +78,7 @@ namespace Aspid.FastTools.Types.Editors
                 .AddChild(icon)
                 .AddChild(glyph)
                 .AddChild(label)
+                .AddChild(context)
                 .AddChild(check)
                 .AddChild(count)
                 .AddChild(favorite)
@@ -109,9 +116,17 @@ namespace Aspid.FastTools.Types.Editors
 
             element.SetPickingMode(PickingMode.Position);
 
+            // A search result puts its namespace after the name, dimmed, so a long namespace cannot push the name out.
+            var hasContext = !string.IsNullOrEmpty(node.Context);
+
             element.Q<Label>(className: ItemTitleClass)
+                .EnableClass(ItemTitleWithContextModifier, hasContext)
                 .SetTextSelf(node.DisplayName)
                 .SetTooltip(node.Tooltip);
+
+            element.Q<Label>(className: ItemContextClass)
+                .SetTextSelf(node.Context)
+                .SetDisplay(hasContext ? DisplayStyle.Flex : DisplayStyle.None);
 
             BindLeading(element.Q<Image>(className: ItemIconClass), element.Q<Label>(className: ItemGlyphClass), node, index == _listView.selectedIndex);
             BindFavorite(element.Q<Button>(className: FavoriteToggleClass), node);
