@@ -50,8 +50,9 @@ Agent Skills for projects that consume the package in `skills/`.
   when one differs.
 - `.github/workflows/ci.yml` holds every required check except the PR title and CHANGELOG (`pr-checks.yml`), and
   `release.yml` runs it on the tagged commit. It has no path filter, so each of its jobs can be a required check. It runs
-  `check-package-files.mjs`, `check-version.mjs`, `check-unity-minimum.mjs` and `check-skills.mjs`, compares the committed
-  Roslyn DLLs with a Release build, runs `node --test scripts/*.test.mjs`, the .NET tests and the Unity EditMode tests.
+  `check-package-files.mjs`, `check-version.mjs`, `check-unity-minimum.mjs`, `check-skills.mjs` and
+  `check-contrast.mjs`, compares the committed Roslyn DLLs with a Release build, runs `node --test scripts/*.test.mjs`,
+  the .NET tests and the Unity EditMode tests.
   The script tests run `set-version.sh` on a copy of the repository and need `npm --prefix Website ci`.
 - `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
   environment. Allow there only commands that cannot run code or read the environment; put the rest in
