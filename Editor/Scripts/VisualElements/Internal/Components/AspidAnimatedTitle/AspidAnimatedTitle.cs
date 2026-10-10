@@ -7,7 +7,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools")]
+    [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
     internal sealed partial class AspidAnimatedTitle : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedTitle";
