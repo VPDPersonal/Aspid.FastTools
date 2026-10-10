@@ -45,6 +45,7 @@
 | <code lang="csharp">SetPadding(8)</code> | все стороны |
 | <code lang="csharp">SetPaddingX(8)</code> | левую и правую |
 | <code lang="csharp">SetPaddingY(8)</code> | верхнюю и нижнюю |
+| <code lang="csharp">SetPadding(8, 4)</code> | верхнюю и правую (порядок: top, right, bottom, left) |
 | <code lang="csharp">SetPadding(top: 8, left: 4)</code> | верхнюю и левую, остальные не меняет |
 | <code lang="csharp">SetBorderRadiusTop(6)</code> | оба верхних угла |
 | <code lang="csharp">SetSize(24, 16)</code> | <code lang="csharp">width</code> и <code lang="csharp">height</code> |

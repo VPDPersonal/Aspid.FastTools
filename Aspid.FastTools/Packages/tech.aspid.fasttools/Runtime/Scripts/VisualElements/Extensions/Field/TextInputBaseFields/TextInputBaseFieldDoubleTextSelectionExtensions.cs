@@ -14,6 +14,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="ITextSelection.OnCursorIndexChange"/> event of <see cref="TextInputBaseField{TValueType}.textSelection"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.3 and newer.
+        /// </remarks>
         /// <typeparam name="T">The field type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
@@ -28,6 +31,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="ITextSelection.OnCursorIndexChange"/> event of <see cref="TextInputBaseField{TValueType}.textSelection"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.3 and newer.
+        /// </remarks>
         /// <typeparam name="T">The field type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
@@ -46,6 +52,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="ITextSelection.OnSelectIndexChange"/> event of <see cref="TextInputBaseField{TValueType}.textSelection"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.3 and newer.
+        /// </remarks>
         /// <typeparam name="T">The field type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
@@ -60,6 +69,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="ITextSelection.OnSelectIndexChange"/> event of <see cref="TextInputBaseField{TValueType}.textSelection"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.3 and newer.
+        /// </remarks>
         /// <typeparam name="T">The field type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>

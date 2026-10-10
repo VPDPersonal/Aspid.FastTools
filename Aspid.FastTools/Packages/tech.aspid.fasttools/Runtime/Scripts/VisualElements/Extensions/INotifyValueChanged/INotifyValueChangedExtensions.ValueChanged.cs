@@ -12,6 +12,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{int}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -40,6 +46,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{uint}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -68,6 +80,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{nint}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -96,6 +114,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{nuint}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -126,6 +150,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{long}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -154,6 +184,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{ulong}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -184,6 +220,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{byte}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -212,6 +254,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{sbyte}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -242,6 +290,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{bool}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -272,6 +326,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{char}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -302,6 +362,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Rect}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -330,6 +396,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{RectInt}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -360,6 +432,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Enum}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -391,6 +469,15 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// <para>Available in Unity 6000.4 and newer.</para>
+        /// <para>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{GUID}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </para>
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -405,6 +492,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.4 and newer.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
@@ -422,6 +512,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Color}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -452,6 +548,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{short}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -480,6 +582,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{ushort}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -510,6 +618,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{float}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -540,6 +654,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{double}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -570,6 +690,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{string}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -600,6 +726,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Bounds}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -628,6 +760,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{BoundsInt}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -658,6 +796,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Hash128}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -688,6 +832,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{decimal}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -718,6 +868,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Vector2}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -746,6 +902,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Vector2Int}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -776,6 +938,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Vector3}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -804,6 +972,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Vector3Int}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -834,6 +1008,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Vector4}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -864,6 +1044,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Delegate}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -894,6 +1080,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Gradient}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -924,6 +1116,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Matrix4x4}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -954,6 +1152,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Quaternion}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -984,6 +1188,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{object}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -1014,6 +1224,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{AnimationCurve}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -1044,6 +1260,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{ToggleButtonGroupState}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -1074,6 +1296,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{T}(T, EventCallback{ChangeEvent{Object}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
@@ -1103,6 +1331,12 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <remarks>
+        /// The callback stays registered until removed. Pass an equal delegate to
+        /// <see cref="RemoveValueChanged{TField, TValue}(TField, EventCallback{ChangeEvent{TValue}})"/>: a method group or a delegate kept in a field.
+        /// A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+        /// and registering it again, for example in <see cref="ListView.bindItem"/>, adds one more.
+        /// </remarks>
         /// <typeparam name="TField">The field type.</typeparam>
         /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>

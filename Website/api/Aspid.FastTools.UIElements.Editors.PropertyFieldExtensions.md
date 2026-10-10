@@ -55,6 +55,13 @@ The callback to subscribe.
 
 A [`PropertyField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PropertyField.html) element to configure.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`PropertyFieldExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.Editors.PropertyFieldExtensions.md#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEditor_UIElements_SerializedPropertyChangeEvent__): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<SerializedPropertyChangeEvent\>\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEditor_UIElements_SerializedPropertyChangeEvent__}
 
 Unsubscribes from the element's value-changed event.

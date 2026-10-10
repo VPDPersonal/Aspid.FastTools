@@ -148,6 +148,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="TextInputBaseField{TValueType}.hideSoftKeyboard"/>.
         /// </summary>
+        /// <remarks>
+        /// Available in Unity 6000.4 and newer.
+        /// </remarks>
         /// <typeparam name="TField">The field type.</typeparam>
         /// <typeparam name="TValue">The value type held by the field.</typeparam>
         /// <param name="element">The element to modify.</param>

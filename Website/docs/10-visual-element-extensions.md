@@ -45,6 +45,7 @@ All of these methods have a variant with the suffix <code lang="csharp">If</code
 | <code lang="csharp">SetPadding(8)</code> | every side |
 | <code lang="csharp">SetPaddingX(8)</code> | left and right |
 | <code lang="csharp">SetPaddingY(8)</code> | top and bottom |
+| <code lang="csharp">SetPadding(8, 4)</code> | top and right (order: top, right, bottom, left) |
 | <code lang="csharp">SetPadding(top: 8, left: 4)</code> | top and left, keeps the rest |
 | <code lang="csharp">SetBorderRadiusTop(6)</code> | both top corners |
 | <code lang="csharp">SetSize(24, 16)</code> | <code lang="csharp">width</code> and <code lang="csharp">height</code> |

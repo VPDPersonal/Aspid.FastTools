@@ -175,6 +175,10 @@ The element, for chaining.
 
 The field type.
 
+#### Remarks
+
+Available in Unity 6000.4 and newer.
+
 ### SetKeyboardType\<T\>\(T, TouchScreenKeyboardType\) {#Aspid_FastTools_UIElements_TextInputBaseFieldDoubleExtensions_SetKeyboardType__1___0_UnityEngine_TouchScreenKeyboardType_}
 
 Sets [`keyboardType`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-keyboardType.html).

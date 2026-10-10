@@ -59,6 +59,10 @@ The field type.
 
 The value type held by the field.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### AddOnSelectIndexChange\<TField, TValue\>\(TField, Action\) {#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_}
 
 Subscribes to the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event of [`textSelection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-textSelection.html).
@@ -92,6 +96,10 @@ The field type.
 `TValue` 
 
 The value type held by the field.
+
+#### Remarks
+
+Available in Unity 6000.3 and newer.
 
 ### RemoveOnCursorIndexChange\<TField, TValue\>\(TField, Action\) {#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_}
 
@@ -127,6 +135,10 @@ The field type.
 
 The value type held by the field.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### RemoveOnSelectIndexChange\<TField, TValue\>\(TField, Action\) {#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_}
 
 Unsubscribes from the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event of [`textSelection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-textSelection.html).
@@ -160,6 +172,10 @@ The field type.
 `TValue` 
 
 The value type held by the field.
+
+#### Remarks
+
+Available in Unity 6000.3 and newer.
 
 ### SetCursorIndex\<TField, TValue\>\(TField, int\) {#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetCursorIndex__2___0_System_Int32_}
 
