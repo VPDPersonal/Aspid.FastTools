@@ -98,7 +98,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Ranked against the constraint-filtered pool, so the suggestion is always assignable — which is what lets a
         // quick-apply bypass the picker. Every entry stores the same broken type, so the first one ranks the same
         // candidates as any other.
-        public bool TryGetSuggestion(Type constraint, out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
+        public bool TryGetSuggestion(Type[] constraint, out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
         {
             suggestion = default;
 
@@ -112,40 +112,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        public Type ResolveConstraint() => ResolveConstraint(out _);
+        public Type[] ResolveConstraint() => ResolveConstraint(out _);
 
-        // mixedFieldTypes separates a fallback caused by disagreeing field types from an unrecoverable one; the
-        // bulk-fix confirmation warns only on the former.
-        public Type ResolveConstraint(out bool mixedFieldTypes)
+        // The field types every entry must fit, or null when the group is unconstrained. mixedFieldTypes separates
+        // a fallback caused by disagreeing field types from an unrecoverable one; the bulk-fix confirmation warns
+        // only on the former.
+        public Type[] ResolveConstraint(out bool mixedFieldTypes)
         {
             mixedFieldTypes = false;
-            Type common = null;
+            Type[] common = null;
 
             foreach (var entry in Entries)
             {
                 // An unrecoverable field type leaves the group unconstrained: a tighter guess could hide a valid
                 // pick.
-                var fieldType = _constraints.Resolve(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid);
-                if (fieldType is null) return typeof(object);
+                var fieldTypes = _constraints.Resolve(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid);
+                if (fieldTypes is null) return null;
 
                 if (common is null)
                 {
-                    common = fieldType;
+                    common = fieldTypes;
                 }
-                else if (common != fieldType)
+                else if (common.Length != fieldTypes.Length || !common.All(fieldTypes.Contains))
                 {
                     mixedFieldTypes = true;
-                    return typeof(object);
+                    return null;
                 }
             }
 
-            return common ?? typeof(object);
+            return common;
         }
     }
 
     internal readonly struct MissingReferenceMigration
     {
-        public readonly Type Constraint;
+        public readonly Type[] Constraint;
         public readonly bool IsMigration;
 
         public readonly Type Target;
@@ -154,7 +155,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             Constraint = group.ResolveConstraint();
             IsMigration = SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var target) &&
-                (Constraint == typeof(object) || Constraint.IsAssignableFrom(target));
+                SerializeReferenceHelpers.FitsConstraints(target, Constraint);
             Target = IsMigration ? target : null;
         }
     }
