@@ -1,3 +1,4 @@
+<!-- PR title: type(scope): summary, up to 72 characters, no period at the end. Rules: CONTRIBUTING.md -->
 <!-- Anything the maintainer must do or decide? Keep this block, one checkbox per ask; otherwise delete it. -->
 > [!IMPORTANT]
 > - [ ] 

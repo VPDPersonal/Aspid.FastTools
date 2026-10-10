@@ -1,6 +1,6 @@
 # PR rules for Aspid.FastTools
 
-Checked by `.github/workflows/pr-checks.yml`; keep this file in sync with it.
+Checked by `.github/workflows/pr-checks.yml`; keep this file, the Pull request section of `CONTRIBUTING.md` and the title hint in `.github/PULL_REQUEST_TEMPLATE.md` in sync with it.
 
 - Types: `feat` `fix` `perf` `refactor` `docs` `test` `chore` `ci` `style`.
 - Scopes (or none): `types` `ids` `enums` `serialize-references` `profiler-markers` `visual-elements` `serialized-property` · `runtime` `editor` `generators` `analyzers` `samples` `package` · `website` `docs` `changelog` `release` `ci` `github` `skills` `claude` `deps`.
