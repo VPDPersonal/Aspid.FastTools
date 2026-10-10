@@ -98,8 +98,8 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           BEFORE: ${{ github.event.before }}
         run: |
-          # What the Unity jobs read: the package except its Markdown, the dev project's version, and their own setup.
-          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|Aspid\.FastTools/ProjectSettings/ProjectVersion\.txt$|scripts/make-unity-test-project\.sh$|\.github/workflows/tests\.yml$)'
+          # What the Unity jobs read: the package except its Markdown, and their own setup.
+          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|scripts/make-unity-test-project\.sh$|\.github/workflows/tests\.yml$)'
 
           # "all" when the changed files are unknown: a release, a new branch, a failed API call, a truncated list.
           files=all
@@ -132,18 +132,19 @@ jobs:
           fi
 
   # Compiles the package, its tests, its Math assembly and all samples in a throwaway project and runs the EditMode
-  # tests on every Unity 6000.x line: the minimum that package.json promises, then one patch of each later line.
-  # A line without a row is not tested: Unity changes APIs and behaviour without a define (see #319 and #325).
-  # Each version needs a GameCI image (unityci/editor). Add a row and move `latest` when a new Unity line ships.
+  # tests on every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
+  # A line without a version is not tested: Unity changes APIs and behaviour without a define (see #319 and #325).
+  # Each version needs a GameCI image (unityci/editor). Add a version when a new Unity line ships.
   # The tests include PlayerCompilationTests, which compiles every script for a standalone player: the Editor compile
   # alone accepts a UnityEditor call in Runtime/ that breaks the user's player build. The job is part of the required
   # "Unity" check below.
+  # There is no Library cache: it saves at most the first import (25-50 s), and 6000.6 was SIGKILLed with a restored one.
   unity-tests:
-    name: Unity EditMode (${{ matrix.name }})
+    name: Unity EditMode (${{ matrix.unity }})
     needs: unity-plan
     if: needs.unity-plan.outputs.run == 'true'
     runs-on: ubuntu-latest
-    # A run takes 3-5 minutes with a restored Library; the rest is room for a cold Library and the image pull.
+    # A run takes 4-5 minutes; the rest is room for a slow image pull.
     timeout-minutes: 30
     permissions:
       contents: read
@@ -151,49 +152,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: minimum
-            unity: 6000.0.53f1
-          - name: '6000.1'
-            unity: 6000.1.17f1
-          - name: '6000.2'
-            unity: 6000.2.15f1
-          - name: '6000.3'
-            unity: 6000.3.25f1
-          - name: dev project
-            unity: project
-          - name: '6000.5'
-            unity: 6000.5.11f1
-          - name: latest
-            unity: 6000.6.4f1
-            # 6000.6.4f1 is often SIGKILLed (exit 137) in its first assembly reload from a restored Library;
-            # it passed every run with a fresh Library. Check again when `latest` moves.
-            library-cache: false
+        # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
+        unity: [6000.0.53f1, 6000.1.17f1, 6000.2.15f1, 6000.3.26f1, 6000.4.12f1, 6000.5.11f1, 6000.6.5f1]
     steps:
-      # What the test project reads: the package, the dev project's version file and the script that builds the project.
+      # What the test project reads: the package and the script that builds the project.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
             Aspid.FastTools/Packages/tech.aspid.fasttools
-            Aspid.FastTools/ProjectSettings
             scripts
 
       - name: Create the test project
-        id: project
         env:
           UNITY: ${{ matrix.unity }}
-        # Assigned first: a failure inside $(...) passed straight to echo would not fail the step.
-        run: |
-          version="$(scripts/make-unity-test-project.sh ci-unity-project "$UNITY")"
-          [ -n "$version" ] || { echo "::error::make-unity-test-project.sh printed no Unity version"; exit 1; }
-          echo "unity=$version" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        if: matrix.library-cache != false
-        with:
-          path: ci-unity-project/Library
-          key: unity-library-${{ steps.project.outputs.unity }}-${{ hashFiles('Aspid.FastTools/Packages/tech.aspid.fasttools/**') }}
-          restore-keys: unity-library-${{ steps.project.outputs.unity }}-
+        run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY"
 
       - uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
         env:
@@ -203,20 +175,19 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          unityVersion: ${{ steps.project.outputs.unity }}
+          unityVersion: ${{ matrix.unity }}
           projectPath: ci-unity-project
           testMode: editmode
           # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
           customParameters: -aspidFastToolsStrictSetup
           artifactsPath: unity-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Unity EditMode results (${{ steps.project.outputs.unity }})
+          checkName: Unity EditMode results (${{ matrix.unity }})
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          # By matrix row, not by version: two rows can resolve to one Unity version, and a second upload of a name fails.
-          name: unity-test-results-${{ matrix.name }}
+          name: unity-test-results-${{ matrix.unity }}
           path: unity-test-results
 
   # The one Unity check that the main ruleset requires. A skipped matrix job reports no per-version names,

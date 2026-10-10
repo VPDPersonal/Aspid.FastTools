@@ -16,7 +16,7 @@ const MENTIONS = [
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',
 ];
-// The CI matrix must test the minimum, not only mention it: its `minimum` row, not any row that has that version.
+// The CI matrix must test the minimum, not only mention it: the first version of its `unity` list, not any version.
 const MATRIX = '.github/workflows/tests.yml';
 
 const { unity, unityRelease } = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8'));
@@ -45,8 +45,8 @@ for (const file of MENTIONS) {
     errors++;
   }
 }
-if (!new RegExp(`^\\s+- name: minimum\\r?\\n\\s+unity: ${escape(minimum)}\\s*$`, 'm').test(readFileSync(MATRIX, 'utf8'))) {
-  fail(MATRIX, `matrix row "name: minimum" with "unity: ${minimum}"`);
+if (!new RegExp(`^\\s+unity: \\[\\s*${escape(minimum)}\\s*[,\\]]`, 'm').test(readFileSync(MATRIX, 'utf8'))) {
+  fail(MATRIX, `matrix "unity: [${minimum}, …]" with the minimum first`);
 }
 
 if (errors) process.exit(1);
