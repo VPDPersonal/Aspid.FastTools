@@ -7,7 +7,8 @@ name: Docs
 on:
   push:
     branches: [main]
-    paths:
+    # The pull_request trigger reuses this list.
+    paths: &paths
       - 'Website/**'
       - 'README.md'
       - 'docs/images/readme-previews/**'
@@ -19,17 +20,7 @@ on:
       - 'CHANGELOG*.md'
       - '.github/workflows/docs.yml'
   pull_request:
-    paths:
-      - 'Website/**'
-      - 'README.md'
-      - 'docs/images/readme-previews/**'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
-      - 'scripts/frame-doc-captures.sh'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
-      - 'CHANGELOG*.md'
-      - '.github/workflows/docs.yml'
+    paths: *paths
   workflow_dispatch:
 
 permissions:
