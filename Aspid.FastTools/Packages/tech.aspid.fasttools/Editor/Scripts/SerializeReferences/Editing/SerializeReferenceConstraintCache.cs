@@ -7,13 +7,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal sealed class SerializeReferenceConstraintCache
     {
-        private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _maps = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type[]>> _maps = new(StringComparer.Ordinal);
 
         private int _loadedSinceUnload;
 
-        // Null (unconstrained) for an orphaned payload or an unresolvable field type. Keyed by exact (fileId, rid),
-        // since rids collide across documents.
-        public Type Resolve(string assetPath, long fileId, long rid)
+        // Null (unconstrained) for an orphaned payload or an unresolvable field type, and one type per field type
+        // when fields of different types share the rid. Keyed by exact (fileId, rid), since rids collide across
+        // documents.
+        public Type[] Resolve(string assetPath, long fileId, long rid)
         {
             if (!_maps.TryGetValue(assetPath, out var map))
             {
@@ -28,7 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A map loads every object of its asset, and a loaded asset stays in memory until it is unloaded, so a cache
         // that fills from hundreds of prefabs releases them in batches, as the project sweep does.
-        private Dictionary<(long fileId, long rid), Type> BuildMap(string assetPath)
+        private Dictionary<(long fileId, long rid), Type[]> BuildMap(string assetPath)
         {
             var wasLoaded = AssetDatabase.IsMainAssetAtPathLoaded(assetPath);
             var map = SerializeReferenceHelpers.BuildConstraintMap(assetPath);

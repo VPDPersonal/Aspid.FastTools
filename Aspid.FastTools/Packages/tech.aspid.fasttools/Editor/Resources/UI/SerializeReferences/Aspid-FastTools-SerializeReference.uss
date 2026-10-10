@@ -73,6 +73,14 @@ Button.aspid-fasttools-serialize-reference__open-button {
     background-image:                                       resource("FolderOpened Icon");
 }
 
+/* A field overridden on a prefab instance: Unity's bold override label, set by hand on this unbound header. */
+.aspid-fasttools-serialize-reference--prefab-override
+    > .unity-foldout
+    > .unity-foldout__toggle
+    > .unity-base-field__label {
+    -unity-font-style:                                      bold;
+}
+
 /* Use padding to preserve Unity's margin-based foldout nesting indent. */
 .aspid-fasttools-serialize-reference--striped > .unity-foldout {
     padding-left:                                         8px;

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {test} from 'node:test';
 import {fileURLToPath} from 'node:url';
-import {prepareIndex, searchEntries} from '../src/components/search.js';
+import {isSearchShortcut, prepareIndex, searchEntries} from '../src/components/search.js';
 import searchPlugin, {plainText} from '../src/plugins/search/index.js';
 
 const entries = prepareIndex([
@@ -32,6 +32,22 @@ test('index decodes entities and drops table rules and MDX machinery', () => {
   assert.equal(plainText("import SamplesGallery from '@site/src/components/SamplesGallery';\n\n<SamplesGallery />\n\nUse <None> or List<float>."), 'Use <None> or List<float>.');
   assert.equal(plainText('<ol className="enum-lookup-flow"><li><b>Exact</b> match</li></ol>'), 'Exact match');
 });
+test('index drops the banner picture and the empty links of image badges', () => {
+  const banner = [
+    '<picture>',
+    '  <source media="(prefers-color-scheme: dark)" srcset="banner_dark.webp" />',
+    '  <img src="banner.png" alt="Aspid.FastTools" />',
+    '</picture>',
+    '',
+    '[![Unity 6.0+](Images/badge.svg)](https://example.com/unity)',
+    '[![MIT License](Images/license.svg)](https://example.com/license)',
+    '',
+    'Aspid.FastTools is a Unity package.',
+    '',
+    '[Documentation](https://example.com/docs)',
+  ].join('\n');
+  assert.equal(plainText(banner), 'Aspid.FastTools is a Unity package. Documentation');
+});
 test('empty queries suggest documentation and samples', () => {
   assert.equal(searchEntries(entries, '  ').length, 3);
   assert.ok(searchEntries(entries, '').every((entry) => entry.section !== 'API'));
@@ -48,4 +64,14 @@ test('index URLs follow trailingSlash: false except the locale root', async () =
   await searchPlugin(context).allContentLoaded({allContent, actions: {createData: async (name, data) => { index = JSON.parse(data); }}});
   assert.deepEqual(index.map((entry) => entry.url),
     ['/Aspid.FastTools/ru/', '/Aspid.FastTools/ru/tutorials', '/Aspid.FastTools/ru/tutorials/types', '/Aspid.FastTools/ru/docs/enum-values']);
+});
+test('Ctrl or Cmd with K opens search on Latin and non-Latin layouts', () => {
+  assert.ok(isSearchShortcut({ctrlKey: true, key: 'k', code: 'KeyK'}));
+  assert.ok(isSearchShortcut({metaKey: true, key: 'K', code: 'KeyK'}));
+  assert.ok(isSearchShortcut({ctrlKey: true, key: 'л', code: 'KeyK'}));
+  assert.ok(isSearchShortcut({ctrlKey: true, key: 'k', code: 'KeyV'}));
+  assert.ok(!isSearchShortcut({key: 'k', code: 'KeyK'}));
+  assert.ok(!isSearchShortcut({ctrlKey: true, key: 'л', code: 'KeyL'}));
+  assert.ok(!isSearchShortcut({ctrlKey: true, key: 't', code: 'KeyK'}));
+  assert.ok(!isSearchShortcut({ctrlKey: true, code: 'KeyJ'}));
 });

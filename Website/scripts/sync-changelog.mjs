@@ -11,6 +11,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { changelogPage, changelogSidebars } from './changelog-page.mjs';
 
 const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const repoDir = path.resolve(siteDir, '..');
@@ -36,33 +37,14 @@ function lastCommitDate(file) {
   }
 }
 
-/**
- * The changelog is served at /changelog. The language-switch line at its top (`> Русская версия: …`)
- * exists for GitHub readers; the site has a locale dropdown, so it is dropped. A translation's H1 carries a
- * language suffix for GitHub (`# Changelog (RU)`); on the site it takes the navbar's translated label instead.
- */
-// `## [1.0.0] — 2026-01-01` → anchor `#v1-0-0`, so the generated sidebar can link every version in every locale.
-const versionHeading = /^## \[([^\]]+)\](.*)$/gm;
-const versionAnchor = (version) => `v${version.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
-
 function writeChangelog(source, destination, title) {
-  const body = fs
-    .readFileSync(source, 'utf8')
-    .replace(/^> .*CHANGELOG(?:\.[a-z]{2})?\.md.*\n\n/m, '')
-    .replace(/^# (.+?)(?: \([A-Z]{2}\))?$/m, (line, heading) => `# ${title ?? heading}`)
-    .replace(versionHeading, (line, version) => `${line} {#${versionAnchor(version)}}`);
   const date = lastCommitDate(source);
   fs.mkdirSync(path.dirname(destination), { recursive: true });
-  fs.writeFileSync(destination, `---\nslug: /\ndisplayed_sidebar: changelog\n${date ? `last_update:\n  date: ${date}\n` : ''}---\n\n${body}`);
+  fs.writeFileSync(destination, changelogPage(fs.readFileSync(source, 'utf8'), title, date));
 }
 
-// The changelog is a single page; its sidebar lists the versions so the left panel is never empty.
 function writeChangelogSidebar(source, destination) {
-  const versions = [...fs.readFileSync(source, 'utf8').matchAll(versionHeading)].map(([, version]) => ({
-    type: 'link', label: version, href: `/changelog#${versionAnchor(version)}`,
-  }));
-  const sidebars = { changelog: [{ type: 'category', label: 'Versions', className: 'doc-menu-group', collapsible: false, items: versions }] };
-  fs.writeFileSync(destination, `${JSON.stringify(sidebars, null, 2)}\n`);
+  fs.writeFileSync(destination, `${JSON.stringify(changelogSidebars(fs.readFileSync(source, 'utf8')), null, 2)}\n`);
 }
 
 writeChangelog(path.join(repoDir, 'CHANGELOG.md'), path.join(changelogDir, 'index.md'));

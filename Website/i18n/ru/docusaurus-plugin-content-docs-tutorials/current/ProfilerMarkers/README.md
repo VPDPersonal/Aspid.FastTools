@@ -12,7 +12,7 @@
 2. Откройте `Scenes/ProfilerMarkers.unity` и **Window → Analysis → Profiler**, войдите в Play Mode и выберите кадр в модуле CPU.
 3. В режиме **Hierarchy** разверните `PlayerLoop` до строки <code lang="string">Flock.Update (74)</code> — она лежит под строкой Unity <code lang="string">Flock.Update() [Invoke]</code>.
 
-Нужен встроенный модуль Unity **Physics** — без него скрипты примера не компилируются.
+Нужен встроенный модуль Unity **Physics**: без него скрипты примера пропускаются, а сцена показывает Missing Script.
 
 ## Попробуйте
 
