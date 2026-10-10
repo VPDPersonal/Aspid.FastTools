@@ -172,6 +172,15 @@ namespace Aspid.FastTools.Types.Editors
             this.TrackPropertyValue(_property, RefreshProperty);
             this.AddContextualMenuManipulator(evt => AddPrefabOverrideActions(evt.menu));
 
+            // Apply All from the Overrides dropdown drops the override without a value change, which the tracker above
+            // does not report, so the bold label would stay.
+            RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
+            });
+            RegisterCallback<DetachFromPanelEvent>(_ => PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated);
+
             // Unity's trackers can miss edits to later targets when the first target's value stays the same.
             if (_property.serializedObject.isEditingMultipleObjects)
                 schedule.Execute(() => PollProperty()).Every(intervalMs: 100).Until(HasDestroyedTarget);
@@ -428,6 +437,21 @@ namespace Aspid.FastTools.Types.Editors
             catch (NullReferenceException)
             {
                 // The caller disposed it: a disposed SerializedObject throws on access, and nothing reads it any more.
+            }
+        }
+
+        private void OnPrefabInstanceUpdated(GameObject instance)
+        {
+            if (_property is null || !ClassListContains(BindingExtensions.prefabOverrideUssClassName)) return;
+
+            try
+            {
+                _property.serializedObject.Update();
+                EnableInClassList(className: BindingExtensions.prefabOverrideUssClassName, enable: IsPrefabOverride(_property));
+            }
+            catch (Exception exception) when (exception is NullReferenceException or ArgumentNullException)
+            {
+                // The target is gone; the field is about to leave its panel.
             }
         }
 
