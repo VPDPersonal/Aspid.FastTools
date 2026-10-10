@@ -288,6 +288,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ByValueTypesWithoutReferences_AreMemoizedOnTheFirstWalk()
         {
+            ForgetMemoized(typeof(PlainOuter), typeof(PlainMiddle), typeof(PlainLeaf));
             Assert.IsFalse(CanHoldManagedReferences(typeof(PlainOuter)));
 
             var memo = ByValueReferenceHolders();
@@ -299,6 +300,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ByValueTypeBelowACutCycle_IsNotMemoizedAsHoldingNoReferences()
         {
+            ForgetMemoized(typeof(CycleOuter), typeof(CycleInner));
             Assert.IsTrue(CanHoldManagedReferences(typeof(CycleOuter)));
 
             Assert.IsFalse(ByValueReferenceHolders().ContainsKey(typeof(CycleInner)),
@@ -309,6 +311,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private static bool CanHoldManagedReferences(Type type) => (bool)typeof(SerializeReferenceHelpers)
             .GetMethod(nameof(CanHoldManagedReferences), BindingFlags.NonPublic | BindingFlags.Static)!
             .Invoke(obj: null, new object[] { type });
+
+        // The memo is static and outlives a test run until a domain reload, so a rerun starts from these types unknown.
+        private static void ForgetMemoized(params Type[] types)
+        {
+            foreach (var type in types)
+                ByValueReferenceHolders().Remove(type);
+        }
 
         private static Dictionary<Type, bool> ByValueReferenceHolders() => (Dictionary<Type, bool>)typeof(SerializeReferenceHelpers)
             .GetField(nameof(ByValueReferenceHolders), BindingFlags.NonPublic | BindingFlags.Static)!
