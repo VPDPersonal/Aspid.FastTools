@@ -18,8 +18,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const int MaxSteps = ushort.MaxValue / 6;
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidHoverGradientOverlay";
 
-        private readonly AspidHoverGradientOverlayColorStyle _color;
-        private readonly AspidHoverGradientOverlayMetricsStyle _metrics;
+        private readonly AspidHoverOverlayColorStyle _color;
+        private readonly AspidHoverOverlayMetricsStyle _metrics;
 
         private float _progress;
         private float _targetProgress;
@@ -58,8 +58,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             this.AddStyleSheetFromResources(StyleSheetPath);
             pickingMode = PickingMode.Ignore;
 
-            _color = new AspidHoverGradientOverlayColorStyle(this, default, MarkDirtyRepaint);
-            _metrics = new AspidHoverGradientOverlayMetricsStyle(this, DefaultSteps, DefaultLerpRate, DefaultAlphaScale, MarkDirtyRepaint);
+            _color = new AspidHoverOverlayColorStyle(this, default, MarkDirtyRepaint);
+            _metrics = new AspidHoverOverlayMetricsStyle(this, DefaultSteps, DefaultLerpRate, DefaultAlphaScale, MarkDirtyRepaint);
 
             generateVisualContent += DrawOverlay;
             _animation = schedule.Execute(Tick).Every(TickMs);

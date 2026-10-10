@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    internal readonly struct AspidAnimatedDotsBackgroundColorsStyle
+    internal readonly struct AspidAnimatedDotsColorsStyle
     {
         public static readonly CustomStyleProperty<Color> Color1Property = new("--aspid-fasttools-colors-dot_blob-color_1");
         public static readonly CustomStyleProperty<Color> Color2Property = new("--aspid-fasttools-colors-dot_blob-color_2");
@@ -27,7 +27,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _ => throw new ArgumentOutOfRangeException(nameof(index)),
         };
 
-        public AspidAnimatedDotsBackgroundColorsStyle(
+        public AspidAnimatedDotsColorsStyle(
             VisualElement element,
             Color color1,
             Color color2,
