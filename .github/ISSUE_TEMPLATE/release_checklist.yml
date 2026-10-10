@@ -127,8 +127,8 @@ body:
   - type: checkboxes
     id: assetstore
     attributes:
-      label: 10. Asset Store upload
-      description: The upload form and the Editor are fixed in the `asp-ft-release` skill, section "Asset Store upload".
+      label: 10. Asset Store upload setup
+      description: The upload form and the Editor are fixed in the `asp-ft-release` skill, section "Asset Store upload". Set up here, upload after 11.
       options:
         - label: "Upload form is **Local UPM Package** (`Tools/Asset Store/Uploader`, Upload type), not From Assets Folder: the package must stay in `Packages/`, because its tests compile only for a package in `Assets/` or in `testables`"
         - label: "The Editor that uploads is **6000.0.53f1** (the minimum in `package.json`), not the dev project's 6000.4: the store can record the uploading Editor as the minimum Unity version, which lists buyers on 6000.0–6000.3 as unsupported"

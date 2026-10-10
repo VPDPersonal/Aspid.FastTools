@@ -80,8 +80,9 @@ Do every step without questions. Stop at the first failure and report it.
      tag has no skills.
    - Every folder has a `SKILL.md`: `git ls-tree -r --name-only <merge-sha>:skills | grep -c '/SKILL.md$'` gives the
      number of folders.
-   - `git ls-tree --name-only origin/main:skills` lists more folders → a skill was merged after the release PR.
-     It is not in this tag.
+   - Run `git fetch origin main`, then
+     `diff <(git ls-tree --name-only <merge-sha>:skills) <(git ls-tree --name-only origin/main:skills)`.
+     A folder only on `main` → a skill was merged, renamed or replaced after the release PR. It is not in this tag.
 4. Ask the user in one message: the version, the channel, the commit SHA and subject, and the result of step 3.
    Say that the tag starts the Release workflow and that a published tag cannot be replaced.
 5. Wait for a clear yes. Any other answer → stop.
