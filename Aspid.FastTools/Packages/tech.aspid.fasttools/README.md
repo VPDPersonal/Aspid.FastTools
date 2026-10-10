@@ -4,12 +4,6 @@ A Unity package that takes the routine out of serialization, profiling and edito
 
 Documentation, sample tutorials and the API reference: https://vpdpersonal.github.io/Aspid.FastTools/
 
-## Installation
+Asset Store package: the install steps and first steps are in [SETUP.md](SETUP.md).
 
-In **Window → Package Manager**, choose **+ → Install package from git URL…**, paste this URL and click **Install**:
-
-```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
-```
-
-[Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) · [Changelog](CHANGELOG.md) · [License](LICENSE.md)
+[Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) · [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md) · [License](LICENSE.md)
