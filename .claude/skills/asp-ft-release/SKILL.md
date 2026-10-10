@@ -45,11 +45,11 @@ Do every step without questions. Stop at the first failure and report it.
 
    The `unity-verify` agent is user-level. Without it, run the batch command from the header of
    `scripts/make-unity-test-project.sh` for both projects, in the background.
-7. Run the checks that the release runs:
-   - from `.github/workflows/ci.yml`: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
+7. Run the .NET checks of `.github/workflows/ci.yml`. The release PR runs the other `ci.yml` checks:
+   - the `dotnet-tests` jobs: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
      `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` and
      `dotnet test Aspid.FastTools.TypeTests --nologo` in the repository root;
-   - from the `roslyn-dlls` job of `.github/workflows/ci.yml`: the two Release builds of the step
+   - the `roslyn-dlls` job: the two Release builds of the step
      "Rebuild both DLLs in Release", then the `git diff` of the next step.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.
 9. Run `npm --prefix Website run check-readme`.
@@ -99,7 +99,7 @@ Do every step without questions. Stop at the first failure and report it.
 
 Read the failed step: `gh run view <id> --log-failed`. Then:
 
-- **The job `Preflight`, `Tests` or `release` failed.** Only the `v<version>` tag is out: the push of the tags is atomic.
+- **The job `Preflight`, a `CI / …` job or `release` failed.** Only the `v<version>` tag is out: the push of the tags is atomic.
   1. Report the cause.
   2. A transient cause (network, Unity license): ask, then run `gh run rerun <id> --failed`.
      It keeps the finished jobs. Go to "Phase 3" when the run ends.

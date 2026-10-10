@@ -53,7 +53,7 @@ jobs:
           node-version: 22
       - run: node scripts/check-package-files.mjs
 
-  # The version files that scripts/set-version.sh writes (the same check as the release preflight), and the minimum
+  # The version files that scripts/set-version.sh writes (release.yml runs this job too), and the minimum
   # Unity version that the files with a hand-written copy still agree on.
   versions:
     name: Version files
