@@ -23,8 +23,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly Vector2[] _blobCenters = new Vector2[BlobCount];
 
         private readonly StatusStyle _status;
-        private readonly AspidAnimatedDotsBackgroundColorsStyle _colors;
-        private readonly AspidAnimatedDotsBackgroundSizeStyle _size;
+        private readonly AspidAnimatedDotsColorsStyle _colors;
+        private readonly AspidAnimatedDotsSizeStyle _size;
 
         private Vertex[] _vertices = Array.Empty<Vertex>();
         private ushort[] _indices = Array.Empty<ushort>();
@@ -90,10 +90,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             _status = new StatusStyle(this, preset.Status);
 
-            _colors = new AspidAnimatedDotsBackgroundColorsStyle(
+            _colors = new AspidAnimatedDotsColorsStyle(
                 this, preset.Color1, preset.Color2, preset.Color3, MarkDirtyRepaint);
 
-            _size = new AspidAnimatedDotsBackgroundSizeStyle(
+            _size = new AspidAnimatedDotsSizeStyle(
                 this, preset.DotRadius, preset.DotSpacing, preset.ScaleReferenceSize, MarkDirtyRepaint);
 
             _animation = schedule.Execute(Tick).Every(33);

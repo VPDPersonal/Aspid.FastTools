@@ -12,7 +12,7 @@ The flock simulation whose phases the markers measure.
 2. Open `Scenes/ProfilerMarkers.unity` and **Window → Analysis → Profiler**, enter Play Mode and select a frame in the CPU module.
 3. In the **Hierarchy** view, expand `PlayerLoop` down to <code lang="string">Flock.Update (74)</code>, under Unity's own <code lang="string">Flock.Update() [Invoke]</code> row.
 
-Needs Unity's built-in **Physics** module; without it the sample scripts do not compile.
+Needs Unity's built-in **Physics** module: without it the sample scripts are skipped and the scene shows Missing Script.
 
 ## Try
 

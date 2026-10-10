@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Creates a throwaway Unity project that compiles the package, its tests and every sample, for running the package's
-# EditMode tests on any Unity version (the dev project itself is pinned to one). CI (tests.yml) and local runs use it.
+# Creates a throwaway Unity project that compiles the package, its tests, its optional Unity.Mathematics assembly and
+# every sample, for running the package's EditMode tests on any Unity version (the dev project itself is pinned to one).
+# CI (ci.yml) and local runs use it.
 #
 # Usage: scripts/make-unity-test-project.sh <project-dir> [unity-version | project]
 #   unity-version  e.g. 6000.0.64f1; "project" (the default) takes the dev project's version.
@@ -43,10 +44,13 @@ PACKAGE_REF="$(python3 -c 'import os, sys; print(os.path.relpath(sys.argv[1], sy
 
 # test-framework 1.4.6 is the newest one on the registry, which early 6000.0 releases resolve from; later Editors
 # bundle 1.6.0 (not on the registry) and raise the version to it. The modules cover what the samples use.
+# mathematics turns on the Aspid.FastTools.VisualElements.Math assembly: without the package its asmdef is skipped and
+# nothing compiles it. 1.3.2 is the version that Unity 6000.0 to 6000.4 packages require; 6000.5+ bundle an empty 1.4.0.
 cat > "$PROJECT/Packages/manifest.json" <<EOF
 {
   "dependencies": {
     "tech.aspid.fasttools": "file:$PACKAGE_REF",
+    "com.unity.mathematics": "1.3.2",
     "com.unity.test-framework": "1.4.6",
     "com.unity.modules.animation": "1.0.0",
     "com.unity.modules.audio": "1.0.0",
