@@ -10,7 +10,7 @@ public static class DiagnosticRules
     public static readonly Descriptor TypeSelectorFieldTypeRule = new(
         id: "AFT0001",
         title: "[TypeSelector] applied to an unsupported field",
-        messageFormat: "[TypeSelector] on '{0}' has no effect: apply it to a string field, a SerializableType / SerializableMonoScript field or a [SerializeReference] managed-reference field",
+        messageFormat: "[TypeSelector] on '{0}' has no effect: apply it to a string field, a SerializableType / SerializableMonoScript field or a [SerializeReference] managed-reference field (a SerializableType subclass must be [Serializable], not abstract, and have a parameterless constructor)",
         category: UsageCategory,
         defaultSeverity: Severity.Error,
         isEnabledByDefault: true);
@@ -66,7 +66,7 @@ public static class DiagnosticRules
     public static readonly Descriptor TypeSelectorTypeNameSyntaxRule = new(
         id: "AFT0008",
         title: "[TypeSelector] string argument is not a valid type name",
-        messageFormat: "[TypeSelector] on '{0}': '{1}' is not a valid assembly-qualified type name",
+        messageFormat: "[TypeSelector] on '{0}': '{1}' is not a valid assembly-qualified type name — {2}",
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true);
@@ -75,6 +75,14 @@ public static class DiagnosticRules
         id: "AFT0009",
         title: "[TypeSelector] base types have no type in common",
         messageFormat: "[TypeSelector] base types '{0}' and '{1}' have no type in common — a candidate must be assignable to every base type, so the selector will be empty",
+        category: UsageCategory,
+        defaultSeverity: Severity.Warning,
+        isEnabledByDefault: true);
+
+    public static readonly Descriptor TypeSelectorNotSerializedRule = new(
+        id: "AFT0012",
+        title: "[TypeSelector] on a field Unity does not serialize",
+        messageFormat: "[TypeSelector] on '{0}' has no effect: Unity does not serialize the field, so the Inspector does not show it — {1}",
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true);

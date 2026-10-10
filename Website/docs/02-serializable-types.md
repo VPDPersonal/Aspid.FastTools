@@ -39,7 +39,7 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 
 ![The missing Game.Combat.Spear type with the Fix and → Spear buttons](Images/serializable-type-missing.png)
 
-**Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**.
+**Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**. The notice compares class names and does not read <code lang="csharp">[MovedFrom]</code>, so a class renamed with that attribute gets no suggestion: choose the new class with **Fix**.
 
 [Project References](06-serialize-reference-tooling.md#type-names) finds every missing name in the project and repairs them in groups. The [build check](07-serialize-reference-validation.md) and [breakage detection](07-serialize-reference-validation.md#detecting-new-breakages) report new ones.
 
@@ -54,13 +54,14 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 
 Limitations:
 
-- only a top-level, non-generic class declared in a `.cs` file of the same name can be picked;
+- only a top-level, non-generic class can be picked: one declared in a `.cs` file of the same name, or one derived from <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code> in a DLL;
 - there is no public constructor, so the field cannot be created in code.
 
 The link breaks, and the field shows a [missing type](#missing-type) with the same notice, when:
 
 - the class is renamed without its file;
-- the file is renamed outside Unity without its `.meta`.
+- the file is renamed outside Unity without its `.meta`;
+- a class from a DLL is renamed or moved to another namespace: Unity identifies its script asset by namespace and class name.
 
 ## Types in a player build
 

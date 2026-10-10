@@ -1,5 +1,7 @@
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
+using System.Diagnostics;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -141,6 +143,139 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsEmpty(document.Shared, "The shared -2 sentinel must not count as an aliased reference.");
             Assert.IsEmpty(document.Orphans, "There are no real nodes, so nothing can be orphaned.");
         }
+
+        // --- Nodes-only mode, for the project-wide usage index ------------------------------------------------------
+
+        [Test]
+        public void BuildNodes_ReturnsTheNodesOfBuild_WithoutRootsOrEdges()
+        {
+            var full = SingleDocument(_missingPath);
+
+            var documents = SerializeReferenceGraphScanner.BuildNodes(SerializeReferenceYaml.ReadLines(_missingPath));
+
+            Assert.AreEqual(1, documents.Count);
+            Assert.AreEqual(full.FileId, documents[0].FileId);
+            CollectionAssert.AreEqual(Describe(full), Describe(documents[0]));
+
+            Assert.IsEmpty(documents[0].Roots);
+            Assert.IsEmpty(documents[0].Edges);
+            Assert.IsEmpty(documents[0].Shared);
+            Assert.IsEmpty(documents[0].Orphans);
+        }
+
+        [Test]
+        public void BuildNodes_DocumentWithoutRealNodes_IsDropped()
+        {
+            // Build keeps this document for its empty root; the usage index has no node to list in it.
+            var documents = SerializeReferenceGraphScanner.BuildNodes(SerializeReferenceYaml.ReadLines(_allUnassignedPath));
+
+            Assert.IsEmpty(documents);
+        }
+
+        [Test]
+        public void BuildNodes_NullLines_ReturnsNoDocuments()
+        {
+            Assert.IsEmpty(SerializeReferenceGraphScanner.BuildNodes(lines: null));
+        }
+
+        // The roots and edges of a list of this size cost seconds, since each pointer counts its siblings to build a
+        // field path; nodes alone must not. The bound is far above the milliseconds a run takes.
+        [Test]
+        public void BuildNodes_LongList_ReadsEveryNodeWithoutBuildingPaths()
+        {
+            const int count = 8000;
+
+            var yaml = new StringBuilder("--- !u!114 &11400000\nMonoBehaviour:\n  _items:\n");
+            for (var i = 0; i < count; i++) yaml.Append("  - rid: ").Append(1000 + i).Append('\n');
+            yaml.Append("  references:\n    version: 2\n    RefIds:\n");
+            for (var i = 0; i < count; i++)
+            {
+                yaml.Append("    - rid: ").Append(1000 + i).Append('\n');
+                yaml.Append("      type: {class: Vector3, ns: UnityEngine, asm: UnityEngine.CoreModule}\n");
+                yaml.Append("      data:\n        _child:\n          rid: -2\n");
+            }
+
+            var lines = yaml.ToString().Split('\n');
+            var timer = Stopwatch.StartNew();
+            var documents = SerializeReferenceGraphScanner.BuildNodes(lines);
+            timer.Stop();
+
+            Assert.AreEqual(1, documents.Count);
+            Assert.AreEqual(count, documents[0].Nodes.Count);
+            Assert.Less(timer.ElapsedMilliseconds, 5000);
+        }
+
+        // Each pointer of a list counts the siblings above it to build its index. The count is kept per line, so a list
+        // of 8000 does not rescan it per element: about 5 seconds once, well under one now.
+        [Test]
+        public void Build_LongList_IndexesEveryElementWithoutRescanningSiblings()
+        {
+            const int count = 8000;
+
+            var yaml = new StringBuilder(FileHeader + "MonoBehaviour:\n  _items:\n");
+            for (var i = 0; i < count; i++) yaml.Append("  - rid: ").Append(1000 + i).Append('\n');
+            AppendRefIds(yaml, count);
+
+            var path = YamlFixtures.WriteTemp(yaml.ToString());
+            try
+            {
+                var timer = Stopwatch.StartNew();
+                var documents = SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false);
+                timer.Stop();
+
+                Assert.AreEqual(1, documents.Count);
+                Assert.AreEqual(count, documents[0].Roots.Count);
+                Assert.AreEqual("_items[0]", documents[0].Roots[0].Label);
+                Assert.AreEqual("_items[4999]", documents[0].Roots[4999].Label);
+                Assert.AreEqual("_items[7999]", documents[0].Roots[7999].Label);
+                Assert.Less(timer.ElapsedMilliseconds, 3000);
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        // Elements without a pointer are not measured, so a later pointer counts them from the nearest measured one.
+        [Test]
+        public void Build_ListWithGaps_IndexesFromTheNearestMeasuredSibling()
+        {
+            var yaml = new StringBuilder(FileHeader)
+                .Append("MonoBehaviour:\n")
+                .Append("  _first:\n  - rid: 1000\n  - 5\n  - 6\n  - rid: 1001\n  - 7\n")
+                .Append("  _second:\n  - 8\n  - rid: 1002\n");
+            AppendRefIds(yaml, 3);
+
+            var path = YamlFixtures.WriteTemp(yaml.ToString());
+            try
+            {
+                var document = SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false).Single();
+
+                CollectionAssert.AreEqual(
+                    new[] { "_first[0]", "_first[3]", "_second[1]" },
+                    document.Roots.Select(root => root.Label));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        private const string FileHeader = "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n--- !u!114 &11400000\n";
+
+        private static void AppendRefIds(StringBuilder yaml, int count)
+        {
+            yaml.Append("  references:\n    version: 2\n    RefIds:\n");
+            for (var i = 0; i < count; i++)
+            {
+                yaml.Append("    - rid: ").Append(1000 + i).Append('\n');
+                yaml.Append("      type: {class: Vector3, ns: UnityEngine, asm: UnityEngine.CoreModule}\n");
+                yaml.Append("      data:\n        x: 0\n");
+            }
+        }
+
+        private static string[] Describe(ReferenceGraphDocument document) =>
+            document.Nodes.Select(node => $"{node.Rid} {node.StoredType.FullName} {node.Resolves}").ToArray();
 
         private static string LabelOfRoot(ReferenceGraphDocument document, long rid)
         {
