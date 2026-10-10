@@ -4,7 +4,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    public static partial class SerializePropertyExtensions
+    public static partial class SerializedPropertyExtensions
     {
         #region Int
         /// <inheritdoc cref="SetInt{T}"/>

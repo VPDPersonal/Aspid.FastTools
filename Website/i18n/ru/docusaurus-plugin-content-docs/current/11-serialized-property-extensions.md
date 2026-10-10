@@ -16,7 +16,7 @@
 | <code lang="csharp">SetIntAndApply(42)</code> | Записывает и применяет изменения |
 | <code lang="csharp">SetIntAndApplyWithoutUndo(42)</code> | Записывает и применяет изменения без Undo |
 
-Перегрузки <code lang="function">SetValue</code> выбирают сеттер по типу аргумента: <code lang="csharp">SetValue(42)</code> вызывает <code lang="function">SetInt</code>. Тип аргумента должен совпадать с типом поля. Полный список сеттеров — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors.SerializePropertyExtensions).
+Перегрузки <code lang="function">SetValue</code> выбирают сеттер по типу аргумента: <code lang="csharp">SetValue(42)</code> вызывает <code lang="function">SetInt</code>. Тип аргумента должен совпадать с типом поля. Полный список сеттеров — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors.SerializedPropertyExtensions).
 
 ### Перечисления, массивы и ссылки
 

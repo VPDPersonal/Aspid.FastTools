@@ -1499,7 +1499,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var builder = new StringBuilder();
 
-            var segments = SerializePropertyExtensions.SimplifyPropertyPath(propertyPath).Split('.');
+            var segments = SerializedPropertyExtensions.SimplifyPropertyPath(propertyPath).Split('.');
 
             foreach (var segment in segments)
             {
