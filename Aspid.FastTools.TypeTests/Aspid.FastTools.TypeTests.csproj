@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Runs the GenericTypeResolver NUnit tests outside Unity. The tests are compiled from the package sources as-is
+         against the resolver in Resolver/, an assembly of its own on .NET Standard 2.1. -->
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <!-- The C# version of Unity 6000.0, so a newer language feature fails here as it would in Unity. -->
+        <LangVersion>9.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Aspid.FastTools.Types.Editors.Tests</RootNamespace>
+        <!-- Resolver/ is a project of its own. -->
+        <DefaultItemExcludes>$(DefaultItemExcludes);Resolver/**</DefaultItemExcludes>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <_TypeTests>$(MSBuildThisFileDirectory)../Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/Types/</_TypeTests>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- GenericTypeResolverTests.Unity.cs holds the tests that need Unity types or the real argument filter of the
+             Editor assembly; the Unity job runs them. -->
+        <Compile Include="$(_TypeTests)GenericTypeResolverTests.cs"
+                 Link="Tests/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="Resolver/Aspid.FastTools.TypeResolver.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- NUnit 3, the major version Unity's Test Framework ships: classic Assert/CollectionAssert as the tests use them. -->
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+        <PackageReference Include="NUnit" Version="3.14.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    </ItemGroup>
+
+</Project>

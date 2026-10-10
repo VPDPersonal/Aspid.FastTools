@@ -15,7 +15,8 @@ Logic paths:
 
 - package: `Aspid.FastTools/Packages/tech.aspid.fasttools/` (except `README.md`), `Aspid.FastTools/Packages/manifest.json`,
   `Aspid.FastTools/Packages/packages-lock.json`, `Aspid.FastTools/Assets/DevTests/`;
-- .NET: `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/`, `Aspid.FastTools.YamlTests/`, `global.json`;
+- .NET: `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/`, `Aspid.FastTools.YamlTests/`,
+  `Aspid.FastTools.TypeTests/`, `global.json`;
 - site: `Website/` except `docs/`, `i18n/`, `tutorials/`, `api/`, `static/`;
 - CI: `scripts/`, `.github/workflows/`, `.github/claude-review.md`.
 

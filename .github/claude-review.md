@@ -17,8 +17,10 @@ Check, in this order:
    - no Unity APIs newer than 6000.0.53f1 without a version guard;
    - no editor-only APIs reachable from runtime code;
    - generator and analyzer code does not write to `Console` and does not reference `SourceGenerator.Foundations`;
-   - no Unity API or language feature newer than C# 9 in the SerializeReference YAML engine
-     that `Aspid.FastTools.YamlTests/` compiles.
+   - no language feature newer than C# 9, no API outside .NET Standard 2.1 and no Unity API without a stub
+     in the package sources that the .NET test projects compile: the SerializeReference YAML engine
+     (`Aspid.FastTools.YamlTests/`) and `GenericTypeResolver`, `GenericArgumentFilter`, `TypeUtility`
+     (`Aspid.FastTools.TypeTests/`).
 3. Public API: a change needs a CHANGELOG entry, XML docs and, when a skill in `skills/` describes it,
    an updated skill in the same PR.
    It also needs the regenerated API reference. A diff that changes public API or XML docs and leaves `Website/api/`
