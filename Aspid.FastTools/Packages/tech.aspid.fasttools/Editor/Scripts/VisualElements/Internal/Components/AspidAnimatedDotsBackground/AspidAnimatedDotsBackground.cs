@@ -10,6 +10,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedDotsBackground : VisualElement
     {
+        // The field drifts slowly, so 20 frames per second look smooth.
+        private const long TickMs = 50;
         private const int BlobCount = 3;
         private const int DotSegments = 10;
         private const float MinVisibleAlpha = 1f / 255f;
@@ -29,6 +31,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private Vertex[] _vertices = Array.Empty<Vertex>();
         private ushort[] _indices = Array.Empty<ushort>();
 
+        private float _time;
+        private bool _animated = true;
         private IVisualElementScheduledItem _animation;
 
         [UxmlAttribute]
@@ -96,10 +100,34 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _size = new AspidAnimatedDotsBackgroundSizeStyle(
                 this, preset.DotRadius, preset.DotSpacing, preset.ScaleReferenceSize, MarkDirtyRepaint);
 
-            _animation = schedule.Execute(Tick).Every(33);
+            _animation = schedule.Execute(Tick).Every(TickMs);
+            _animation.Pause();
 
-            RegisterCallback<AttachToPanelEvent>(_ => _animation.Resume());
-            RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
+            RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+            RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+        }
+
+        internal bool IsAnimating => _animation.isActive;
+
+        private void OnAttachToPanel(AttachToPanelEvent _)
+        {
+            AspidAnimatedDotsBackgroundSettings.Changed += UpdateAnimation;
+            UpdateAnimation();
+        }
+
+        private void OnDetachFromPanel(DetachFromPanelEvent _)
+        {
+            AspidAnimatedDotsBackgroundSettings.Changed -= UpdateAnimation;
+            _animation.Pause();
+        }
+
+        // With the setting off the field keeps its last frame and repaints only when the layout changes.
+        private void UpdateAnimation()
+        {
+            _animated = AspidAnimatedDotsBackgroundSettings.Enabled;
+
+            if (_animated) _animation.Resume();
+            else _animation.Pause();
         }
 
         private void Tick()
@@ -115,7 +143,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             if (rect.width <= 0f || rect.height <= 0f) return;
             if (!(_size.ScaleReference > 0f)) return;
 
-            var time = (float)EditorApplication.timeSinceStartup;
+            if (_animated) _time = (float)EditorApplication.timeSinceStartup;
+            var time = _time;
 
             var scale = Mathf.Sqrt(Mathf.Min(rect.width, rect.height) / _size.ScaleReference);
             var spacing = _size.DotSpacing * scale;
