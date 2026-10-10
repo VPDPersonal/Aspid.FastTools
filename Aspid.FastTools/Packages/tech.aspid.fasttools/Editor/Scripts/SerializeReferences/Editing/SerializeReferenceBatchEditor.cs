@@ -13,12 +13,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             out List<MissingReferenceLocation> onDisk, out List<MissingReferenceLocation> inMemory)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();
+            var verdicts = new Dictionary<string, bool>(StringComparer.Ordinal);
             onDisk = new List<MissingReferenceLocation>(source.Count);
             inMemory = new List<MissingReferenceLocation>();
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) onDisk.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) onDisk.Add(entry);
                 else inMemory.Add(entry);
             }
         }
@@ -28,12 +29,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static List<MissingReferenceLocation> FilterWritable(IReadOnlyList<MissingReferenceLocation> source, out int skipped)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();
+            var verdicts = new Dictionary<string, bool>(StringComparer.Ordinal);
             var writable = new List<MissingReferenceLocation>(source.Count);
             skipped = 0;
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) writable.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath, verdicts)) writable.Add(entry);
                 else skipped++;
             }
 
@@ -46,14 +48,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static List<MissingReferenceLocation> FilterStillHolding(IReadOnlyList<MissingReferenceLocation> source,
             ManagedTypeName appliedType, out int diverged)
         {
+            var edits = ComputeRewrites(source, appliedType);
             var holding = new List<MissingReferenceLocation>(source.Count);
             diverged = 0;
 
-            foreach (var entry in source)
+            for (var i = 0; i < source.Count; i++)
             {
-                if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, appliedType, out var edit) &&
-                    edit.IsValid && string.Equals(edit.OldLine, edit.NewLine, StringComparison.Ordinal))
-                    holding.Add(entry);
+                if (edits[i].IsValid && string.Equals(edits[i].OldLine, edits[i].NewLine, StringComparison.Ordinal))
+                    holding.Add(source[i]);
                 else
                     diverged++;
             }
@@ -61,13 +63,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return holding;
         }
 
+        // The edit a rewrite to newType would make for each entry, in the order of entries, with one read per file.
+        // A slot whose IsValid is false is an entry that could not be computed.
+        public static RewriteEdit[] ComputeRewrites(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName newType)
+        {
+            var edits = new RewriteEdit[entries.Count];
+
+            var byFile = Enumerable.Range(0, entries.Count)
+                .GroupBy(index => entries[index].AssetPath, StringComparer.Ordinal);
+
+            foreach (var file in byFile)
+            {
+                var indices = file.ToArray();
+                var fileEdits = SerializeReferenceYamlEditor.ComputeRewrites(
+                    file.Key,
+                    indices.Select(index => entries[index].Entry).ToArray(),
+                    newType);
+
+                for (var i = 0; i < indices.Length; i++)
+                    edits[indices[i]] = fileEdits[i];
+            }
+
+            return edits;
+        }
+
         public static int Rewrite(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName targetType, string progressTitle) =>
-            RunBatch(entries, progressTitle, (path, entry) =>
-                SerializeReferenceYamlEditor.TryRewriteType(path, entry.Entry.FileId, entry.Entry.Rid, targetType));
+            RunBatch(entries, progressTitle, (path, fileEntries) =>
+                SerializeReferenceYamlEditor.RewriteTypes(path, fileEntries, targetType));
 
         public static int Null(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle) =>
-            RunBatch(entries, progressTitle, (path, entry) =>
-                SerializeReferenceYamlEditor.TryNullReference(path, entry.Entry.FileId, entry.Entry.Rid));
+            RunBatch(entries, progressTitle, SerializeReferenceYamlEditor.NullReferences);
 
         public static int ClearOpenInMemory(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName storedType)
         {
@@ -84,8 +109,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int CountFiles(IEnumerable<MissingReferenceLocation> entries) =>
             entries.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
 
+        // Edits each file once: edit gets all the file's entries and returns how many it applied.
         private static int RunBatch(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle,
-            Func<string, MissingReferenceLocation, bool> edit)
+            Func<string, IReadOnlyList<MissingReferenceEntry>, int> edit)
         {
             var byFile = entries
                 .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
@@ -108,16 +134,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // it writable before its first entry, even when that entry turns out stale.
                     if (File.Exists(file.Key) && !SerializeReferenceYamlEditor.TryMakeEditable(file.Key)) continue;
 
-                    var changed = false;
-                    foreach (var entry in file)
-                    {
-                        if (!edit(file.Key, entry)) continue;
+                    var fileApplied = edit(file.Key, file.Select(location => location.Entry).ToArray());
+                    if (fileApplied == 0) continue;
 
-                        applied++;
-                        changed = true;
-                    }
-
-                    if (changed) AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
+                    applied += fileApplied;
+                    AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
                 }
             }
             finally
