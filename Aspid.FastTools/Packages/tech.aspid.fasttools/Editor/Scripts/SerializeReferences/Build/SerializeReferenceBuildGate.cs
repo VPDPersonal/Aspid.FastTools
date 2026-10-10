@@ -13,10 +13,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         public int callbackOrder => 0;
 
-        public void OnPreprocessBuild(BuildReport report) =>
+        public void OnPreprocessBuild(BuildReport report)
+        {
+            // A pull may have changed the committed severity and excluded folders since the Editor loaded them.
+            SerializeReferenceSettings.ReloadShared();
+
             Check(
                 SerializeReferenceSettings.BuildSeverity,
                 unscanned => SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned));
+        }
 
         // The scan is injected so tests can drive each severity without scanning the project.
         internal static void Check(

@@ -45,7 +45,7 @@ Agent Skills for projects that consume the package in `skills/`.
   Unity repairs these in a local package and ignores or breaks them in an installed one. An asmdef that needs an assembly
   from another package lists it in `EXTERNAL_ASSEMBLIES` of the script.
 - The minimum Unity version is `unity` and `unityRelease` in `package.json`. It is also written by hand in this file,
-  `.github/claude-review.md`, `.github/ISSUE_TEMPLATE/release_checklist.yml`, `skills/aspid-visual-element-fluent/SKILL.md`
+  `.github/claude-review.md`, `.github/ISSUE_TEMPLATE/release_checklist.yml`, `skills/aspid-visual-element-fluent/SKILL.md`, the package `SETUP.md`
   and the first Unity version of the matrix in `.github/workflows/ci.yml`; `scripts/check-unity-minimum.mjs` (CI) fails
   when one differs.
 - `.github/workflows/ci.yml` holds every required check except the PR title and CHANGELOG (`pr-checks.yml`), and
