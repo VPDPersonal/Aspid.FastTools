@@ -45,7 +45,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // [TypeSelector] applies to a collection, not to its elements, so its list draws them with the picker
             // itself, ahead of any type drawer, as the drawer did when it reached each element.
             if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true)) return !isArrayElement;
-            if (CustomDrawerRegistry.DeclaresDrawnAttribute(field, isManagedReference: true, isArrayElement: isArrayElement))
+            // Unity takes the managed-reference flag from the property itself, and a list of references is no
+            // managed-reference property.
+            if (CustomDrawerRegistry.DeclaresDrawnAttribute(
+                    field,
+                    isManagedReference: !child.isArray,
+                    isArrayElement: isArrayElement,
+                    isCollection: child.isArray))
                 return true;
 
             // Unity applies a type drawer to each element, never to the list, so the list keeps the picker-backed add.
