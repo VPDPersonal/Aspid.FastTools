@@ -15,7 +15,9 @@ namespace Aspid.FastTools.Editors
     internal sealed class WelcomeView : VisualElement
     {
         private const string UssClassPrefix = "aspid-fasttools-welcome__";
-        private const string UxmlResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome-View";
+        // The template and the style sheet share a name: each load asks for its own type. A .unitypackage update
+        // replaces a file only at its old path, so a renamed template would stay next to the old one.
+        private const string UxmlResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
         private const string StyleSheetResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
 
         private const long ToastVisibleDurationMs = 2500;

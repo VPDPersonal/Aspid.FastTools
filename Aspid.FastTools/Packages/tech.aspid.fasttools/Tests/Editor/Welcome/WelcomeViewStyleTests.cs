@@ -15,7 +15,7 @@ namespace Aspid.FastTools.Editors.Tests
     [TestFixture]
     internal sealed class WelcomeViewStyleTests
     {
-        private const string TemplatePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome-View";
+        private const string TemplatePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
         private const string WelcomeStyleSheet = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
         private const string WindowStyleSheet = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
