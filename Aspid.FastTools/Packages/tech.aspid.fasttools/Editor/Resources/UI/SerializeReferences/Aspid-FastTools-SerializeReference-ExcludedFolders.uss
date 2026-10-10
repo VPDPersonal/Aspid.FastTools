@@ -99,5 +99,5 @@
 
 .aspid-fasttools-excluded-folders__entry--danger .aspid-fasttools-excluded-folders__remove {
     background-color:                                     var(--aspid-colors-status-error-light);
-    color:                                                var(--aspid-colors-status-error-text-light);
+    color:                                                var(--aspid-colors-status-error-text-lightness);
 }

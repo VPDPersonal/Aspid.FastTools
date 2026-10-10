@@ -146,6 +146,22 @@ jobs:
       - run: npm install --no-save --no-audit --no-fund js-yaml@4
       - run: node scripts/check-skills.mjs
 
+  # WCAG contrast of the Editor palette: text against the background it sits on, on both skins, read from the USS.
+  contrast:
+    name: Editor palette contrast
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            scripts
+            Aspid.FastTools/Packages/tech.aspid.fasttools/Editor
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: node scripts/check-contrast.mjs
+
   dotnet-tests:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest

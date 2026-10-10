@@ -53,7 +53,9 @@ owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` 
   shared palette `var(--aspid-colors-*)` / `var(--aspid-icons-*)` so theme overrides work, own classes
   `aspid-fasttools-<block>[__<element>][--<modifier>]`, own custom properties
   `--aspid-fasttools-{colors|prop|metrics|icons}-<name>`. No inline `style.*` for anything a theme should control.
-  A new colour goes into `Aspid-FastTools-Default-Dark.uss` as a token, never as a literal in a component sheet.
+  A new colour goes into `Aspid-FastTools-Default-Dark.uss` as a token, never as a literal in a component sheet,
+  with a light value in `Aspid-FastTools-Default-Light.uss` (`DefaultPaletteTokenTests` checks it). Text needs 4.5:1:
+  add the pair to `scripts/check-contrast.mjs` and run it.
 - UI drawn inside a regular Inspector (drawers, fields, notices) sits on Unity's own background: colour it with
   `var(--unity-colors-*)`, not the dark palette. A built-in icon takes `var(--unity-icons-*)` where Unity has one;
   otherwise keep the `d_` icon and override it under `.aspid-fasttools-skin--light`, which
