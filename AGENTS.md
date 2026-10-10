@@ -24,6 +24,14 @@ Agent Skills for projects that consume the package in `skills/`.
   `GenericArgumentFilter` and `TypeUtility` with the resolver tests in the same way. It stubs only `UnityEngine.Object`
   and `CompilationPipeline.GetAssemblies`, so a new Unity API in these three files breaks it. A test that needs the
   Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
+- `Tests/Editor/PublicApi/PublicApi.txt` in the package is a snapshot of the public API, and `PublicApiSnapshotTests`
+  fails on any difference, so a removed or renamed member cannot reach a release unnoticed. After an intended API
+  change, rewrite the file on Unity 6000.4+ and commit its diff in the same PR. Close the project in the Editor
+  first, or run the command from a worktree:
+  `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity> -batchmode -nographics -projectPath Aspid.FastTools -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "${TMPDIR:-/tmp}/public-api.xml"`.
+  An older Editor compiles only part of the API (the `UNITY_6000_x_OR_NEWER` guards), so there the test checks only
+  for additions. The `#if` around `HasWholeApi` in the test names the newest guard: move it and `WholeApiVersion`
+  when a public member gets a newer one.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
   READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
   which `ci.yml` checks (`scripts/check-version.mjs`) in every PR and in the release. The version also picks the channel,
