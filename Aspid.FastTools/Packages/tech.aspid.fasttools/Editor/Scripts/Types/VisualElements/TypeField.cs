@@ -391,16 +391,24 @@ namespace Aspid.FastTools.Types.Editors
             };
         }
 
+        // Raised after a bound field has written a new name to its property: (previous name, new name).
+        internal event Action<string, string> NameWritten;
+
         internal void ApplyPicked(string assemblyQualifiedName)
         {
+            var name = assemblyQualifiedName ?? string.Empty;
+            var wasMixed = showMixedValue;
+
             // The property goes first. The picker window picks inside its own event, so Unity queues ChangeEvent until
             // this method returns, whatever the order here. The caller's SerializedObject is updated too, so a change
             // handler that applies it does not write the old name back.
+            var previousName = string.Empty;
             if (_property is not null)
             {
                 var serializedObject = _property.serializedObject;
                 serializedObject.Update();
-                _property.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
+                previousName = _property.stringValue ?? string.Empty;
+                _property.SetStringAndApply(name);
                 serializedObject.Update();
 
                 UpdateSourceSerializedObject();
@@ -408,6 +416,7 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             value = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
+            if (_property is not null && (wasMixed || previousName != name)) NameWritten?.Invoke(previousName, name);
         }
 
         private void UpdateSourceSerializedObject()
