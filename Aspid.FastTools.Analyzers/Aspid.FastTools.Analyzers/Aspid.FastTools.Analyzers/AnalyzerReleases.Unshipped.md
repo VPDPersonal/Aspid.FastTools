@@ -16,6 +16,7 @@ AFT0008 | Usage | Warning | [TypeSelector] string argument is not a valid type n
 AFT0009 | Usage | Warning | [TypeSelector] base types have no type in common
 AFT0010 | Usage | Warning | this.Marker() call the profiler-marker generator cannot support
 AFT0011 | Usage | Warning | this.Marker() scope is never disposed
+AFT0012 | Usage | Warning | [TypeSelector] on a field Unity does not serialize
 
 
 

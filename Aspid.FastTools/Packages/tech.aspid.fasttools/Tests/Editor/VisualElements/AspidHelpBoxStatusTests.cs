@@ -89,6 +89,19 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             AssertLabelsCarry(box, StatusStyle.Type.Success);
         }
 
+        [Test]
+        public void DefaultPreset_TextTakesLightnessTheme()
+        {
+            // scripts/check-contrast.mjs checks the help box with this theme on every status fill.
+            var box = new AspidHelpBox("Title", "Message", AspidHelpBoxPreset.Default)
+                .SetMessageType(HelpBoxMessageType.Warning);
+
+            var themes = box.Query<AspidLabel>().ToList().Select(label => label.LabelTheme).ToArray();
+            Assert.AreEqual(2, themes.Length);
+            Assert.That(themes, Is.All.EqualTo(ThemeStyle.Type.Lightness),
+                "The title and message must take the lightness theme to read at 4.5:1 on the status fill.");
+        }
+
         private static void AssertLabelsCarry(AspidHelpBox box, StatusStyle.Type status)
         {
             var statuses = LabelStatuses(box);
