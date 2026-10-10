@@ -204,24 +204,29 @@ function sheets(dir) {
   });
 }
 
-// The type picker dropdown and the inspector notices sit on Unity's own background; every other sheet styles a window.
-const SHEET_PLACES = {
-  [TYPE_SELECTOR_SHEET]: { base: [LIST_BG], in: DROPDOWN },
-  [INSPECTOR_NOTICE_SHEET]: { base: [LIST_BG], in: INSPECTOR },
-};
+// Where a rule is drawn: inspector notices sit on Unity's inspector background, and the type picker is a dropdown on
+// Unity's popup background or, embedded in the References windows, a window panel; every other sheet styles a window.
 const WINDOW_PLACE = { base: CARD.map(expand), in: WINDOW };
+const DROPDOWN_PLACE = { base: [LIST_BG], in: DROPDOWN };
+const INSPECTOR_PLACE = { base: [LIST_BG], in: INSPECTOR };
+
+function places(file, selector) {
+  if (file === INSPECTOR_NOTICE_SHEET) return [INSPECTOR_PLACE];
+  if (file !== TYPE_SELECTOR_SHEET) return [WINDOW_PLACE];
+  return selector.includes('--dropdown') ? [DROPDOWN_PLACE] : [DROPDOWN_PLACE, WINDOW_PLACE];
+}
 
 const ruleChecks = sheets(join(PACKAGE, 'Editor')).flatMap(file => rules(file)
   .filter(r => r.declarations['color'] && r.declarations['background-color'])
   .filter(r => isOpaque(r.declarations['background-color']))
-  .map(r => ({
+  .flatMap(r => places(file, r.selector).map(place => ({
     where: `${relative(UI, file)} ${r.selector}`,
     fg: r.declarations['color'],
-    bg: [...(SHEET_PLACES[file] ?? WINDOW_PLACE).base, r.declarations['background-color']],
+    bg: [...place.base, r.declarations['background-color']],
     min: TEXT,
-    in: (SHEET_PLACES[file] ?? WINDOW_PLACE).in,
+    in: place.in,
     fromRule: true,
-  })));
+  }))));
 
 // A transparent background only clears Unity's default fill; an unresolved one is reported by the check itself.
 function isOpaque(value) {
