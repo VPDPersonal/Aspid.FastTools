@@ -43,6 +43,21 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 
 Все потерянные имена в проекте находит [Project References](06-serialize-reference-tooling.md#имена-типов) и восстанавливает их группами. О новых потерях сообщают [проверка перед сборкой](07-serialize-reference-validation.md) и [обнаружение новых поломок](07-serialize-reference-validation.md#обнаружение-новых-поломок).
 
+### Пустое поле
+
+Незаполненное поле проверяйте через <code lang="csharp">field is null || field.IsEmpty</code>, а не через один <code lang="csharp">field == null</code>:
+
+- У объекта, загруженного из ассета, сцены или префаба, в поле лежит обёртка, пустая, если ничего не выбрано.
+- У объекта, созданного в коде (<code lang="csharp">AddComponent</code>, <code lang="csharp">ScriptableObject.CreateInstance</code>), поле равно <code lang="csharp">null</code>, пока Unity не сериализует объект.
+
+Состояния обёртки различают <code lang="csharp">IsEmpty</code> и <code lang="csharp">IsMissing</code>:
+
+| Состояние | Type | IsEmpty | IsMissing |
+|---|---|---|---|
+| Тип выбран | тип | <code lang="csharp">false</code> | <code lang="csharp">false</code> |
+| Ничего не выбрано | <code lang="csharp">null</code> | <code lang="csharp">true</code> | <code lang="csharp">false</code> |
+| Сохранённое имя больше не находится, [потерянный тип](#потерянный-тип) | <code lang="csharp">null</code> | <code lang="csharp">false</code> | <code lang="csharp">true</code> |
+
 ## SerializableMonoScript
 
 <code lang="class-name">SerializableMonoScript</code> помнит сам ассет скрипта, поэтому выбор переживает его переименование. Тип выбирают в инспекторе или перетаскивают файл `.cs` из **Project** на поле.
@@ -65,7 +80,7 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 ## Типы в плеере
 
 > [!WARNING]
-> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, при **Managed Stripping Level** Low и выше Unity может вырезать его из билда: <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>, хотя в редакторе тип находится. Сохраните класс через <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) или `link.xml`.
+> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, при **Managed Stripping Level** Low и выше Unity может вырезать его из билда: <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>, а <code lang="csharp">IsMissing</code> станет <code lang="csharp">true</code>, хотя в редакторе тип находится. Сохраните класс через <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) или `link.xml`.
 
 ## Пример в пакете
 
