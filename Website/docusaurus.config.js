@@ -15,6 +15,9 @@ const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
 const LOCALES = ['en', 'ru'];
 const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const ASSET_STORE = 'https://assetstore.unity.com/packages/slug/365584';
+const BASE_URL = '/Aspid.FastTools/';
+/** IBM Plex, linked from `headTags`: a CSS `@import` would start the fonts only after the stylesheet that holds it. */
+const FONTS = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap';
 /** The docs in the working tree describe the package version in the working tree. */
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json`, import.meta.url), 'utf8')).version;
 /**
@@ -110,16 +113,22 @@ const markdownOptions = {
 const config = {
   title: 'Aspid.FastTools',
   tagline: 'Unity tools that cut boilerplate',
-  favicon: 'img/favicon.png',
-  // Applies the stored accent colour (src/accents.js) and arms the introduction's entrance (src/intro.js) before the first paint.
+  // The scripts apply the stored accent colour (src/accents.js) and arm the introduction's entrance (src/intro.js) before
+  // the first paint, so they come before the stylesheet, which would hold them back until it has loaded.
+  // The icon is a plain tag, not the `favicon` field: React Helmet owns the tag that field renders and restores the default
+  // icon on every navigation, undoing the accent's icon (src/accents.js).
   headTags: [
     { tagName: 'script', attributes: {}, innerHTML: ACCENT_BOOT_SCRIPT },
     { tagName: 'script', attributes: {}, innerHTML: INTRO_BOOT_SCRIPT },
+    { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
+    { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' } },
+    { tagName: 'link', attributes: { rel: 'stylesheet', href: FONTS } },
+    { tagName: 'link', attributes: { rel: 'icon', href: `${BASE_URL}img/favicon.png` } },
   ],
   clientModules: ['./src/clientModules/accent.js'],
 
   url: 'https://vpdpersonal.github.io',
-  baseUrl: '/Aspid.FastTools/',
+  baseUrl: BASE_URL,
   customFields: {
     assetStore: ASSET_STORE, packageVersion: PACKAGE_VERSION, packageVersions: readPackageVersions(),
     framedCaptures: readFramedCaptures(),
@@ -168,7 +177,7 @@ const config = {
           sidebarPath: './sidebars.js',
           versions: { current: { label: PACKAGE_VERSION } },
           ...markdownOptions,
-          beforeDefaultRemarkPlugins: [[remarkIntroBanner, {baseUrl: '/Aspid.FastTools/', siteUrl: 'https://vpdpersonal.github.io'}], ...markdownOptions.beforeDefaultRemarkPlugins],
+          beforeDefaultRemarkPlugins: [[remarkIntroBanner, {baseUrl: BASE_URL, siteUrl: 'https://vpdpersonal.github.io'}], ...markdownOptions.beforeDefaultRemarkPlugins],
           remarkPlugins: [remarkStatusBadges],
         },
         blog: false,
