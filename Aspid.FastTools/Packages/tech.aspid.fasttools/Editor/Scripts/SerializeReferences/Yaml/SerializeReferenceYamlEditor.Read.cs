@@ -261,7 +261,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var item = itemPattern.Match(lines[j]);
                 if (!item.Success)
                 {
-                    if (itemIndent >= 0 && IndentOf(lines[j]) <= itemIndent) break;
+                    // A list empty on disk ("_list: []") has no items: the next key's items belong to another list.
+                    if (itemIndent < 0 || IndentOf(lines[j]) <= itemIndent) break;
                     continue;
                 }
 

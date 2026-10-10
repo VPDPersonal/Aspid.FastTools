@@ -248,6 +248,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // An asset last saved before Unity 2021.2 keeps its managed references in registry version 1, without RefIds. The
+        // scan sees no references in it, so it must hand the file back as unscanned instead of passing it as clean.
+        [Test]
+        public void Scan_MissingOnly_ReportsOtherReferencesVersionAsUnscanned()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                File.WriteAllText(ProbeAssetPath,
+                    "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n--- !u!114 &11400000\nMonoBehaviour:\n" +
+                    "  m_Name: Probe\n  _weapon:\n    id: 0\n  references:\n    version: 1\n    00000000:\n" +
+                    "      type: {class: Ghost, ns: Game, asm: Assembly-CSharp}\n      data:\n        _damage: 1\n");
+
+                var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+                CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.UnsupportedReferencesVersion));
+
+                var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+                StringAssert.Contains("registry version other than 2", notice);
+                StringAssert.Contains(ProbeAssetPath, notice);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
         // A binary ScriptableObject under Force Text (never re-saved, or [PreferBinarySerialization]) can hold managed
         // references the scan could not read, so the warning names it.
         [Test]
