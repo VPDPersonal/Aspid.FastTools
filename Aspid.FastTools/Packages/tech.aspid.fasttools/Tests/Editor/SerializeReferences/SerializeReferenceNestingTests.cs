@@ -66,10 +66,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
     internal sealed class DrawnDerivedInspectorAttribute : DrawnBaseInspectorAttribute { }
 
-    internal sealed class DrawnCollectionInspectorAttribute : UnityEngine.PropertyAttribute
+    internal class DrawnCollectionInspectorAttribute : UnityEngine.PropertyAttribute
     {
         public DrawnCollectionInspectorAttribute() : base(applyToCollection: true) { }
     }
+
+    internal sealed class DrawnDerivedCollectionInspectorAttribute : DrawnCollectionInspectorAttribute { }
 
     internal sealed class DrawnPipelineInspectorAttribute : UnityEngine.PropertyAttribute { }
 
@@ -121,6 +123,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeReference] public PipelineDrawnEffect pipelineDrawn;
         [SerializeReference, DrawnDerivedInspector] public List<UndrawnEffect> attributedList = new();
         [SerializeReference, DrawnCollectionInspector] public List<UndrawnEffect> collectionAttributedList = new();
+        [SerializeReference, DrawnDerivedCollectionInspector] public List<UndrawnEffect> derivedCollectionAttributedList = new();
         [SerializeReference] public List<DrawnBaseEffect> drawnList = new();
         [SerializeReference] public List<UndrawnEffect> undrawnList = new();
         [TypeSelector] [SerializeReference] public List<DrawnBaseEffect> selectorList = new();
@@ -290,6 +293,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(SerializeReferenceNesting.DrawsOwnHeader(list, depth: 0),
                 "The attribute applies to the collection, so Unity hands the list to its drawer.");
             Assert.IsTrue(SerializeReferenceNesting.DrawsOwnHeader(list.GetArrayElementAtIndex(0), depth: 0));
+        }
+
+        // Unity reads the managed-reference flag of the list itself, which is false, so a drawer registered for the base
+        // attribute without useForChildren does not reach a list with a derived collection attribute.
+        [Test]
+        public void DrawnByUnity_ListWithADerivedCollectionAttribute_KeepsThePicker()
+        {
+            _host.derivedCollectionAttributedList.Add(new UndrawnEffect());
+
+            using var serializedObject = new SerializedObject(_host);
+            var list = serializedObject.FindProperty(nameof(DrawnNestingHost.derivedCollectionAttributedList));
+
+            Assert.IsFalse(SerializeReferenceNesting.DrawnByUnity(list),
+                "Without useForChildren Unity finds no drawer for the list, so the picker-backed add stays.");
         }
 
         [Test]
