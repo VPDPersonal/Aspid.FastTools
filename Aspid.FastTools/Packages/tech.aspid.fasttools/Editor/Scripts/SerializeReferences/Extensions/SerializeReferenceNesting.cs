@@ -29,9 +29,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // itself, ahead of any type drawer, as the drawer did when it reached each element.
             var isArrayElement = child.IsArrayElement();
             if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true)) return !isArrayElement;
+            // Unity takes the managed-reference flag from the property itself, and a list of references is no
+            // managed-reference property.
             if (CustomDrawerRegistry.DeclaresDrawnAttribute(
                     field,
-                    isManagedReference: true,
+                    isManagedReference: !child.isArray,
                     isArrayElement: isArrayElement,
                     isCollection: child.isArray))
                 return true;
