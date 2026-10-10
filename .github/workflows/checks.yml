@@ -57,24 +57,6 @@ jobs:
       - run: node scripts/check-version.mjs
       - run: node scripts/check-unity-minimum.mjs
 
-  # The frontmatter of every SKILL.md. skills.yml runs the same script, but only on a pull request that touches skills.
-  skills:
-    name: Skills
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          sparse-checkout: |
-            scripts
-            skills
-            .claude/skills
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22
-      - run: npm install --no-save --no-audit --no-fund js-yaml@4
-      - run: node scripts/check-skills.mjs
-
   # The tests of scripts/*.test.mjs. They run set-version.sh on a copy, and set-version.sh regenerates the root README
   # with the dependencies of Website/, so they install them.
   script-tests:
