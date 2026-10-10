@@ -231,6 +231,10 @@ Provides extension methods for [`MultiColumnListView`](https://docs.unity3d.com/
 
 Provides extension methods for [`MultiColumnTreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.MultiColumnTreeView.html).
 
+ [ScrollViewExtensions](Aspid.FastTools.UIElements.ScrollViewExtensions.md)
+
+Provides extension methods for [`ScrollView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView.html).
+
  [SliderExtensions](Aspid.FastTools.UIElements.SliderExtensions.md)
 
 Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1.html).
@@ -238,6 +242,14 @@ Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.4
  [SliderIntExtensions](Aspid.FastTools.UIElements.SliderIntExtensions.md)
 
 Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).
+
+ [TabExtensions](Aspid.FastTools.UIElements.TabExtensions.md)
+
+Provides extension methods for [`Tab`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Tab.html).
+
+ [TabViewExtensions](Aspid.FastTools.UIElements.TabViewExtensions.md)
+
+Provides extension methods for [`TabView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView.html).
 
  [TextElementExtensions](Aspid.FastTools.UIElements.TextElementExtensions.md)
 
@@ -318,6 +330,10 @@ Provides text-selection extension methods for [`TextInputBaseField<T>`](https://
  [TreeViewExtensions](Aspid.FastTools.UIElements.TreeViewExtensions.md)
 
 Provides extension methods for [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+
+ [TwoPaneSplitViewExtensions](Aspid.FastTools.UIElements.TwoPaneSplitViewExtensions.md)
+
+Provides extension methods for [`TwoPaneSplitView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TwoPaneSplitView.html).
 
  [VisualElementExtensions](Aspid.FastTools.UIElements.VisualElementExtensions.md)
 

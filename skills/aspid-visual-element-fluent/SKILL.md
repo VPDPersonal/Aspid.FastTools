@@ -67,6 +67,9 @@ rootVisualElement.AddChild(new VisualElement()
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
 | `enumField.Init(v);` | `enumField.Initialize(v)` |
 | `el.AddManipulator(new Clickable(cb));` | `el.AddClickable(cb)` (also `AddContextualMenuManipulator`) |
+| `scroll.mode = ScrollViewMode.Horizontal; scroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;` | `scroll.SetMode(ScrollViewMode.Horizontal).SetVerticalScrollerVisibility(ScrollerVisibility.Hidden)` (also `SetScrollOffset`, page sizes, `SetElasticity`) |
+| `tabs.selectedTabIndex = 1; tab.label = "Stats"; tab.closeable = true;` | `tabs.SetSelectedTabIndex(1)`, `tab.SetLabel("Stats").SetCloseable(true).AddClosed(cb)` (also `SetIconImage`, `AddActiveTabChanged`, `AddTabClosed`) |
+| `split.fixedPaneIndex = 1; split.orientation = TwoPaneSplitViewOrientation.Vertical;` | `split.SetFixedPaneIndex(1).SetOrientation(TwoPaneSplitViewOrientation.Vertical)` (also `SetFixedPaneInitialDimension`) |
 
 Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])`, `UnbindFrom()`,
 `BindPropertyTo(property)`, `SetBindingPath(path)`, `PropertyField.SetLabel(...)` / `.AddValueChanged(...)`,
@@ -86,6 +89,9 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   `SetBackgroundImage` only `StyleBackground`, transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
   Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
+- Add the tabs before `SetActiveTab` and `SetSelectedTabIndex`: Unity throws for a tab that is not in the view and
+  ignores an index out of range. Call `ScrollView.SetScrollOffset` after the content is laid out: the scrollers limit
+  the offset to the scrollable range. `Tab.AddClosing` callbacks all run, but only the last result counts.
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
