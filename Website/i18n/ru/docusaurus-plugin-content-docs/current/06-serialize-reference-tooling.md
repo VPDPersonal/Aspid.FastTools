@@ -44,7 +44,7 @@ Project References также восстанавливает имена, кот�
 
 ## Project References: восстановить группу
 
-Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки).
+Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки). Каждый проход показывает индикатор прогресса; **Cancel** останавливает проверку и оставляет прежние результаты. Группа показывает первые 200 записей, а **Show more** добавляет следующие 200.
 
 ![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
 

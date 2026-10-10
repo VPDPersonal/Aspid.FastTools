@@ -10,6 +10,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (!HasCandidate(imported) && !HasCandidate(deleted) && !HasCandidate(moved)) return;
 
+            MissingReferenceGroup.ClearConstraintCache();
             SerializeReferenceRepairSuggestions.ClearCache();
             SerializeReferenceHelpers.InvalidateMixedTypesCache();
             SerializeReferenceHelpers.InvalidateMissingTypeMemo();

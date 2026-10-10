@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
@@ -8,6 +9,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceProjectSummary
     {
+        // A card builds this many rows, then offers Show more, so thousands of entries stay cheap to build.
+        public const int RowsPerPage = 200;
+
         private const int MaxPreviewedEntries = 8;
 
         private const string RequiredNotScannedText = "Required fields have not been checked yet — Rescan to include them.";
@@ -74,6 +78,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var fileText = files == 1 ? "1 file" : $"{files} files";
             return $"{entryText} · {fileText}";
         }
+
+        // The rows a card builds when `requested` rows were asked for: the first page at least, every entry at most.
+        public static int GetShownRows(int requested, int total) =>
+            Math.Min(total, Math.Max(requested, RowsPerPage));
+
+        public static int GetNextShownRows(int shown) => shown + RowsPerPage;
+
+        public static string BuildShowMoreText(int shown, int total) =>
+            $"Show more ({shown} of {total} shown)";
+
+        public static string BuildShowMoreTooltip(int shown, int total) =>
+            $"Show the next {BuildCountText(Math.Min(RowsPerPage, total - shown), "row")}.";
 
         public static string BuildTypeNameCountText(MissingTypeNameGroup group)
         {

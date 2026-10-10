@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using UnityEditor;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
@@ -58,6 +59,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly ScrollView _scroll;
 
         private readonly NavRing _ring;
+
+        // Rows shown so far per card, by card key; a card that is not here shows its first page.
+        private readonly Dictionary<string, int> _shownRows = new(StringComparer.Ordinal);
+
+        // The row to focus while the list is rebuilt after Show more: its card key and its index in that card.
+        private (string Key, int Index) _focusRow;
+
+        // Which list layout is on screen, so that Show more rebuilds the same one and keeps its header.
+        private bool _isMissingClean;
 
         private readonly AuditPickerHost _picker;
 
@@ -198,13 +208,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_list is null) return;
 
             _picker.Close();
-            ClearSummaries();
 
-            _requiredCheckDisabled = SerializeReferenceSettings.BuildSeverity == GateSeverity.Off;
-            _requiredViolationsCache = CollectRequiredViolations();
+            // Each sweep has a cancelable progress bar. Cancelling keeps the earlier results, the summaries and their
+            // Undo, since a half-finished scan would pass for a clean project.
+            var requiredCheckDisabled = SerializeReferenceSettings.BuildSeverity == GateSeverity.Off;
+            var requiredViolations = CollectRequiredViolations(requiredCheckDisabled);
+            if (requiredViolations is null) return;
+
+            var typeNames = MissingTypeNames.ScanProject();
+            if (typeNames is null) return;
+
+            ClearSummaries();
+            _shownRows.Clear();
+            MissingReferenceGroup.ClearConstraintCache();
+
+            _requiredCheckDisabled = requiredCheckDisabled;
+            _requiredViolationsCache = requiredViolations;
             _requiredIsWarm = true;
 
-            _typeNamesCache = MissingTypeNames.ScanProject();
+            _typeNamesCache = typeNames;
             _typeNamesIsWarm = true;
 
             RenderWarmGroups();
@@ -218,10 +240,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
         }
 
-        private static IReadOnlyList<GateViolation> CollectRequiredViolations() =>
-            _requiredCheckDisabled
-                ? Array.Empty<GateViolation>()
-                : SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly);
+        // Null when the progress bar is cancelled.
+        private static IReadOnlyList<GateViolation> CollectRequiredViolations(bool checkDisabled)
+        {
+            if (checkDisabled) return Array.Empty<GateViolation>();
+
+            try
+            {
+                return SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (progress, path) =>
+                    EditorUtility.DisplayCancelableProgressBar("Scanning Required Fields", path, progress));
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
+        }
 
         // Keeps a warm audit current after a bulk edit by re-checking only the files it rewrote on disk.
         private static void RefreshRequiredViolations(IEnumerable<string> editedPaths)
@@ -233,6 +266,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void RenderGroups(List<MissingReferenceGroup> groups, IReadOnlyList<GateViolation> requiredViolations)
         {
+            _isMissingClean = false;
             _list.Clear();
             ResetNavTargets();
 
@@ -283,6 +317,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _list.AddChild(BuildGroupCard(group, migration));
         }
 
+        // Builds the list again for the data on screen, with the layout and the header it already has.
+        private void RerenderList()
+        {
+            if (_isMissingClean) ShowMissingReferencesClean();
+            else RenderWarmGroups();
+        }
+
         private void RerenderAfterBulkEdit()
         {
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
@@ -295,6 +336,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void ShowMissingReferencesClean()
         {
+            _isMissingClean = true;
             _list.Clear();
             ResetNavTargets();
             var requiredViolations = RequiredViolationsForRender;

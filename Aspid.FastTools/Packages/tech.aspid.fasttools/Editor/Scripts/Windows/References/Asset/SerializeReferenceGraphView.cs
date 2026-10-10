@@ -291,12 +291,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var status = SerializeReferenceAuditUI.ResolveStatus(missing - migrations, orphans, required, migrations);
             ShowOverview(status, total, missing, orphans, Math.Max(0, empties - graphedRequired), migrations, required);
 
-            if (ungraphedRequired.Count > 0)
-            {
-                var labels = new ViolationFieldLabels();
-                foreach (var violation in ungraphedRequired)
-                    _list.AddChild(BuildRequiredOnlyCard(violation, labels));
-            }
+            foreach (var violation in ungraphedRequired)
+                _list.AddChild(BuildRequiredOnlyCard(violation));
 
             _onCanvasStatus?.Invoke(status);
         }
