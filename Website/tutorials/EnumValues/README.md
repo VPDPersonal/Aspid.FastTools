@@ -11,7 +11,7 @@ The walker crosses different surfaces and leaves a continuous colored trail.
 1. Import the sample: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** on **EnumValues**.
 2. Open `Scenes/EnumValues.unity` and enter Play Mode: the walker speeds up on hot metal, slows down on wet and soft tiles, and leaves a trail in each surface's color.
 
-Needs Unity's built-in **Physics** module; without it the sample scripts do not compile.
+Needs Unity's built-in **Physics** module: without it the sample scripts are skipped and the scene shows Missing Script.
 
 ## Try
 
@@ -43,9 +43,12 @@ Right-click the table → **Populate Missing Enum Members** adds the `Stone` row
 
 ### 3. Enum picked in the Inspector
 
-Select **Walker**. The **Speed By Terrain** table declares only its value type, and the <code lang="class-name">TerrainFlags</code> enum is picked in the table header. A row can hold several flags: the `Wet` + `Slippery` row gives `0.5`.
+Select **Walker**. It has two tables. **Color Sample Interval** takes <code lang="class-name">SurfaceType</code> from the code, as in step 1: its rows set the seconds between trail color samples on each surface. **Speed By Terrain** declares only its value type, and the <code lang="class-name">TerrainFlags</code> enum is picked in the table header. A row can hold several flags: the `Wet` + `Slippery` row gives `0.5`.
 
 ```csharp
+[SerializeField, InspectorName("Color Sample Interval")]
+private EnumValues<SurfaceType, float> _stepInterval;
+
 [SerializeField] private EnumValues<float> _speedByTerrain;
 
 var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags));
@@ -57,7 +60,7 @@ var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags)
 
 | Key | Row | Multiplier |
 |---|---|---|
-| `Wet, Slippery` (the Water tile) | the exact `Wet` + `Slippery` row, although `Wet` and `Slippery` rows exist | `0.5` |
+| `Wet, Slippery` (the Water tile and the wet Stone tile) | the exact `Wet` + `Slippery` row, although `Wet` and `Slippery` rows exist | `0.5` |
 | `Wet, Hot` | the first row whose flags are all in the key: `Wet`, above `Hot` | `0.8` |
 | `None` | none, the table's **Default Value** | `1` |
 
@@ -65,9 +68,12 @@ Multipliers of several matching rows are never added or multiplied.
 
 ### 5. Iteration
 
-Right-click **Walker → Log Tables**: <code lang="csharp">foreach</code> yields the configured rows in list order, without the default value.
+Right-click **Walker → Log Tables**: it prints both tables, **Color Sample Interval** first. <code lang="csharp">foreach</code> yields the configured rows in list order, without the default value.
 
 ```csharp
+foreach (var (surface, interval) in _stepInterval)
+    Debug.Log($"Color sample interval {surface}: {interval:0.00}s", this);
+
 foreach (var (flags, multiplier) in _speedByTerrain)
     Debug.Log($"Speed x{multiplier:0.00} on [{flags}]", this);
 ```
