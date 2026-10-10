@@ -1138,22 +1138,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Unity reports a field on a missing type as empty, so the other fields on the same rid are found in the
-        // document. Empty when the object has no readable document.
+        // Unity reports a field on a missing type as empty but keeps its rid in memory, so the other fields on the same
+        // rid are found in the live object, not in the saved file: an unsaved edit can shift a list or set a field to
+        // <None>, and the file then names the wrong field. Empty when the object has no readable document.
         private static List<(string Path, Type FieldType)> FindMissingReferenceAliases(SerializedProperty property, long referenceId)
         {
             var aliases = new List<(string Path, Type FieldType)>();
-            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _)) return aliases;
+            if (!TryGetRepairLocation(property, out _, out _, out _)) return aliases;
 
             var selfPath = property.propertyPath;
             TraverseManagedReferences(property.serializedObject, other =>
             {
-                if (other.managedReferenceValue is null && other.propertyPath != selfPath &&
-                    SerializeReferenceYamlEditor.TryReadReferenceId(assetPath, fileId, other.propertyPath, out var rid) &&
-                    rid == referenceId)
-                {
+                if (other.managedReferenceValue is null && other.propertyPath != selfPath && other.managedReferenceId == referenceId)
                     aliases.Add((other.propertyPath, GetFieldType(other)));
-                }
 
                 return false;
             });
