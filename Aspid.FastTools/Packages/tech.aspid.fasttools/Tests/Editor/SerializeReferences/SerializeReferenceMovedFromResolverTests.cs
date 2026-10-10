@@ -139,7 +139,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void MovedFromFields_UnityAttribute_HasEveryField()
         {
-            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(typeof(MovedFromAttribute));
+            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(attributeType: typeof(MovedFromAttribute));
 
             Assert.IsNull(fields.Missing, "The resolver would warn and match nothing.");
         }
@@ -147,7 +147,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void MovedFromFields_AttributeWithoutData_NamesTheDataField()
         {
-            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(typeof(object));
+            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(attributeType: typeof(object));
 
             Assert.AreEqual("data", fields.Missing);
         }
@@ -155,7 +155,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void MovedFromFields_DataWithoutParts_NamesTheFirstMissingPart()
         {
-            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(typeof(MovedFromWithoutParts));
+            var fields = new SerializeReferenceMovedFromResolver.MovedFromFields(attributeType: typeof(MovedFromWithoutParts));
 
             Assert.AreEqual("className", fields.Missing);
         }

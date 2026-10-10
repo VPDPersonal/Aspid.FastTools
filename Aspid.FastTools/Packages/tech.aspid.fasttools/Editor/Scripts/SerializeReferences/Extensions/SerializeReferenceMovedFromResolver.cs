@@ -69,7 +69,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 foreach (var attribute in candidate.GetCustomAttributes(typeof(MovedFromAttribute), inherit: false))
                 {
-                    var data = _fields.Data.GetValue(attribute);
+                    var data = _fields.Data.GetValue(obj: attribute);
                     if (data is null) continue;
 
                     // A false "*HasChanged" flag means the old value equals the current one, matching how Unity's
@@ -117,7 +117,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static MovedFromFields LoadFields()
         {
-            var fields = new MovedFromFields(typeof(MovedFromAttribute));
+            var fields = new MovedFromFields(attributeType: typeof(MovedFromAttribute));
             if (fields.Missing is null) return fields;
 
             Debug.LogWarning(
@@ -139,7 +139,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             public MovedFromFields(Type attributeType)
             {
-                Data = attributeType.GetField("data", InstanceFlags);
+                Data = attributeType.GetField(name: "data", bindingAttr: InstanceFlags);
 
                 var dataType = Data?.FieldType;
                 Class = new MovedSlot(dataType, valueName: "className", changedName: "classHasChanged");
@@ -160,14 +160,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             public MovedSlot(Type dataType, string valueName, string changedName)
             {
-                _value = dataType?.GetField(valueName, InstanceFlags);
-                _changed = dataType?.GetField(changedName, InstanceFlags);
+                _value = dataType?.GetField(name: valueName, bindingAttr: InstanceFlags);
+                _changed = dataType?.GetField(name: changedName, bindingAttr: InstanceFlags);
 
                 Missing = dataType is null ? null : _value is null ? valueName : _changed is null ? changedName : null;
             }
 
             public string Read(object data, string current) =>
-                _changed.GetValue(data) is true ? _value.GetValue(data) as string : current;
+                _changed.GetValue(obj: data) is true ? _value.GetValue(obj: data) as string : current;
         }
     }
 }
