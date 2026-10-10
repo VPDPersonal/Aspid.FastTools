@@ -62,7 +62,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 ```
 
 > [!NOTE]
-> В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся.
+> В инспекторе runtime-объекта селектор не предлагает типы из editor-only сборок (`UnityEditor`, asmdef только для Editor и папки `Editor`): в билде плеера они не найдутся. На поле `[SerializeReference]` такие типы отклоняют также **Paste**, **Paste Template**, **Link to Existing**, **Smart Fix** и перетаскивание скрипта.
 
 ## Свойства
 

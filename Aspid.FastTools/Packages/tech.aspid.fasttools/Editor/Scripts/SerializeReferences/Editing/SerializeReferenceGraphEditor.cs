@@ -123,9 +123,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             using (serializedObject)
             {
-                var previous = property.managedReferenceValue;
-                property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-                property.isExpanded = type is not null;
+                // A re-pick of the held type or a type the asset cannot hold writes nothing, so the asset is not saved.
+                if (!SerializeReferenceWriter.SetType(property, type)) return false;
 
                 var target = serializedObject.targetObject;
                 EditorUtility.SetDirty(target);

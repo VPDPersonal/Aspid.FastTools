@@ -1,7 +1,10 @@
 using UnityEngine;
 using UnityEditor;
 using NUnit.Framework;
+using Aspid.FastTools.Tests;
+using UnityEngine.TestTools;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Store = Aspid.FastTools.SerializeReferences.Editors.SerializeReferencePendingAssignment;
 using Entry = Aspid.FastTools.SerializeReferences.Editors.SerializeReferencePendingAssignment.Entry;
 
@@ -219,6 +222,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(1, survivors.Count, "A resolvable target with an unresolved type stays pending.");
                 Assert.AreEqual(1, survivors[0].Attempts,
                     "A loaded target whose type has not compiled yet spends exactly one attempt per reload pass.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        [Test]
+        public void ResolvePass_ResolvedType_AssignsANewInstance()
+        {
+            var probe = ScriptableObject.CreateInstance<UnsavedRepairTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                Seed(new Entry(GlobalObjectId.GetGlobalObjectIdSlow(probe).ToString(), nameof(UnsavedRepairTestObject.a),
+                    typeof(TestSword).FullName, attempts: 0));
+
+                Assert.IsFalse(Store.ResolvePass(countAttempt: true), "An applied entry leaves the queue.");
+                Assert.IsInstanceOf<TestSword>(probe.a);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        [Test]
+        public void ResolvePass_EditorOnlyTypeOnRuntimeObject_IsDroppedWithAWarning()
+        {
+            var probe = ScriptableObject.CreateInstance<InMemoryRepairTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                Seed(new Entry(GlobalObjectId.GetGlobalObjectIdSlow(probe).ToString(), nameof(InMemoryRepairTestObject.value),
+                    typeof(TestSword).FullName, attempts: 0));
+                LogAssert.Expect(LogType.Warning, new Regex("editor-only assembly"));
+
+                Assert.IsFalse(Store.ResolvePass(countAttempt: true), "A type the object cannot hold drops the entry.");
+                Assert.IsNull(probe.value, "A player build would load an editor-only type as missing, so it is not assigned.");
             }
             finally
             {
