@@ -154,7 +154,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // Require both a new index-to-ID binding and an increased occurrence count to exclude reorders.
+        // Require both a new index-to-ID binding and an increased occurrence count to exclude reorders, and that
+        // dropping the copy gives the previous layout back. The array path names a position, so after an outer
+        // element is deleted the same path can hold another element's list; that is not an insertion.
         internal static bool TryFindFreshDuplicate(
             IReadOnlyDictionary<int, long> previous,
             IReadOnlyDictionary<int, long> current,
@@ -186,8 +188,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (index < best) best = index;
             }
 
-            if (best == int.MaxValue) return false;
+            if (best == int.MaxValue || !IsPreviousWithInsertedElement(previous, current, best)) return false;
+
             duplicateIndex = best;
+            return true;
+        }
+
+        // The maps are sparse (an element without a valid id has no entry); only indexes after the insertion shift.
+        private static bool IsPreviousWithInsertedElement(
+            IReadOnlyDictionary<int, long> previous,
+            IReadOnlyDictionary<int, long> current,
+            int insertedIndex)
+        {
+            if (previous.Count != current.Count - 1) return false;
+
+            foreach (var pair in current)
+            {
+                if (pair.Key == insertedIndex) continue;
+
+                var previousIndex = pair.Key < insertedIndex ? pair.Key : pair.Key - 1;
+                if (!previous.TryGetValue(previousIndex, out var rid) || rid != pair.Value) return false;
+            }
+
             return true;
         }
 
