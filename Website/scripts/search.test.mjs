@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {test} from 'node:test';
 import {fileURLToPath} from 'node:url';
-import {prepareIndex, searchEntries} from '../src/components/search.js';
+import {isSearchShortcut, prepareIndex, searchEntries} from '../src/components/search.js';
 import searchPlugin, {plainText} from '../src/plugins/search/index.js';
 
 const entries = prepareIndex([
@@ -48,4 +48,14 @@ test('index URLs follow trailingSlash: false except the locale root', async () =
   await searchPlugin(context).allContentLoaded({allContent, actions: {createData: async (name, data) => { index = JSON.parse(data); }}});
   assert.deepEqual(index.map((entry) => entry.url),
     ['/Aspid.FastTools/ru/', '/Aspid.FastTools/ru/tutorials', '/Aspid.FastTools/ru/tutorials/types', '/Aspid.FastTools/ru/docs/enum-values']);
+});
+test('Ctrl or Cmd with K opens search on Latin and non-Latin layouts', () => {
+  assert.ok(isSearchShortcut({ctrlKey: true, key: 'k', code: 'KeyK'}));
+  assert.ok(isSearchShortcut({metaKey: true, key: 'K', code: 'KeyK'}));
+  assert.ok(isSearchShortcut({ctrlKey: true, key: 'л', code: 'KeyK'}));
+  assert.ok(isSearchShortcut({ctrlKey: true, key: 'k', code: 'KeyV'}));
+  assert.ok(!isSearchShortcut({key: 'k', code: 'KeyK'}));
+  assert.ok(!isSearchShortcut({ctrlKey: true, key: 'л', code: 'KeyL'}));
+  assert.ok(!isSearchShortcut({ctrlKey: true, key: 't', code: 'KeyK'}));
+  assert.ok(!isSearchShortcut({ctrlKey: true, code: 'KeyJ'}));
 });
