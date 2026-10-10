@@ -458,22 +458,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        // A constraint substituted from the interface's type arguments can be one C# rejects in a declaration, such as
-        // object, a sealed class or a struct (CS0701, CS0702); an explicit implementation inherits it instead.
+        // A constraint substituted from the interface's type arguments can be one C# rejects in a declaration: object, a
+        // sealed class or a struct (CS0701, CS0702), a class type next to class or struct (CS0450) or after another
+        // constraint (CS0406). An explicit implementation inherits the constraints instead.
         private static bool CanRestateConstraints(MethodInfo method)
         {
             if (!method.IsGenericMethodDefinition) return true;
 
             foreach (var parameter in method.GetGenericArguments())
             {
-                var isStruct = (parameter.GenericParameterAttributes & GenericParameterAttributes.NotNullableValueTypeConstraint) != 0;
+                var attributes = parameter.GenericParameterAttributes;
+                var isStruct = (attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) != 0;
+                var hasKind = isStruct || (attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0;
 
+                var position = 0;
                 foreach (var constraint in parameter.GetGenericParameterConstraints())
                 {
                     if (isStruct && constraint == typeof(ValueType)) continue;
-                    if (constraint.IsGenericParameter || constraint.IsInterface) continue;
-                    if (!constraint.IsClass || constraint.IsSealed) return false;
-                    if (constraint == typeof(object) || constraint == typeof(ValueType) || constraint == typeof(Array)) return false;
+
+                    var isClassType = !constraint.IsGenericParameter && !constraint.IsInterface;
+                    if (isClassType)
+                    {
+                        if (!constraint.IsClass || constraint.IsSealed || hasKind || position > 0) return false;
+                        if (constraint == typeof(object) || constraint == typeof(ValueType) || constraint == typeof(Array)) return false;
+                    }
+
+                    position++;
                 }
             }
 

@@ -56,6 +56,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         internal interface IMap<TBase> { void Put<T>(T item) where T : TBase; }
 
+        internal interface IReferenceMap<TBase> { void Put<T>(T item) where T : class, TBase; }
+
+        internal interface IDisposableMap<TBase> { void Put<T>(T item) where T : IDisposable, TBase; }
+
         internal interface IIndexed
         {
             int this[int index] { get; set; }
@@ -195,6 +199,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.That(stub, Does.Contain($".IMap<{argument}>.Put<T>(T item) => {Throw};"));
             Assert.That(stub, Does.Not.Contain("where T :"));
         }
+
+        // A class type next to class is CS0450.
+        [Test]
+        public void SubstitutedClassConstraintNextToClass_IsImplementedExplicitly()
+        {
+            var stub = Generate(typeof(IReferenceMap<ItemBase>));
+
+            Assert.That(stub, Does.Contain($".IReferenceMap<Aspid.FastTools.SerializeReferences.Editors.Tests.ItemBase>.Put<T>(T item) => {Throw};"));
+            Assert.That(stub, Does.Not.Contain("where T :"));
+        }
+
+        // A class type after an interface is CS0406.
+        [Test]
+        public void SubstitutedClassConstraintAfterAnInterface_IsNotRestatedInThatOrder() =>
+            Assert.That(Generate(typeof(IDisposableMap<ItemBase>)), Does.Not.Contain("where T : System.IDisposable, "));
 
         [Test]
         public void SubstitutedConstraintOfAnOpenClass_IsRestated() =>
