@@ -40,7 +40,7 @@ Do every step without questions. Stop at the first failure and report it.
 5. Run `scripts/set-version.sh <version>`. Keep the "channel changed" line if the script prints it.
 6. Start two `unity-verify` agents in the background, with EditMode tests and no filter:
    - a project from `scripts/make-unity-test-project.sh <scratchpad>/unity-min <minimum>`, where `<minimum>` is the
-     `minimum` entry of `.github/workflows/tests.yml`;
+     first version of the `unity` matrix in `.github/workflows/tests.yml`;
    - the dev project `Aspid.FastTools/` of this checkout.
 
    The `unity-verify` agent is user-level. Without it, run the batch command from the header of

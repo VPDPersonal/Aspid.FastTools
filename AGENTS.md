@@ -46,7 +46,8 @@ Agent Skills for projects that consume the package in `skills/`.
   from another package lists it in `EXTERNAL_ASSEMBLIES` of the script.
 - The minimum Unity version is `unity` and `unityRelease` in `package.json`. It is also written by hand in this file,
   `.github/claude-review.md`, `.github/ISSUE_TEMPLATE/release_checklist.yml`, `skills/aspid-visual-element-fluent/SKILL.md`
-  and the `minimum` row of `.github/workflows/tests.yml`; `scripts/check-unity-minimum.mjs` (CI) fails when one differs.
+  and the first Unity version of the matrix in `.github/workflows/tests.yml`; `scripts/check-unity-minimum.mjs` (CI) fails
+  when one differs.
 - `.github/workflows/checks.yml` has no path filter, so each of its jobs can be a required check. It runs
   `check-package-files.mjs`, `check-version.mjs` and `check-unity-minimum.mjs`, compares the committed Roslyn DLLs with a
   Release build, and runs `node --test scripts/*.test.mjs`. Those tests run `set-version.sh` on a copy of the repository

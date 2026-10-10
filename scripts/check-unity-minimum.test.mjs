@@ -21,7 +21,7 @@ const MENTIONS = [
 
 const valid = () => ({
   [PACKAGE_JSON]: JSON.stringify({ unity: '6000.0', unityRelease: '53f1' }),
-  [MATRIX]: '# 6000.0.53f1 is the minimum.\n          - name: minimum\n            unity: 6000.0.53f1\n          - name: latest\n            unity: 6000.6.4f1\n',
+  [MATRIX]: '# 6000.0.53f1 is the minimum.\n        unity: [6000.0.53f1, 6000.6.5f1]\n',
   ...Object.fromEntries(MENTIONS.map((file) => [file, 'The package supports Unity 6000.0.53f1.\n'])),
 });
 
@@ -65,16 +65,16 @@ test('a raised minimum in package.json reports every file that still names the o
 });
 
 test('the CI matrix must test the minimum, not only mention it', (t) => {
-  const result = check(t, { [MATRIX]: '# 6000.0.53f1 is the minimum.\n          - name: latest\n            unity: 6000.6.4f1\n' });
+  const result = check(t, { [MATRIX]: '# 6000.0.53f1 is the minimum.\n        unity: [6000.6.5f1, 6000.0.53f1]\n' });
   assert.equal(result.status, 1, result.stdout + result.stderr);
   assert.ok(result.stdout.includes(`::error file=${MATRIX}::`), result.stdout);
-  assert.match(result.stdout, /matrix row "name: minimum" with "unity: 6000\.0\.53f1"/);
+  assert.match(result.stdout, /matrix "unity: \[6000\.0\.53f1, …\]" with the minimum first/);
 });
 
-test('only the minimum row of the matrix counts', (t) => {
+test('only the first version of the matrix counts', (t) => {
   const result = check(t, {
     [PACKAGE_JSON]: JSON.stringify({ unity: '6000.2', unityRelease: '15f1' }),
-    [MATRIX]: '          - name: minimum\n            unity: 6000.0.53f1\n          - name: \'6000.2\'\n            unity: 6000.2.15f1\n',
+    [MATRIX]: '        unity: [6000.0.53f1, 6000.2.15f1]\n',
     ...Object.fromEntries(MENTIONS.map((file) => [file, 'The package supports Unity 6000.2.15f1.\n'])),
   });
   assert.equal(result.status, 1, result.stdout + result.stderr);
@@ -84,7 +84,7 @@ test('only the minimum row of the matrix counts', (t) => {
 test('a package.json without unityRelease names a minor version', (t) => {
   const text = 'The package supports Unity 6000.0.\n';
   const files = Object.fromEntries(MENTIONS.map((file) => [file, text]));
-  const matrix = { [MATRIX]: '          - name: minimum\n            unity: 6000.0\n' };
+  const matrix = { [MATRIX]: '        unity: [6000.0, 6000.6.5f1]\n' };
   assert.equal(check(t, { [PACKAGE_JSON]: JSON.stringify({ unity: '6000.0' }), ...files, ...matrix }).status, 0);
   assert.equal(check(t, { [PACKAGE_JSON]: JSON.stringify({ unityRelease: '53f1' }) }).status, 1);
 });
