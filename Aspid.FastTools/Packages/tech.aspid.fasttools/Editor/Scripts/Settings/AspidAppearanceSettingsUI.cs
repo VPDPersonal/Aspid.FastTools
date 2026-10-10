@@ -7,10 +7,16 @@ namespace Aspid.FastTools.Editors
 {
     internal static class AspidAppearanceSettingsUI
     {
+        internal const string AnimatedBackgroundName = "animated-background";
+
+        // The Appearance section and Preferences page: the theme override, then the animated background switch.
         public static void BuildControls(VisualElement container)
         {
+            AspidThemeSettingsUI.BuildControls(container);
+
             var animated = new AspidSwitch("Animated background")
             {
+                name = AnimatedBackgroundName,
                 value = AspidAnimatedDotsBackgroundSettings.Enabled,
                 tooltip = "Animate the dots behind the FastTools window and its settings pages.\n"
                     + "Turning it off stops the dots repaint timer.\n"

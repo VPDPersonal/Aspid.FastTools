@@ -125,9 +125,8 @@ namespace Aspid.FastTools.Editors
             if ((scope & AspidSettingsScope.User) == 0) return;
 
             AddSection(container, "Type Selector", TypeSelectorSettingsView.BuildControls);
-            AddSection(container, "Appearance", AspidThemeSettingsUI.BuildControls);
-            AddSection(container, "Welcome", WelcomeSettingsUI.BuildControls);
             AddSection(container, "Appearance", AspidAppearanceSettingsUI.BuildControls);
+            AddSection(container, "Welcome", WelcomeSettingsUI.BuildControls);
         }
 
         private static VisualElement BuildSurfaceHeader(AspidSettingsScope scope, string title, string description)

@@ -96,7 +96,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             AspidAppearanceSettingsUI.BuildControls(container);
             yield return null;
 
-            var animated = container.Q<AspidSwitch>();
+            var animated = container.Q<AspidSwitch>(AspidAppearanceSettingsUI.AnimatedBackgroundName);
             Assert.IsNotNull(animated, "BuildControls must emit the animated background switch.");
             Assert.IsTrue(animated.value);
 

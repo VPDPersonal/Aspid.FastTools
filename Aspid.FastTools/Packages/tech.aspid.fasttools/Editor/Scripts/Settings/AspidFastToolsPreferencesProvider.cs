@@ -1,7 +1,6 @@
 using UnityEditor;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.SerializeReferences.Editors;
-using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -35,7 +34,6 @@ namespace Aspid.FastTools.Editors
                 "Override",
                 "Welcome",
                 "Dropdown",
-                "Appearance",
                 "Animated",
             },
         };
@@ -77,9 +75,13 @@ namespace Aspid.FastTools.Editors
                 activateHandler = static (_, root) => AspidSettingsUI.BuildAreaProviderPage(
                     root,
                     title: "Appearance",
-                    AspidThemeSettingsUI.BuildControls),
+                    AspidAppearanceSettingsUI.BuildControls),
 
-                keywords = new[] { "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Override" },
+                keywords = new[]
+                {
+                    "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Override",
+                    "Animated", "Animation", "Background",
+                },
             };
 
         [SettingsProvider]
@@ -94,20 +96,6 @@ namespace Aspid.FastTools.Editors
                     WelcomeSettingsUI.BuildControls),
 
                 keywords = new[] { "Aspid", "FastTools", "Welcome", "Auto", "Show" },
-            };
-
-        [SettingsProvider]
-        public static SettingsProvider CreateAppearance() =>
-            new(SettingsPath + "/Appearance", SettingsScope.User)
-            {
-                label = "Appearance",
-
-                activateHandler = static (_, root) => AspidSettingsUI.BuildAreaProviderPage(
-                    root,
-                    title: "Appearance",
-                    AspidAppearanceSettingsUI.BuildControls),
-
-                keywords = new[] { "Aspid", "FastTools", "Appearance", "Animated", "Animation", "Background" },
             };
     }
 }
