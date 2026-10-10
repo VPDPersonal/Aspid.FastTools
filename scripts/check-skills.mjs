@@ -17,6 +17,8 @@ const CONSUMER_ROOT = 'skills';
 const SKILL_ROOTS = [CONSUMER_ROOT, '.claude/skills'];
 const ANALYZERS = ':(glob)Aspid.FastTools.Analyzers/**/*.cs';
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
+// A dotted name that ends in one of these is a file name (`Aspid.FastTools.Analyzers.dll`), not a namespace.
+const FILE_EXTENSION = /\.(?:asmdef|asmref|cs|dll|git|json|md|meta|pdb|unitypackage|xml)$/;
 
 let errors = 0;
 const fail = (file, message) => {
@@ -94,17 +96,22 @@ const mentionedIn = text => [...text.matchAll(/AFT(\d{4})(?:`?\s*[-–—]\s*`?A
   return Array.from({ length: Math.max(to - from + 1, 1) }, (_, i) => `AFT${String(from + i).padStart(4, '0')}`);
 });
 
+// Every .md file of the skill roots, and every SKILL.md elsewhere (.cursor/skills, .agents/skills, ...).
+const skillDocs = [...new Set([...files(...SKILL_ROOTS).filter(file => extname(file) === '.md'), ...skillFiles])];
 const documented = new Set();
-for (const file of files(...SKILL_ROOTS).filter(file => extname(file) === '.md')) {
+for (const file of skillDocs) {
   const text = readFileSync(file, 'utf8');
   const consumer = file.startsWith(`${CONSUMER_ROOT}/`);
   const mentioned = new Set(mentionedIn(text));
   if (consumer) mentioned.forEach(code => documented.add(code));
   for (const code of mentioned) if (reported.size && !reported.has(code)) fail(file, `${code} is not reported by any analyzer`);
   // Only a namespace or an assembly: a fully qualified type name is not known here, so write a `using` instead.
-  if (consumer)
-    for (const name of new Set(text.match(/Aspid\.FastTools(?:\.\w+)*/g)))
+  // A name in a URL path (`github.com/VPDPersonal/Aspid.FastTools.git`) or a file name is skipped.
+  if (consumer) {
+    const names = [...text.matchAll(/(?<![\w/.-])Aspid\.FastTools(?:\.\w+)*/g)].map(m => m[0]).filter(name => !FILE_EXTENSION.test(name));
+    for (const name of new Set(names))
       if (known.size && !known.has(name)) fail(file, `${name} is not a namespace or an assembly of the package`);
+  }
 }
 for (const code of [...reported].sort().filter(code => !documented.has(code)))
   console.log(`::warning::${code} is reported by an analyzer but no consumer skill in ${CONSUMER_ROOT}/ mentions it`);
