@@ -22,6 +22,7 @@ The field offers only concrete two-handed weapons: classes derived from <code la
 | <code lang="csharp">string</code> | Stores the assembly-qualified name |
 | [Serializable Types](02-serializable-types.md) | Configures the wrapper's selection |
 | <code lang="csharp">[SerializeReference]</code> | Creates an instance of the selected implementation — see [SerializeReference Selector](04-serialize-reference-selector.md) |
+| An array or <code lang="class-name">List&lt;T&gt;</code> of these | Every element gets its own selector; for <code lang="csharp">[SerializeReference]</code>, see [Lists](04-serialize-reference-selector.md#lists) |
 
 > [!WARNING]
 > In a player, a string field is resolved by name, like [Serializable Types](02-serializable-types.md#types-in-a-player-build): a class used only through this selection may be stripped at **Managed Stripping Level** Low or higher.
@@ -69,7 +70,7 @@ A wrapper's <code lang="class-name">T</code> and a <code lang="csharp">[Serializ
 | Property | Default | Behaviour |
 |---|---|---|
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Lets abstract classes (<code lang="csharp">Abstract</code>), interfaces (<code lang="csharp">Interface</code>), both or neither into the list. Ignored on <code lang="csharp">[SerializeReference]</code> |
-| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Warns about an empty type name or a <code lang="csharp">null</code> managed reference |
+| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Warns about an empty type name in a <code lang="csharp">string</code> field or a [Serializable Types](02-serializable-types.md) wrapper, or a <code lang="csharp">null</code> in a <code lang="csharp">[SerializeReference]</code> field |
 
 ## Required field
 
