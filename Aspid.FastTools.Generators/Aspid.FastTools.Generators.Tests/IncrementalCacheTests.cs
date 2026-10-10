@@ -44,7 +44,7 @@ public class IncrementalCacheTests
             }
             """;
 
-        var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };
+        var stubs = GeneratorTestHost.PackageSources.Select(package => package.Source).ToArray();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new ProfilerMarkersGenerator());
 
         driver = driver.RunGenerators(MakeCompilation(Source(before), "// unrelated", stubs));
@@ -59,7 +59,7 @@ public class IncrementalCacheTests
 
     private static void AssertCachedAfterUnrelatedEdit(string targetSource, IIncrementalGenerator generator)
     {
-        var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };
+        var stubs = GeneratorTestHost.PackageSources.Select(package => package.Source).ToArray();
 
         var driverOptions = new GeneratorDriverOptions(
             disabledOutputs: IncrementalGeneratorOutputKind.None,
