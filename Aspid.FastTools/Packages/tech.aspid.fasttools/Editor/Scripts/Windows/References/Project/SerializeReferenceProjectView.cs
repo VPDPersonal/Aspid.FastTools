@@ -209,6 +209,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _picker.Close();
 
+            // A pull may have changed the committed severity and excluded folders since the Editor loaded them.
+            SerializeReferenceSettings.ReloadShared();
+
             // Each sweep has a cancelable progress bar. Cancelling keeps the earlier results, the summaries and their
             // Undo, since a half-finished scan would pass for a clean project.
             var requiredCheckDisabled = SerializeReferenceSettings.BuildSeverity == GateSeverity.Off;

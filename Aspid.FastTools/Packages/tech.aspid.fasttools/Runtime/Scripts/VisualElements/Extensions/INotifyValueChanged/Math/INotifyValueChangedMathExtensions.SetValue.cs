@@ -8,6 +8,9 @@ namespace Aspid.FastTools.UIElements
     /// <summary>
     /// Provides extension methods for <see cref="INotifyValueChanged{T}"/> of <c>Unity.Mathematics</c> types.
     /// </summary>
+    /// <remarks>
+    /// Compiled when <c>com.unity.mathematics</c> is installed, and on Unity 6000.5 and newer, where the types ship in the engine.
+    /// </remarks>
     public static partial class INotifyValueChangedMathExtensions
     {
         #region Unity.Mathematics.Int

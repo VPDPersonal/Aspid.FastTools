@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    [UxmlElement(libraryPath = "Aspid/FastTools")]
+    [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
     internal sealed partial class AspidGradientButton : VisualElement
     {
         internal const string FadeTextureName = "Aspid.FastTools.GradientButtonFade";
