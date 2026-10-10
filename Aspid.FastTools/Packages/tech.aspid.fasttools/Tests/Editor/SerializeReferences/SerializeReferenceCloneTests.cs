@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using NUnit.Framework;
+using System.Reflection;
 using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -9,8 +10,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// Coverage for the two data-preservation copiers behind type switches and Make-unique:
     /// <list type="bullet">
     /// <item><see cref="SerializeReferenceHelpers.CreateInstancePreservingData"/> carries nested
-    /// <c>[SerializeReference]</c> children ACROSS a type switch by reference — JsonUtility alone drops them,
-    /// which silently reset every nested reference before this coverage existed;</item>
+    /// <c>[SerializeReference]</c> children ACROSS a type switch by reference — JsonUtility alone only makes
+    /// copies, so aliases onto the nested instances were lost on a type switch;</item>
     /// <item><see cref="SerializeReferenceHelpers.CloneManagedReferenceGraph"/> deep-copies for Make-unique /
     /// de-alias: children become independent, internal aliasing topology survives, cycles terminate.</item>
     /// </list>
@@ -46,6 +47,57 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private sealed class Link : IPart
         {
             [SerializeReference] public IPart next;
+        }
+
+        [Serializable]
+        private struct Slot
+        {
+            [SerializeReference] public IPart part;
+        }
+
+        [Serializable]
+        private sealed class Socket
+        {
+            public int size;
+            [SerializeReference] public IPart part;
+        }
+
+        // Managed references inside by-value data, plus a private one without [SerializeField].
+        [Serializable]
+        private sealed class Rig : IPart
+        {
+            [SerializeReference] public IPart gem;
+            public Slot slot = new();
+            public Socket socket = new();
+            public Slot[] slots = Array.Empty<Slot>();
+            public List<Socket> sockets = new();
+            [SerializeReference] private IPart _hidden;
+
+            public IPart Hidden
+            {
+                get => _hidden;
+                set => _hidden = value;
+            }
+
+            [field: SerializeReference] public IPart Auto { get; set; }
+        }
+
+        [Serializable]
+        private sealed class OtherRig : IPart
+        {
+            public Slot slot = new();
+            public Socket socket = new();
+            public Slot[] slots = Array.Empty<Slot>();
+            public List<Socket> sockets = new();
+            [SerializeReference] private IPart _hidden;
+
+            public IPart Hidden
+            {
+                get => _hidden;
+                set => _hidden = value;
+            }
+
+            [field: SerializeReference] public IPart Auto { get; set; }
         }
 
         [Test]
@@ -114,6 +166,176 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreNotSame(second, clone.next);
             Assert.AreSame(clone, ((Link)clone.next).next,
                 "A cyclic graph must clone into its own cycle instead of recursing forever.");
+        }
+
+        [Test]
+        public void CreateInstancePreservingData_TypeSwitch_CarriesReferencesInsideByValueData()
+        {
+            var previous = CreateRig();
+
+            var switched = (OtherRig)SerializeReferenceHelpers.CreateInstancePreservingData(
+                typeof(OtherRig), previous);
+
+            Assert.AreEqual(5, switched.socket.size, "Plain data inside a serializable class must keep riding JSON.");
+            Assert.AreSame(previous.slot.part, switched.slot.part, "A reference inside a struct must carry over.");
+            Assert.AreSame(previous.socket.part, switched.socket.part,
+                "A reference inside a serializable class must carry over.");
+            Assert.AreSame(previous.slots[0].part, switched.slots[0].part,
+                "A reference inside an array element must carry over.");
+            Assert.AreSame(previous.sockets[0].part, switched.sockets[0].part,
+                "A reference inside a list element must carry over.");
+        }
+
+        [Test]
+        public void CloneManagedReferenceGraph_CopiesReferencesInsideByValueData()
+        {
+            var source = CreateRig();
+
+            var clone = (Rig)SerializeReferenceHelpers.CloneManagedReferenceGraph(source);
+
+            Assert.AreEqual(5, clone.socket.size);
+            AssertIndependentCopy(source.slot.part, clone.slot.part, where: "a struct");
+            AssertIndependentCopy(source.socket.part, clone.socket.part, where: "a serializable class");
+            AssertIndependentCopy(source.slots[0].part, clone.slots[0].part, where: "an array element");
+            AssertIndependentCopy(source.sockets[0].part, clone.sockets[0].part, where: "a list element");
+        }
+
+        [Test]
+        public void CloneManagedReferenceGraph_InsideByValueData_PreservesAliasingAndLeavesSourceIntact()
+        {
+            var shared = new Gem { power = 6 };
+            var source = new Rig
+            {
+                gem = shared,
+                slot = new Slot { part = shared },
+                sockets = new List<Socket> { new() { part = shared } },
+            };
+
+            var clone = (Rig)SerializeReferenceHelpers.CloneManagedReferenceGraph(source);
+
+            Assert.AreNotSame(shared, clone.gem);
+            Assert.AreSame(clone.gem, clone.slot.part,
+                "A field and a struct aliasing one instance must alias one copy.");
+            Assert.AreSame(clone.gem, clone.sockets[0].part,
+                "A field and a list element aliasing one instance must alias one copy.");
+            Assert.AreSame(shared, source.slot.part, "Make unique must not rewrite the source's struct.");
+            Assert.AreSame(shared, source.sockets[0].part, "Make unique must not rewrite the source's list.");
+        }
+
+        [Test]
+        public void PrivateSerializeReferenceField_IsCarriedOnTypeSwitch()
+        {
+            var previous = new Rig { Hidden = new Gem { power = 8 }, Auto = new Gem { power = 9 } };
+
+            var switched = (OtherRig)SerializeReferenceHelpers.CreateInstancePreservingData(
+                typeof(OtherRig), previous);
+
+            Assert.AreSame(previous.Hidden, switched.Hidden,
+                "Unity serializes a private [SerializeReference] field without [SerializeField] too.");
+            Assert.AreSame(previous.Auto, switched.Auto,
+                "The backing field of a [field: SerializeReference] auto-property must carry over.");
+        }
+
+        [Test]
+        public void PrivateSerializeReferenceField_IsClonedWithItsAliases()
+        {
+            var shared = new Gem { power = 8 };
+            var source = new Rig { gem = shared, Hidden = shared, Auto = shared };
+
+            var clone = (Rig)SerializeReferenceHelpers.CloneManagedReferenceGraph(source);
+
+            AssertIndependentCopy(source.Hidden, clone.Hidden, where: "a private field");
+            Assert.AreSame(clone.gem, clone.Hidden,
+                "A private field aliasing a public one must alias the same copy.");
+            Assert.AreSame(clone.gem, clone.Auto,
+                "An auto-property backing field aliasing a public one must alias the same copy.");
+        }
+
+        [Serializable]
+        private sealed class PlainOuter
+        {
+            public PlainMiddle first = new();
+            public PlainMiddle second = new();
+        }
+
+        [Serializable]
+        private sealed class PlainMiddle
+        {
+            public PlainLeaf first = new();
+            public PlainLeaf second = new();
+        }
+
+        [Serializable]
+        private sealed class PlainLeaf
+        {
+            public int value;
+        }
+
+        // A by-value cycle: CycleInner reaches a reference only through CycleOuter.
+        [Serializable]
+        private sealed class CycleOuter
+        {
+            public CycleInner inner;
+            [SerializeReference] public IPart part;
+        }
+
+        [Serializable]
+        private sealed class CycleInner
+        {
+            public CycleOuter back;
+        }
+
+        [Test]
+        public void ByValueTypesWithoutReferences_AreMemoizedOnTheFirstWalk()
+        {
+            ForgetMemoized(typeof(PlainOuter), typeof(PlainMiddle), typeof(PlainLeaf));
+            Assert.IsFalse(CanHoldManagedReferences(typeof(PlainOuter)));
+
+            var memo = ByValueReferenceHolders();
+            Assert.IsTrue(memo.TryGetValue(typeof(PlainMiddle), out var middle) && !middle,
+                "A nested type without references must be memoized, or every path to it walks it again.");
+            Assert.IsTrue(memo.TryGetValue(typeof(PlainLeaf), out var leaf) && !leaf);
+        }
+
+        [Test]
+        public void ByValueTypeBelowACutCycle_IsNotMemoizedAsHoldingNoReferences()
+        {
+            ForgetMemoized(typeof(CycleOuter), typeof(CycleInner));
+            Assert.IsTrue(CanHoldManagedReferences(typeof(CycleOuter)));
+
+            Assert.IsFalse(ByValueReferenceHolders().ContainsKey(typeof(CycleInner)),
+                "A negative answer found while the walk cut its cycle at CycleOuter must not be kept.");
+            Assert.IsTrue(CanHoldManagedReferences(typeof(CycleInner)), "CycleInner reaches a reference through CycleOuter.");
+        }
+
+        private static bool CanHoldManagedReferences(Type type) => (bool)typeof(SerializeReferenceHelpers)
+            .GetMethod(nameof(CanHoldManagedReferences), BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(obj: null, new object[] { type });
+
+        // The memo is static and outlives a test run until a domain reload, so a rerun starts from these types unknown.
+        private static void ForgetMemoized(params Type[] types)
+        {
+            foreach (var type in types)
+                ByValueReferenceHolders().Remove(type);
+        }
+
+        private static Dictionary<Type, bool> ByValueReferenceHolders() => (Dictionary<Type, bool>)typeof(SerializeReferenceHelpers)
+            .GetField(nameof(ByValueReferenceHolders), BindingFlags.NonPublic | BindingFlags.Static)!
+            .GetValue(obj: null);
+
+        private static Rig CreateRig() => new()
+        {
+            slot = new Slot { part = new Gem { power = 1 } },
+            socket = new Socket { size = 5, part = new Gem { power = 2 } },
+            slots = new[] { new Slot { part = new Gem { power = 3 } } },
+            sockets = new List<Socket> { new() { part = new Gem { power = 4 } } },
+        };
+
+        private static void AssertIndependentCopy(IPart original, IPart copy, string where)
+        {
+            Assert.IsNotNull(copy, $"The reference inside {where} must not become null.");
+            Assert.AreNotSame(original, copy, $"The reference inside {where} must become an independent copy.");
+            Assert.AreEqual(((Gem)original).power, ((Gem)copy).power, $"The copy inside {where} must keep its data.");
         }
     }
 }
