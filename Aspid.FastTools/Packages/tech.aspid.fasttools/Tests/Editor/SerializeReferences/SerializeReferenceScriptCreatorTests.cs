@@ -54,6 +54,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             bool TryGet<T>(out T value) where T : struct;
         }
 
+        internal interface IMap<TBase> { void Put<T>(T item) where T : TBase; }
+
         internal interface IIndexed
         {
             int this[int index] { get; set; }
@@ -181,6 +183,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.That(stub, Does.Contain($"public void Fill<T>(T item) where T : class, new() => {Throw};"));
             Assert.That(stub, Does.Contain($"public System.Boolean TryGet<T>(out T value) where T : struct => {Throw};"));
         }
+
+        // object, a sealed class and a struct cannot be restated as constraints (CS0702, CS0701).
+        [TestCase(typeof(IMap<object>), "System.Object")]
+        [TestCase(typeof(IMap<string>), "System.String")]
+        [TestCase(typeof(IMap<int>), "System.Int32")]
+        public void SubstitutedConstraintCSharpRejects_IsImplementedExplicitly(Type baseType, string argument)
+        {
+            var stub = Generate(baseType);
+
+            Assert.That(stub, Does.Contain($".IMap<{argument}>.Put<T>(T item) => {Throw};"));
+            Assert.That(stub, Does.Not.Contain("where T :"));
+        }
+
+        [Test]
+        public void SubstitutedConstraintOfAnOpenClass_IsRestated() =>
+            Assert.That(Generate(typeof(IMap<ItemBase>)), Does.Contain("Put<T>(T item) where T : "));
 
         [Test]
         public void GenericMethodDeclaredTwice_IsImplementedOnce()

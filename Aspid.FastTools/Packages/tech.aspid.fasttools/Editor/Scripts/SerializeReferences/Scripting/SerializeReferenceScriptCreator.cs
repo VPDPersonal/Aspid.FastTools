@@ -246,7 +246,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var (returnGroup, index) in group.GroupBy(ReturnTypeName)
                     .Select((returnGroup, index) => (returnGroup, index)))
                 {
-                    if (index is 0)
+                    if (index is 0 && CanRestateConstraints(returnGroup.First()))
                     {
                         builder.AppendLine($"{indent}{MethodDeclaration(returnGroup.First(), modifiers: "public ", qualifier: string.Empty, withConstraints: true)}");
                         continue;
@@ -456,6 +456,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return builder.ToString();
+        }
+
+        // A constraint substituted from the interface's type arguments can be one C# rejects in a declaration, such as
+        // object, a sealed class or a struct (CS0701, CS0702); an explicit implementation inherits it instead.
+        private static bool CanRestateConstraints(MethodInfo method)
+        {
+            if (!method.IsGenericMethodDefinition) return true;
+
+            foreach (var parameter in method.GetGenericArguments())
+            {
+                var isStruct = (parameter.GenericParameterAttributes & GenericParameterAttributes.NotNullableValueTypeConstraint) != 0;
+
+                foreach (var constraint in parameter.GetGenericParameterConstraints())
+                {
+                    if (isStruct && constraint == typeof(ValueType)) continue;
+                    if (constraint.IsGenericParameter || constraint.IsInterface) continue;
+                    if (!constraint.IsClass || constraint.IsSealed) return false;
+                    if (constraint == typeof(object) || constraint == typeof(ValueType) || constraint == typeof(Array)) return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool IsUnmanaged(Type parameter) =>
