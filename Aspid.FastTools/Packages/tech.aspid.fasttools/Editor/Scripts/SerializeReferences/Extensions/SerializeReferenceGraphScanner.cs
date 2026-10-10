@@ -141,7 +141,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 foreach (Match match in _ridPointer.Matches(lines[i]))
                 {
-                    if (!long.TryParse(match.Groups["id"].Value, out var rid)) continue;
+                    if (!SerializeReferenceYaml.TryParseId(match.Groups["id"].Value, out var rid)) continue;
 
                     // Kept as an empty root so a cleared slot stays visible; the shared/orphan math skips sentinels.
                     if (rid < 0)
@@ -176,7 +176,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     foreach (Match match in _ridPointer.Matches(lines[j]))
                     {
-                        if (!long.TryParse(match.Groups["id"].Value, out var child)) continue;
+                        if (!SerializeReferenceYaml.TryParseId(match.Groups["id"].Value, out var child)) continue;
                         if (child == parent) continue;
 
                         // A null slot stays visible as an empty edge; a dangling pointer to no known node is dropped.
@@ -327,7 +327,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var match = SerializeReferenceYaml.DocumentHeader.Match(lines[i]);
                 if (match.Success &&
-                    long.TryParse(match.Groups["id"].Value, out var fileId) &&
+                    SerializeReferenceYaml.TryParseId(match.Groups["id"].Value, out var fileId) &&
                     int.TryParse(match.Groups["class"].Value, out var classId))
                 {
                     headers.Add((fileId, classId, i));
