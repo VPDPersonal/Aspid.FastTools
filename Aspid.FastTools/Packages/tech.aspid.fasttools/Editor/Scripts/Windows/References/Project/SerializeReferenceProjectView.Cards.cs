@@ -49,9 +49,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(GroupFixAllClass);
             if (isMigration) fixAll.AddClass(GroupFixAllMigrateClass);
             _ring.RegisterHeader(fixAll, card, GroupHeaderHoverClass, () => ToggleGroupPicker(group, constraint, fixAll));
-            fixAll.tooltip = constraint == typeof(object)
+            fixAll.tooltip = constraint is null
                 ? $"{group.DisplayName}\nMixed or unresolvable field types — the picker is unconstrained (any managed-reference type)."
-                : $"{group.DisplayName}\nConstrained to {constraint.FullName}.";
+                : $"{group.DisplayName}\nConstrained to {string.Join(", ", constraint.Select(type => type.FullName))}.";
 
             fixAll.AddLeadingContent(BuildGroupHeaderRow(
                 group.StoredType.Class,
