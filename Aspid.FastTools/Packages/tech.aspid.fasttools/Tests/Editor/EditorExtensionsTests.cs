@@ -3,6 +3,7 @@ using NUnit.Framework;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Aspid.FastTools.Types.Tests;
 using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.Editors.Tests
@@ -33,7 +34,7 @@ namespace Aspid.FastTools.Editors.Tests
         [Test]
         public void DestroyedObjects_ReturnEmptyNames()
         {
-            var component = _gameObject.AddComponent<AudioSource>();
+            var component = _gameObject.AddComponent<ComponentSwapPlain>();
             Object.DestroyImmediate(component);
 
             Assert.AreEqual(string.Empty, component.GetDisplayName());
@@ -43,39 +44,39 @@ namespace Aspid.FastTools.Editors.Tests
         [Test]
         public void DisplayName_UsesTypeInsteadOfObjectName()
         {
-            var component = _gameObject.AddComponent<AudioSource>();
+            var component = _gameObject.AddComponent<ComponentSwapPlain>();
 
-            Assert.AreEqual("Audio Source", component.GetDisplayName());
+            Assert.AreEqual("Component Swap Plain", component.GetDisplayName());
         }
 
         [Test]
         public void SingleComponent_HasNoIndex()
         {
-            var component = _gameObject.AddComponent<AudioSource>();
+            var component = _gameObject.AddComponent<ComponentSwapPlain>();
 
-            Assert.AreEqual("Audio Source", component.GetDisplayNameWithIndex());
+            Assert.AreEqual("Component Swap Plain", component.GetDisplayNameWithIndex());
         }
 
         [Test]
         public void DuplicateComponents_HaveOneBasedIndices()
         {
-            var first = _gameObject.AddComponent<AudioSource>();
-            var second = _gameObject.AddComponent<AudioSource>();
+            var first = _gameObject.AddComponent<ComponentSwapPlain>();
+            var second = _gameObject.AddComponent<ComponentSwapPlain>();
 
-            Assert.AreEqual("Audio Source (1)", first.GetDisplayNameWithIndex());
-            Assert.AreEqual("Audio Source (2)", second.GetDisplayNameWithIndex());
+            Assert.AreEqual("Component Swap Plain (1)", first.GetDisplayNameWithIndex());
+            Assert.AreEqual("Component Swap Plain (2)", second.GetDisplayNameWithIndex());
         }
 
         [Test]
         public void RemovingDuplicate_RemovesRemainingIndex()
         {
-            var first = _gameObject.AddComponent<AudioSource>();
-            var second = _gameObject.AddComponent<AudioSource>();
-            Assert.AreEqual("Audio Source (2)", second.GetDisplayNameWithIndex());
+            var first = _gameObject.AddComponent<ComponentSwapPlain>();
+            var second = _gameObject.AddComponent<ComponentSwapPlain>();
+            Assert.AreEqual("Component Swap Plain (2)", second.GetDisplayNameWithIndex());
 
             Object.DestroyImmediate(first);
 
-            Assert.AreEqual("Audio Source", second.GetDisplayNameWithIndex());
+            Assert.AreEqual("Component Swap Plain", second.GetDisplayNameWithIndex());
         }
 
         [Test]
