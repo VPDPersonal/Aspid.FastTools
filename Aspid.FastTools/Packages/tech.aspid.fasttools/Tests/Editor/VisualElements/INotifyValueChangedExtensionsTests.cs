@@ -97,5 +97,23 @@ namespace Aspid.FastTools.UIElements.Tests
 
             Assert.AreEqual(1, _calls);
         }
+
+        // A lambda that captures a local is a new closure on every call, as in a ListView bindItem: RegisterCallback
+        // keeps each one instead of dropping it as a duplicate.
+        [UnityTest]
+        public IEnumerator AddValueChanged_LambdaCapturingALocal_RegistersOnEveryCall()
+        {
+            var field = new IntegerField();
+            _panel.Root.Add(field);
+            yield return null;
+
+            Subscribe(field, step: 1);
+            Subscribe(field, step: 1);
+            field.SetValue(5);
+
+            Assert.AreEqual(2, _calls);
+        }
+
+        private void Subscribe(IntegerField field, int step) => field.AddValueChanged(_ => _calls += step);
     }
 }
