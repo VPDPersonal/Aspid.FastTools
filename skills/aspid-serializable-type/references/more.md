@@ -31,8 +31,12 @@ public abstract class EnemyBase : MonoBehaviour
 }
 ```
 
-The dropdown lists concrete subclasses of the declaring class (no `<None>`) and rewrites the object's script,
-keeping the fields both classes share. Each subclass must live in its own file named after the class, otherwise the
+The dropdown lists the declaring class (unless it is abstract) and its concrete subclasses, with no `<None>`, and
+rewrites the object's script, keeping the fields both classes share. On a runtime component it leaves out classes
+from editor-only assemblies. Each subclass must live in its own file named after the class, otherwise the
 switch is skipped with a Console warning. The switch adds the new class's `[RequireComponent]` components and is
 refused (with a warning) when it would duplicate a `[DisallowMultipleComponent]` class, drop a class another
-component requires, or need a component that cannot be added (an abstract class such as `Collider`).
+component requires, or need a component that cannot be added (an abstract class such as `Collider`). It is also
+refused for a component inherited from a prefab (an instance in a scene or a variant): Unity keeps no override for
+a changed script, so change the class in the source prefab. With several components selected, one refusal cancels
+the change for all of them.

@@ -16,7 +16,7 @@ public abstract class EnemyBase : MonoBehaviour
 |---|---|
 | <pre lang="csharp"><code>public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private float _speed = 25f;&#10;&#125;</code></pre> | <pre lang="csharp"><code>public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private int _armor = 10;&#10;&#125;</code></pre> |
 
-The list offers the concrete subclasses of the class that declares the field, with no `<None>` entry. Display settings from [<code lang="csharp">[TypeSelectorDisplay]</code>](03-type-selector.md#typeselectordisplay) apply here, while <code lang="csharp">[TypeSelector]</code> does not configure the list.
+The list offers the class that declares the field, unless it is abstract, and its concrete subclasses, with no `<None>` entry. Display settings from [<code lang="csharp">[TypeSelectorDisplay]</code>](03-type-selector.md#typeselectordisplay) apply here, while <code lang="csharp">[TypeSelector]</code> does not configure the list.
 
 ![Picking ArmoredEnemy instead of FastEnemy keeps Health = 75](Images/component-type-selector.gif)
 
@@ -28,7 +28,13 @@ The list offers the concrete subclasses of the class that declares the field, wi
 
 ## When the type does not change
 
-The switch follows the rules of **Add Component**: the components the new class lists in <code lang="csharp">[RequireComponent]</code> are added with it. If Unity would refuse to add the new class or remove the old one, the class stays as it was and the Console shows why. The same happens when the class has no script file of its own with the same name, such as a nested class.
+The switch follows the rules of **Add Component**: the components the new class lists in <code lang="csharp">[RequireComponent]</code> are added with it. The class stays as it was, and the Console shows why, when:
+
+- Unity would refuse to add the new class or remove the old one;
+- the class has no script file of its own with the same name, such as a nested class;
+- the component is inherited from a prefab (an instance in a scene or a variant): change its class in the source prefab.
+
+With several components selected, a refusal for one of them leaves all of them as they were.
 
 ## Package sample
 

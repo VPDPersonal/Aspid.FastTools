@@ -16,7 +16,7 @@ public abstract class EnemyBase : MonoBehaviour
 |---|---|
 | <pre lang="csharp"><code>public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private float _speed = 25f;&#10;&#125;</code></pre> | <pre lang="csharp"><code>public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField]&#10;    private int _armor = 10;&#10;&#125;</code></pre> |
 
-Список предлагает конкретных наследников класса, где объявлено поле; пункта `<None>` нет. Оформление из [<code lang="csharp">[TypeSelectorDisplay]</code>](03-type-selector.md#typeselectordisplay) здесь действует, а <code lang="csharp">[TypeSelector]</code> список не настраивает.
+Список предлагает сам класс, где объявлено поле, если он не абстрактный, и его конкретных наследников; пункта `<None>` нет. Оформление из [<code lang="csharp">[TypeSelectorDisplay]</code>](03-type-selector.md#typeselectordisplay) здесь действует, а <code lang="csharp">[TypeSelector]</code> список не настраивает.
 
 ![Выбор ArmoredEnemy вместо FastEnemy сохраняет Health = 75](../../../../docs/Images/component-type-selector.gif)
 
@@ -28,7 +28,13 @@ public abstract class EnemyBase : MonoBehaviour
 
 ## Когда тип не меняется
 
-Смена следует правилам **Add Component**: компоненты из <code lang="csharp">[RequireComponent]</code> нового класса добавляются вместе с ней. Если Unity не дала бы добавить новый класс или убрать старый, класс остаётся прежним, а Console показывает причину. То же происходит, если у класса нет своего файла скрипта с тем же именем, например у вложенного класса.
+Смена следует правилам **Add Component**: компоненты из <code lang="csharp">[RequireComponent]</code> нового класса добавляются вместе с ней. Класс остаётся прежним, а Console показывает причину, если:
+
+- Unity не дала бы добавить новый класс или убрать старый;
+- у класса нет своего файла скрипта с тем же именем, например у вложенного класса;
+- компонент унаследован от префаба (экземпляр в сцене или вариант): меняйте его класс в исходном префабе.
+
+Если выделено несколько компонентов, отказ для одного оставляет прежний класс у всех.
 
 ## Пример в пакете
 
