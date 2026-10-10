@@ -19,6 +19,9 @@
     height: 100px;
     flex-shrink: 1;
     margin-right: 15px;
+    --aspid-fasttools-prop-animated_logo-layer_1: var(--aspid-icons-status-success);
+    --aspid-fasttools-prop-animated_logo-layer_2: var(--aspid-icons-status-warning);
+    --aspid-fasttools-prop-animated_logo-layer_3: var(--aspid-icons-status-error);
 }
 
 .aspid-fasttools-welcome__hero-text {
@@ -36,6 +39,13 @@ AspidAnimatedTitle {
     --aspid-fasttools-colors-animated_title-color_1: var(--aspid-colors-status-success-text-darkness);
     --aspid-fasttools-colors-animated_title-color_2: var(--aspid-colors-status-success-text-dark);
     --aspid-fasttools-colors-animated_title-color_3: var(--aspid-colors-status-success-text-light);
+}
+
+/* The palest tone of the dark palette is below 3:1 against the light canvas, so each tone steps one level darker. */
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero AspidAnimatedTitle {
+    --aspid-fasttools-colors-animated_title-color_1: var(--aspid-colors-status-success-text-dark);
+    --aspid-fasttools-colors-animated_title-color_2: var(--aspid-colors-status-success-text-light);
+    --aspid-fasttools-colors-animated_title-color_3: var(--aspid-colors-status-success-text-lightness);
 }
 
 .aspid-fasttools-welcome__description {
@@ -58,6 +68,15 @@ AspidAnimatedTitle {
 
 .aspid-fasttools-welcome__hero-link:hover {
     color: var(--aspid-colors-status-success-text-light);
+}
+
+/* The link tone of the dark palette is about 3.5:1 on the light canvas; the light skin uses the next darker tones. */
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero-link {
+    color: var(--aspid-colors-status-success-text-light);
+}
+
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero-link:hover {
+    color: var(--aspid-colors-status-success-text-lightness);
 }
 
 .aspid-fasttools-welcome__hero-link-separator {
@@ -206,4 +225,9 @@ AspidDividingLine {
 
 .aspid-fasttools-welcome__toast--visible {
     opacity: 0.75;
+}
+
+/* A translucent toast over the light canvas drops its text below 4.5:1. */
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__toast--visible {
+    opacity: 1;
 }

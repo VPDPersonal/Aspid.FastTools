@@ -3,6 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using UnityEditor.PackageManager.UI;
 using Aspid.FastTools.UIElements.Editors.Internal;
@@ -14,7 +15,10 @@ namespace Aspid.FastTools.Editors
     internal sealed class WelcomeView : VisualElement
     {
         private const string UssClassPrefix = "aspid-fasttools-welcome__";
+        // The template and the style sheet share a name: each load asks for its own type. A .unitypackage update
+        // replaces a file only at its old path, so a renamed template would stay next to the old one.
         private const string UxmlResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
+        private const string StyleSheetResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
 
         private const long ToastVisibleDurationMs = 2500;
         private const float ToastEdgeMargin = 8f;
@@ -73,9 +77,13 @@ namespace Aspid.FastTools.Editors
                 return;
             }
 
-            // The template brings Default-Dark for UI Builder; the theme sheets add the light palette and the override.
+            // The template has no style sheet links: a link follows the asset path, which differs when the package
+            // sits in Assets. Default-Dark goes first so that the Welcome sheet outranks it on equal specificity;
+            // the theme sheets then add the light palette and the override.
             tree.CloneTree(this);
-            this.AddAspidThemeStyleSheets();
+            this.AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet)
+                .AddStyleSheetFromResources(StyleSheetResourcePath)
+                .AddAspidThemeStyleSheets();
 
             _toast = this.Q<Label>(ToastName);
             if (_toast != null)
@@ -210,18 +218,70 @@ namespace Aspid.FastTools.Editors
                     imported: true);
             }
 
-            return CreateSampleCard(displayName, description, "Import", imported: false, onClick: pointer =>
-            {
-                if (!captured.Import(Sample.ImportOptions.HideImportWindow))
-                {
-                    ShowToast($"Failed to import “{displayName}”", pointer);
-                    return;
-                }
+            return CreateSampleCard(displayName, description, "Import", imported: false,
+                onClick: pointer => ImportSample(captured, displayName, pointer));
+        }
 
-                AssetDatabase.Refresh();
-                ShowToast($"“{displayName}” imported into Assets/Samples", pointer);
-                RebuildSamplesList();
-            });
+        private void ImportSample(Sample sample, string displayName, Vector2 pointer)
+        {
+            var options = Sample.ImportOptions.HideImportWindow;
+
+            // Unity imports nothing while a copy from another package version exists, unless it may delete that copy.
+            var previousImports = FindPreviousImports(sample.importPath);
+            if (previousImports.Count > 0)
+            {
+                if (!ConfirmReplacePreviousImports(displayName, previousImports)) return;
+                options |= Sample.ImportOptions.OverridePreviousImports;
+            }
+
+            if (!sample.Import(options))
+            {
+                ShowToast($"Failed to import “{displayName}”", pointer);
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            ShowToast($"“{displayName}” imported into Assets/Samples", pointer);
+            RebuildSamplesList();
+        }
+
+        // The folders Unity treats as earlier imports: Samples/<package>/<other version>/<sample>.
+        internal static IReadOnlyList<string> FindPreviousImports(string importPath)
+        {
+            if (string.IsNullOrEmpty(importPath)) return Array.Empty<string>();
+
+            var current = new DirectoryInfo(importPath.TrimEnd('/', '\\'));
+            var currentVersion = current.Parent;
+            var versions = currentVersion?.Parent;
+            if (versions is null || !versions.Exists) return Array.Empty<string>();
+
+            var result = new List<string>();
+            foreach (var version in versions.GetDirectories())
+            {
+                if (version.Name == currentVersion.Name) continue;
+
+                var copy = Path.Combine(version.FullName, current.Name);
+                if (Directory.Exists(copy)) result.Add(copy);
+            }
+
+            result.Sort(StringComparer.Ordinal);
+            return result;
+        }
+
+        private static bool ConfirmReplacePreviousImports(string displayName, IReadOnlyList<string> previousImports)
+        {
+            var copies = new List<string>(previousImports.Count);
+            foreach (var path in previousImports)
+                copies.Add(ToProjectRelativePath(path));
+
+            var list = string.Join("\n", copies);
+
+            return EditorUtility.DisplayDialog(
+                $"Update “{displayName}”",
+                "This replaces the copy from an older package version with the current one, " +
+                $"discarding any local changes to the old copy:\n{list}\n\nContinue?",
+                "Update",
+                "Cancel");
         }
 
         private VisualElement CreateSampleCard(

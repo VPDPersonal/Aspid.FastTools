@@ -1,8 +1,6 @@
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Text.RegularExpressions;
-using PackageInfo = UnityEditor.PackageManager.PackageInfo;
+using Aspid.FastTools.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
@@ -10,8 +8,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidWindowFooter : VisualElement
     {
-        private const string PackageName = "tech.aspid.fasttools";
-        private const string PackageManifestPath = "Assets/Aspid/FastTools/package.json";
         private const string GitHubUrl = "https://github.com/VPDPersonal/Aspid.FastTools";
         private const string GitHubReleasesUrl = GitHubUrl + "/releases";
         private const string GitHubReleaseTagUrlFormat = GitHubReleasesUrl + "/tag/v{0}";
@@ -30,9 +26,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 .AddStyleSheetFromResources(StyleSheetPath)
                 .AddClass(RootClass);
 
-            var version = ReadPackageVersion();
+            var version = PackageVersion.Current;
 
-            var releaseUrl = version is "?"
+            var releaseUrl = version == PackageVersion.Unknown
                 ? GitHubReleasesUrl
                 : string.Format(GitHubReleaseTagUrlFormat, version);
 
@@ -54,22 +50,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             this.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default.SetTheme(ThemeStyle.Type.Darkness)))
                 .AddChild(row);
-        }
-
-        private static string ReadPackageVersion()
-        {
-            var package = PackageInfo.FindForPackageName(PackageName);
-            if (package is not null && !string.IsNullOrEmpty(package.version))
-                return package.version;
-
-            var manifest = AssetDatabase.LoadAssetAtPath<TextAsset>(PackageManifestPath);
-            if (manifest is null) return "?";
-
-            var match = Regex.Match(
-                input: manifest.text,
-                pattern: "\"version\"\\s*:\\s*\"([^\"]+)\"");
-
-            return match.Success ? match.Groups[1].Value : "?";
         }
     }
 }
