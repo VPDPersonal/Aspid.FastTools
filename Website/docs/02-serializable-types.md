@@ -54,13 +54,14 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 
 Limitations:
 
-- only a top-level, non-generic class declared in a `.cs` file of the same name can be picked;
+- only a top-level, non-generic class can be picked: one declared in a `.cs` file of the same name, or one derived from <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code> in a DLL;
 - there is no public constructor, so the field cannot be created in code.
 
 The link breaks, and the field shows a [missing type](#missing-type) with the same notice, when:
 
 - the class is renamed without its file;
-- the file is renamed outside Unity without its `.meta`.
+- the file is renamed outside Unity without its `.meta`;
+- a class from a DLL is renamed or moved to another namespace: Unity identifies its script asset by namespace and class name.
 
 ## Types in a player build
 
