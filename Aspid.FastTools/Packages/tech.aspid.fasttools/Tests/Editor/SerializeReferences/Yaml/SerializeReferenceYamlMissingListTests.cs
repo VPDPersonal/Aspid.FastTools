@@ -89,13 +89,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void Snapshot_ReplacedSlotThatNoLongerHoldsTheElement_LeavesEverySlotOut()
+        public void Snapshot_ReplacedSlotThatNoLongerHoldsTheElement_LeavesTheNearestSlotOut()
         {
-            // The list was edited before the pick, so the noted slot holds Shotgun now: the note covers every slot of Ghost.
+            // The list was edited before the pick, so the noted slot holds Shotgun now: the note covers the nearest Ghost slot.
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid }, backups: new[] { N }, ghostEntry: true));
             var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 1) };
 
             Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots));
+        }
+
+        [Test]
+        public void Restore_ReplacedSlotShiftedByAnUnsavedDelete_RestoresTheOtherSlot()
+        {
+            // The file holds [Shotgun, Ghost, Ghost]. Shotgun was deleted in memory, then slot 0 of [Ghost, Ghost] was set to
+            // <None>: the note's slot 0 holds Shotgun in the file, so only the nearest Ghost slot counts as replaced.
+            _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { ShotgunRid, GhostRid, GhostRid }, backups: new[] { N }, ghostEntry: true));
+            var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 0) };
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots);
+            File.WriteAllText(_path, Asset(sidearms: new[] { N, N }, backups: new[] { N }, ghostEntry: false));
+
+            var report = SerializeReferenceYamlEditor.RestoreMissingLists(_path, snapshots);
+
+            Assert.AreEqual(1, report.Restored.Count);
+            Assert.AreEqual(1, CountEntries(GhostRid));
+            AssertList("_sidearms", N, GhostRid);
         }
 
         [Test]
