@@ -17,6 +17,7 @@ const MENTIONS = [
   '.github/claude-review.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',
+  'Aspid.FastTools/Packages/tech.aspid.fasttools/SETUP.md',
 ];
 
 const valid = () => ({

@@ -15,6 +15,7 @@ const MENTIONS = [
   '.github/claude-review.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',
+  'Aspid.FastTools/Packages/tech.aspid.fasttools/SETUP.md',
 ];
 // The CI matrix must test the minimum, not only mention it: the first version of its `unity` list, not any version.
 const MATRIX = '.github/workflows/ci.yml';
