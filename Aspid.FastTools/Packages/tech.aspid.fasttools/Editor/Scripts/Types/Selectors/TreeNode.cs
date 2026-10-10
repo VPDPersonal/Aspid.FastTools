@@ -5,7 +5,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    internal class TreeNode
+    internal sealed class TreeNode
     {
         private int? _typeCount;
 
