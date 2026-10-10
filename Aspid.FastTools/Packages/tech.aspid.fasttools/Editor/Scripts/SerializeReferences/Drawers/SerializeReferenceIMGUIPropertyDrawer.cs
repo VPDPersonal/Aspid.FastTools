@@ -310,14 +310,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void DrawChildren(SerializedProperty property, float x, float width, float spacing, ref float y, int depth)
         {
-            var iterator = property.Copy();
-            var end = property.GetEndProperty();
-            var enterChildren = true;
-
-            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
+            foreach (var iterator in property.VisibleChildren())
             {
-                enterChildren = false;
-
                 var child = iterator.Copy();
 
                 // Unity ships no picker, so PropertyField would draw a nested reference with no way to choose a type
@@ -351,15 +345,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static float GetChildrenHeight(SerializedProperty property, float spacing, int depth)
         {
             var height = 0f;
-            var iterator = property.Copy();
-            var end = property.GetEndProperty();
-            var enterChildren = true;
-
-            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
-            {
-                enterChildren = false;
+            foreach (var iterator in property.VisibleChildren())
                 height += ChildHeight(iterator.Copy(), depth) + spacing;
-            }
 
             return height;
         }

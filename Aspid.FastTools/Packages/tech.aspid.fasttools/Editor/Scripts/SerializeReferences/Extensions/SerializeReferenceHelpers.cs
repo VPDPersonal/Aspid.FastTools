@@ -1322,7 +1322,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 visited.Clear();
 
                 using var serialized = new SerializedObject(obj);
-                var iterator = serialized.GetIterator();
+                using var iterator = serialized.GetIterator();
 
                 var enterChildren = true;
                 while (iterator.Next(enterChildren))
