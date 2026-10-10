@@ -56,6 +56,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         internal interface IMap<TBase> { void Put<T>(T item) where T : TBase; }
 
+        internal interface IListMap<TItem> { void Put<T>(T item) where T : IList<TItem>; }
+
         internal interface IReferenceMap<TBase> { void Put<T>(T item) where T : class, TBase; }
 
         internal interface IDisposableMap<TBase> { void Put<T>(T item) where T : IDisposable, TBase; }
@@ -216,8 +218,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.That(Generate(typeof(IDisposableMap<ItemBase>)), Does.Not.Contain("where T : System.IDisposable, "));
 
         [Test]
-        public void SubstitutedConstraintOfAnOpenClass_IsRestated() =>
-            Assert.That(Generate(typeof(IMap<ItemBase>)), Does.Contain("Put<T>(T item) where T : "));
+        public void SubstitutedConstraintOfAnOpenClass_IsRestatedWithTheArgument() =>
+            Assert.That(Generate(typeof(IMap<ItemBase>)),
+                Does.Contain($"public void Put<T>(T item) where T : Aspid.FastTools.SerializeReferences.Editors.Tests.ItemBase => {Throw};"));
+
+        [Test]
+        public void ConstraintBuiltFromTheInterfaceArgument_IsSubstituted() =>
+            Assert.That(Generate(typeof(IListMap<ItemBase>)),
+                Does.Contain("where T : System.Collections.Generic.IList<Aspid.FastTools.SerializeReferences.Editors.Tests.ItemBase>"));
 
         [Test]
         public void GenericMethodDeclaredTwice_IsImplementedOnce()

@@ -446,7 +446,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 else if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0) constraints.Add("class");
 
                 // The compiler lists ValueType among the constraints of a struct; the keyword already says it.
-                foreach (var constraint in parameter.GetGenericParameterConstraints())
+                foreach (var constraint in SubstitutedConstraints(method, parameter))
                     if (!isStruct || constraint != typeof(ValueType)) constraints.Add(TypeName(constraint));
 
                 if (!isStruct && (attributes & GenericParameterAttributes.DefaultConstructorConstraint) != 0)
@@ -472,7 +472,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var hasKind = isStruct || (attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0;
 
                 var position = 0;
-                foreach (var constraint in parameter.GetGenericParameterConstraints())
+                foreach (var constraint in SubstitutedConstraints(method, parameter))
                 {
                     if (isStruct && constraint == typeof(ValueType)) continue;
 
@@ -488,6 +488,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return true;
+        }
+
+        // Reflection gives the constraints of a method on a constructed type in terms of the type definition's
+        // parameters (where T : TBase on IMap<object>), so the type's arguments are put in.
+        private static IEnumerable<Type> SubstitutedConstraints(MethodInfo method, Type parameter)
+        {
+            var arguments = method.DeclaringType is { IsConstructedGenericType: true } declaringType
+                ? declaringType.GetGenericArguments()
+                : Type.EmptyTypes;
+
+            return parameter.GetGenericParameterConstraints().Select(constraint => Substitute(constraint, arguments));
+        }
+
+        private static Type Substitute(Type type, Type[] arguments)
+        {
+            if (arguments.Length is 0 || !type.ContainsGenericParameters) return type;
+
+            if (type.IsGenericParameter)
+            {
+                var ofType = type.DeclaringMethod is null && type.GenericParameterPosition < arguments.Length;
+                return ofType ? arguments[type.GenericParameterPosition] : type;
+            }
+
+            if (type.IsArray)
+            {
+                var element = Substitute(type.GetElementType(), arguments);
+                return type.GetArrayRank() is 1 ? element.MakeArrayType() : element.MakeArrayType(type.GetArrayRank());
+            }
+
+            if (type.IsGenericType)
+            {
+                var substituted = type.GetGenericArguments().Select(argument => Substitute(argument, arguments)).ToArray();
+                return type.GetGenericTypeDefinition().MakeGenericType(substituted);
+            }
+
+            return type;
         }
 
         private static bool IsUnmanaged(Type parameter) =>
