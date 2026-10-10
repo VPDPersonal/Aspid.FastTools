@@ -27,8 +27,10 @@ Agent Skills for projects that consume the package in `skills/`.
   Release one; the site derives `UPM_BRANCH` from the version. `/asp-ft-release <version>` runs the whole release.
 - `skills/` is for **consumers** of the package and is installed with `npx skills add VPDPersonal/Aspid.FastTools`;
   skills for working on this repo live in `.claude/skills/` and carry `metadata.internal: true` so that command does
-  not offer them; `scripts/check-skills.mjs` (CI) checks both. A skill that describes public API is updated in the same PR
-  as that API.
+  not offer them. `scripts/check-skills.mjs` (CI, on every PR) checks every `SKILL.md` in the repository: a file outside
+  `skills/` must be internal, because the installer scans about 30 agent folders, an `AFT` code in a skill must be
+  reported by an analyzer, and a namespace or assembly in a consumer skill must exist in the package. A skill that
+  describes public API is updated in the same PR as that API.
 - `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
   environment. Allow there only commands that cannot run code or read the environment; put the rest in
   `.claude/settings.local.json`.
