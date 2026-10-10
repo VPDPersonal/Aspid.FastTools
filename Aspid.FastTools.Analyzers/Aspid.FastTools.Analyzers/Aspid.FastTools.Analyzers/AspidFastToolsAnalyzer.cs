@@ -353,6 +353,8 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     // Type.GetType resolves a name without an assembly only in the calling assembly (the package's editor code) and
     // in mscorlib, so any other type turns into an Inspector notice. Null when the name has an assembly or names a
     // core library type. Generic names with brackets are left to the editor, as in IsPlausibleTypeName.
+    // Against .NET Standard the core library is the netstandard facade, which also forwards types that live outside
+    // mscorlib at runtime (System.Uri, HashSet<T>); those get no warning. This misses warnings and never adds one.
     private static string? GetMissingAssemblyHint(string name, Compilation compilation)
     {
         if (name.IndexOf(',') >= 0 || name.IndexOf('[') >= 0) return null;
