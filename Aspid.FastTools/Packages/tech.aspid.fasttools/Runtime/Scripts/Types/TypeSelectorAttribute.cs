@@ -56,8 +56,9 @@ namespace Aspid.FastTools.Types
         /// <remarks>
         /// <para>
         /// "Unset" means <see langword="null"/> for a <c>[SerializeReference]</c> field and an empty name for a
-        /// <see cref="string"/> or <see cref="SerializableType"/> field. A reference that is set but whose type no longer
-        /// resolves is not a violation of this flag — the separate missing-type check covers that.
+        /// <see cref="string"/> field or a <see cref="SerializableType"/> or <see cref="SerializableMonoScript"/>
+        /// field, generic ones included. Other field types ignore the flag. A reference that is set but whose type no
+        /// longer resolves is not a violation of this flag — the separate missing-type check covers that.
         /// </para>
         /// <para>
         /// Asset References marks the field in any gate mode, Project References → Scan Project reports it when the

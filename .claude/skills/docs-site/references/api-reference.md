@@ -20,7 +20,7 @@ checkout before `npm run api`. Run these from the worktree root (macOS):
 2. Copy `Aspid.FastTools.csproj`, `Aspid.FastTools.Editor.csproj` and `Aspid.FastTools.VisualElements.Math.csproj`
    into `Aspid.FastTools/`. Replace the main checkout path in them with the worktree path, so the analyzers come
    from the worktree. Unity writes the Math csproj only while `com.unity.mathematics` is installed in the dev
-   project, today as a transitive dependency (depth 2 in `packages-lock.json`, not in `manifest.json`).
+   project; `Aspid.FastTools/Packages/manifest.json` lists it, so keep it there.
 3. Link `Website/node_modules` to the main checkout's folder. `Website/.gitignore` ignores the link.
 
 The cloned `Library/ScriptAssemblies` holds DLLs built from the main checkout. A PR that changes an asmdef outside
