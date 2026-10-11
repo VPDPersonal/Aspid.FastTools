@@ -12,6 +12,13 @@ namespace Aspid.FastTools.Types.Editors
         private static readonly Dictionary<Type, TypeInfo> _cache = new();
         private static readonly Dictionary<System.Reflection.Assembly, string> _assemblyNames = new();
 
+        // The types that pass every check of GetAllTypeInfos except the predicate, per key. They depend on the loaded
+        // types alone, so they are reused until a new domain sweep replaces DomainTypes (it does so after any assembly
+        // load; a recompile reloads the domain and resets the cache). Like the other caches here, it is read from the
+        // main thread only.
+        private static IReadOnlyList<Type> _candidatesDomainTypes;
+        private static readonly Dictionary<CandidatesKey, Type[]> _candidates = new();
+
         internal readonly string Name;
         internal readonly string Assembly;
         internal readonly string Namespace;
@@ -99,10 +106,9 @@ namespace Aspid.FastTools.Types.Editors
 
         // Additional candidates bypass ordinary constraints, but hidden types remain excluded unless the repair
         // picker explicitly includes them. Types from editor-only assemblies are left out of both when the value is
-        // stored in a runtime object, since a player cannot resolve them. The base type check runs first, because it
-        // rejects most of the domain for a narrow base. The cheap modifier checks run before the attribute lookups,
-        // which matters for an unconstrained picker scanning the whole domain. A picker with a predicate scans on every
-        // opening, so the checks create no closure per type.
+        // stored in a runtime object, since a player cannot resolve them. Everything but the predicate is decided once
+        // per key by GetCandidates, so a picker with a predicate, which cannot be cached between openings because it
+        // may differ per field, runs only the predicate over the loaded types, in the order of the domain sweep.
         internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
@@ -113,16 +119,8 @@ namespace Aspid.FastTools.Types.Editors
         {
             var result = new List<TypeInfo>();
 
-            result.AddRange(TypeUtility.DomainTypes
-                .Where(t => IsAssignableToAll(baseTypes, t) &&
-                    !(t.IsAbstract && t.IsSealed) &&
-                    (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
-                    (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
-                    (!excludeEditorOnly || !TypeUtility.IsEditorOnlyAssembly(t.Assembly)) &&
-                    !TypeUtility.IsCompilerGenerated(t) &&
-                    (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(t)) &&
-                    (filter is null || filter(t)))
-                .Select(Get));
+            foreach (var type in GetCandidates(baseTypes, allow, includeHidden, excludeEditorOnly))
+                if (filter is null || filter(type)) result.Add(Get(type));
 
             if (additionalTypes is not null)
             {
@@ -139,12 +137,104 @@ namespace Aspid.FastTools.Types.Editors
             return result;
         }
 
+        // The loaded types a picker with this key may offer before its predicate is asked. The base type check runs
+        // first, because it rejects most of the domain for a narrow base, and the cheap modifier checks run before
+        // the attribute lookups, which matters for an unconstrained picker scanning the whole domain. The result is
+        // the array the cache holds, so the caller must not change it.
+        internal static Type[] GetCandidates(Type[] baseTypes, TypeAllow allow, bool includeHidden, bool excludeEditorOnly)
+        {
+            var domainTypes = TypeUtility.DomainTypes;
+
+            if (!ReferenceEquals(_candidatesDomainTypes, domainTypes))
+            {
+                _candidates.Clear();
+                _candidatesDomainTypes = domainTypes;
+            }
+
+            var key = new CandidatesKey(baseTypes, allow, includeHidden, excludeEditorOnly);
+            if (_candidates.TryGetValue(key, out var cached)) return cached;
+
+            var allowAbstract = allow.HasFlag(TypeAllow.Abstract);
+            var allowInterface = allow.HasFlag(TypeAllow.Interface);
+            var candidates = new List<Type>();
+
+            foreach (var type in domainTypes)
+            {
+                if (IsAssignableToAll(baseTypes, type) &&
+                    !(type.IsAbstract && type.IsSealed) &&
+                    (allowAbstract || type.IsInterface || !type.IsAbstract) &&
+                    (allowInterface || !type.IsInterface) &&
+                    (!excludeEditorOnly || !TypeUtility.IsEditorOnlyAssembly(type.Assembly)) &&
+                    !TypeUtility.IsCompilerGenerated(type) &&
+                    (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(type)))
+                {
+                    candidates.Add(type);
+                }
+            }
+
+            var result = candidates.ToArray();
+            _candidates[key.WithOwnBaseTypes()] = result;
+
+            return result;
+        }
+
         private static bool IsAssignableToAll(Type[] baseTypes, Type type)
         {
             foreach (var baseType in baseTypes)
                 if (!baseType.IsAssignableFrom(type)) return false;
 
             return true;
+        }
+
+        // The base types compare in the order given and by type, so two pickers with the same constraints share a list.
+        private readonly struct CandidatesKey : IEquatable<CandidatesKey>
+        {
+            private readonly Type[] _baseTypes;
+            private readonly TypeAllow _allow;
+            private readonly bool _includeHidden;
+            private readonly bool _excludeEditorOnly;
+
+            internal CandidatesKey(Type[] baseTypes, TypeAllow allow, bool includeHidden, bool excludeEditorOnly)
+            {
+                _baseTypes = baseTypes;
+                _allow = allow;
+                _includeHidden = includeHidden;
+                _excludeEditorOnly = excludeEditorOnly;
+            }
+
+            // The array of a lookup belongs to the caller, so a stored key keeps a copy that the caller cannot change.
+            internal CandidatesKey WithOwnBaseTypes() =>
+                new((Type[])_baseTypes.Clone(), _allow, _includeHidden, _excludeEditorOnly);
+
+            public bool Equals(CandidatesKey other)
+            {
+                if (_allow != other._allow ||
+                    _includeHidden != other._includeHidden ||
+                    _excludeEditorOnly != other._excludeEditorOnly ||
+                    _baseTypes.Length != other._baseTypes.Length) return false;
+
+                for (var i = 0; i < _baseTypes.Length; i++)
+                    if (_baseTypes[i] != other._baseTypes[i]) return false;
+
+                return true;
+            }
+
+            public override bool Equals(object obj) =>
+                obj is CandidatesKey other && Equals(other);
+
+            public override int GetHashCode()
+            {
+                var hash = new HashCode();
+
+                hash.Add(_allow);
+                hash.Add(_includeHidden);
+                hash.Add(_excludeEditorOnly);
+
+                foreach (var baseType in _baseTypes)
+                    hash.Add(baseType);
+
+                return hash.ToHashCode();
+            }
         }
     }
 }
