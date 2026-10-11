@@ -421,7 +421,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var inlineMatch = Regex.Match(inline, @"rid:\s*(-?\d+)");
             if (inlineMatch.Success)
-                return long.TryParse(inlineMatch.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
+                return TryParseId(inlineMatch.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
 
             var blockStart = i + 1;
             var blockEnd = rangeEnd;
@@ -440,7 +440,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // A managed reference's value block is exactly a "rid:" scalar; anything else is a container.
             var ridScalar = Regex.Match(lines[firstChild].Trim(), @"^rid:\s*(-?\d+)$");
             if (ridScalar.Success)
-                return long.TryParse(ridScalar.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
+                return TryParseId(ridScalar.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
 
             valueStart = blockStart;
             valueEnd = blockEnd;
@@ -481,7 +481,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     var ridMatch = Regex.Match(lines[j].TrimStart(), @"^-\s+rid:\s*(-?\d+)\s*$");
                     if (ridMatch.Success)
-                        return long.TryParse(ridMatch.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
+                        return TryParseId(ridMatch.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
 
                     // Mapping item: it runs until the next sibling "- " or a dedent; its fields start one "- " past
                     // the item indent.
