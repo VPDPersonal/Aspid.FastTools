@@ -51,7 +51,7 @@ namespace Aspid.FastTools.Types.Editors
             if (type is { IsGenericTypeDefinition: true })
             {
                 var validationFieldTypes = page.IsBase ? _fieldTypes : new[] { page.ConstraintType };
-                BeginResolveGeneric(type, page.ConstraintType, validationFieldTypes, page.OnPicked);
+                BeginResolveGeneric(type, validationFieldTypes, page.Validate, page.OnPicked);
                 return;
             }
 

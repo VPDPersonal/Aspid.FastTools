@@ -57,5 +57,13 @@ namespace Aspid.FastTools.Types.Editors
         // Set by the Inspector drawers for a value stored in a runtime object: a player cannot resolve a type from an
         // editor-only assembly, so neither the list nor the generic-argument pages offer one.
         internal bool ExcludeEditorOnly { get; set; }
+
+        // Set by the [SerializeReference] pickers, which narrow the list to the [TypeSelector] types through Predicate:
+        // a generic the picker closes skips that predicate, so it must be assignable to these types too.
+        internal Type[] NarrowingTypes { get; set; }
+
+        // Set by the [SerializeReference] pickers: the open generic definitions an argument page offers as nested
+        // arguments. ArgumentFilter judges only the closed type, after the user has picked every argument.
+        internal Func<Type, bool> GenericDefinitionFilter { get; set; }
     }
 }
