@@ -1,7 +1,6 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -11,10 +10,7 @@ namespace Aspid.FastTools.Editors
     {
         private const string SessionKey = "Aspid.FastTools.WelcomeWindow.StartupHandled";
 
-        private static string SeenKey => $"Aspid.FastTools.WelcomeWindow.Seen::{PackageVersion}::{ProjectPath}";
-
-        private static string PackageVersion =>
-            PackageInfo.FindForAssembly(typeof(WelcomeWindowStartup).Assembly)?.version ?? "unknown";
+        internal static string SeenKey => $"Aspid.FastTools.WelcomeWindow.Seen::{PackageVersion.Current}::{ProjectPath}";
 
         public static bool HasBeenSeen
         {

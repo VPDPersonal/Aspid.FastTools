@@ -46,15 +46,31 @@ namespace Aspid.FastTools.Types.Editors
                 .SetPickingMode(PickingMode.Ignore);
             InspectorNotice notice = null;
 
+            TypeUIToolkitPropertyDrawer.IsolateNameChanges(root: container);
             Refresh(persistent);
 
             typeField.TrackPropertyValue(persistent, Refresh);
             container.TrackSerializedObjectValue(wrapperProperty.serializedObject,
                 _ => container.schedule.Execute(RefreshFromObject));
-            typeField.RegisterValueChangedCallback(evt => SerializableMonoScriptUtility.Assign(persistent, evt.newValue));
-            RegisterDragAndDrop(typeField, persistent);
+            typeField.RegisterValueChangedCallback(evt => Assign(type: evt.newValue));
+            RegisterDragAndDrop(field: typeField, assign: Assign);
 
             return container;
+
+            // Every write goes through here, so a pick and a drop both report the change to a PropertyField above.
+            void Assign(Type type)
+            {
+                persistent.serializedObject.Update();
+                persistent.serializedObject.SetIsDifferentCacheDirty();
+                var previousName = SerializableTypeUtility.GetBackingProperty(wrapperProperty: persistent).stringValue;
+                var wasMixed = SerializableMonoScriptUtility.HasMultipleDifferentValues(wrapperProperty: persistent);
+
+                SerializableMonoScriptUtility.Assign(wrapperProperty: persistent, type: type);
+
+                var newName = type?.AssemblyQualifiedName ?? string.Empty;
+                if (wasMixed || previousName != newName)
+                    TypeUIToolkitPropertyDrawer.SendNameChanged(root: container, previousName: previousName, newName: newName);
+            }
 
             // As in the SerializableType drawer: a fresh SerializedObject sees values the tracked one has not re-read.
             void RefreshFromObject()
@@ -72,6 +88,9 @@ namespace Aspid.FastTools.Types.Editors
 
                 if (type is not null) typeField.SetValueWithoutNotify(type);
                 else typeField.SetValueFromAssemblyQualifiedNameWithoutNotify(assemblyQualifiedName);
+
+                current.serializedObject.SetIsDifferentCacheDirty();
+                typeField.showMixedValue = SerializableMonoScriptUtility.HasMultipleDifferentValues(wrapperProperty: current);
 
                 RefreshNotice(current);
             }
@@ -114,7 +133,7 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        private static void RegisterDragAndDrop(TypeField field, SerializedProperty wrapperProperty)
+        private static void RegisterDragAndDrop(TypeField field, Action<Type> assign)
         {
             field.RegisterCallback<DragUpdatedEvent>(evt =>
             {
@@ -128,7 +147,7 @@ namespace Aspid.FastTools.Types.Editors
                 if (!SerializableMonoScriptUtility.TryResolveDroppedType(field.Types, field.Allow, out var dropped)) return;
 
                 DragAndDrop.AcceptDrag();
-                SerializableMonoScriptUtility.Assign(wrapperProperty, dropped);
+                assign(dropped);
             });
         }
     }
