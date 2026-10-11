@@ -6,7 +6,7 @@
  * - the "Inherited Members" list is dropped (dozens of `object`/`Attribute` members on every page);
  * - an extension method is dropped from the pages of types it cannot extend: DocFX does not check a receiver
  *   constraint like `where T : BaseSlider<TValue>` and lists the method on every type;
- * - a `<p>` spread over three lines becomes one line, since MDX would nest its own `<p>` inside it;
+ * - a `<p>` spread over several lines becomes one line, since MDX would nest its own `<p>` inside it;
  * - `{` and `}` outside code are escaped, MDX would read them as expressions;
  * - every page gets front matter with a short title for the sidebar;
  * - `toc.yml` becomes `Website/api/sidebar.js`, the sidebar of the `api` docs plugin instance. Every namespace keeps

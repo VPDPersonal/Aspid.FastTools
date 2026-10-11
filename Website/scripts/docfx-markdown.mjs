@@ -133,7 +133,7 @@ export function disambiguateLabels(sidebar) {
 }
 
 /**
- * `<p>`, the text and `</p>` on three lines → one line. MDX reads the lines between the tags as a Markdown paragraph
+ * `<p>`, the text and `</p>` spread over several lines → one line. MDX reads the lines between the tags as a Markdown paragraph
  * and wraps it in its own `<p>`, so the page holds a `<p>` inside a `<p>`: the browser closes the outer one while
  * parsing and React reports a hydration mismatch (error #418). On one line MDX leaves the element alone. A block with
  * a code fence stays as it is: joining the lines would break the fence.
