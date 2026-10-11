@@ -561,6 +561,11 @@ export default { api: [
           },
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.ScrollViewExtensions",
+            "label": "ScrollViewExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.SliderExtensions",
             "label": "SliderExtensions"
           },
@@ -568,6 +573,16 @@ export default { api: [
             "type": "doc",
             "id": "Aspid.FastTools.UIElements.SliderIntExtensions",
             "label": "SliderIntExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TabExtensions",
+            "label": "TabExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TabViewExtensions",
+            "label": "TabViewExtensions"
           },
           {
             "type": "doc",
@@ -668,6 +683,11 @@ export default { api: [
             "type": "doc",
             "id": "Aspid.FastTools.UIElements.TreeViewExtensions",
             "label": "TreeViewExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TwoPaneSplitViewExtensions",
+            "label": "TwoPaneSplitViewExtensions"
           },
           {
             "type": "doc",
