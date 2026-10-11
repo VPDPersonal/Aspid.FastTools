@@ -67,6 +67,18 @@ namespace Aspid.FastTools.UIElements.Tests
         }
 
         [Test]
+        public void SetShowBorder_SetsFlagAndReturnsView()
+        {
+            var source = new ListView();
+
+            ListView list = source.SetShowBorder(true);
+
+            Assert.AreSame(source, list);
+            Assert.IsTrue(list.showBorder);
+            Assert.IsFalse(new TreeView().SetShowBorder(true).SetShowBorder(false).showBorder);
+        }
+
+        [Test]
         public void SetItemsSource_OnListView_SetsSource()
         {
             var items = new List<string> { "Sword", "Armor" };

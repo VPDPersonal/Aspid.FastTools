@@ -51,20 +51,16 @@ MonoBehaviour:
     _values:
     - _key: Fire
       _value: 1.5
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Water
       _value: 0.8
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _typedSingleLine:
     _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _defaultValue: {r: 1, g: 1, b: 1, a: 1}
     _values:
     - _key: Fire
       _value: {r: 1, g: 0.5, b: 0.1, a: 1}
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Water
       _value: {r: 0.3, g: 0.6, b: 1, a: 1}
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _typedFoldout:
     _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _defaultValue:
@@ -87,17 +83,14 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _typedFlags:
     _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Modifier, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _defaultValue: 1
     _values:
     - _key: Burning
       _value: 0.9
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Modifier, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: 'Burning, Slowed'
       _value: 0.4
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Modifier, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &4234567890123456789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116,20 +109,16 @@ MonoBehaviour:
     _values:
     - _key: Fire
       _value: 1.5
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Water
       _value: 0.8
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _typedSingleLine:
     _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _defaultValue: {r: 1, g: 1, b: 1, a: 1}
     _values:
     - _key: Fire
       _value: {r: 1, g: 0.5, b: 0.1, a: 1}
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Water
       _value: {r: 0.3, g: 0.6, b: 1, a: 1}
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _typedFoldout:
     _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _defaultValue:
@@ -152,14 +141,11 @@ MonoBehaviour:
             m_PreInfinity: 2
             m_PostInfinity: 2
             m_RotationOrder: 4
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Element, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _typedFlags:
     _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Modifier, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _defaultValue: 1
     _values:
     - _key: Burning
       _value: 0.9
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Modifier, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: 'Burning, Slowed'
       _value: 0.4
-      _enumType: Aspid.FastTools.DevTests.Enums.EnumValuesIMGUITest+Modifier, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

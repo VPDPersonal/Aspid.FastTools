@@ -16,7 +16,9 @@ Agent Skills for projects that consume the package in `skills/`.
 
 - A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
   `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run. Commit the rebuilt DLL:
-  `ci.yml` fails when a committed DLL differs from a Release build of its sources.
+  `ci.yml` fails when a committed DLL differs from a Release build of its sources. `PackagedAnalyzerTests` read the
+  committed DLLs, so after a change to a generator or an analyzer run the Release build first: only then do they judge
+  the new code.
 - `Aspid.FastTools.YamlTests/` runs the package's SerializeReference YAML engine and its tests outside Unity: it compiles
   those package sources as-is (C# 9, Unity 6000.0's version; the engine against .NET Standard 2.1) and stubs only
   `Debug.LogError` and `AssetDatabase.MakeEditable`, so a Unity API, a newer language feature or a newer .NET API added
@@ -24,6 +26,9 @@ Agent Skills for projects that consume the package in `skills/`.
   `GenericArgumentFilter` and `TypeUtility` with the resolver tests in the same way. It stubs only `UnityEngine.Object`
   and `CompilationPipeline.GetAssemblies`, so a new Unity API in these three files breaks it. A test that needs the
   Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
+- `Tests/Burst` (Burst jobs that call `this.Marker()`) compiles only where `com.unity.burst` is installed
+  (`versionDefines`): the dev project has it through URP, the project from `scripts/make-unity-test-project.sh`
+  does not, so CI skips it.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
   READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
   which `ci.yml` checks (`scripts/check-version.mjs`) in every PR and in the release. The version also picks the channel,
