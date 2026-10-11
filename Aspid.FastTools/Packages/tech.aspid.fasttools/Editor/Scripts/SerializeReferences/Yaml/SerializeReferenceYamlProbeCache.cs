@@ -103,7 +103,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (_firstHeader < 0) _firstHeader = i;
 
                     var match = SerializeReferenceYaml.DocumentHeader.Match(Lines[i]);
-                    current = match.Success && long.TryParse(match.Groups["id"].Value, out currentId) ? i : -1;
+                    current = match.Success && SerializeReferenceYaml.TryParseId(match.Groups["id"].Value, out currentId) ? i : -1;
                 }
 
                 return documents;
