@@ -154,6 +154,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void Assign_SetsAnInstanceOfTheType()
         {
+            // The slot starts empty, so only a write that went through can put a sword there.
+            _target.sidearms[0] = null;
+            _serialized.Update();
+
             SerializeReferenceDropHandler.Assign(_serialized.FindProperty("sidearms.Array.data[0]"), typeof(TestSword));
 
             _serialized.Update();
