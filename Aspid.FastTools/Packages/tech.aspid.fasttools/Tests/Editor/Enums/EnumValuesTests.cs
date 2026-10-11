@@ -3,11 +3,14 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Unity.Profiling;
 using System.Threading;
 using Aspid.FastTools.Types;
 using UnityEngine.TestTools;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
+using Unity.Profiling.LowLevel.Unsafe;
 using UnityEngine.TestTools.Constraints;
 using Is = UnityEngine.TestTools.Constraints.Is;
 
@@ -753,5 +756,69 @@ namespace Aspid.FastTools.Enums.Tests
             Assert.AreEqual(5, _host.Untyped.GetValue(UnsignedValues.Top));
             Assert.AreEqual(-1, _host.Untyped.GetValue(UnsignedValues.Zero));
         }
+
+#if ENABLE_PROFILER && !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
+        private void RunLookups()
+        {
+            _host.Seasons.GetValue(Season.Summer);
+            _host.Seasons.TryGetValue(Season.Summer, out _);
+            _host.Untyped.GetValue(Season.Summer);
+            _host.Untyped.GetValue<Season>(Season.Summer);
+            _host.Untyped.TryGetValue(Season.Summer, out _);
+            _host.Untyped.TryGetValue<Season>(Season.Summer, out _);
+            _host.Untyped.Equals(Season.Summer, Season.Summer);
+        }
+
+        [Test]
+        public void Lookups_OpenNoProfilerMarker()
+        {
+            // A lookup per entity per frame would fill the Profiler with samples, so only the first access,
+            // which builds the entries, opens a marker. A marker stays registered until the Editor exits, even after
+            // the code that opened it is gone, so count the samples the lookups record now, not the registered markers.
+            AddEntry("_seasons", nameof(Season.Summer), 1);
+            AddEntry("_untyped", nameof(Season.Summer), 1, typeof(Season).AssemblyQualifiedName);
+
+            // Registers the markers of the closed types.
+            RunLookups();
+
+            var handles = new List<ProfilerRecorderHandle>();
+            ProfilerRecorderHandle.GetAvailable(handles);
+
+            var recorders = new List<(string Name, ProfilerRecorder Recorder)>();
+            try
+            {
+                foreach (var handle in handles)
+                {
+                    var name = ProfilerRecorderHandle.GetDescription(handle).Name;
+                    if (!name.StartsWith("EnumValues<", StringComparison.Ordinal)) continue;
+
+                    const ProfilerRecorderOptions options =
+                        ProfilerRecorderOptions.StartImmediately |
+                        ProfilerRecorderOptions.WrapAroundWhenCapacityReached |
+                        ProfilerRecorderOptions.CollectOnlyOnCurrentThread;
+
+                    recorders.Add((name, new ProfilerRecorder(handle, capacity: 4, options)));
+                }
+
+                // Build the entries again, as the first access of a fresh instance does.
+                ((ISerializationCallbackReceiver)_host.Seasons).OnAfterDeserialize();
+                ((ISerializationCallbackReceiver)_host.Untyped).OnAfterDeserialize();
+                RunLookups();
+
+                var sampled = recorders.Where(entry => entry.Recorder.Count > 0).Select(entry => entry.Name).ToArray();
+                var report = $"Markers that recorded samples: [{string.Join(", ", sampled)}]";
+
+                Assert.IsTrue(sampled.Any(name => name.Contains(".Initialize")), $"The first access records no sample. {report}");
+                Assert.IsFalse(
+                    sampled.Any(name => name.Contains(".GetValue") || name.Contains(".TryGetValue") || name.Contains(".Equals")),
+                    $"A lookup opens a Profiler marker. {report}");
+            }
+            finally
+            {
+                foreach (var (_, recorder) in recorders)
+                    recorder.Dispose();
+            }
+        }
+#endif
     }
 }

@@ -68,7 +68,7 @@ Markers are created once. After initialization, repeated measurements allocate n
 
 ## Package markers
 
-The package marks its own hot paths too, such as <code lang="class-name">EnumValues</code> lookups and <code lang="class-name">SerializableType</code> resolution. Add the symbol `ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED` to **Scripting Define Symbols** to compile these markers out. Markers from your own <code lang="csharp">this.Marker()</code> calls stay.
+The package marks its own hot paths too, such as the first access to <code lang="class-name">EnumValues</code>, which builds its entries, and <code lang="class-name">SerializableType</code> resolution. Lookups in an already built <code lang="class-name">EnumValues</code> open no marker. Add the symbol `ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED` to **Scripting Define Symbols** to compile these markers out. Markers from your own <code lang="csharp">this.Marker()</code> calls stay.
 
 ## Limitations
 

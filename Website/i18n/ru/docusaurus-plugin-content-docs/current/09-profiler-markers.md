@@ -68,7 +68,7 @@ public void Step()
 
 ## Маркеры пакета
 
-Пакет ставит маркеры и на свои горячие пути, например на поиск в <code lang="class-name">EnumValues</code> или разрешение типа в <code lang="class-name">SerializableType</code>. Чтобы вырезать эти маркеры, добавьте символ `ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED` в **Scripting Define Symbols**. Маркеры от ваших вызовов <code lang="csharp">this.Marker()</code> остаются.
+Пакет ставит маркеры и на свои горячие пути, например на первое обращение к <code lang="class-name">EnumValues</code>, которое строит записи, или на разрешение типа в <code lang="class-name">SerializableType</code>. Поиск в уже построенном <code lang="class-name">EnumValues</code> маркер не открывает. Чтобы вырезать эти маркеры, добавьте символ `ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED` в **Scripting Define Symbols**. Маркеры от ваших вызовов <code lang="csharp">this.Marker()</code> остаются.
 
 ## Ограничения
 
