@@ -481,6 +481,11 @@ export default { api: [
           },
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.CallbackEventHandlerExtensions",
+            "label": "CallbackEventHandlerExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.EnumFieldExtensions",
             "label": "EnumFieldExtensions"
           },

@@ -375,6 +375,10 @@ The style, for chaining.
 
 The style type.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### SetBackgroundColor\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBackgroundColor__1___0_UnityEngine_UIElements_StyleColor_}
 
 Sets [`backgroundColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundColor.html).
@@ -456,6 +460,66 @@ The style to modify.
 `value` StyleBackground
 
 The background image to set.
+
+#### Returns
+
+ T
+
+The style, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The style type.
+
+### SetBackgroundImage\<T\>\(T, Sprite\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBackgroundImage__1___0_UnityEngine_Sprite_}
+
+Sets [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`Sprite`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Sprite.html).
+
+```csharp
+public static T SetBackgroundImage<T>(this T style, Sprite value) where T : IStyle
+```
+
+#### Parameters
+
+`style` T
+
+The style to modify.
+
+`value` Sprite
+
+The sprite to use as the background image.
+
+#### Returns
+
+ T
+
+The style, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The style type.
+
+### SetBackgroundImage\<T\>\(T, VectorImage\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_VectorImage_}
+
+Sets [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`VectorImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VectorImage.html).
+
+```csharp
+public static T SetBackgroundImage<T>(this T style, VectorImage value) where T : IStyle
+```
+
+#### Parameters
+
+`style` T
+
+The style to modify.
+
+`value` VectorImage
+
+The vector image to use as the background image.
 
 #### Returns
 
@@ -794,6 +858,12 @@ The style, for chaining.
 `T` 
 
 The style type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetBorderColor(Color.red, Color.blue)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`IStyleExtensions.SetBorderColorY<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderColorY__1___0_UnityEngine_UIElements_StyleColor_) and [`IStyleExtensions.SetBorderColorX<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderColorX__1___0_UnityEngine_UIElements_StyleColor_) for pairs.
 
 ### SetBorderColorBottom\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderColorBottom__1___0_UnityEngine_UIElements_StyleColor_}
 
@@ -1253,6 +1323,11 @@ The style, for chaining.
 
 The style type.
 
+#### Remarks
+
+Positional arguments follow the order top-left, top-right, bottom-right, bottom-left, so
+<code>SetBorderRadius(8, 4)</code> sets the top-left and the top-right corner, not the diagonal pairs.
+
 ### SetBorderRadiusBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderRadiusBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
 Sets [`borderBottomRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
@@ -1566,6 +1641,12 @@ The style, for chaining.
 `T` 
 
 The style type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetBorderWidth(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`IStyleExtensions.SetBorderWidthY<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderWidthY__1___0_UnityEngine_UIElements_StyleFloat_) and [`IStyleExtensions.SetBorderWidthX<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderWidthX__1___0_UnityEngine_UIElements_StyleFloat_) for pairs.
 
 ### SetBorderWidthBottom\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetBorderWidthBottom__1___0_UnityEngine_UIElements_StyleFloat_}
 
@@ -2005,6 +2086,12 @@ The style, for chaining.
 
 The style type.
 
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetDistance(8, 4)</code> sets the top and the right offset, not the vertical and horizontal pairs.
+Name the arguments, or use [`IStyleExtensions.SetDistanceY<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetDistanceY__1___0_UnityEngine_UIElements_StyleLength_) and [`IStyleExtensions.SetDistanceX<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetDistanceX__1___0_UnityEngine_UIElements_StyleLength_) for pairs.
+
 ### SetDistanceX\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetDistanceX__1___0_UnityEngine_UIElements_StyleLength_}
 
 Sets [`right`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-right.html) and [`left`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-left.html).
@@ -2094,6 +2181,10 @@ The style, for chaining.
 `T` 
 
 The style type.
+
+#### Remarks
+
+Available in Unity 6000.3 and newer.
 
 ### SetFlexBasis\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetFlexBasis__1___0_UnityEngine_UIElements_StyleLength_}
 
@@ -2558,6 +2649,12 @@ The style, for chaining.
 `T` 
 
 The style type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetMargin(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`IStyleExtensions.SetMarginY<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetMarginY__1___0_UnityEngine_UIElements_StyleLength_) and [`IStyleExtensions.SetMarginX<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetMarginX__1___0_UnityEngine_UIElements_StyleLength_) for pairs.
 
 ### SetMarginBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetMarginBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
@@ -3180,6 +3277,12 @@ The style, for chaining.
 `T` 
 
 The style type.
+
+#### Remarks
+
+Positional arguments follow the order top, right, bottom, left, so
+<code>SetPadding(8, 4)</code> sets the top and the right side, not the vertical and horizontal pairs.
+Name the arguments, or use [`IStyleExtensions.SetPaddingY<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetPaddingY__1___0_UnityEngine_UIElements_StyleLength_) and [`IStyleExtensions.SetPaddingX<T>`](Aspid.FastTools.UIElements.IStyleExtensions.md#Aspid_FastTools_UIElements_IStyleExtensions_SetPaddingX__1___0_UnityEngine_UIElements_StyleLength_) for pairs.
 
 ### SetPaddingBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetPaddingBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
@@ -4149,6 +4252,10 @@ The style, for chaining.
 
 The style type.
 
+#### Remarks
+
+Available in Unity 6000.3 and newer.
+
 ### SetUnityOverflowClipBox\<T\>\(T, StyleEnum\<OverflowClipBox\>\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetUnityOverflowClipBox__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_OverflowClipBox__}
 
 Sets [`unityOverflowClipBox`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityOverflowClipBox.html).
@@ -4672,6 +4779,10 @@ The style, for chaining.
 `T` 
 
 The style type.
+
+#### Remarks
+
+Available in Unity 6000.2 and newer.
 
 ### SetUnityTextGenerator\<T\>\(T, StyleEnum\<TextGeneratorType\>\) {#Aspid_FastTools_UIElements_IStyleExtensions_SetUnityTextGenerator__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_TextGeneratorType__}
 
