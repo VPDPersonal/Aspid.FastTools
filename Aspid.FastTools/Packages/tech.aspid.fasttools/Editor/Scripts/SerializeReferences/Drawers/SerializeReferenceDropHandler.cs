@@ -36,7 +36,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (property is null || type is null) return false;
 
-            return SerializeReferenceWriter.SetType(property.Persistent(), type, view: property);
+            var assigned = false;
+            new DetachedProperty(property).Use(persistent => assigned = SerializeReferenceWriter.SetType(persistent, type, view: property));
+            return assigned;
         }
     }
 }

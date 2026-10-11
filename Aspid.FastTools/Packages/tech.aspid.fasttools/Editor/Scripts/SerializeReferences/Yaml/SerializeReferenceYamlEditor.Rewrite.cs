@@ -12,6 +12,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The inline type mapping Unity writes for the null sentinel RefIds entry — an empty type identity.
         private const string NullSentinelType = "type: {class: , ns: , asm: }";
 
+        // "rid: N" or "- rid: N" at the start of a line; the lead ends at the column of the rid key.
+        private static readonly Regex _leadingRidKey = new(@"^(?<lead>\s*(?<dash>-\s+)?)rid:", RegexOptions.Compiled);
+
+        // "  _field:" or "  - _field:": a key whose value is the block below it; the lead ends at the key's column.
+        // Any key Unity writes counts, such as "<Prop>k__BackingField" or a non-ASCII field name.
+        private static readonly Regex _openKey = new(@"^(?<lead>\s*(?:-\s+)?)(?<key>[^\s:#-][^:]*):\s*$", RegexOptions.Compiled);
+
         // Replaces the entry's type mapping. The caller reimports the asset.
         public static bool TryRewriteType(string assetPath, long fileId, long rid, ManagedTypeName newType) =>
             RewriteTypes(assetPath, new[] { new MissingReferenceEntry(fileId, rid, storedType: default) }, newType) == 1;
@@ -26,10 +33,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
 
-                var lines = ReadAllLines(assetPath, out var original, out var encoding);
-                if (!LooksLikeUnityYaml(lines)) return 0;
+                if (!TryReadAllLines(assetPath, out var source, out var original, out var encoding)) return 0;
+                if (!LooksLikeUnityYaml(source)) return 0;
 
+                // The type lines are rewritten in this copy; the writer checks the batch against the lines as read.
+                var lines = (string[])source.Clone();
                 var refIdsBlocks = new Dictionary<long, (int RefIdsStart, int End)>();
+                var rewritten = new HashSet<(long FileId, long Rid)>();
                 var applied = 0;
 
                 foreach (var entry in entries)
@@ -39,10 +49,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!TryComputeRewrite(lines, assetPath, entry.FileId, entry.Rid, newType, refIdsBlocks, out var edit)) continue;
 
                     lines[edit.LineNumber] = edit.NewLine;
+                    rewritten.Add((entry.FileId, entry.Rid));
                     applied++;
                 }
 
-                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines, original, encoding)) return 0;
+                // A type rewrite replaces each entry with one of the same rid and size, so every rewritten entry is both
+                // removed and added.
+                if (applied == 0 || !TryWritePreservingNewlines(assetPath, source, lines, original, encoding,
+                        removed: rewritten, added: rewritten))
+                    return 0;
 
                 // Same-tick writes can leave the modification-time key unchanged, so bust the probe cache explicitly.
                 SerializeReferenceYamlProbeCache.ClearCache();
@@ -156,7 +171,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 for (var k = 0; k < headerIndex; k++) remaining.Add(lines[k]);
                 for (var k = entryEnd; k < lines.Length; k++) remaining.Add(lines[k]);
 
-                if (!TryWritePreservingNewlines(assetPath, remaining)) return false;
+                if (!TryWritePreservingNewlines(assetPath, lines, remaining, fileId, removedRid: rid)) return false;
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
             }
@@ -185,19 +200,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
 
-                var lines = ReadAllLines(assetPath, out var original, out var encoding);
-                if (!LooksLikeUnityYaml(lines)) return 0;
+                if (!TryReadAllLines(assetPath, out var source, out var original, out var encoding)) return 0;
+                if (!LooksLikeUnityYaml(source)) return 0;
+
+                // Each entry is nulled on a copy of the lines before it; the writer checks the batch against the lines
+                // as read.
+                var lines = source;
+                var removed = new List<(long FileId, long Rid)>();
+                var added = new List<(long FileId, long Rid)>();
 
                 var applied = 0;
                 foreach (var entry in entries)
                 {
-                    if (!TryNullReference(lines, entry.FileId, entry.Rid, out var nulled)) continue;
+                    if (!TryNullReference(lines, entry.FileId, entry.Rid, out var nulled, out var removedEntry,
+                            out var addedSentinel))
+                        continue;
 
                     lines = nulled;
+                    if (removedEntry) removed.Add((entry.FileId, entry.Rid));
+                    if (addedSentinel) added.Add((entry.FileId, NullRid));
                     applied++;
                 }
 
-                if (applied == 0 || !TryWritePreservingNewlines(assetPath, lines, original, encoding)) return 0;
+                if (applied == 0 || !TryWritePreservingNewlines(assetPath, source, lines, original, encoding, removed, added))
+                    return 0;
 
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return applied;
@@ -209,10 +235,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Works on a copy, so source stays unchanged when the entry bails after its pointers were nulled.
-        private static bool TryNullReference(string[] source, long fileId, long rid, out string[] result)
+        // Works on a copy, so source stays unchanged when the entry bails after its pointers were nulled. removedEntry
+        // and addedSentinel tell the writer's check which RefIds entries the edit removed or added.
+        private static bool TryNullReference(string[] source, long fileId, long rid, out string[] result,
+            out bool removedEntry, out bool addedSentinel)
         {
             result = null;
+            removedEntry = false;
+            addedSentinel = false;
 
             var lines = (string[])source.Clone();
             var (start, end) = FindDocumentRange(lines, fileId);
@@ -250,9 +280,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Null every pointer to the rid — a "- rid: N" array element, a "rid: N" scalar field or an inline
                 // "{rid: N}" — so no dangling pointer survives the entry's removal (which errors on array fields).
                 // The anchored pattern preserves each pointer's structural prefix/suffix and only rewrites the id.
-                if (pointerToken.IsMatch(lines[i]))
+                if (pointerToken.IsMatch(lines[i]) && IsPointerLine(lines, i, start, end, refIdsStart, entryIndent))
                 {
-                    lines[i] = pointerToken.Replace(lines[i], $"${{prefix}}rid: {NullRid}${{suffix}}");
+                    lines[i] = pointerToken.Replace(lines[i], $"${{prefix}}rid: {FormatId(NullRid)}${{suffix}}");
                     pointerNulled = true;
                 }
             }
@@ -282,12 +312,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (needsNullEntry && i == refIdsStart)
                 {
-                    nulled.Add($"{dash}- rid: {NullRid}");
+                    nulled.Add($"{dash}- rid: {FormatId(NullRid)}");
                     nulled.Add($"{typeIndent}{NullSentinelType}");
                 }
             }
 
             result = nulled.ToArray();
+            removedEntry = headerIndex >= 0;
+            addedSentinel = needsNullEntry;
             return true;
         }
 
@@ -327,7 +359,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         continue;
                     }
 
-                    if (pointerToken.IsMatch(lines[i])) count++;
+                    if (pointerToken.IsMatch(lines[i]) && IsPointerLine(lines, i, start, end, refIdsStart, entryIndent)) count++;
                 }
 
                 return count;
@@ -342,8 +374,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Anchored matcher for a real "rid: N" pointer — never a bare "rid: N" substring inside a string field value.
         // Only Unity's three pointer shapes match: a line-anchored "- rid: N" item, a line-anchored "rid: N" scalar,
         // or an inline "{rid: N}" mapping; the structural prefix/suffix are captured so a rewrite replaces only the id.
-        private static Regex BuildPointerPattern(long rid) => new(
-            $@"(?<prefix>^\s*(?:-\s+)?)rid:\s*{rid}(?<suffix>\s*$)|(?<prefix>\{{\s*)rid:\s*{rid}(?<suffix>\s*\}})");
+        // A line-anchored match is a pointer only when IsPointerLine agrees.
+        private static Regex BuildPointerPattern(long rid)
+        {
+            var id = FormatId(rid);
+            return new Regex($@"(?<prefix>^\s*(?:-\s+)?)rid:\s*{id}(?<suffix>\s*$)|(?<prefix>\{{\s*)rid:\s*{id}(?<suffix>\s*\}})");
+        }
+
+        // Unity writes a pointer as the only key of its mapping: a "- rid: N" list item, the one child of a field key,
+        // or "{rid: N}". A field of the user's own named rid has sibling keys, or sits right under an entry's data key
+        // as the only field of the referenced object, so its value is not a pointer. A struct whose only field is rid
+        // reads the same as a pointer.
+        private static bool IsPointerLine(string[] lines, int index, int start, int end, int refIdsStart, int entryIndent)
+        {
+            // The inline "{rid: N}" form: its braces already bound the mapping to the one key.
+            var key = _leadingRidKey.Match(lines[index]);
+            if (!key.Success) return true;
+
+            var column = key.Groups["lead"].Length;
+
+            var next = index + 1;
+            while (next < end && lines[next].Trim().Length == 0) next++;
+            if (next < end && IndentOf(lines[next]) >= column) return false;
+
+            if (key.Groups["dash"].Success) return true;
+
+            var previous = index - 1;
+            while (previous > start && lines[previous].Trim().Length == 0) previous--;
+
+            var parent = _openKey.Match(lines[previous]);
+            if (!parent.Success || parent.Groups["lead"].Length >= column) return false;
+
+            // Unity writes the type and data keys of a RefIds entry two columns right of its dash.
+            return previous <= refIdsStart
+                || parent.Groups["lead"].Length != entryIndent + 2
+                || !string.Equals(parent.Groups["key"].Value, "data", StringComparison.Ordinal);
+        }
 
         private static bool HasNullSentinelEntry(string[] lines, int refIdsStart, int end, int entryIndent)
         {

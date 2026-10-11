@@ -1,7 +1,8 @@
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
+using Aspid.FastTools.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Enums.Editors
@@ -11,7 +12,7 @@ namespace Aspid.FastTools.Enums.Editors
     internal sealed class EnumValuesPropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) =>
-            EnumValuesIMGUIPropertyDrawer.Draw(position, label, property, IsTypedVariant());
+            EnumValuesIMGUIPropertyDrawer.Draw(position, label, property, IsTypedVariant(fieldInfo));
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
             EnumValuesIMGUIPropertyDrawer.GetHeight(property);
@@ -20,23 +21,11 @@ namespace Aspid.FastTools.Enums.Editors
             EnumValuesUIToolkitPropertyDrawer.Draw(
                 property,
                 string.IsNullOrEmpty(preferredLabel) ? property.displayName : preferredLabel,
-                IsTypedVariant());
+                IsTypedVariant(fieldInfo));
 
-        private bool IsTypedVariant()
-        {
-            // For collection elements, fieldInfo describes the array or list itself.
-            var type = fieldInfo.FieldType;
-
-            if (type.IsArray)
-            {
-                type = type.GetElementType();
-            }
-            else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-            {
-                type = type.GetGenericArguments()[0];
-            }
-
-            return type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(EnumValues<,>);
-        }
+        // For collection elements, fieldInfo describes the array or list itself; it is null when Unity finds no field.
+        internal static bool IsTypedVariant(FieldInfo fieldInfo) =>
+            fieldInfo?.FieldType.GetCollectionElementTypeOrSelf() is { IsGenericType: true } type
+            && type.GetGenericTypeDefinition() == typeof(EnumValues<,>);
     }
 }
