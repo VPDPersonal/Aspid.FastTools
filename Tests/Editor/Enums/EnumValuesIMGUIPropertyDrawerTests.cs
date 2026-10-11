@@ -120,9 +120,8 @@ namespace Aspid.FastTools.Enums.Tests
             values.arraySize++;
 
             var element = values.GetArrayElementAtIndex(values.arraySize - 1);
+            // A row takes its enum type from the table, so only the key is written.
             element.FindPropertyRelative("_key").stringValue = key;
-            element.FindPropertyRelative("_enumType").stringValue =
-                _serializedObject.FindProperty($"{field}._enumType").stringValue;
 
             _serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
