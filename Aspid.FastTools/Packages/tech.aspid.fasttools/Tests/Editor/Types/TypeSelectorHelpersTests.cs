@@ -21,6 +21,14 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [TypeSelectorDisplay(Name = "Mod")]
         private sealed class NamedWrapper<T> { }
 
+        private sealed class Host<T>
+        {
+            [TypeSelectorDisplay(Name = "Mod")]
+            internal sealed class NamedNested { }
+
+            internal sealed class Nested { }
+        }
+
         [Test]
         public void Title_NoTypeAndNoName_IsTheNoneOption()
         {
@@ -75,6 +83,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
+        public void CustomDisplayName_NestedInGeneric_HasNoArgumentsOfItsOwn()
+        {
+            Assert.AreEqual("Mod", TypeSelectorHelpers.GetCustomDisplayName(typeof(Host<>.NamedNested)));
+            Assert.AreEqual("Mod", TypeSelectorHelpers.GetCustomDisplayName(typeof(Host<int>.NamedNested)));
+        }
+
+        [Test]
         public void Tooltip_NoType_IsNull() =>
             Assert.IsNull(TypeSelectorHelpers.GetTypeSelectorTooltip(null));
 
@@ -84,6 +99,18 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var assembly = typeof(List<int>).Assembly.GetName().Name;
             Assert.AreEqual($"System.Collections.Generic.List<Int32>, {assembly}",
                 TypeSelectorHelpers.GetTypeSelectorTooltip(typeof(List<int>)));
+        }
+
+        [Test]
+        public void Tooltip_NestedType_KeepsTheOuterTypesWithTheirArguments()
+        {
+            var assembly = typeof(Host<>).Assembly.GetName().Name;
+            var prefix = $"{typeof(TypeSelectorHelpersTests).Namespace}.{nameof(TypeSelectorHelpersTests)}";
+
+            Assert.AreEqual($"{prefix}.Host<T>.Nested, {assembly}",
+                TypeSelectorHelpers.GetTypeSelectorTooltip(typeof(Host<>.Nested)));
+            Assert.AreEqual($"{prefix}.Host<Int32>.Nested, {assembly}",
+                TypeSelectorHelpers.GetTypeSelectorTooltip(typeof(Host<int>.Nested)));
         }
     }
 }

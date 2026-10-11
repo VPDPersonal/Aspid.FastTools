@@ -55,12 +55,17 @@ When this method returns <a href="https://learn.microsoft.com/dotnet/csharp/lang
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the property was resolved and successfully parsed
-    as <code class="typeparamref">T</code>; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the property was resolved and parsed to a defined value
+    of <code class="typeparamref">T</code>; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
 #### Type Parameters
 
 `T` 
 
 The enum type to parse the USS value as.
+
+#### Remarks
+
+A number is accepted only when it is a defined value, and a comma-separated list only for a
+[`FlagsAttribute`](https://learn.microsoft.com/dotnet/api/system.flagsattribute) enum, which accepts names only.
 

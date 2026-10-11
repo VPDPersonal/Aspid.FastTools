@@ -13,6 +13,7 @@ namespace Aspid.FastTools.Types.Editors
 
         private static readonly Dictionary<string, Texture> _iconCache = new();
         private static readonly Dictionary<string, Texture> _typeFallbackCache = new();
+        private static readonly Dictionary<string, Texture> _builtInCache = new();
 
         internal static Texture Resolve(string icon) =>
             string.IsNullOrWhiteSpace(icon) ? null : GetOrLoad(_iconCache, icon, LoadIcon);
@@ -20,10 +21,14 @@ namespace Aspid.FastTools.Types.Editors
         internal static Texture ResolveForType(string assemblyQualifiedName)
         {
             if (string.IsNullOrEmpty(assemblyQualifiedName))
-                return Resolve(TypeFallbackIcon);
+                return ResolveBuiltIn(TypeFallbackIcon);
 
             return GetOrLoad(_typeFallbackCache, assemblyQualifiedName, LoadTypeFallbackIcon);
         }
+
+        // The package's own fallbacks are Unity icons: a project Resources texture of the same name must not replace them.
+        private static Texture ResolveBuiltIn(string icon) =>
+            GetOrLoad(_builtInCache, icon, static name => EditorGUIUtility.IconContent(name)?.image);
 
         private static Texture GetOrLoad(Dictionary<string, Texture> cache, string key, Func<string, Texture> load)
         {
@@ -54,17 +59,12 @@ namespace Aspid.FastTools.Types.Editors
                 icon.StartsWith("Packages/", StringComparison.Ordinal))
                 return AssetDatabase.LoadAssetAtPath<Texture>(icon);
 
-            if (icon.Contains('/'))
-            {
-                var resource = Resources.Load<Texture>(icon);
-                if (resource is not null) return resource;
+            // Resources first: IconContent logs "Unable to load the icon" for a name it does not know, which a
+            // Resources icon such as "SwordIcon" is. A Resources texture therefore wins over a Unity icon of the same name.
+            var resource = Resources.Load<Texture>(icon);
+            if (resource is not null) return resource;
 
-                var pathContent = EditorGUIUtility.IconContent(icon);
-                return pathContent?.image;
-            }
-
-            var content = EditorGUIUtility.IconContent(icon);
-            return content?.image ?? Resources.Load<Texture>(icon);
+            return EditorGUIUtility.IconContent(icon)?.image;
         }
 
         private static Texture LoadTypeFallbackIcon(string assemblyQualifiedName)
@@ -77,10 +77,10 @@ namespace Aspid.FastTools.Types.Editors
                 if (thumbnail is not null) return thumbnail;
 
                 if (typeof(ScriptableObject).IsAssignableFrom(type))
-                    return Resolve(ScriptableObjectFallbackIcon);
+                    return ResolveBuiltIn(ScriptableObjectFallbackIcon);
             }
 
-            return Resolve(TypeFallbackIcon);
+            return ResolveBuiltIn(TypeFallbackIcon);
         }
     }
 }

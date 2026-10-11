@@ -25,14 +25,20 @@ Read and mirror, in full, before writing:
 `Styles/Aspid<Name><Property>Style.cs`, plus the `.uss` and every `.meta`. Namespace
 `Aspid.FastTools.UIElements.Editors.Internal` with `// ReSharper disable once CheckNamespace`.
 
+A path from the package root may have at most 123 characters (the Asset Store Validator limit is 140, counted from
+`Aspid/FastTools/`; `scripts/check-package-files.mjs` checks it). For a long component name, shorten the component part
+of the style struct names instead of using the pattern above: `AspidAnimatedDotsBackground` has
+`AspidAnimatedDotsSizeStyle`, `AspidHoverGradientOverlay` has `AspidHoverOverlayColorStyle`.
+
 Preset and Extensions are skipped only when there is nothing to configure (`AspidSwitch` is a `BaseField<bool>`,
 `AspidWindowFooter` takes one constructor flag) or the element is a child that its owner configures through the
 owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` / `AspidGradientButton`).
 
 ## Rules
 
-- `[UxmlElement(libraryPath = "Aspid/FastTools")] internal sealed partial class`; a parameterless constructor for
-  UXML; all constructors chain to `(…, Aspid<Name>Preset preset)`.
+- `[UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)] internal sealed partial class`
+  (hidden, so the element does not show in the UI Builder Library of a consumer project); a parameterless constructor
+  for UXML; all constructors chain to `(…, Aspid<Name>Preset preset)`.
 - Load only the component's own sheet: `this.AddStyleSheetFromResources(StyleSheetPath)`. The palette and
   `.aspid-fasttools-background*` come from the host root's `AddAspidThemeStyleSheets()`; only standalone roots
   (`AspidWindowFooter`, `InspectorNotice`) call it themselves. A themed background = `.AddClass(AspidStyles.BackgroundStyle)
@@ -48,7 +54,9 @@ owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` 
   shared palette `var(--aspid-colors-*)` / `var(--aspid-icons-*)` so theme overrides work, own classes
   `aspid-fasttools-<block>[__<element>][--<modifier>]`, own custom properties
   `--aspid-fasttools-{colors|prop|metrics|icons}-<name>`. No inline `style.*` for anything a theme should control.
-  A new colour goes into `Aspid-FastTools-Default-Dark.uss` as a token, never as a literal in a component sheet.
+  A new colour goes into `Aspid-FastTools-Default-Dark.uss` as a token, never as a literal in a component sheet,
+  with a light value in `Aspid-FastTools-Default-Light.uss` (`DefaultPaletteTokenTests` checks it). Text needs 4.5:1:
+  add the pair to `scripts/check-contrast.mjs` and run it.
 - UI drawn inside a regular Inspector (drawers, fields, notices) sits on Unity's own background: colour it with
   `var(--unity-colors-*)`, not the dark palette. A built-in icon takes `var(--unity-icons-*)` where Unity has one;
   otherwise keep the `d_` icon and override it under `.aspid-fasttools-skin--light`, which

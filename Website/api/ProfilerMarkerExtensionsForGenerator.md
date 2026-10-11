@@ -79,8 +79,9 @@ The scope returned by [`ProfilerMarkerExtensionsForGenerator.Marker<T>`](Profile
 
 `name` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-The text replacing the member part of the marker name. Read from the source at compile time,
-so it must be a string literal or an interpolated string without holes; anything else leaves the name untouched.
+The text replacing the member part of the marker name. Read from the source at compile time, so it must be
+a constant: a string literal, a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/const">const</a> string, <code>nameof(...)</code>, or a concatenation or
+interpolation of them. Anything else leaves the name untouched, and analyzer <code>AFT0014</code> reports it.
 
 #### Returns
 
