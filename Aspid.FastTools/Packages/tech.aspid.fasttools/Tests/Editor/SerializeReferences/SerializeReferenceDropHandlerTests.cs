@@ -12,6 +12,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class SerializeReferenceDropHandlerTests
     {
         private MonoScript _script;
+        private LinkerTestObject _target;
+        private SerializedObject _serialized;
+
+        // The resolver checks that the property's objects can hold the type, so it needs a real property.
+        private SerializedProperty Property => _serialized.FindProperty(nameof(LinkerTestObject.a));
 
         [SetUp]
         public void SetUp()
@@ -21,18 +26,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             _script = AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(guids[0]));
             Assert.AreEqual(typeof(IMGUIDropWeapon), _script.GetClass(), "Precondition: the script reports its class.");
+
+            _target = ScriptableObject.CreateInstance<LinkerTestObject>();
+            _serialized = new SerializedObject(_target);
         }
 
         [TearDown]
-        public void TearDown() =>
+        public void TearDown()
+        {
             DragAndDrop.PrepareStartDrag();
+            _serialized.Dispose();
+            Object.DestroyImmediate(_target);
+        }
 
         [Test]
         public void TryResolveDroppedType_AssignableScript_ResolvesItsClass()
         {
             Drag(_script);
 
-            Assert.IsTrue(SerializeReferenceDropHandler.TryResolveDroppedType(typeof(ITestWeapon), Array.Empty<Type>(), out var type));
+            Assert.IsTrue(SerializeReferenceDropHandler.TryResolveDroppedType(Property, typeof(ITestWeapon), Array.Empty<Type>(), out var type));
             Assert.AreEqual(typeof(IMGUIDropWeapon), type);
         }
 
@@ -44,7 +56,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 Drag(notAScript, _script);
 
-                Assert.IsTrue(SerializeReferenceDropHandler.TryResolveDroppedType(typeof(ITestWeapon), baseTypes: null, out var type));
+                Assert.IsTrue(SerializeReferenceDropHandler.TryResolveDroppedType(Property, typeof(ITestWeapon), baseTypes: null, out var type));
                 Assert.AreEqual(typeof(IMGUIDropWeapon), type, "An object that is not a script must be skipped, not reject the drop.");
             }
             finally
@@ -58,7 +70,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             Drag(_script);
 
-            Assert.IsFalse(SerializeReferenceDropHandler.TryResolveDroppedType(typeof(IDisposable), Array.Empty<Type>(), out var type));
+            Assert.IsFalse(SerializeReferenceDropHandler.TryResolveDroppedType(Property, typeof(IDisposable), Array.Empty<Type>(), out var type));
             Assert.IsNull(type);
         }
 
@@ -67,7 +79,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             Drag(_script);
 
-            Assert.IsFalse(SerializeReferenceDropHandler.TryResolveDroppedType(typeof(ITestWeapon), new[] { typeof(IMGUIShield) }, out _),
+            Assert.IsFalse(SerializeReferenceDropHandler.TryResolveDroppedType(Property, typeof(ITestWeapon), new[] { typeof(IMGUIShield) }, out _),
                 "A [TypeSelector] base type must narrow what a drop may assign.");
         }
 
@@ -76,7 +88,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             DragAndDrop.PrepareStartDrag();
 
-            Assert.IsFalse(SerializeReferenceDropHandler.TryResolveDroppedType(typeof(ITestWeapon), Array.Empty<Type>(), out _));
+            Assert.IsFalse(SerializeReferenceDropHandler.TryResolveDroppedType(Property, typeof(ITestWeapon), Array.Empty<Type>(), out _));
         }
 
         [Test]
