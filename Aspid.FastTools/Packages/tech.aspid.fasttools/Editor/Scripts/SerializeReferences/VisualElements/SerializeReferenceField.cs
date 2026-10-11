@@ -804,15 +804,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                filter: new TypeSelectorFilter
-                {
-                    Types = new[] { _fieldType },
-                    Predicate = _filter,
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
-                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
-                    InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
-                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(_property),
-                },
+                filter: SerializeReferenceHelpers.BuildPickerFilter(_fieldType, _baseTypes,
+                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(_property)),
                 assemblyQualifiedName: SerializeReferenceHelpers.GetSelectorCurrentAqn(_property, currentType),
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null

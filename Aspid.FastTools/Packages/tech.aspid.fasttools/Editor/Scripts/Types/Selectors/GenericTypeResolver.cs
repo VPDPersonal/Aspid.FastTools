@@ -13,17 +13,19 @@ namespace Aspid.FastTools.Types.Editors
         private static readonly Dictionary<Type, bool> _unmanagedParameters = new();
 
         // Additional candidates bypass the normal scan; validate narrowing constraints here and close fully
-        // inferred rows before displaying them.
+        // inferred rows before displaying them. A [SerializeReference] value must be a class, while a generic
+        // argument may be a struct too (includeValueTypes).
         internal static IEnumerable<Type> GetAssignableGenericDefinitions(
             Type fieldType,
             Type[] narrowTypes,
-            GenericArgumentFilter argumentFilter = null)
+            GenericArgumentFilter argumentFilter = null,
+            bool includeValueTypes = false)
         {
             if (fieldType is null) yield break;
 
             foreach (var type in TypeUtility.DomainTypes)
             {
-                if (!IsAssignableGenericDefinition(type)) continue;
+                if (!IsAssignableGenericDefinition(type, includeValueTypes)) continue;
                 if (!CanCloseToFieldType(type, fieldType)) continue;
                 if (!CanCloseToAllNarrowing(type, narrowTypes)) continue;
 
@@ -269,7 +271,9 @@ namespace Aspid.FastTools.Types.Editors
             var requireReferenceType = (special & GenericParameterAttributes.ReferenceTypeConstraint) != 0;
             var requireDefaultCtor = (special & GenericParameterAttributes.DefaultConstructorConstraint) != 0;
 
-            if (requireValueType && (!candidate.IsValueType || Nullable.GetUnderlyingType(candidate) is not null)) return false;
+            // The open Nullable<> has no underlying type yet, so the definition is compared, which covers both forms.
+            if (requireValueType && (!candidate.IsValueType ||
+                candidate.IsGenericType && candidate.GetGenericTypeDefinition() == typeof(Nullable<>))) return false;
             if (requireReferenceType && candidate.IsValueType) return false;
 
             // An open definition is judged once its own arguments are chosen.
@@ -449,7 +453,7 @@ namespace Aspid.FastTools.Types.Editors
                     if (fieldType is null || fieldType == typeof(object)) continue;
                     if (fieldType.IsAssignableFrom(closed)) continue;
 
-                    error = $"{closed.Name} is not assignable to {fieldType.Name}.";
+                    error = $"{TypeUtility.FormatGenericName(closed)} is not assignable to {TypeUtility.FormatGenericName(fieldType)}.";
                     closed = null;
                     return false;
                 }
@@ -472,11 +476,13 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        // The open definitions that can be offered once closed: non-abstract generic classes that are neither
-        // UnityEngine.Object nor delegates, and not compiler-generated. The last exclusion has to happen here
-        // because these definitions are injected verbatim, bypassing the checks applied to ordinary candidates.
-        private static bool IsAssignableGenericDefinition(Type type) =>
-            type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
+        // The open definitions that can be offered once closed: non-abstract generic classes (and structs when
+        // asked, except ref structs, which no generic argument can be) that are neither UnityEngine.Object nor
+        // delegates, and not compiler-generated. The last exclusion has to happen here because these definitions
+        // are injected verbatim, bypassing the checks applied to ordinary candidates.
+        private static bool IsAssignableGenericDefinition(Type type, bool includeValueTypes) =>
+            type is { IsAbstract: false, IsGenericTypeDefinition: true } &&
+            (type.IsClass || (includeValueTypes && type is { IsValueType: true, IsByRefLike: false })) &&
             !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type) &&
             !TypeUtility.IsCompilerGenerated(type);

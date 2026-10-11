@@ -161,6 +161,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var parameter = typeof(StructBox<>).GetGenericArguments()[0];
 
             Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(int?)));
+            Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(System.Nullable<>)),
+                "The open Nullable<> would only lead to a Nullable<T> the constraint rejects.");
         }
 
         [Test]

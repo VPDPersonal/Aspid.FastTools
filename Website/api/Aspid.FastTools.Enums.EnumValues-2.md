@@ -68,7 +68,7 @@ public class HitEffect : MonoBehaviour
 
 <p>Lookup semantics (including <code>[Flags]</code> handling) and thread safety are identical to [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) — see its remarks for details. Steady-state [`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_Equals__0__0_) and <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">foreach</a> (which binds to the struct [`EnumValuesEnumerator<T1, T2>`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md)) never allocate.</p>
 <p>In the editor the serialized layout is compatible with [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md): the enum type is still stored in a hidden editor-only <code>_enumType</code> field, auto-filled with <code class="typeparamref">TEnum</code>'s assembly-qualified name on serialization. Switching a field between the two variants therefore migrates existing data, as long as the configured enum type matches <code class="typeparamref">TEnum</code>. Player builds strip the field — at runtime the enum type comes from the generic argument alone.</p>
-<p>Internal hot paths are wrapped in profiler markers; define the <code>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.</p>
+<p>Internal hot paths are wrapped in profiler markers; define the <code>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.</p>
 
 ## Properties
 

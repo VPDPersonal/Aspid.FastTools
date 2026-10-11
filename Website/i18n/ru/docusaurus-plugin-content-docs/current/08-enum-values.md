@@ -151,7 +151,7 @@ foreach (var entry in _multipliers)
     total += entry.Value;
 ```
 
-**Default Value** и строки с неразрешёнными ключами в перебор не входят. После первого обращения, которое инициализирует ключи, прямой <code lang="csharp">foreach</code> по таблице не выделяет память. <code lang="csharp">Count</code> — число строк, которые отдаёт перебор.
+**Default Value** и строки с неразрешёнными ключами в перебор не входят. После первого обращения, которое инициализирует ключи, прямой <code lang="csharp">foreach</code> по таблице не выделяет память. Через <code lang="class-name">IEnumerable&lt;T&gt;</code>, например в LINQ, перечислитель упаковывается и выделяет память. <code lang="csharp">Count</code> — число строк, которые отдаёт перебор.
 
 ## Если enum изменился
 
