@@ -35,7 +35,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             if (_window == null) return;
 
             _window.rootVisualElement.Clear();
-            Object.DestroyImmediate(_window);
+            if (_window != null) _window.Close();
         }
 
         [UnityTest]

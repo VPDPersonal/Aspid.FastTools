@@ -60,7 +60,7 @@ namespace Aspid.FastTools.Editors.Tests
             }
             finally
             {
-                Object.DestroyImmediate(window);
+                Close(window);
             }
         }
 
@@ -86,7 +86,7 @@ namespace Aspid.FastTools.Editors.Tests
             }
             finally
             {
-                Object.DestroyImmediate(window);
+                Close(window);
             }
         }
 
@@ -111,8 +111,15 @@ namespace Aspid.FastTools.Editors.Tests
             }
             finally
             {
-                if (prompt != null) Object.DestroyImmediate(prompt);
+                Close(prompt);
             }
+        }
+
+        // Close() takes the native window down with the view. DestroyImmediate leaves it on Linux, where its animated
+        // content keeps repainting through software rendering and slows every later test.
+        private static void Close(EditorWindow window)
+        {
+            if (window != null) window.Close();
         }
 
         private static VisualElement FindContainer(EditorWindow window) =>
