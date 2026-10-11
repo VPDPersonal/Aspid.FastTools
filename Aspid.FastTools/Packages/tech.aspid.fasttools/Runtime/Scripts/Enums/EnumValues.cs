@@ -47,7 +47,7 @@ namespace Aspid.FastTools.Enums
     /// </para>
     /// <para>
     /// Internal hot paths are wrapped in profiler markers; define the
-    /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
+    /// <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
     /// </para>
     /// </remarks>
     /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
@@ -102,7 +102,7 @@ namespace Aspid.FastTools.Enums
         {
             if (_isInitialized) return;
 
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -172,7 +172,7 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public TValue? GetValue(Enum enumValue)
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -200,7 +200,7 @@ namespace Aspid.FastTools.Enums
         public TValue? GetValue<TEnum>(TEnum enumValue)
             where TEnum : struct, Enum
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -228,7 +228,7 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public bool TryGetValue(Enum enumValue, out TValue? value)
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -260,7 +260,7 @@ namespace Aspid.FastTools.Enums
         public bool TryGetValue<TEnum>(TEnum enumValue, out TValue? value)
             where TEnum : struct, Enum
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -292,7 +292,7 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public bool Equals(Enum enumValue1, Enum enumValue2)
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -358,7 +358,7 @@ namespace Aspid.FastTools.Enums
     /// </para>
     /// <para>
     /// Internal hot paths are wrapped in profiler markers; define the
-    /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
+    /// <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
     /// </para>
     /// </remarks>
     /// <typeparam name="TEnum">The enum type the entries are keyed by.</typeparam>
@@ -417,7 +417,7 @@ namespace Aspid.FastTools.Enums
         {
             if (_isInitialized) return;
 
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -444,7 +444,7 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public TValue? GetValue(TEnum enumValue)
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
@@ -465,7 +465,7 @@ namespace Aspid.FastTools.Enums
         /// <returns><see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.</returns>
         public bool TryGetValue(TEnum enumValue, out TValue? value)
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {

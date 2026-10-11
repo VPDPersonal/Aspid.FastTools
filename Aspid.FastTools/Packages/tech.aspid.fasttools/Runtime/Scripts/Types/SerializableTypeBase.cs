@@ -81,7 +81,7 @@ namespace Aspid.FastTools.Types
                 if (type is null)
                 {
                     // Only the lookup is measured: a marker on the cached hot path would flood the Profiler.
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
                     using (this.Marker())
 #endif
                     {

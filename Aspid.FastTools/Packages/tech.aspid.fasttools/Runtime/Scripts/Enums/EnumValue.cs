@@ -24,7 +24,7 @@ namespace Aspid.FastTools.Enums
 
         public void Initialize(Type type)
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
