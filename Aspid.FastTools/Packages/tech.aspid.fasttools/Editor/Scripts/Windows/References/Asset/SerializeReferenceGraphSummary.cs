@@ -6,12 +6,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceGraphSummary
     {
-        // A binary file or an unfetched LFS pointer is never read, which is not the same as holding no references.
-        public static string BuildUnreadAssetMessage(AssetFileFormat format) =>
-            format == AssetFileFormat.LfsPointer
-                ? "This asset is a Git LFS pointer, so its managed references were not read. Fetch the LFS objects to map them."
-                : "This asset is not stored as text YAML, or another program has it locked, so its managed references " +
-                  "were not read. For a binary asset, set Asset Serialization → Mode to Force Text and save it again.";
+        // A binary file, an unfetched LFS pointer and a file that cannot be opened are never read, which is not the same
+        // as holding no references. Each has its own cause and way out: Force Text helps only a binary file.
+        public static string BuildUnreadAssetMessage(AssetFileFormat format) => format switch
+        {
+            AssetFileFormat.LfsPointer =>
+                "This asset is a Git LFS pointer, so its managed references were not read. Fetch the LFS objects to map them.",
+            AssetFileFormat.Unreadable =>
+                "This asset could not be opened, so its managed references were not read. Another program may have it " +
+                "locked, or you may lack permission to read it. Close that program and select the asset again.",
+            _ =>
+                "This asset is not stored as text YAML, so its managed references were not read. Set Asset " +
+                "Serialization → Mode to Force Text and save it again.",
+        };
 
         public static string BuildOverviewTitle(int broken, int orphans, int migrations, int required)
         {

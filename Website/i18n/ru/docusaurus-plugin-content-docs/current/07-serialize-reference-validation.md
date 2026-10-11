@@ -43,7 +43,7 @@
 - сохранённые `.prefab`, `.asset`, `.unity`, `.controller` (Animator Controller) и `.playable` (Timeline) под `Assets/`, кроме **Excluded scan folders**;
 - <code lang="csharp">[SerializeReference]</code> и имена в полях <code lang="class-name">SerializableType</code> и <code lang="class-name">SerializableMonoScript</code>; строки с <code lang="csharp">[TypeSelector]</code> не проверяются;
 - ожидающие [миграции с MovedFrom](06-serialize-reference-tooling.md#миграции-с-movedfrom) потерянными не считаются;
-- двоичные ассеты и нескачанные файлы Git LFS не проверяются: Scan Project и проверка сборки предупреждают о них в Console, CI перечисляет их в отчёте; для полного сканирования включите **Asset Serialization → Mode → Force Text** и скачайте файлы LFS; чтобы CI считал их нарушениями, передайте `-srGateStrict`.
+- двоичные ассеты, нескачанные файлы Git LFS и файлы, которые не удалось открыть (заблокированы другой программой, нет прав на чтение), не проверяются: Scan Project и проверка сборки предупреждают о них в Console, CI перечисляет их в отчёте; для полного сканирования включите **Asset Serialization → Mode → Force Text**, скачайте файлы LFS и закройте программу, которая держит заблокированный файл; чтобы CI считал их нарушениями, передайте `-srGateStrict`.
 - файл, последний раз сохранённый до Unity 2021.2, хранит managed-ссылки в старом формате: сборка и CI предупреждают о нём вместо проверки, пока его не пересохранят, например через <code lang="csharp">AssetDatabase.ForceReserializeAssets()</code>.
 
 **Excluded scan folders** исключает папки из Project References, проверки сборки, CI и обнаружения новых поломок.
@@ -72,7 +72,7 @@ Unity -batchmode -projectPath . \
 | `-srGateRequired` | Дополнительно проверить незаполненные поля с <code lang="csharp">Required = true</code> |
 | `-srGateFail` | Использовать `Fail` вместо режима проекта, даже `Off` |
 | `-srGateWarnOnly` | Использовать `Warn` вместо режима проекта, даже `Off`; важнее `-srGateFail`, если переданы оба |
-| `-srGateStrict` | Считать нарушениями файлы, которые не удалось проверить (нескачанные файлы Git LFS, двоичные ассеты, способные хранить ссылки, файлы, сохранённые до Unity 2021.2); в режиме `Warn` код выхода остаётся `0` |
+| `-srGateStrict` | Считать нарушениями файлы, которые не удалось проверить (нескачанные файлы Git LFS, двоичные ассеты, способные хранить ссылки, файлы, которые не удалось открыть, файлы, сохранённые до Unity 2021.2); в режиме `Warn` код выхода остаётся `0` |
 
 ## Отчёт
 
@@ -88,13 +88,14 @@ Unity -batchmode -projectPath . \
 ```text
 # SerializeReference Gate Report
 # Violations: 2
-# Not scanned: 3
+# Not scanned: 4
 #   Binary	Assets/Legacy/OldLoadout.prefab
 #   LfsPointer	Assets/Levels/Arena.unity
+#   Unreadable	Assets/Levels/Boss.prefab
 #   UnsupportedReferencesVersion	Assets/Legacy/OldWave.asset
 ```
 
-У каждого пропущенного файла указана причина: двоичный файл, нескачанный файл Git LFS или managed-ссылки в формате старше Unity 2021.2.
+У каждого пропущенного файла указана причина: двоичный файл, нескачанный файл Git LFS, файл, который не удалось открыть (`Unreadable`: заблокирован другой программой или нет прав на чтение), или managed-ссылки в формате старше Unity 2021.2.
 
 Дальше — по строке на нарушение, поля разделены табуляцией:
 
