@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -82,14 +83,26 @@ namespace Aspid.FastTools.Editors
         internal static Object ResolvePendingTarget(Object current, Object requested) =>
             CanInspect(requested) ? requested : current;
 
-        // Asset References maps a prefab, ScriptableObject or scene under Assets, or the source prefab of a prefab
-        // instance. A folder, a texture or a script has no managed references to show.
+        // Asset References maps a prefab, ScriptableObject or scene, also one in an embedded package, or the source
+        // prefab of a prefab instance. A folder, a texture or a script has no managed references to show.
         internal static bool CanInspect(Object target)
         {
             if (!target) return false;
 
-            return SerializeReferenceYaml.IsCandidateAssetPath(AssetDatabase.GetAssetPath(target))
+            return HasScanExtension(AssetDatabase.GetAssetPath(target))
                    || SerializeReferenceHelpers.TryGetSourcePrefabPath(target, out _);
+        }
+
+        private static bool HasScanExtension(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+
+            foreach (var extension in SerializeReferenceYaml.ScanExtensions)
+            {
+                if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+
+            return false;
         }
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Project References", priority = 21)]
