@@ -64,9 +64,9 @@ public sealed class Armory : MonoBehaviour
   so check `BaseType.IsAssignableFrom(type)` before casting when that matters.
 - A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Medium or
   High (Minimal and Low keep the type), mark types picked only in the Inspector `[Preserve]` (`UnityEngine.Scripting`)
-  or list them in `link.xml`, else `.Type` is `null` and `IsMissing` is `true` in the build. `[RequireImplementors]` on
-  an interface, or `[RequireDerived]` on a base class, keeps all its implementations when the field is a
-  `SerializableType<T>` of it. Same for `[TypeSelector]` strings.
+  or list them in `link.xml`, else `.Type` is `null` and `IsMissing` is `true` in the build; `[Preserve]` and `link.xml`
+  apply to `[TypeSelector]` strings too. `[RequireImplementors]` on an interface, or `[RequireDerived]` on a base class,
+  keeps all its implementations when the field is a `SerializableType<T>` of it.
 - Test an unset field with `field is null || field.IsEmpty`, not `field == null` alone: Unity fills a field with an
   empty wrapper when it loads an asset, a scene or a prefab, but on an object created in code (`AddComponent`,
   `ScriptableObject.CreateInstance`) the field is `null` until Unity serializes the object. `IsEmpty` means no type
