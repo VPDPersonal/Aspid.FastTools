@@ -48,23 +48,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Applied to the header while a compatible MonoScript is dragged over the field.
         private const string DropTargetClass = BlockClass + "--drop-target";
 
-        // Unity's mixed-value class — gives the dropdown the standard "—" treatment under a mixed multi-object selection.
-        private const string MixedValueClass = "unity-base-field--show-mixed-value";
-
         private const string MixedCaption = "—";
 
-        // Unity's BaseField input class — applied to the dropdown's inner input so it picks up the
-        // same flex/indent the EnumField theme rules target on a real field's visualInput.
-        private const string BaseFieldInputClass = "unity-base-field__input";
-
         // Unity's own [Header] decorator class, reused verbatim by the re-emitted header (see WithDecorators) so a
-        // header above a nested reference is indistinguishable from one Unity drew.
+        // header above a nested reference is indistinguishable from one Unity drew. Unity has no public constant for it.
         private const string HeaderClass = "unity-header-drawer__label";
 
-        // No prefab-override treatment anywhere in this field. Unity records an override inside a managed reference
-        // under "managedReferences[rid].<field>", which no property path in the subtree matches, so prefabOverride
-        // reports false for every property under a [SerializeReference] — verified on 6000.4. Unity's own binding
-        // reads that same flag, so showing the bar would mean matching the modification list by rid ourselves.
+        // Bolds the label of a field overridden on a prefab instance, as Unity's binding does for a bound field; this
+        // header is not bound. The flag is read from the header's own pointer (checked on 6000.4 for a field, a nested
+        // reference and a list element). The blue bar belongs to the inspector element and is out of reach.
+        private const string PrefabOverrideClass = BlockClass + "--prefab-override";
 
         private const float DropdownGap = 2f;
 
@@ -155,9 +148,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Mirror SerializableType's TypeField: an enum-field "root" wrapping a separate "__input" child —
             // Unity's theme indents the caption through descendant selectors that only match when the input
-            // is a child of the field.
+            // is a child of the field. The input also carries BaseField's input class, which those rules target
+            // on a real field's visualInput.
             var dropdownInput = new VisualElement()
-                .AddClass(BaseFieldInputClass)
+                .AddClass(BaseField<object>.inputUssClassName)
                 .AddClass(EnumField.inputUssClassName)
                 .AddChild(_caption)
                 .AddChild(new VisualElement()
@@ -220,6 +214,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // fires; each field re-evaluates itself on undo/redo or a re-/un-aliased sibling would stay stale.
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 Undo.undoRedoPerformed += OnUndoRedo;
+                // Apply from the Overrides dropdown or another window drops the override but keeps the value, so
+                // TrackPropertyValue stays silent and the bold label would stay.
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -228,6 +226,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
                 _liveFields.Remove(this);
             });
         }
@@ -288,9 +287,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
+            // Unity puts its mixed-value class on the caption of a real EnumField, which tints the "—". The theme rule
+            // matches only a caption that is a direct child of the input, which carries BaseField's input class.
+            _caption.EnableClass(className: BaseField<object>.mixedValueLabelUssClassName, enable: mixedTypes);
             _dropdown.EnableInClassList(DropdownMissingClass, !missingType.IsEmpty);
-            _dropdown.EnableInClassList(MixedValueClass, mixedTypes);
             EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
+            EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
             _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);
 
             UpdateMissingBox();
@@ -338,15 +340,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_childrenBuilt) return;
             _childrenBuilt = true;
 
-            var iterator = _property.Copy();
-            var end = _property.GetEndProperty();
-            var enterChildren = true;
-
-            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
-            {
-                enterChildren = false;
+            foreach (var iterator in _property.VisibleChildren())
                 _content.Add(CreateChildField(iterator.Copy(), _depth));
-            }
         }
 
         // Unity ships no type picker for a managed reference, so a nested one drawn as a plain PropertyField is a
@@ -855,6 +850,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void BuildContextMenu(ContextualMenuPopulateEvent evt)
         {
+            if (SerializeReferencePrefabOverride.IsOverridden(_property))
+            {
+                evt.menu.AppendAction("Revert", _ =>
+                {
+                    SerializeReferencePrefabOverride.Revert(_property);
+                    ApplyReferenceChange();
+                });
+
+                if (SerializeReferencePrefabOverride.TryGetApplyTarget(_property, out var applyPath))
+                {
+                    evt.menu.AppendAction(SerializeReferencePrefabOverride.GetApplyLabel(applyPath), _ =>
+                    {
+                        SerializeReferencePrefabOverride.Apply(_property, applyPath);
+                        ApplyReferenceChange();
+                    });
+                }
+
+                evt.menu.AppendSeparator();
+            }
+
             // Copy reads the first target's value (Unity's own convention for a multi-selection menu). Paste then
             // applies an independent instance PER target, so the pasted reference is never aliased across objects.
             evt.menu.AppendAction("Copy Serialize Reference",
@@ -1015,6 +1030,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!IsPropertyAlive()) return;
             _property.serializedObject.Update();
             Refresh(forceRebuild: false);
+        }
+
+        // An Apply only removes overrides, so a field that shows none has nothing to update.
+        internal void OnPrefabInstanceUpdated(GameObject instance)
+        {
+            if (!ClassListContains(PrefabOverrideClass) || !IsPropertyAlive()) return;
+            _property.serializedObject.Update();
+            EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
         }
 
         private void PasteFromClipboard()
