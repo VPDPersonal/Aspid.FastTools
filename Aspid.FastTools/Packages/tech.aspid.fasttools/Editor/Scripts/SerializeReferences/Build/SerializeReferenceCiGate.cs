@@ -60,7 +60,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var serializationMode = EditorSettings.serializationMode;
                 var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, serializationMode);
-                if (notice is not null) Debug.LogWarning(notice);
+                if (notice is not null) Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, context: null, "{0}", notice);
 
                 var uncheckedFiles = SerializeReferenceGateScanner.CountUnchecked(unscanned, serializationMode);
                 if (strict && uncheckedFiles > 0)

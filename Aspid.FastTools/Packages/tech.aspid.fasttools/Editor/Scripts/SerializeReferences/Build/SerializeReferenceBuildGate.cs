@@ -34,7 +34,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var violations = scan(unscanned);
 
             var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, EditorSettings.serializationMode);
-            if (notice is not null) Debug.LogWarning(notice);
+            if (notice is not null) Debug.LogFormat(LogType.Warning, LogOption.NoStacktrace, context: null, "{0}", notice);
 
             if (violations.Count is 0) return;
 
