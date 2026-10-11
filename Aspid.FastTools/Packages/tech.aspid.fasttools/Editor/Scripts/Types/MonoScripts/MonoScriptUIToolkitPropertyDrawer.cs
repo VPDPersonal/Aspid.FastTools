@@ -26,14 +26,17 @@ namespace Aspid.FastTools.Types.Editors
             out InspectorTypeField field)
         {
             label = string.IsNullOrWhiteSpace(label) ? null : label;
-            var persistent = wrapperProperty.Persistent();
+
+            // Every read and write opens a copy of the object when it runs and disposes it afterwards: the drawer
+            // outlives the property Unity hands it, and holds no copy of its own.
+            var detached = new DetachedProperty(property: wrapperProperty);
 
             var typeField = new InspectorTypeField(label)
             {
                 Allow = allow,
                 Types = types,
                 Predicate = SerializableMonoScriptUtility.HasScript,
-                ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(persistent),
+                ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(property: wrapperProperty),
             };
 
             field = typeField;
@@ -47,9 +50,9 @@ namespace Aspid.FastTools.Types.Editors
             InspectorNotice notice = null;
 
             TypeUIToolkitPropertyDrawer.IsolateNameChanges(root: container);
-            Refresh(persistent);
+            RefreshFromObject();
 
-            typeField.TrackPropertyValue(persistent, Refresh);
+            typeField.TrackPropertyValue(property: wrapperProperty, callback: _ => RefreshFromObject());
             container.TrackSerializedObjectValue(wrapperProperty.serializedObject,
                 _ => container.schedule.Execute(RefreshFromObject));
             typeField.RegisterValueChangedCallback(evt => Assign(type: evt.newValue));
@@ -60,12 +63,22 @@ namespace Aspid.FastTools.Types.Editors
             // Every write goes through here, so a pick and a drop both report the change to a PropertyField above.
             void Assign(Type type)
             {
-                persistent.serializedObject.Update();
-                persistent.serializedObject.SetIsDifferentCacheDirty();
-                var previousName = SerializableTypeUtility.GetBackingProperty(wrapperProperty: persistent).stringValue;
-                var wasMixed = SerializableMonoScriptUtility.HasMultipleDifferentValues(wrapperProperty: persistent);
+                var assigned = false;
+                var wasMixed = false;
+                string previousName = null;
 
-                SerializableMonoScriptUtility.Assign(wrapperProperty: persistent, type: type);
+                detached.Use(persistent =>
+                {
+                    persistent.serializedObject.SetIsDifferentCacheDirty();
+                    previousName = SerializableTypeUtility.GetBackingProperty(wrapperProperty: persistent).stringValue;
+                    wasMixed = SerializableMonoScriptUtility.HasMultipleDifferentValues(wrapperProperty: persistent);
+
+                    SerializableMonoScriptUtility.Assign(wrapperProperty: persistent, type: type);
+                    assigned = true;
+                });
+
+                // A skipped write, for a target destroyed or a path gone, changed nothing to report.
+                if (!assigned) return;
 
                 var newName = type?.AssemblyQualifiedName ?? string.Empty;
                 if (wasMixed || previousName != newName)
@@ -73,14 +86,8 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             // As in the SerializableType drawer: a fresh SerializedObject sees values the tracked one has not re-read.
-            void RefreshFromObject()
-            {
-                var current = persistent.Persistent();
-                if (current is null) return;
-
-                using var owner = current.serializedObject;
-                Refresh(current);
-            }
+            // No copy means the property is gone.
+            void RefreshFromObject() => detached.Use(Refresh);
 
             void Refresh(SerializedProperty current)
             {
@@ -111,7 +118,7 @@ namespace Aspid.FastTools.Types.Editors
                             types: typeField.Types, allow: typeField.Allow,
                             excludeEditorOnly: typeField.ExcludeEditorOnlyTypes,
                             predicate: SerializableMonoScriptUtility.HasScript),
-                        onSuggestionApplied: () => Refresh(persistent));
+                        onSuggestionApplied: RefreshFromObject);
                     return;
                 }
 

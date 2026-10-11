@@ -117,6 +117,40 @@ namespace Aspid.FastTools.Editors.Tests
             Assert.AreSame(_book.Effect, Effect.FindPropertyRelative(nameof(ReflectionBurnEffect.Damage)).GetDeclaringInstance());
         }
 
+        // A callback that outlives its inspector resolves the owner from the targets and the path, with no copy open.
+        [Test]
+        public void DetachedProperty_GetDeclaringInstance_MatchesThePropertyAfterItsSerializedObjectIsDisposed()
+        {
+            DetachedProperty ability;
+            DetachedProperty abilityName;
+            DetachedProperty effectDamage;
+            DetachedProperty abilities;
+
+            using (var source = new SerializedObject(_book))
+            {
+                abilities = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Abilities)));
+                ability = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Abilities)).GetArrayElementAtIndex(1));
+                abilityName = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Abilities)).GetArrayElementAtIndex(1)
+                    .FindPropertyRelative(nameof(ReflectionAbility.Name)));
+                effectDamage = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Effect))
+                    .FindPropertyRelative(nameof(ReflectionBurnEffect.Damage)));
+            }
+
+            Assert.AreSame(_book, abilities.GetDeclaringInstance());
+            Assert.AreSame(_book, ability.GetDeclaringInstance());
+            Assert.AreSame(_book.Abilities[1], abilityName.GetDeclaringInstance());
+            Assert.AreSame(_book.Effect, effectDamage.GetDeclaringInstance());
+        }
+
+        [Test]
+        public void DetachedProperty_GetDeclaringInstance_ReturnsNullForIndexOutsideTheList()
+        {
+            var name = new DetachedProperty(property: Abilities.GetArrayElementAtIndex(1).FindPropertyRelative(nameof(ReflectionAbility.Name)));
+            _book.Abilities.RemoveAt(1);
+
+            Assert.IsNull(name.GetDeclaringInstance());
+        }
+
         [Test]
         public void GetFieldInfo_FollowsTheRuntimeTypeOfAManagedReference()
         {
