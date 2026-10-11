@@ -16,7 +16,7 @@ asset, so renaming or moving the class does not break the field.
 
 ```csharp
 [Serializable]
-public class SerializableMonoScript : SerializableTypeBase, ISerializableType, ISerializationCallbackReceiver
+public class SerializableMonoScript : SerializableTypeBase, ISerializableType, IEquatable<SerializableTypeBase>, ISerializationCallbackReceiver
 ```
 
 #### Inheritance
@@ -32,6 +32,7 @@ public class SerializableMonoScript : SerializableTypeBase, ISerializableType, I
 #### Implements
 
 [ISerializableType](Aspid.FastTools.Types.ISerializableType.md),
+[IEquatable\<SerializableTypeBase\>](https://learn.microsoft.com/dotnet/api/system.iequatable-1),
 ISerializationCallbackReceiver
 
 

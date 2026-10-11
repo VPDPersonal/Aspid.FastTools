@@ -7,7 +7,8 @@ description: "Aspid.FastTools chainable UI Toolkit extensions (namespace Aspid.F
 
 `using Aspid.FastTools.UIElements;` (editor helpers: also `using Aspid.FastTools.UIElements.Editors;`). If the user's
 scripts have an `.asmdef`, reference `Aspid.FastTools` (editor code: also `Aspid.FastTools.Editor`; `Unity.Mathematics`
-overloads: `Aspid.FastTools.VisualElements.Math`, enabled automatically when `com.unity.mathematics` is installed).
+overloads: `Aspid.FastTools.VisualElements.Math`, enabled automatically when `com.unity.mathematics` is installed
+or on Unity 6000.5+, where the types ship in the engine).
 
 Before using a method you have not seen in this file, confirm its exact name, parameters and receiver constraint in
 the installed package source. Do not guess. The package is `Packages/tech.aspid.fasttools` (embedded or local) or
@@ -47,7 +48,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf` |
+| method Unity defines or may define | `...Self` on the same receiver as the Unity method - `SetEnabledSelf`, `AddManipulatorSelf`, `RemoveManipulatorSelf` (`VisualElement`), `FocusSelf`, `BlurSelf` (`Focusable`), `SetTextSelf` (`TextElement`), `MarkDirtyLayoutSelf` (`IMGUIContainer` only), `SetRootItemsSelf` (`BaseTreeView`), `RegisterCallbackSelf`, `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf` (`CallbackEventHandler`) |
 
 | Unity API | FastTools |
 |---|---|
@@ -56,6 +57,7 @@ rootVisualElement.AddChild(new VisualElement()
 | `el.style.width = 100; el.style.height = 50;` | `el.SetSize(100, 50)` |
 | `el.style.color = ...;` | `el.SetColor("#FFC24D")` or a `StyleColor` |
 | `el.style.backgroundImage = Resources.Load<Texture2D>("UI/Card");` | `el.SetBackgroundImageFromResources("UI/Card")` |
+| `el.style.backgroundImage = new StyleBackground(sprite);` | `el.SetBackgroundImage(sprite)` (also a `VectorImage`) |
 | `el.AddToClassList("a"); el.EnableInClassList("b", on);` | `el.AddClass("a").EnableClass("b", on)` (also `ToggleClass`, `RemoveClass`) |
 | `el.AddToClassList("a"); el.AddToClassList("b");` | `el.AddClasses("a", "b")` (also `RemoveClasses`, `ToggleClasses`, `EnableClasses(on, "a", "b")`) |
 | `el.styleSheets.Add(sheet);` | `el.AddStyleSheet(sheet)`; several: `el.AddStyleSheets(baseSheet, themeSheet)` |
@@ -65,6 +67,7 @@ rootVisualElement.AddChild(new VisualElement()
 | `if (show) parent.Add(help);` | `parent.AddChildIf(show, help)` |
 | `field.SetValueWithoutNotify(v);` | `field.SetValue(v, notify: false)` |
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
+| `el.RegisterCallback<ClickEvent>(OnClick);` | `el.RegisterCallbackSelf<Button, ClickEvent>(OnClick)` (also `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf`) |
 | `enumField.Init(v);` | `enumField.Initialize(v)` |
 | `el.AddManipulator(new Clickable(cb));` | `el.AddClickable(cb)` (also `AddContextualMenuManipulator`) |
 
@@ -78,18 +81,40 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   `void` and end the chain; use the replacements above.
 - On a `Label`, `Button` or other `TextElement`, set the text with `SetTextSelf`. From Unity 6000.6, `SetText(string)`
   calls Unity's `TextElement.SetText`, which returns `void`. `Foldout`, `HelpBox` and `Toggle` keep `SetText`.
+- From Unity 6000.6, `SetTextSelf` also takes an `int`, a `long`, a `ulong`, a `float` (with a format), a `ReadOnlySpan<char>`,
+  a `StringBuilder` or a `char[]` slice and calls Unity's allocation-free `TextElement.SetText`. Use them for text that
+  changes every frame instead of `SetTextSelf(value.ToString())`. An element that is not attached to a panel yet gets the
+  string instead, without a warning, so attach it first to avoid the allocation.
 - `EnableClasses` and `EnableStyleSheets` take the flag first: `EnableClasses(on, "a", "b")`, but `EnableClass("a", on)`.
   Name both flags of `EnableClassIf(condition: x, "a", enable: y)`: swapped bools compile.
 - These do not exist: `ToggleInClass`, `EnableInClass`, `...FromResource` (singular),
-  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use Unity's `RegisterCallback`).
+  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use `RegisterCallbackSelf`).
 - Values are `Style*` types: sizes `StyleLength` (`12`, `Length.Percent(50)`, `StyleKeyword.Auto`),
-  `SetBackgroundImage` only `StyleBackground`, transitions `StyleList<T>` from a `List<T>` (not an array).
+  `SetBackgroundImage` a `Sprite`, a `VectorImage` or a `StyleBackground` (a `Texture2D` converts to it),
+  transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
   Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
+- Positional arguments of `SetPadding`, `SetMargin`, `SetBorderWidth`, `SetBorderColor` and `SetDistance` run top, right,
+  bottom, left: `SetPadding(8, 4)` sets the top and the right side, not vertical and horizontal. For pairs use
+  `SetPaddingY(8).SetPaddingX(4)`, or name the arguments. `SetBorderRadius` runs top-left, top-right, bottom-right,
+  bottom-left.
+- `SetValue(v)` raises the change event only when the element is in a panel and `v` differs from the current value;
+  `notify: true` does not force it.
+- A slider clamps its value to its range, `0..10` for a new `Slider` or `SliderInt`. Call `SetLowValue` and `SetHighValue`
+  before `SetValue`: `new Slider().SetValue(50f).SetHighValue(100f)` ends at 10.
+- `RemoveValueChanged` removes only an equal delegate: pass a method group or a delegate kept in a field. A lambda that
+  captures a local variable is a new delegate on every call: it cannot be removed, and a `bindItem` handler that
+  registers one adds one more callback on every bind.
+- `ListView`, `TreeView` and their multi-column variants have no content container. `AddChild` and `AddChildren` throw
+  `InvalidOperationException` for a non-null child; `InsertChild`, `RemoveChildAt` and `ClearChildren` do nothing.
+  Fill a `ListView` or `MultiColumnListView` with `SetItemsSource`, and a `TreeView` or `MultiColumnTreeView` with
+  `SetRootItemsSelf`.
 - `...If` variants evaluate their arguments even when the condition is false.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
   setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
+- `RegisterCallbackSelf` infers its type arguments only from a callback with a typed parameter, such as
+  `(ClickEvent evt) => ...`. For a method group or an untyped lambda name both: `RegisterCallbackSelf<Button, ClickEvent>(OnClick)`.
 - The package supports Unity 6000.0.53f1. Wrap these in `#if UNITY_6000_x_OR_NEWER` when the project must support older
   versions: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
   `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values
-  (6000.4).
+  (6000.4); the `SetTextSelf` overloads for numbers, spans, builders and arrays (6000.6).
