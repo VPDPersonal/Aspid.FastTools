@@ -7,9 +7,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceDropHandler
     {
-        // Resolves the first dragged script's class when it is assignable to the field and passes the
-        // [TypeSelector] narrowing.
-        public static bool TryResolveDroppedType(Type fieldType, Type[] baseTypes, out Type type)
+        // Resolves the first dragged script's class when it is assignable to the field, passes the [TypeSelector]
+        // narrowing and is a type the property's objects can hold.
+        public static bool TryResolveDroppedType(SerializedProperty property, Type fieldType, Type[] baseTypes, out Type type)
         {
             type = null;
 
@@ -22,6 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!SerializeReferenceHelpers.IsAssignableManagedReference(candidate)) continue;
                 if (fieldType != null && !fieldType.IsAssignableFrom(candidate)) continue;
                 if (!SerializeReferenceHelpers.BuildAssignableFilter(baseTypes)(candidate)) continue;
+                if (!SerializeReferenceWriter.CanHold(property, candidate)) continue;
 
                 type = candidate;
                 return true;
@@ -30,24 +31,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // Assigns a fresh instance per target, so a multi-selection drop never aliases one reference across objects.
-        public static void Assign(SerializedProperty property, Type type)
+        // The write goes through a separate SerializedObject; the inspector's property only gets the expansion.
+        public static bool Assign(SerializedProperty property, Type type)
         {
-            if (property is null || type is null) return;
+            if (property is null || type is null) return false;
 
-            var persistent = property.Persistent();
-            var previous = persistent.managedReferenceValue;
-
-            if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
-            {
-                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(persistent,
-                    target => SerializeReferenceHelpers.CreateInstancePreservingData(type, target));
-            }
-            else
-            {
-                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-                SerializeReferenceHelpers.InvalidateReferenceMemos();
-            }
+            return SerializeReferenceWriter.SetType(property.Persistent(), type, view: property);
         }
     }
 }

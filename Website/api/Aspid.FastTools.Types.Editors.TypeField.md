@@ -80,8 +80,6 @@ IMixedValueSupport
 [ManipulatorExtensions.AddKeyboardNavigationManipulator\<TypeField\>\(TypeField, Action\<KeyboardNavigationOperation, EventBase\>\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_AddKeyboardNavigationManipulator__1___0_System_Action_UnityEngine_UIElements_KeyboardNavigationOperation_UnityEngine_UIElements_EventBase__),
 [ManipulatorExtensions.AddKeyboardNavigationManipulator\<TypeField\>\(TypeField, Action\<KeyboardNavigationOperation, EventBase\>, out KeyboardNavigationManipulator\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_AddKeyboardNavigationManipulator__1___0_System_Action_UnityEngine_UIElements_KeyboardNavigationOperation_UnityEngine_UIElements_EventBase__UnityEngine_UIElements_KeyboardNavigationManipulator__),
 [ManipulatorExtensions.AddManipulatorSelf\<TypeField\>\(TypeField, IManipulator\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_AddManipulatorSelf__1___0_UnityEngine_UIElements_IManipulator_),
-[TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<TypeField, TValue\>\(TypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<TypeField, TValue\>\(TypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [VisualElementExtensions.AddOpenScriptCommand\<TypeField\>\(TypeField, Object\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_),
 [VisualElementExtensions.AddStyleSheet\<TypeField\>\(TypeField, StyleSheet?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_),
 [VisualElementExtensions.AddStyleSheetFromResources\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetFromResources__1___0_System_String_),
@@ -207,8 +205,6 @@ IMixedValueSupport
 [VisualElementExtensions.RemoveClassesIf\<TypeField\>\(TypeField, bool, ReadOnlySpan\<string\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__),
 [VisualElementExtensions.RemoveItalicUnityFontStyleAndWeight\<TypeField\>\(TypeField\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveItalicUnityFontStyleAndWeight__1___0_),
 [ManipulatorExtensions.RemoveManipulatorSelf\<TypeField\>\(TypeField, IManipulator\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_RemoveManipulatorSelf__1___0_UnityEngine_UIElements_IManipulator_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<TypeField, TValue\>\(TypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<TypeField, TValue\>\(TypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [VisualElementExtensions.RemoveStyleSheet\<TypeField\>\(TypeField, StyleSheet?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_),
 [VisualElementExtensions.RemoveStyleSheetFromResources\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetFromResources__1___0_System_String_),
 [VisualElementExtensions.RemoveStyleSheetFromResourcesIf\<TypeField\>\(TypeField, bool, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_),
@@ -237,7 +233,6 @@ IMixedValueSupport
 [VisualElementExtensions.SetAlignSelf\<TypeField\>\(TypeField, StyleEnum\<Align\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignSelf__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Align__),
 [VisualElementExtensions.SetAlignSelf\<TypeField\>\(TypeField, Align\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignSelf__1___0_UnityEngine_UIElements_Align_),
 [VisualElementExtensions.SetAspectRatio\<TypeField\>\(TypeField, StyleRatio\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetAspectRatio__1___0_UnityEngine_UIElements_StyleRatio_),
-[TextInputBaseFieldExtensions.SetAutoCorrection\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetAutoCorrection__2___0_System_Boolean_),
 [VisualElementExtensions.SetBackgroundColor\<TypeField\>\(TypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetBackgroundColor\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_System_String_),
 [VisualElementExtensions.SetBackgroundImage\<TypeField\>\(TypeField, StyleBackground\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_StyleBackground_),
@@ -288,11 +283,9 @@ IMixedValueSupport
 [VisualElementExtensions.SetColor\<TypeField\>\(TypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetColor\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetColor__1___0_System_String_),
 [VisualElementExtensions.SetCursor\<TypeField\>\(TypeField, StyleCursor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetCursor__1___0_UnityEngine_UIElements_StyleCursor_),
-[TextInputBaseFieldTextSelectionExtensions.SetCursorIndex\<TypeField, TValue\>\(TypeField, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetCursorIndex__2___0_System_Int32_),
 [VisualElementExtensions.SetDataSource\<TypeField\>\(TypeField, object\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSource__1___0_System_Object_),
 [VisualElementExtensions.SetDataSourcePath\<TypeField\>\(TypeField, PropertyPath\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSourcePath__1___0_Unity_Properties_PropertyPath_),
 [VisualElementExtensions.SetDataSourceType\<TypeField\>\(TypeField, Type\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSourceType__1___0_System_Type_),
-[TextInputBaseFieldExtensions.SetDelayed\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetDelayed__2___0_System_Boolean_),
 [FocusableExtensions.SetDelegatesFocus\<TypeField\>\(TypeField, bool\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_SetDelegatesFocus__1___0_System_Boolean_),
 [VisualElementExtensions.SetDisablePlayModeTint\<TypeField\>\(TypeField, bool\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDisablePlayModeTint__1___0_System_Boolean_),
 [VisualElementExtensions.SetDisplay\<TypeField\>\(TypeField, StyleEnum\<DisplayStyle\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDisplay__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_DisplayStyle__),
@@ -301,7 +294,6 @@ IMixedValueSupport
 [VisualElementExtensions.SetDistance\<TypeField\>\(TypeField, StyleLength?, StyleLength?, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistance__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
 [VisualElementExtensions.SetDistanceX\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistanceX__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetDistanceY\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistanceY__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldTextSelectionExtensions.SetDoubleClickSelectsWord\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetDoubleClickSelectsWord__2___0_System_Boolean_),
 [VisualElementExtensions.SetEnabledSelf\<TypeField\>\(TypeField, bool\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetEnabledSelf__1___0_System_Boolean_),
 [VisualElementExtensions.SetFilter\<TypeField\>\(TypeField, StyleList\<FilterFunction\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetFilter__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_FilterFunction__),
 [VisualElementExtensions.SetFlexBasis\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexBasis__1___0_UnityEngine_UIElements_StyleLength_),
@@ -314,18 +306,12 @@ IMixedValueSupport
 [FocusableExtensions.SetFocusable\<TypeField\>\(TypeField, bool\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_SetFocusable__1___0_System_Boolean_),
 [VisualElementExtensions.SetFontSize\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetFontSize__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetHeight\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetHeight__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetHideMobileInput\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideMobileInput__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHidePlaceholderOnFocus\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHidePlaceholderOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHideSoftKeyboard\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideSoftKeyboard__2___0_System_Boolean_),
-[SliderExtensions.SetHighValue\<TypeField, TValue\>\(TypeField, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_),
 [VisualElementExtensions.SetJustifyContent\<TypeField\>\(TypeField, StyleEnum\<Justify\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetJustifyContent__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Justify__),
 [VisualElementExtensions.SetJustifyContent\<TypeField\>\(TypeField, Justify\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetJustifyContent__1___0_UnityEngine_UIElements_Justify_),
-[TextInputBaseFieldExtensions.SetKeyboardType\<TypeField, TValue\>\(TypeField, TouchScreenKeyboardType\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetKeyboardType__2___0_UnityEngine_TouchScreenKeyboardType_),
 [BaseFieldExtensions.SetLabel\<TypeField, TValue\>\(TypeField, string\)](Aspid.FastTools.UIElements.BaseFieldExtensions.md#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_),
 [VisualElementExtensions.SetLanguageDirection\<TypeField\>\(TypeField, LanguageDirection\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetLanguageDirection__1___0_UnityEngine_UIElements_LanguageDirection_),
 [VisualElementExtensions.SetLeft\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetLeft__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetLetterSpacing\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetLetterSpacing__1___0_UnityEngine_UIElements_StyleLength_),
-[SliderExtensions.SetLowValue\<TypeField, TValue\>\(TypeField, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_),
 [VisualElementExtensions.SetMargin\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMargin__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMargin\<TypeField\>\(TypeField, StyleLength?, StyleLength?, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMargin__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
 [VisualElementExtensions.SetMarginBottom\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginBottom__1___0_UnityEngine_UIElements_StyleLength_),
@@ -334,9 +320,7 @@ IMixedValueSupport
 [VisualElementExtensions.SetMarginTop\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginTop__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMarginX\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginX__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMarginY\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginY__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetMaskChar\<TypeField, TValue\>\(TypeField, char\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaskChar__2___0_System_Char_),
 [VisualElementExtensions.SetMaxHeight\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxHeight__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetMaxLength\<TypeField, TValue\>\(TypeField, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaxLength__2___0_System_Int32_),
 [VisualElementExtensions.SetMaxSize\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxSize__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMaxSize\<TypeField\>\(TypeField, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxSize__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
 [VisualElementExtensions.SetMaxWidth\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxWidth__1___0_UnityEngine_UIElements_StyleLength_),
@@ -357,19 +341,12 @@ IMixedValueSupport
 [VisualElementExtensions.SetPaddingTop\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingTop__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetPaddingX\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingX__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetPaddingY\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingY__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetPassword\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPassword__2___0_System_Boolean_),
 [VisualElementExtensions.SetPickingMode\<TypeField\>\(TypeField, PickingMode\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPickingMode__1___0_UnityEngine_UIElements_PickingMode_),
-[TextInputBaseFieldExtensions.SetPlaceholder\<TypeField, TValue\>\(TypeField, string\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPlaceholder__2___0_System_String_),
 [VisualElementExtensions.SetPosition\<TypeField\>\(TypeField, StyleEnum\<Position\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPosition__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Position__),
 [VisualElementExtensions.SetPosition\<TypeField\>\(TypeField, Position\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPosition__1___0_UnityEngine_UIElements_Position_),
-[TextInputBaseFieldExtensions.SetReadOnly\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetReadOnly__2___0_System_Boolean_),
 [VisualElementExtensions.SetRight\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetRight__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetRotate\<TypeField\>\(TypeField, StyleRotate\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetRotate__1___0_UnityEngine_UIElements_StyleRotate_),
 [VisualElementExtensions.SetScale\<TypeField\>\(TypeField, StyleScale\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetScale__1___0_UnityEngine_UIElements_StyleScale_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnFocus\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnMouseUp\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnMouseUp__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectIndex\<TypeField, TValue\>\(TypeField, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectIndex__2___0_System_Int32_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectable\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectable__2___0_System_Boolean_),
 [IMixedValueSupportExtensions.SetShowMixedValue\<TypeField\>\(TypeField, bool\)](Aspid.FastTools.UIElements.IMixedValueSupportExtensions.md#Aspid_FastTools_UIElements_IMixedValueSupportExtensions_SetShowMixedValue__1___0_System_Boolean_),
 [VisualElementExtensions.SetSize\<TypeField\>\(TypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetSize__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetSize\<TypeField\>\(TypeField, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetSize__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
@@ -385,7 +362,6 @@ IMixedValueSupport
 [VisualElementExtensions.SetTransitionProperty\<TypeField\>\(TypeField, StyleList\<StylePropertyName\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionProperty__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_StylePropertyName__),
 [VisualElementExtensions.SetTransitionTimingFunction\<TypeField\>\(TypeField, StyleList\<EasingFunction\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionTimingFunction__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_EasingFunction__),
 [VisualElementExtensions.SetTranslate\<TypeField\>\(TypeField, StyleTranslate\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetTranslate__1___0_UnityEngine_UIElements_StyleTranslate_),
-[TextInputBaseFieldTextSelectionExtensions.SetTripleClickSelectsLine\<TypeField, TValue\>\(TypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetTripleClickSelectsLine__2___0_System_Boolean_),
 [VisualElementExtensions.SetUnityBackgroundImageTintColor\<TypeField\>\(TypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityBackgroundImageTintColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetUnityBackgroundImageTintColor\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityBackgroundImageTintColor__1___0_System_String_),
 [VisualElementExtensions.SetUnityEditorTextRenderingMode\<TypeField\>\(TypeField, StyleEnum\<EditorTextRenderingMode\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityEditorTextRenderingMode__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_EditorTextRenderingMode__),
@@ -444,6 +420,11 @@ IMixedValueSupport
 [CallbackEventHandlerExtensions.UnregisterCallbackSelf\<TypeField, TEventType\>\(TypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
 [CallbackEventHandlerExtensions.UnregisterCallbackSelf\<TypeField, TEventType, TUserArgsType\>\(TypeField, EventCallback\<TEventType, TUserArgsType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__3___0_UnityEngine_UIElements_EventCallback___1___2__UnityEngine_UIElements_TrickleDown_)
 
+## Remarks
+
+<p>UXML creates an unbound field: it ignores <code>binding-path</code>, and [`TypeField.Types`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Types) and [`TypeField.Predicate`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Predicate) have no UXML attributes. Create a bound or constrained field in C#.</p>
+<p>Not designed for inheritance outside the package.</p>
+
 ## Constructors
 
 ### TypeField\(\) {#Aspid_FastTools_Types_Editors_TypeField__ctor}
@@ -468,6 +449,16 @@ public TypeField(SerializedProperty property)
 
 A string property holding the assembly-qualified type name.
 
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
 ### TypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_UnityEditor_SerializedProperty_}
 
 Creates a bound field: the picked type's name is written to the property, and external edits are
@@ -487,12 +478,43 @@ The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-ref
 
 A string property holding the assembly-qualified type name.
 
+#### Remarks
+
+Before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent, a pick writes the property and calls
+[`Update`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.Update.html) on the [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code>:
+a change handler reads the picked name from <code class="paramref">property</code>, and edits it applies through that
+object keep the pick. Changes not yet applied to that object are lost.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
+### TypeField\(string\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_}
+
+Creates an unbound field without an initial type; the picked type is reported only through the change event.
+
+```csharp
+public TypeField(string label)
+```
+
+#### Parameters
+
+`label` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
+
 ### TypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_System_Type_}
 
 Creates an unbound field; the picked type is reported only through the change event.
 
 ```csharp
-public TypeField(string label, Type defaultValue = null)
+public TypeField(string label, Type defaultValue)
 ```
 
 #### Parameters
@@ -524,6 +546,37 @@ public TypeAllow Allow { get; set; }
 
 [`TypeAllow.None`](Aspid.FastTools.Types.TypeAllow.md) by default, so only concrete types are offered, unlike
 [`TypeSelectorAttribute.Allow`](Aspid.FastTools.Types.TypeSelectorAttribute.md#Aspid_FastTools_Types_TypeSelectorAttribute_Allow), which defaults to [`TypeAllow.All`](Aspid.FastTools.Types.TypeAllow.md).
+
+### AssemblyQualifiedName {#Aspid_FastTools_Types_Editors_TypeField_AssemblyQualifiedName}
+
+Gets the assembly-qualified name of the selected type, or the stored name of a missing type; an empty
+string when no type is selected.
+
+```csharp
+public string AssemblyQualifiedName { get; }
+```
+
+#### Property Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+### ExcludeEditorOnlyTypes {#Aspid_FastTools_Types_Editors_TypeField_ExcludeEditorOnlyTypes}
+
+Gets or sets a value indicating whether types from editor-only assemblies are left out, for a value that a
+player build must resolve.
+
+```csharp
+[UxmlAttribute]
+public bool ExcludeEditorOnlyTypes { get; set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+#### Remarks
+
+A bound field turns it on when its property belongs to an object of a runtime assembly.
 
 ### HideNoneOption {#Aspid_FastTools_Types_Editors_TypeField_HideNoneOption}
 
@@ -581,6 +634,11 @@ public Type[] Types { get; set; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
+
+#### Remarks
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are dropped. For a closed generic type such as <code>IHandler&lt;int&gt;</code>,
+the dropdown also offers the generic classes that close to it, such as <code>Handler&lt;int&gt;</code>.
 
 ### value {#Aspid_FastTools_Types_Editors_TypeField_value}
 
