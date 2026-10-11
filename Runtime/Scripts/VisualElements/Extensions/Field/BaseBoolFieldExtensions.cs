@@ -23,7 +23,7 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseField{TValueType}.label"/>.
+        /// Sets <c>label</c> of <see cref="BaseField{TValueType}"/>.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
