@@ -1,6 +1,6 @@
 ---
 name: aspid-serializable-type
-description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, the TypeField element and TypeSelectorWindow for editor code, analyzers AFT0001-AFT0009 and AFT0012. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, adding a type dropdown to a custom inspector or editor window, or fixing these analyzer warnings."
+description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, the TypeField element and TypeSelectorWindow for editor code, analyzers AFT0001-AFT0009 and AFT0012, the CI gate for missing types. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, adding a type dropdown to a custom inspector or editor window, failing a CI job on missing types, or fixing these analyzer warnings."
 ---
 
 # Serializable types and [TypeSelector]
@@ -17,6 +17,7 @@ Namespace `Aspid.FastTools.Types`. If the user's scripts have an `.asmdef`, it m
 | Switch a MonoBehaviour/ScriptableObject to a sibling subclass | `ComponentTypeSelector`, see [references/more.md](references/more.md) |
 | Type dropdown in a custom inspector or editor window | `TypeField`, see [references/more.md](references/more.md) |
 | Open the picker from custom editor code | `TypeSelectorWindow.Show`, see [references/more.md](references/more.md) |
+| Fail a CI job on missing types or unset `Required` fields | `SerializeReferenceCiGate.RunCheck`, see [references/more.md](references/more.md) |
 
 ```csharp
 using System;
@@ -100,7 +101,8 @@ public sealed class Armory : MonoBehaviour
   it is not a runtime null check.
 - `[Conditional("UNITY_EDITOR")]`: never read it at runtime.
 - In a runtime object's Inspector the picker omits types from editor-only assemblies (`UnityEditor`, Editor asmdefs and
-  folders): a player cannot resolve them. Editor windows and editor-only settings objects still offer every type.
+  folders), and Paste, templates, a dropped script, Link to Existing and Smart Fix refuse them: a player cannot resolve
+  them. Editor windows and editor-only settings objects still offer every type.
 - `[SerializeReference]`: the field type is the first constraint, only instantiable classes are offered, nested
   managed references get the selector automatically; `UnityEngine.Object` field types are invalid (`AFT0004`).
 - Renaming or moving a `[SerializeReference]` implementation turns its stored data into a missing type. Add

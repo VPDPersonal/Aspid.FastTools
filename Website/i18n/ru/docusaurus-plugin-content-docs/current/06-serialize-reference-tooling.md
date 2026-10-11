@@ -39,6 +39,7 @@ Project References также восстанавливает имена, кот�
 |---|---|
 | Выбрано несколько объектов | Выберите один: до этого **Missing type** не показывается |
 | В сцене или Prefab Mode есть несохранённые изменения | Сохраните: до этого поле показывает `<None>` без **Missing type** |
+| После несохранённых правок списка не понять, какой элемент стоит в слоте: например, удалён один из двух соседних потерянных элементов | Сохраните: до этого слот показывает `<None>` без **Missing type** |
 | Экземпляр префаба, класс хранится в исходном префабе | Исправьте исходный префаб, его имя в подсказке |
 | Экземпляр префаба, класс задан override | Выберите новый класс на экземпляре или отмените override |
 
@@ -55,7 +56,7 @@ Project References также восстанавливает имена, кот�
 
 ## Project References: восстановить группу
 
-Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки).
+Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки). Каждый проход показывает индикатор прогресса; **Cancel** останавливает проверку и оставляет прежние результаты. Группа показывает первые 200 записей, а **Show more** добавляет следующие 200.
 
 ![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
 
