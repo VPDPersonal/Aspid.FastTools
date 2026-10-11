@@ -440,7 +440,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 menu.AddItem(new GUIContent("Revert"), false, () =>
                 {
-                    SerializeReferencePrefabOverride.Revert(persistent);
+                    detached.Use(SerializeReferencePrefabOverride.Revert);
                     SerializeReferenceHelpers.InvalidateReferenceMemos();
                 });
 
@@ -448,7 +448,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     menu.AddItem(new GUIContent(SerializeReferencePrefabOverride.GetApplyLabel(applyPath)), false, () =>
                     {
-                        SerializeReferencePrefabOverride.Apply(persistent, applyPath);
+                        detached.Use(persistent => SerializeReferencePrefabOverride.Apply(persistent, applyPath));
                         SerializeReferenceHelpers.InvalidateReferenceMemos();
                     });
                 }
