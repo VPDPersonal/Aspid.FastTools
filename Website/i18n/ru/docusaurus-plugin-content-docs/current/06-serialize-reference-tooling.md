@@ -56,7 +56,7 @@ Project References также восстанавливает имена, кот�
 
 ## Project References: восстановить группу
 
-Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки).
+Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки). Каждый проход показывает индикатор прогресса; **Cancel** останавливает проверку и оставляет прежние результаты. Группа показывает первые 200 записей, а **Show more** добавляет следующие 200.
 
 ![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -101,7 +101,7 @@ Project References также восстанавливает имена, кот�
 
 ## Asset References: разобрать один ассет
 
-Откройте **Tools → Aspid 🐍 → FastTools → Asset References** и укажите сохранённый префаб, ScriptableObject или сцену в поле рядом с **Rescan**. Щелчок по строке записи в Project References открывает её ассет здесь же.
+Откройте **Tools → Aspid 🐍 → FastTools → Asset References** и укажите сохранённый префаб, ScriptableObject или сцену в поле рядом с **Rescan**. Либо выберите ассет в окне Project и вызовите **Assets → Aspid 🐍 → FastTools → Asset References** в главном или контекстном меню: вкладка откроется на этом ассете. Щелчок по строке записи в Project References открывает её ассет здесь же.
 
 ![Asset References: потерянный GhostCrossbow, общий Pistol с меткой SHARED и запись Railgun в Orphaned](../../../../docs/Images/aspid_fasttools_serialize_reference_asset_references.png)
 
