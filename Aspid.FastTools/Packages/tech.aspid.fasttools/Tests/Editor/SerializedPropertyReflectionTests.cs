@@ -35,6 +35,12 @@ namespace Aspid.FastTools.Editors.Tests
         public float Damage;
     }
 
+    [Serializable]
+    internal sealed class ReflectionFreezeEffect : IReflectionEffect
+    {
+        public float Damage;
+    }
+
     // The field type and owner table of the SerializedProperty Extensions page, row by row.
     internal sealed class SerializedPropertyReflectionTests
     {
@@ -109,6 +115,32 @@ namespace Aspid.FastTools.Editors.Tests
             Assert.AreSame(_book, Effect.GetDeclaringInstance());
             Assert.AreSame(_book.Abilities[0], ability.FindPropertyRelative(nameof(ReflectionAbility.Name)).GetDeclaringInstance());
             Assert.AreSame(_book.Effect, Effect.FindPropertyRelative(nameof(ReflectionBurnEffect.Damage)).GetDeclaringInstance());
+        }
+
+        [Test]
+        public void GetFieldInfo_FollowsTheRuntimeTypeOfAManagedReference()
+        {
+            var burnDamage = Effect.FindPropertyRelative(nameof(ReflectionBurnEffect.Damage)).GetFieldInfo();
+
+            _book.Effect = new ReflectionFreezeEffect { Damage = 3 };
+            _serializedObject.Update();
+            var freezeDamage = Effect.FindPropertyRelative(nameof(ReflectionFreezeEffect.Damage)).GetFieldInfo();
+
+            Assert.AreEqual(typeof(ReflectionBurnEffect).GetField(nameof(ReflectionBurnEffect.Damage)), burnDamage);
+            Assert.AreEqual(typeof(ReflectionFreezeEffect).GetField(nameof(ReflectionFreezeEffect.Damage)), freezeDamage);
+        }
+
+        [Test]
+        public void GetDeclaringInstance_ResolvesMultiDigitIndexes()
+        {
+            for (var i = _book.Abilities.Count; i < 13; i++)
+                _book.Abilities.Add(new ReflectionAbility { Name = $"Ability {i}" });
+            _serializedObject.Update();
+
+            var name = Abilities.GetArrayElementAtIndex(11).FindPropertyRelative(nameof(ReflectionAbility.Name));
+
+            Assert.AreSame(_book.Abilities[11], name.GetDeclaringInstance());
+            Assert.AreEqual("Ability 11", name.stringValue);
         }
 
         [Test]
