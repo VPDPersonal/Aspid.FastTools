@@ -20,6 +20,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const int SamplePathCount = 8;
         private const long ProgressDelayMilliseconds = 250;
 
+        // Appended to a prompt that offers to answer for the rest of the delete.
+        private const string ApplyToRestHint =
+            "More scripts or folders are being deleted. \"Delete All Anyway\" and \"Cancel\" also decide for every one " +
+            "of them that is still used, without asking again; \"Delete Anyway\" asks again for the next one.";
+
         // A C# identifier, which may start with any Unicode letter ("Оружие").
         private const string Identifier = @"@?[\p{L}\p{Nl}_][\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Nl}\p{Pc}\p{Cf}]*";
 
@@ -45,10 +50,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static List<string> _referencePaths;
         private static bool _isSweepCancelled;
 
+        // The calls of one delete action come in the same editor tick, and Unity does not say how many scripts or folders
+        // the action holds. A prompt that sees more of them offers to answer for the rest. That answer lives until the
+        // end of the tick (see ResetAnswerAtTickEnd), so a later delete asks again.
+        private static AssetDeleteResult? _actionAnswer;
+        private static bool _hasPrompted;
+
+        // The dialog and the selection are fields so that a test can answer a prompt: it cannot click a modal window.
+        internal static PromptDialog ShowPrompt = DisplayPrompt;
+        internal static Func<IReadOnlyList<string>> GetSelectedPaths = GetSelectedAssetPaths;
+
+        // offerRest: the dialog also offers an answer for the rest of the delete action.
+        internal delegate PromptAnswer PromptDialog(string title, string message, bool offerRest);
+
+        internal enum PromptAnswer
+        {
+            Delete,
+            Cancel,
+            DeleteAll,
+        }
+
         private static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions options)
         {
             if (Application.isBatchMode) return AssetDeleteResult.DidNotDelete;
+            return GuardAsset(assetPath);
+        }
+
+        internal static AssetDeleteResult GuardAsset(string assetPath)
+        {
             if (string.IsNullOrEmpty(assetPath)) return AssetDeleteResult.DidNotDelete;
+
+            // "Delete All Anyway" has answered already, so nothing is left to check.
+            if (_actionAnswer == AssetDeleteResult.DidNotDelete) return AssetDeleteResult.DidNotDelete;
 
             // A folder delete fires once with the folder path; the scripts inside get no callback of their own.
             if (AssetDatabase.IsValidFolder(assetPath)) return GuardFolder(assetPath);
@@ -77,9 +110,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 $"{string.Join("\n", sample)}\n\n" +
                 "Deleting the script will leave those references missing.";
 
-            var proceed = EditorUtility.DisplayDialog("Delete Script", message, "Delete Anyway", "Cancel");
-
-            return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
+            return Ask(assetPath, title: "Delete Script", message: message);
         }
 
         private static AssetDeleteResult GuardFolder(string folderPath)
@@ -113,8 +144,69 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 $"references ({totalCount} place(s) total):\n\n{string.Join("\n", affected)}\n\n" +
                 "Deleting the folder will leave those references missing.";
 
-            var proceed = EditorUtility.DisplayDialog("Delete Folder", message, "Delete Anyway", "Cancel");
-            return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
+            return Ask(folderPath, title: "Delete Folder", message: message);
+        }
+
+        // The first prompt of a delete action may answer for the rest of it: "Delete All Anyway" deletes every script and
+        // folder that is left, and "Cancel" keeps every one that is still used, without asking again. Only a prompt that
+        // offered this remembers a "Cancel", since a plain one told the user nothing about the rest.
+        private static AssetDeleteResult Ask(string assetPath, string title, string message)
+        {
+            if (_actionAnswer is { } remembered) return remembered;
+
+            var offerRest = _hasPrompted || HasOtherDeletedAssets(assetPath);
+            if (offerRest) message = $"{message}\n\n{ApplyToRestHint}";
+
+            var answer = ShowPrompt(title: title, message: message, offerRest: offerRest);
+            var result = answer == PromptAnswer.Delete || answer == PromptAnswer.DeleteAll
+                ? AssetDeleteResult.DidNotDelete
+                : AssetDeleteResult.FailedDelete;
+
+            if (answer == PromptAnswer.DeleteAll || (answer == PromptAnswer.Cancel && offerRest))
+                _actionAnswer = result;
+
+            // Set after the dialog, so that a tick that passes while it is open cannot drop the state.
+            _hasPrompted = true;
+            ResetAnswerAtTickEnd();
+
+            return result;
+        }
+
+        // Another script or folder is selected next to the one being deleted. A selection that does not hold the path is
+        // not the delete being run (a script deleting by code), so it says nothing about it.
+        private static bool HasOtherDeletedAssets(string assetPath)
+        {
+            var selected = GetSelectedPaths();
+            if (!selected.Contains(assetPath)) return false;
+
+            return selected.Any(path =>
+                path != assetPath &&
+                (path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || AssetDatabase.IsValidFolder(path)));
+        }
+
+        private static IReadOnlyList<string> GetSelectedAssetPaths() =>
+            Selection.assetGUIDs.Select(AssetDatabase.GUIDToAssetPath).ToArray();
+
+        private static PromptAnswer DisplayPrompt(string title, string message, bool offerRest)
+        {
+            if (!offerRest)
+            {
+                return EditorUtility.DisplayDialog(title, message, "Delete Anyway", "Cancel")
+                    ? PromptAnswer.Delete
+                    : PromptAnswer.Cancel;
+            }
+
+            return EditorUtility.DisplayDialogComplex(
+                title: title,
+                message: message,
+                ok: "Delete Anyway",
+                cancel: "Cancel",
+                alt: "Delete All Anyway") switch
+            {
+                0 => PromptAnswer.Delete,
+                2 => PromptAnswer.DeleteAll,
+                _ => PromptAnswer.Cancel,
+            };
         }
 
         // MonoScript.GetClass() only knows the class named after the file, so every type the scripts declare is looked
@@ -417,6 +509,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             _referencePaths = null;
             _isSweepCancelled = false;
+        }
+
+        internal static void ResetAnswer()
+        {
+            _actionAnswer = null;
+            _hasPrompted = false;
+        }
+
+        // Restores the dialog and the selection a test replaced.
+        internal static void ResetSeams()
+        {
+            ShowPrompt = DisplayPrompt;
+            GetSelectedPaths = GetSelectedAssetPaths;
+        }
+
+        private static void ResetAnswerAtTickEnd()
+        {
+            // Removed first, so that a second prompt in the same tick does not queue the reset twice.
+            EditorApplication.delayCall -= ResetAnswer;
+            EditorApplication.delayCall += ResetAnswer;
         }
 
         // A changed asset can add a reference the kept list lacks. The cancel flag stays: the user's answer outlives it.
