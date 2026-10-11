@@ -16,7 +16,7 @@ For extra constraints, required fields and list appearance, see [TypeSelector](0
 
 - <code lang="csharp">Allow</code> has no effect here: the types must be instantiable.
 - Classes derived from <code lang="class-name">UnityEngine.Object</code> are not offered: keep such an object in a plain field, without <code lang="csharp">[SerializeReference]</code>.
-- Generic arguments are inferred from the field type; when they cannot be, the picker asks for types Unity can serialize.
+- Generic arguments are inferred from the field type and the <code lang="csharp">[TypeSelector]</code> types; when they cannot be, the picker asks for types Unity can serialize.
 
 ## Lists
 
