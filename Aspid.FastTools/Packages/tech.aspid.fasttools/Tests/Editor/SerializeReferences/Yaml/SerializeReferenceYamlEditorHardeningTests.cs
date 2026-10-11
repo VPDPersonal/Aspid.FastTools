@@ -281,6 +281,61 @@ MonoBehaviour:
             Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(source, result, YamlFixtures.MonoBehaviourFileId));
         }
 
+        // ---- batch check: one write of several edits names the entries of all of them --------------------------------
+
+        [Test]
+        public void IsVerifiedEdit_BatchTypeRewriteOfEveryNamedEntry_Passes()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RewriteClass(source, "GhostPistol", "Pistol");
+            result = RewriteClass(result, "Shotgun", "Pistol");
+
+            var rewritten = new[] { Entry(YamlFixtures.GhostPistolRid), Entry(YamlFixtures.ShotgunRid) };
+            Assert.IsTrue(SerializeReferenceYamlEditor.IsVerifiedEdit(source, result, removed: rewritten, added: rewritten));
+        }
+
+        [Test]
+        public void IsVerifiedEdit_BatchTypeRewriteOfAnEntryItDoesNotName_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+            var result = RewriteClass(source, "GhostPistol", "Pistol");
+            result = RewriteClass(result, "Shotgun", "Pistol");
+
+            var rewritten = new[] { Entry(YamlFixtures.GhostPistolRid) };
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(source, result, removed: rewritten, added: rewritten),
+                "The type line of rid 1003 changed, but the batch named only rid 1002.");
+        }
+
+        [Test]
+        public void IsVerifiedEdit_BatchRemovalOfTwoEntries_ThatCutsIntoAThird_Fails()
+        {
+            var source = Lines(YamlFixtures.MissingTypePrefab);
+
+            // Removes rid 1002 and rid 1003 with the header of rid 1004 after them.
+            var result = RemoveLines(source, Array.IndexOf(source, "    - rid: 1002"), count: 11);
+
+            var removed = new[] { Entry(YamlFixtures.GhostPistolRid), Entry(YamlFixtures.ShotgunRid) };
+            Assert.IsFalse(SerializeReferenceYamlEditor.IsVerifiedEdit(
+                source, result, removed: removed, added: Array.Empty<(long FileId, long Rid)>()));
+
+            var exact = RemoveLines(source, Array.IndexOf(source, "    - rid: 1002"), count: 10);
+            Assert.IsTrue(SerializeReferenceYamlEditor.IsVerifiedEdit(
+                source, exact, removed: removed, added: Array.Empty<(long FileId, long Rid)>()));
+        }
+
+        private static (long FileId, long Rid) Entry(long rid) =>
+            (YamlFixtures.MonoBehaviourFileId, rid);
+
+        private static string[] RewriteClass(string[] lines, string from, string to)
+        {
+            var index = Array.FindIndex(lines, line => line.Contains($"class: {from},"));
+            Assert.GreaterOrEqual(index, 0, "Fixture sanity: the type line to rewrite must exist.");
+
+            var result = (string[])lines.Clone();
+            result[index] = result[index].Replace($"class: {from},", $"class: {to},");
+            return result;
+        }
+
         private static string[] Lines(string yaml) =>
             yaml.Replace("\r\n", "\n").TrimEnd('\n').Split('\n');
 

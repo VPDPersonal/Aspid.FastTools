@@ -1,5 +1,11 @@
 export const normalize = (text) => text.toLocaleLowerCase().normalize('NFKC').replace(/ё/g, 'е');
 
+/** True for Ctrl or Cmd with K. A non-Latin layout reports another letter for that key ("л"), so there the key's position decides. */
+export function isSearchShortcut({ctrlKey, metaKey, key = '', code}) {
+  if (!ctrlKey && !metaKey) return false;
+  return key.toLowerCase() === 'k' || (code === 'KeyK' && !/^[a-z]$/i.test(key));
+}
+
 export function prepareIndex(entries) {
   return entries.map((entry) => ({...entry, normalizedTitle: normalize(entry.title), normalizedText: normalize(entry.text)}));
 }

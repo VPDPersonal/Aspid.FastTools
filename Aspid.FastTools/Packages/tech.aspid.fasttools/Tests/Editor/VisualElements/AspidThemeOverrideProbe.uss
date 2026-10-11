@@ -1,0 +1,4 @@
+/* A theme override that recolors one palette token, so tests can see the override win over the built-in palette. */
+:root {
+    --aspid-colors-bg-dark:                                rgb(1, 2, 3);
+}

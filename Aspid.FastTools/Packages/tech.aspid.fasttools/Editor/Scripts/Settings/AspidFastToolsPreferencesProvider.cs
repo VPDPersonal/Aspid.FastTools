@@ -25,8 +25,16 @@ namespace Aspid.FastTools.Editors
                 "Favorites",
                 "Recent",
                 "Breakage",
+                "Appearance",
+                "Theme",
+                "Style",
+                "USS",
+                "Color",
+                "Palette",
+                "Override",
                 "Welcome",
                 "Dropdown",
+                "Animated",
             },
         };
 
@@ -56,6 +64,24 @@ namespace Aspid.FastTools.Editors
                     TypeSelectorSettingsView.BuildControls),
 
                 keywords = new[] { "Aspid", "FastTools", "Type Selector", "Favorites", "Recent", "Dropdown" },
+            };
+
+        [SettingsProvider]
+        public static SettingsProvider CreateAppearance() =>
+            new(SettingsPath + "/Appearance", SettingsScope.User)
+            {
+                label = "Appearance",
+
+                activateHandler = static (_, root) => AspidSettingsUI.BuildAreaProviderPage(
+                    root,
+                    title: "Appearance",
+                    AspidAppearanceSettingsUI.BuildControls),
+
+                keywords = new[]
+                {
+                    "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Override",
+                    "Animated", "Animation", "Background",
+                },
             };
 
         [SettingsProvider]

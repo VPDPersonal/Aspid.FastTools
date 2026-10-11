@@ -194,6 +194,7 @@ namespace Aspid.FastTools.Types.Editors
                 node.DisplayName = $"{node.DisplayName}.{onlyChild.DisplayName}";
                 node.AssemblyQualifiedName = onlyChild.AssemblyQualifiedName;
                 node.Caption = onlyChild.Caption;
+                node.Title = onlyChild.Title;
                 node.Tooltip = onlyChild.Tooltip;
                 node.Icon = onlyChild.Icon;
                 node.SearchName = onlyChild.SearchName;
@@ -224,7 +225,10 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     1 => type.Label,
                     _ when labelAssemblyCounts[(type.Label, type.Assembly)] == 1 => $"{type.Label} ({type.Assembly})",
-                    _ => type.Label == type.Name ? $"{type.Label} ({type.Assembly})" : $"{type.Label} ({type.Name})",
+                    // Same label in one assembly: nested types differ by their outer class, the rest by their real name.
+                    _ => type.Label == type.Name
+                        ? $"{type.Label} ({type.DeclaringName ?? type.Assembly})"
+                        : $"{type.Label} ({type.Name})",
                 };
 
                 var caption = string.IsNullOrEmpty(captionPrefix)
@@ -237,6 +241,7 @@ namespace Aspid.FastTools.Types.Editors
 
         private static TreeNode CreateLeaf(TypeInfo type, string displayName, string caption = null) => new(displayName, type.AssemblyQualifiedName, caption ?? displayName)
         {
+            Title = displayName,
             Tooltip = type.Tooltip,
             Icon = type.Icon,
             SearchName = type.Name,

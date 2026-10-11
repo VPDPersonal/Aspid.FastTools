@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    [UxmlElement(libraryPath = "Aspid/FastTools")]
+    [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
     internal sealed partial class AspidAnimatedLogo : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedLogo";

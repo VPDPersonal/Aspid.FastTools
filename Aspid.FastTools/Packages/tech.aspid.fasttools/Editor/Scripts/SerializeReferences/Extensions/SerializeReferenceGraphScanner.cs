@@ -29,7 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var lines = SerializeReferenceYaml.ReadLines(assetPath);
                 if (lines is null) return result;
 
-                AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, result);
+                AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, nodesOnly: false, result);
             }
             catch (Exception)
             {
@@ -39,14 +39,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Text-only, for a sweep that already read the file for another pass.
-        public static List<ReferenceGraphDocument> Build(string[] lines)
+        // Text-only and nodes-only, for a sweep that already read the file for another pass: the documents carry no
+        // roots, edges, shared or orphan sets. Those cost a field path per pointer, which grows with the list length.
+        public static List<ReferenceGraphDocument> BuildNodes(string[] lines)
         {
             var result = new List<ReferenceGraphDocument>();
 
             try
             {
-                if (lines is not null) AddDocuments(lines, typeNames: null, result);
+                if (lines is not null) AddDocuments(lines, typeNames: null, nodesOnly: true, result);
             }
             catch (Exception)
             {
@@ -56,7 +57,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        private static void AddDocuments(string[] lines, Dictionary<long, string> typeNames, List<ReferenceGraphDocument> result)
+        private static void AddDocuments(string[] lines, Dictionary<long, string> typeNames, bool nodesOnly, List<ReferenceGraphDocument> result)
         {
             var headers = CollectHeaders(lines);
 
@@ -65,7 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var (fileId, classId, start) = headers[h];
                 var end = SerializeReferenceYaml.FindDocumentEnd(lines, start + 1);
 
-                var document = BuildDocument(lines, fileId, start, end);
+                var document = BuildDocument(lines, fileId, start, end, nodesOnly);
                 if (document is null) continue;
 
                 document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
@@ -77,22 +78,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Documents without reference entries or field pointers contribute no graph.
-        private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end)
+        private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end, bool nodesOnly)
         {
-            var referencesStart = FindKey(lines, _referencesKey, start, end);
-            var bodyEnd = referencesStart >= 0 ? referencesStart : end;
-
             var refIdsStart = SerializeReferenceYaml.FindRefIdsStart(lines, start, end);
             if (refIdsStart < 0) return null;
 
             var document = new ReferenceGraphDocument { FileId = fileId };
             CollectNodes(lines, refIdsStart, end, document);
 
+            if (nodesOnly) return document.Nodes.Count > 0 ? document : null;
+
+            var referencesStart = FindKey(lines, _referencesKey, start, end);
+            var bodyEnd = referencesStart >= 0 ? referencesStart : end;
+
             var knownRids = new HashSet<long>();
             foreach (var node in document.Nodes) knownRids.Add(node.Rid);
 
-            CollectRoots(lines, start, bodyEnd, knownRids, document);
-            CollectEdges(lines, refIdsStart, end, knownRids, document);
+            var siblings = new Dictionary<int, (int index, int owner)>();
+            CollectRoots(lines, start, bodyEnd, knownRids, document, siblings);
+            CollectEdges(lines, refIdsStart, end, knownRids, document, siblings);
             ComputeSharedAndOrphans(document, knownRids);
 
             // An asset whose fields are all unassigned still has slots to surface as "<None>" leaves.
@@ -135,7 +139,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Field pointers in the document body are the tree roots. Every pointer is kept, with no de-duplication, so
         // two fields aliasing one reference both render and the alias counts as shared.
-        private static void CollectRoots(string[] lines, int start, int bodyEnd, HashSet<long> knownRids, ReferenceGraphDocument document)
+        private static void CollectRoots(string[] lines, int start, int bodyEnd, HashSet<long> knownRids,
+            ReferenceGraphDocument document, Dictionary<int, (int index, int owner)> siblings)
         {
             for (var i = start + 1; i < bodyEnd; i++)
             {
@@ -146,18 +151,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // Kept as an empty root so a cleared slot stays visible; the shared/orphan math skips sentinels.
                     if (rid < 0)
                     {
-                        document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start)));
+                        document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start, siblings)));
                         continue;
                     }
 
                     if (!knownRids.Contains(rid)) continue;
 
-                    document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start)));
+                    document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start, siblings)));
                 }
             }
         }
 
-        private static void CollectEdges(string[] lines, int refIdsStart, int end, HashSet<long> knownRids, ReferenceGraphDocument document)
+        private static void CollectEdges(string[] lines, int refIdsStart, int end, HashSet<long> knownRids,
+            ReferenceGraphDocument document, Dictionary<int, (int index, int owner)> siblings)
         {
             var entryIndent = SerializeReferenceYaml.FindRefIdsEntryIndent(lines, refIdsStart, end);
             if (entryIndent < 0) return;
@@ -182,7 +188,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         // A null slot stays visible as an empty edge; a dangling pointer to no known node is dropped.
                         if (child >= 0 && !knownRids.Contains(child)) continue;
 
-                        AddEdge(document, parent, new ReferenceGraphEdge(child, BuildEdgePath(lines, j, dataStart)));
+                        AddEdge(document, parent, new ReferenceGraphEdge(child, BuildEdgePath(lines, j, dataStart, siblings)));
                     }
                 }
             }
@@ -237,18 +243,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Omit the document wrapper so root labels remain serialized field paths.
-        private static string BuildRootPath(string[] lines, int i, int start)
+        private static string BuildRootPath(string[] lines, int i, int start, Dictionary<int, (int index, int owner)> siblings)
         {
-            var path = BuildPath(lines, i, floor: start, stopIndent: 0);
+            var path = BuildPath(lines, i, floor: start, stopIndent: 0, siblings);
             return string.IsNullOrEmpty(path) ? "reference" : path;
         }
 
         // Stop at the data-block boundary to keep nested edge labels relative to their parent.
-        private static string BuildEdgePath(string[] lines, int pointerLine, int dataStart) =>
-            BuildPath(lines, pointerLine, floor: dataStart, stopIndent: SerializeReferenceYaml.IndentOf(lines[dataStart]));
+        private static string BuildEdgePath(string[] lines, int pointerLine, int dataStart, Dictionary<int, (int index, int owner)> siblings) =>
+            BuildPath(lines, pointerLine, floor: dataStart, stopIndent: SerializeReferenceYaml.IndentOf(lines[dataStart]), siblings);
 
-        // Unity sequence dashes align with their owning key; count sibling dashes at that indentation.
-        private static string BuildPath(string[] lines, int pointerLine, int floor, int stopIndent)
+        // Unity sequence dashes align with their owning key; count sibling dashes at that indentation. "siblings" keeps
+        // the index and owner line of each dash line already measured, so a long list is not rescanned per element.
+        private static string BuildPath(string[] lines, int pointerLine, int floor, int stopIndent, Dictionary<int, (int index, int owner)> siblings)
         {
             var segments = new List<string>();
             var line = pointerLine;
@@ -258,7 +265,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var indent = SerializeReferenceYaml.IndentOf(lines[line]);
                 int next;
 
-                if (lines[line].TrimStart().StartsWith("- "))
+                if (lines[line].TrimStart().StartsWith("- ", StringComparison.Ordinal))
                 {
                     var elementKey = _mappingKey.Match(lines[line]);
                     if (elementKey.Success && !IsStructuralKey(elementKey.Groups["key"].Value))
@@ -273,12 +280,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         var jIndent = SerializeReferenceYaml.IndentOf(lines[j]);
                         if (jIndent > indent) continue;
                         if (jIndent < indent) break;
-                        if (lines[j].TrimStart().StartsWith("- ")) { index++; continue; }
+                        if (lines[j].TrimStart().StartsWith("- ", StringComparison.Ordinal))
+                        {
+                            if (siblings.TryGetValue(j, out var known))
+                            {
+                                index += known.index + 1;
+                                ownerLine = known.owner;
+                                break;
+                            }
+
+                            index++;
+                            continue;
+                        }
 
                         ownerLine = j;
                         break;
                     }
 
+                    siblings[line] = (index, ownerLine);
                     if (ownerLine < 0) break;
 
                     var ownerKey = _mappingKey.Match(lines[ownerLine]);

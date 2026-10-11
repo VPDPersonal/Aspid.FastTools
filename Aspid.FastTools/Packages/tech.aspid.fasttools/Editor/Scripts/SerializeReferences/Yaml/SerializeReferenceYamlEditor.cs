@@ -93,7 +93,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
             }
 
-            if (!IsVerifiedEdit(source, lines, fileId, removedRid, addedRid))
+            return TryWritePreservingNewlines(assetPath, source, lines, original, encoding,
+                removed: EntriesOf(fileId, removedRid), added: EntriesOf(fileId, addedRid));
+        }
+
+        // The batch form. source, original and encoding come from the one TryReadAllLines the batch made before it
+        // computed its first edit, so a change made on disk while the batch was computed is caught as well. removed and
+        // added name every RefIds entry the batch removes or adds, by document, and the check runs on the whole batch.
+        private static bool TryWritePreservingNewlines(string assetPath, string[] source, IReadOnlyList<string> lines,
+            string original, Encoding encoding, IReadOnlyCollection<(long FileId, long Rid)> removed,
+            IReadOnlyCollection<(long FileId, long Rid)> added)
+        {
+            if (!IsVerifiedEdit(source, lines, removed, added))
             {
                 Debug.LogError($"[Aspid FastTools] The fix of '{assetPath}' failed its safety check and was not written; the asset was not changed.");
                 return false;
@@ -105,7 +116,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!TryReadUtf8(assetPath, out var checkedOut, out _)) return false;
             if (checkedOut != original)
             {
-                Debug.LogError($"[Aspid FastTools] '{assetPath}' changed on disk while it was checked out; it was not changed. Retry the fix.");
+                Debug.LogError($"[Aspid FastTools] '{assetPath}' changed on disk while it was being edited; it was not changed. Retry the fix.");
                 return false;
             }
 
@@ -124,14 +135,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Re-scans an edit before it is written. The result must still be Unity YAML with the same document headers,
-        // and every document must keep its RefIds entries with their type lines, except that document fileId loses the
-        // removedRid entry and gains the addedRid entry; a type rewrite removes and adds the same rid. An edit that
-        // names an entry must also keep the line count of every other entry, and change the document's line count by
-        // the sizes of the named entries only. So an edit that cuts into another entry, a type line or a document
-        // header fails, and so does one that leaves a removed entry or a part of it behind.
+        // Re-scans one edit of document fileId before it is written; see the batch form below.
         internal static bool IsVerifiedEdit(string[] source, IReadOnlyList<string> result, long fileId,
-            long? removedRid = null, long? addedRid = null)
+            long? removedRid = null, long? addedRid = null) =>
+            IsVerifiedEdit(source, result, removed: EntriesOf(fileId, removedRid), added: EntriesOf(fileId, addedRid));
+
+        // Re-scans an edit before it is written. The result must still be Unity YAML with the same document headers,
+        // and every document must keep its RefIds entries with their type lines, except that each document named in
+        // removed loses those entries and each one named in added gains those; a type rewrite removes and adds the same
+        // rid. An edit that names an entry must also keep the line count of every other entry, and change each
+        // document's line count by the sizes of its named entries only. So an edit that cuts into another entry, a type
+        // line or a document header fails, and so does one that leaves a removed entry or a part of it behind. A batch
+        // names the entries of all its edits, so one check covers the whole batch.
+        internal static bool IsVerifiedEdit(string[] source, IReadOnlyList<string> result,
+            IReadOnlyCollection<(long FileId, long Rid)> removed, IReadOnlyCollection<(long FileId, long Rid)> added)
         {
             var edited = result as string[] ?? result.ToArray();
             if (!LooksLikeUnityYaml(edited)) return false;
@@ -141,15 +158,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (before.Count != after.Count) return false;
 
             // A type name rewrite names no entry and may collapse a folded scalar inside one, so sizes may change.
-            var keepsSizes = removedRid.HasValue || addedRid.HasValue;
+            var keepsSizes = removed.Count > 0 || added.Count > 0;
 
-            var target = -1;
-            if (keepsSizes)
-            {
-                var (start, _) = FindDocumentRange(source, fileId);
-                target = before.FindIndex(document => document.HeaderLine == start);
-                if (target < 0) return false;
-            }
+            if (!TryGroupByDocument(source, before, removed, out var removedOf)) return false;
+            if (!TryGroupByDocument(source, before, added, out var addedOf)) return false;
 
             for (var i = 0; i < before.Count; i++)
             {
@@ -159,26 +171,67 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var expected = new List<(long Rid, string Type, int Lines)>(before[i].Entries);
                 var expectedLines = before[i].Lines;
 
-                if (i == target && removedRid.HasValue)
+                if (removedOf.TryGetValue(i, out var removedRids))
                 {
-                    var removed = expected.FindIndex(entry => entry.Rid == removedRid.Value);
-                    if (removed < 0) return false;
+                    foreach (var rid in removedRids)
+                    {
+                        var index = expected.FindIndex(entry => entry.Rid == rid);
+                        if (index < 0) return false;
 
-                    expectedLines -= expected[removed].Lines;
-                    expected.RemoveAt(removed);
+                        expectedLines -= expected[index].Lines;
+                        expected.RemoveAt(index);
+                    }
                 }
 
-                if (i == target && addedRid.HasValue)
+                if (addedOf.TryGetValue(i, out var addedRids))
                 {
-                    var added = after[i].Entries.FindIndex(entry => entry.Rid == addedRid.Value && entry.Type != null);
-                    if (added < 0) return false;
+                    foreach (var rid in addedRids)
+                    {
+                        var index = after[i].Entries.FindIndex(entry => entry.Rid == rid && entry.Type != null);
+                        if (index < 0) return false;
 
-                    expectedLines += after[i].Entries[added].Lines;
-                    expected.Add(after[i].Entries[added]);
+                        expectedLines += after[i].Entries[index].Lines;
+                        expected.Add(after[i].Entries[index]);
+                    }
                 }
 
                 if (keepsSizes && expectedLines != after[i].Lines) return false;
                 if (!HaveSameEntries(expected, after[i].Entries, keepsSizes)) return false;
+            }
+
+            return true;
+        }
+
+        private static (long FileId, long Rid)[] EntriesOf(long fileId, long? rid) =>
+            rid.HasValue ? new[] { (FileId: fileId, Rid: rid.Value) } : Array.Empty<(long FileId, long Rid)>();
+
+        // The rids of entries by the index of their document in documents, each rid once: a batch that names an entry
+        // twice, such as a type rewrite listed twice, edits it once. False when a fileId names no document.
+        private static bool TryGroupByDocument(string[] source,
+            List<(int HeaderLine, int Lines, List<(long Rid, string Type, int Lines)> Entries)> documents,
+            IReadOnlyCollection<(long FileId, long Rid)> entries, out Dictionary<int, HashSet<long>> result)
+        {
+            result = new Dictionary<int, HashSet<long>>();
+            var documentOf = new Dictionary<long, int>();
+
+            foreach (var (fileId, rid) in entries)
+            {
+                if (!documentOf.TryGetValue(fileId, out var document))
+                {
+                    var (start, _) = FindDocumentRange(source, fileId);
+                    document = documents.FindIndex(candidate => candidate.HeaderLine == start);
+                    if (document < 0) return false;
+
+                    documentOf.Add(fileId, document);
+                }
+
+                if (!result.TryGetValue(document, out var rids))
+                {
+                    rids = new HashSet<long>();
+                    result.Add(document, rids);
+                }
+
+                rids.Add(rid);
             }
 
             return true;
@@ -294,6 +347,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Debug.LogError($"[Aspid FastTools] '{path}' is not valid UTF-8; it was not changed.");
                 return false;
             }
+        }
+
+        // Reads the asset as strict UTF-8, as TryReadUtf8 does, and splits it the way File.ReadAllLines does. A batch
+        // keeps the text and the encoding for TryWritePreservingNewlines, so it reads the file once.
+        private static bool TryReadAllLines(string path, out string[] lines, out string text, out Encoding encoding)
+        {
+            lines = null;
+            if (!TryReadUtf8(path, out text, out encoding)) return false;
+
+            var result = new List<string>();
+            using var reader = new StringReader(text);
+            for (var line = reader.ReadLine(); line is not null; line = reader.ReadLine())
+                result.Add(line);
+
+            lines = result.ToArray();
+            return true;
         }
 
         // File.WriteAllText truncates the asset first, so a failed write (full disk, killed process) would leave it cut

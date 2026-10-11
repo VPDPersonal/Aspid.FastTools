@@ -197,11 +197,3 @@ html[data-theme='light'][data-accent='mono'].docs-doc-page {
   --venom-accent: #2a2c31;
   --venom-ripple: #8a8e98;
 }
-
-/* Without a hue, article links would read as body text: underline them at rest. In the light theme buttons and card
-   titles are already framed as links, so they stay plain there. */
-html[data-theme='dark'][data-accent='mono'] .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link),
-html[data-theme='light'][data-accent='mono'] .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):not([class*='primary_']):not([class*='secondary_']):not(:is(.feature-card__title, .feature-card__more, .resource-card__title) a) {
-  text-decoration: underline;
-  text-decoration-color: var(--venom-divider);
-}
