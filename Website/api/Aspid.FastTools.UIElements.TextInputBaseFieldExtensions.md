@@ -93,6 +93,40 @@ The field type.
 
 The value type held by the field.
 
+### SetFormatString\<TField, TValue\>\(TField, string\) {#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetFormatString__2___0_System_String_}
+
+Sets [`formatString`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextValueField_1-formatString.html).
+
+```csharp
+public static TField SetFormatString<TField, TValue>(this TField element, string value) where TField : TextValueField<TValue>
+```
+
+#### Parameters
+
+`element` TField
+
+The element to modify.
+
+`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The format string applied when the value is displayed.
+
+#### Returns
+
+ TField
+
+The element, for chaining.
+
+#### Type Parameters
+
+`TField` 
+
+The field type.
+
+`TValue` 
+
+The value type held by the field.
+
 ### SetHideMobileInput\<TField, TValue\>\(TField, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideMobileInput__2___0_System_Boolean_}
 
 Sets [`hideMobileInput`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-hideMobileInput.html).
