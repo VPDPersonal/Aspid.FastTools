@@ -123,7 +123,7 @@
 
 Для собственных типов значений доступны обобщённые <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> и <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
 
-Для типов <code lang="csharp">Unity.Mathematics</code> (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>) методам <code lang="function">SetValue</code> и <code lang="function">AddValueChanged</code> аргументы типа не нужны. Перегрузки лежат в отдельной сборке `Aspid.FastTools.VisualElements.Math` ([справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), которая компилируется, когда установлен пакет `com.unity.mathematics`.
+Для типов <code lang="csharp">Unity.Mathematics</code> (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>) методам <code lang="function">SetValue</code> и <code lang="function">AddValueChanged</code> аргументы типа не нужны. Перегрузки лежат в отдельной сборке `Aspid.FastTools.VisualElements.Math` ([справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), которая компилируется, когда установлен пакет `com.unity.mathematics`, а также в Unity 6000.5 и новее, где `Unity.Mathematics` входит в движок.
 
 ## Фокус
 

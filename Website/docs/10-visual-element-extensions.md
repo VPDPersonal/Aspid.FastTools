@@ -123,7 +123,7 @@ All of these methods have a variant with the suffix <code lang="csharp">If</code
 
 For custom value types, use the generic <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> and <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
 
-For <code lang="csharp">Unity.Mathematics</code> types (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>), <code lang="function">SetValue</code> and <code lang="function">AddValueChanged</code> need no type arguments. The overloads are in the separate assembly `Aspid.FastTools.VisualElements.Math` ([API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), which compiles when the `com.unity.mathematics` package is installed.
+For <code lang="csharp">Unity.Mathematics</code> types (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>), <code lang="function">SetValue</code> and <code lang="function">AddValueChanged</code> need no type arguments. The overloads are in the separate assembly `Aspid.FastTools.VisualElements.Math` ([API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), which compiles when the `com.unity.mathematics` package is installed, and on Unity 6000.5 and later, where `Unity.Mathematics` ships in the engine.
 
 ## Focus
 
