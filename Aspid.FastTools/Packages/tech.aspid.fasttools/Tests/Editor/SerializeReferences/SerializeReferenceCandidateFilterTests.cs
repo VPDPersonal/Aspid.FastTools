@@ -182,6 +182,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(SerializeReferenceHelpers.IsValidGenericArgumentDefinition(definition));
 
         [Test]
+        public void ListDefinition_IsNotOfferedOnTheElementPageOfAList()
+        {
+            var list = typeof(System.Collections.Generic.List<>);
+
+            Assert.IsFalse(SerializeReferenceHelpers.IsValidGenericArgumentDefinition(building: list, definition: list),
+                "Unity keeps one level of List<T>, so a list of lists could only end in the error of its closing.");
+            Assert.IsTrue(SerializeReferenceHelpers.IsValidGenericArgumentDefinition(
+                building: typeof(OpenGenericCandidate<>), definition: list));
+            Assert.IsTrue(SerializeReferenceHelpers.IsValidGenericArgumentDefinition(
+                building: list, definition: typeof(OpenGenericCandidate<>)));
+            Assert.IsFalse(SerializeReferenceHelpers.IsValidGenericArgumentDefinition(
+                building: list, definition: typeof(System.Collections.Generic.HashSet<>)));
+        }
+
+        [Test]
         public void UserGenericDefinition_IsOffered() =>
             Assert.IsTrue(SerializeReferenceHelpers.IsValidGenericArgumentDefinition(typeof(OpenGenericCandidate<>)));
     }

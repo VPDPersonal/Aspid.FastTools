@@ -1064,6 +1064,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             definition is { IsGenericTypeDefinition: true, IsSerializable: true } &&
             (definition == typeof(List<>) || !IsFrameworkType(definition));
 
+        // The page that fills an argument of `building` knows more: Unity keeps one level of List<T>, so the element
+        // page of a List<> offers no List<>, which could only end in the error of the closed List<List<T>>.
+        public static bool IsValidGenericArgumentDefinition(Type building, Type definition) =>
+            IsValidGenericArgumentDefinition(definition) &&
+            !(building == typeof(List<>) && definition == typeof(List<>));
+
         // The framework types carry [Serializable] for .NET's own binary serialization, not for Unity's: DateTime,
         // TimeSpan, Guid, Decimal, Nullable<T>, KeyValuePair<,>, the tuples, Dictionary<,>, HashSet<T>, Queue<T> and
         // the like keep their data in private fields Unity does not write, so a field of such a type silently loses

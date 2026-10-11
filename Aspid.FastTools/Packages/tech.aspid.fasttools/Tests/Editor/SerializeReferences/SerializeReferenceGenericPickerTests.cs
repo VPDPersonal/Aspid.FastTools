@@ -183,9 +183,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void ArgumentPage_ListOfList_IsNotStored()
+        public void ArgumentPage_ListElement_DoesNotOfferAList()
         {
             var picker = Open(narrowingTypes: null);
+
+            picker.Pick(typeof(GenericPickerContainer<>));
+
+            Assert.IsTrue(picker.Offers(typeof(List<>)), "A List<T> can be the argument of a container.");
+
+            picker.Pick(typeof(List<>));
+
+            Assert.IsFalse(picker.Offers(typeof(List<>)),
+                "Unity keeps one level of List<T>: a list of lists could only end in an error.");
+            Assert.IsTrue(picker.Offers(typeof(GenericPickerBox<>)), "A list of your own generic is fine.");
+            Assert.IsTrue(picker.Offers(typeof(int)));
+        }
+
+        [Test]
+        public void ArgumentPage_ListInsideAGenericInsideAList_IsOffered()
+        {
+            var picker = Open(narrowingTypes: null);
+
+            picker.Pick(typeof(GenericPickerContainer<>));
+            picker.Pick(typeof(List<>));
+            picker.Pick(typeof(GenericPickerBox<>));
+
+            Assert.IsTrue(picker.Offers(typeof(List<>)),
+                "A list in a class that sits in a list is two classes apart, which Unity serializes.");
+        }
+
+        // The last line of defence for a filter that lists a definition it cannot judge up front.
+        [Test]
+        public void ArgumentPage_ListOfListTheFilterLets_IsNotStored()
+        {
+            var filter = SerializeReferenceHelpers.BuildPickerFilter(FieldType, baseTypes: null,
+                excludeEditorOnly: false);
+            filter.GenericDefinitionFilter = null;
+
+            var picker = Open(filter);
 
             picker.Pick(typeof(GenericPickerContainer<>));
             picker.Pick(typeof(List<>));
