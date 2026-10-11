@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`ScrollView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView.html).
+Provides extension methods for [`ScrollView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView.html).
 
 ```csharp
 public static class ScrollViewExtensions
@@ -27,7 +27,7 @@ public static class ScrollViewExtensions
 
 ### SetElasticAnimationIntervalMs\<T\>\(T, long\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetElasticAnimationIntervalMs__1___0_System_Int64_}
 
-Sets [`elasticAnimationIntervalMs`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-elasticAnimationIntervalMs.html).
+Sets [`elasticAnimationIntervalMs`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-elasticAnimationIntervalMs.html).
 
 ```csharp
 public static T SetElasticAnimationIntervalMs<T>(this T element, long value) where T : ScrollView
@@ -57,7 +57,7 @@ The element type.
 
 ### SetElasticity\<T\>\(T, float\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetElasticity__1___0_System_Single_}
 
-Sets [`elasticity`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-elasticity.html).
+Sets [`elasticity`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-elasticity.html).
 
 ```csharp
 public static T SetElasticity<T>(this T element, float value) where T : ScrollView
@@ -87,7 +87,7 @@ The element type.
 
 ### SetHorizontalPageSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetHorizontalPageSize__1___0_System_Single_}
 
-Sets [`horizontalPageSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-horizontalPageSize.html).
+Sets [`horizontalPageSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-horizontalPageSize.html).
 
 ```csharp
 public static T SetHorizontalPageSize<T>(this T element, float value) where T : ScrollView
@@ -117,7 +117,7 @@ The element type.
 
 ### SetHorizontalScrollerVisibility\<T\>\(T, ScrollerVisibility\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetHorizontalScrollerVisibility__1___0_UnityEngine_UIElements_ScrollerVisibility_}
 
-Sets [`horizontalScrollerVisibility`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-horizontalScrollerVisibility.html).
+Sets [`horizontalScrollerVisibility`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-horizontalScrollerVisibility.html).
 
 ```csharp
 public static T SetHorizontalScrollerVisibility<T>(this T element, ScrollerVisibility value) where T : ScrollView
@@ -147,7 +147,7 @@ The element type.
 
 ### SetMode\<T\>\(T, ScrollViewMode\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetMode__1___0_UnityEngine_UIElements_ScrollViewMode_}
 
-Sets [`mode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-mode.html).
+Sets [`mode`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-mode.html).
 
 ```csharp
 public static T SetMode<T>(this T element, ScrollViewMode value) where T : ScrollView
@@ -177,7 +177,7 @@ The element type.
 
 ### SetMouseWheelScrollSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetMouseWheelScrollSize__1___0_System_Single_}
 
-Sets [`mouseWheelScrollSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-mouseWheelScrollSize.html).
+Sets [`mouseWheelScrollSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-mouseWheelScrollSize.html).
 
 ```csharp
 public static T SetMouseWheelScrollSize<T>(this T element, float value) where T : ScrollView
@@ -207,11 +207,11 @@ The element type.
 
 #### Remarks
 
-Setting the default value 18 on a new [`ScrollView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView.html) does not override the theme.
+Setting the default value 18 on a new [`ScrollView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView.html) does not override the theme.
 
 ### SetNestedInteractionKind\<T\>\(T, NestedInteractionKind\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetNestedInteractionKind__1___0_UnityEngine_UIElements_ScrollView_NestedInteractionKind_}
 
-Sets [`nestedInteractionKind`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-nestedInteractionKind.html).
+Sets [`nestedInteractionKind`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-nestedInteractionKind.html).
 
 ```csharp
 public static T SetNestedInteractionKind<T>(this T element, ScrollView.NestedInteractionKind value) where T : ScrollView
@@ -241,7 +241,7 @@ The element type.
 
 ### SetScrollDecelerationRate\<T\>\(T, float\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetScrollDecelerationRate__1___0_System_Single_}
 
-Sets [`scrollDecelerationRate`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-scrollDecelerationRate.html).
+Sets [`scrollDecelerationRate`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-scrollDecelerationRate.html).
 
 ```csharp
 public static T SetScrollDecelerationRate<T>(this T element, float value) where T : ScrollView
@@ -271,7 +271,7 @@ The element type.
 
 ### SetScrollOffset\<T\>\(T, Vector2\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetScrollOffset__1___0_UnityEngine_Vector2_}
 
-Sets [`scrollOffset`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-scrollOffset.html).
+Sets [`scrollOffset`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-scrollOffset.html).
 
 ```csharp
 public static T SetScrollOffset<T>(this T element, Vector2 value) where T : ScrollView
@@ -305,7 +305,7 @@ The scrollers limit the offset to the scrollable range, so add the content and w
 
 ### SetTouchScrollBehavior\<T\>\(T, TouchScrollBehavior\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetTouchScrollBehavior__1___0_UnityEngine_UIElements_ScrollView_TouchScrollBehavior_}
 
-Sets [`touchScrollBehavior`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-touchScrollBehavior.html).
+Sets [`touchScrollBehavior`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-touchScrollBehavior.html).
 
 ```csharp
 public static T SetTouchScrollBehavior<T>(this T element, ScrollView.TouchScrollBehavior value) where T : ScrollView
@@ -335,7 +335,7 @@ The element type.
 
 ### SetVerticalPageSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetVerticalPageSize__1___0_System_Single_}
 
-Sets [`verticalPageSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-verticalPageSize.html).
+Sets [`verticalPageSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-verticalPageSize.html).
 
 ```csharp
 public static T SetVerticalPageSize<T>(this T element, float value) where T : ScrollView
@@ -365,7 +365,7 @@ The element type.
 
 ### SetVerticalScrollerVisibility\<T\>\(T, ScrollerVisibility\) {#Aspid_FastTools_UIElements_ScrollViewExtensions_SetVerticalScrollerVisibility__1___0_UnityEngine_UIElements_ScrollerVisibility_}
 
-Sets [`verticalScrollerVisibility`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ScrollView-verticalScrollerVisibility.html).
+Sets [`verticalScrollerVisibility`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ScrollView-verticalScrollerVisibility.html).
 
 ```csharp
 public static T SetVerticalScrollerVisibility<T>(this T element, ScrollerVisibility value) where T : ScrollView

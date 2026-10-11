@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-[`EditorWindow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/EditorWindow.html) for selecting a type from a filtered hierarchy.
+[`EditorWindow`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorWindow.html) for selecting a type from a filtered hierarchy.
 
 ```csharp
 public sealed class TypeSelectorWindow : EditorWindow

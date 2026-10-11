@@ -46,7 +46,7 @@ An array/list property whose elements are managed references.
 
 `label` GUIContent
 
-The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses the display name of <code class="paramref">listProperty</code>, [`none`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/GUIContent-none.html) displays no label.
+The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses the display name of <code class="paramref">listProperty</code>, [`none`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/GUIContent-none.html) displays no label.
 
 `elementType` [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
@@ -82,7 +82,7 @@ An array/list property whose elements are managed references.
 
 `label` GUIContent
 
-The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses the display name of <code class="paramref">listProperty</code>, [`none`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/GUIContent-none.html) displays no label.
+The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses the display name of <code class="paramref">listProperty</code>, [`none`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/GUIContent-none.html) displays no label.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 

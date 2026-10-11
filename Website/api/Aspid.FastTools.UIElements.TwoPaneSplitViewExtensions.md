@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`TwoPaneSplitView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TwoPaneSplitView.html).
+Provides extension methods for [`TwoPaneSplitView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TwoPaneSplitView.html).
 
 ```csharp
 public static class TwoPaneSplitViewExtensions
@@ -27,7 +27,7 @@ public static class TwoPaneSplitViewExtensions
 
 ### SetFixedPaneIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_TwoPaneSplitViewExtensions_SetFixedPaneIndex__1___0_System_Int32_}
 
-Sets [`fixedPaneIndex`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TwoPaneSplitView-fixedPaneIndex.html).
+Sets [`fixedPaneIndex`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TwoPaneSplitView-fixedPaneIndex.html).
 
 ```csharp
 public static T SetFixedPaneIndex<T>(this T element, int value) where T : TwoPaneSplitView
@@ -57,7 +57,7 @@ The element type.
 
 ### SetFixedPaneInitialDimension\<T\>\(T, float\) {#Aspid_FastTools_UIElements_TwoPaneSplitViewExtensions_SetFixedPaneInitialDimension__1___0_System_Single_}
 
-Sets [`fixedPaneInitialDimension`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TwoPaneSplitView-fixedPaneInitialDimension.html).
+Sets [`fixedPaneInitialDimension`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TwoPaneSplitView-fixedPaneInitialDimension.html).
 
 ```csharp
 public static T SetFixedPaneInitialDimension<T>(this T element, float value) where T : TwoPaneSplitView
@@ -91,7 +91,7 @@ Unity uses the value only when it has no saved view data for the split view.
 
 ### SetOrientation\<T\>\(T, TwoPaneSplitViewOrientation\) {#Aspid_FastTools_UIElements_TwoPaneSplitViewExtensions_SetOrientation__1___0_UnityEngine_UIElements_TwoPaneSplitViewOrientation_}
 
-Sets [`orientation`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TwoPaneSplitView-orientation.html).
+Sets [`orientation`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TwoPaneSplitView-orientation.html).
 
 ```csharp
 public static T SetOrientation<T>(this T element, TwoPaneSplitViewOrientation value) where T : TwoPaneSplitView

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`RadioButtonGroup`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.RadioButtonGroup.html).
+Provides extension methods for [`RadioButtonGroup`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.RadioButtonGroup.html).
 
 ```csharp
 public static class RadioButtonGroupExtensions
@@ -27,7 +27,7 @@ public static class RadioButtonGroupExtensions
 
 ### SetChoices\<T\>\(T, IEnumerable\<string\>\) {#Aspid_FastTools_UIElements_RadioButtonGroupExtensions_SetChoices__1___0_System_Collections_Generic_IEnumerable_System_String__}
 
-Sets [`choices`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.RadioButtonGroup-choices.html).
+Sets [`choices`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.RadioButtonGroup-choices.html).
 
 ```csharp
 public static T SetChoices<T>(this T element, IEnumerable<string> value) where T : RadioButtonGroup

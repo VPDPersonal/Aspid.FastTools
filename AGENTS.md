@@ -7,7 +7,7 @@ Agent Skills for projects that consume the package in `skills/`.
 ## Never
 
 - Use Unity APIs newer than **6000.0.53f1** without a `#if UNITY_6000_x_OR_NEWER` guard — the dev project runs
-  6000.4, but `package.json` promises 6000.0.53f1. Unity has no define for a patch: an API from a later 6000.0 patch
+  6000.6, but `package.json` promises 6000.0.53f1. Unity has no define for a patch: an API from a later 6000.0 patch
   needs a higher `unityRelease`.
 - Write to `Console` from generator or analyzer code, or reference `SourceGenerator.Foundations` —
   it deadlocks Unity's compilation server.
@@ -30,8 +30,8 @@ Agent Skills for projects that consume the package in `skills/`.
   fails on any difference, so a removed or renamed member cannot reach a release unnoticed. After an intended API
   change, rewrite the file on the Unity version that `WholeApiVersion` in the test names, or a newer one, and commit
   its diff in the same PR. Write it from the throwaway project of `scripts/make-unity-test-project.sh`, which references
-  the package in place: the dev project does not compile on 6000.6, where the embedded Asset Store Tools call APIs
-  that are errors there. `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" <version>)`, then
+  the package in place on any Unity version; a batch run cannot open the dev project while its Editor is open.
+  `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" <version>)`, then
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity $v> -batchmode -nographics -projectPath "$p" -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "$p/public-api.xml"`.
   An older Editor compiles only part of the API (the `UNITY_6000_x_OR_NEWER` guards), so there the test checks only
   for additions. The `#if` around `HasWholeApi` in the test names the newest guard: move it and `WholeApiVersion`
@@ -55,9 +55,11 @@ Agent Skills for projects that consume the package in `skills/`.
   reported by an analyzer, and a namespace or assembly in a consumer skill must exist in the package. A skill that
   describes public API is updated in the same PR as that API.
 - `scripts/check-package-files.mjs` (CI) fails on a package path longer than 123 characters (the Asset Store Validator
-  limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, and
-  on a `.uss.meta` with importer id 12388. Unity writes the full block into every new `.cs.meta`, and a reserialize adds
-  it to old ones, so the check keeps all of them in one format. Unity rewrites id 12388 to 12385 when it imports a sample.
+  limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, on a
+  `.uss.meta` without a `ScriptedImporter` block or with importer id 12388. Unity writes the full block into every new
+  `.cs.meta` and `.uss.meta`, and a reserialize adds it to old ones, so the check keeps all of them in one format; an IDE
+  writes only the GUID, and Unity 6000.6 warns on such a `.uss.meta`. Unity rewrites id 12388 to 12385 when it imports
+  a sample.
   It also fails on a file or folder without a `.meta` (`Samples~` content too), a `.meta` without an asset, a GUID used
   twice, a sample path of `package.json` that is no folder, and an asmdef reference that is no asmdef of the package.
   Unity repairs these in a local package and ignores or breaks them in an installed one. An asmdef that needs an assembly

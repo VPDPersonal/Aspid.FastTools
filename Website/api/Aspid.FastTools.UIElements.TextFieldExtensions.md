@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`TextField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextField.html).
+Provides extension methods for [`TextField`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TextField.html).
 
 ```csharp
 public static class TextFieldExtensions
@@ -27,7 +27,7 @@ public static class TextFieldExtensions
 
 ### SetMultiline\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextFieldExtensions_SetMultiline__1___0_System_Boolean_}
 
-Sets [`multiline`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextField-multiline.html).
+Sets [`multiline`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TextField-multiline.html).
 
 ```csharp
 public static T SetMultiline<T>(this T element, bool value) where T : TextField
@@ -57,7 +57,7 @@ The field type.
 
 ### SetVerticalScrollerVisibilitySelf\<T\>\(T, ScrollerVisibility\) {#Aspid_FastTools_UIElements_TextFieldExtensions_SetVerticalScrollerVisibilitySelf__1___0_UnityEngine_UIElements_ScrollerVisibility_}
 
-Sets [`verticalScrollerVisibility`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-verticalScrollerVisibility.html).
+Sets [`verticalScrollerVisibility`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TextInputBaseField_1-verticalScrollerVisibility.html).
 
 ```csharp
 public static T SetVerticalScrollerVisibilitySelf<T>(this T element, ScrollerVisibility value) where T : TextField

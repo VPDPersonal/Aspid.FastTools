@@ -8,7 +8,7 @@
  * Members are told apart by case, as Unity names them: properties, fields, events and constructors (`-ctor`)
  * start in lower case.
  *
- * The link goes to the reference of `unityVersion` (`6000.4`), the Editor whose assemblies DocFX read: Unity moves members
+ * The link goes to the reference of `unityVersion` (`6000.6`), the Editor whose assemblies DocFX read: Unity moves members
  * between versions (`BaseField<T>.label` went to `AbstractBaseField` in 6000.6), so the unversioned latest reference loses
  * pages. Without a version the link goes to the latest reference.
  *

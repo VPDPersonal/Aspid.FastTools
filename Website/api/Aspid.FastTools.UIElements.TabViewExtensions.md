@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`TabView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView.html).
+Provides extension methods for [`TabView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView.html).
 
 ```csharp
 public static class TabViewExtensions
@@ -27,7 +27,7 @@ public static class TabViewExtensions
 
 ### AddActiveTabChanged\<T\>\(T, Action\<Tab, Tab\>\) {#Aspid_FastTools_UIElements_TabViewExtensions_AddActiveTabChanged__1___0_System_Action_UnityEngine_UIElements_Tab_UnityEngine_UIElements_Tab__}
 
-Subscribes to the [`activeTabChanged`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-activeTabChanged.html) event.
+Subscribes to the [`activeTabChanged`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-activeTabChanged.html) event.
 
 ```csharp
 public static T AddActiveTabChanged<T>(this T element, Action<Tab, Tab> value) where T : TabView
@@ -57,7 +57,7 @@ The element type.
 
 ### AddTabClosed\<T\>\(T, Action\<Tab, int\>\) {#Aspid_FastTools_UIElements_TabViewExtensions_AddTabClosed__1___0_System_Action_UnityEngine_UIElements_Tab_System_Int32__}
 
-Subscribes to the [`tabClosed`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-tabClosed.html) event.
+Subscribes to the [`tabClosed`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-tabClosed.html) event.
 
 ```csharp
 public static T AddTabClosed<T>(this T element, Action<Tab, int> value) where T : TabView
@@ -87,7 +87,7 @@ The element type.
 
 ### AddTabReordered\<T\>\(T, Action\<int, int\>\) {#Aspid_FastTools_UIElements_TabViewExtensions_AddTabReordered__1___0_System_Action_System_Int32_System_Int32__}
 
-Subscribes to the [`tabReordered`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-tabReordered.html) event.
+Subscribes to the [`tabReordered`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-tabReordered.html) event.
 
 ```csharp
 public static T AddTabReordered<T>(this T element, Action<int, int> value) where T : TabView
@@ -117,7 +117,7 @@ The element type.
 
 ### RemoveActiveTabChanged\<T\>\(T, Action\<Tab, Tab\>\) {#Aspid_FastTools_UIElements_TabViewExtensions_RemoveActiveTabChanged__1___0_System_Action_UnityEngine_UIElements_Tab_UnityEngine_UIElements_Tab__}
 
-Unsubscribes from the [`activeTabChanged`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-activeTabChanged.html) event.
+Unsubscribes from the [`activeTabChanged`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-activeTabChanged.html) event.
 
 ```csharp
 public static T RemoveActiveTabChanged<T>(this T element, Action<Tab, Tab> value) where T : TabView
@@ -147,7 +147,7 @@ The element type.
 
 ### RemoveTabClosed\<T\>\(T, Action\<Tab, int\>\) {#Aspid_FastTools_UIElements_TabViewExtensions_RemoveTabClosed__1___0_System_Action_UnityEngine_UIElements_Tab_System_Int32__}
 
-Unsubscribes from the [`tabClosed`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-tabClosed.html) event.
+Unsubscribes from the [`tabClosed`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-tabClosed.html) event.
 
 ```csharp
 public static T RemoveTabClosed<T>(this T element, Action<Tab, int> value) where T : TabView
@@ -177,7 +177,7 @@ The element type.
 
 ### RemoveTabReordered\<T\>\(T, Action\<int, int\>\) {#Aspid_FastTools_UIElements_TabViewExtensions_RemoveTabReordered__1___0_System_Action_System_Int32_System_Int32__}
 
-Unsubscribes from the [`tabReordered`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-tabReordered.html) event.
+Unsubscribes from the [`tabReordered`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-tabReordered.html) event.
 
 ```csharp
 public static T RemoveTabReordered<T>(this T element, Action<int, int> value) where T : TabView
@@ -207,7 +207,7 @@ The element type.
 
 ### SetActiveTab\<T\>\(T, Tab\) {#Aspid_FastTools_UIElements_TabViewExtensions_SetActiveTab__1___0_UnityEngine_UIElements_Tab_}
 
-Sets [`activeTab`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-activeTab.html).
+Sets [`activeTab`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-activeTab.html).
 
 ```csharp
 public static T SetActiveTab<T>(this T element, Tab value) where T : TabView
@@ -241,7 +241,7 @@ Unity throws when <code class="paramref">value</code> is not a tab of this view,
 
 ### SetReorderable\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TabViewExtensions_SetReorderable__1___0_System_Boolean_}
 
-Sets [`reorderable`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-reorderable.html).
+Sets [`reorderable`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-reorderable.html).
 
 ```csharp
 public static T SetReorderable<T>(this T element, bool value) where T : TabView
@@ -271,7 +271,7 @@ The element type.
 
 ### SetSelectedTabIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_TabViewExtensions_SetSelectedTabIndex__1___0_System_Int32_}
 
-Sets [`selectedTabIndex`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TabView-selectedTabIndex.html).
+Sets [`selectedTabIndex`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TabView-selectedTabIndex.html).
 
 ```csharp
 public static T SetSelectedTabIndex<T>(this T element, int value) where T : TabView
