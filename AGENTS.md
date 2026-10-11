@@ -76,9 +76,8 @@ Agent Skills for projects that consume the package in `skills/`.
 - `Aspid.FastTools/Packages/com.unity.asset-store-tools/` is Unity's Asset Store Tools (the package validator and uploader),
   embedded in the dev project. It is third-party code with CRLF line endings, so do not edit, reformat or delete it. It
   stays outside `Aspid.FastTools/Packages/tech.aspid.fasttools/`, so the `upm` branches do not contain it.
-- The dev project uses the legacy Input Manager on purpose (`activeInputHandler: 0`, no `com.unity.inputsystem`).
-  `com.unity.pipeline` compiles its input commands only when `ENABLE_INPUT_SYSTEM` is defined, and then it needs the
-  package. The CLI input commands (`simulate_key` and the pointer commands) report as unavailable.
+- The dev project uses only the Input System (`activeInputHandler: 1`, `com.unity.inputsystem`): `UnityEngine.Input`
+  throws there. `com.unity.pipeline` needs the package for its CLI input commands (`simulate_key`, pointer commands).
 
 ## Checks
 
