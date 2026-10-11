@@ -616,6 +616,16 @@ namespace Aspid.FastTools.Editors.Tests
         }
 
         [Test]
+        public void Enum_With64BitValue_WritesTheWholeValue()
+        {
+            _serializedObject.FindProperty(nameof(SetterTarget.Long)).SetEnumAndApply(SetterFar.Far);
+            _serializedObject.FindProperty(nameof(SetterTarget.Ulong)).SetEnumAndApply(SetterMask.High);
+
+            Assert.AreEqual((long)SetterFar.Far, _target.Long);
+            Assert.AreEqual((ulong)SetterMask.High, _target.Ulong);
+        }
+
+        [Test]
         public void ExposedReference_WithContext_KeepsTheNameOnlyAfterApply()
         {
             var table = ScriptableObject.CreateInstance<ExposedTable>();
@@ -831,6 +841,10 @@ namespace Aspid.FastTools.Editors.Tests
         private enum SetterDirections { None = 0, Up = 1, Down = 2, Left = 4, Right = 8 }
 
         private enum SetterSmallRarity : byte { Small = 1, Big = 5 }
+
+        private enum SetterFar : long { Near = 0, Far = 1L << 40 }
+
+        private enum SetterMask : ulong { None = 0, High = 1UL << 63 }
 
         private sealed class ExposedTable : ScriptableObject, IExposedPropertyTable
         {

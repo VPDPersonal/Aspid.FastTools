@@ -632,6 +632,11 @@ namespace Aspid.FastTools.Editors
         /// the entries are numbered. To write an index, use <see cref="SetEnumIndex{T}"/>.
         /// </para>
         /// <para>A combination of <see cref="FlagsAttribute"/> flags is written as is.</para>
+        /// <para>
+        /// Unity serializes only enums of 32 bits or smaller. The value of a <see langword="long"/> or
+        /// <see langword="ulong"/> enum is written to <see cref="SerializedProperty.longValue"/> or
+        /// <see cref="SerializedProperty.ulongValue"/>, so it fits a <see langword="long"/> or <see langword="ulong"/> field.
+        /// </para>
         /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <typeparam name="TEnum">The enum type of the field.</typeparam>
@@ -642,7 +647,14 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
             where TEnum : struct, Enum
         {
-            property.intValue = unchecked((int)Convert.ToInt64(value));
+            switch (Type.GetTypeCode(typeof(TEnum)))
+            {
+                case TypeCode.Int64: property.longValue = Convert.ToInt64(value); break;
+                case TypeCode.UInt64: property.ulongValue = Convert.ToUInt64(value); break;
+                // A uint value above int.MaxValue keeps its bits.
+                default: property.intValue = unchecked((int)Convert.ToInt64(value)); break;
+            }
+
             return property;
         }
 

@@ -1277,6 +1277,11 @@ Writes the value of the enum entry, not its index, so <code>SetEnum(Rarity.Rare)
 the entries are numbered. To write an index, use [`SerializePropertyExtensions.SetEnumIndex<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumIndex__1___0_System_Int32_).
 </p>
 <p>A combination of [`FlagsAttribute`](https://learn.microsoft.com/dotnet/api/system.flagsattribute) flags is written as is.</p>
+<p>
+Unity serializes only enums of 32 bits or smaller. The value of a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">long</a> or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">ulong</a> enum is written to [`longValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-longValue.html) or
+[`ulongValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-ulongValue.html), so it fits a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">long</a> or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">ulong</a> field.
+</p>
 
 ### SetEnumAndApply\<T, TEnum\>\(T, TEnum\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumAndApply__2___0___1_}
 
@@ -3220,6 +3225,11 @@ Writes the value of the enum entry, not its index, so <code>SetEnum(Rarity.Rare)
 the entries are numbered. To write an index, use [`SerializePropertyExtensions.SetEnumIndex<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumIndex__1___0_System_Int32_).
 </p>
 <p>A combination of [`FlagsAttribute`](https://learn.microsoft.com/dotnet/api/system.flagsattribute) flags is written as is.</p>
+<p>
+Unity serializes only enums of 32 bits or smaller. The value of a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">long</a> or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">ulong</a> enum is written to [`longValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-longValue.html) or
+[`ulongValue`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty-ulongValue.html), so it fits a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">long</a> or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/integral-numeric-types">ulong</a> field.
+</p>
 
 ### SetValue\<T\>\(T, bool\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValue__1___0_System_Boolean_}
 
