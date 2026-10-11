@@ -54,9 +54,6 @@ namespace UnityEngine
     // The wrappers open profiler markers, which the package compiles out under this scripting symbol.
     private const string ProfilerDisabledSymbol = "ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED";
 
-    // The pre-1.0 spelling, kept as an alias for one release.
-    private const string LegacyProfilerDisabledSymbol = "ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED";
-
     private static Task Verify(string code, params DiagnosticResult[] expected)
     {
         var test = CreateTest(code);
@@ -1125,14 +1122,12 @@ class C { [{|#0:SerializeField|}, TypeSelector] private string _type; }",
         DiagnosticResult.CompilerError("CS0246").WithLocation(0).WithArguments("SerializeField"));
 
     // The package sources have no Marker() in this compilation, so they compile only when the symbol strips it.
-    [Theory]
-    [InlineData(ProfilerDisabledSymbol)]
-    [InlineData(LegacyProfilerDisabledSymbol)]
-    public Task ProfilerDisabledSymbol_CompilesMarkersOut(string symbol) => CreateTest(@"
+    [Fact]
+    public Task ProfilerDisabledSymbol_CompilesMarkersOut() => CreateTest(@"
 using UnityEngine;
 using Aspid.FastTools.Types;
 class C { [SerializeField, TypeSelector(typeof(System.Object))] private string _type; }",
-        profilerDisabledSymbol: symbol).RunAsync();
+        profilerDisabledSymbol: ProfilerDisabledSymbol).RunAsync();
 
     private static Task VerifyWithReferencedProject(string code, string referencedProjectSource)
     {

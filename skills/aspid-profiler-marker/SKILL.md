@@ -71,5 +71,5 @@ warning `AFT0014`. For runtime-computed names use a hand-written `static readonl
   `internal`/`public`, rename the parameter, or use a hand-written `ProfilerMarker`. A `private`
   or `protected` nested `ref struct` does not compile at all (CS1929): make it `internal`/`public`.
 - `ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED` strips only the package's own markers, not user `this.Marker()` calls.
-  The old spelling `ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED` is an alias for one more release.
+  The old spelling `ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED` no longer works.
 - Leave existing `Profiler.BeginSample` / `ProfilerMarker` code alone unless the user asks to migrate it.
