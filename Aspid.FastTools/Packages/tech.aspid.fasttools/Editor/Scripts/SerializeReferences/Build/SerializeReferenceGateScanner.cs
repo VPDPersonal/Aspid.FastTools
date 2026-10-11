@@ -68,14 +68,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!isTextYaml) unscanned?.Add((path, format));
                 }
 
+                // One read for every YAML pass: managed references, the names stored by SerializableType wrappers and
+                // the registry version, which the required-field reader of a scene cannot read either.
+                var lines = needsYaml && isTextYaml ? SerializeReferenceYaml.ReadLines(path, knownTextYaml: true) : null;
+                if (lines is not null && SerializeReferenceYaml.HasUnsupportedReferencesVersion(lines))
+                    unscanned?.Add((path, AssetFileFormat.UnsupportedReferencesVersion));
+
                 if (options.ScanMissingTypes && isTextYaml)
                 {
-                    // One read for both passes: managed references, then the names stored by SerializableType wrappers.
-                    var lines = SerializeReferenceYaml.ReadLines(path, knownTextYaml: true);
-
-                    if (SerializeReferenceYaml.HasUnsupportedReferencesVersion(lines))
-                        unscanned?.Add((path, AssetFileFormat.UnsupportedReferencesVersion));
-
                     foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(lines, SerializeReferenceHelpers.StoredTypeResolves))
                     {
                         if (IsPendingMigration(path, entry)) continue;
