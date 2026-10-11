@@ -43,7 +43,7 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 - saved `.prefab`, `.asset`, `.unity`, `.controller` (Animator Controller) and `.playable` (Timeline) files under `Assets/`, apart from **Excluded scan folders**;
 - <code lang="csharp">[SerializeReference]</code> and the names in <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields; <code lang="csharp">[TypeSelector]</code> strings are not checked;
 - pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing;
-- binary assets and unfetched Git LFS files are not scanned, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files; to make CI count them as violations, pass `-srGateStrict`.
+- binary assets and unfetched Git LFS files are not scanned: Scan Project and the build gate warn about them in the Console, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files; to make CI count them as violations, pass `-srGateStrict`.
 - a file last saved before Unity 2021.2 stores managed references in an older format: the build and CI warn about it instead of checking it, until it is saved again, for example with <code lang="csharp">AssetDatabase.ForceReserializeAssets()</code>.
 
 **Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection.

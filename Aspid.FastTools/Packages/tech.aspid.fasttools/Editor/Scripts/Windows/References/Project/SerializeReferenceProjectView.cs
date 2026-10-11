@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
@@ -87,6 +88,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static IReadOnlyList<MissingTypeNameLocation> TypeNamesForRender =>
             _typeNamesIsWarm ? _typeNamesCache : Array.Empty<MissingTypeNameLocation>();
+
+        // Files Scan Project could not read (binary, Git LFS pointer): their absence from the lists proves nothing.
+        private static int _unreadFileCount;
 
         private static RequiredAuditState RequiredAudit =>
             SerializeReferenceProjectSummary.GetRequiredAuditState(
@@ -218,7 +222,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var requiredViolations = CollectRequiredViolations(requiredCheckDisabled);
             if (requiredViolations is null) return;
 
-            var typeNames = MissingTypeNames.ScanProject();
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+            var typeNames = MissingTypeNames.ScanProject(unscanned: unscanned);
             if (typeNames is null) return;
 
             ClearSummaries();
@@ -231,6 +236,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _typeNamesCache = typeNames;
             _typeNamesIsWarm = true;
+
+            _unreadFileCount = SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, EditorSettings.serializationMode);
+
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, EditorSettings.serializationMode);
+            if (notice is not null) Debug.LogWarning(notice);
 
             RenderWarmGroups();
         }
@@ -283,7 +293,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 // An audit that never ran, went stale or was switched off has found nothing, which is not the same
                 // as a clean project.
-                var (success, title, message) = SerializeReferenceProjectSummary.BuildNothingFoundState(RequiredAudit);
+                var (success, title, message) = SerializeReferenceProjectSummary.BuildNothingFoundState(
+                    RequiredAudit, typeNamesScanned: _typeNamesIsWarm, unreadFileCount: _unreadFileCount);
                 ShowEmptyState(success, title, message);
                 return;
             }
@@ -304,10 +315,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 SerializeReferenceProjectSummary.BuildResultsHeaderText(
                     missingCount - migrationCount - TypeNamesForRender.Count, migrationCount, requiredCount, TypeNamesForRender.Count),
                 StatusStyle.Type.Warning);
-            _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0, RequiredAudit, overrides.Count > 0);
 
-            var hasAmber = groups.Count > migrations.Count || requiredCount > 0 || overrides.Count > pendingOverrides ||
-                           typeNameGroups.Count > 0;
+            // Only these cards have a Fix all; a renamed type has Reassign all and Migrate all instead.
+            var hasBrokenGroups = groups.Count > migrations.Count || typeNameGroups.Count > 0;
+            _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(
+                requiredCount > 0,
+                RequiredAudit,
+                overrides.Count > 0,
+                hasBrokenGroups: hasBrokenGroups,
+                hasTypeNames: typeNameGroups.Count > 0,
+                typeNamesScanned: _typeNamesIsWarm,
+                unreadFileCount: _unreadFileCount);
+
+            var hasAmber = hasBrokenGroups || requiredCount > 0 || overrides.Count > pendingOverrides;
             _legend.EnableInClassList(LegendHiddenClass, migrationCount == 0 || !hasAmber);
 
             if (overrides.Count > 0)
@@ -348,9 +368,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 requiredViolations.Count == 0
                     ? "No missing references"
                     : $"No missing references, {BuildCountText(requiredViolations.Count, "required violation")}",
-                SerializeReferenceProjectSummary.GetMissingReferencesCleanStatus(RequiredAudit, requiredViolations.Count > 0));
-            _resultsHint.text =
-                SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAudit, requiredViolations.Count > 0);
+                SerializeReferenceProjectSummary.GetMissingReferencesCleanStatus(
+                    RequiredAudit, requiredViolations.Count > 0, typeNamesScanned: _typeNamesIsWarm, unreadFileCount: _unreadFileCount));
+            _resultsHint.text = SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(
+                RequiredAudit, requiredViolations.Count > 0, typeNamesScanned: _typeNamesIsWarm, unreadFileCount: _unreadFileCount);
             _legend.AddClass(LegendHiddenClass);
 
             if (requiredViolations.Count > 0)

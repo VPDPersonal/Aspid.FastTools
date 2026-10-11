@@ -102,6 +102,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(other, SerializeReferenceYamlEditor.FindStoredTypeNames(ProbeAssetPath).Single(entry => entry.FieldPath == "type").TypeName);
         }
 
+        // A file the YAML pass cannot read has no missing names, which is not the same as having none: the caller gets
+        // it back as unscanned.
+        [TestCase("version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n", AssetFileFormat.LfsPointer)]
+        [TestCase("\u0001\u0002binary", AssetFileFormat.Binary)]
+        public void FindInFile_FileThatIsNotTextYaml_IsReportedAsUnscanned(string content, AssetFileFormat format)
+        {
+            SaveProbeWithBrokenNames();
+            File.WriteAllText(ProbeAssetPath, content);
+
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+
+            CollectionAssert.IsEmpty(MissingTypeNames.FindInFile(ProbeAssetPath, unscanned));
+            CollectionAssert.AreEqual(new[] { (ProbeAssetPath, format) }, unscanned);
+        }
+
+        [Test]
+        public void FindInFile_TextYaml_IsNotReportedAsUnscanned()
+        {
+            SaveProbeWithBrokenNames();
+
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+
+            Assert.AreEqual(2, MissingTypeNames.FindInFile(ProbeAssetPath, unscanned).Count);
+            CollectionAssert.IsEmpty(unscanned);
+        }
+
+        [Test]
+        public void FindInFile_MissingFile_IsNotReportedAsUnscanned()
+        {
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+
+            CollectionAssert.IsEmpty(MissingTypeNames.FindInFile(ProbeAssetPath, unscanned));
+            CollectionAssert.IsEmpty(unscanned);
+        }
+
+        [Test]
+        public void ScanProject_LfsPointer_AppearsInUnscanned()
+        {
+            SaveProbeWithBrokenNames();
+            File.WriteAllText(ProbeAssetPath, "version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n");
+
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+            var missing = MissingTypeNames.ScanProject(unscanned);
+
+            CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.LfsPointer));
+            Assert.IsFalse(missing.Any(location => location.AssetPath == ProbeAssetPath));
+        }
+
         [Test]
         public void TryGetFieldConstraint_ReadsTheWrapperTypeArgument()
         {
