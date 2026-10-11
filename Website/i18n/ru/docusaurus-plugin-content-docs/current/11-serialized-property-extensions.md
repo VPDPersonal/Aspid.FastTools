@@ -16,12 +16,13 @@
 | <code lang="csharp">SetIntAndApply(42)</code> | Записывает и применяет изменения |
 | <code lang="csharp">SetIntAndApplyWithoutUndo(42)</code> | Записывает и применяет изменения без Undo |
 
-Перегрузки <code lang="function">SetValue</code> выбирают сеттер по типу аргумента: <code lang="csharp">SetValue(42)</code> вызывает <code lang="function">SetInt</code>. Тип аргумента должен совпадать с типом поля. Полный список сеттеров — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors.SerializePropertyExtensions).
+Перегрузки <code lang="function">SetValue</code> выбирают сеттер по типу аргумента: <code lang="csharp">SetValue(42)</code> вызывает <code lang="function">SetInt</code>. Тип аргумента должен совпадать с типом поля. Целые типы меньше <code lang="csharp">int</code>, а также <code lang="csharp">char</code>, тоже вызывают <code lang="function">SetInt</code>. Полный список сеттеров — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors.SerializePropertyExtensions).
 
 ### Перечисления, массивы и ссылки
 
 | Unity | FastTools |
 |---|---|
+| <code lang="csharp">intValue = (int)Rarity.Rare</code> | <code lang="csharp">SetEnum(Rarity.Rare)</code> |
 | <code lang="csharp">enumValueIndex = 1</code> | <code lang="csharp">SetEnumIndex(1)</code> |
 | <code lang="csharp">enumValueFlag = flags</code> | <code lang="csharp">SetEnumFlag(flags)</code> |
 | <code lang="csharp">arraySize = 5</code> | <code lang="csharp">SetArraySize(5)</code> |
@@ -31,6 +32,13 @@
 | <code lang="csharp">objectReferenceValue = value</code> | <code lang="csharp">SetObjectReference(value)</code> |
 | <code lang="csharp">boxedValue = value</code> | <code lang="csharp">SetBoxed(value)</code> |
 | <code lang="csharp">exposedReferenceValue = value</code> | <code lang="csharp">SetExposedReference(value)</code> |
+
+- У <code lang="function">SetEnumIndex</code> и <code lang="function">SetEnumFlag</code> нет формы <code lang="function">SetValue</code>: вызывайте их по имени.
+- <code lang="csharp">SetValue(1)</code> для поля-перечисления вызывает <code lang="function">SetInt</code>: записывается значение 1, а не индекс.
+- Значение перечисления записывают <code lang="function">SetEnum</code> и <code lang="csharp">SetValue(Rarity.Rare)</code>.
+
+> [!WARNING]
+> С контекстом <code lang="class-name">IExposedPropertyTable</code>, например <code lang="class-name">PlayableDirector</code>, <code lang="csharp">SetExposedReference()</code> сразу кладёт ссылку в таблицу, но новое имя остаётся неприменённым. Вызовите после него <code lang="csharp">ApplyModifiedProperties()</code>: иначе очередное обновление или перезагрузка домена сбросят имя, и запись в таблице останется без владельца.
 
 ### Update() и Apply…()
 
