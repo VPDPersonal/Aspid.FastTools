@@ -74,6 +74,8 @@ Do every step without questions. Stop at the first failure and report it.
 
 1. Find the merge commit: `gh pr view chore/release-<version> --json state,mergeCommit`.
 2. The PR is not merged → say so and stop.
+   **Stable:** ask the user whether this version is live on the Asset Store. Not yet → give the steps of
+   "Asset Store upload" and stop.
 3. Check the consumer skills in the merge commit. The docs tell users to install them from the tag
    (`npx skills add VPDPersonal/Aspid.FastTools#v<version>`), and a published tag cannot be replaced.
    - `git ls-tree --name-only <merge-sha>:skills` lists the skill folders. An error or an empty list means that the
@@ -138,41 +140,39 @@ Read the failed step: `gh run view <id> --log-failed`. Then:
 
 ## Asset Store upload
 
-The upload is manual and belongs to a **Stable** release. The user signs in and uploads. These decisions are fixed.
+The upload is manual and belongs to a **Stable** release. The user signs in, uploads and submits. These decisions are
+fixed.
 
-- **Upload form: Local UPM Package** of Asset Store Tools (`Tools/Asset Store/Uploader`, "Upload type").
-  - The package stays a UPM package in `Packages/`. Its tests compile only for a package in `Assets/` or in
-    `testables`, so a buyer does not run them.
-  - Do not use "From Assets Folder". The package would land in `Assets/`, and about 30 tests would run in the buyer's
-    project, some of them changing its `ProjectSettings`.
-  - "Pre-exported .unitypackage" is the fallback if Asset Store Tools removes the Local UPM Package entry.
-- **Symbol:** the entry exists only with `UNITY_ASTOOLS_EXPERIMENTAL`. The dev project sets it for the Standalone group
-  only (`Aspid.FastTools/ProjectSettings/ProjectSettings.asset`). Keep it there, so that the Uploader and the
-  Validator open in the dev project for a look. Never upload from the dev project: see "Editor". The upload project
-  needs the same symbol, and its build target must stay Standalone: on Android or iOS the entry disappears without a
-  message.
-- **Editor: 6000.0.53f1**, the minimum of `package.json` and of the `ci.yml` matrix. Asset Store Tools sends the Editor version
-  with every request, and the store can record it as the minimum Unity version. An upload from the dev project (6000.6)
-  can list buyers on 6000.0–6000.3 as unsupported. Do not open the dev project in 6000.0.53f1: it is a 6000.6
-  project, and the downgrade rewrites its files.
+- **Order:** the stable version reaches GitHub only after the Asset Store publishes it. The upload starts after the
+  release PR is merged ("Phase 2" step 2) and before the tag. The `v<version>` tag waits until the product is live.
+- **Portal:** the UPM Publisher Portal (`https://cloud.unity.com/assetstore/publisher/products`), product `fastTools`
+  (id 2333465, store page `https://assetstore.unity.com/packages/package/2333465`). The package technical name
+  `tech.aspid.fasttools` is reserved there and must stay the `name` of `package.json`. The old portal
+  (`publisher.unity.com`) serves `.unitypackage` assets only: do not upload FastTools there.
+- **Tool:** Asset Store UPM Publishing Tools, `com.unity.upm-publishing-tools`. It is free, but it installs only for an
+  account that has it in **My Assets** (`https://assetstore.unity.com/packages/package/5368745`): the registry refuses
+  the download otherwise. The dev project lists it in `manifest.json`. Do not use the old Asset Store Tools
+  (`com.unity.asset-store-tools`): their "Local UPM Package" uploads a `.unitypackage` to the old portal.
+- **Editor: 6000.0.53f1**, the minimum of `package.json` and of the `ci.yml` matrix. The portal records the Editor
+  version of every uploaded package. An upload from the dev project (6000.6) can list buyers on 6000.0–6000.5 as
+  unsupported. Do not open the dev project in 6000.0.53f1: it is a 6000.6 project, and the downgrade rewrites its files.
 - **Upload project:** a new project on 6000.0.53f1.
-  1. Put the package into `Packages/tech.aspid.fasttools`. Take it from the `upm/<version>` tag after "Phase 3":
-     `git clone --depth 1 --branch upm/<version> https://github.com/VPDPersonal/Aspid.FastTools <upload project>/Packages/tech.aspid.fasttools`,
-     then delete the `.git` folder in it. The tag has the generated `CHANGELOG.md`. Before the tag, run
-     `node scripts/package-changelog.mjs v<version>` and copy the package folder.
-  2. Copy `Aspid.FastTools/Packages/com.unity.asset-store-tools` into `Packages/`.
-  3. Add `UNITY_ASTOOLS_EXPERIMENTAL` to the Standalone scripting define symbols.
-  4. In the Uploader, pick the draft, "Local UPM Package" and `Packages/tech.aspid.fasttools/package.json`.
-- **Validator:** run `Tools/Asset Store/Validator` on the package before the upload. Fix every failure first.
-  One warning is expected and stays: "The following scripts contain types not nested under a namespace".
-  - It lists `ProfilerMarkerExtensionsForGenerator`. The type has no namespace on purpose, because the generator
-    finds it by name. Do not move it.
-  - The Validator does not report the types of the Roslyn DLLs. It reads only the DLLs that the Editor has loaded,
-    and it skips compiler-generated names.
-
-  Put the warning into the submission notes and name that type.
-- **Check the export:** use "Export" and import the `.unitypackage` into a clean 6000.0.53f1 project. The package
-  lands in `Packages/tech.aspid.fasttools`, and the Test Runner lists no FastTools tests.
+  1. Check out the merge commit of the release PR in a worktree, run `node scripts/package-changelog.mjs v<version>`
+     there, and copy `Aspid.FastTools/Packages/tech.aspid.fasttools` into `Packages/tech.aspid.fasttools` of the
+     upload project. It is the content that the Release workflow later publishes to `upm/<version>`.
+  2. Install the Publishing Tools: **Window → Package Manager → My Assets → Asset Store UPM Publishing Tools → Install**.
+- **Validator:** Validation Type **UPM**. Fix every failure first. A warning about types outside a namespace that names
+  `ProfilerMarkerExtensionsForGenerator` stays: the generator finds that type by name. Put it into the submission
+  notes and name that type.
+- **Uploader:** the **UPM Packages** tab, **Upload** on `tech.aspid.fasttools`. Every upload needs a version that the
+  product has not had: a fix after a rejection may need the next version, released through "Phase 1" again.
+- **Portal, package metadata:** the compatible Unity versions (every `6000.x` from 6000.0 that the `ci.yml` matrix
+  covers), the release notes (the version's CHANGELOG section) and the package information.
+- **Submit** with **Manually publish**. Unity reviews in about five business days. After the approval the user clicks
+  publish in the portal, checks the store page, and only then answers yes to the tag question of "Phase 2".
+- **Check the install:** in a clean 6000.0.53f1 project, **My Assets → Aspid.FastTools → Install**. The package lands
+  in the **Packages** list (not in `Assets/`), its **Samples** tab imports the samples, and the Test Runner lists no
+  FastTools tests.
 
 ## Not done by this skill
 
@@ -183,7 +183,7 @@ Put these items into the Phase 1 report. Do not do them without a request.
 - "The channel changed" from `set-version.sh` → re-record the README install walk-through in a separate PR
   (`docs/media/readme-previews/README.md`).
 - **Stable:** the manual QA of `.github/ISSUE_TEMPLATE/release_checklist.yml`: player builds, and the Asset Store
-  upload as in "Asset Store upload".
+  upload as in "Asset Store upload". It comes before the tag of "Phase 2".
 
 ## Report format
 

@@ -1,7 +1,6 @@
 ﻿<Solution>
   <Project Path="Aspid.FastTools.csproj" />
   <Project Path="Aspid.FastTools.Samples.SerializeReferences.csproj" />
-  <Project Path="asset-store-tools-editor.csproj" />
   <Project Path="Aspid.FastTools.Editor.csproj" />
   <Project Path="Aspid.FastTools.Editor.SerializeReferences.Tests.csproj" />
   <Project Path="Aspid.FastTools.Samples.EnumValues.csproj" />
