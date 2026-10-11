@@ -38,7 +38,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             typeNamesScanned ? BuildRequiredNotCheckedText(state) : TypeNamesNotScannedText;
 
         // Binary files and Git LFS pointers are not text YAML, so no scan reads them; a file another program locks
-        // cannot be opened and is counted with them.
+        // cannot be opened (AssetFileFormat.Unreadable) and is counted with them.
         public static string BuildUnreadFilesText(int count) =>
             (count == 1
                 ? "1 file was not checked (binary, a Git LFS pointer or not readable)"

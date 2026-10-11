@@ -119,8 +119,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // `unscanned` collects the file when it exists but is not text YAML (binary, LFS pointer), so the caller can
-        // tell a file with no missing names from a file nobody read.
+        // `unscanned` collects the file when it exists but is not text YAML (binary, LFS pointer) or cannot be opened
+        // (Unreadable), so the caller can tell a file with no missing names from a file nobody read.
         public static List<MissingTypeNameLocation> FindInFile(
             string assetPath, ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
@@ -163,16 +163,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Sniffed once: the format decides whether the file is read, and a file that cannot be read is reported.
+        // Sniffed once: the format decides whether the file is read, and a file that cannot be read, also one whose read
+        // failed after the sniff, is reported.
         private static string[] ReadLines(string assetPath, ICollection<(string AssetPath, AssetFileFormat Format)> unscanned)
         {
             if (unscanned is null || !File.Exists(assetPath)) return SerializeReferenceYaml.ReadLines(assetPath);
 
-            var format = SerializeReferenceYaml.SniffFileFormat(assetPath);
-            if (format == AssetFileFormat.TextYaml) return SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml: true);
+            var lines = SerializeReferenceYaml.ReadLines(assetPath, out var format);
+            if (format != AssetFileFormat.TextYaml) unscanned.Add((assetPath, format));
 
-            unscanned.Add((assetPath, format));
-            return null;
+            return lines;
         }
 
         // Re-reads the given files and swaps their entries in an earlier result; every other file keeps its entries.

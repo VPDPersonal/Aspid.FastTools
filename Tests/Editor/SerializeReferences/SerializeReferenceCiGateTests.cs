@@ -81,6 +81,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 ("Assets/Scene/LightingData.asset", AssetFileFormat.Binary),
                 ("Assets/B.prefab", AssetFileFormat.LfsPointer),
                 ("Assets/Old.asset", AssetFileFormat.UnsupportedReferencesVersion),
+                ("Assets/Locked.prefab", AssetFileFormat.Unreadable),
             };
 
             var lines = SerializeReferenceCiGate.BuildReport(new[] { violation }, unscanned)
@@ -88,10 +89,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 .Select(line => line.TrimEnd('\r'))
                 .ToArray();
 
-            CollectionAssert.Contains(lines, "# Not scanned: 3");
+            CollectionAssert.Contains(lines, "# Not scanned: 4");
             CollectionAssert.Contains(lines, "#   Binary\tAssets/Scene/LightingData.asset");
             CollectionAssert.Contains(lines, "#   LfsPointer\tAssets/B.prefab");
             CollectionAssert.Contains(lines, "#   UnsupportedReferencesVersion\tAssets/Old.asset");
+            CollectionAssert.Contains(lines, "#   Unreadable\tAssets/Locked.prefab");
             CollectionAssert.Contains(lines, "MissingType\tAssets/A.prefab\t1\t2\tGhost\t\t\tNs\tAsm");
         }
 
@@ -152,6 +154,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.AreEqual(3, SerializeReferenceGateScanner.CountUnchecked(unscanned, SerializationMode.ForceText));
             Assert.AreEqual(0, SerializeReferenceGateScanner.CountUnchecked(null, SerializationMode.ForceText));
+        }
+
+        // A file that could not be opened was not checked either, so strict mode counts it as it counts the others.
+        [Test]
+        public void CountUnchecked_CountsUnreadableFiles()
+        {
+            var unscanned = new[]
+            {
+                ("Assets/A.prefab", AssetFileFormat.Unreadable),
+                ("Assets/B.prefab", AssetFileFormat.LfsPointer),
+            };
+
+            Assert.AreEqual(2, SerializeReferenceGateScanner.CountUnchecked(unscanned, SerializationMode.ForceText));
         }
 
         // -----------------------------------------------------------------------------------------------------
@@ -305,6 +320,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 ("Assets/Arena.unity", AssetFileFormat.LfsPointer));
 
             Assert.AreEqual(1, exitCode);
+        }
+
+        [Test]
+        public void Execute_Strict_UnreadableFile_FailsUnderFail()
+        {
+            LogAssert.Expect(LogType.Warning, new Regex("1 file\\(s\\) could not be opened"));
+            LogAssert.Expect(LogType.Error, Line("-srGateStrict: 1 file(s) were not checked."));
+
+            var exitCode = Execute(Args("-srGateStrict"), GateSeverity.Fail, Array.Empty<GateViolation>(),
+                ("Assets/Arena.unity", AssetFileFormat.Unreadable));
+
+            Assert.AreEqual(1, exitCode);
+
+            StringAssert.Contains("Unreadable\tAssets/Arena.unity", File.ReadAllText(ReportPath));
+        }
+
+        [Test]
+        public void Execute_WithoutStrict_UnreadableFile_WarnsAndReturnsZero()
+        {
+            LogAssert.Expect(LogType.Warning, new Regex("1 file\\(s\\) could not be opened"));
+
+            var exitCode = Execute(Args(), GateSeverity.Fail, Array.Empty<GateViolation>(),
+                ("Assets/Arena.unity", AssetFileFormat.Unreadable));
+
+            Assert.AreEqual(0, exitCode);
         }
 
         [Test]
