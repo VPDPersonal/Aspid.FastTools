@@ -2993,13 +2993,8 @@ The element type.
 
 #### Remarks
 
-<p>
-<code class="paramref">children</code> is copied before the first change, so it may be the live
-[`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.
-</p>
-<p>
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
-</p>
+<p><code class="paramref">children</code> is copied before the first change, so it may be the live [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.</p>
+<p>Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).</p>
 
 ### InsertChildren\<T\>\(T, int, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
@@ -3163,13 +3158,8 @@ The element type.
 
 #### Remarks
 
-<p>
-<code class="paramref">children</code> is copied before the first change, so it may be the live
-[`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.
-</p>
-<p>
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
-</p>
+<p><code class="paramref">children</code> is copied before the first change, so it may be the live [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.</p>
+<p>Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).</p>
 
 ### InsertChildrenIf\<T\>\(T, bool, int, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 

@@ -18,7 +18,7 @@ is read-only, and lookups are compile-time safe.
 
 ```csharp
 [Serializable]
-public sealed class EnumValues<TEnum, TValue> : IEnumerable<KeyValuePair<TEnum, TValue?>>, IEnumerable, ISerializationCallbackReceiver where TEnum : struct, Enum
+public sealed class EnumValues<TEnum, TValue> : IReadOnlyCollection<KeyValuePair<TEnum, TValue?>>, IEnumerable<KeyValuePair<TEnum, TValue?>>, IEnumerable, ISerializationCallbackReceiver where TEnum : struct, Enum
 ```
 
 #### Type Parameters
@@ -38,6 +38,7 @@ The type of the value associated with each enum member.
 
 #### Implements
 
+[IReadOnlyCollection\<KeyValuePair\<TEnum, TValue?\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1),
 [IEnumerable\<KeyValuePair\<TEnum, TValue?\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1),
 [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.ienumerable),
 ISerializationCallbackReceiver
@@ -45,40 +46,7 @@ ISerializationCallbackReceiver
 
 #### Extension Methods
 
-[TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
-[INotifyValueChangedExtensions.AddValueChanged\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\<EnumValues\<TEnum, TValue\>\>\(EnumValues\<TEnum, TValue\>, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
-[INotifyValueChangedExtensions.RemoveValueChanged\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[TextInputBaseFieldExtensions.SetAutoCorrection\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetAutoCorrection__2___0_System_Boolean_),
-[PopupFieldExtensions.SetChoices\<EnumValues\<TEnum, TValue\>, TChoice\>\(EnumValues\<TEnum, TValue\>, List\<TChoice\>\)](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetChoices__2___0_System_Collections_Generic_List___1__),
-[TextInputBaseFieldTextSelectionExtensions.SetCursorIndex\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetCursorIndex__2___0_System_Int32_),
-[TextInputBaseFieldExtensions.SetDelayed\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetDelayed__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetDoubleClickSelectsWord\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetDoubleClickSelectsWord__2___0_System_Boolean_),
-[PopupFieldExtensions.SetFormatListItemCallback\<EnumValues\<TEnum, TValue\>, TChoice\>\(EnumValues\<TEnum, TValue\>, Func\<TChoice, string\>\)](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetFormatListItemCallback__2___0_System_Func___1_System_String__),
-[PopupFieldExtensions.SetFormatSelectedValueCallback\<EnumValues\<TEnum, TValue\>, TChoice\>\(EnumValues\<TEnum, TValue\>, Func\<TChoice, string\>\)](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetFormatSelectedValueCallback__2___0_System_Func___1_System_String__),
-[TextInputBaseFieldExtensions.SetFormatString\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, string\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetFormatString__2___0_System_String_),
-[TextInputBaseFieldExtensions.SetHideMobileInput\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideMobileInput__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHidePlaceholderOnFocus\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHidePlaceholderOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHideSoftKeyboard\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideSoftKeyboard__2___0_System_Boolean_),
-[SliderExtensions.SetHighValue\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_),
-[PopupFieldExtensions.SetIndex\<EnumValues\<TEnum, TValue\>, TChoice\>\(EnumValues\<TEnum, TValue\>, int\)](Aspid.FastTools.UIElements.PopupFieldExtensions.md#Aspid_FastTools_UIElements_PopupFieldExtensions_SetIndex__2___0_System_Int32_),
-[TextInputBaseFieldExtensions.SetKeyboardType\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, TouchScreenKeyboardType\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetKeyboardType__2___0_UnityEngine_TouchScreenKeyboardType_),
-[BaseFieldExtensions.SetLabel\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, string\)](Aspid.FastTools.UIElements.BaseFieldExtensions.md#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_),
-[SliderExtensions.SetLowValue\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_),
-[TextInputBaseFieldExtensions.SetMaskChar\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, char\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaskChar__2___0_System_Char_),
-[TextInputBaseFieldExtensions.SetMaxLength\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaxLength__2___0_System_Int32_),
-[TextInputBaseFieldExtensions.SetPassword\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPassword__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetPlaceholder\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, string\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPlaceholder__2___0_System_String_),
-[TextInputBaseFieldExtensions.SetReadOnly\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetReadOnly__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnFocus\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnMouseUp\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnMouseUp__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectIndex\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectIndex__2___0_System_Int32_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectable\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectable__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetTripleClickSelectsLine\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetTripleClickSelectsLine__2___0_System_Boolean_),
-[INotifyValueChangedExtensions.SetValue\<EnumValues\<TEnum, TValue\>, TValue\>\(EnumValues\<TEnum, TValue\>, TValue, bool\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__2___0___1_System_Boolean_)
+[ProfilerMarkerExtensionsForGenerator.Marker\<EnumValues\<TEnum, TValue\>\>\(EnumValues\<TEnum, TValue\>, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_)
 
 ## Examples
 
@@ -98,24 +66,24 @@ public class HitEffect : MonoBehaviour
 
 ## Remarks
 
-<p>
-Lookup semantics (including <code>[Flags]</code> handling) are identical to
-[`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) — see its remarks for details. Steady-state
-[`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_Equals__0__0_) and <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">foreach</a> (which binds to the struct
-[`EnumValuesEnumerator<T1, T2>`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md)) never allocate.
-</p>
-<p>
-In the editor the serialized layout is compatible with [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md):
-the enum type is still stored in a hidden editor-only <code>_enumType</code> field, auto-filled
-with <code class="typeparamref">TEnum</code>'s assembly-qualified name on serialization. Switching a
-field between the two variants therefore migrates existing data, as long as the configured
-enum type matches <code class="typeparamref">TEnum</code>. Player builds strip the field — at runtime
-the enum type comes from the generic argument alone.
-</p>
-<p>
-Internal hot paths are wrapped in profiler markers; define the
-<code>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.
-</p>
+<p>Lookup semantics (including <code>[Flags]</code> handling) and thread safety are identical to [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) — see its remarks for details. Steady-state [`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_Equals__0__0_) and <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">foreach</a> (which binds to the struct [`EnumValuesEnumerator<T1, T2>`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md)) never allocate.</p>
+<p>In the editor the serialized layout is compatible with [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md): the enum type is still stored in a hidden editor-only <code>_enumType</code> field, auto-filled with <code class="typeparamref">TEnum</code>'s assembly-qualified name on serialization. Switching a field between the two variants therefore migrates existing data, as long as the configured enum type matches <code class="typeparamref">TEnum</code>. Player builds strip the field — at runtime the enum type comes from the generic argument alone.</p>
+<p>Internal hot paths are wrapped in profiler markers; define the <code>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.</p>
+
+## Properties
+
+### Count {#Aspid_FastTools_Enums_EnumValues_2_Count}
+
+Gets the number of entries [`EnumValues<T1, T2>.GetEnumerator`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetEnumerator) yields: the rows whose key resolved to an
+enum member, duplicate keys included. The default value is not counted.
+
+```csharp
+public int Count { get; }
+```
+
+#### Property Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ## Methods
 
@@ -182,4 +150,28 @@ The enum member to look up.
 
 The mapped value, or the default value when no entry matches. A reference-type
 <code class="typeparamref">TValue</code> left unassigned in the Inspector is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+### TryGetValue\(TEnum, out TValue?\) {#Aspid_FastTools_Enums_EnumValues_2_TryGetValue__0__1__}
+
+Looks up the value mapped to <code class="paramref">enumValue</code> and reports whether an entry matched.
+
+```csharp
+public bool TryGetValue(TEnum enumValue, out TValue? value)
+```
+
+#### Parameters
+
+`enumValue` TEnum
+
+The enum member to look up.
+
+`value` TValue?
+
+The mapped value, or the default value when no entry matches, as [`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_) returns it.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if an entry matches; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 

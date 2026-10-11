@@ -10,24 +10,34 @@ namespace Aspid.FastTools.Enums
             (value1 & value2) == value2 &&
             (value1 == 0L) == (value2 == 0L);
 
-        public static TValue? Find<TValue>(EnumValue<TValue>[] values, long lookup, bool isFlags, TValue? defaultValue)
+        public static bool TryFind<TValue>(EnumValue<TValue>[] values, long lookup, bool isFlags, out TValue? value)
         {
-            foreach (var value in values)
+            foreach (var entry in values)
             {
-                if (value.IsResolved && value.NumericKey == lookup)
-                    return value.Value;
+                if (entry.IsResolved && entry.NumericKey == lookup)
+                {
+                    value = entry.Value;
+                    return true;
+                }
             }
 
             if (isFlags)
             {
-                foreach (var value in values)
+                foreach (var entry in values)
                 {
-                    if (value.IsResolved && FlagsEquals(lookup, value.NumericKey))
-                        return value.Value;
+                    if (entry.IsResolved && FlagsEquals(lookup, entry.NumericKey))
+                    {
+                        value = entry.Value;
+                        return true;
+                    }
                 }
             }
 
-            return defaultValue;
+            value = default;
+            return false;
         }
+
+        public static TValue? Find<TValue>(EnumValue<TValue>[] values, long lookup, bool isFlags, TValue? defaultValue) =>
+            TryFind(values, lookup, isFlags, out var value) ? value : defaultValue;
     }
 }
