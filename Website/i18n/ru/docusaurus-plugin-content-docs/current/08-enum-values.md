@@ -16,7 +16,7 @@
 
 Для enum без <code lang="csharp">[Flags]</code> задайте общее значение в **Default Value**, а отдельные строки добавьте для тех членов, которым нужно другое значение.
 
-**Populate Missing Enum Members** в контекстном меню заголовка таблицы добавляет строки для недостающих членов enum в конец таблицы и копирует в них **Default Value**.
+**Populate Missing Enum Members** в контекстном меню заголовка таблицы добавляет строки для недостающих членов enum в конец таблицы и копирует в них **Default Value**. Члены с одинаковым числовым значением (алиасы) получают одну общую строку. Пункт меню неактивен, если у каждого члена уже есть строка.
 
 Для <code lang="csharp">[Flags]</code> автоматически добавляются только объявленные члены enum. Например, если в enum объявлено <code lang="csharp">FireAndIce = Fire | Ice</code>, команда добавит отдельную строку с ключом <code lang="csharp">FireAndIce</code>. Комбинации без отдельного имени можно добавить вручную.
 
@@ -30,11 +30,13 @@
 | Чем отличаются | <code lang="class-name">EnumValues&lt;TEnum, TValue&gt;</code> | <code lang="class-name">EnumValues&lt;TValue&gt;</code> |
 |---|---|---|
 | Где выбирается enum | Аргумент <code lang="class-name">TEnum</code> | Заголовок таблицы в инспекторе |
-| Ключ в <code lang="function">GetValue</code> и <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
-| Упаковка в <code lang="function">GetValue</code> | Нет | Ключ упаковывается |
+| Ключ в <code lang="function">GetValue</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> или любой enum |
+| Ключ в <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
 | Ключ другого enum | Не компилируется | Возвращает **Default Value** |
 
 Значения таблицы задаются в инспекторе; из кода их можно только читать.
+
+Поле можно переключать между вариантами без потери строк, если enum, выбранный в <code lang="class-name">EnumValues&lt;TValue&gt;</code>, совпадает с <code lang="class-name">TEnum</code>.
 
 В варианте <code lang="class-name">EnumValues&lt;TValue&gt;</code> поле множителей объявляется как <code lang="class-name">EnumValues&lt;float&gt;</code>, а <code lang="class-name">DamageType</code> выбирается в заголовке таблицы:
 
@@ -48,6 +50,9 @@ private EnumValues<float>
 
 - Выбор enum обязателен: если поле пустое, инспектор показывает **Required type is not set**. Это поле также учитывает [проверка обязательных полей](07-serialize-reference-validation.md#что-проверяет-каждый-запуск).
 - При первом обращении к таблице с пустым полем enum в Console появляется предупреждение, а <code lang="function">GetValue</code> возвращает **Default Value**.
+
+> [!WARNING]
+> В плеере <code lang="class-name">EnumValues&lt;TValue&gt;</code> находит enum по сохранённому имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): при **Managed Stripping Level** Low и выше Unity может вырезать enum, который используется только через такой выбор. Тогда таблица пишет ошибку в Console, а <code lang="function">GetValue</code> возвращает **Default Value**.
 
 ## Правила поиска
 
@@ -106,6 +111,20 @@ private EnumValues<DamageType, float>
 >
 > Строка со значением, равным **Default Value**, тоже участвует в поиске. Если добавить строку <code lang="csharp">Fire | Poison</code> со значением <code lang="csharp">0</code>, вызов для этой комбинации вернёт <code lang="csharp">0</code> по точному совпадению, вместо <code lang="csharp">0.9</code> из строки <code lang="csharp">Fire</code>.
 
+## TryGetValue()
+
+<code lang="function">GetValue</code> возвращает одно и то же значение, когда строки нет и когда строка хранит **Default Value**. <code lang="function">TryGetValue</code> показывает, какой из двух случаев произошёл:
+
+```csharp
+if (_multipliers.TryGetValue(
+        type, out var multiplier))
+    total *= multiplier;
+```
+
+Если подходящей строки нет, <code lang="csharp">multiplier</code> равен **Default Value**, как и у <code lang="function">GetValue</code>.
+
+В варианте <code lang="class-name">EnumValues&lt;TValue&gt;</code> аргумент конкретного enum, например <code lang="csharp">DamageType.Fire</code>, выбирает <code lang="csharp">GetValue&lt;TEnum&gt;()</code> и <code lang="csharp">TryGetValue&lt;TEnum&gt;()</code>: они не упаковывают ключ.
+
 ## Equals()
 
 Метод таблицы проверяет, подходит ли ключ к запросу, не читая значений:
@@ -132,7 +151,7 @@ foreach (var entry in _multipliers)
     total += entry.Value;
 ```
 
-**Default Value** и строки с неразрешёнными ключами в перебор не входят. После первого обращения, которое инициализирует ключи, прямой <code lang="csharp">foreach</code> по таблице не выделяет память.
+**Default Value** и строки с неразрешёнными ключами в перебор не входят. После первого обращения, которое инициализирует ключи, прямой <code lang="csharp">foreach</code> по таблице не выделяет память. <code lang="csharp">Count</code> — число строк, которые отдаёт перебор.
 
 ## Если enum изменился
 
