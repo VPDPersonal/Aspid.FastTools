@@ -35,7 +35,8 @@ namespace Aspid.FastTools.Types
     /// <para>
     /// Two wrappers are equal when they store the same assembly-qualified name, whatever their wrapper class or
     /// constraint, so they work as dictionary keys. <c>==</c> still compares references. The hash code follows the
-    /// stored name: do not change a wrapper that is a key, which includes deserializing it again.
+    /// stored name: do not change a wrapper that is a key, which includes serializing or deserializing it again
+    /// (in the Editor, saving a <see cref="SerializableMonoScript"/> rewrites the name of a renamed class).
     /// </para>
     /// </remarks>
     [Serializable]
