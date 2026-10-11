@@ -1,7 +1,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using System.Reflection;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
@@ -219,6 +218,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // TrackPropertyValue stays silent and the bold label would stay.
                 PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
                 PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
+                // The same step can take back a <None> pick on a missing reference after this field refreshed.
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
+                SerializeReferenceMissingListGuard.UndoChangedNotes += OnUndoRedo;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -228,6 +230,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
                 _liveFields.Remove(this);
             });
         }
@@ -372,24 +375,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Unity would silently cost it the dropdown instead.
         private static VisualElement WithDecorators(SerializedProperty property, VisualElement field)
         {
-            var info = property.GetFieldInfo();
-            if (info is null) return field;
+            var decorators = SerializeReferenceDecorators.For(property);
 
-            if (info.GetCustomAttribute<TooltipAttribute>(inherit: true) is { } tooltip)
-                field.tooltip = tooltip.tooltip;
+            if (decorators.Tooltip.Length != 0)
+                field.tooltip = decorators.Tooltip;
 
-            var header = info.GetCustomAttribute<HeaderAttribute>(inherit: true);
-            var space = info.GetCustomAttribute<SpaceAttribute>(inherit: true);
-
-            if (header is null && space is null) return field;
+            if (decorators.Items.Count == 0) return field;
 
             var group = new VisualElement();
 
-            if (space is not null)
-                group.AddChild(new VisualElement().SetHeight(space.height));
-
-            if (header is not null)
-                group.AddChild(new Label(header.header).AddClass(HeaderClass));
+            foreach (var decorator in decorators.Items)
+            {
+                if (decorator is SpaceAttribute space)
+                    group.AddChild(new VisualElement().SetHeight(space.height));
+                else if (decorator is HeaderAttribute header)
+                    group.AddChild(new Label(header.header).AddClass(HeaderClass));
+            }
 
             return group.AddChild(field);
         }
@@ -822,26 +823,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
-                SerializeReferenceMissingListGuard.NoteReplaced(_property);
-
-                // Multi-object: each target gets its OWN instance, created from that target's previous value, so the
-                // managed reference is never aliased across objects; <None> clears all. One Undo step covers them all.
-                if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
-                {
-                    SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
-                        _property,
-                        previous => SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-
-                    _property.isExpanded = type is not null;
-                }
-                else
-                {
-                    var previous = _property.managedReferenceValue;
-                    _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-                    _property.isExpanded = type is not null;
-                }
-
-                ApplyReferenceChange();
+                if (SerializeReferenceWriter.SetType(_property, type)) ApplyReferenceChange();
             }
 
             Rect GetScreenRect() => new(
@@ -878,7 +860,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             evt.menu.AppendAction("Copy Serialize Reference",
                 _ => SerializeReferenceClipboard.Copy(_property.managedReferenceValue));
 
-            var canPaste = SerializeReferenceClipboard.CanPasteInto(_fieldType, _filter);
+            var filter = SerializeReferenceWriter.WithHoldCheck(_property, _filter);
+            var canPaste = SerializeReferenceClipboard.CanPasteInto(_fieldType, filter);
 
             evt.menu.AppendAction("Paste Serialize Reference",
                 _ => PasteFromClipboard(),
@@ -894,7 +877,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     _ => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
 
             if (SerializeReferenceHelpers.NoticesApply(_property))
-                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(_property, filter: _filter))
+                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(_property, filter: filter))
                 {
                     var path = candidate.Path;
                     evt.menu.AppendAction(SerializeReferenceHelpers.GetLinkToExistingMenuLabel(candidate.Type, path),
@@ -911,9 +894,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
             {
                 if (_fieldType != null && !_fieldType.IsAssignableFrom(template.Type)) continue;
-                if (!_filter(template.Type)) continue;
+                if (!filter(template.Type)) continue;
                 var name = template.Name;
-                evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(name));
+                var templateType = template.Type;
+                evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(templateType, name));
                 hasTemplates = true;
             }
 
@@ -937,7 +921,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void UpdateDrag(VisualElement target)
         {
-            if (SerializeReferenceDropHandler.TryResolveDroppedType(_fieldType, _baseTypes, out _))
+            if (SerializeReferenceDropHandler.TryResolveDroppedType(_property, _fieldType, _baseTypes, out _))
             {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Link;
                 target.AddToClassList(DropTargetClass);
@@ -952,11 +936,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void PerformDrop(VisualElement target)
         {
             target.RemoveFromClassList(DropTargetClass);
-            if (!SerializeReferenceDropHandler.TryResolveDroppedType(_fieldType, _baseTypes, out var type)) return;
+            if (!SerializeReferenceDropHandler.TryResolveDroppedType(_property, _fieldType, _baseTypes, out var type)) return;
 
             DragAndDrop.AcceptDrag();
-            SerializeReferenceDropHandler.Assign(_property, type);
-            ApplyReferenceChange();
+            if (SerializeReferenceDropHandler.Assign(_property, type)) ApplyReferenceChange();
         }
 
         private void LinkToExisting(string sourcePath)
@@ -983,20 +966,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 name => SerializeReferenceTemplates.SaveConfirmed(name, value));
         }
 
-        private void ApplyTemplate(string name)
+        private void ApplyTemplate(Type type, string name)
         {
-            if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
-            {
-                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(_property, _ => SerializeReferenceTemplates.CreateInstance(name));
-            }
-            else
-            {
-                var instance = SerializeReferenceTemplates.CreateInstance(name);
-                if (instance is null) return;
-                _property.SetManagedReferenceAndApply(instance);
-            }
-
-            ApplyReferenceChange();
+            if (SerializeReferenceWriter.SetValue(_property, type, () => SerializeReferenceTemplates.CreateInstance(name)))
+                ApplyReferenceChange();
         }
 
         private void MakeUnique()
@@ -1045,26 +1018,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void PasteFromClipboard()
         {
-            SerializeReferenceMissingListGuard.NoteReplaced(_property);
-
-            // Multi-object: rebuild a fresh instance from the clipboard for EACH target so no two objects share
-            // the same managed reference; one Undo step covers all.
-            if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
-            {
-                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
-                    _property,
-                    _ => SerializeReferenceClipboard.CreateInstance());
-
-                _property.isExpanded = SerializeReferenceClipboard.Type is not null;
-            }
-            else
-            {
-                var value = SerializeReferenceClipboard.CreateInstance();
-                _property.SetManagedReferenceAndApply(value);
-                _property.isExpanded = value is not null;
-            }
-
-            ApplyReferenceChange();
+            if (SerializeReferenceWriter.SetValue(_property, SerializeReferenceClipboard.Type, SerializeReferenceClipboard.CreateInstance))
+                ApplyReferenceChange();
         }
     }
 }
