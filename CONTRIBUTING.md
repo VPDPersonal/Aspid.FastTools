@@ -112,6 +112,6 @@ CI sets the `type:`, `area:` and `breaking-change` labels from the title and the
 - **PR title** and **CHANGELOG**: the rules above.
 - **Tests** on every pull request: the generator, analyzer, YAML engine and type resolver tests, and the tests of the repository scripts.
 - **Unity:** the EditMode tests on every Unity version in the matrix of `.github/workflows/ci.yml`, from the minimum one up, when a change reaches the package code. They need repository secrets, which a pull request from a fork does not get. On such a pull request the required **Unity** check fails instead of skipping: this is expected, not your mistake. A maintainer reads the change, runs the tests on a branch of this repository and merges. Say how you tested in Unity.
-- **Repository files** on every pull request: the committed Roslyn DLLs match a Release build, package files and their `.meta` files, the version in every file that holds it, every `SKILL.md` (front matter, `AFT` codes, namespaces), and the contrast of the Editor palette.
+- **Repository files** on every pull request: the committed Roslyn DLLs match a Release build, package files and their `.meta` files, the version and the minimum Unity version in every file that holds them, every `SKILL.md` (front matter, `AFT` codes, namespaces), and the contrast of the Editor palette.
 - **Docs:** the site builds when `Website/`, a README or a CHANGELOG changes.
 - **Review:** a bot reviews non-draft pull requests opened from branches of this repository, by the rules in [.github/claude-review.md](.github/claude-review.md).
