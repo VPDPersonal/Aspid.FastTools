@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
@@ -16,7 +17,8 @@ namespace Aspid.FastTools.Editors.Tests
     /// <summary>
     /// Behavioural coverage for the Settings tab: the keyboard handling of the Build / CI gate row (arrows step the
     /// value without wrapping, Fail and Off ask for confirmation first, Enter does not change the value), the
-    /// contrast of the field borders and the slider track, and the keyboard focus border, on both palettes.
+    /// Theme override field in the keyboard ring, the contrast of the field borders and the slider track, and the
+    /// keyboard focus border, on both palettes.
     /// </summary>
     [TestFixture]
     internal sealed class SettingsViewTests
@@ -139,6 +141,82 @@ namespace Aspid.FastTools.Editors.Tests
                 panel.Root.Clear();
                 panel.Dispose();
                 SerializeReferenceSettings.BuildSeverity = severity;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator ThemeOverrideField_IsFocusableAndReachedByTheArrows()
+        {
+            var panel = new TestPanel();
+
+            try
+            {
+                var view = new SettingsView();
+                panel.Root.Add(view);
+                yield return null;
+
+                var field = view.Q<ObjectField>();
+                Assert.IsNotNull(field, "The Settings tab must contain the Theme override field.");
+
+                // Tab walks the focusable elements; the field delegates the focus to the display that holds it.
+                var display = field.Q(className: ObjectField.objectUssClassName);
+                Assert.IsTrue(field.focusable && field.tabIndex >= 0, "The Theme override field must take part in Tab navigation.");
+                Assert.IsTrue(display.focusable && display.tabIndex >= 0, "The display of the field must be able to hold the focus.");
+
+                Assert.IsTrue(field.ClassListContains(AspidSettingsUI.NavTargetClass),
+                    "The Theme override field must be a target of the keyboard ring.");
+
+                FocusInRing(view, field);
+                Assert.IsTrue(field.ClassListContains(AspidSettingsUI.NavTargetFocusedClass),
+                    "The Down arrow must reach the Theme override field.");
+
+                SendKey(view, KeyCode.DownArrow);
+                Assert.IsFalse(field.ClassListContains(AspidSettingsUI.NavTargetFocusedClass),
+                    "The Down arrow must move on from the Theme override field.");
+
+                SendKey(view, KeyCode.UpArrow);
+                Assert.IsTrue(field.ClassListContains(AspidSettingsUI.NavTargetFocusedClass),
+                    "The Up arrow must come back to the Theme override field.");
+            }
+            finally
+            {
+                panel.Root.Clear();
+                panel.Dispose();
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator ThemeOverrideField_Focused_GetsTheStrongBorder()
+        {
+            var panel = new TestPanel();
+
+            try
+            {
+                // Components that carry their own sheets keep the dark palette outside an Aspid window, so the test stays on it.
+                var theme = CreateTheme(lightPalette: false);
+                var view = new SettingsView();
+                theme.Add(view);
+                panel.Root.Add(theme);
+                yield return null;
+                yield return null;
+
+                var field = view.Q<ObjectField>();
+                Assert.IsNotNull(field, "The Settings tab must contain the Theme override field.");
+
+                FocusInRing(view, field);
+                yield return null;
+                yield return null;
+
+                var backplate = field.Q(className: AspidSettingsUI.RowBackplateClass);
+                Assert.IsNotNull(backplate, "The field must carry the backplate that draws the focus border.");
+                Assert.Greater(backplate.resolvedStyle.borderTopWidth, 0f, "The focused field must have a border.");
+                Assert.AreEqual(Token(theme, "--aspid-colors-status-success-text-light"), backplate.resolvedStyle.borderTopColor,
+                    "The focused field must use the strong status color.");
+            }
+            finally
+            {
+                panel.Root.Clear();
+                panel.Dispose();
             }
         }
 
@@ -337,6 +415,16 @@ namespace Aspid.FastTools.Editors.Tests
                 "The Down arrow must reach the Build / CI gate row.");
 
             return gate;
+        }
+
+        // The ring has about thirty targets before the Appearance section; the loop gives up well after the field.
+        private static void FocusInRing(SettingsView view, VisualElement target)
+        {
+            for (var i = 0; i < 60 && !target.ClassListContains(AspidSettingsUI.NavTargetFocusedClass); i++)
+                SendKey(view, KeyCode.DownArrow);
+
+            Assert.IsTrue(target.ClassListContains(AspidSettingsUI.NavTargetFocusedClass),
+                "The Down arrow must reach the target.");
         }
 
         private static Color Token(VisualElement element, string name)

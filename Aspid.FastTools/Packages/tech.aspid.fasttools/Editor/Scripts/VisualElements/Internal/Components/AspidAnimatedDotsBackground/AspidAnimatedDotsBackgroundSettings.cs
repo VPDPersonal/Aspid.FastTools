@@ -4,6 +4,7 @@ using UnityEditor;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+    // The per-user "Animated background" switch: it stops the dots background, and the title and logo of the Welcome tab.
     internal static class AspidAnimatedDotsBackgroundSettings
     {
         private const string EnabledKey = "Aspid.FastTools.Appearance.AnimatedBackground";

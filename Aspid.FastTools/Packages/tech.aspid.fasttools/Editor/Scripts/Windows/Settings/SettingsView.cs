@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -13,6 +14,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly ScrollView _scroll;
 
         private readonly NavRing _ring;
+
+        private bool _openingPicker;
 
         public SettingsView()
         {
@@ -67,6 +70,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         adjust: delta => slider.value = Mathf.Clamp(slider.value + delta, slider.lowValue, slider.highValue));
                     return;
 
+                case ObjectField field:
+                    _ring.Register(field, () => OpenPicker(field));
+                    return;
+
                 case SerializeReferenceExcludedFoldersField folders:
                     foreach (var (target, activate, remove) in folders.GetNavTargets())
                         _ring.Register(target, activate, remove: remove);
@@ -86,6 +93,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void RebuildNavTargets() =>
             _ring.Rebuild(() => CollectNavTargets(this));
+
+        // The field opens its picker on Enter only while it holds the focus, so it gets the focus for that one key.
+        private void OpenPicker(ObjectField field)
+        {
+            // The key sent below bubbles up to the ring of this view, which would open the picker again.
+            if (_openingPicker) return;
+
+            var display = field.Q(className: ObjectField.objectUssClassName);
+            if (display is null) return;
+
+            _openingPicker = true;
+            try
+            {
+                display.Focus();
+
+                using var evt = KeyDownEvent.GetPooled('\n', KeyCode.Return, EventModifiers.None);
+                evt.target = display;
+                display.SendEvent(evt);
+            }
+            finally
+            {
+                _openingPicker = false;
+
+                // The field would take the Enter meant for the next row.
+                Focus();
+            }
+        }
 
         // The native popup is outside the keyboard ring, so arrows step the value.
         // Stepping does not wrap, and a value with team-wide effect asks first.

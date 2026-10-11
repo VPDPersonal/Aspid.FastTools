@@ -18,8 +18,9 @@ namespace Aspid.FastTools.Editors
             {
                 name = AnimatedBackgroundName,
                 value = AspidAnimatedDotsBackgroundSettings.Enabled,
-                tooltip = "Animate the dots behind the FastTools window and its settings pages.\n"
-                    + "Turning it off stops the dots repaint timer.\n"
+                tooltip = "Animate the dots behind the FastTools window and its settings pages, "
+                    + "and the title and logo on the Welcome tab.\n"
+                    + "Turning it off stops their timers.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
             animated.WithScopeStripe(AspidSettingsUI.UserScopeClass);

@@ -37,27 +37,74 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator KeysHint_AtAnyWidth_StaysBetweenVersionAndLink()
         {
-            foreach (var width in new[] { 380f, 340f, 260f, 200f })
+            // The Settings tab shows the longer hint with the left and right arrows.
+            foreach (var hint in new[] { AspidWindowFooter.KeysHint, AspidWindowFooter.AdjustableKeysHint })
             {
-                _host.style.width = width;
-                yield return null;
-                yield return null;
+                _footer.SetKeysHint(hint);
 
-                var version = Element("version");
-                var keys = Element("keys");
-                var link = Element("link");
+                foreach (var width in new[] { 380f, 340f, 260f, 200f })
+                {
+                    _host.style.width = width;
+                    yield return null;
+                    yield return null;
 
-                var message = $"Width {width}: ";
-                Assert.Greater(version.layout.width, 0f, message + "The version must keep its width.");
-                Assert.Greater(link.layout.width, 0f, message + "The link must keep its width.");
+                    var version = Element("version");
+                    var keys = Element("keys");
+                    var link = Element("link");
 
-                Assert.LessOrEqual(version.worldBound.xMax, keys.worldBound.xMin + Tolerance,
-                    message + "The keys hint must not reach the version.");
-                Assert.LessOrEqual(keys.worldBound.xMax, link.worldBound.xMin + Tolerance,
-                    message + "The keys hint must not reach the link.");
-                Assert.LessOrEqual(link.worldBound.xMax, _host.worldBound.xMax + Tolerance,
-                    message + "The link must stay inside the window.");
+                    var message = $"Hint \"{hint}\", width {width}: ";
+                    Assert.Greater(version.layout.width, 0f, message + "The version must keep its width.");
+                    Assert.Greater(link.layout.width, 0f, message + "The link must keep its width.");
+
+                    Assert.LessOrEqual(version.worldBound.xMax, keys.worldBound.xMin + Tolerance,
+                        message + "The keys hint must not reach the version.");
+                    Assert.LessOrEqual(keys.worldBound.xMax, link.worldBound.xMin + Tolerance,
+                        message + "The keys hint must not reach the link.");
+                    Assert.LessOrEqual(link.worldBound.xMax, _host.worldBound.xMax + Tolerance,
+                        message + "The link must stay inside the window.");
+                }
             }
+        }
+
+        [Test]
+        public void KeysHint_Default_NamesTheRingKeys()
+        {
+            Assert.AreEqual(AspidWindowFooter.KeysHint, Element("keys").text);
+
+            foreach (var key in new[] { "↑↓", "⏎", "esc" })
+                StringAssert.Contains(key, AspidWindowFooter.KeysHint);
+
+            StringAssert.DoesNotContain("←→", AspidWindowFooter.KeysHint,
+                "Only a view whose rows step with the left and right arrows may name them.");
+        }
+
+        [Test]
+        public void AdjustableKeysHint_AddsTheLeftAndRightArrows()
+        {
+            Assert.AreEqual(AspidWindowFooter.KeysHint,
+                AspidWindowFooter.AdjustableKeysHint.Replace("←→ adjust   ", string.Empty),
+                "The adjustable hint must be the plain hint plus the arrows.");
+        }
+
+        [Test]
+        public void SetKeysHint_ReplacesTheText()
+        {
+            _footer.SetKeysHint(AspidWindowFooter.AdjustableKeysHint);
+            Assert.AreEqual(AspidWindowFooter.AdjustableKeysHint, Element("keys").text);
+
+            _footer.SetKeysHint(AspidWindowFooter.KeysHint);
+            Assert.AreEqual(AspidWindowFooter.KeysHint, Element("keys").text);
+        }
+
+        [Test]
+        public void SetKeysHint_WithoutTheHint_DoesNothing()
+        {
+            _host.Clear();
+            _footer = new AspidWindowFooter(showKeysHint: false);
+            _host.Add(_footer);
+
+            Assert.DoesNotThrow(() => _footer.SetKeysHint(AspidWindowFooter.AdjustableKeysHint));
+            Assert.IsNull(_footer.Q(className: ClassOf("keys")), "Setting a hint must not build one.");
         }
 
         [UnityTest]
