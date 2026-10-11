@@ -33,14 +33,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string BuildNotCheckedText(RequiredAuditState state, bool typeNamesScanned) =>
             typeNamesScanned ? BuildRequiredNotCheckedText(state) : TypeNamesNotScannedText;
 
-        // Binary files and Git LFS pointers are not text YAML, so no scan reads them.
+        // Binary files and Git LFS pointers are not text YAML, so no scan reads them; a file another program locks
+        // cannot be opened and is counted with them.
         public static string BuildUnreadFilesText(int count) =>
-            $"{(count == 1 ? "1 binary or Git LFS file was" : $"{count} binary or Git LFS files were")} not checked — see the Console.";
+            (count == 1
+                ? "1 file was not checked (binary, a Git LFS pointer or not readable)"
+                : $"{count} files were not checked (binary, Git LFS pointers or not readable)") + " — see the Console.";
 
         // A read-only or locked file logs its reason to the Console; an entry that changed since the scan is left
         // alone without a log, so the text names both causes.
         public static string BuildNotRewrittenText(int count, string verb = "rewritten") =>
             $"{count} could not be {verb} — a file is read-only or locked (see the Console), or the entry changed since the scan.";
+
+        // An in-memory entry fails without a log when its scene or Prefab Mode stage was closed after the scan.
+        public static string BuildNoLongerOpenText(int count) =>
+            $"{count} {(count == 1 ? "was" : "were")} no longer open in Prefab Mode or a scene — Rescan.";
 
         // The parts of a summary body that apply, in one paragraph; a part that is null or empty is left out.
         public static string JoinSentences(params string[] sentences) =>

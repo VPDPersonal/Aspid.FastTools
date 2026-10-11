@@ -10,8 +10,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string BuildUnreadAssetMessage(AssetFileFormat format) =>
             format == AssetFileFormat.LfsPointer
                 ? "This asset is a Git LFS pointer, so its managed references were not read. Fetch the LFS objects to map them."
-                : "This asset is not stored as text YAML, so its managed references were not read. " +
-                  "Set Asset Serialization → Mode to Force Text and save the asset again to map them.";
+                : "This asset is not stored as text YAML, or another program has it locked, so its managed references " +
+                  "were not read. For a binary asset, set Asset Serialization → Mode to Force Text and save it again.";
 
         public static string BuildOverviewTitle(int broken, int orphans, int migrations, int required)
         {

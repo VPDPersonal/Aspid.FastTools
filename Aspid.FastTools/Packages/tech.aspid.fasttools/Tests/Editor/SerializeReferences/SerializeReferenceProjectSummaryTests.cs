@@ -118,7 +118,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreNotEqual("Project clean", title);
             StringAssert.DoesNotContain("anywhere under Assets/", message);
             StringAssert.Contains("in the files that could be read", message);
-            StringAssert.Contains("2 binary or Git LFS files were not checked", message);
+            StringAssert.Contains("2 files were not checked (binary, Git LFS pointers or not readable)", message);
             StringAssert.Contains("Console", message);
         }
 
@@ -136,8 +136,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void BuildUnreadFilesText_CountsFiles()
         {
-            StringAssert.StartsWith("1 binary or Git LFS file was not checked", SerializeReferenceProjectSummary.BuildUnreadFilesText(1));
-            StringAssert.StartsWith("3 binary or Git LFS files were not checked", SerializeReferenceProjectSummary.BuildUnreadFilesText(3));
+            StringAssert.StartsWith("1 file was not checked (binary, a Git LFS pointer or not readable)", SerializeReferenceProjectSummary.BuildUnreadFilesText(1));
+            StringAssert.StartsWith("3 files were not checked (binary, Git LFS pointers or not readable)", SerializeReferenceProjectSummary.BuildUnreadFilesText(3));
         }
 
         [TestCase(RequiredAuditState.Checked, true, 0, StatusStyle.Type.Success)]
@@ -157,7 +157,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             StringAssert.StartsWith("Nothing left to repair in the files that were read.", hint);
             StringAssert.DoesNotContain("confirm it's clean", hint);
-            StringAssert.Contains("4 binary or Git LFS files were not checked", hint);
+            StringAssert.Contains("4 files were not checked (binary, Git LFS pointers or not readable)", hint);
         }
 
         // The rows that stay listed after a repair are those of the last scan, as in the results hint.
@@ -235,7 +235,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         [Test]
         public void BuildResultsHintText_UnreadFiles_AppendsTheCount() =>
-            StringAssert.EndsWith("2 binary or Git LFS files were not checked — see the Console.",
+            StringAssert.EndsWith("2 files were not checked (binary, Git LFS pointers or not readable) — see the Console.",
                 SerializeReferenceProjectSummary.BuildResultsHintText(false, RequiredAuditState.Checked, unreadFileCount: 2));
 
         // A read-only file is logged; an entry that changed since the scan is not, so the text names both causes.

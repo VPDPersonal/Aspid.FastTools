@@ -262,6 +262,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var clearedOnDisk = SerializeReferenceBatchEditor.Null(onDisk, "Clearing References");
             var clearedInMemory = SerializeReferenceBatchEditor.ClearOpenInMemory(inMemory, group.StoredType);
             var cleared = clearedOnDisk + clearedInMemory;
+            var notCleared = SerializeReferenceProjectSummary.JoinSentences(
+                clearedOnDisk < onDisk.Count ? SerializeReferenceProjectSummary.BuildNotRewrittenText(onDisk.Count - clearedOnDisk, verb: "cleared") : null,
+                clearedInMemory < inMemory.Count ? SerializeReferenceProjectSummary.BuildNoLongerOpenText(inMemory.Count - clearedInMemory) : null);
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
@@ -270,10 +273,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (_scanButton is not null) _scanButton.Text = RescanLabel;
                 RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
 
-                AddSummary(new RepairSummary(
-                    "Nothing was cleared",
-                    SerializeReferenceProjectSummary.BuildNotRewrittenText(total, verb: "cleared"),
-                    receipt: null));
+                AddSummary(new RepairSummary("Nothing was cleared", notCleared, receipt: null));
                 return;
             }
 
@@ -287,7 +287,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             if (cleared < total)
-                summaryBody += " " + SerializeReferenceProjectSummary.BuildNotRewrittenText(total - cleared, verb: "cleared");
+                summaryBody += " " + notCleared;
 
             // Clearing can create required-field violations. The files edited on disk are re-audited; a reference nulled
             // only in memory reaches disk on save, so that audit is stale until the next Rescan.
