@@ -18,6 +18,13 @@ namespace Aspid.FastTools.Types.Editors
                 attributedProperty.GetDeclaringInstance() ?? attributedProperty.serializedObject.targetObject,
                 assemblyQualifiedNames);
 
+        // For a callback that runs long after the property is gone: the instance comes from the targets and the path,
+        // so no copy of the object is opened.
+        internal static Result Resolve(DetachedProperty attributedProperty, IReadOnlyList<string> assemblyQualifiedNames) =>
+            Resolve(
+                attributedProperty.GetDeclaringInstance() ?? attributedProperty.Targets[0],
+                assemblyQualifiedNames);
+
         // CreateField, CreateList and DrawFieldLayout bypass TypeSelectorPropertyDrawer, so the [TypeSelector] on the
         // field is resolved here. On a collection it applies to the collection, not to its elements.
         internal static Type[] AppendFieldConstraints(SerializedProperty fieldProperty, Type[] baseTypes)

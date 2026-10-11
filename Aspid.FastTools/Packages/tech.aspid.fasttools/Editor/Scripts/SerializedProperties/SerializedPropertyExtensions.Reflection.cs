@@ -39,11 +39,15 @@ namespace Aspid.FastTools.Editors
         /// <remarks>A struct instance is a boxed copy; modifying it does not update the serialized object.</remarks>
         /// <param name="property">The property whose declaring instance to resolve.</param>
         /// <returns>The declaring instance; otherwise, <see langword="null"/> if the path cannot be resolved.</returns>
-        public static object GetDeclaringInstance(this SerializedProperty property)
-        {
-            object current = property.serializedObject.targetObject;
+        public static object GetDeclaringInstance(this SerializedProperty property) =>
+            GetDeclaringInstance(property.serializedObject.targetObject, property.propertyPath);
 
-            var path = property.SimplifyPropertyPath();
+        // For a caller that keeps a target and a path instead of a property, as DetachedProperty does.
+        internal static object GetDeclaringInstance(UnityEngine.Object target, string propertyPath)
+        {
+            object current = target;
+
+            var path = SimplifyPropertyPath(propertyPath);
             var lastDotIndex = path.LastIndexOf('.');
             if (lastDotIndex < 0) return current;
 

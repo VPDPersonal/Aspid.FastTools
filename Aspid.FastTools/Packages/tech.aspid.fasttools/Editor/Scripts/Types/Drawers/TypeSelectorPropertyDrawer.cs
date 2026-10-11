@@ -218,8 +218,8 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // applyResolvedTypes keeps member-referenced base types live while the inspector is open. It runs long after
-        // this call returns, so it works on a persistent copy: the property Unity hands a drawer is not guaranteed
-        // to stay valid past CreatePropertyGUI.
+        // this call returns, so it works on the targets and the path of the property, with no copy of the object: the
+        // property Unity hands a drawer is not guaranteed to stay valid past CreatePropertyGUI.
         private VisualElement CreateField(
             string label,
             SerializedProperty property,
@@ -228,7 +228,7 @@ namespace Aspid.FastTools.Types.Editors
             Type wrapperBaseType,
             out Action applyResolvedTypes)
         {
-            var persistent = property.Persistent();
+            var detached = new DetachedProperty(property: property);
 
             switch (shape)
             {
@@ -240,7 +240,7 @@ namespace Aspid.FastTools.Types.Editors
                         baseTypes: GetTypesFromAttribute(property),
                         field: out var referenceField);
 
-                    applyResolvedTypes = () => referenceField.SetBaseTypes(GetTypesFromAttribute(persistent));
+                    applyResolvedTypes = () => referenceField.SetBaseTypes(GetTypesFromAttribute(detached));
                     return element;
                 }
 
@@ -252,7 +252,7 @@ namespace Aspid.FastTools.Types.Editors
                         elementType: SerializeReferenceHelpers.GetArrayElementType(property),
                         baseTypes: GetTypesFromAttribute(property));
 
-                    applyResolvedTypes = () => list.SetBaseTypes(GetTypesFromAttribute(persistent));
+                    applyResolvedTypes = () => list.SetBaseTypes(GetTypesFromAttribute(detached));
                     return list;
                 }
 
@@ -264,7 +264,7 @@ namespace Aspid.FastTools.Types.Editors
 
                     applyResolvedTypes = () =>
                     {
-                        types = GetWrapperBaseTypes(persistent, wrapperBaseType);
+                        types = GetWrapperBaseTypes(detached, wrapperBaseType);
                         list.Query<InspectorTypeField>().ForEach(field => field.Types = types);
                     };
                     return list;
@@ -285,7 +285,7 @@ namespace Aspid.FastTools.Types.Editors
                         types: GetWrapperBaseTypes(property, wrapperBaseType),
                         field: out var typeField);
 
-                    applyResolvedTypes = () => typeField.Types = GetWrapperBaseTypes(persistent, wrapperBaseType);
+                    applyResolvedTypes = () => typeField.Types = GetWrapperBaseTypes(detached, wrapperBaseType);
                     return element;
                 }
             }
@@ -394,9 +394,14 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        private Type[] GetWrapperBaseTypes(SerializedProperty property, Type wrapperBaseType)
+        private Type[] GetWrapperBaseTypes(SerializedProperty property, Type wrapperBaseType) =>
+            AddWrapperBaseType(GetTypesFromAttribute(property), wrapperBaseType);
+
+        private Type[] GetWrapperBaseTypes(DetachedProperty detached, Type wrapperBaseType) =>
+            AddWrapperBaseType(GetTypesFromAttribute(detached), wrapperBaseType);
+
+        private static Type[] AddWrapperBaseType(Type[] attributeTypes, Type wrapperBaseType)
         {
-            var attributeTypes = GetTypesFromAttribute(property);
             if (wrapperBaseType is null) return attributeTypes;
 
             var types = new List<Type>(attributeTypes.Length + 1) { wrapperBaseType };
@@ -404,16 +409,24 @@ namespace Aspid.FastTools.Types.Editors
             return types.ToArray();
         }
 
-        private Type[] GetTypesFromAttribute(SerializedProperty property)
+        private Type[] GetTypesFromAttribute(SerializedProperty property) =>
+            TypeSelector.AssemblyQualifiedNames.Length is 0
+                ? GetNoTypesFromAttribute()
+                : TakeResolution(TypeSelectorConstraintResolver.Resolve(property, TypeSelector.AssemblyQualifiedNames));
+
+        private Type[] GetTypesFromAttribute(DetachedProperty detached) =>
+            TypeSelector.AssemblyQualifiedNames.Length is 0
+                ? GetNoTypesFromAttribute()
+                : TakeResolution(TypeSelectorConstraintResolver.Resolve(detached, TypeSelector.AssemblyQualifiedNames));
+
+        private Type[] GetNoTypesFromAttribute()
         {
-            if (TypeSelector.AssemblyQualifiedNames.Length is 0)
-            {
-                _constraintWarnings = Array.Empty<string>();
-                return Array.Empty<Type>();
-            }
+            _constraintWarnings = Array.Empty<string>();
+            return Array.Empty<Type>();
+        }
 
-            var resolution = TypeSelectorConstraintResolver.Resolve(property, TypeSelector.AssemblyQualifiedNames);
-
+        private Type[] TakeResolution(TypeSelectorConstraintResolver.Result resolution)
+        {
             // Overwrite (never ??=): a member-referenced constraint re-resolves while the inspector is
             // open, and the warnings must follow the latest resolution rather than freeze on the first.
             _constraintWarnings = resolution.Warnings;

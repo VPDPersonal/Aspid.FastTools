@@ -5,6 +5,7 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Tests;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
@@ -168,8 +169,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             using var serializedObject = new SerializedObject(component);
             var scheduled = ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
-                serializedObject.FindProperty("m_Script"), component.GetType(), typeof(ComponentSwapNeedsSpriteRenderer),
-                onRejected: () => rejected = true);
+                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(),
+                typeof(ComponentSwapNeedsSpriteRenderer), onRejected: () => rejected = true);
 
             Assert.IsTrue(scheduled, "The pre-checks do not rule this swap out; it fails only when the component is added.");
             Assert.IsFalse(rejected, "The swap runs on the next editor tick, not inside the call.");
@@ -188,13 +189,34 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             using var serializedObject = new SerializedObject(component);
             Assert.IsTrue(ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
-                serializedObject.FindProperty("m_Script"), component.GetType(), typeof(ComponentSwapSingle),
+                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(), typeof(ComponentSwapSingle),
                 onRejected: () => rejected = true));
 
             yield return WaitUntil(() => _gameObject.GetComponent<ComponentSwapSingle>());
 
             Assert.IsNotNull(_gameObject.GetComponent<ComponentSwapSingle>(), "The scheduled swap must run.");
             Assert.IsFalse(rejected);
+        }
+
+        // The swap opens its copy of the object when the editor tick runs it, so the component can be gone by then;
+        // it used to throw there, on a copy opened at pick time.
+        [UnityTest]
+        public IEnumerator ReplaceComponentScript_ComponentDestroyedBeforeTheSwap_ReportsItWithoutThrowing()
+        {
+            var component = _gameObject.AddComponent<ComponentSwapPlain>();
+            var rejected = false;
+
+            using var serializedObject = new SerializedObject(component);
+            Assert.IsTrue(ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
+                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(), typeof(ComponentSwapSingle),
+                onRejected: () => rejected = true));
+
+            Object.DestroyImmediate(component);
+
+            yield return WaitUntil(() => rejected);
+
+            Assert.IsTrue(rejected, "The caller must learn that the swap did not run.");
+            Assert.IsNull(_gameObject.GetComponent<ComponentSwapSingle>());
         }
 
         // Unity records no override for a changed m_Script, so on an inherited component the swap would look done
@@ -345,7 +367,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             using var serializedObject = new SerializedObject(component);
             return ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
-                serializedObject.FindProperty("m_Script"), component.GetType(), newType);
+                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(), newType);
         }
     }
 }

@@ -25,6 +25,10 @@ namespace Aspid.FastTools.Editors
             Path = property.propertyPath;
         }
 
+        // The instance that declares the field, as GetDeclaringInstance gives it for the property, found from the first
+        // target and the path without opening a copy.
+        public object GetDeclaringInstance() => SerializedPropertyExtensions.GetDeclaringInstance(target: Targets[0], propertyPath: Path);
+
         // The copy is disposed when the action returns, so the action must not keep it. A target destroyed since
         // the callback was set up, or a path that no longer exists on the targets, skips the action.
         public void Use(Action<SerializedProperty> action)

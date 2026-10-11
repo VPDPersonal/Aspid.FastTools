@@ -92,7 +92,7 @@ namespace Aspid.FastTools.Types.Editors
                     onFix: () => ShowSelector(wrapperProperty: wrapperProperty, rect: noticeRect, allow: allow,
                         types: types, currentAqn: null, repair: true),
                     onSuggestion: picked => SerializableMonoScriptUtility.Assign(
-                        wrapperProperty: wrapperProperty.Persistent(), type: picked));
+                        detached: new DetachedProperty(property: wrapperProperty), type: picked));
                 return;
             }
 
@@ -106,14 +106,15 @@ namespace Aspid.FastTools.Types.Editors
         private static void ShowSelector(SerializedProperty wrapperProperty, Rect rect, TypeAllow allow, Type[] types,
             string currentAqn, bool repair = false)
         {
-            var persistent = wrapperProperty.Persistent();
+            // The picker answers after this draw, and a cancelled one never answers: no copy is open until then.
+            var detached = new DetachedProperty(property: wrapperProperty);
 
             TypeSelectorWindow.Show(
                 screenRect: GUIUtility.GUIToScreenRect(rect),
                 filter: CreateFilter(allow: allow, types: types,
-                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(persistent), hideNoneOption: repair),
+                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(wrapperProperty), hideNoneOption: repair),
                 assemblyQualifiedName: repair ? null : currentAqn,
-                onSelected: picked => SerializableMonoScriptUtility.Assign(persistent, TypeUtility.GetTypeOrNull(picked)));
+                onSelected: picked => SerializableMonoScriptUtility.Assign(detached: detached, type: TypeUtility.GetTypeOrNull(picked)));
         }
 
         internal static TypeSelectorFilter CreateFilter(

@@ -119,7 +119,8 @@ namespace Aspid.FastTools.Types.Editors
                     allow: allow, excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(property));
                 DrawMissingNotice(rect: noticeRect, storedName: property.stringValue, suggestion: suggestion,
                     onFix: () => ShowSelector(property: property, rect: noticeRect, allow: allow, types: types, repair: true),
-                    onSuggestion: picked => property.Persistent().SetStringAndApply(value: picked.AssemblyQualifiedName));
+                    onSuggestion: picked => SetName(detached: new DetachedProperty(property: property),
+                        assemblyQualifiedName: picked.AssemblyQualifiedName));
                 return;
             }
 
@@ -132,7 +133,8 @@ namespace Aspid.FastTools.Types.Editors
         private static void ShowSelector(SerializedProperty property, Rect rect, TypeAllow allow, Type[] types,
             bool repair = false)
         {
-            var persistent = property.Persistent();
+            // The picker answers after this draw, and a cancelled one never answers: no copy is open until then.
+            var detached = new DetachedProperty(property: property);
             TypeSelectorWindow.Show(screenRect: GUIUtility.GUIToScreenRect(rect),
                 filter: new TypeSelectorFilter
                 {
@@ -143,8 +145,13 @@ namespace Aspid.FastTools.Types.Editors
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
                 assemblyQualifiedName: repair || property.hasMultipleDifferentValues ? null : property.stringValue ?? string.Empty,
-                onSelected: assemblyQualifiedName => persistent.SetStringAndApply(value: assemblyQualifiedName ?? string.Empty));
+                onSelected: assemblyQualifiedName => SetName(detached: detached, assemblyQualifiedName: assemblyQualifiedName));
         }
+
+        // The write goes through a copy opened now and disposed on return; a target destroyed or a path gone since
+        // the picker or the suggestion was set up skips it.
+        internal static void SetName(DetachedProperty detached, string assemblyQualifiedName) =>
+            detached.Use(persistent => persistent.SetStringAndApply(value: assemblyQualifiedName ?? string.Empty));
 
         // The warning stripe on the left edge of a field whose stored type is missing.
         internal static void DrawMissingStripe(Rect position)

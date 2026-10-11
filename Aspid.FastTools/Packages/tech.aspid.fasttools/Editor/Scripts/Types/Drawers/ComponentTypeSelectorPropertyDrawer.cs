@@ -24,13 +24,14 @@ namespace Aspid.FastTools.Types.Editors
             if (EditorGUI.DropdownButton(dropdownRect,
                     new GUIContent(TypeSelectorHelpers.GetTypeSelectorTitle(currentType)), FocusType.Passive))
             {
-                var persistent = property.Persistent();
+                // The picker answers after this draw, and a cancelled one never answers: no copy is open until then.
+                var detached = new DetachedProperty(property: property);
 
                 TypeSelectorWindow.Show(
                     GUIUtility.GUIToScreenRect(dropdownRect),
                     CreateFilter(declaringType: fieldInfo.DeclaringType, property: property),
                     currentType.AssemblyQualifiedName,
-                    onSelected: aqn => ReplaceComponentScript(persistent, currentType, TypeUtility.GetTypeOrNull(aqn)));
+                    onSelected: aqn => ReplaceComponentScript(detached, currentType, TypeUtility.GetTypeOrNull(aqn)));
             }
 
             TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openButtonRect, currentType);
@@ -42,7 +43,7 @@ namespace Aspid.FastTools.Types.Editors
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var currentType = property.serializedObject.targetObject.GetType();
-            var persistent = property.Persistent();
+            var detached = new DetachedProperty(property: property);
             var filter = CreateFilter(declaringType: fieldInfo.DeclaringType, property: property);
 
             var field = new InspectorTypeField(label: null, defaultValue: currentType)
@@ -57,7 +58,7 @@ namespace Aspid.FastTools.Types.Editors
             // next editor tick, the caption must go back to the type the object actually is.
             field.RegisterValueChangedCallback(evt =>
             {
-                if (!ReplaceComponentScript(persistent, currentType, evt.newValue, onRejected: RestoreCaption))
+                if (!ReplaceComponentScript(detached, currentType, evt.newValue, onRejected: RestoreCaption))
                     RestoreCaption();
             });
 
@@ -87,9 +88,9 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // Returns false when the swap is refused at once. A true result only means it was scheduled: onRejected runs
-        // if the scheduled swap is refused later.
+        // if the scheduled swap is refused later, or skipped because the component is gone by then.
         internal static bool ReplaceComponentScript(
-            SerializedProperty property,
+            DetachedProperty detached,
             Type oldType,
             Type newType,
             Action onRejected = null)
@@ -109,7 +110,7 @@ namespace Aspid.FastTools.Types.Editors
 
             // m_Script is written directly, so Unity checks none of the attributes AddComponent would: refuse the
             // swaps AddComponent or Remove Component would refuse, and add what the new class requires in SwapScript.
-            foreach (var target in property.serializedObject.targetObjects)
+            foreach (var target in detached.Targets)
             {
                 if (target is not Component component) continue;
 
@@ -121,10 +122,13 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             // Deferred: the swap rebuilds the inspector, which must not happen from inside the current GUI/event pass.
+            // The copy of the object opens then and is disposed right after the swap.
             EditorApplication.delayCall += () =>
             {
-                if (!SwapScript(property.serializedObject, script, newType))
-                    onRejected?.Invoke();
+                var swapped = false;
+                detached.Use(property => swapped = SwapScript(property.serializedObject, script, newType));
+
+                if (!swapped) onRejected?.Invoke();
             };
 
             return true;

@@ -318,7 +318,7 @@ namespace Aspid.FastTools.Editors.Internal
             {
                 preview = UnityEngine.Object.Instantiate(original);
                 preview.hideFlags = HideFlags.HideAndDontSave;
-                var serialized = new SerializedObject(preview);
+                using var serialized = new SerializedObject(preview);
                 var theme = SampleThemeSettings.instance.EnumValuesLight;
                 ApplyTable(serialized.FindProperty("_tileColors._values"), theme.Tiles);
                 ApplyTable(serialized.FindProperty("_footprintColors._values"), theme.Trails);
@@ -369,6 +369,11 @@ namespace Aspid.FastTools.Editors.Internal
         [MenuItem("Tools/Aspid 🐍/FastTools/Sample Themes", priority = 41)]
         private static void Open() => GetWindow<SampleThemeWindow>("Sample Themes");
 
+        // Bound to the palette fields for as long as the window is open.
+        [NonSerialized] private SerializedObject _settings;
+
+        private void OnDestroy() => _settings?.Dispose();
+
         private void CreateGUI()
         {
             var root = rootVisualElement;
@@ -382,7 +387,8 @@ namespace Aspid.FastTools.Editors.Internal
             var scroll = new ScrollView();
             scroll.style.flexGrow = 1;
             root.Add(scroll);
-            var settings = new SerializedObject(SampleThemeSettings.instance);
+            _settings?.Dispose();
+            var settings = _settings = new SerializedObject(SampleThemeSettings.instance);
             scroll.Add(new PropertyField(settings.FindProperty("_light"), "Light palette"));
             scroll.Add(new PropertyField(settings.FindProperty("_dark"), "Dark palette"));
             scroll.Add(new PropertyField(settings.FindProperty("_enumValuesLight"), "EnumValues light surfaces"));
