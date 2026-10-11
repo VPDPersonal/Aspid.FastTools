@@ -193,11 +193,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var picker = Open(narrowingTypes: new[] { typeof(IGenericPickerEffect<float>) });
 
             picker.Pick(typeof(GenericPickerScaledEffect<,>));
-            picker.Pick(typeof(int));
-            picker.Pick(typeof(int));
 
-            Assert.IsNull(picker.Selected, "The attribute allows only IGenericPickerEffect<float>.");
-            StringAssert.Contains("IGenericPickerEffect<Single>", picker.Error);
+            // The T page offers only arguments that can still close to the allowed type, so Int32 never gets picked.
+            Assert.IsFalse(picker.Offers(typeof(int)), "The attribute allows only IGenericPickerEffect<float>.");
+            Assert.IsTrue(picker.Offers(typeof(float)));
+            Assert.IsNull(picker.Selected);
         }
 
         [Test]
