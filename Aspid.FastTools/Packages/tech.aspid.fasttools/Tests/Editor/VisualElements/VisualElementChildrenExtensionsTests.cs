@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine.UIElements;
@@ -136,6 +137,40 @@ namespace Aspid.FastTools.UIElements.Tests
             parent.RemoveChildrenIf(true, parent.Children());
 
             Assert.AreEqual(0, parent.childCount);
+        }
+
+        [TestCase(typeof(ListView))]
+        [TestCase(typeof(TreeView))]
+        public void AddChild_ThrowsOnElementWithoutContentContainer(Type viewType)
+        {
+            var view = (VisualElement)Activator.CreateInstance(viewType);
+
+            Assert.Throws<InvalidOperationException>(() => view.AddChild(new VisualElement()));
+        }
+
+        [TestCase(typeof(ListView))]
+        [TestCase(typeof(TreeView))]
+        public void AddChild_Null_LeavesElementWithoutContentContainerUnchanged(Type viewType)
+        {
+            var view = (VisualElement)Activator.CreateInstance(viewType);
+            var count = view.hierarchy.childCount;
+
+            Assert.DoesNotThrow(() => view.AddChild(null).AddChildren((VisualElement)null));
+            Assert.AreEqual(count, view.hierarchy.childCount);
+        }
+
+        [TestCase(typeof(ListView))]
+        [TestCase(typeof(TreeView))]
+        public void InsertRemoveAndClear_DoNothingOnElementWithoutContentContainer(Type viewType)
+        {
+            var view = (VisualElement)Activator.CreateInstance(viewType);
+            var child = new VisualElement();
+            var count = view.hierarchy.childCount;
+
+            view.InsertChild(0, child).RemoveChild(child).RemoveChildAt(0).ClearChildren();
+
+            Assert.AreEqual(count, view.hierarchy.childCount);
+            Assert.IsNull(child.hierarchy.parent);
         }
     }
 }
