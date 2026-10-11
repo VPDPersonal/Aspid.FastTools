@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -90,5 +91,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void BuildResultsHintText_CheckedWithViolations_PointsToRows() =>
             StringAssert.Contains("required-violation row",
                 SerializeReferenceProjectSummary.BuildResultsHintText(true, RequiredAuditState.Checked));
+
+        // A card never builds fewer rows than its first page and never more than its entries.
+        [TestCase(0, 450, 200)]
+        [TestCase(200, 450, 200)]
+        [TestCase(400, 450, 400)]
+        [TestCase(600, 450, 450)]
+        [TestCase(0, 50, 50)]
+        [TestCase(0, 0, 0)]
+        public void GetShownRows_StaysBetweenTheFirstPageAndTheEntryCount(int requested, int total, int expected) =>
+            Assert.AreEqual(expected, SerializeReferenceProjectSummary.GetShownRows(requested, total));
+
+        [Test]
+        public void ShowMore_PagesThroughEveryEntry()
+        {
+            const int total = 450;
+
+            var shown = SerializeReferenceProjectSummary.GetShownRows(requested: 0, total);
+            var pages = new List<int> { shown };
+
+            while (shown < total)
+            {
+                shown = SerializeReferenceProjectSummary.GetShownRows(
+                    SerializeReferenceProjectSummary.GetNextShownRows(shown), total);
+                pages.Add(shown);
+            }
+
+            CollectionAssert.AreEqual(new[] { 200, 400, 450 }, pages);
+        }
+
+        [TestCase(200, 450, "Show more (200 of 450 shown)", "Show the next 200 rows.")]
+        [TestCase(400, 450, "Show more (400 of 450 shown)", "Show the next 50 rows.")]
+        [TestCase(200, 201, "Show more (200 of 201 shown)", "Show the next 1 row.")]
+        public void BuildShowMore_NamesTheRowsTheNextPageAdds(int shown, int total, string text, string tooltip)
+        {
+            Assert.AreEqual(text, SerializeReferenceProjectSummary.BuildShowMoreText(shown, total));
+            Assert.AreEqual(tooltip, SerializeReferenceProjectSummary.BuildShowMoreTooltip(shown, total));
+        }
     }
 }

@@ -314,12 +314,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var status = SerializeReferenceAuditUI.ResolveStatus(missing - migrations, orphans, required, migrations);
             ShowOverview(status, total, missing, orphans, Math.Max(0, empties - graphedRequired), migrations, required);
 
-            if (requiredCards.Count > 0)
-            {
-                var labels = new ViolationFieldLabels();
-                foreach (var violation in requiredCards)
-                    _list.AddChild(BuildRequiredOnlyCard(violation, labels));
-            }
+            foreach (var violation in requiredCards)
+                _list.AddChild(BuildRequiredOnlyCard(violation));
 
             if (hidden > 0) _list.AddChild(BuildHiddenNotice(hidden));
 
