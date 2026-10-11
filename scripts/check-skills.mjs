@@ -91,7 +91,9 @@ for (const file of files(`:(glob)${PACKAGE}/**/*.cs`)) {
   const namespaces = [...text.matchAll(/^\s*namespace\s+(Aspid\.FastTools[\w.]*)/gm)].map(m => m[1]);
   namespaces.forEach(addWithParents);
   if (namespaces.length !== 1) continue;
-  for (const m of text.matchAll(/\b(?:class|struct|interface|enum|record)\s+(\w+)/g)) types.add(`${namespaces[0]}.${m[1]}`);
+  // A declaration starts its line, so a keyword in a comment, a string or a `where T : class` constraint is no type.
+  const declarations = /^[ \t]*(?:(?:public|internal|private|protected|static|sealed|abstract|partial|readonly|unsafe|new|ref)\s+)*(?:class|struct|interface|enum|record(?:\s+(?:class|struct))?)\s+(\w+)/gm;
+  for (const m of text.matchAll(declarations)) types.add(`${namespaces[0]}.${m[1]}`);
 }
 for (const file of files(`:(glob)${PACKAGE}/**/*.asmdef`))
   for (const m of readFileSync(file, 'utf8').matchAll(/"name"\s*:\s*"(Aspid\.FastTools[\w.]*)"/g)) addWithParents(m[1]);
