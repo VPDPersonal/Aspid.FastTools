@@ -21,9 +21,9 @@ namespace Aspid.FastTools.Enums
     /// </para>
     /// <para>
     /// A player resolves the enum by the stored name only, which managed code stripping does not see: from
-    /// Managed Stripping Level Low up, an enum referenced only by this name can be removed from the build.
-    /// The table then logs an error and returns the default value. Keep such enums with <c>[Preserve]</c> or
-    /// <c>link.xml</c>.
+    /// Managed Stripping Level Medium up, an enum referenced only by this name can be removed from the build.
+    /// The table then logs an error and returns the default value. Minimal and Low keep it. Keep such enums with
+    /// <c>[Preserve]</c> or <c>link.xml</c>.
     /// </para>
     /// <para>
     /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses flag-containment semantics

@@ -27,7 +27,7 @@
 Поле должно сериализоваться Unity: быть публичным или отмеченным <code lang="csharp">[SerializeField]</code> либо <code lang="csharp">[SerializeReference]</code>.
 
 > [!WARNING]
-> В плеере строковое поле находит тип по имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): класс, который используется только через такой выбор, может быть вырезан при **Managed Stripping Level** Low и выше.
+> В плеере строковое поле находит тип по имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): класс, который используется только через такой выбор, может быть вырезан при **Managed Stripping Level** Medium или High.
 
 ## Какие типы в списке
 

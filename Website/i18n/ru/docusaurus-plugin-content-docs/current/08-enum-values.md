@@ -52,7 +52,7 @@ private EnumValues<float>
 - При первом обращении к таблице с пустым полем enum в Console появляется предупреждение, а <code lang="function">GetValue</code> возвращает **Default Value**.
 
 > [!WARNING]
-> В плеере <code lang="class-name">EnumValues&lt;TValue&gt;</code> находит enum по сохранённому имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): при **Managed Stripping Level** Low и выше Unity может вырезать enum, который используется только через такой выбор. Тогда таблица пишет ошибку в Console, а <code lang="function">GetValue</code> возвращает **Default Value**.
+> В плеере <code lang="class-name">EnumValues&lt;TValue&gt;</code> находит enum по сохранённому имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): при **Managed Stripping Level** Medium или High Unity может вырезать enum, который используется только через такой выбор. Тогда таблица пишет ошибку в Console, а <code lang="function">GetValue</code> возвращает **Default Value**.
 
 ## Правила поиска
 

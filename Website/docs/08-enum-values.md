@@ -52,7 +52,7 @@ private EnumValues<float>
 - The first access to a table with an empty enum field logs a warning to the Console, and <code lang="function">GetValue</code> returns **Default Value**.
 
 > [!WARNING]
-> In a player, <code lang="class-name">EnumValues&lt;TValue&gt;</code> finds the enum by its stored name, like [Serializable Types](02-serializable-types.md#types-in-a-player-build): an enum used only through this selection may be stripped at **Managed Stripping Level** Low or higher. The table then logs an error, and <code lang="function">GetValue</code> returns **Default Value**.
+> In a player, <code lang="class-name">EnumValues&lt;TValue&gt;</code> finds the enum by its stored name, like [Serializable Types](02-serializable-types.md#types-in-a-player-build): an enum used only through this selection may be stripped at **Managed Stripping Level** Medium or High. The table then logs an error, and <code lang="function">GetValue</code> returns **Default Value**.
 
 ## Lookup rules
 

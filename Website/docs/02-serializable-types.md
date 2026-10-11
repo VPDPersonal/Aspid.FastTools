@@ -83,7 +83,13 @@ The link breaks, and the field shows a [missing type](#missing-type) with the sa
 ## Types in a player build
 
 > [!WARNING]
-> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, **Managed Stripping Level** Low or higher may strip it: <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> and <code lang="csharp">IsMissing</code> becomes <code lang="csharp">true</code>, although the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`.
+> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, **Managed Stripping Level** Medium or High strips it: <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> and <code lang="csharp">IsMissing</code> becomes <code lang="csharp">true</code>, although the editor resolves it. Minimal and Low keep it.
+
+To keep the class at Medium or High:
+
+- Mark the class or its constructor with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>).
+- List the class, or its whole assembly, in `link.xml`.
+- Mark your interface with <code lang="csharp">[RequireImplementors]</code> or your base class with <code lang="csharp">[RequireDerived]</code> to keep all its implementations: the field must be a <code lang="csharp">SerializableType&lt;T&gt;</code> of that interface or base class.
 
 ## Package sample
 
