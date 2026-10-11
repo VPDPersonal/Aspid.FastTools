@@ -23,8 +23,8 @@ export default { api: [
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.Editors.SerializePropertyExtensions",
-            "label": "SerializePropertyExtensions"
+            "id": "Aspid.FastTools.Editors.SerializedPropertyExtensions",
+            "label": "SerializedPropertyExtensions"
           }
         ]
       }

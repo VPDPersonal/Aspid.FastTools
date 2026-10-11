@@ -56,7 +56,7 @@ A save that resizes a list, and every save of a prefab, writes the list's missin
 
 ## Project References: repair a group
 
-Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the next tab of the same window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope). A progress bar shows each sweep; **Cancel** stops the scan and keeps the earlier results. A group lists its first 200 entries, and **Show more** adds the next 200.
+Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the next tab of the same window. **Scan Project** reads the `.prefab`, `.asset`, `.unity`, `.controller` and `.playable` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope). A progress bar shows each sweep; **Cancel** stops the scan and keeps the earlier results. A group lists its first 200 entries, and **Show more** adds the next 200.
 
 ![Project References with Fix all, Smart Fix → Pistol and Migrate all groups](Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -144,6 +144,7 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 | Open scenes, Prefab Mode, unsaved and locked files | Fix all, Smart Fix and Migrate all skip them: save and close the file, or use [Fix in the Inspector](#fix-in-the-inspector) with its data-transfer limitations |
 | Scenes and fields under a missing parent reference | Asset References changes only missing types |
 | Binary assets and unfetched Git LFS files | Not scanned: Scan Project counts them and the Console lists them, Asset References shows **Not scanned**; use **Force Text** and fetch LFS files |
+| Files last saved before Unity 2021.2 | Their managed references are not read: save the files again in the current Unity version |
 | More than 1000 reference cards in one window | Asset References draws the first 1000 and says how many it left out; Project References repairs missing types without this limit |
 
 ## Package sample

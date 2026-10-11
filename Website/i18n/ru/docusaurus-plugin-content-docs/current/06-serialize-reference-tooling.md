@@ -56,7 +56,7 @@ Project References также восстанавливает имена, кот�
 
 ## Project References: восстановить группу
 
-Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки). Каждый проход показывает индикатор прогресса; **Cancel** останавливает проверку и оставляет прежние результаты. Группа показывает первые 200 записей, а **Show more** добавляет следующие 200.
+Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset`, `.unity`, `.controller` и `.playable` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки). Каждый проход показывает индикатор прогресса; **Cancel** останавливает проверку и оставляет прежние результаты. Группа показывает первые 200 записей, а **Show more** добавляет следующие 200.
 
 ![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -144,6 +144,7 @@ Project References также восстанавливает имена, кот�
 | Открытые сцены, Prefab Mode, несохранённые и заблокированные файлы | Fix all, Smart Fix и Migrate all их пропускают: сохраните и закройте файл или используйте [Fix в инспекторе](#fix-в-инспекторе) с ограничениями переноса данных |
 | Сцены и поля под потерянной родительской ссылкой | Asset References меняет только потерянные типы |
 | Двоичные ассеты и нескачанные файлы Git LFS | Не сканируются: Scan Project считает их, Console перечисляет, Asset References показывает **Not scanned**; используйте **Force Text** и скачайте файлы LFS |
+| Файлы, последний раз сохранённые до Unity 2021.2 | Их managed-ссылки не читаются: пересохраните файлы в текущей версии Unity |
 | Больше 1000 карточек ссылок в одном окне | Asset References рисует первые 1000 и сообщает, сколько пропустил; Project References исправляет потерянные типы без этого предела |
 
 ## Пример в пакете

@@ -66,7 +66,7 @@ public class HitEffect : MonoBehaviour
 <p>[`EnumValues<T>.GetValue`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_GetValue_System_Enum_) returns the configured default value when no entry matches the lookup key. For <code>[Flags]</code> enums multiple entries may match a single lookup value; an exact-key entry always wins first, and only if none exists does the first entry (in serialized order) whose bits are all contained in the lookup value win.</p>
 <p>Iteration via [`EnumValues<T>.GetEnumerator`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_GetEnumerator) yields only the explicitly configured entries and does <b>not</b> include the default value.</p>
 <p>Lookups and iteration may run on any thread, including the first access that initializes the entries, as long as Unity is not deserializing the table at the same time.</p>
-<p>Internal hot paths are wrapped in profiler markers; define the <code>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.</p>
+<p>Internal hot paths are wrapped in profiler markers; define the <code>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.</p>
 
 ## Properties
 

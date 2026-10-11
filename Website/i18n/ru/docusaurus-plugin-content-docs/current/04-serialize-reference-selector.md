@@ -16,7 +16,7 @@
 
 - <code lang="csharp">Allow</code> здесь не действует: нужны типы, экземпляры которых можно создать.
 - Классов, производных от <code lang="class-name">UnityEngine.Object</code>, в списке нет: такой объект храните в обычном поле, без <code lang="csharp">[SerializeReference]</code>.
-- Аргументы generic-класса выводятся из типа поля; если вывести их нельзя, окно предлагает выбрать типы, которые Unity умеет сериализовать.
+- Аргументы generic-класса выводятся из типа поля и типов <code lang="csharp">[TypeSelector]</code>; если вывести их нельзя, окно предлагает выбрать типы, которые Unity умеет сериализовать.
 
 ## Списки
 
@@ -69,6 +69,8 @@
 ![Make unique создаёт независимую копию общей ссылки](../../../../docs/Images/aspid_fasttools_serialize_reference_make_unique.png)
 
 Продублированный элемент списка получает собственный экземпляр, а не ссылку на тот же. За это отвечает настройка **Auto de-alias duplicated list elements** в **Tools → Aspid 🐍 → FastTools → Settings**, по умолчанию она включена и [общая для команды](07-serialize-reference-validation.md#область-проверки).
+
+Это работает для списков, элементы которых сами являются ссылками, например <code lang="class-name">List&lt;IWeapon&gt;</code>. В списке структур или классов с полем или списком <code lang="csharp">[SerializeReference]</code> **Duplicate Array Element** копирует и ссылку, поэтому оба элемента указывают на один экземпляр, пока **Make unique** их не разделит.
 
 ## Потерянный тип
 
