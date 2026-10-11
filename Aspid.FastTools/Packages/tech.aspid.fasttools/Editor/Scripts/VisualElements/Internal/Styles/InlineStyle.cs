@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    internal class InlineStyle<T>
+    internal sealed class InlineStyle<T>
     {
         private readonly Action<T, T> _onSet;
 
