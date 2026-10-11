@@ -31,8 +31,10 @@ namespace Aspid.FastTools.UIElements.Tests
                 .SetIndex(2);
 
             CollectionAssert.AreEqual(choices, field.choices);
-            Assert.AreNotSame(choices, field.choices);
             Assert.AreEqual("C", field.value);
+
+            choices[0] = "X";
+            Assert.AreEqual("A", field.choices[0], "The field keeps a copy, so a later change to the array does not reach it.");
         }
 
         [Test]
