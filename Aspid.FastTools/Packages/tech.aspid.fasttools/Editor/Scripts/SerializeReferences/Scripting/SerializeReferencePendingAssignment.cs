@@ -2,7 +2,6 @@ using System;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -128,10 +127,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var property = serializedObject.FindProperty(entry.PropertyPath);
             if (property is null || property.propertyType != SerializedPropertyType.ManagedReference) return ApplyOutcome.Dead;
 
-            property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(type));
-            SerializeReferenceHelpers.InvalidateReferenceMemos();
+            if (!SerializeReferenceWriter.CanHold(property, type))
+            {
+                WarnEditorOnly(entry);
+                return ApplyOutcome.Dead;
+            }
+
+            SerializeReferenceWriter.SetValue(property, type, () => SerializeReferenceHelpers.CreateInstance(type));
             return ApplyOutcome.Applied;
         }
+
+        // The script was saved under an Editor folder, while the object keeps the reference in a build.
+        private static void WarnEditorOnly(Entry entry) =>
+            Debug.LogWarning(
+                $"[Aspid.FastTools] Not assigning '{entry.FullTypeName}' to '{entry.PropertyPath}': its script compiles " +
+                "into an editor-only assembly, and a player build would load the reference as a missing type. Move " +
+                "the script out of the Editor folder, then pick its type.");
 
         private static void WarnDropped(Entry entry) =>
             Debug.LogWarning(

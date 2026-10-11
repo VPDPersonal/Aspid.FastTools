@@ -99,8 +99,10 @@ namespace Aspid.FastTools.Types.Editors
 
         // Additional candidates bypass ordinary constraints, but hidden types remain excluded unless the repair
         // picker explicitly includes them. Types from editor-only assemblies are left out of both when the value is
-        // stored in a runtime object, since a player cannot resolve them. The cheap modifier checks run before the
-        // attribute lookups, which matters for an unconstrained picker scanning the whole domain.
+        // stored in a runtime object, since a player cannot resolve them. The base type check runs first, because it
+        // rejects most of the domain for a narrow base. The cheap modifier checks run before the attribute lookups,
+        // which matters for an unconstrained picker scanning the whole domain. A picker with a predicate scans on every
+        // opening, so the checks create no closure per type.
         internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
@@ -112,10 +114,10 @@ namespace Aspid.FastTools.Types.Editors
             var result = new List<TypeInfo>();
 
             result.AddRange(TypeUtility.DomainTypes
-                .Where(t => !(t.IsAbstract && t.IsSealed) &&
+                .Where(t => IsAssignableToAll(baseTypes, t) &&
+                    !(t.IsAbstract && t.IsSealed) &&
                     (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
                     (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
-                    baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
                     (!excludeEditorOnly || !TypeUtility.IsEditorOnlyAssembly(t.Assembly)) &&
                     !TypeUtility.IsCompilerGenerated(t) &&
                     (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(t)) &&
@@ -135,6 +137,14 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             return result;
+        }
+
+        private static bool IsAssignableToAll(Type[] baseTypes, Type type)
+        {
+            foreach (var baseType in baseTypes)
+                if (!baseType.IsAssignableFrom(type)) return false;
+
+            return true;
         }
     }
 }
