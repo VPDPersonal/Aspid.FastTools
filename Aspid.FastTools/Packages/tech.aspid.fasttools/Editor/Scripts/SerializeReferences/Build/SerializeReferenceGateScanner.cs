@@ -74,20 +74,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // constraint map of a pending migration, and either load counts toward the next unload.
                 var wasLoaded = !options.ScanRequiredFields || isScene || AssetDatabase.IsMainAssetAtPathLoaded(path);
 
-                // Sniffed once here; the YAML scanners below are told the result instead of opening the file again.
+                // Sniffed and read once here, for every YAML pass: managed references, the names stored by SerializableType
+                // wrappers and the registry version, which the required-field reader of a scene cannot read either. The
+                // scanners below are told the result instead of opening the file again. A file whose read fails after the
+                // sniff passed (another program locked it in between) is unscanned too, not a clean one.
                 var needsYaml = options.ScanMissingTypes || (options.ScanRequiredFields && isScene);
                 var isTextYaml = true;
+                string[] lines = null;
 
                 if (needsYaml && File.Exists(path))
                 {
-                    var format = SerializeReferenceYaml.SniffFileFormat(path);
+                    lines = SerializeReferenceYaml.ReadLines(path, out var format);
                     isTextYaml = format == AssetFileFormat.TextYaml;
                     if (!isTextYaml) unscanned?.Add((path, format));
                 }
 
-                // One read for every YAML pass: managed references, the names stored by SerializableType wrappers and
-                // the registry version, which the required-field reader of a scene cannot read either.
-                var lines = needsYaml && isTextYaml ? SerializeReferenceYaml.ReadLines(path, knownTextYaml: true) : null;
                 if (lines is not null && SerializeReferenceYaml.HasUnsupportedReferencesVersion(lines))
                     unscanned?.Add((path, AssetFileFormat.UnsupportedReferencesVersion));
 
@@ -196,7 +197,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             format = AssetFileFormat.TextYaml;
             if (!SerializeReferenceYaml.IsCandidateAssetPath(assetPath) || !File.Exists(assetPath)) return false;
 
-            format = SerializeReferenceYaml.SniffFileFormat(assetPath);
+            // Read as well as sniffed: a text file whose read fails shows no references either.
+            SerializeReferenceYaml.ReadLines(assetPath, out format);
             return IsReportable((assetPath, format), forceText: serializationMode == SerializationMode.ForceText);
         }
 

@@ -488,6 +488,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // The sniff accepts the file, then another program locks it before the full read. The scan must not take the
+        // missing read for a file with no problems: it hands the file back as unreadable.
+        [Test]
+        public void Scan_MissingOnly_ReportsFileWhoseReadFailsAfterTheSniffAsUnreadable()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                File.WriteAllText(ProbeAssetPath,
+                    "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n--- !u!114 &11400000\nMonoBehaviour:\n  m_Name: Probe\n");
+
+                var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                YamlFixtures.WithFailingRead(ProbeAssetPath, () =>
+                    SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned));
+
+                CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.Unreadable));
+                CollectionAssert.DoesNotContain(unscanned, (ProbeAssetPath, AssetFileFormat.Binary));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
         [TestCase("Assets/Weapons/Pistol.prefab")]
         [TestCase("Assets/Scenes/Arena.unity")]
         public void DescribeUnscanned_BinaryPrefabOrSceneUnderForceText_Warns(string path)
@@ -682,6 +707,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 using (LockFile(UnreadProbePath))
                     isUnread = SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out format);
+
+                Assert.IsTrue(isUnread);
+                Assert.AreEqual(AssetFileFormat.Unreadable, format);
+            }
+            finally
+            {
+                File.Delete(UnreadProbePath);
+            }
+        }
+
+        // Asset References found no references in a text prefab it could not read in full: it says so instead of "No
+        // managed references".
+        [Test]
+        public void TryGetUnreadFormat_ReadFailsAfterTheSniff_ReturnsUnreadable()
+        {
+            try
+            {
+                File.WriteAllText(UnreadProbePath, "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n");
+
+                var isUnread = false;
+                var format = AssetFileFormat.TextYaml;
+
+                YamlFixtures.WithFailingRead(UnreadProbePath, () =>
+                    isUnread = SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out format));
 
                 Assert.IsTrue(isUnread);
                 Assert.AreEqual(AssetFileFormat.Unreadable, format);

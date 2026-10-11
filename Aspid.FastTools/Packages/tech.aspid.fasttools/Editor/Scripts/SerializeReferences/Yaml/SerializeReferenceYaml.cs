@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Buffers;
 using System.Globalization;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -85,6 +86,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsTextYamlFile(string path) =>
             SniffFileFormat(path) == AssetFileFormat.TextYaml;
 
+        // The full read of every scan: the lines of a file the sniff has accepted. Not const so tests can make a read
+        // fail after a successful sniff, which needs a lock that only Windows enforces against a reader.
+        internal static Func<string, string[]> LineReader = ReadAllLinesShared;
+
+        // File.ReadAllLines opens the file with FileShare.Read, which fails while another program has it open for
+        // writing, although the sniff and the marker probe (FileShare.ReadWrite) got through. Sharing with writers here
+        // as well keeps a file that sniffed as text YAML readable.
+        private static string[] ReadAllLinesShared(string path)
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+
+            var lines = new List<string>();
+
+            string line;
+            while ((line = reader.ReadLine()) is not null)
+                lines.Add(line);
+
+            return lines.ToArray();
+        }
+
+        // The sniff and the read of ReadLines in one, for a caller that reports the files it could not scan. `format`
+        // is TextYaml when the lines were read, Unreadable when the sniff accepted the file but the read failed
+        // (another program locked it in between), and the sniffed format otherwise; the lines are null unless it is
+        // TextYaml.
+        public static string[] ReadLines(string assetPath, out AssetFileFormat format)
+        {
+            format = SniffFileFormat(assetPath);
+            if (format != AssetFileFormat.TextYaml) return null;
+
+            var lines = ReadLines(assetPath, knownTextYaml: true);
+            if (lines is null) format = AssetFileFormat.Unreadable;
+
+            return lines;
+        }
+
         // The one file read of the text scans (graph, missing types, overrides, usage index, scene required fields):
         // the asset's lines, or null when the path is empty, missing, unreadable or not text YAML. The first bytes are
         // sniffed before the full read, so a binary asset or an LFS pointer is never decoded; `knownTextYaml` skips
@@ -96,7 +133,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return null;
                 if (!knownTextYaml && !IsTextYamlFile(assetPath)) return null;
 
-                return File.ReadAllLines(assetPath);
+                return LineReader(assetPath);
             }
             catch (Exception)
             {
@@ -115,7 +152,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return null;
                 if (!ContainsAnyMarker(assetPath, markers)) return null;
 
-                return File.ReadAllLines(assetPath);
+                return LineReader(assetPath);
             }
             catch (Exception)
             {

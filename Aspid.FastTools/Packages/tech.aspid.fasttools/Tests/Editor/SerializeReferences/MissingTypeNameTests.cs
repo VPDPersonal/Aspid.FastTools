@@ -117,6 +117,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             CollectionAssert.AreEqual(new[] { (ProbeAssetPath, format) }, unscanned);
         }
 
+        // The sniff accepted the file but another program locked it before the full read: it is not a file without missing
+        // names, so the caller gets it back as unreadable.
+        [Test]
+        public void FindInFile_ReadFailsAfterTheSniff_IsReportedAsUnreadable()
+        {
+            SaveProbeWithBrokenNames();
+
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+
+            YamlFixtures.WithFailingRead(ProbeAssetPath, () =>
+                CollectionAssert.IsEmpty(MissingTypeNames.FindInFile(ProbeAssetPath, unscanned)));
+
+            CollectionAssert.AreEqual(new[] { (ProbeAssetPath, AssetFileFormat.Unreadable) }, unscanned);
+        }
+
         [Test]
         public void FindInFile_TextYaml_IsNotReportedAsUnscanned()
         {

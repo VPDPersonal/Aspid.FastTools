@@ -815,6 +815,27 @@ MonoBehaviour:
         }
 
         /// <summary>
+        /// Runs <paramref name="body"/> with the full read of <paramref name="path"/> failing as it does when another
+        /// program locks the file after the format sniff passed. Windows enforces such a lock against a reader; the
+        /// other platforms do not, so the failure is injected through <see cref="SerializeReferenceYaml.LineReader"/>.
+        /// </summary>
+        public static void WithFailingRead(string path, Action body)
+        {
+            var original = SerializeReferenceYaml.LineReader;
+            SerializeReferenceYaml.LineReader = file =>
+                string.Equals(file, path, StringComparison.Ordinal) ? throw new IOException("locked") : original(file);
+
+            try
+            {
+                body();
+            }
+            finally
+            {
+                SerializeReferenceYaml.LineReader = original;
+            }
+        }
+
+        /// <summary>
         /// Deletes a temp fixture file if present.
         /// </summary>
         public static void Delete(string path)

@@ -100,6 +100,73 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(AssetFileFormat.TextYaml, SerializeReferenceYaml.SniffFileFormat(path));
         }
 
+        // A file that sniffs as text YAML but cannot be read in full (another program locked it in between) is not a clean
+        // file: the callers that list unscanned files get Unreadable for it, not an empty result.
+        [Test]
+        public void ReadLines_ReadFailsAfterTheSniff_IsUnreadable()
+        {
+            var path = Write(YamlFixtures.MissingTypePrefab);
+            string[] lines = null;
+            var format = AssetFileFormat.TextYaml;
+
+            YamlFixtures.WithFailingRead(path, () => lines = SerializeReferenceYaml.ReadLines(path, out format));
+
+            Assert.IsNull(lines);
+            Assert.AreEqual(AssetFileFormat.Unreadable, format);
+        }
+
+        [Test]
+        public void ReadLines_TextYaml_ReturnsTheLines()
+        {
+            var path = Write(YamlFixtures.MissingTypePrefab);
+
+            var lines = SerializeReferenceYaml.ReadLines(path, out var format);
+
+            Assert.AreEqual(AssetFileFormat.TextYaml, format);
+            CollectionAssert.AreEqual(File.ReadAllLines(path), lines);
+        }
+
+        // The shared reader replaces File.ReadAllLines: a byte order mark and CRLF must still split into the same lines.
+        [Test]
+        public void ReadLines_ByteOrderMarkAndCrlf_MatchesFileReadAllLines()
+        {
+            var bytes = new byte[] { 0xEF, 0xBB, 0xBF }
+                .Concat(Encoding.UTF8.GetBytes(YamlFixtures.MissingTypePrefab.Replace("\n", "\r\n")))
+                .ToArray();
+            var path = WriteBytes(bytes);
+
+            CollectionAssert.AreEqual(File.ReadAllLines(path), SerializeReferenceYaml.ReadLines(path));
+        }
+
+        [TestCase(AssetFileFormat.LfsPointer)]
+        [TestCase(AssetFileFormat.Binary)]
+        public void ReadLines_FileThatIsNotTextYaml_ReturnsNullAndItsFormat(AssetFileFormat expected)
+        {
+            var path = expected == AssetFileFormat.LfsPointer
+                ? Write(LfsPointer)
+                : WriteBytes(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x11 });
+
+            var lines = SerializeReferenceYaml.ReadLines(path, out var format);
+
+            Assert.IsNull(lines);
+            Assert.AreEqual(expected, format);
+        }
+
+        // A program that writes the asset while sharing it (the sniff and the marker probe share the same way) must not
+        // make the full read fail. Windows enforces the sharing mode against a reader; elsewhere this only guards the
+        // behaviour.
+        [Test]
+        public void ReadLines_FileOpenForWritingWithSharing_IsRead()
+        {
+            var path = Write(YamlFixtures.MissingTypePrefab);
+
+            using (new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+            {
+                Assert.AreEqual(AssetFileFormat.TextYaml, SerializeReferenceYaml.SniffFileFormat(path));
+                Assert.IsNotNull(SerializeReferenceYaml.ReadLines(path));
+            }
+        }
+
         // Without the %YAML / %TAG preamble the body still carries GhostPistol's RefIds entry, so a scanner that parses
         // every file line by line would report it.
         [Test]
