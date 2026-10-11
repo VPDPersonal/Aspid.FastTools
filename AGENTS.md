@@ -81,9 +81,10 @@ Agent Skills for projects that consume the package in `skills/`.
   result in the same PR. CI cannot run it, because DocFX compiles against a local Unity install. The steps for a worktree
   are in `.claude/skills/docs-site/references/api-reference.md`.
 - The Asset Store product is a UPM product on the UPM Publisher Portal, uploaded with Asset Store UPM Publishing Tools
-  (`com.unity.upm-publishing-tools` in the dev project manifest). That package resolves only for an account that has
-  it in **My Assets**, so a Package Manager error about it means a missing entitlement, not a broken manifest. CI never
-  opens the dev project. The release steps are in the `asp-ft-release` skill, section "Asset Store upload".
+  (`com.unity.upm-publishing-tools`). Never commit that package to the dev project manifest: it resolves only for an
+  account that has it in **My Assets**, and one dependency that fails to download stops the whole package resolve, so
+  every other clone opens with an error. The release steps are in the `asp-ft-release` skill, section
+  "Asset Store upload".
 - The dev project uses only the Input System (`activeInputHandler: 1`, `com.unity.inputsystem`): `UnityEngine.Input`
   throws there. `com.unity.pipeline` needs the package for its CLI input commands (`simulate_key`, pointer commands).
 

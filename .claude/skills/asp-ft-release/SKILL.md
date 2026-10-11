@@ -156,7 +156,8 @@ fixed.
   (`publisher.unity.com`) serves `.unitypackage` assets only: do not upload FastTools there.
 - **Tool:** Asset Store UPM Publishing Tools, `com.unity.upm-publishing-tools`. It is free, but it installs only for an
   account that has it in **My Assets** (`https://assetstore.unity.com/packages/package/5368745`): the registry refuses
-  the download otherwise. The dev project lists it in `manifest.json`. Do not use the old Asset Store Tools
+  the download otherwise. It lives only in the upload project: never commit it to the dev project manifest, where it
+  would fail the package resolve of every clone without that entitlement. Do not use the old Asset Store Tools
   (`com.unity.asset-store-tools`): their "Local UPM Package" uploads a `.unitypackage` to the old portal.
 - **Editor: 6000.0.53f1**, the minimum of `package.json` and of the `ci.yml` matrix. The portal records the Editor
   version of every uploaded package. An upload from the dev project (6000.6) can list buyers on 6000.0–6000.5 as
