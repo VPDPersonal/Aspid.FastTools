@@ -57,6 +57,8 @@ public sealed class Armory : MonoBehaviour
 - Both have a picker without any attribute; `[TypeSelector]` only adds constraints or `Required`.
 - Read: `.Type` (lazy; the result, `null` included, is cached until the stored name changes), implicit `Type?`,
   `AssemblyQualifiedName` (stored name, kept when it no longer resolves), `BaseType` (`typeof(T)`).
+- Wrappers compare by stored name: `a.Equals(b)` is `true` for the same type name whatever the wrapper class or `T`, so
+  they work as `Dictionary` and `HashSet` keys (do not serialize or deserialize a wrapper while it is a key: in the Editor, saving a `SerializableMonoScript` rewrites the name of a renamed class). `==` compares references.
 - `T` limits the picker and the constructor only: a name stored before `T` or the class's base changed still resolves,
   so check `BaseType.IsAssignableFrom(type)` before casting when that matters.
 - A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Low or
@@ -98,7 +100,8 @@ public sealed class Armory : MonoBehaviour
   it is not a runtime null check.
 - `[Conditional("UNITY_EDITOR")]`: never read it at runtime.
 - In a runtime object's Inspector the picker omits types from editor-only assemblies (`UnityEditor`, Editor asmdefs and
-  folders): a player cannot resolve them. Editor windows and editor-only settings objects still offer every type.
+  folders), and Paste, templates, a dropped script, Link to Existing and Smart Fix refuse them: a player cannot resolve
+  them. Editor windows and editor-only settings objects still offer every type.
 - `[SerializeReference]`: the field type is the first constraint, only instantiable classes are offered, nested
   managed references get the selector automatically; `UnityEngine.Object` field types are invalid (`AFT0004`).
 - Renaming or moving a `[SerializeReference]` implementation turns its stored data into a missing type. Add
