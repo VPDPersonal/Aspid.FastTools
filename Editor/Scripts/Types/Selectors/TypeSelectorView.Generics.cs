@@ -75,7 +75,7 @@ namespace Aspid.FastTools.Types.Editors
                 .GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter, includeValueTypes: true)
                 .Where(candidate => candidate.IsGenericTypeDefinition
                     ? GenericTypeResolver.SatisfiesSpecialConstraints(parameter, candidate)
-                      && (_genericDefinitionFilter?.Invoke(candidate) ?? true)
+                      && (_genericDefinitionFilter?.Invoke(openDefinition, candidate) ?? true)
                       && FitsArguments(candidate)
                     : Filter(candidate));
 

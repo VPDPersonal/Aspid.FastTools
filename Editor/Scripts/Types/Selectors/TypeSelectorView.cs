@@ -58,7 +58,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly Action _onDismiss;
         private readonly Action<string> _onSelected;
         private readonly Func<Type, bool> _argumentFilter;
-        private readonly Func<Type, bool> _genericDefinitionFilter;
+        private readonly Func<Type, Type, bool> _genericDefinitionFilter;
         private readonly GenericArgumentFilter _inferredArgumentFilter;
         private readonly Type[] _fieldTypes;
         private readonly string _currentAqn;

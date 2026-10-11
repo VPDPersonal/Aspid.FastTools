@@ -63,7 +63,8 @@ namespace Aspid.FastTools.Types.Editors
         internal Type[] NarrowingTypes { get; set; }
 
         // Set by the [SerializeReference] pickers: the open generic definitions an argument page offers as nested
-        // arguments. ArgumentFilter judges only the closed type, after the user has picked every argument.
-        internal Func<Type, bool> GenericDefinitionFilter { get; set; }
+        // arguments. ArgumentFilter judges only the closed type, after the user has picked every argument. It takes
+        // the definition whose argument the page fills and the candidate definition.
+        internal Func<Type, Type, bool> GenericDefinitionFilter { get; set; }
     }
 }
