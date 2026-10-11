@@ -27,7 +27,7 @@ body:
         - label: "`package.json` `version` bumped to the release version with `scripts/set-version.sh X.Y.Z` (no `-rc`/`-preview` suffix for a stable release)"
         - label: "Stable release: the badge reads `Release X.Y.Z` and the install URLs use `#upm` (`scripts/set-version.sh` switches them from `Preview` / `#upm-preview`; the Release workflow checks it)"
         - label: "`CHANGELOG.md` `[Unreleased]` section closed into `[X.Y.Z]` with a date (`scripts/set-version.sh` does it)"
-        - label: "Everything merged into `main`; a pushed `vX.Y.Z` tag starts the Release workflow, which publishes the `upm*/` tag and the GitHub release"
+        - label: "Everything merged into `main`; a pushed `vX.Y.Z` tag starts the Release workflow, which publishes the `upm*/` tag and the GitHub release. A stable release PR merges only after §12, the Asset Store publication, and its tag follows at once: the stable version reaches GitHub only after the store"
         - label: Working tree clean (`git status`)
 
   - type: checkboxes
@@ -38,7 +38,7 @@ body:
       options:
         - label: Clean project on minimum Unity **6000.0.53f1** — imports with 0 errors / 0 warnings
         - label: Project on latest LTS / 6.1+ — no API drift
-        - label: "Installed from the `.unitypackage` that the Local UPM Package upload exports (Asset Store distribution form): the package lands in `Packages/tech.aspid.fasttools` and the Test Runner lists no FastTools tests"
+        - label: "Installed from the Asset Store (**My Assets → Install**, the UPM product): the package lands in the **Packages** list, not in `Assets/`, and the Test Runner lists no FastTools tests"
         - label: Installed via UPM `upm` git tag (stable)
         - label: Installed via UPM `upm-preview` branch (preview) — README badge links resolve
         - label: Tested **with** and **without** `com.unity.mathematics` present
@@ -121,7 +121,7 @@ body:
       options:
         - label: "Site docs (`Website/docs/`, `Website/tutorials/`, their `Website/i18n/ru/` twins) and the short sample READMEs match the API; `npm --prefix Website run build` passes with no broken links"
         - label: The package README links the site, and the unpacked package has no images outside `Editor/Resources`
-        - label: "`SETUP.md` matches a fresh `.unitypackage` import: the install steps, the menu paths and the minimum Unity version of `package.json`"
+        - label: "`SETUP.md` matches a fresh install from **My Assets**: the install steps, the menu paths and the minimum Unity version of `package.json`"
         - label: The version badge renders and links the `vX.Y.Z` release
         - label: Asset Store card screenshots proofread (no typos)
 
@@ -129,18 +129,27 @@ body:
     id: assetstore
     attributes:
       label: 10. Asset Store upload setup
-      description: The upload form and the Editor are fixed in the `asp-ft-release` skill, section "Asset Store upload". Set up here, upload after 11.
+      description: The portal, the tool and the Editor are fixed in the `asp-ft-release` skill, section "Asset Store upload". Set up here while the release PR is open, upload after 11, merge and tag after 12.
       options:
-        - label: "Upload form is **Local UPM Package** (`Tools/Asset Store/Uploader`, Upload type), not From Assets Folder: the package must stay in `Packages/`, because its tests compile only for a package in `Assets/` or in `testables`"
-        - label: "The Editor that uploads is **6000.0.53f1** (the minimum in `package.json`), not the dev project's 6000.6: the store can record the uploading Editor as the minimum Unity version, which lists buyers on 6000.0–6000.3 as unsupported"
-        - label: "The Local UPM Package entry shows in the Uploader: the active build target is Standalone, because `UNITY_ASTOOLS_EXPERIMENTAL` is set for the Standalone group only"
-        - label: "`CHANGELOG.md` and its `.meta` are in the package folder before the export (`node scripts/package-changelog.mjs vX.Y.Z`, or the `upm/X.Y.Z` tag) and in the exported `.unitypackage`"
-        - label: "Validator (`Tools/Asset Store/Validator`) run on the package: no failures. One warning is expected, \"scripts contain types not nested under a namespace\", for `ProfilerMarkerExtensionsForGenerator` (the generator finds it by name): name that type in the submission notes. The Validator does not report the types of the Roslyn DLLs"
+        - label: "The upload goes to the UPM Publisher Portal (`cloud.unity.com/assetstore/publisher/products`, product `fastTools`), whose technical name `tech.aspid.fasttools` matches `package.json`; not to the `.unitypackage` portal `publisher.unity.com`"
+        - label: "The Editor that uploads is **6000.0.53f1** (the minimum in `package.json`), not the dev project's 6000.6: the portal records the uploading Editor version, which can list buyers on older 6000.x as unsupported"
+        - label: "The package in the upload project comes from the head of `chore/release-X.Y.Z` with `CHANGELOG.md` and its `.meta` generated (`node scripts/package-changelog.mjs vX.Y.Z`); no other PR that changes the package or the CHANGELOGs merges into `main` until the release PR does"
+        - label: "Asset Store UPM Publishing Tools (`com.unity.upm-publishing-tools`, from My Assets) installed; Validator with Validation Type **UPM** run on the package: no failures. A warning about types outside a namespace for `ProfilerMarkerExtensionsForGenerator` (the generator finds it by name) is expected: name that type in the submission notes"
+        - label: "Uploaded from the **UPM Packages** tab of the Uploader; the portal's package metadata lists every compatible `6000.x` and the version's CHANGELOG section as release notes"
 
   - type: checkboxes
     id: final
     attributes:
       label: 11. Final smoke before upload
       options:
-        - label: Fresh `.unitypackage` import into an empty project — clean console, one sample imports and runs
+        - label: In the upload project — clean console, one sample imports from the **Samples** tab and runs, the Test Runner lists no FastTools tests
         - label: "Asset Store card (version, Unity compatibility, category, license, tags) matches the package"
+
+  - type: checkboxes
+    id: publish
+    attributes:
+      label: 12. After the upload, before the merge and the tag
+      options:
+        - label: "Submitted with **Manually publish**; after the approval, published in the portal"
+        - label: Fresh install from **My Assets** into an empty project — clean console, the package is in the **Packages** list
+        - label: "The `## [X.Y.Z] — <date>` heading of both CHANGELOGs carries the publication day; then the release PR is merged and `vX.Y.Z` is tagged"

@@ -1,4 +1,4 @@
-# Line endings stay as committed (the vendored com.unity.asset-store-tools and the font licences are CRLF);
+# Line endings stay as committed (the font licences are CRLF);
 # only files that stop working with CRLF are pinned to LF.
 *.sh            text eol=lf
 

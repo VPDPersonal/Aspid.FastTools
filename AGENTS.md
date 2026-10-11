@@ -80,9 +80,11 @@ Agent Skills for projects that consume the package in `skills/`.
 - A change to public API or to its XML docs reaches `Website/api/` **only** after `npm run api` in `Website/`; commit the
   result in the same PR. CI cannot run it, because DocFX compiles against a local Unity install. The steps for a worktree
   are in `.claude/skills/docs-site/references/api-reference.md`.
-- `Aspid.FastTools/Packages/com.unity.asset-store-tools/` is Unity's Asset Store Tools (the package validator and uploader),
-  embedded in the dev project. It is third-party code with CRLF line endings, so do not edit, reformat or delete it. It
-  stays outside `Aspid.FastTools/Packages/tech.aspid.fasttools/`, so the `upm` branches do not contain it.
+- The Asset Store product is a UPM product on the UPM Publisher Portal, uploaded with Asset Store UPM Publishing Tools
+  (`com.unity.upm-publishing-tools`). Never commit that package to the dev project manifest: it resolves only for an
+  account that has it in **My Assets**, and one dependency that fails to download stops the whole package resolve, so
+  every other clone opens with an error. The release steps are in the `asp-ft-release` skill, section
+  "Asset Store upload".
 - The dev project uses only the Input System (`activeInputHandler: 1`, `com.unity.inputsystem`): `UnityEngine.Input`
   throws there. `com.unity.pipeline` needs the package for its CLI input commands (`simulate_key`, pointer commands).
 
