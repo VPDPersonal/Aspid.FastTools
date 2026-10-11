@@ -24,6 +24,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
+            // The delete guard keeps the assets with managed references for one editor tick; a changed one makes that stale.
+            if (HasCandidate(imported) || HasCandidate(deleted) || HasCandidate(moved))
+                SerializeReferenceDeleteGuard.InvalidateSweep();
+
             // A cold index has nothing to patch; the next consumer builds it from the current assets.
             if (!SerializeReferenceTypeUsageIndex.IsWarm) return;
 

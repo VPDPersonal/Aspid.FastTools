@@ -22,8 +22,7 @@ namespace Aspid.FastTools.Samples.EnumValues
 
         // Enum fixed in code. No row for a surface means the Default Value.
         [Tooltip("Seconds between trail color samples on each surface.")]
-        [SerializeField, InspectorName("Color Sample Interval")]
-        private EnumValues<SurfaceType, float> _stepInterval;
+        [SerializeField] private EnumValues<SurfaceType, float> _stepInterval;
 
         // Enum picked in the Inspector (TerrainFlags here). [Flags] lookup: an exact key wins first, then the
         // first entry whose flags are all contained in the value, then the default.
@@ -31,8 +30,7 @@ namespace Aspid.FastTools.Samples.EnumValues
         [SerializeField] private EnumValues<float> _speedByTerrain;
 
         [Tooltip("Seconds before trail points expire.")]
-        [SerializeField, Min(0.1f), InspectorName("Trail Lifetime")]
-        private float _footprintLifetime = 2f;
+        [SerializeField, Min(0.1f)] private float _footprintLifetime = 2f;
 
         private int _direction = 1;
         private float _nextStep;
@@ -120,7 +118,7 @@ namespace Aspid.FastTools.Samples.EnumValues
         {
             // foreach yields the configured rows only, in list order; the default value is not part of it.
             foreach (var (surface, interval) in _stepInterval)
-                Debug.Log($"Color sample interval {surface}: {interval:0.00}s", this);
+                Debug.Log($"Step interval {surface}: {interval:0.00}s", this);
 
             foreach (var (flags, multiplier) in _speedByTerrain)
                 Debug.Log($"Speed x{multiplier:0.00} on [{flags}]", this);

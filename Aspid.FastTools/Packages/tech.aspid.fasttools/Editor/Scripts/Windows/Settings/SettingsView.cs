@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
@@ -53,7 +54,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return;
 
                 case EnumField dropdown:
-                    _ring.Register(dropdown, () => CycleEnum(dropdown));
+                    _ring.Register(
+                        dropdown,
+                        activate: null,
+                        adjust: delta => StepEnum(dropdown, delta, ConfirmStep));
                     return;
 
                 case SliderInt slider:
@@ -83,12 +87,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void RebuildNavTargets() =>
             _ring.Rebuild(() => CollectNavTargets(this));
 
-        // Cycle values because the native popup is outside the keyboard ring.
-        private static void CycleEnum(EnumField dropdown)
+        // The native popup is outside the keyboard ring, so arrows step the value.
+        // Stepping does not wrap, and a value with team-wide effect asks first.
+        internal static void StepEnum(EnumField dropdown, int delta, Func<Enum, bool> confirm)
         {
             var values = Enum.GetValues(dropdown.value.GetType());
-            var index = Array.IndexOf(values, dropdown.value);
-            dropdown.value = (Enum)values.GetValue((index + 1) % values.Length);
+            var index = Mathf.Clamp(Array.IndexOf(values, dropdown.value) + delta, 0, values.Length - 1);
+            var next = (Enum)values.GetValue(index);
+
+            if (Equals(next, dropdown.value)) return;
+            if (NeedsConfirmation(next) && !confirm(next)) return;
+
+            dropdown.value = next;
+        }
+
+        // Fail breaks the team's builds and Off silently skips the check.
+        internal static bool NeedsConfirmation(Enum value) =>
+            value is GateSeverity.Fail or GateSeverity.Off;
+
+        private static bool ConfirmStep(Enum next)
+        {
+            var effect = next is GateSeverity.Fail
+                ? "Fail aborts the player build and fails the CI job when the check finds a violation."
+                : "Off never checks, so missing types reach the build and the CI job without a warning.";
+
+            return EditorUtility.DisplayDialog(
+                title: $"Build / CI gate: {next}",
+                message: effect
+                    + "\n\nThis edits the committed ProjectSettings asset, so it affects the whole team once committed.",
+                ok: $"Set to {next}",
+                cancel: "Cancel");
         }
 
         private static void Submit(Button button)
