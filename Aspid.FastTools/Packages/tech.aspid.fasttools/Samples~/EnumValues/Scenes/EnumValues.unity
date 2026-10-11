@@ -1511,16 +1511,10 @@ MonoBehaviour:
     _values:
     - _key: Sand
       _value: 0.6
-      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Water
       _value: 0.8
-      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Metal
       _value: 0.25
-      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _speedByTerrain:
     _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
@@ -1528,24 +1522,14 @@ MonoBehaviour:
     _values:
     - _key: Wet
       _value: 0.8
-      _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Slippery
       _value: 1.4
-      _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Hot
       _value: 1.6
-      _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Wet, Slippery
       _value: 0.5
-      _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Soft
       _value: 0.4
-      _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _footprintLifetime: 2
 --- !u!23 &824253716
 MeshRenderer:

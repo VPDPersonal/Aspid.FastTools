@@ -22,6 +22,9 @@ namespace Aspid.FastTools.UIElements.Tests
             yield return Case(() => new FloatField().SetLabel(Label));
             yield return Case(() => new DoubleField().SetLabel(Label));
             yield return Case(() => new Hash128Field().SetLabel(Label));
+#if UNITY_6000_4_OR_NEWER
+            yield return Case(() => new GUIDField().SetLabel(Label));
+#endif
             yield return Case(() => new EnumField().SetLabel(Label));
             yield return Case(() => new Slider().SetLabel(Label));
             yield return Case(() => new SliderInt().SetLabel(Label));
