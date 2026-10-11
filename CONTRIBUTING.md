@@ -20,6 +20,7 @@ By sending a pull request you agree to license your contribution under the [MIT 
 | `Aspid.FastTools/` | The Unity project that opens the package for development |
 | `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/` | .NET solutions whose Release build produces the DLLs in the package |
 | `Aspid.FastTools.YamlTests/` | Tests of the SerializeReference YAML engine, run without Unity |
+| `Aspid.FastTools.TypeTests/` | Tests of the generic type resolver, run without Unity |
 | `Website/` | The documentation site: pages, tutorials, Russian translations and the API reference |
 | `skills/` | Agent Skills for projects that use the package |
 
@@ -37,6 +38,7 @@ A pull request that breaks one of these does not merge:
 - Do not reach editor-only APIs from runtime code.
 - Do not write to `Console` or reference `SourceGenerator.Foundations` in generator or analyzer code. It deadlocks Unity's compilation server.
 - Keep the SerializeReference YAML engine (`Editor/Scripts/SerializeReferences/Yaml`) on C# 9 with no Unity API: `Aspid.FastTools.YamlTests` compiles it outside Unity.
+- Keep `GenericTypeResolver`, `GenericArgumentFilter` and `TypeUtility` on C# 9 with no new Unity API: `Aspid.FastTools.TypeTests` compiles them outside Unity.
 
 Style is set by `.editorconfig` and the "C# style" section of [AGENTS.md](AGENTS.md): named arguments, `using` directives sorted by line length, `sealed` leaf classes, `internal` for implementation. Public API carries XML docs.
 
@@ -50,7 +52,7 @@ A change to generator or analyzer source reaches Unity only through the DLLs com
 2. Build in Release in the same folder: `dotnet build -c Release`. This copies the DLL into the package.
 3. Commit the changed DLL together with the source.
 
-Build with the SDK from `global.json`. The release workflow rebuilds both DLLs and fails when they differ from the committed ones.
+Build with the SDK from `global.json`. CI rebuilds both DLLs on every pull request and fails when they differ from the committed ones.
 
 ## Tests
 
@@ -59,6 +61,7 @@ Build with the SDK from `global.json`. The release workflow rebuilds both DLLs a
 | Generators | `dotnet test` in `Aspid.FastTools.Generators/` |
 | Analyzers | `dotnet test` in `Aspid.FastTools.Analyzers/` |
 | YAML engine | `dotnet test Aspid.FastTools.YamlTests` in the repository root |
+| Type resolver | `dotnet test Aspid.FastTools.TypeTests` in the repository root |
 | Package | **Window → General → Test Runner → EditMode** in the development project |
 
 Add or extend a test for every behavior change a test project can reach. EditMode tests live in `Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/`. To run them on another Unity version, use the batch command in the header of `scripts/make-unity-test-project.sh`.
@@ -68,7 +71,7 @@ Add or extend a test for every behavior change a test project can reach. EditMod
 A change to `Runtime/`, `Editor/`, `Samples~/` (except `Documentation`) or the package DLLs that users can see needs an entry under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md), under Added, Changed, Fixed or Removed.
 
 - Put the entry next to the most related one, not at the end of the section. Parallel pull requests then do not conflict on the same line.
-- Add the same entry in Russian to [CHANGELOG.ru.md](CHANGELOG.ru.md). If you do not write Russian, say so in the pull request.
+- Add the same entry in Russian to [CHANGELOG.ru.md](CHANGELOG.ru.md): the check fails when only one of the two files changes. If you do not write Russian, put the English entry there and say so in the pull request; a maintainer translates it.
 - A breaking change goes under Changed and says how to migrate.
 - Users see no change (a refactor, a test)? Ask for the `no-changelog` label instead.
 
@@ -107,7 +110,8 @@ CI sets the `type:`, `area:` and `breaking-change` labels from the title and the
 ### What CI checks
 
 - **PR title** and **CHANGELOG**: the rules above.
-- **Tests:** the generator, analyzer and YAML engine tests on every pull request. The Unity EditMode tests run on five Unity versions when a change can affect them. They need repository secrets, so a pull request from a fork skips them: say how you tested in Unity.
+- **Tests** on every pull request: the generator, analyzer, YAML engine and type resolver tests, and the tests of the repository scripts.
+- **Unity:** the EditMode tests on every Unity version in the matrix of `.github/workflows/ci.yml`, from the minimum one up, when a change reaches the package code. They need repository secrets, which a pull request from a fork does not get. On such a pull request the required **Unity** check fails instead of skipping: this is expected, not your mistake. A maintainer reads the change, runs the tests on a branch of this repository and merges. Say how you tested in Unity.
+- **Repository files** on every pull request: the committed Roslyn DLLs match a Release build, package files and their `.meta` files, the version in every file that holds it, every `SKILL.md` (front matter, `AFT` codes, namespaces), and the contrast of the Editor palette.
 - **Docs:** the site builds when `Website/`, a README or a CHANGELOG changes.
-- **Skills:** the `SKILL.md` front matter is valid when a skill changes.
 - **Review:** a bot reviews non-draft pull requests opened from branches of this repository, by the rules in [.github/claude-review.md](.github/claude-review.md).
