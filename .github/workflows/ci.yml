@@ -304,14 +304,19 @@ jobs:
           UNITY: ${{ matrix.unity }}
         run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY"
 
-      - uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
-        env:
+      # Unity sometimes assigns no Personal seat ("assigned no seat") when many jobs activate the same account at once.
+      # Such a run fails before any test and leaves no results file, so it gets one second attempt after a pause; a
+      # run with test failures writes its results and fails at once.
+      - id: tests
+        uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
+        continue-on-error: true
+        env: &unity-env
           # The action asks the GitHub API for the latest game-ci CLI release; without a token, the shared runner IP
           # hits the anonymous rate limit (403).
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
+        with: &unity-with
           unityVersion: ${{ matrix.unity }}
           projectPath: ci-unity-project
           testMode: editmode
@@ -320,6 +325,25 @@ jobs:
           artifactsPath: unity-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ matrix.unity }})
+
+      - name: Wait before a second license request
+        id: no-results
+        if: steps.tests.outcome == 'failure' && hashFiles('unity-test-results/**/*.xml') == ''
+        run: |
+          echo "::warning::The Unity test run left no results (most likely no license seat); trying once more."
+          sleep $((60 + RANDOM % 60))
+
+      - id: retry
+        if: steps.no-results.outcome == 'success'
+        uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
+        env: *unity-env
+        with: *unity-with
+
+      - name: Fail on a failed test run
+        if: steps.tests.outcome == 'failure' && steps.retry.outcome != 'success'
+        run: |
+          echo "::error::Unity EditMode failed; see the test runner step above."
+          exit 1
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
