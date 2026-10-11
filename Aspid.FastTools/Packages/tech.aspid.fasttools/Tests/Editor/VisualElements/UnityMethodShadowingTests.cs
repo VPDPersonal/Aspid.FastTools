@@ -73,10 +73,14 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.IsEmpty(withoutReceiver, "These extensions have no receiver type to check:" + Environment.NewLine + string.Join(Environment.NewLine, withoutReceiver));
         }
 
+        // The runtime and Editor fluent extensions, and the Math ones when com.unity.mathematics is loaded.
         private static IEnumerable<MethodInfo> GetExtensionMethods() =>
-            typeof(VisualElementExtensions).Assembly
-                .GetTypes()
-                .Where(type => type.IsPublic && type.IsAbstract && type.IsSealed && type.Namespace == typeof(VisualElementExtensions).Namespace)
+            new[] { typeof(VisualElementExtensions).Assembly, typeof(Editors.PropertyFieldExtensions).Assembly }
+                .Concat(AppDomain.CurrentDomain.GetAssemblies().Where(assembly => assembly.GetName().Name == "Aspid.FastTools.VisualElements.Math"))
+                .Distinct()
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(type => type.IsPublic && type.IsAbstract && type.IsSealed
+                    && type.Namespace?.StartsWith("Aspid.FastTools.UIElements", StringComparison.Ordinal) == true)
                 .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
                 .Where(method => method.IsDefined(typeof(ExtensionAttribute), inherit: false));
 
@@ -135,9 +139,11 @@ namespace Aspid.FastTools.UIElements.Tests
             return false;
         }
 
-        // An open generic argument of the extension can be any type, so it counts as a match.
+        // An open generic argument on either side can be any type, so it counts as a match: C# infers the type
+        // argument of a generic instance method and binds to it.
         private static bool Accepts(Type instanceParameter, Type extensionParameter) =>
-            extensionParameter.ContainsGenericParameters || instanceParameter.IsAssignableFrom(extensionParameter);
+            extensionParameter.ContainsGenericParameters || instanceParameter.ContainsGenericParameters
+            || instanceParameter.IsAssignableFrom(extensionParameter);
 
         private static string FormatParameters(IEnumerable<ParameterInfo> parameters) =>
             string.Join(", ", parameters.Select(parameter => parameter.ParameterType.Name));

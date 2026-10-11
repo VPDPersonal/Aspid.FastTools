@@ -2,6 +2,8 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
+using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.UIElements.Tests
 {
@@ -11,10 +13,28 @@ namespace Aspid.FastTools.UIElements.Tests
         private const string MissingPath = "Icons/aspid_icon_missing";
         private const string ExistingTexturePath = "Icons/aspid_icon_home";
 
+        private readonly List<Object> _created = new();
+
+        // Created objects are destroyed after each test, also when an assert fails.
+        private T Track<T>(T created) where T : Object
+        {
+            _created.Add(created);
+            return created;
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var created in _created)
+                Object.DestroyImmediate(created);
+
+            _created.Clear();
+        }
+
         [Test]
         public void Setters_ReturnImageAndSetProperties()
         {
-            var texture = new Texture2D(2, 2);
+            var texture = Track(new Texture2D(width: 2, height: 2));
             var source = new Image();
 
             Image image = source
@@ -26,8 +46,6 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.AreSame(texture, image.image);
             Assert.AreEqual(Color.red, image.tintColor);
             Assert.AreEqual(ScaleMode.ScaleAndCrop, image.scaleMode);
-
-            Object.DestroyImmediate(texture);
         }
 
         // Image keeps uv and sourceRect in sync, so each is checked on its own.
@@ -44,40 +62,33 @@ namespace Aspid.FastTools.UIElements.Tests
         [Test]
         public void SetSourceRect_SetsSourceRect()
         {
-            var texture = new Texture2D(4, 4);
+            var texture = Track(new Texture2D(width: 4, height: 4));
             var sourceRect = new Rect(1f, 1f, 2f, 2f);
 
             var image = new Image().SetImage(texture).SetSourceRect(sourceRect);
 
             Assert.AreEqual(sourceRect, image.sourceRect);
-
-            Object.DestroyImmediate(texture);
         }
 
         [Test]
         public void SetSprite_SetsSprite()
         {
-            var texture = new Texture2D(2, 2);
-            var sprite = Sprite.Create(texture, new Rect(0f, 0f, 2f, 2f), pivot: Vector2.zero);
+            var texture = Track(new Texture2D(width: 2, height: 2));
+            var sprite = Track(Sprite.Create(texture, new Rect(0f, 0f, 2f, 2f), pivot: Vector2.zero));
 
             var image = new Image().SetSprite(sprite);
 
             Assert.AreSame(sprite, image.sprite);
-
-            Object.DestroyImmediate(sprite);
-            Object.DestroyImmediate(texture);
         }
 
         [Test]
         public void SetVectorImage_SetsVectorImage()
         {
-            var vectorImage = ScriptableObject.CreateInstance<VectorImage>();
+            var vectorImage = Track(ScriptableObject.CreateInstance<VectorImage>());
 
             var image = new Image().SetVectorImage(vectorImage);
 
             Assert.AreSame(vectorImage, image.vectorImage);
-
-            Object.DestroyImmediate(vectorImage);
         }
 
         [Test]

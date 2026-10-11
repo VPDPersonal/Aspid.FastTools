@@ -3,6 +3,7 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.UIElements.Tests
 {
@@ -13,6 +14,24 @@ namespace Aspid.FastTools.UIElements.Tests
     [TestFixture]
     internal sealed class ListViewExtensionsTests
     {
+        private readonly List<Object> _created = new();
+
+        // Created objects are destroyed after each test, also when an assert fails.
+        private T Track<T>(T created) where T : Object
+        {
+            _created.Add(created);
+            return created;
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            foreach (var created in _created)
+                Object.DestroyImmediate(created);
+
+            _created.Clear();
+        }
+
         #region Set, Add and Remove
         [Test]
         public void OnAdd_SetAddRemove_ManageTheCallbacks()
@@ -345,34 +364,32 @@ namespace Aspid.FastTools.UIElements.Tests
         public void ListView_SetMakeItemAndItemTemplate_SetProperties()
         {
             Func<VisualElement> makeItem = () => new Label();
-            var template = ScriptableObject.CreateInstance<VisualTreeAsset>();
+            var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
 
             var list = new ListView().SetMakeItem(makeItem);
             Assert.AreSame(makeItem, list.makeItem);
 
             list.SetItemTemplate(template);
             Assert.AreSame(template, list.itemTemplate);
-
-            UnityEngine.Object.DestroyImmediate(template);
         }
 
         [Test]
         public void TreeView_Setters_ReturnTreeAndSetProperties()
         {
             Func<VisualElement> makeItem = () => new Label();
-            var template = ScriptableObject.CreateInstance<VisualTreeAsset>();
+            var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
             var source = new TreeView();
 
             TreeView tree = source
                 .SetAutoExpand(true)
-                .SetMakeItem(makeItem)
-                .SetItemTemplate(template);
+                .SetMakeItem(makeItem);
 
             Assert.AreSame(source, tree);
             Assert.IsTrue(tree.autoExpand);
-            Assert.AreSame(template, tree.itemTemplate);
+            Assert.AreSame(makeItem, tree.makeItem);
 
-            UnityEngine.Object.DestroyImmediate(template);
+            tree.SetItemTemplate(template);
+            Assert.AreSame(template, tree.itemTemplate);
         }
 
         [Test]

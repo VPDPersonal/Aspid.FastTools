@@ -1,6 +1,8 @@
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
+using Object = UnityEngine.Object;
 using Aspid.FastTools.UIElements.Editors.Internal.Tests;
 
 namespace Aspid.FastTools.UIElements.Tests
@@ -17,8 +19,25 @@ namespace Aspid.FastTools.UIElements.Tests
         [SetUp]
         public void SetUp() => _panel = new TestPanel();
 
+        private readonly List<Object> _created = new();
+
+        // Created objects are destroyed after each test, also when an assert fails.
+        private T Track<T>(T created) where T : Object
+        {
+            _created.Add(created);
+            return created;
+        }
+
         [TearDown]
-        public void TearDown() => _panel.Dispose();
+        public void TearDown()
+        {
+            _panel.Dispose();
+
+            foreach (var created in _created)
+                Object.DestroyImmediate(created);
+
+            _created.Clear();
+        }
 
         #region Button
         [Test]
@@ -72,13 +91,11 @@ namespace Aspid.FastTools.UIElements.Tests
         [Test]
         public void Button_SetIconImage_SetsBackground()
         {
-            var texture = new Texture2D(2, 2);
+            var texture = Track(new Texture2D(width: 2, height: 2));
 
             var button = new Button().SetIconImage(Background.FromTexture2D(texture));
 
             Assert.AreSame(texture, button.iconImage.texture);
-
-            Object.DestroyImmediate(texture);
         }
 
         // A submit event is what Enter and the gamepad button send, and Button turns it into a click.
