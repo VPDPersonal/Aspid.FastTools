@@ -835,7 +835,14 @@ Aspid.FastTools.UIElements.TextElementExtensions
     public static T SetEmojiFallbackSupport<T>(this T element, bool value) where T : UnityEngine.UIElements.TextElement
     public static T SetEnableRichText<T>(this T element, bool value) where T : UnityEngine.UIElements.TextElement
     public static T SetParseEscapeSequences<T>(this T element, bool value) where T : UnityEngine.UIElements.TextElement
+    public static T SetTextSelf<T>(this T element, System.ReadOnlySpan<char> value) where T : UnityEngine.UIElements.TextElement
+    public static T SetTextSelf<T>(this T element, System.Text.StringBuilder value) where T : UnityEngine.UIElements.TextElement
+    public static T SetTextSelf<T>(this T element, char[] value, int start, int length) where T : UnityEngine.UIElements.TextElement
+    public static T SetTextSelf<T>(this T element, float value, string format = null) where T : UnityEngine.UIElements.TextElement
+    public static T SetTextSelf<T>(this T element, int value) where T : UnityEngine.UIElements.TextElement
+    public static T SetTextSelf<T>(this T element, long value) where T : UnityEngine.UIElements.TextElement
     public static T SetTextSelf<T>(this T element, string value) where T : UnityEngine.UIElements.TextElement
+    public static T SetTextSelf<T>(this T element, ulong value) where T : UnityEngine.UIElements.TextElement
 
 Aspid.FastTools.UIElements.TextFieldExtensions
     public static class TextFieldExtensions
