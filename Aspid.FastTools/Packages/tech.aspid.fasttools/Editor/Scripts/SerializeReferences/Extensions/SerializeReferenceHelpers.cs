@@ -964,8 +964,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             !typeof(Delegate).IsAssignableFrom(type);
 
         private static bool IsSerializedCollection(Type type) =>
-            (type.IsArray && type.GetArrayRank() == 1) ||
-            (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>));
+            (type.IsArray && type.GetArrayRank() == 1) || IsClosedList(type);
+
+        private static bool IsClosedList(Type type) =>
+            type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
 
         private static Dictionary<string, FieldInfo> MapSerializedFields(Type type)
         {
@@ -1036,29 +1038,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (type is null) return false;
             if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters) return false;
             if (typeof(Delegate).IsAssignableFrom(type)) return false;
-            if (IsFrameworkGenericStruct(type)) return false;
 
-            return type.IsPrimitive ||
-                   type.IsEnum ||
+            // Unity stores T[] and List<T> as a sequence of T, one level deep: no multidimensional array, no sequence
+            // of sequences, and a sequence of what Unity drops is dropped with it.
+            if (type.IsArray) return type.GetArrayRank() == 1 && IsValidSequenceElement(type.GetElementType());
+            if (IsClosedList(type)) return IsValidSequenceElement(type.GetGenericArguments()[0]);
+
+            if (type.IsPrimitive) return type != typeof(IntPtr) && type != typeof(UIntPtr);
+
+            return type.IsEnum ||
                    type == typeof(string) ||
                    typeof(Object).IsAssignableFrom(type) ||
                    UnityNativeSerializableTypes.Contains(type) ||
-                   (type.IsValueType && type.IsSerializable) ||
-                   (type.IsClass && type.IsSerializable);
+                   (type.IsValueType && type.IsSerializable && !IsFrameworkType(type)) ||
+                   (type.IsClass && type.IsSerializable && !IsFrameworkType(type));
         }
 
+        private static bool IsValidSequenceElement(Type element) =>
+            !element.IsArray && !IsClosedList(element) && IsValidGenericArgument(element);
+
         // The open definitions an argument page offers as nested arguments. IsValidGenericArgument judges a closed
-        // generic by its definition alone, so a definition it rejects would lead only to a dead end.
+        // generic by its definition alone, so a definition it rejects would lead only to a dead end. List<> is the one
+        // framework generic Unity serializes; IsValidGenericArgument then judges its element.
         public static bool IsValidGenericArgumentDefinition(Type definition) =>
             definition is { IsGenericTypeDefinition: true, IsSerializable: true } &&
-            !IsFrameworkGenericStruct(definition);
+            (definition == typeof(List<>) || !IsFrameworkType(definition));
 
-        // Nullable<T>, KeyValuePair<,>, ValueTuple<…> and the like carry [Serializable], but Unity does not serialize
-        // them, so a field of such a type silently loses its value.
-        private static bool IsFrameworkGenericStruct(Type type)
+        // The page that fills an argument of `building` knows more: Unity keeps one level of List<T>, so the element
+        // page of a List<> offers no List<>, which could only end in the error of the closed List<List<T>>.
+        public static bool IsValidGenericArgumentDefinition(Type building, Type definition) =>
+            IsValidGenericArgumentDefinition(definition) &&
+            !(building == typeof(List<>) && definition == typeof(List<>));
+
+        // The framework types carry [Serializable] for .NET's own binary serialization, not for Unity's: DateTime,
+        // TimeSpan, Guid, Decimal, Nullable<T>, KeyValuePair<,>, the tuples, Dictionary<,>, HashSet<T>, Queue<T> and
+        // the like keep their data in private fields Unity does not write, so a field of such a type silently loses
+        // its value. What the framework gives Unity to serialize is handled before this check: primitives, string,
+        // enums, T[] and List<T>.
+        private static bool IsFrameworkType(Type type)
         {
-            if (type is not { IsValueType: true, IsGenericType: true }) return false;
-
             var assembly = type.Assembly.GetName().Name;
             return assembly is "mscorlib" or "netstandard" or "System" ||
                    assembly.StartsWith("System.", StringComparison.Ordinal);
