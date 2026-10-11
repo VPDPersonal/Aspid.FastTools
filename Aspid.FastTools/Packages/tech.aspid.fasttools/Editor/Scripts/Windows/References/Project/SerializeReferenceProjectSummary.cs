@@ -45,9 +45,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string BuildNotRewrittenText(int count, string verb = "rewritten") =>
             $"{count} could not be {verb} — a file is read-only or locked (see the Console), or the entry changed since the scan.";
 
-        // An in-memory entry fails without a log when its scene or Prefab Mode stage was closed after the scan.
+        // An in-memory entry fails without a log when its scene or Prefab Mode stage was closed after the scan, or
+        // when the live object no longer holds that missing reference.
         public static string BuildNoLongerOpenText(int count) =>
-            $"{count} {(count == 1 ? "was" : "were")} no longer open in Prefab Mode or a scene — Rescan.";
+            $"{count} {(count == 1 ? "was" : "were")} no longer open in Prefab Mode or a scene, or changed since the scan — Rescan.";
 
         // The parts of a summary body that apply, in one paragraph; a part that is null or empty is left out.
         public static string JoinSentences(params string[] sentences) =>
