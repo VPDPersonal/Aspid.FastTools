@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 
 // ReSharper disable once CheckNamespace
@@ -13,6 +15,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceYamlEditorRewriteTests
     {
+        private static readonly ManagedTypeName _pistol = new(
+            "Aspid.FastTools.Samples.SerializeReferences",
+            "Aspid.FastTools.Samples.SerializeReferences",
+            "Pistol");
+
         private string _path;
 
         [SetUp]
@@ -75,6 +82,113 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(SerializeReferenceYamlEditor.TryRewriteType(
                 _path, YamlFixtures.MonoBehaviourFileId, 999999, newType));
             Assert.AreEqual(before, File.ReadAllText(_path), "A no-op rewrite must leave the file byte-identical.");
+        }
+
+        [Test]
+        public void RewriteTypes_SeveralEntries_WritesWhatOneRewritePerEntryWrites()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.BurnEffectRid, storedType: default),
+            };
+
+            var expectedPath = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
+            try
+            {
+                foreach (var entry in entries)
+                    Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(expectedPath, entry.FileId, entry.Rid, _pistol));
+
+                Assert.AreEqual(entries.Length, SerializeReferenceYamlEditor.RewriteTypes(_path, entries, _pistol));
+                Assert.AreEqual(File.ReadAllText(expectedPath), File.ReadAllText(_path),
+                    "One write for all entries must give the same file as one write per entry.");
+            }
+            finally
+            {
+                YamlFixtures.Delete(expectedPath);
+            }
+        }
+
+        [Test]
+        public void RewriteTypes_StaleEntry_IsSkipped_AndTheOthersAreRewritten()
+        {
+            var before = File.ReadAllLines(_path);
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, rid: 999999, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, storedType: default),
+            };
+
+            Assert.AreEqual(1, SerializeReferenceYamlEditor.RewriteTypes(_path, entries, _pistol));
+
+            var after = File.ReadAllLines(_path);
+            var changed = Enumerable.Range(0, before.Length).Where(i => before[i] != after[i]).ToArray();
+            Assert.AreEqual(1, changed.Length, "Only the type line of the present entry should change.");
+            StringAssert.Contains("GhostPistol", before[changed[0]]);
+            StringAssert.Contains("class: Pistol", after[changed[0]]);
+        }
+
+        [Test]
+        public void RewriteTypes_EveryEntryStale_ReturnsZero_AndLeavesFileUnchanged()
+        {
+            var before = File.ReadAllText(_path);
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, rid: 999999, storedType: default),
+                new MissingReferenceEntry(fileId: 424242, YamlFixtures.GhostPistolRid, storedType: default),
+            };
+
+            Assert.AreEqual(0, SerializeReferenceYamlEditor.RewriteTypes(_path, entries, _pistol));
+            Assert.AreEqual(before, File.ReadAllText(_path), "A batch with nothing to rewrite must not write the file.");
+        }
+
+        [Test]
+        public void ComputeRewrites_SeveralEntries_GivesTheEditOfEachEntryInOrder_AndWritesNothing()
+        {
+            var before = File.ReadAllText(_path);
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, rid: 999999, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, storedType: default),
+            };
+
+            var edits = SerializeReferenceYamlEditor.ComputeRewrites(_path, entries, _pistol);
+
+            Assert.AreEqual(entries.Length, edits.Length, "The result must have one slot per entry.");
+            Assert.IsFalse(edits[1].IsValid, "A stale entry must give an invalid slot.");
+
+            foreach (var index in new[] { 0, 2 })
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryComputeRewrite(
+                    _path, entries[index].FileId, entries[index].Rid, _pistol, out var single));
+                Assert.AreEqual(single.LineNumber, edits[index].LineNumber);
+                Assert.AreEqual(single.OldLine, edits[index].OldLine);
+                Assert.AreEqual(single.NewLine, edits[index].NewLine);
+            }
+
+            Assert.AreEqual(before, File.ReadAllText(_path), "Computing the edits must not write the file.");
+
+            Assert.AreEqual(2, SerializeReferenceYamlEditor.RewriteTypes(_path, entries, _pistol));
+            var after = File.ReadAllLines(_path);
+            Assert.AreEqual(edits[0].NewLine, after[edits[0].LineNumber], "The batch preview must equal what the batch writes.");
+            Assert.AreEqual(edits[2].NewLine, after[edits[2].LineNumber], "The batch preview must equal what the batch writes.");
+        }
+
+        [Test]
+        public void ComputeRewrites_UnknownDocument_GivesOnlyInvalidSlots()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(fileId: 424242, YamlFixtures.GhostPistolRid, storedType: default),
+                new MissingReferenceEntry(fileId: 424242, YamlFixtures.ShotgunRid, storedType: default),
+            };
+
+            var edits = SerializeReferenceYamlEditor.ComputeRewrites(_path, entries, _pistol);
+
+            Assert.AreEqual(entries.Length, edits.Length);
+            Assert.IsFalse(edits.Any(edit => edit.IsValid), "An entry of a document the file does not have cannot be computed.");
         }
 
         [Test]
@@ -182,5 +296,94 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 YamlFixtures.Delete(path);
             }
         }
+
+        // The first three line breaks use the other style; the writer re-emits every line with the dominant one.
+        [TestCase("\r\n", "\n")]
+        [TestCase("\n", "\r\n")]
+        public void TryRewriteType_MixedNewlines_WritesTheDominantStyle(string dominant, string other)
+        {
+            var lines = Lf(YamlFixtures.MissingTypePrefab).TrimEnd('\n').Split('\n');
+            var builder = new StringBuilder();
+            for (var i = 0; i < lines.Length; i++) builder.Append(lines[i]).Append(i < 3 ? other : dominant);
+
+            var path = YamlFixtures.WriteTemp(builder.ToString());
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol));
+
+                var expected = string.Join(dominant, lines).Replace("class: GhostPistol,", "class: Pistol,") + dominant;
+                Assert.AreEqual(expected, File.ReadAllText(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryRewriteType_WithoutTrailingNewline_AddsNone()
+        {
+            var yaml = Lf(YamlFixtures.MissingTypePrefab).TrimEnd('\n');
+            var path = YamlFixtures.WriteTemp(yaml);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol));
+
+                Assert.AreEqual(yaml.Replace("class: GhostPistol,", "class: Pistol,"), File.ReadAllText(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryRewriteType_NonAsciiText_KeepsEveryOtherByte()
+        {
+            var yaml = Lf(YamlFixtures.MissingTypePrefab)
+                .Replace("  m_Name: LoadoutMissingType", "  m_Name: Снаряжение 装备 🎯")
+                .Replace("        _magazineSize: 12\n", "        _magazineSize: 12\n        _label: Пистолет «Призрак» ✓\n");
+            var path = YamlFixtures.WriteTemp(yaml);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol));
+
+                var expected = new UTF8Encoding(false).GetBytes(yaml.Replace("class: GhostPistol,", "class: Pistol,"));
+                CollectionAssert.AreEqual(expected, File.ReadAllBytes(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        // Empty lists sit beside the fields and as the last line of the entry just before the removed one.
+        [Test]
+        public void TryRemoveEntry_EmptyLists_StayWithTheirOwners()
+        {
+            var yaml = Lf(YamlFixtures.MissingTypePrefab)
+                .Replace("  _onHitEffect:\n", "  _empty: []\n  _onHitEffect:\n")
+                .Replace("        _magazineSize: 12\n", "        _magazineSize: 12\n        _upgrades: []\n");
+            var path = YamlFixtures.WriteTemp(yaml);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRemoveEntry(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid));
+
+                var shotgun = yaml.IndexOf("    - rid: 1003\n", StringComparison.Ordinal);
+                var freeze = yaml.IndexOf("    - rid: 1004\n", StringComparison.Ordinal);
+                Assert.AreEqual(yaml.Remove(shotgun, freeze - shotgun), File.ReadAllText(path));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        private static string Lf(string yaml) =>
+            yaml.Replace("\r\n", "\n");
     }
 }

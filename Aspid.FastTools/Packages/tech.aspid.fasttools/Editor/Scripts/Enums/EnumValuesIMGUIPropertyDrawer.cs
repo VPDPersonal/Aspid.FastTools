@@ -30,12 +30,13 @@ namespace Aspid.FastTools.Enums.Editors
         public static float GetHeight(SerializedProperty property)
         {
             var valuesProperty = property.FindPropertyRelative("_values");
+            var enumTypeProperty = property.FindPropertyRelative("_enumType");
             var defaultValueProperty = property.FindPropertyRelative("_defaultValue");
 
             var headerHeight =
                 BorderWidth
                 + CardPadding
-                + EditorGUIUtility.singleLineHeight
+                + GetHeaderContentHeight(enumTypeProperty)
                 + SeamPadding;
 
             var contentHeight =
@@ -58,11 +59,10 @@ namespace Aspid.FastTools.Enums.Editors
             var enumTypeProperty = property.FindPropertyRelative("_enumType");
             var defaultValueProperty = property.FindPropertyRelative("_defaultValue");
 
-            EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(valuesProperty, enumTypeProperty);
-
             var inset = BorderWidth + CardPadding;
 
-            var headerBackgroundHeight = BorderWidth + CardPadding + EditorGUIUtility.singleLineHeight + SeamPadding;
+            var headerContentHeight = GetHeaderContentHeight(enumTypeProperty);
+            var headerBackgroundHeight = BorderWidth + CardPadding + headerContentHeight + SeamPadding;
             var headerBackgroundRect = new Rect(position.x, position.y, position.width, headerBackgroundHeight);
 
             var containerBackgroundRect = new Rect(position.x, headerBackgroundRect.yMax, position.width, position.height - headerBackgroundHeight);
@@ -71,7 +71,7 @@ namespace Aspid.FastTools.Enums.Editors
                 position.x + inset,
                 position.y + BorderWidth + CardPadding,
                 position.width - inset * 2f,
-                EditorGUIUtility.singleLineHeight);
+                headerContentHeight);
 
             DrawCardBackground(headerBackgroundRect, containerBackgroundRect);
             DrawHeader(headerRect, label, enumTypeProperty, isTyped);
@@ -88,15 +88,18 @@ namespace Aspid.FastTools.Enums.Editors
                 position.x + contentInset, containerBackgroundRect.y + SeamPadding,
                 position.width - contentInset - inset, valuesHeight);
 
-            EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(valuesRect, valuesProperty, includeChildren: true);
-            if (EditorGUI.EndChangeCheck())
-                EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(valuesProperty, enumTypeProperty);
 
             var defaultValueHeight = EditorGUI.GetPropertyHeight(defaultValueProperty, includeChildren: true);
             var defaultValueRect = new Rect(valuesRect.x, valuesRect.yMax + EditorGUIUtility.standardVerticalSpacing, valuesRect.width, defaultValueHeight);
             EditorGUI.PropertyField(defaultValueRect, defaultValueProperty, includeChildren: true);
         }
+
+        // The type field adds a notice row when the type is missing or required; a fixed line would let it
+        // overlap the list below.
+        private static float GetHeaderContentHeight(SerializedProperty enumTypeProperty) => Mathf.Max(
+            EditorGUIUtility.singleLineHeight,
+            EditorGUI.GetPropertyHeight(enumTypeProperty, GUIContent.none, includeChildren: false));
 
         private static void DrawCardBackground(Rect headerRect, Rect containerRect)
         {
@@ -138,6 +141,7 @@ namespace Aspid.FastTools.Enums.Editors
         {
             var labelRect = rect;
             labelRect.width = EditorGUIUtility.labelWidth;
+            labelRect.height = EditorGUIUtility.singleLineHeight;
             EditorGUI.LabelField(labelRect, label);
 
             var fieldRect = rect;

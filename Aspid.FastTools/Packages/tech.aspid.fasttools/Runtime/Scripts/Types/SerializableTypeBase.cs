@@ -16,18 +16,33 @@ namespace Aspid.FastTools.Types
     /// so every wrapper shares one serialized layout.
     /// </para>
     /// <para>
+    /// Unity fills a serialized field with an empty wrapper when it loads the object from an asset, a scene or
+    /// a prefab, so <c>field == null</c> does not detect an unset field there. On an object created in code
+    /// (<c>AddComponent</c>, <c>ScriptableObject.CreateInstance</c>) the field stays <see langword="null"/> until
+    /// Unity serializes the object. Test an unset field with <c>field is null || field.IsEmpty</c>, or a usable
+    /// type with <c>field?.Type is not null</c>.
+    /// </para>
+    /// <para>
     /// A player resolves the type by the stored name only, which managed code stripping does not see: from
-    /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build and
-    /// <see cref="Type"/> returns <see langword="null"/>. Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
+    /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build,
+    /// <see cref="Type"/> returns <see langword="null"/> and <see cref="IsMissing"/> is <see langword="true"/>.
+    /// Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
     /// </para>
     /// <para>
     /// A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
     /// loaded later is not picked up before that.
     /// </para>
+    /// <para>
+    /// Two wrappers are equal when they store the same assembly-qualified name, whatever their wrapper class or
+    /// constraint, so they work as dictionary keys. <c>==</c> still compares references. The hash code follows the
+    /// stored name: do not change a wrapper that is a key, which includes serializing or deserializing it again
+    /// (in the Editor, saving a <see cref="SerializableMonoScript"/> rewrites the name of a renamed class).
+    /// </para>
     /// </remarks>
     [Serializable]
     public abstract class SerializableTypeBase :
         ISerializableType,
+        IEquatable<SerializableTypeBase>,
         ISerializationCallbackReceiver
     {
         [Tooltip("The selected type, stored by its assembly-qualified name.")]
@@ -62,22 +77,42 @@ namespace Aspid.FastTools.Types
         {
             get
             {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
-                using (this.Marker())
-#endif
+                var type = _type;
+                if (type is null)
                 {
-                    // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
-                    var type = _type;
-                    if (type is null)
+                    // Only the lookup is measured: a marker on the cached hot path would flood the Profiler.
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
+                    using (this.Marker())
+#endif
                     {
+                        // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
                         type = ResolveType(_assemblyQualifiedName, out var cacheable) ?? _unresolved;
                         if (cacheable) _type = type;
                     }
-
-                    return ReferenceEquals(type, _unresolved) ? null : type;
                 }
+
+                return ReferenceEquals(type, _unresolved) ? null : type;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether no type is stored.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Type"/> is <see langword="null"/>. Mutually exclusive with <see cref="IsMissing"/>.
+        /// </remarks>
+        public bool IsEmpty =>
+            string.IsNullOrWhiteSpace(_assemblyQualifiedName) && Type is null;
+
+        /// <summary>
+        /// Gets a value indicating whether a type name is stored but does not resolve.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Type"/> is <see langword="null"/> and <see cref="AssemblyQualifiedName"/> keeps the old name,
+        /// for example after the class was renamed, moved or stripped from a player build.
+        /// </remarks>
+        public bool IsMissing =>
+            !string.IsNullOrWhiteSpace(_assemblyQualifiedName) && Type is null;
 
         private protected string? StoredAssemblyQualifiedName => _assemblyQualifiedName;
 
@@ -87,6 +122,34 @@ namespace Aspid.FastTools.Types
         /// </summary>
         public override string ToString() =>
             Type?.Name ?? AssemblyQualifiedName;
+
+        /// <summary>
+        /// Determines whether <paramref name="other"/> stores the same assembly-qualified name.
+        /// </summary>
+        /// <param name="other">The wrapper to compare with.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="other"/> is not <see langword="null"/> and stores the same
+        /// name, also when neither stores a type; otherwise, <see langword="false"/>.
+        /// </returns>
+        public bool Equals(SerializableTypeBase? other) =>
+            other is not null && AssemblyQualifiedName == other.AssemblyQualifiedName;
+
+        /// <summary>
+        /// Determines whether <paramref name="obj"/> is a wrapper that stores the same assembly-qualified name.
+        /// </summary>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="Equals(SerializableTypeBase)"/> is <see langword="true"/> for
+        /// <paramref name="obj"/>; otherwise, <see langword="false"/>.
+        /// </returns>
+        public override bool Equals(object? obj) =>
+            Equals(obj as SerializableTypeBase);
+
+        /// <summary>
+        /// Returns a hash code of the stored assembly-qualified name.
+        /// </summary>
+        public override int GetHashCode() =>
+            AssemblyQualifiedName.GetHashCode();
 
         private protected void SetAssemblyQualifiedName(string? assemblyQualifiedName)
         {

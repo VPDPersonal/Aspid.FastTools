@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEditor.Compilation;
+using System.Runtime.CompilerServices;
 using Assembly = System.Reflection.Assembly;
 using AssemblyFlags = UnityEditor.Compilation.AssemblyFlags;
 
@@ -11,29 +13,86 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeUtility
     {
+        // Most passes SweepDomainTypes makes, so a steady stream of assembly loads cannot loop it forever.
+        internal const int MaxDomainSweeps = 8;
+
+        // Counts assembly loads. A cache built at an older count can miss a type that exists now.
+        private static int _assemblyLoads;
+
+        private static int _domainTypesLoads;
+        private static int _resolvedTypesLoads;
         private static IReadOnlyList<Type> _domainTypes;
         private static Dictionary<string, bool> _compiledAssemblies;
+        private static readonly Dictionary<string, Type> _resolvedTypes = new(StringComparer.Ordinal);
         private static readonly Dictionary<Assembly, bool> _editorOnlyAssemblies = new();
 
         static TypeUtility()
         {
-            AppDomain.CurrentDomain.AssemblyLoad += (_, _) => _domainTypes = null;
+            AppDomain.CurrentDomain.AssemblyLoad += (_, _) => Interlocked.Increment(ref _assemblyLoads);
         }
 
-        internal static IReadOnlyList<Type> DomainTypes => _domainTypes ??= EnumerateDomainTypes().ToArray();
+        internal static IReadOnlyList<Type> DomainTypes
+        {
+            get
+            {
+                if (_domainTypes is not null && _domainTypesLoads == Volatile.Read(ref _assemblyLoads))
+                    return _domainTypes;
 
+                _domainTypes = SweepDomainTypes(AppDomain.CurrentDomain.GetAssemblies, out _domainTypesLoads);
+                return _domainTypes;
+            }
+        }
+
+        // Walking the types can load another assembly, and the walk then misses its types. The walk repeats until a
+        // pass loads nothing; a repeat pass reads only the assemblies that no pass read yet. loads is the count the
+        // last pass started at, so a walk cut off by the cap is redone later.
+        internal static Type[] SweepDomainTypes(Func<Assembly[]> getAssemblies, out int loads)
+        {
+            var sweeps = 0;
+            var types = new List<Type>();
+            var swept = new HashSet<Assembly>();
+
+            do
+            {
+                loads = Volatile.Read(ref _assemblyLoads);
+
+                foreach (var assembly in getAssemblies())
+                    if (swept.Add(assembly)) types.AddRange(GetAssemblyTypes(assembly));
+            }
+            while (loads != Volatile.Read(ref _assemblyLoads) && ++sweeps < MaxDomainSweeps);
+
+            return types.ToArray();
+        }
+
+        // IMGUI asks for the same stored name several times per field on every event. Each name is resolved once, a
+        // missing type too; an assembly load can change the answer, so it drops the results.
         internal static Type GetTypeOrNull(string assemblyQualifiedName)
         {
             if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) return null;
 
+            var loads = Volatile.Read(ref _assemblyLoads);
+
+            if (_resolvedTypesLoads != loads)
+            {
+                _resolvedTypes.Clear();
+                _resolvedTypesLoads = loads;
+            }
+
+            if (_resolvedTypes.TryGetValue(assemblyQualifiedName, out var cached)) return cached;
+
+            Type type;
+
             try
             {
-                return Type.GetType(assemblyQualifiedName, throwOnError: false);
+                type = Type.GetType(assemblyQualifiedName, throwOnError: false);
             }
             catch (Exception)
             {
-                return null;
+                type = null;
             }
+
+            _resolvedTypes[assemblyQualifiedName] = type;
+            return type;
         }
 
         // Whether a player build leaves the assembly out, so a type from it cannot be resolved there. Assemblies Unity
@@ -73,33 +132,93 @@ namespace Aspid.FastTools.Types.Editors
         // Short display name for a type: generic types are rendered with angle-bracket arguments
         // (Modifier<Single>, nested — Modifier<Modifier<Int32>>)
         // instead of the raw arity form (Modifier`1). Non-generic types are returned unchanged.
-        internal static string FormatGenericName(Type type)
+        // A nested type lists only its own arguments: those of its outer types stay in their names.
+        internal static string FormatGenericName(Type type) =>
+            type.IsGenericType ? FormatWithArguments(type, type.GetGenericArguments()) : type.Name;
+
+        // "Outer.Inner" for the types enclosing a nested type, each with its generic arguments; null for a top-level type.
+        internal static string FormatDeclaringName(Type type)
         {
-            if (!type.IsGenericType) return type.Name;
+            // The declaring type of a constructed nested type is the open definition, so an outer type takes the
+            // leading arguments of the nested one, which carries those of every outer type before its own.
+            var arguments = type.IsGenericType ? type.GetGenericArguments() : Type.EmptyTypes;
+            string name = null;
 
-            var baseName = StripArity(type.Name);
-            var arguments = string.Join(", ", type.GetGenericArguments().Select(FormatGenericName));
+            for (var declaring = type.DeclaringType; declaring is not null; declaring = declaring.DeclaringType)
+            {
+                var count = declaring.IsGenericType ? declaring.GetGenericArguments().Length : 0;
+                var formatted = count is 0 || count > arguments.Length
+                    ? FormatGenericName(declaring)
+                    : FormatWithArguments(declaring, arguments.Take(count).ToArray());
 
-            return $"{baseName}<{arguments}>";
+                name = name is null ? formatted : $"{formatted}.{name}";
+            }
+
+            return name;
         }
 
-        internal static IEnumerable<Type> EnumerateDomainTypes()
+        // Namespace.Outer.Name without the assembly part.
+        internal static string FormatQualifiedName(Type type)
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            var name = FormatGenericName(type);
+            var declaringName = FormatDeclaringName(type);
+
+            if (declaringName is not null)
+                name = $"{declaringName}.{name}";
+
+            return string.IsNullOrEmpty(type.Namespace) ? name : $"{type.Namespace}.{name}";
+        }
+
+        // A type the compiler synthesized, or one nested in such a type: the compiler's static-data holder
+        // <PrivateImplementationDetails> carries __StaticArrayInitTypeSize=12, whose own name has no angle brackets.
+        // The attribute is read on the type only: a source generator may mark an ordinary class with it,
+        // and the types written inside that class stay selectable.
+        internal static bool IsCompilerGenerated(Type type)
+        {
+            if (type.IsDefined(typeof(CompilerGeneratedAttribute), inherit: false))
+                return true;
+
+            for (var current = type; current is not null; current = current.DeclaringType)
             {
-                Type[] types;
+                if (current.Name.Contains('<') || current.Name.Contains('>'))
+                    return true;
+            }
 
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException exception)
-                {
-                    types = exception.Types.Where(type => type is not null).ToArray();
-                }
+            return false;
+        }
 
-                foreach (var type in types)
-                    yield return type;
+        private static string FormatWithArguments(Type type, Type[] arguments)
+        {
+            var baseName = StripArity(type.Name);
+            var ownCount = GetOwnArgumentCount(type, arguments.Length);
+
+            if (ownCount is 0) return baseName;
+
+            var own = arguments.Skip(arguments.Length - ownCount).Select(FormatGenericName);
+            return $"{baseName}<{string.Join(", ", own)}>";
+        }
+
+        // A nested type's generic arguments start with those of its outer types, while the arity in its name
+        // counts only its own.
+        private static int GetOwnArgumentCount(Type type, int total)
+        {
+            if (!type.IsNested) return total;
+
+            var tick = type.Name.IndexOf('`');
+            if (tick < 0) return 0;
+
+            return int.TryParse(type.Name[(tick + 1)..], out var count) ? Math.Min(count, total) : total;
+        }
+
+        private static Type[] GetAssemblyTypes(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException exception)
+            {
+                return exception.Types.Where(type => type is not null).ToArray();
             }
         }
     }

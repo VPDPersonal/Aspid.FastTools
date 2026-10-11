@@ -49,6 +49,20 @@ namespace Aspid.FastTools.Types.Editors
             TypeAllow allow = TypeAllow.All,
             params Type[] types)
         {
+            // Gives a value overridden on a prefab instance its bold label and Unity's Apply and Revert menu.
+            label = EditorGUI.BeginProperty(totalPosition: position, label: label, property: property);
+            try
+            {
+                DrawRow(position: position, label: label, property: property, allow: allow, types: types);
+            }
+            finally
+            {
+                EditorGUI.EndProperty();
+            }
+        }
+
+        private static void DrawRow(Rect position, GUIContent label, SerializedProperty property, TypeAllow allow, Type[] types)
+        {
             var isMissing = TypeMissingRepair.IsMissing(property: property);
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;
@@ -67,7 +81,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var dropdownRect = fieldRect;
             var currentType = TypeUtility.GetTypeOrNull(property.stringValue);
-            var hasValidType = currentType is not null;
+            var hasValidType = currentType is not null && !property.hasMultipleDifferentValues;
 
             if (hasValidType)
                 dropdownRect.width -= openButtonSize + 1f;
@@ -124,10 +138,11 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     Types = types,
                     Allow = allow,
+                    AdditionalTypes = GenericTypeResolver.GetClosableGenericDefinitions(types),
                     HideNoneOption = repair,
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
-                currentAqn: repair || property.hasMultipleDifferentValues ? null : property.stringValue ?? string.Empty,
+                assemblyQualifiedName: repair || property.hasMultipleDifferentValues ? null : property.stringValue ?? string.Empty,
                 onSelected: assemblyQualifiedName => persistent.SetStringAndApply(value: assemblyQualifiedName ?? string.Empty));
         }
 

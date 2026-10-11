@@ -780,6 +780,36 @@ The element, for chaining.
 
 The element type.
 
+### SetShowBorder\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseVerticalCollectionViewExtensions_SetShowBorder__1___0_System_Boolean_}
+
+Sets [`showBorder`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseVerticalCollectionView-showBorder.html).
+
+```csharp
+public static T SetShowBorder<T>(this T element, bool value) where T : BaseVerticalCollectionView
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a border is drawn around the view.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
 ### SetVirtualizationMethod\<T\>\(T, CollectionVirtualizationMethod\) {#Aspid_FastTools_UIElements_BaseVerticalCollectionViewExtensions_SetVirtualizationMethod__1___0_UnityEngine_UIElements_CollectionVirtualizationMethod_}
 
 Sets [`virtualizationMethod`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseVerticalCollectionView-virtualizationMethod.html).

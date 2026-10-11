@@ -93,59 +93,71 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         #endregion
 
         #region Multi-object editing
-        public static bool IsEditingMultipleObjects(SerializedProperty property) =>
-            property.serializedObject.isEditingMultipleObjects;
-
         public static bool HasMixedTypes(SerializedProperty property)
         {
             if (!property.serializedObject.isEditingMultipleObjects) return false;
 
-            // hasMultipleDifferentValues misses the all-missing case, where every target reads back null but the
-            // stored, unloadable type names still differ.
-            if (property.hasMultipleDifferentValues) return true;
-
-            if (property.managedReferenceValue is not null) return false;
+            // hasMultipleDifferentValues also compares rids, which differ between objects that hold the same type, and
+            // it misses the all-missing case, where every target reads back null but the stored, unloadable type names
+            // still differ. Only the stored type names decide.
+            var loaded = property.hasMultipleDifferentValues;
+            if (!loaded && property.managedReferenceValue is not null) return false;
 
             var first = property.managedReferenceFullTypename;
             var targets = property.serializedObject.targetObjects;
             if (targets.Length < 2) return false;
 
-            if (TryGetMixedCache(property.propertyPath, first, targets, out var cached)) return cached;
+            // Unloadable type names change only with the file, which every package write, Undo and import reports.
+            // A loaded value can change without them (Play Mode code, an editor script), so its result lasts one tick.
+            var tick = loaded ? MemoTick : -1;
+            var path = property.propertyPath;
+
+            if (!MixedTargetsMatch(targets)) ResetMixedSelection(targets);
+            if (_mixedResults.TryGetValue(path, out var entry) && entry.tick == tick && entry.first == first)
+                return entry.result;
 
             var result = false;
-            foreach (var target in targets)
+            for (var i = 0; i < targets.Length && !result; i++)
             {
-                if (target == null) continue;
-
-                using var single = new SerializedObject(target);
-                var other = single.FindProperty(property.propertyPath);
-                if (other is null) continue;
-                if (other.managedReferenceFullTypename != first) { result = true; break; }
+                var other = GetMixedTarget(i)?.FindProperty(path);
+                result = other is not null && other.managedReferenceFullTypename != first;
             }
 
-            StoreMixedCache(property.propertyPath, first, targets, result);
+            _mixedResults[path] = (first, tick, result);
             return result;
         }
 
-        // Cache by property path within one selection; invalidate when the selection changes.
+        // One entry per property path within one selection. Each selected object has one SerializedObject, refreshed
+        // at most once per tick, so a long list reads each object once instead of once per element.
         private static Object[] _mixedTargets;
-        private static readonly Dictionary<string, (string first, bool result)> _mixedResults = new(StringComparer.Ordinal);
+        private static SerializedObject[] _mixedTargetObjects;
+        private static long[] _mixedTargetTicks;
+        private static readonly Dictionary<string, (string first, long tick, bool result)> _mixedResults = new(StringComparer.Ordinal);
 
         // Keyed by selection, not file state, so an external rewrite of the selected assets must drop it explicitly.
         public static void InvalidateMixedTypesCache()
         {
-            _mixedTargets = null;
             _mixedResults.Clear();
+            if (_mixedTargetTicks is not null) Array.Fill(_mixedTargetTicks, -1);
         }
 
-        private static bool TryGetMixedCache(string path, string first, UnityEngine.Object[] targets, out bool result)
-        {
-            result = false;
-            if (!MixedTargetsMatch(targets)) return false;
-            if (!_mixedResults.TryGetValue(path, out var entry) || entry.first != first) return false;
+        // A new selection drops the per-target SerializedObjects of the last multi-object one; they hold native memory
+        // until disposed.
+        [InitializeOnLoadMethod]
+        private static void ReleaseMixedSelectionOnSelectionChange() => Selection.selectionChanged += ReleaseMixedSelection;
 
-            result = entry.result;
-            return true;
+        private static void ReleaseMixedSelection()
+        {
+            if (_mixedTargetObjects is not null)
+            {
+                foreach (var serializedObject in _mixedTargetObjects)
+                    serializedObject?.Dispose();
+            }
+
+            _mixedResults.Clear();
+            _mixedTargets = null;
+            _mixedTargetObjects = null;
+            _mixedTargetTicks = null;
         }
 
         private static bool MixedTargetsMatch(UnityEngine.Object[] targets)
@@ -158,49 +170,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        private static void StoreMixedCache(string path, string first, UnityEngine.Object[] targets, bool result)
+        private static void ResetMixedSelection(UnityEngine.Object[] targets)
         {
-            if (!MixedTargetsMatch(targets))
-            {
-                _mixedResults.Clear();
-                _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
-            }
-
-            _mixedResults[path] = (first, result);
+            ReleaseMixedSelection();
+            _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
+            _mixedTargetObjects = new SerializedObject[targets.Length];
+            _mixedTargetTicks = new long[targets.Length];
         }
 
-        // Assign per target so each object receives an independent instance; collapse the writes into one Undo step.
-        public static void ApplyManagedReferencePerTarget(SerializedProperty property, Func<object, object> factory)
+        private static SerializedObject GetMixedTarget(int index)
         {
-            var serializedObject = property.serializedObject;
-            var targets = serializedObject.targetObjects;
-            var propertyPath = property.propertyPath;
+            var target = _mixedTargets[index];
+            if (target == null) return null;
 
-            Undo.IncrementCurrentGroup();
-            var undoGroup = Undo.GetCurrentGroup();
+            var serializedObject = _mixedTargetObjects[index];
+            if (serializedObject is null)
+                _mixedTargetObjects[index] = serializedObject = new SerializedObject(target);
+            else if (_mixedTargetTicks[index] != MemoTick)
+                serializedObject.Update();
 
-            foreach (var target in targets)
-            {
-                if (target == null) continue;
-
-                using var single = new SerializedObject(target);
-                var singleProperty = single.FindProperty(propertyPath);
-                if (singleProperty is null) continue;
-
-                var previous = singleProperty.managedReferenceValue;
-                var instance = factory(previous);
-
-                singleProperty.managedReferenceValue = instance;
-                singleProperty.isExpanded = instance is not null;
-                single.ApplyModifiedProperties();
-            }
-
-            Undo.CollapseUndoOperations(undoGroup);
-
-            // Update() pulls the per-target writes back in; applying instead would write the live object's stale
-            // reference back over them.
-            serializedObject.Update();
-            InvalidateReferenceMemos();
+            _mixedTargetTicks[index] = MemoTick;
+            return serializedObject;
         }
 
         // Repair notices operate on one backing asset and cannot represent a multi-object selection.
@@ -230,26 +220,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<(Object target, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
             _missingProbeMemo = new();
 
-        // Where each memoized missing reference is stored, kept beside the memo above under the same key.
-        private static readonly Dictionary<(Object target, string path), (MissingTypeOrigin origin, string storedIn)>
+        // Where each memoized missing reference is stored, kept beside the memo above under the same key: its origin, the
+        // asset, and the slot in the file of an element of a top-level list.
+        private static readonly Dictionary<(Object target, string path), (MissingTypeOrigin origin, string storedIn, (string field, int index) slot)>
             _missingOriginMemo = new();
 
         // Every null reference field of a prefab instance reads the same modification list, so it is fetched once
         // per instance and frame alongside the memos above.
         private static readonly Dictionary<Object, PropertyModification[]> _propertyModificationsMemo = new();
 
-        public static void InvalidateMissingTypeMemo() => _missingProbeFrame = -1;
+        public static void InvalidateMissingTypeMemo()
+        {
+            _missingProbeFrame = -1;
+
+            // The in-memory ids are read again; a match is rebuilt only when they, the file or the guard's notes changed.
+            foreach (var match in _listMatches.Values)
+                match.Tick = -1;
+        }
 
         private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType) =>
-            TryGetMissingType(property, out referenceId, out storedType, out _, out _);
+            TryGetMissingType(property, out referenceId, out storedType, out _, out _, out _);
 
         private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType,
-            out MissingTypeOrigin origin, out string storedIn)
+            out MissingTypeOrigin origin, out string storedIn, out (string field, int index) slot)
         {
             referenceId = 0;
             storedType = default;
             origin = MissingTypeOrigin.OwnDocument;
             storedIn = null;
+            slot = (null, -1);
 
             if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
             if (property.managedReferenceValue is not null) return false;
@@ -270,32 +269,216 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 referenceId = cached.referenceId;
                 storedType = cached.storedType;
-                (origin, storedIn) = _missingOriginMemo[key];
+                (origin, storedIn, slot) = _missingOriginMemo[key];
                 return cached.missing;
             }
 
-            var missing = ProbeMissingType(property, out referenceId, out storedType, out origin, out storedIn);
+            var missing = ProbeMissingType(property, out referenceId, out storedType, out origin, out storedIn, out slot);
             _missingProbeMemo[key] = (missing, referenceId, storedType);
-            _missingOriginMemo[key] = (origin, storedIn);
+            _missingOriginMemo[key] = (origin, storedIn, slot);
             return missing;
         }
 
         private static bool ProbeMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType,
-            out MissingTypeOrigin origin, out string storedIn)
+            out MissingTypeOrigin origin, out string storedIn, out (string field, int index) slot)
         {
             referenceId = 0;
             storedType = default;
             origin = MissingTypeOrigin.OwnDocument;
             storedIn = null;
+            slot = (null, -1);
 
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _))
                 return ProbeInheritedMissingType(property, out referenceId, out storedType, out origin, out storedIn);
 
-            if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, property.propertyPath, out referenceId, out storedType))
+            // One version of the file serves every read of the probe, so the file on disk is checked once.
+            var file = SerializeReferenceYamlEditor.ReadProbedFile(assetPath);
+            if (file is null) return false;
+
+            if (!TryGetStoredPath(property, assetPath, file, fileId, out var anchorRid, out var storedPath, out slot)) return false;
+
+            if (!SerializeReferenceYamlEditor.TryReadStoredType(file, fileId, anchorRid, storedPath, out referenceId, out storedType))
                 return false;
 
+            if (storedType.IsEmpty || StoredTypeResolvesCached(storedType)) return false;
+
+            // A <None> pick, another type or a paste changes the file only on save.
+            if (SerializeReferenceMissingListGuard.IsReplaced(assetPath, fileId, referenceId, slot.field, slot.index)) return false;
+
             storedIn = assetPath;
-            return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+            return true;
+        }
+
+        // The slot in the file of a missing element of a top-level list. After an unsaved edit of the list it may differ
+        // from the index the Inspector shows. False for a reference outside a top-level list.
+        public static bool TryGetMissingListSlot(SerializedProperty property, out string field, out int index)
+        {
+            field = null;
+            index = -1;
+
+            if (!TryGetMissingType(property, out _, out _, out _, out _, out var slot) || slot.field is null) return false;
+
+            (field, index) = slot;
+            return true;
+        }
+
+        private static readonly Regex _listElementPath = new(@"^(?<list>.+)\.Array\.data\[(?<index>\d+)\]$", RegexOptions.Compiled);
+
+        // Where the property's reference sits in the file, which an unsaved edit can make differ from its path. A field
+        // inside a reference is read from that reference's data by the reference's rid. A list element is matched with the
+        // list in the file by the rids of the other elements; false when the match is not certain. slot names the place of
+        // an element of a top-level list in the file.
+        private static bool TryGetStoredPath(SerializedProperty property, string assetPath,
+            SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, out long anchorRid, out string storedPath,
+            out (string field, int index) slot)
+        {
+            anchorRid = SerializeReferenceYamlEditor.NoAnchor;
+            storedPath = property.propertyPath;
+            slot = (null, -1);
+
+            var serializedObject = property.serializedObject;
+            var anchorPath = string.Empty;
+
+            var enclosing = GetEnclosingReferences(serializedObject, storedPath);
+            if (enclosing.Count > 0)
+            {
+                (anchorPath, anchorRid) = enclosing[^1];
+                if (anchorRid < 0) return false;
+
+                storedPath = storedPath[(anchorPath.Length + 1)..];
+            }
+
+            var element = _listElementPath.Match(storedPath);
+            if (!element.Success || !int.TryParse(element.Groups["index"].Value, out var index)) return true;
+
+            var list = element.Groups["list"].Value;
+            var listPath = anchorPath.Length == 0 ? list : $"{anchorPath}.{list}";
+
+            var stored = MatchStoredSlot(serializedObject, listPath, assetPath, file, fileId, anchorRid, list, index);
+            if (stored < 0) return false;
+
+            storedPath = $"{list}.Array.data[{stored}]";
+
+            var topLevel = anchorRid == SerializeReferenceYamlEditor.NoAnchor && list.IndexOfAny(_pathSeparators) < 0;
+            if (topLevel) slot = (list, stored);
+
+            return true;
+        }
+
+        private static readonly char[] _pathSeparators = { '.', '[', ']' };
+
+        // The list in the file each in-memory list is matched with, kept while the in-memory ids, the file and the guard's
+        // notes stay the same. The in-memory ids are read once per editor update.
+        private const int MaxListMatches = 64;
+        private static readonly Dictionary<(Object target, string path), ListMatch> _listMatches = new();
+
+        private sealed class ListMatch
+        {
+            public long Tick = -1;
+            public long[] Current;
+            public long[] Stored;
+            public int NotesVersion;
+            public int[] Sources;
+        }
+
+        // The index in the file's list of the element that the in-memory slot holds, or -1.
+        private static int MatchStoredSlot(SerializedObject serializedObject, string listPath, string assetPath,
+            SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid, string storedListPath, int index)
+        {
+            if (!SerializeReferenceYamlEditor.TryReadListIds(file, fileId, anchorRid, storedListPath, out var stored)) return -1;
+
+            var key = (serializedObject.targetObject, listPath);
+            if (!_listMatches.TryGetValue(key, out var match))
+            {
+                if (_listMatches.Count >= MaxListMatches) _listMatches.Clear();
+                _listMatches[key] = match = new ListMatch();
+            }
+
+            if (match.Tick != MemoTick)
+            {
+                match.Tick = MemoTick;
+
+                var current = ReadElementIds(serializedObject, listPath);
+                if (match.Current is null || current is null || !match.Current.AsSpan().SequenceEqual(current))
+                {
+                    match.Current = current;
+                    match.Sources = null;
+                }
+            }
+
+            if (match.Current is null) return -1;
+
+            var notesVersion = SerializeReferenceMissingListGuard.NotesVersion;
+            if (match.Sources is null || !ReferenceEquals(match.Stored, stored) || match.NotesVersion != notesVersion)
+            {
+                var state = BuildStoredListState(assetPath, file, fileId, anchorRid, storedListPath, stored, match.Current);
+
+                match.Stored = stored;
+                match.NotesVersion = notesVersion;
+                match.Sources = state.HasMissing
+                    ? MissingListAlignment.MatchSlots(state, match.Current)
+                    : Array.Empty<int>();
+            }
+
+            return index < match.Sources.Length ? match.Sources[index] : -1;
+        }
+
+        // A missing element reads as a null id, like a <None> one.
+        private static long[] ReadElementIds(SerializedObject serializedObject, string listPath)
+        {
+            using var list = serializedObject.FindProperty(listPath);
+            if (list is null || !IsManagedReferenceArray(list)) return null;
+
+            var ids = new long[list.arraySize];
+            for (var i = 0; i < ids.Length; i++)
+            {
+                using var element = list.GetArrayElementAtIndex(i);
+                ids[i] = element.managedReferenceId;
+            }
+
+            return ids;
+        }
+
+        // The list in the file as a save would find it: an element is missing while its type does not resolve, the editor
+        // does not hold its id and the user has not replaced it; a replaced one counts as a null.
+        private static MissingListState BuildStoredListState(string assetPath, SerializeReferenceYamlProbeCache.ProbedFile file,
+            long fileId, long anchorRid, string listPath, long[] stored, long[] current)
+        {
+            var held = new HashSet<long>(current);
+            var topLevel = anchorRid == SerializeReferenceYamlEditor.NoAnchor && listPath.IndexOfAny(_pathSeparators) < 0;
+            var slotField = topLevel ? listPath : null;
+
+            var rids = (long[])stored.Clone();
+            var collapsible = new bool[stored.Length];
+
+            for (var i = 0; i < stored.Length; i++)
+            {
+                var rid = stored[i];
+                if (rid < 0 || held.Contains(rid)) continue;
+                if (!SerializeReferenceYamlEditor.TryReadEntryType(file, fileId, rid, out var type)) continue;
+                if (StoredTypeResolvesCached(type)) continue;
+
+                var slotIndex = topLevel ? i : -1;
+                if (SerializeReferenceMissingListGuard.IsReplaced(assetPath, fileId, rid, slotField, slotIndex))
+                    rids[i] = MissingListState.NullRid;
+                else
+                    collapsible[i] = true;
+            }
+
+            return new MissingListState(rids, collapsible);
+        }
+
+        // Type.GetType is too slow to repeat for every probed element on every repaint, and its answer changes only with a
+        // domain reload, which clears this memo.
+        private static readonly Dictionary<(string assembly, string @namespace, string className), bool> _storedTypeResolvesMemo = new();
+
+        private static bool StoredTypeResolvesCached(ManagedTypeName name)
+        {
+            var key = (name.Assembly, name.Namespace, name.Class);
+            if (!_storedTypeResolvesMemo.TryGetValue(key, out var resolves))
+                _storedTypeResolvesMemo[key] = resolves = StoredTypeResolves(name);
+
+            return resolves;
         }
 
         // Deeper chains than this are not authored by hand; the bound only guards against a malformed source loop.
@@ -334,7 +517,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                         if (depth == 0) origin = MissingTypeOrigin.PrefabOverride;
                         storedIn = GetStoragePath(current);
-                        return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+                        return !storedType.IsEmpty && !StoredTypeResolvesCached(storedType);
                     }
 
                     // No modification of the field itself, but an override of an enclosing reference still owns its data.
@@ -358,7 +541,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
 
             storedIn = assetPath;
-            return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+            return !storedType.IsEmpty && !StoredTypeResolvesCached(storedType);
         }
 
         // The managed references the path passes through, outermost first, with their rids on this level.
@@ -442,7 +625,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var modification in modifications)
             {
                 if (modification.target != source || modification.propertyPath != modificationPath) continue;
-                if (!long.TryParse(modification.value, out referenceId)) return false;
+                if (!SerializeReferenceYaml.TryParseId(modification.value, out referenceId)) return false;
 
                 found = true;
                 break;
@@ -475,7 +658,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Why Fix is unavailable for a missing reference, as the notice's second line.
         public static string GetMissingTypeRepairHint(SerializedProperty property)
         {
-            if (!TryGetMissingType(property, out _, out _, out var origin, out var storedIn))
+            if (!TryGetMissingType(property, out _, out _, out var origin, out var storedIn, out _))
                 return "Open this asset from the Project window to repair it.";
 
             return origin switch
@@ -515,6 +698,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                            Array.TrueForAll(narrowing, baseType => baseType.IsAssignableFrom(type));
         }
 
+        // The type picker filter of a [SerializeReference] field, shared by every picker so none forgets a check.
+        public static TypeSelectorFilter BuildPickerFilter(Type fieldType, Type[] baseTypes, bool excludeEditorOnly) => new()
+        {
+            Types = new[] { fieldType },
+            Predicate = BuildAssignableFilter(baseTypes),
+            AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
+            ArgumentFilter = IsValidGenericArgument,
+            InferredArgumentFilter = IsAcceptableGenericArgument,
+            GenericDefinitionFilter = IsValidGenericArgumentDefinition,
+            NarrowingTypes = baseTypes,
+            ExcludeEditorOnly = excludeEditorOnly,
+        };
+
         // Return null when no constraint narrows the candidates to avoid allocating a predicate.
         private static Type[] FilterNarrowingTypes(Type[] baseTypes)
         {
@@ -550,6 +746,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static object CreateInstancePreservingData(Type newType, object previous)
         {
+            var instance = CreateInstanceWithPlainData(newType, previous);
+            if (instance is null || previous is null) return instance;
+
+            // JsonUtility does not keep [SerializeReference] instances, so they are carried by reflection, and aliases
+            // onto them survive the type switch.
+            try
+            {
+                TransferManagedReferences(previous, instance, map: value => value, depth: 0);
+            }
+            catch (Exception)
+            {
+                // Same best-effort contract as the JSON pass.
+            }
+
+            return instance;
+        }
+
+        private static object CreateInstanceWithPlainData(Type newType, object previous)
+        {
             var instance = CreateInstance(newType);
             if (instance is null || previous is null) return instance;
 
@@ -564,39 +779,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Best effort: incompatible layouts just mean nothing is carried over.
             }
 
-            // JsonUtility skips [SerializeReference] fields, so nested references are carried by reflection — the
-            // very instances, not copies, so aliases onto them survive the type switch.
-            try
-            {
-                CarryManagedReferences(previous, instance);
-            }
-            catch (Exception)
-            {
-                // Same best-effort contract as the JSON pass.
-            }
-
             return instance;
-        }
-
-        private static void CarryManagedReferences(object previous, object instance)
-        {
-            Dictionary<string, FieldInfo> targets = null;
-
-            foreach (var field in EnumerateManagedReferenceFields(previous.GetType()))
-            {
-                if (targets is null)
-                {
-                    targets = new Dictionary<string, FieldInfo>(StringComparer.Ordinal);
-                    foreach (var target in EnumerateManagedReferenceFields(instance.GetType()))
-                        targets[target.Name] = target;
-                }
-
-                if (!targets.TryGetValue(field.Name, out var into)) continue;
-
-                var value = field.GetValue(previous);
-                if (value is null || into.FieldType.IsInstanceOfType(value))
-                    into.SetValue(instance, value);
-            }
         }
 
         // Register each clone before cloning its children to preserve aliases and terminate cycles.
@@ -608,12 +791,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (source is null) return null;
             if (clones.TryGetValue(source, out var existing)) return existing;
 
-            var clone = CreateInstancePreservingData(source.GetType(), source);
+            var clone = CreateInstanceWithPlainData(source.GetType(), source);
             if (clone is null) return null;
             clones[source] = clone;
 
-            foreach (var field in EnumerateManagedReferenceFields(source.GetType()))
-                field.SetValue(clone, CloneManagedReferenceValue(field.GetValue(source), clones));
+            TransferManagedReferences(source, clone,
+                map: value => CloneManagedReferenceValue(value, clones), depth: 0);
 
             return clone;
         }
@@ -646,7 +829,155 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static IEnumerable<FieldInfo> EnumerateManagedReferenceFields(Type type)
+        // Writes each [SerializeReference] value of source, passed through map, into the same-named field of target.
+        // The walk enters the by-value data the JSON pass copied: structs, serializable classes, arrays and lists.
+        private static void TransferManagedReferences(object source, object target, Func<object, object> map, int depth)
+        {
+            var sameType = source.GetType() == target.GetType();
+            Dictionary<string, FieldInfo> targets = null;
+
+            foreach (var field in EnumerateSerializedFields(source.GetType()))
+            {
+                var isReference = field.IsDefined(typeof(SerializeReference), inherit: false);
+                if (!isReference && !CanHoldManagedReferences(field.FieldType)) continue;
+
+                var into = field;
+                if (!sameType)
+                {
+                    targets ??= MapSerializedFields(target.GetType());
+                    if (!targets.TryGetValue(field.Name, out into)) continue;
+                    if (into.IsDefined(typeof(SerializeReference), inherit: false) != isReference) continue;
+                    if (!isReference && !CanHoldManagedReferences(into.FieldType)) continue;
+                }
+
+                if (isReference)
+                {
+                    var value = map(field.GetValue(source));
+                    if (value is null || into.FieldType.IsInstanceOfType(value))
+                        into.SetValue(target, value);
+
+                    continue;
+                }
+
+                if (depth >= MaxByValueDepth) continue;
+
+                var from = field.GetValue(source);
+                var to = into.GetValue(target);
+                if (from is null || to is null || ReferenceEquals(from, to)) continue;
+
+                var isCollection = IsSerializedCollection(field.FieldType);
+                if (isCollection != IsSerializedCollection(into.FieldType)) continue;
+
+                if (isCollection)
+                {
+                    TransferManagedReferenceItems((IList)from, (IList)to, map, depth: depth + 1);
+                    continue;
+                }
+
+                TransferManagedReferences(from, to, map, depth: depth + 1);
+
+                // GetValue boxed a struct, so the updated copy goes back into the field.
+                if (to.GetType().IsValueType) into.SetValue(target, to);
+            }
+        }
+
+        private static void TransferManagedReferenceItems(
+            IList source, IList target, Func<object, object> map, int depth)
+        {
+            var count = Math.Min(source.Count, target.Count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var from = source[i];
+                var to = target[i];
+                if (from is null || to is null || ReferenceEquals(from, to)) continue;
+
+                TransferManagedReferences(from, to, map, depth);
+                if (to.GetType().IsValueType) target[i] = to;
+            }
+        }
+
+        // Unity stops serializing by-value data at this depth; the cap also ends a cyclic graph of by-value classes.
+        private const int MaxByValueDepth = 10;
+
+        // Per-type memo, so the walk skips by-value data without managed references, such as long arrays of plain
+        // structs. The reflected field set is stable until a domain reload clears statics.
+        private static readonly Dictionary<Type, bool> ByValueReferenceHolders = new();
+
+        // The types on the current walk with their depth, and the smallest depth at which the walk below the current
+        // type cut a cycle.
+        private static readonly Dictionary<Type, int> ByValueTypesInProgress = new();
+        private static int _shallowestCycleCut = int.MaxValue;
+
+        // A serializable struct or class, or an array or a list of one, whose fields reach a [SerializeReference].
+        private static bool CanHoldManagedReferences(Type type)
+        {
+            if (IsSerializedCollection(type))
+                type = type.IsArray ? type.GetElementType() : type.GetGenericArguments()[0];
+
+            if (!IsByValueComposite(type)) return false;
+            if (ByValueReferenceHolders.TryGetValue(type, out var holds)) return holds;
+
+            // A type already on the walk adds no new path, and by-value types may be cyclic.
+            if (ByValueTypesInProgress.TryGetValue(type, out var cutDepth))
+            {
+                _shallowestCycleCut = Math.Min(_shallowestCycleCut, cutDepth);
+                return false;
+            }
+
+            var depth = ByValueTypesInProgress.Count;
+            var outerCycleCut = _shallowestCycleCut;
+            _shallowestCycleCut = int.MaxValue;
+            ByValueTypesInProgress.Add(type, depth);
+
+            try
+            {
+                foreach (var field in EnumerateSerializedFields(type))
+                {
+                    if (!field.IsDefined(typeof(SerializeReference), inherit: false) &&
+                        !CanHoldManagedReferences(field.FieldType)) continue;
+
+                    holds = true;
+                    break;
+                }
+            }
+            finally
+            {
+                ByValueTypesInProgress.Remove(type);
+            }
+
+            // A negative answer is exact unless the walk below cut a cycle at a type further up, whose answer is not
+            // known yet; a cycle back to this type adds no field it has not seen.
+            var cycleCut = _shallowestCycleCut;
+            if (holds || cycleCut >= depth) ByValueReferenceHolders[type] = holds;
+
+            _shallowestCycleCut = depth == 0 ? int.MaxValue : Math.Min(outerCycleCut, cycleCut);
+            return holds;
+        }
+
+        private static bool IsByValueComposite(Type type) =>
+            type is { IsPrimitive: false, IsEnum: false, IsArray: false, IsAbstract: false } &&
+            type.IsSerializable &&
+            type != typeof(string) &&
+            !IsSerializedCollection(type) &&
+            !typeof(Object).IsAssignableFrom(type) &&
+            !typeof(Delegate).IsAssignableFrom(type);
+
+        private static bool IsSerializedCollection(Type type) =>
+            (type.IsArray && type.GetArrayRank() == 1) ||
+            (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>));
+
+        private static Dictionary<string, FieldInfo> MapSerializedFields(Type type)
+        {
+            var fields = new Dictionary<string, FieldInfo>(StringComparer.Ordinal);
+            foreach (var field in EnumerateSerializedFields(type))
+                fields[field.Name] = field;
+
+            return fields;
+        }
+
+        // [SerializeReference] alone makes a private field serialized, as [SerializeField] does.
+        private static IEnumerable<FieldInfo> EnumerateSerializedFields(Type type)
         {
             const BindingFlags flags =
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
@@ -655,8 +986,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var field in current.GetFields(flags))
                 {
                     if (field.IsStatic || field.IsInitOnly || field.IsNotSerialized) continue;
-                    if (!field.IsPublic && !field.IsDefined(typeof(SerializeField), inherit: false)) continue;
-                    if (field.IsDefined(typeof(SerializeReference), inherit: false)) yield return field;
+
+                    if (field.IsPublic ||
+                        field.IsDefined(typeof(SerializeField), inherit: false) ||
+                        field.IsDefined(typeof(SerializeReference), inherit: false))
+                        yield return field;
                 }
         }
 
@@ -702,6 +1036,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (type is null) return false;
             if (type.IsAbstract || type.IsInterface || type.ContainsGenericParameters) return false;
             if (typeof(Delegate).IsAssignableFrom(type)) return false;
+            if (IsFrameworkGenericStruct(type)) return false;
 
             return type.IsPrimitive ||
                    type.IsEnum ||
@@ -710,6 +1045,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    UnityNativeSerializableTypes.Contains(type) ||
                    (type.IsValueType && type.IsSerializable) ||
                    (type.IsClass && type.IsSerializable);
+        }
+
+        // The open definitions an argument page offers as nested arguments. IsValidGenericArgument judges a closed
+        // generic by its definition alone, so a definition it rejects would lead only to a dead end.
+        public static bool IsValidGenericArgumentDefinition(Type definition) =>
+            definition is { IsGenericTypeDefinition: true, IsSerializable: true } &&
+            !IsFrameworkGenericStruct(definition);
+
+        // Nullable<T>, KeyValuePair<,>, ValueTuple<…> and the like carry [Serializable], but Unity does not serialize
+        // them, so a field of such a type silently loses its value.
+        private static bool IsFrameworkGenericStruct(Type type)
+        {
+            if (type is not { IsValueType: true, IsGenericType: true }) return false;
+
+            var assembly = type.Assembly.GetName().Name;
+            return assembly is "mscorlib" or "netstandard" or "System" ||
+                   assembly.StartsWith("System.", StringComparison.Ordinal);
         }
 
         // Inferred arguments require serializability only when the parameter reaches a field serialized by value.
@@ -743,7 +1095,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string GetMissingTypeDisplayName(SerializedProperty property) =>
             GetMissingTypeName(property).DisplayName;
 
-        // Rank only picker-compatible candidates so quick repair cannot bypass the field constraints.
+        // Rank only picker-compatible candidates so quick repair cannot bypass the field constraints or the editor-only
+        // types the Fix picker hides.
         public static bool TryGetRepairSuggestion(SerializedProperty property, Type[] baseTypes,
             out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
         {
@@ -755,15 +1108,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var fieldType = GetFieldType(property);
             var pickerFilter = BuildAssignableFilter(baseTypes);
 
+            // A Fix retypes every field on the rid, so the suggestion must fit the types of all of them.
             var ranked = SerializeReferenceRepairSuggestions.GetCached(assetPath, fileId, referenceId,
                 () => SerializeReferenceRepairSuggestions.Rank(
                     storedType,
                     GetMissingFieldNames(property, assetPath, fileId, referenceId, inMemory),
-                    fieldType));
+                    AppendAliasFieldTypes(new[] { fieldType }, FindMissingReferenceAliases(property, referenceId))));
 
             foreach (var candidate in ranked)
             {
-                if (!pickerFilter(candidate.Type)) continue;
+                if (!pickerFilter(candidate.Type) || !SerializeReferenceWriter.CanHold(property, candidate.Type)) continue;
                 suggestion = candidate;
                 return true;
             }
@@ -920,44 +1274,52 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             TryGetMissingType(property, out referenceId, out _);
 
         // Repair permits hidden types because visibility limits authoring, not recovery of existing data.
-        public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null)
+        // detach repairs through a copy opened when a type is picked, for a property that may be gone by then.
+        public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null, bool detach = false)
         {
             var fieldType = GetFieldType(property);
+            if (TryGetMissingReferenceId(property, out var referenceId))
+                baseTypes = AppendAliasFieldTypes(baseTypes, FindMissingReferenceAliases(property, referenceId));
+
+            var filter = BuildPickerFilter(fieldType, baseTypes,
+                excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(property));
+            filter.IncludeHidden = true;
+            var detached = new DetachedProperty(property);
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                filter: new TypeSelectorFilter
-                {
-                    Types = new[] { fieldType },
-                    Predicate = BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
-                    ArgumentFilter = IsValidGenericArgument,
-                    InferredArgumentFilter = IsAcceptableGenericArgument,
-                    IncludeHidden = true,
-                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
-                },
-                currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
+                filter: filter,
+                assemblyQualifiedName: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
                 {
                     var type = string.IsNullOrEmpty(assemblyQualifiedName)
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-                    if (type is not null && TryFixMissingType(property, type))
-                        onFixed?.Invoke();
+                    if (type is null) return;
+
+                    var fixedType = false;
+                    if (detach) detached.Use(persistent => fixedType = TryFixMissingType(persistent, type));
+                    else fixedType = TryFixMissingType(property, type);
+
+                    if (fixedType) onFixed?.Invoke();
                 });
         }
 
         // Repair assets through YAML and open Prefab Mode objects and loaded scenes through their live serialized state.
-        public static bool TryFixMissingType(SerializedProperty property, Type newType)
+        public static bool TryFixMissingType(SerializedProperty property, Type newType) =>
+            TryFixMissingType(property, newType, retryAfterSave: true);
+
+        private static bool TryFixMissingType(SerializedProperty property, Type newType, bool retryAfterSave)
         {
-            if (newType is null) return false;
+            if (newType is null || !SerializeReferenceWriter.CanHold(property, newType)) return false;
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
             if (!TryGetMissingReferenceId(property, out var referenceId)) return false;
 
             // Prefab Mode saves over the asset file, so neither route would survive. The reimport would drop unsaved
             // changes, so a dirty asset is saved first: the YAML route keeps the whole stored payload, which the
             // in-memory route cannot recover.
+            var savesFirst = !inMemory && SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath);
             if (!inMemory &&
                 (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath, "Fix Missing Type") ||
                  SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath, "Fix Missing Type")))
@@ -970,9 +1332,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
-                repaired = SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
+                // The rewrite retypes the shared entry itself, so a field that cannot hold the type would load empty.
+                var fits = FitsAliases(FindMissingReferenceAliases(property, referenceId), newType);
+                repaired = fits &&
+                           SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
                 // ForceUpdate invalidates the live SerializedObject, so the property must not be touched afterwards.
                 if (repaired) AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+                // A type that does not fit fails the same way after the save, so only a failed rewrite is retried.
+                else if (fits && savesFirst && retryAfterSave) RetryFixAfterSave(property, newType);
             }
 
             // An IMGUI repaint can land in the same frame as this click, so the frame-keyed memos must go too.
@@ -986,6 +1353,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (repaired) ScheduleInspectorRebuild();
             return repaired;
+        }
+
+        // A save that resizes a list writes its missing element as a null and drops its entry, so the rewrite finds no
+        // entry. The missing-list guard puts the element back under a new rid in a delayCall queued by that save; this
+        // call is queued after it, so the fix runs again on the element the guard put back.
+        public static void RetryFixAfterSave(SerializedProperty property, Type newType)
+        {
+            var target = property.serializedObject.targetObject;
+            var propertyPath = property.propertyPath;
+
+            EditorApplication.delayCall += () =>
+            {
+                InvalidateMissingTypeMemo();
+
+                if (target != null)
+                {
+                    using var serializedObject = new SerializedObject(target);
+                    var retried = serializedObject.FindProperty(propertyPath);
+                    if (retried is not null && TryFixMissingType(retried, newType, retryAfterSave: false)) return;
+                }
+
+                Debug.LogWarning($"[Aspid FastTools] Fix Missing Type did not apply to '{propertyPath}': saving the asset " +
+                    "moved the missing reference. If the field still shows Missing type, click Fix again.");
+            };
         }
 
         // Unity caches the missing-types banner on editor creation; reselection rebuilds it after repair.
@@ -1088,7 +1479,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // An asset has no scene or prefab save to wait for, so its entry is cleared at once and the fix has no Undo.
         public static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
         {
-            var target = property.serializedObject.targetObject;
+            var serializedObject = property.serializedObject;
+            var target = serializedObject.targetObject;
+
+            // Every field on the missing rid takes the new instance: the save that drops the replaced entry would
+            // write a field left on it as empty.
+            var aliases = FindMissingReferenceAliases(property, referenceId);
+            if (!FitsAliases(aliases, newType)) return false;
+
             var instance = CreateInstance(newType);
             if (instance is null) return false;
 
@@ -1099,9 +1497,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 break;
             }
 
-            property.SetManagedReferenceAndApply(instance);
+            property.managedReferenceValue = instance;
+            foreach (var alias in aliases)
+                serializedObject.FindProperty(alias.Path).managedReferenceValue = instance;
+
+            serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(target);
-            property.serializedObject.Update();
+            serializedObject.Update();
 
             var scene = GetOwningScene(target);
             if (!scene.IsValid())
@@ -1120,6 +1522,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             EditorSceneManager.MarkSceneDirty(scene);
 
             return true;
+        }
+
+        // Unity reports a field on a missing type as empty, so the other fields on the same rid are found in the
+        // document. Empty when the object has no readable document.
+        private static List<(string Path, Type FieldType)> FindMissingReferenceAliases(SerializedProperty property, long referenceId)
+        {
+            var aliases = new List<(string Path, Type FieldType)>();
+            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _)) return aliases;
+
+            var selfPath = property.propertyPath;
+            TraverseManagedReferences(property.serializedObject, other =>
+            {
+                if (other.managedReferenceValue is null && other.propertyPath != selfPath &&
+                    SerializeReferenceYamlEditor.TryReadReferenceId(assetPath, fileId, other.propertyPath, out var rid) &&
+                    rid == referenceId)
+                {
+                    aliases.Add((other.propertyPath, GetFieldType(other)));
+                }
+
+                return false;
+            });
+
+            return aliases;
+        }
+
+        private static bool FitsAliases(List<(string Path, Type FieldType)> aliases, Type type)
+        {
+            foreach (var alias in aliases)
+            {
+                if (alias.FieldType.IsAssignableFrom(type)) continue;
+
+                Debug.LogWarning($"Fix Missing Type: '{type.FullName}' does not fit '{alias.Path}', which shares the missing reference.");
+                return false;
+            }
+
+            return true;
+        }
+
+        // A Fix retypes every field on the missing rid, so the picker narrows to the types of all of them.
+        private static Type[] AppendAliasFieldTypes(Type[] baseTypes, List<(string Path, Type FieldType)> aliases)
+        {
+            if (aliases.Count == 0) return baseTypes;
+
+            var types = baseTypes is null ? new List<Type>() : new List<Type>(baseTypes);
+            foreach (var alias in aliases)
+                types.Add(alias.FieldType);
+
+            return types.ToArray();
         }
 
         // The in-memory counterpart of the YAML clear, used when a file rewrite would be clobbered by the open copy
@@ -1244,7 +1694,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             foreach (Match match in Regex.Matches(data ?? string.Empty, @"(?<!\w)rid:\s*(-?\d+)"))
             {
-                if (long.TryParse(match.Groups[1].Value, out var child) && child != self)
+                if (SerializeReferenceYaml.TryParseId(match.Groups[1].Value, out var child) && child != self)
                     yield return child;
             }
         }
@@ -1253,63 +1703,59 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // overwritten onto the instance. Nested mappings and sequences stay at the new type's defaults.
         private static void RecoverManagedReferenceData(string serializedData, object instance)
         {
-            if (string.IsNullOrEmpty(serializedData)) return;
+            var type = instance.GetType();
+            var scalars = SerializeReferenceYamlEditor.ReadPayloadScalarsAsJson(serializedData, key => IsStringField(type, key));
+            if (scalars.Count == 0) return;
 
+            if (TryOverwriteFromJson(scalars, instance)) return;
+
+            // JsonUtility rejects the whole object for one bad value, so each scalar gets its own try.
+            foreach (var scalar in scalars)
+                TryOverwriteFromJson(scalars: new[] { scalar }, instance);
+        }
+
+        private static bool TryOverwriteFromJson(IEnumerable<KeyValuePair<string, string>> scalars, object instance)
+        {
             try
             {
-                var json = new StringBuilder("{");
-                var first = true;
-
-                foreach (var raw in serializedData.Split('\n'))
-                {
-                    var line = raw.TrimEnd('\r');
-                    if (line.Length == 0 || char.IsWhiteSpace(line[0]) || line[0] == '-') continue;
-
-                    var separator = line.IndexOf(':');
-                    if (separator <= 0) continue;
-
-                    var key = line[..separator].Trim();
-                    var value = line[(separator + 1)..].Trim();
-
-                    // An empty value is a mapping or array header, and a flow value is not a flat scalar.
-                    if (key.Length == 0 || value.Length == 0 || value[0] is '{' or '[') continue;
-
-                    if (!first) json.Append(',');
-                    first = false;
-
-                    json.Append('"').Append(key).Append("\":");
-                    json.Append(IsJsonNumber(value) ? value : Quote(UnquoteYaml(value)));
-                }
-
-                json.Append('}');
-                if (!first) JsonUtility.FromJsonOverwrite(json.ToString(), instance);
+                JsonUtility.FromJsonOverwrite(SerializeReferenceYamlEditor.BuildJsonObject(scalars), instance);
+                return true;
             }
             catch (Exception)
             {
-                // Best effort: an unparseable payload simply leaves the new instance at its defaults.
+                // Best effort: a value the new type cannot take leaves its field at the default.
+                return false;
             }
         }
 
-        private static bool IsJsonNumber(string value) => Regex.IsMatch(value, @"^-?\d+(\.\d+)?$");
+        // A payload scalar carries no type, and JsonUtility writes a number into a string field as 1.500000.
+        private static bool IsStringField(Type type, string name)
+        {
+            const BindingFlags flags =
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
-        private static string UnquoteYaml(string value) =>
-            value.Length >= 2 && value[0] == '\'' && value[^1] == '\''
-                ? value[1..^1].Replace("''", "'")
-                : value;
+            for (var current = type; current is not null && current != typeof(object); current = current.BaseType)
+            {
+                if (current.GetField(name, flags) is { } field)
+                    return field.FieldType == typeof(string);
+            }
 
-        private static string Quote(string value) =>
-            $"\"{value.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+            return false;
+        }
         #endregion
 
         #region Constraint map
         // Combine declared live field types with YAML IDs; missing parents and orphaned entries remain unconstrained.
-        public static Dictionary<(long fileId, long rid), Type> BuildConstraintMap(string assetPath)
+        // A rid that fields of different types share must fit each of them, so it maps to all of their types.
+        public static Dictionary<(long fileId, long rid), Type[]> BuildConstraintMap(string assetPath)
         {
-            var map = new Dictionary<(long, long), Type>();
+            var map = new Dictionary<(long, long), Type[]>();
             if (string.IsNullOrEmpty(assetPath)) return map;
 
             // Scenes cannot be read through LoadAllAssetsAtPath, so an unconstrained picker is the fallback.
             if (IsScene(assetPath)) return map;
+
+            var fieldTypes = new Dictionary<(long, long), List<Type>>();
 
             // A cyclic graph would loop the walk forever. Cleared per document, since rids are document-scoped.
             var visited = new HashSet<long>();
@@ -1322,7 +1768,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 visited.Clear();
 
                 using var serialized = new SerializedObject(obj);
-                var iterator = serialized.GetIterator();
+                using var iterator = serialized.GetIterator();
 
                 var enterChildren = true;
                 while (iterator.Next(enterChildren))
@@ -1343,11 +1789,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var fieldType = GetFieldType(iterator);
                     if (fieldType is null || fieldType == typeof(object)) continue;
 
-                    map[(fileId, rid)] = fieldType;
+                    AddConstraint(fieldTypes, (fileId, rid), fieldType);
                 }
             }
 
+            foreach (var pair in fieldTypes)
+                map.Add(pair.Key, pair.Value.ToArray());
+
             return map;
+        }
+
+        // A type that another field type already implies adds nothing, so only the narrowest types are kept.
+        private static void AddConstraint(Dictionary<(long, long), List<Type>> fieldTypes, (long, long) key, Type fieldType)
+        {
+            if (!fieldTypes.TryGetValue(key, out var types))
+            {
+                fieldTypes.Add(key, new List<Type> { fieldType });
+                return;
+            }
+
+            if (types.Exists(type => fieldType.IsAssignableFrom(type))) return;
+
+            types.RemoveAll(type => type.IsAssignableFrom(fieldType));
+            types.Add(fieldType);
+        }
+
+        // True when the type fits every constraint. Null constraints leave it unconstrained.
+        public static bool FitsConstraints(Type type, Type[] constraints)
+        {
+            if (constraints is null) return true;
+
+            foreach (var constraint in constraints)
+            {
+                if (constraint is not null && !constraint.IsAssignableFrom(type))
+                    return false;
+            }
+
+            return true;
         }
         #endregion
 
@@ -1499,7 +1977,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var builder = new StringBuilder();
 
-            var segments = SerializePropertyExtensions.SimplifyPropertyPath(propertyPath).Split('.');
+            var segments = SerializedPropertyExtensions.SimplifyPropertyPath(propertyPath).Split('.');
 
             foreach (var segment in segments)
             {
@@ -1579,9 +2057,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Undo.undoRedoPerformed += InvalidateReferenceMemos;
         }
 
-        public static void MakeReferenceUnique(SerializedProperty property)
+        public static void MakeReferenceUnique(SerializedProperty property) =>
+            new DetachedProperty(property).Use(MakeReferenceUniqueOnCopy);
+
+        // For a caller that already owns a copy of the property, as DetachedProperty.Use provides.
+        public static void MakeReferenceUniqueOnCopy(SerializedProperty persistent)
         {
-            var persistent = property.Persistent();
             var current = persistent.managedReferenceValue;
             if (current is null) return;
 

@@ -1,7 +1,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using System.Reflection;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
@@ -49,23 +48,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Applied to the header while a compatible MonoScript is dragged over the field.
         private const string DropTargetClass = BlockClass + "--drop-target";
 
-        // Unity's mixed-value class — gives the dropdown the standard "—" treatment under a mixed multi-object selection.
-        private const string MixedValueClass = "unity-base-field--show-mixed-value";
-
         private const string MixedCaption = "—";
 
-        // Unity's BaseField input class — applied to the dropdown's inner input so it picks up the
-        // same flex/indent the EnumField theme rules target on a real field's visualInput.
-        private const string BaseFieldInputClass = "unity-base-field__input";
-
         // Unity's own [Header] decorator class, reused verbatim by the re-emitted header (see WithDecorators) so a
-        // header above a nested reference is indistinguishable from one Unity drew.
+        // header above a nested reference is indistinguishable from one Unity drew. Unity has no public constant for it.
         private const string HeaderClass = "unity-header-drawer__label";
 
-        // No prefab-override treatment anywhere in this field. Unity records an override inside a managed reference
-        // under "managedReferences[rid].<field>", which no property path in the subtree matches, so prefabOverride
-        // reports false for every property under a [SerializeReference] — verified on 6000.4. Unity's own binding
-        // reads that same flag, so showing the bar would mean matching the modification list by rid ourselves.
+        // Bolds the label of a field overridden on a prefab instance, as Unity's binding does for a bound field; this
+        // header is not bound. The flag is read from the header's own pointer (checked on 6000.4 for a field, a nested
+        // reference and a list element). The blue bar belongs to the inspector element and is out of reach.
+        private const string PrefabOverrideClass = BlockClass + "--prefab-override";
 
         private const float DropdownGap = 2f;
 
@@ -156,9 +148,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Mirror SerializableType's TypeField: an enum-field "root" wrapping a separate "__input" child —
             // Unity's theme indents the caption through descendant selectors that only match when the input
-            // is a child of the field.
+            // is a child of the field. The input also carries BaseField's input class, which those rules target
+            // on a real field's visualInput.
             var dropdownInput = new VisualElement()
-                .AddClass(BaseFieldInputClass)
+                .AddClass(BaseField<object>.inputUssClassName)
                 .AddClass(EnumField.inputUssClassName)
                 .AddChild(_caption)
                 .AddChild(new VisualElement()
@@ -221,6 +214,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // fires; each field re-evaluates itself on undo/redo or a re-/un-aliased sibling would stay stale.
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 Undo.undoRedoPerformed += OnUndoRedo;
+                // Apply from the Overrides dropdown or another window drops the override but keeps the value, so
+                // TrackPropertyValue stays silent and the bold label would stay.
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
+                // The same step can take back a <None> pick on a missing reference after this field refreshed.
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
+                SerializeReferenceMissingListGuard.UndoChangedNotes += OnUndoRedo;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -229,6 +229,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
+                PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
                 _liveFields.Remove(this);
             });
         }
@@ -289,9 +291,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
+            // Unity puts its mixed-value class on the caption of a real EnumField, which tints the "—". The theme rule
+            // matches only a caption that is a direct child of the input, which carries BaseField's input class.
+            _caption.EnableClass(className: BaseField<object>.mixedValueLabelUssClassName, enable: mixedTypes);
             _dropdown.EnableInClassList(DropdownMissingClass, !missingType.IsEmpty);
-            _dropdown.EnableInClassList(MixedValueClass, mixedTypes);
             EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
+            EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
             _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);
 
             UpdateMissingBox();
@@ -339,15 +344,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_childrenBuilt) return;
             _childrenBuilt = true;
 
-            var iterator = _property.Copy();
-            var end = _property.GetEndProperty();
-            var enterChildren = true;
-
-            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
-            {
-                enterChildren = false;
+            foreach (var iterator in _property.VisibleChildren())
                 _content.Add(CreateChildField(iterator.Copy(), _depth));
-            }
         }
 
         // Unity ships no type picker for a managed reference, so a nested one drawn as a plain PropertyField is a
@@ -377,24 +375,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Unity would silently cost it the dropdown instead.
         private static VisualElement WithDecorators(SerializedProperty property, VisualElement field)
         {
-            var info = property.GetFieldInfo();
-            if (info is null) return field;
+            var decorators = SerializeReferenceDecorators.For(property);
 
-            if (info.GetCustomAttribute<TooltipAttribute>(inherit: true) is { } tooltip)
-                field.tooltip = tooltip.tooltip;
+            if (decorators.Tooltip.Length != 0)
+                field.tooltip = decorators.Tooltip;
 
-            var header = info.GetCustomAttribute<HeaderAttribute>(inherit: true);
-            var space = info.GetCustomAttribute<SpaceAttribute>(inherit: true);
-
-            if (header is null && space is null) return field;
+            if (decorators.Items.Count == 0) return field;
 
             var group = new VisualElement();
 
-            if (space is not null)
-                group.AddChild(new VisualElement().SetHeight(space.height));
-
-            if (header is not null)
-                group.AddChild(new Label(header.header).AddClass(HeaderClass));
+            foreach (var decorator in decorators.Items)
+            {
+                if (decorator is SpaceAttribute space)
+                    group.AddChild(new VisualElement().SetHeight(space.height));
+                else if (decorator is HeaderAttribute header)
+                    group.AddChild(new Label(header.header).AddClass(HeaderClass));
+            }
 
             return group.AddChild(field);
         }
@@ -808,16 +804,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                filter: new TypeSelectorFilter
-                {
-                    Types = new[] { _fieldType },
-                    Predicate = _filter,
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
-                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
-                    InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
-                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(_property),
-                },
-                currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(_property, currentType),
+                filter: SerializeReferenceHelpers.BuildPickerFilter(_fieldType, _baseTypes,
+                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(_property)),
+                assemblyQualifiedName: SerializeReferenceHelpers.GetSelectorCurrentAqn(_property, currentType),
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
                     : Type.GetType(assemblyQualifiedName, throwOnError: false)));
@@ -827,26 +816,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
-                SerializeReferenceMissingListGuard.NoteReplaced(_property);
-
-                // Multi-object: each target gets its OWN instance, created from that target's previous value, so the
-                // managed reference is never aliased across objects; <None> clears all. One Undo step covers them all.
-                if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
-                {
-                    SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
-                        _property,
-                        previous => SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-
-                    _property.isExpanded = type is not null;
-                }
-                else
-                {
-                    var previous = _property.managedReferenceValue;
-                    _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-                    _property.isExpanded = type is not null;
-                }
-
-                ApplyReferenceChange();
+                if (SerializeReferenceWriter.SetType(_property, type)) ApplyReferenceChange();
             }
 
             Rect GetScreenRect() => new(
@@ -858,12 +828,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void BuildContextMenu(ContextualMenuPopulateEvent evt)
         {
+            if (SerializeReferencePrefabOverride.IsOverridden(_property))
+            {
+                evt.menu.AppendAction("Revert", _ =>
+                {
+                    SerializeReferencePrefabOverride.Revert(_property);
+                    ApplyReferenceChange();
+                });
+
+                if (SerializeReferencePrefabOverride.TryGetApplyTarget(_property, out var applyPath))
+                {
+                    evt.menu.AppendAction(SerializeReferencePrefabOverride.GetApplyLabel(applyPath), _ =>
+                    {
+                        SerializeReferencePrefabOverride.Apply(_property, applyPath);
+                        ApplyReferenceChange();
+                    });
+                }
+
+                evt.menu.AppendSeparator();
+            }
+
             // Copy reads the first target's value (Unity's own convention for a multi-selection menu). Paste then
             // applies an independent instance PER target, so the pasted reference is never aliased across objects.
             evt.menu.AppendAction("Copy Serialize Reference",
                 _ => SerializeReferenceClipboard.Copy(_property.managedReferenceValue));
 
-            var canPaste = SerializeReferenceClipboard.CanPasteInto(_fieldType, _filter);
+            var filter = SerializeReferenceWriter.WithHoldCheck(_property, _filter);
+            var canPaste = SerializeReferenceClipboard.CanPasteInto(_fieldType, filter);
 
             evt.menu.AppendAction("Paste Serialize Reference",
                 _ => PasteFromClipboard(),
@@ -879,7 +870,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     _ => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
 
             if (SerializeReferenceHelpers.NoticesApply(_property))
-                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(_property, filter: _filter))
+                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(_property, filter: filter))
                 {
                     var path = candidate.Path;
                     evt.menu.AppendAction(SerializeReferenceHelpers.GetLinkToExistingMenuLabel(candidate.Type, path),
@@ -896,9 +887,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
             {
                 if (_fieldType != null && !_fieldType.IsAssignableFrom(template.Type)) continue;
-                if (!_filter(template.Type)) continue;
+                if (!filter(template.Type)) continue;
                 var name = template.Name;
-                evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(name));
+                var templateType = template.Type;
+                evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(templateType, name));
                 hasTemplates = true;
             }
 
@@ -922,7 +914,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void UpdateDrag(VisualElement target)
         {
-            if (SerializeReferenceDropHandler.TryResolveDroppedType(_fieldType, _baseTypes, out _))
+            if (SerializeReferenceDropHandler.TryResolveDroppedType(_property, _fieldType, _baseTypes, out _))
             {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Link;
                 target.AddToClassList(DropTargetClass);
@@ -937,11 +929,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void PerformDrop(VisualElement target)
         {
             target.RemoveFromClassList(DropTargetClass);
-            if (!SerializeReferenceDropHandler.TryResolveDroppedType(_fieldType, _baseTypes, out var type)) return;
+            if (!SerializeReferenceDropHandler.TryResolveDroppedType(_property, _fieldType, _baseTypes, out var type)) return;
 
             DragAndDrop.AcceptDrag();
-            SerializeReferenceDropHandler.Assign(_property, type);
-            ApplyReferenceChange();
+            if (SerializeReferenceDropHandler.Assign(_property, type)) ApplyReferenceChange();
         }
 
         private void LinkToExisting(string sourcePath)
@@ -968,20 +959,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 name => SerializeReferenceTemplates.SaveConfirmed(name, value));
         }
 
-        private void ApplyTemplate(string name)
+        private void ApplyTemplate(Type type, string name)
         {
-            if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
-            {
-                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(_property, _ => SerializeReferenceTemplates.CreateInstance(name));
-            }
-            else
-            {
-                var instance = SerializeReferenceTemplates.CreateInstance(name);
-                if (instance is null) return;
-                _property.SetManagedReferenceAndApply(instance);
-            }
-
-            ApplyReferenceChange();
+            if (SerializeReferenceWriter.SetValue(_property, type, () => SerializeReferenceTemplates.CreateInstance(name)))
+                ApplyReferenceChange();
         }
 
         private void MakeUnique()
@@ -1020,28 +1001,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Refresh(forceRebuild: false);
         }
 
+        // An Apply only removes overrides, so a field that shows none has nothing to update.
+        internal void OnPrefabInstanceUpdated(GameObject instance)
+        {
+            if (!ClassListContains(PrefabOverrideClass) || !IsPropertyAlive()) return;
+            _property.serializedObject.Update();
+            EnableInClassList(PrefabOverrideClass, SerializeReferencePrefabOverride.IsOverridden(_property));
+        }
+
         private void PasteFromClipboard()
         {
-            SerializeReferenceMissingListGuard.NoteReplaced(_property);
-
-            // Multi-object: rebuild a fresh instance from the clipboard for EACH target so no two objects share
-            // the same managed reference; one Undo step covers all.
-            if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
-            {
-                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
-                    _property,
-                    _ => SerializeReferenceClipboard.CreateInstance());
-
-                _property.isExpanded = SerializeReferenceClipboard.Type is not null;
-            }
-            else
-            {
-                var value = SerializeReferenceClipboard.CreateInstance();
-                _property.SetManagedReferenceAndApply(value);
-                _property.isExpanded = value is not null;
-            }
-
-            ApplyReferenceChange();
+            if (SerializeReferenceWriter.SetValue(_property, SerializeReferenceClipboard.Type, SerializeReferenceClipboard.CreateInstance))
+                ApplyReferenceChange();
         }
     }
 }

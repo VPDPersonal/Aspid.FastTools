@@ -17,7 +17,9 @@
 }
 
 .aspid-fasttools-window-footer__version {
-    color:                                                var(--aspid-colors-text-darkness);
+    flex-shrink:                                          0;
+    cursor:                                               link;
+    color:                                                var(--aspid-colors-text-dark);
     font-size:                                            14px;
 }
 
@@ -26,17 +28,21 @@
 }
 
 .aspid-fasttools-window-footer__keys {
-    position:                                             absolute;
-    left:                                                 0;
-    right:                                                0;
-    top:                                                  0;
-    bottom:                                               0;
+    flex-grow:                                            1;
+    flex-shrink:                                          1;
+    margin-left:                                          8px;
+    margin-right:                                         8px;
+    overflow:                                             hidden;
+    white-space:                                          nowrap;
+    text-overflow:                                        ellipsis;
     font-size:                                            11px;
-    color:                                                var(--aspid-colors-text-darkness);
+    color:                                                var(--aspid-colors-text-dark);
     -unity-text-align:                                    middle-center;
 }
 
 .aspid-fasttools-window-footer__link {
+    flex-shrink:                                          0;
+    cursor:                                               link;
     color:                                                var(--aspid-colors-status-success-text-dark);
     font-size:                                            14px;
     -unity-font-style:                                    bold;

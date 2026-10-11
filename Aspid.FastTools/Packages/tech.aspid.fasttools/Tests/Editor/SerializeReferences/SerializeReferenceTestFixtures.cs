@@ -49,6 +49,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeReference] public List<ITestWeapon> weapons = new();
     }
 
+    // A list of references where one kind holds references of its own, for the missing-type probe of a list with unsaved
+    // edits. The marker interface keeps these types out of the ITestWeapon pickers.
+    internal interface ITestGear { }
+
+    [Serializable]
+    internal sealed class TestBlade : ITestGear
+    {
+        public int damage;
+    }
+
+    [Serializable]
+    internal sealed class TestHolster : ITestGear
+    {
+        [SerializeReference] public ITestGear item;
+        [SerializeReference] public List<ITestGear> spares = new();
+    }
+
+    internal sealed class GearListTestObject : ScriptableObject
+    {
+        [SerializeReference] public List<ITestGear> gear = new();
+    }
+
     // A required managed reference and a required string type field.
     internal sealed class RequiredTestObject : ScriptableObject
     {
@@ -99,6 +121,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
     // A self-referential serializable shape: the reflection walk must terminate on the cycle instead of recursing
     // forever (Unity itself refuses such graphs at serialize time, but GetRequiredFields sees the raw type).
+    // Unity's serialization analyzer (6000.5+) flags the cycle, which is the point of the fixture.
+#pragma warning disable UAC1005, UAC1006
     [Serializable]
     internal sealed class RequiredCycleNode
     {
@@ -110,6 +134,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         public RequiredCycleNode root;
     }
+#pragma warning restore UAC1005, UAC1006
 
     // Top-level (namespace-scoped) candidate pool for the ranking tests. The marker interface keeps the TypeCache
     // pool down to these two types, so the assertions never race additions elsewhere in the project.

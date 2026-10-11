@@ -18,7 +18,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly AuditPickerHost.PickerClasses _pickerClassSet =
             new(PickerClass, PickerAttachedClass, GroupPickingClass);
 
-        private void ToggleGroupPicker(MissingReferenceGroup group, Type constraint, AspidGradientButton button)
+        private void ToggleGroupPicker(MissingReferenceGroup group, Type[] constraint, AspidGradientButton button)
         {
             if (_picker.ToggleClosed(button)) return;
 
@@ -102,14 +102,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var rewritten = MissingTypeNameRepair.Rewrite(entries, newType, "Repairing Type Names");
             RefreshTypeNames(entries.Select(entry => entry.AssetPath));
 
-            var summaryTitle = rewritten == 1 ? "Rewrote 1 type name" : $"Rewrote {rewritten} type names";
-            var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
-            if (skipped > 0)
-                summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
-            if (rewritten < entries.Count)
-                summaryBody += $" {entries.Count - rewritten} changed on disk since the scan and were left alone.";
+            // A fix that changed nothing has no replacement to report and nothing to undo.
+            var summaryTitle = rewritten == 0 ? "Nothing was rewritten"
+                : rewritten == 1 ? "Rewrote 1 type name"
+                : $"Rewrote {rewritten} type names";
+            var summaryBody = SerializeReferenceProjectSummary.JoinSentences(
+                rewritten == 0 ? null : $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.",
+                skipped > 0 ? $"Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes." : null,
+                rewritten < entries.Count ? SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten) : null);
 
-            var receipt = new TypeNameReceipt(entries, newName, group.DisplayName, newType.FullName);
+            var receipt = rewritten == 0 ? null : new TypeNameReceipt(entries, newName, group.DisplayName, newType.FullName);
 
             RerenderAfterBulkEdit();
             AddSummary(new RepairSummary(summaryTitle, summaryBody, receipt));
@@ -213,12 +215,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            var summaryTitle = rewritten == 1 ? "Rewrote 1 reference" : $"Rewrote {rewritten} references";
-            var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
-            if (skipped > 0)
-                summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
+            // A fix that changed nothing has no replacement to report and nothing to undo.
+            var summaryTitle = rewritten == 0 ? "Nothing was rewritten"
+                : rewritten == 1 ? "Rewrote 1 reference"
+                : $"Rewrote {rewritten} references";
+            var summaryBody = SerializeReferenceProjectSummary.JoinSentences(
+                rewritten == 0 ? null : $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.",
+                skipped > 0 ? $"Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes." : null,
+                rewritten < entries.Count ? SerializeReferenceProjectSummary.BuildNotRewrittenText(entries.Count - rewritten) : null);
 
-            var receipt = new RepairReceipt(entries, group.StoredType, managedType, group.DisplayName, newType.FullName);
+            var receipt = rewritten == 0 ? null : new RepairReceipt(entries, group.StoredType, managedType, group.DisplayName, newType.FullName);
 
             RerenderAfterBulkEdit();
             AddSummary(new RepairSummary(summaryTitle, summaryBody, receipt));
@@ -256,6 +262,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var clearedOnDisk = SerializeReferenceBatchEditor.Null(onDisk, "Clearing References");
             var clearedInMemory = SerializeReferenceBatchEditor.ClearOpenInMemory(inMemory, group.StoredType);
             var cleared = clearedOnDisk + clearedInMemory;
+            var notCleared = SerializeReferenceProjectSummary.JoinSentences(
+                clearedOnDisk < onDisk.Count ? SerializeReferenceProjectSummary.BuildNotRewrittenText(onDisk.Count - clearedOnDisk, verb: "cleared") : null,
+                clearedInMemory < inMemory.Count ? SerializeReferenceProjectSummary.BuildNoLongerOpenText(inMemory.Count - clearedInMemory) : null);
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
@@ -263,6 +272,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (_scanButton is not null) _scanButton.Text = RescanLabel;
                 RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
+
+                AddSummary(new RepairSummary("Nothing was cleared", notCleared, receipt: null));
                 return;
             }
 
@@ -274,6 +285,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? " 1 was nulled in memory — save the asset to persist it (still listed until saved)."
                     : $" {clearedInMemory} were nulled in memory — save the assets to persist them (still listed until saved).";
             }
+
+            if (cleared < total)
+                summaryBody += " " + notCleared;
 
             // Clearing can create required-field violations. The files edited on disk are re-audited; a reference nulled
             // only in memory reaches disk on save, so that audit is stale until the next Rescan.

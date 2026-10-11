@@ -1,7 +1,6 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -11,10 +10,7 @@ namespace Aspid.FastTools.Editors
     {
         private const string SessionKey = "Aspid.FastTools.WelcomeWindow.StartupHandled";
 
-        private static string SeenKey => $"Aspid.FastTools.WelcomeWindow.Seen::{PackageVersion}::{ProjectPath}";
-
-        private static string PackageVersion =>
-            PackageInfo.FindForAssembly(typeof(WelcomeWindowStartup).Assembly)?.version ?? "unknown";
+        internal static string SeenKey => $"Aspid.FastTools.WelcomeWindow.Seen::{PackageVersion.Current}::{ProjectPath}";
 
         public static bool HasBeenSeen
         {
@@ -43,14 +39,20 @@ namespace Aspid.FastTools.Editors
             if (SessionState.GetBool(SessionKey, false)) return;
             SessionState.SetBool(SessionKey, true);
 
+            // A CI or build Editor reads nothing at startup, as before the decision moved into ShouldShow.
             if (Application.isBatchMode) return;
 
-            if (!WelcomeSettings.AutoShowEnabled) return;
-            if (HasBeenSeen) return;
-            if (HasOpenWindow()) return;
+            var shouldShow = ShouldShow(
+                isBatchMode: false,
+                autoShowEnabled: WelcomeSettings.AutoShowEnabled,
+                hasBeenSeen: HasBeenSeen,
+                hasOpenWindow: HasOpenWindow());
 
-            TabWindow.OpenWelcome();
+            if (shouldShow) TabWindow.OpenWelcome();
         }
+
+        internal static bool ShouldShow(bool isBatchMode, bool autoShowEnabled, bool hasBeenSeen, bool hasOpenWindow) =>
+            !isBatchMode && autoShowEnabled && !hasBeenSeen && !hasOpenWindow;
 
         private static bool HasOpenWindow()
         {

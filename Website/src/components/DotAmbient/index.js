@@ -51,7 +51,8 @@ function readColors() {
 /** Keeps an uneven glow along the bottom of a docs page's dot background: highest next to the article, sloping down to
  *  the edges of the screen, its top edge slowly changing shape. On the introduction a lower glow rises from the banner's
  *  bottom edge as well, and sparks fly up from that edge into it. Below MIN_WIDTH only the banner's glow and sparks are
- *  drawn, inside the banner. */
+ *  drawn, inside the banner. Where no dots are drawn (other pages, a narrow page without the banner), it holds no
+ *  canvas and runs no frames. */
 export default function DotAmbient() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -66,14 +67,15 @@ export default function DotAmbient() {
       document.body.appendChild(canvas);
       return canvas.getContext('2d');
     };
-    const ctx = layer();
-    const sparkCtx = layer();
+    let ctx = null;
+    let sparkCtx = null;
     // The canvases cover the viewport, or the banner while they lie in its layer.
     let host = document.body;
     let areaWidth = 0;
     let areaHeight = 0;
 
     const resize = () => {
+      if (!ctx) return;
       const dpr = Math.min(devicePixelRatio || 1, 2);
       areaWidth = host === document.body ? innerWidth : host.clientWidth;
       areaHeight = host === document.body ? innerHeight : host.clientHeight;
@@ -83,7 +85,6 @@ export default function DotAmbient() {
         context.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
     };
-    resize();
 
     let frame = 0;
     let last = 0;
@@ -242,14 +243,47 @@ export default function DotAmbient() {
       }
       drawSparks(now, elapsed, glow);
     };
-    frame = requestAnimationFrame(render);
+
+    // Dots are drawn on a docs page from MIN_WIDTH up, and below it only in the introduction's banner.
+    const shown = () => root.classList.contains('docs-doc-page') && (innerWidth >= MIN_WIDTH || document.querySelector(BANNER_LAYER) !== null);
+
+    const start = () => {
+      ctx = layer();
+      sparkCtx = layer();
+      host = document.body;
+      resize();
+      colors = null;
+      sparks = [];
+      sparksDrawn = false;
+      last = 0;
+      sparkAt = performance.now();
+      frame = requestAnimationFrame(render);
+    };
+
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      ctx.canvas.remove();
+      sparkCtx.canvas.remove();
+      ctx = null;
+      sparkCtx = null;
+      article = null;
+      banner = null;
+    };
+
+    // The page, its width or its banner may change while the page is open.
+    const sync = () => {
+      const on = shown();
+      if (on && !ctx) start();
+      else if (!on && ctx) stop();
+    };
 
     // A hidden tab stops drawing entirely.
     const onVisibility = () => {
       if (document.hidden) {
         cancelAnimationFrame(frame);
         frame = 0;
-      } else if (!frame) {
+      } else if (ctx && !frame) {
         frame = requestAnimationFrame(render);
       }
     };
@@ -260,16 +294,24 @@ export default function DotAmbient() {
       if (banner && host === document.body) last = 0;
     };
 
-    addEventListener('resize', resize);
+    const onResize = () => {
+      sync();
+      resize();
+    };
+
+    // Navigating changes the classes of the root; the banner of a new page is in place by then.
+    const observer = new MutationObserver(sync);
+    observer.observe(root, {attributes: true, attributeFilter: ['class']});
+    addEventListener('resize', onResize);
     addEventListener('scroll', onScroll, {passive: true});
     document.addEventListener('visibilitychange', onVisibility);
+    sync();
     return () => {
-      removeEventListener('resize', resize);
+      observer.disconnect();
+      removeEventListener('resize', onResize);
       removeEventListener('scroll', onScroll);
       document.removeEventListener('visibilitychange', onVisibility);
-      cancelAnimationFrame(frame);
-      ctx.canvas.remove();
-      sparkCtx.canvas.remove();
+      if (ctx) stop();
     };
   }, []);
   return null;

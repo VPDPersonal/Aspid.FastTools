@@ -102,6 +102,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(other, SerializeReferenceYamlEditor.FindStoredTypeNames(ProbeAssetPath).Single(entry => entry.FieldPath == "type").TypeName);
         }
 
+        // A file the YAML pass cannot read has no missing names, which is not the same as having none: the caller gets
+        // it back as unscanned.
+        [TestCase("version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n", AssetFileFormat.LfsPointer)]
+        [TestCase("\u0001\u0002binary", AssetFileFormat.Binary)]
+        public void FindInFile_FileThatIsNotTextYaml_IsReportedAsUnscanned(string content, AssetFileFormat format)
+        {
+            SaveProbeWithBrokenNames();
+            File.WriteAllText(ProbeAssetPath, content);
+
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+
+            CollectionAssert.IsEmpty(MissingTypeNames.FindInFile(ProbeAssetPath, unscanned));
+            CollectionAssert.AreEqual(new[] { (ProbeAssetPath, format) }, unscanned);
+        }
+
+        [Test]
+        public void FindInFile_TextYaml_IsNotReportedAsUnscanned()
+        {
+            SaveProbeWithBrokenNames();
+
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+
+            Assert.AreEqual(2, MissingTypeNames.FindInFile(ProbeAssetPath, unscanned).Count);
+            CollectionAssert.IsEmpty(unscanned);
+        }
+
+        [Test]
+        public void FindInFile_MissingFile_IsNotReportedAsUnscanned()
+        {
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+
+            CollectionAssert.IsEmpty(MissingTypeNames.FindInFile(ProbeAssetPath, unscanned));
+            CollectionAssert.IsEmpty(unscanned);
+        }
+
+        [Test]
+        public void ScanProject_LfsPointer_AppearsInUnscanned()
+        {
+            SaveProbeWithBrokenNames();
+            File.WriteAllText(ProbeAssetPath, "version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n");
+
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+            var missing = MissingTypeNames.ScanProject(unscanned);
+
+            CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.LfsPointer));
+            Assert.IsFalse(missing.Any(location => location.AssetPath == ProbeAssetPath));
+        }
+
         [Test]
         public void TryGetFieldConstraint_ReadsTheWrapperTypeArgument()
         {
@@ -231,7 +279,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
             _established = SessionState.GetBool(TypeNameBreakageDetector.EstablishedKey, false);
-            _baseline = SessionState.GetString(TypeNameBreakageDetector.BaselineKey, string.Empty);
+            _baseline = TypeNameBreakageDetector.ExportBaseline();
 
             TypeNameBreakageDetector.ResetForTests();
 
@@ -242,7 +290,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             SerializeReferenceSettings.BreakageDetectionEnabled = true;
             SessionState.EraseBool(TypeNameBreakageDetector.EstablishedKey);
-            SessionState.EraseString(TypeNameBreakageDetector.BaselineKey);
+            TypeNameBreakageDetector.ImportBaseline(string.Empty);
         }
 
         [TearDown]
@@ -254,7 +302,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
             SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, _established);
-            SessionState.SetString(TypeNameBreakageDetector.BaselineKey, _baseline);
+            TypeNameBreakageDetector.ImportBaseline(_baseline);
+            TypeNameBreakageDetector.PersistBaseline();
         }
 
         [Test]
@@ -275,9 +324,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void Scan_ChangedAsset_WritesSessionStateOnlyWhenPersisted()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredWrapperTestObject>();
+            probe.type = new SerializableType(typeof(TestSword));
+            AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+            AssetDatabase.SaveAssets();
+
+            TypeNameBreakageDetector.Scan(changedAssets: null);
+            TypeNameBreakageDetector.CompleteSweep();
+
+            StringAssert.DoesNotContain(ProbeAssetPath, SessionState.GetString(TypeNameBreakageDetector.BaselineKey, string.Empty));
+
+            TypeNameBreakageDetector.PersistBaseline();
+
+            StringAssert.Contains(ProbeAssetPath, SessionState.GetString(TypeNameBreakageDetector.BaselineKey, string.Empty));
+        }
+
+        [Test]
+        public void ResetBaseline_DropsBaselineAndEstablishedFlag()
+        {
+            TypeNameBreakageDetector.ImportBaseline($"{ProbeAssetPath}\t{BrokenKey}");
+            SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, true);
+
+            TypeNameBreakageDetector.ResetBaseline();
+
+            Assert.IsFalse(TypeNameBreakageDetector.IsEstablished);
+            CollectionAssert.IsEmpty(TypeNameBreakageDetector.GetBaselineKeys(ProbeAssetPath));
+        }
+
+        [Test]
         public void Scan_BaselineNameNoLongerResolves_ReportsItOnce()
         {
-            SessionState.SetString(TypeNameBreakageDetector.BaselineKey, $"{ProbeAssetPath}\t{BrokenKey}");
+            TypeNameBreakageDetector.ImportBaseline($"{ProbeAssetPath}\t{BrokenKey}");
             SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, true);
 
             TypeNameBreakageDetector.Scan(changedAssets: null);

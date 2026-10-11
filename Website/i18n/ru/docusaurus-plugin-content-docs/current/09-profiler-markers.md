@@ -19,6 +19,7 @@
 | <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (строка)</code> |
 | <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (строка)</code> |
 | <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (строка)</code> |
+| Явная реализация <code lang="csharp">void ISimulation.Step()</code> | <code lang="string">FlockSimulation.Step (строка)</code> |
 
 Номер строки меняется при перемещении вызова в коде.
 
@@ -57,19 +58,24 @@ public void Step()
 }
 ```
 
-> [!NOTE]
-> Задавайте имя строковым литералом прямо в <code lang="function">WithName</code>. Переменные, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> и строки с подстановками не меняют имя маркера; аргумент при этом вычисляется при каждом вызове.
+Имя должно быть константой: строковым литералом, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> или строкой, собранной из них. Имя, известное только во время выполнения, оставляет имя метода.
 
 ## В Profiler
 
-Маркеры создаются один раз. После инициализации повторные замеры не выделяют память.
+Маркеры создаются один раз. После инициализации повторные замеры не выделяют память. В сборке плеера без **Development Build** <code lang="csharp">this.Marker()</code> ничего не замеряет: символ `ENABLE_PROFILER` не определён.
 
 ![Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.](../../../../docs/Images/profiler-markers-hierarchy.svg)
+
+## Маркеры пакета
+
+Пакет ставит маркеры и на свои горячие пути, например на поиск в <code lang="class-name">EnumValues</code> или разрешение типа в <code lang="class-name">SerializableType</code>. Чтобы вырезать эти маркеры, добавьте символ `ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED` в **Scripting Define Symbols**. Маркеры от ваших вызовов <code lang="csharp">this.Marker()</code> остаются.
 
 ## Ограничения
 
 - Вызывайте <code lang="csharp">this.Marker()</code> внутри собственного типа. Вызовы на объекте другого типа, в статическом классе или вложенном <code lang="csharp">private</code>/<code lang="csharp">protected</code> типе ненадёжны: замер может отсутствовать или попасть в чужой маркер.
+- <code lang="csharp">Marker()</code> объявлен без пространства имён, поэтому <code lang="csharp">using</code> не нужен, а автодополнение предлагает его у любого выражения, даже если вызов не получит маркер.
 - Используйте <code lang="csharp">using</code>. Отдельный вызов <code lang="csharp">this.Marker();</code> начинает замер и не завершает его.
+- Закрывайте <code lang="csharp">using</code> до <code lang="csharp">yield return</code> или <code lang="csharp">await</code>. Корутина или <code lang="csharp">async</code>-метод продолжают работу в другом кадре или потоке, поэтому незакрытый замер оставляет в Profiler несбалансированные сэмплы.
 
 > [!WARNING]
 > Вызовы внутри одного типа с одинаковым номером строки делят один маркер, даже если находятся в разных файлах <code lang="csharp">partial</code>. Давайте каждой точке замера свой номер строки, иначе замеры объединятся под именем первого вызова.
