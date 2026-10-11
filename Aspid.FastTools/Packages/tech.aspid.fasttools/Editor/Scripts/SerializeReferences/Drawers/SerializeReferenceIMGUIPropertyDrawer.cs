@@ -243,13 +243,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                             // the picker a line lower.
                             var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(noticeRect.x, noticeRect.y));
                             var screenRect = new Rect(screenPosition.x, screenPosition.y, noticeRect.width, EditorGUIUtility.singleLineHeight);
-                            SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null, baseTypes);
+                            SerializeReferenceHelpers.ShowFixTypeSelector(property, screenRect, null, baseTypes, detach: true);
                         }
                         : null,
                     hasSuggestion ? SerializeReferenceHelpers.GetSuggestionLabel(suggestion) : null,
                     hasSuggestion ? SerializeReferenceHelpers.GetSuggestionDetail(suggestion) : null,
                     hasSuggestion
-                        ? () => SerializeReferenceHelpers.TryFixMissingType(property.Persistent(), suggestion.Type)
+                        ? () => new DetachedProperty(property).Use(
+                            persistent => SerializeReferenceHelpers.TryFixMissingType(persistent, suggestion.Type))
                         : null);
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
@@ -436,9 +437,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void ShowSelector(SerializedProperty property, Type fieldType, Type[] baseTypes, Type currentType, Rect dropdownRect)
         {
-            // The picker answers after this draw: the write goes through a SerializedObject of its own, and a copy of
-            // the inspector's property receives the expansion.
-            var persistent = property.Persistent();
+            // The picker answers after this draw: the write goes through a SerializedObject opened only then, and a
+            // copy of the inspector's property receives the expansion.
+            var detached = new DetachedProperty(property);
             var view = property.Copy();
             var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(dropdownRect.x, dropdownRect.y));
             var screenRect = new Rect(screenPosition.x, screenPosition.y, dropdownRect.width, dropdownRect.height);
@@ -448,15 +449,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 filter: SerializeReferenceHelpers.BuildPickerFilter(fieldType, baseTypes,
                     excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(property)),
                 currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(property, currentType),
-                onSelected: assemblyQualifiedName => SerializeReferenceWriter.SetType(
-                    persistent,
-                    string.IsNullOrEmpty(assemblyQualifiedName) ? null : Type.GetType(assemblyQualifiedName, throwOnError: false),
-                    view));
+                onSelected: assemblyQualifiedName =>
+                {
+                    var type = string.IsNullOrEmpty(assemblyQualifiedName)
+                        ? null
+                        : Type.GetType(assemblyQualifiedName, throwOnError: false);
+
+                    detached.Use(persistent => SerializeReferenceWriter.SetType(persistent, type, view));
+                });
         }
 
         private static void ShowContextMenu(SerializedProperty property, Type fieldType, Type[] baseTypes)
         {
-            var persistent = property.Persistent();
+            // Each item works on its own copy, opened when the item is clicked, so a closed menu holds nothing.
+            var detached = new DetachedProperty(property);
             var view = property.Copy();
             var filter = SerializeReferenceWriter.WithHoldCheck(property, SerializeReferenceHelpers.BuildAssignableFilter(baseTypes));
             var menu = new GenericMenu();
@@ -465,7 +471,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 menu.AddItem(new GUIContent("Revert"), false, () =>
                 {
-                    SerializeReferencePrefabOverride.Revert(persistent);
+                    detached.Use(SerializeReferencePrefabOverride.Revert);
                     SerializeReferenceHelpers.InvalidateReferenceMemos();
                 });
 
@@ -473,7 +479,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     menu.AddItem(new GUIContent(SerializeReferencePrefabOverride.GetApplyLabel(applyPath)), false, () =>
                     {
-                        SerializeReferencePrefabOverride.Apply(persistent, applyPath);
+                        detached.Use(persistent => SerializeReferencePrefabOverride.Apply(persistent, applyPath));
                         SerializeReferenceHelpers.InvalidateReferenceMemos();
                     });
                 }
@@ -484,12 +490,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Copy reads the first target's value, Unity's convention; paste applies an independent instance per
             // target so the result is never aliased.
             menu.AddItem(new GUIContent("Copy Serialize Reference"), false,
-                () => SerializeReferenceClipboard.Copy(persistent.managedReferenceValue));
+                () => detached.Use(persistent => SerializeReferenceClipboard.Copy(persistent.managedReferenceValue)));
 
             var pasteLabel = new GUIContent("Paste Serialize Reference");
             if (SerializeReferenceClipboard.CanPasteInto(fieldType, filter))
-                menu.AddItem(pasteLabel, false, () => SerializeReferenceWriter.SetValue(persistent,
-                    SerializeReferenceClipboard.Type, SerializeReferenceClipboard.CreateInstance, view));
+                menu.AddItem(pasteLabel, false, () => detached.Use(persistent => SerializeReferenceWriter.SetValue(persistent,
+                    SerializeReferenceClipboard.Type, SerializeReferenceClipboard.CreateInstance, view)));
             else
                 menu.AddDisabledItem(pasteLabel);
 
@@ -497,7 +503,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (SerializeReferenceHelpers.NoticesApply(property) &&
                 SerializeReferenceHelpers.HasSharedReference(property))
                 menu.AddItem(new GUIContent("Make Unique Reference"), false,
-                    () => SerializeReferenceHelpers.MakeReferenceUnique(persistent));
+                    () => detached.Use(SerializeReferenceHelpers.MakeReferenceUniqueOnCopy));
 
             var usagesType = SerializeReferenceHelpers.GetCurrentType(property);
             if (usagesType != null)
@@ -512,7 +518,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     var path = candidate.Path;
                     var label = SerializeReferenceHelpers.GetLinkToExistingMenuLabel(candidate.Type, path);
-                    menu.AddItem(new GUIContent(label), false, () => SerializeReferenceLinker.LinkTo(persistent, path, view));
+                    menu.AddItem(new GUIContent(label), false,
+                        () => detached.Use(persistent => SerializeReferenceLinker.LinkTo(persistent, path, view)));
                 }
             }
 
@@ -522,20 +529,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     if (!SerializeReferenceScriptCreator.TryCreateSubclassStub(fieldType, out _, out var fullTypeName)) return;
 
-                    // One pending assignment per target — targetObject alone would leave objects 2..N untouched. The
-                    // transient property may be disposed by the time this deferred callback runs.
-                    foreach (var target in persistent.serializedObject.targetObjects)
-                        SerializeReferencePendingAssignment.Enqueue(target, persistent.propertyPath, fullTypeName);
+                    // One pending assignment per target — targetObject alone would leave objects 2..N untouched.
+                    foreach (var target in detached.Targets)
+                        SerializeReferencePendingAssignment.Enqueue(target, detached.Path, fullTypeName);
                 });
             }
 
             if (usagesType != null)
             {
-                var value = persistent.managedReferenceValue;
-                menu.AddItem(new GUIContent("Save as Template…"), false,
-                    () => SerializeReferenceNamePrompt.Show("Save Template",
+                menu.AddItem(new GUIContent("Save as Template…"), false, () => detached.Use(persistent =>
+                {
+                    var value = persistent.managedReferenceValue;
+                    SerializeReferenceNamePrompt.Show("Save Template",
                         SerializeReferenceTemplates.SuggestName(usagesType),
-                        name => SerializeReferenceTemplates.SaveConfirmed(name, value)));
+                        name => SerializeReferenceTemplates.SaveConfirmed(name, value));
+                }));
             }
 
             var hasTemplates = false;
@@ -545,8 +553,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!filter(template.Type)) continue;
                 var name = template.Name;
                 var templateType = template.Type;
-                menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => SerializeReferenceWriter.SetValue(persistent,
-                    templateType, () => SerializeReferenceTemplates.CreateInstance(name), view));
+                menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => detached.Use(persistent =>
+                    SerializeReferenceWriter.SetValue(persistent, templateType, () => SerializeReferenceTemplates.CreateInstance(name), view)));
                 hasTemplates = true;
             }
 

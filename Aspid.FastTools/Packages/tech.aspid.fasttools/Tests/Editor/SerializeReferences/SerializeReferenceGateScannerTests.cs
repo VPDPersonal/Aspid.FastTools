@@ -45,11 +45,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     "Unset [SerializeReference, TypeSelector(Required = true)] field must be reported.");
                 Assert.IsTrue(forProbe.Any(v => v.FieldPath == nameof(RequiredTestObject.requiredString)),
                     "Unset [TypeSelector(Required = true)] string field must be reported.");
+
+                // The windows label a row from the scan itself; loading the file again for it froze a large project.
+                Assert.IsTrue(forProbe.All(v => v.ComponentName == nameof(RequiredTestObject)));
+                Assert.IsTrue(forProbe.All(v => v.FieldLabel == $"{nameof(RequiredTestObject)}.{v.FieldPath}"));
             }
             finally
             {
                 AssetDatabase.DeleteAsset(ProbeAssetPath);
             }
+        }
+
+        [Test]
+        public void FieldLabel_WithoutComponent_IsTheBareFieldPath()
+        {
+            var violation = new GateViolation("Assets/Arena.unity", 1, 0, default, GateViolationKind.RequiredUnset, "_weapon");
+
+            Assert.AreEqual("_weapon", violation.FieldLabel);
         }
 
         // ScanAssetRequiredFields is the scoped, single-asset entry point the Inspect Asset graph calls on every
@@ -127,10 +139,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (_, path) =>
                 {
-                    if (!probes.Contains(path)) return;
+                    if (!probes.Contains(path)) return false;
 
                     if (firstVisited is null) firstVisited = path;
                     else firstLoadedAtSecond = AssetDatabase.IsMainAssetAtPathLoaded(firstVisited);
+
+                    return false;
                 });
 
                 Assert.AreEqual(false, firstLoadedAtSecond,
@@ -140,6 +154,74 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 SerializeReferenceGateScanner.UnloadEveryLoadedFiles = batchSize;
                 foreach (var path in probes) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        // The Scan Project progress bar can be cancelled. A half-finished sweep must not pass for a clean project, so
+        // the scan returns nothing, and it still releases the assets it had loaded.
+        [Test]
+        public void Scan_RequiredOnly_ProgressStopsTheSweep_ReturnsNullAndUnloadsLoadedAssets()
+        {
+            const string secondProbePath = "Assets/__AspidGateScannerRequiredProbe2__.asset";
+
+            var probes = new[] { ProbeAssetPath, secondProbePath };
+            try
+            {
+                foreach (var path in probes)
+                {
+                    var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+                    AssetDatabase.CreateAsset(probe, path);
+                    Resources.UnloadAsset(probe);
+                    Assume.That(AssetDatabase.IsMainAssetAtPathLoaded(path), Is.False);
+                }
+
+                string firstVisited = null;
+
+                var violations = SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (_, path) =>
+                {
+                    if (!probes.Contains(path)) return false;
+                    if (firstVisited is not null) return true;
+
+                    firstVisited = path;
+                    return false;
+                });
+
+                Assert.IsNull(violations, "A cancelled sweep has no result.");
+                Assert.IsNotNull(firstVisited);
+                Assert.IsFalse(AssetDatabase.IsMainAssetAtPathLoaded(firstVisited),
+                    "An asset the cancelled sweep loaded must not stay loaded.");
+            }
+            finally
+            {
+                foreach (var path in probes) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        [Test]
+        public void Scan_RequiredOnly_ReportsProgressForEachFile()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+
+                var paths = new List<string>();
+                var fractions = new List<float>();
+
+                var violations = SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (fraction, path) =>
+                {
+                    fractions.Add(fraction);
+                    paths.Add(path);
+                    return false;
+                });
+
+                Assert.IsNotNull(violations);
+                CollectionAssert.Contains(paths, ProbeAssetPath);
+                Assert.IsTrue(fractions.All(fraction => fraction is >= 0f and < 1f));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
             }
         }
 
