@@ -18,6 +18,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const string KeysClass = RootClass + "__keys";
         private const string LinkClass = RootClass + "__link";
 
+        // The keys of a view with a keyboard ring; a view whose rows also step with the left and right arrows adds them.
+        internal const string KeysHint = "↑↓ navigate   ⏎ activate   esc dismiss";
+        internal const string AdjustableKeysHint = "↑↓ navigate   ←→ adjust   ⏎ activate   esc dismiss";
+
+        private readonly Label _keys;
+
         public AspidWindowFooter() : this(showKeysHint: true) { }
 
         public AspidWindowFooter(bool showKeysHint)
@@ -42,14 +48,24 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             row.AddChild(versionLabel);
 
             if (showKeysHint)
-                row.AddChild(new Label("↑↓ navigate   ⏎ activate   esc dismiss")
+            {
+                _keys = new Label(KeysHint)
                     .AddClass(KeysClass)
-                    .SetPickingMode(PickingMode.Ignore));
+                    .SetPickingMode(PickingMode.Ignore);
+
+                row.AddChild(_keys);
+            }
 
             row.AddChild(githubLabel);
 
             this.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default.SetTheme(ThemeStyle.Type.Darkness)))
                 .AddChild(row);
+        }
+
+        // Does nothing in a footer built without the keys hint.
+        internal void SetKeysHint(string text)
+        {
+            if (_keys is not null) _keys.text = text;
         }
     }
 }

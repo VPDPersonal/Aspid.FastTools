@@ -44,6 +44,7 @@ namespace Aspid.FastTools.Editors
         private readonly List<RepairSummary> _projectSummaries = new();
 
         private AspidAnimatedDotsBackground _background;
+        private AspidWindowFooter _footer;
         private VisualElement _container;
         private Button _homeButton;
         private Button _inspectButton;
@@ -152,10 +153,12 @@ namespace Aspid.FastTools.Editors
             _container = new VisualElement().AddClass(ContainerClass);
             _container.style.flexGrow = 1;
 
+            _footer = new AspidWindowFooter();
+
             root.AddChild(_background)
                 .AddChild(toolbar)
                 .AddChild(_container)
-                .AddChild(new AspidWindowFooter());
+                .AddChild(_footer);
 
             SwitchMode(CurrentTabType);
         }
@@ -229,8 +232,13 @@ namespace Aspid.FastTools.Editors
                 project.Initialize();
             }
 
+            _footer?.SetKeysHint(KeysHintFor(tabType));
             UpdateToolbar();
         }
+
+        // Only the Settings tab has rows that the left and right arrows step.
+        internal static string KeysHintFor(TabType tabType) =>
+            tabType == TabType.Settings ? AspidWindowFooter.AdjustableKeysHint : AspidWindowFooter.KeysHint;
 
         private void SetCanvasStatus(StatusStyle.Type status) =>
             _background?.SetStatus(status);

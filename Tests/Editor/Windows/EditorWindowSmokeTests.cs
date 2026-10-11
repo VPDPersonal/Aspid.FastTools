@@ -22,6 +22,7 @@ namespace Aspid.FastTools.Editors.Tests
         private const string ContainerClass = "aspid-fasttools-serialize-reference-window__container";
         private const string ActiveButtonClass = "aspid-fasttools-serialize-reference-window__toolbar-button--active";
         private const string ToolbarButtonClass = "aspid-fasttools-serialize-reference-window__toolbar-button";
+        private const string FooterKeysClass = "aspid-fasttools-window-footer__keys";
 
         private const int MaxFrames = 30;
 
@@ -56,6 +57,8 @@ namespace Aspid.FastTools.Editors.Tests
                     Assert.IsInstanceOf(viewType, container[0], $"{tab} must show {viewType.Name}.");
                     Assert.AreEqual(1, window.rootVisualElement.Query<Button>(className: ActiveButtonClass).ToList().Count,
                         $"Exactly one toolbar button must be active on {tab}.");
+                    Assert.AreEqual(TabWindow.KeysHintFor(tab), window.rootVisualElement.Q<Label>(className: FooterKeysClass)?.text,
+                        $"The footer must show the keys of {tab}.");
                 }
             }
             finally
