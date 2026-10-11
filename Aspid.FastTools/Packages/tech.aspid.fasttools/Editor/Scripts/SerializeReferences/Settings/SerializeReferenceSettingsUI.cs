@@ -19,6 +19,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if ((scope & AspidSettingsScope.Shared) == 0) return;
 
+            // The controls must show the committed file, not a copy loaded before the last pull.
+            SerializeReferenceSettings.ReloadShared();
+
             var autoDeAlias = new AspidSwitch("Auto de-alias duplicated list elements")
             {
                 value = SerializeReferenceSettings.AutoDeAliasEnabled,

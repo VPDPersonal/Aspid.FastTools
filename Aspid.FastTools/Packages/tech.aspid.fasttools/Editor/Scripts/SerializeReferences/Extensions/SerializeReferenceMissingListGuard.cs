@@ -1,23 +1,36 @@
 using System;
+using System.IO;
+using System.Text;
 using UnityEditor;
+using UnityEngine;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal sealed class SerializeReferenceMissingListGuard : AssetModificationProcessor
     {
-        // Consumed once by the post-save pass and dropped, so a later save re-snapshots from the then-current file.
-        private static readonly Dictionary<string, List<Snapshot>> PendingByPath = new();
+        private const string NotesKey = "Aspid.FastTools.SerializeReference.MissingListGuard.Notes";
+        private const char NoteSeparator = '\n';
+        private const char FieldSeparator = '\t';
 
-        // Missing elements the user replaced (<None>, another type, a paste) since the last save, by asset path; the
-        // next save lets them go.
-        private static readonly Dictionary<string, HashSet<(long fileId, long rid)>> ReplacedByPath = new();
+        private static readonly Regex _topLevelListSlot =
+            new(@"^(?<field>[^.\[\]]+)\.Array\.data\[(?<index>\d+)\]$", RegexOptions.Compiled);
 
-        // A note is not tied to one Undo step, and a replace on a missing element may record none, so any Undo or
-        // Redo drops every note: the next save then keeps the element rather than lose it.
+        // Missing elements the user replaced (<None>, another type, a paste), so the next save lets them go. They live in
+        // SessionState, so a domain reload keeps them, and only a save that writes the file uses them up. A note holds
+        // the stamp of the file it was made on: after a change outside a save, such as a revert in version control, it
+        // no longer applies.
+        private static List<Note> _notes;
+
+        private static List<Note> Notes => _notes ??= LoadNotes();
+
+        // Drops the loaded notes, as a domain reload does; the next access reads them back from SessionState.
+        internal static void ReloadNotes() => _notes = null;
+
         [InitializeOnLoadMethod]
-        private static void ForgetReplacementsOnUndo() => Undo.undoRedoPerformed += ReplacedByPath.Clear;
+        private static void TrackUndo() => Undo.undoRedoEvent += OnUndoRedo;
 
         // Fires with the file still in its pre-save state; the returned set is never altered.
         private static string[] OnWillSaveAssets(string[] paths)
@@ -26,18 +39,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (!IsGuarded(path))
                 {
-                    if (!string.IsNullOrEmpty(path)) ReplacedByPath.Remove(path);
+                    if (!string.IsNullOrEmpty(path)) ForgetNotes(path);
                     continue;
                 }
 
-                var snapshots = SnapshotMissingArrayElements(path, SerializeReferenceHelpers.StoredTypeResolves);
-                if (snapshots.Count == 0) continue;
-
-                PendingByPath[path] = snapshots;
+                var pending = BeginSave(path, StoredTypeLoads);
+                if (pending is null) continue;
 
                 // Anchored to the path, not a SerializedObject: the repair re-reads from disk after Unity writes.
                 var captured = path;
-                EditorApplication.delayCall += () => RestoreAfterSave(captured);
+                EditorApplication.delayCall += () => CompleteSave(captured, pending);
             }
 
             return paths;
@@ -47,6 +58,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // from what the editor shows.
         internal static bool IsGuarded(string path) =>
             SerializeReferenceYaml.IsCandidateAssetPath(path) && SerializeReferenceOpenCopyGuard.IsWritable(path);
+
+        // Whether Unity loads the stored type: it resolves, or a single [MovedFrom] rename claims it. Unity keeps such an
+        // element on save, so the guard must not take it for missing.
+        internal static bool StoredTypeLoads(ManagedTypeName type) =>
+            SerializeReferenceHelpers.StoredTypeResolves(type) || SerializeReferenceMovedFromResolver.TryResolve(type, out _);
 
         // Called before a missing element is replaced, so the next save does not bring it back; a healthy element is
         // not noted.
@@ -75,258 +91,277 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (inMemory) return; // an open copy is never rewritten by the guard
             if (!SerializeReferenceHelpers.TryGetMissingReferenceId(property, out var rid)) return;
 
-            NoteReplaced(assetPath, fileId, rid);
+            // A slot of a top-level list is noted too, so the other slots that share the missing reference stay guarded.
+            var slot = _topLevelListSlot.Match(property.propertyPath);
+            if (slot.Success && int.TryParse(slot.Groups["index"].Value, out var index))
+                NoteReplaced(assetPath, fileId, rid, slot.Groups["field"].Value, index);
+            else
+                NoteReplaced(assetPath, fileId, rid);
         }
 
-        internal static void NoteReplaced(string assetPath, long fileId, long rid)
+        internal static void NoteReplaced(string assetPath, long fileId, long rid) =>
+            NoteReplaced(assetPath, fileId, rid, field: null, index: -1);
+
+        // field and index name the list slot replaced, as the editor showed it; without them every slot of the rid counts
+        // as replaced.
+        internal static void NoteReplaced(string assetPath, long fileId, long rid, string field, int index)
         {
-            if (!ReplacedByPath.TryGetValue(assetPath, out var cleared))
-                ReplacedByPath[assetPath] = cleared = new HashSet<(long fileId, long rid)>();
+            var note = new Note(assetPath, fileId, rid, field, index, Undo.GetCurrentGroup(), Stamp(assetPath));
 
-            cleared.Add((fileId, rid));
-        }
+            Notes.RemoveAll(existing => existing.Matches(note));
+            Notes.Add(note);
+            SaveNotes();
 
-        internal static List<Snapshot> SnapshotMissingArrayElements(string assetPath, Func<ManagedTypeName, bool> resolves)
-        {
-            var result = new List<Snapshot>();
-
-            ReplacedByPath.TryGetValue(assetPath, out var cleared);
-            ReplacedByPath.Remove(assetPath);
-
-            var missing = SerializeReferenceYamlEditor.FindMissingReferences(assetPath, resolves);
-            if (missing.Count == 0) return result;
-
-            var missingRids = new HashSet<(long fileId, long rid)>();
-            foreach (var entry in missing)
-                missingRids.Add((entry.FileId, entry.Rid));
-
-            var arrays = new Dictionary<(long fileId, string field), ArrayState>();
-
-            foreach (var entry in missing)
+            // The replace runs right after this call and may record into a group of its own (a multi-object pick
+            // increments the group first): the note's range of groups grows to the one current on the next tick.
+            EditorApplication.delayCall += () =>
             {
-                // An override lives in the PrefabInstance document, which has no list for a resize to drop.
-                if (entry.IsOverride) continue;
+                var group = Undo.GetCurrentGroup();
+                if (note.Undone || group <= note.LastGroup || !Notes.Contains(note)) return;
 
-                if (!SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(assetPath, entry.FileId, entry.Rid, out var field, out var index))
-                    continue; // a single field or nested pointer is not resized, so not at risk
+                note.LastGroup = group;
+                SaveNotes();
+            };
+        }
 
-                if (!arrays.TryGetValue((entry.FileId, field), out var before))
-                {
-                    if (!SerializeReferenceYamlEditor.TryReadTopLevelArrayRids(assetPath, entry.FileId, field, out var rids)) continue;
-                    arrays[(entry.FileId, field)] = before = ArrayState.Build(rids, entry.FileId, missingRids, cleared);
-                }
+        // Only an undo step takes a replace back. Steps run through the groups in order, so undoing a group up to the end
+        // of the note's range takes it back, and redoing a group inside the range restores it; any other step leaves the
+        // note as is.
+        private static void OnUndoRedo(in UndoRedoInfo info)
+        {
+            var changed = false;
 
-                if (cleared is not null && cleared.Contains((entry.FileId, entry.Rid))) continue;
+            foreach (var note in Notes)
+            {
+                var undone = info.isRedo
+                    ? note.Undone && (info.undoGroup < note.Group || info.undoGroup > note.LastGroup)
+                    : note.Undone || info.undoGroup <= note.LastGroup;
 
-                var elementPath = $"{field}.Array.data[{index}]";
-                if (SerializeReferenceYamlEditor.TryReadArrayElementEntryBlock(assetPath, entry.FileId, elementPath, out _, out var entryLines))
-                    result.Add(new Snapshot(entry.FileId, field, index, before, entryLines));
+                if (undone == note.Undone) continue;
+
+                note.Undone = undone;
+                changed = true;
             }
 
-            return result;
+            if (changed) SaveNotes();
         }
 
-        private static void RestoreAfterSave(string assetPath)
+        // The state a save is about to overwrite: the lists at risk, the notes they rely on and a stamp of the file. Null
+        // when the save puts nothing at risk and the file has no note.
+        internal static PendingSave BeginSave(string assetPath, Func<ManagedTypeName, bool> resolves)
         {
-            if (!PendingByPath.TryGetValue(assetPath, out var snapshots)) return;
-            PendingByPath.Remove(assetPath);
+            var stamp = Stamp(assetPath);
+            if (Notes.RemoveAll(note => note.AssetPath == assetPath && note.Stamp != stamp) > 0) SaveNotes();
 
-            var restored = RestoreSnapshots(assetPath, snapshots);
-            if (restored == 0) return;
+            var hasNotes = false;
+            var replaced = new HashSet<(long fileId, long rid)>();
+            var replacedRids = new HashSet<(long fileId, long rid)>();
+            var replacedSlots = new List<(long fileId, long rid, string field, int index)>();
 
-            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
-            UnityEngine.Debug.Log($"[Aspid FastTools] Preserved {restored} missing list reference(s) that saving dropped in '{assetPath}'.");
-        }
-
-        internal static int RestoreSnapshots(string assetPath, List<Snapshot> snapshots)
-        {
-            // Read once per array, before any restore rewrites it, so every snapshot is matched against the saved state.
-            var arrays = new Dictionary<(long fileId, string field), List<long>>();
-
-            var restored = 0;
-            foreach (var snapshot in snapshots)
+            foreach (var note in Notes)
             {
-                var key = (snapshot.FileId, snapshot.Field);
-                if (!arrays.TryGetValue(key, out var after))
-                {
-                    if (!SerializeReferenceYamlEditor.TryReadTopLevelArrayRids(assetPath, snapshot.FileId, snapshot.Field, out after))
-                        after = null;
-                    arrays[key] = after;
-                }
+                if (note.AssetPath != assetPath) continue;
 
-                if (after is null) continue;
-                if (!TryResolveRestoreIndex(snapshot.Before, after, snapshot.Index, out var target)) continue;
+                hasNotes = true;
+                if (note.Undone) continue;
 
-                var elementPath = $"{snapshot.Field}.Array.data[{target}]";
-                if (SerializeReferenceYamlEditor.TryRestoreArrayElementReference(assetPath, snapshot.FileId, elementPath, snapshot.EntryLines))
-                    restored++;
+                replaced.Add((note.FileId, note.Rid));
+                if (note.Field is null) replacedRids.Add((note.FileId, note.Rid));
+                else replacedSlots.Add((note.FileId, note.Rid, note.Field, note.Index));
             }
 
-            return restored;
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(assetPath, resolves, replacedRids, replacedSlots);
+            if (snapshots.Count == 0 && !hasNotes) return null;
+
+            return new PendingSave(snapshots, replaced, stamp);
         }
 
-        // Where the missing element before[index] sits after the save, if the save dropped it and nothing else. Unity
-        // may write a missing element as a null id on any save (a prefab never keeps one), so an unchanged size keeps
-        // it in its slot, as Unity does itself for a ScriptableObject. A grown list prefers the old index, since "+"
-        // appends; a shrunk list follows the alignment that ShrunkAlignment picks. When no alignment explains the save
-        // (a healthy element set to <None>, or a reorder, in the same save), the element goes back to its old slot.
-        internal static bool TryResolveRestoreIndex(ArrayState before, IReadOnlyList<long> after, int index, out int target)
+        // Runs once Unity has written the file.
+        internal static void CompleteSave(string assetPath, PendingSave pending)
         {
-            target = -1;
-            if (index < 0 || index >= before.Count || !before.Collapsible[index]) return false;
+            if (!ConsumeIfWritten(assetPath, pending) || pending.Snapshots.Count == 0) return;
 
-            var candidate = after.Count == before.Count ? index
-                : after.Count > before.Count ? GrownCandidate(before, after, index)
-                : ShrunkAlignment(before, after) is { } positions ? positions[index] : index;
+            // An edit made since the save is only in memory, and the reimport after a restore would drop it.
+            var guid = AssetDatabase.GUIDFromAssetPath(assetPath);
+            if (!guid.Empty()) AssetDatabase.SaveAssetIfDirty(guid);
 
-            if (candidate < 0 || candidate >= after.Count) return false;
-            if (after[candidate] >= 0) return false; // the element survived, or the slot was re-assigned
+            var report = RestoreSnapshots(assetPath, pending.Snapshots);
+            if (report.Restored.Count > 0)
+            {
+                RestampNotes(assetPath);
+                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            }
 
-            target = candidate;
+            Log(assetPath, report);
+        }
+
+        // A save that left the file as it was used up nothing: its notes wait for the next save. The notes a save that
+        // wrote did not use move on to the file it wrote.
+        internal static bool ConsumeIfWritten(string assetPath, PendingSave pending)
+        {
+            if (Stamp(assetPath) == pending.Stamp) return false;
+
+            Notes.RemoveAll(note =>
+                !note.Undone && note.AssetPath == assetPath && pending.Replaced.Contains((note.FileId, note.Rid)));
+            RestampNotes(assetPath);
+
             return true;
         }
 
-        // The only place in after that before[index] can take while every other element of before keeps its order;
-        // the old index when it is one of several, and the old index too when no such place exists.
-        private static int GrownCandidate(ArrayState before, IReadOnlyList<long> after, int index)
+        private static void RestampNotes(string assetPath)
         {
-            // prefix[a, b]: the first b elements of before embed into the first a of after; suffix[a, b]: before from
-            // b embeds into after from a.
-            var prefix = new bool[after.Count + 1, before.Count + 1];
-            for (var a = 0; a <= after.Count; a++)
-            {
-                prefix[a, 0] = true;
-                for (var b = 1; b <= before.Count && a > 0; b++)
-                    prefix[a, b] = prefix[a - 1, b] || (prefix[a - 1, b - 1] && before.Accepts(b - 1, after[a - 1]));
-            }
+            var stamp = Stamp(assetPath);
+            foreach (var note in Notes)
+                if (note.AssetPath == assetPath) note.Stamp = stamp;
 
-            var suffix = new bool[after.Count + 1, before.Count + 1];
-            for (var a = after.Count; a >= 0; a--)
-            {
-                suffix[a, before.Count] = true;
-                for (var b = before.Count - 1; b >= 0 && a < after.Count; b--)
-                    suffix[a, b] = suffix[a + 1, b] || (before.Accepts(b, after[a]) && suffix[a + 1, b + 1]);
-            }
-
-            var candidate = -1;
-            for (var j = 0; j < after.Count; j++)
-            {
-                if (!prefix[j, index] || !before.Accepts(index, after[j]) || !suffix[j + 1, index + 1]) continue;
-                if (j == index) return j;
-                if (candidate >= 0) return -1;
-
-                candidate = j;
-            }
-
-            return candidate >= 0 ? candidate : index;
+            SaveNotes();
         }
 
-        // Where each element of before sits in after, or -1 where it was deleted; null when no deletion gives after.
-        // A save writes the same nulls whether the user deleted a missing element or a <None> beside it, so the pick
-        // keeps as many <None> elements as it can (a deleted missing element stays deleted) and, among those
-        // alignments, the earliest elements: a run of missing elements that lost one keeps its first ones in order.
-        internal static int[] ShrunkAlignment(ArrayState before, IReadOnlyList<long> after)
+        internal static List<MissingListSnapshot> SnapshotMissingArrayElements(string assetPath, Func<ManagedTypeName, bool> resolves) =>
+            BeginSave(assetPath, resolves)?.Snapshots ?? new List<MissingListSnapshot>();
+
+        internal static MissingListReport RestoreSnapshots(string assetPath, List<MissingListSnapshot> snapshots) =>
+            SerializeReferenceYamlEditor.RestoreMissingLists(assetPath, snapshots);
+
+        private static void Log(string assetPath, MissingListReport report)
         {
-            // kept[b, a]: the most <None> elements kept when before from b is aligned onto after from a; -1 if none.
-            var kept = new int[before.Count + 1, after.Count + 1];
-            for (var b = before.Count; b >= 0; b--)
+            if (report.Restored.Count > 0)
             {
-                for (var a = after.Count; a >= 0; a--)
-                {
-                    if (a == after.Count) kept[b, a] = 0;
-                    else if (b == before.Count) kept[b, a] = -1;
-                    else kept[b, a] = Math.Max(kept[b + 1, a], KeepScore(before, after, b, a, kept));
-                }
+                Debug.Log($"[Aspid FastTools] Restored {report.Restored.Count} missing list reference(s) that saving dropped in " +
+                    $"'{assetPath}': {MissingListReport.Describe(report.Restored, markGuessed: true)}.");
             }
 
-            if (kept[0, 0] < 0) return null;
+            var dropped = report.Dropped.FindAll(element => element.Guessed);
+            if (dropped.Count == 0) return;
 
-            var positions = new int[before.Count];
-            for (int b = 0, a = 0; b < before.Count; b++)
-            {
-                var keep = a < after.Count && KeepScore(before, after, b, a, kept) == kept[b, a];
-                positions[b] = keep ? a++ : -1;
-            }
-
-            return positions;
+            Debug.LogWarning($"[Aspid FastTools] Saving dropped {dropped.Count} missing list reference(s) in '{assetPath}' " +
+                $"that no slot was found for (indexes before the save): {MissingListReport.Describe(dropped, markGuessed: false)}. " +
+                "If you did not delete them, restore the file from version control.");
         }
 
-        private static int KeepScore(ArrayState before, IReadOnlyList<long> after, int b, int a, int[,] kept)
+        internal static void ForgetNotes(string assetPath)
         {
-            if (!before.Accepts(b, after[a]) || kept[b + 1, a + 1] < 0) return -1;
-            return kept[b + 1, a + 1] + (before.IsNull(b) ? 1 : 0);
+            if (Notes.RemoveAll(note => note.AssetPath == assetPath) > 0) SaveNotes();
         }
 
-        // The pre-save pointers of one array: which slots hold a missing element that the save may write as a null id.
-        // A missing element the user replaced counts as a plain null.
-        internal sealed class ArrayState
+        private static (long writeTimeTicks, long length) Stamp(string assetPath)
         {
-            public readonly long[] Rids;
-            public readonly bool[] Collapsible;
-
-            private readonly HashSet<long> _held = new();
-
-            public int Count => Rids.Length;
-
-            public ArrayState(long[] rids, bool[] collapsible)
+            try
             {
-                Rids = rids;
-                Collapsible = collapsible;
-
-                foreach (var rid in rids)
-                    if (rid >= 0) _held.Add(rid);
+                var file = new FileInfo(assetPath);
+                return file.Exists ? (file.LastWriteTimeUtc.Ticks, file.Length) : (0, -1);
             }
-
-            public static ArrayState Build(List<long> rids, long fileId,
-                HashSet<(long fileId, long rid)> missingRids, HashSet<(long fileId, long rid)> cleared)
+            catch (Exception)
             {
-                var slots = new long[rids.Count];
-                var collapsible = new bool[rids.Count];
-
-                for (var i = 0; i < slots.Length; i++)
-                {
-                    var rid = rids[i];
-                    var isCleared = cleared is not null && cleared.Contains((fileId, rid));
-
-                    slots[i] = isCleared ? NullRid : rid;
-                    collapsible[i] = !isCleared && missingRids.Contains((fileId, rid));
-                }
-
-                return new ArrayState(slots, collapsible);
-            }
-
-            // A <None> element: a null the user left, not a missing element.
-            public bool IsNull(int index) => !Collapsible[index] && Rids[index] < 0;
-
-            // Whether the slot may hold this id after a save that deleted or added elements. A healthy or null slot may
-            // also take an id the array did not hold: a type pick, Paste or Make Unique in the same save. A missing
-            // slot may not, since replacing a missing element is noted and turns it into a null.
-            public bool Accepts(int index, long rid)
-            {
-                var previous = Rids[index];
-                if (rid == previous) return true;
-                if (Collapsible[index]) return rid < 0;
-                return rid < 0 ? previous < 0 : !_held.Contains(rid);
+                return (0, -1);
             }
         }
 
-        private const long NullRid = -2;
-
-        internal readonly struct Snapshot
+        private static List<Note> LoadNotes()
         {
+            var notes = new List<Note>();
+
+            foreach (var line in SessionState.GetString(NotesKey, string.Empty).Split(NoteSeparator))
+            {
+                if (Note.TryDecode(line, out var note)) notes.Add(note);
+            }
+
+            return notes;
+        }
+
+        private static void SaveNotes()
+        {
+            if (Notes.Count == 0)
+            {
+                SessionState.EraseString(NotesKey);
+                return;
+            }
+
+            var builder = new StringBuilder();
+            foreach (var note in Notes)
+            {
+                if (builder.Length > 0) builder.Append(NoteSeparator);
+                builder.Append(note.Encode());
+            }
+
+            SessionState.SetString(NotesKey, builder.ToString());
+        }
+
+        internal sealed class PendingSave
+        {
+            public readonly List<MissingListSnapshot> Snapshots;
+            public readonly HashSet<(long fileId, long rid)> Replaced;
+            public readonly (long writeTimeTicks, long length) Stamp;
+
+            public PendingSave(List<MissingListSnapshot> snapshots, HashSet<(long fileId, long rid)> replaced,
+                (long writeTimeTicks, long length) stamp)
+            {
+                Snapshots = snapshots;
+                Replaced = replaced;
+                Stamp = stamp;
+            }
+        }
+
+        private sealed class Note
+        {
+            private const int FieldCount = 10;
+
+            public readonly string AssetPath;
             public readonly long FileId;
+            public readonly long Rid;
+
+            // The list slot replaced, or null and -1 when every slot of the rid counts.
             public readonly string Field;
             public readonly int Index;
-            public readonly ArrayState Before;
-            public readonly List<string> EntryLines;
 
-            public Snapshot(long fileId, string field, int index, ArrayState before, List<string> entryLines)
+            // The Undo group current when the note was made, and the last group the replace may have recorded into.
+            public readonly int Group;
+            public int LastGroup;
+
+            public bool Undone;
+            public (long writeTimeTicks, long length) Stamp;
+
+            public Note(string assetPath, long fileId, long rid, string field, int index, int group,
+                (long writeTimeTicks, long length) stamp)
             {
+                AssetPath = assetPath;
                 FileId = fileId;
+                Rid = rid;
                 Field = field;
-                Index = index;
-                Before = before;
-                EntryLines = entryLines;
+                Index = field is null ? -1 : index;
+                Group = group;
+                LastGroup = group;
+                Stamp = stamp;
+            }
+
+            public bool Matches(Note other) =>
+                AssetPath == other.AssetPath && FileId == other.FileId && Rid == other.Rid
+                && Field == other.Field && Index == other.Index;
+
+            // The path goes last, so a tab in it cannot shift the other fields.
+            public string Encode() =>
+                string.Join(FieldSeparator.ToString(), FileId, Rid, Group, LastGroup, Undone ? 1 : 0, Stamp.writeTimeTicks,
+                    Stamp.length, Index, Field ?? string.Empty, AssetPath);
+
+            public static bool TryDecode(string line, out Note note)
+            {
+                note = null;
+
+                var fields = line.Split(new[] { FieldSeparator }, count: FieldCount);
+                if (fields.Length != FieldCount || string.IsNullOrEmpty(fields[9])) return false;
+                if (!long.TryParse(fields[0], out var fileId) || !long.TryParse(fields[1], out var rid)) return false;
+                if (!int.TryParse(fields[2], out var group) || !int.TryParse(fields[3], out var lastGroup)) return false;
+                if (!long.TryParse(fields[5], out var ticks) || !long.TryParse(fields[6], out var length)) return false;
+                if (!int.TryParse(fields[7], out var index)) return false;
+
+                var field = fields[8].Length == 0 ? null : fields[8];
+                note = new Note(fields[9], fileId, rid, field, index, group, (ticks, length))
+                {
+                    LastGroup = lastGroup,
+                    Undone = fields[4] == "1",
+                };
+
+                return true;
             }
         }
     }

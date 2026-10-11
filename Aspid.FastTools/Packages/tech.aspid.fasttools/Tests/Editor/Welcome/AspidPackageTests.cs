@@ -2,7 +2,6 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
-using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.Editors.Tests
 {
@@ -42,9 +41,9 @@ namespace Aspid.FastTools.Editors.Tests
         [Test]
         public void ReadManifestVersion_ReturnsTheVersionOfThePackageJson()
         {
-            var version = AspidWindowFooter.ReadManifestVersion();
+            var version = PackageVersion.ReadManifestVersion();
 
-            Assert.AreNotEqual("?", version, "A package.json found by its GUID must give a version.");
+            Assert.AreNotEqual(PackageVersion.Unknown, version, "A package.json found by its GUID must give a version.");
             Assert.AreEqual(LoadManifest().version, version);
         }
 

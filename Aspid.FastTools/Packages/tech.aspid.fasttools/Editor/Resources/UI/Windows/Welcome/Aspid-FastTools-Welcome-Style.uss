@@ -1,0 +1,234 @@
+.aspid-fasttools-welcome__scroll {
+    flex-grow: 1;
+}
+
+.aspid-fasttools-welcome__content {
+    padding: 12px;
+    flex-grow: 1;
+    align-items: stretch;
+}
+
+.aspid-fasttools-welcome__hero {
+    padding: 10px 0;
+    align-items: center;
+    flex-direction: row;
+}
+
+.aspid-fasttools-welcome__logo {
+    width: 100px;
+    height: 100px;
+    cursor: link;
+    flex-shrink: 1;
+    margin-right: 15px;
+    --aspid-fasttools-prop-animated_logo-layer_1: var(--aspid-icons-status-success);
+    --aspid-fasttools-prop-animated_logo-layer_2: var(--aspid-icons-status-warning);
+    --aspid-fasttools-prop-animated_logo-layer_3: var(--aspid-icons-status-error);
+}
+
+.aspid-fasttools-welcome__hero-text {
+    flex-grow: 1;
+}
+
+AspidAnimatedTitle {
+    margin-bottom: 5px;
+    font-size: 36px;
+    -unity-font-style: bold;
+}
+
+/* The hero scope outranks the animated title's :root palette. */
+.aspid-fasttools-welcome__hero AspidAnimatedTitle {
+    --aspid-fasttools-colors-animated_title-color_1: var(--aspid-colors-status-success-text-darkness);
+    --aspid-fasttools-colors-animated_title-color_2: var(--aspid-colors-status-success-text-dark);
+    --aspid-fasttools-colors-animated_title-color_3: var(--aspid-colors-status-success-text-light);
+}
+
+/* The palest tone of the dark palette is below 3:1 against the light canvas, so each tone steps one level darker. */
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero AspidAnimatedTitle {
+    --aspid-fasttools-colors-animated_title-color_1: var(--aspid-colors-status-success-text-dark);
+    --aspid-fasttools-colors-animated_title-color_2: var(--aspid-colors-status-success-text-light);
+    --aspid-fasttools-colors-animated_title-color_3: var(--aspid-colors-status-success-text-lightness);
+}
+
+.aspid-fasttools-welcome__description {
+    white-space: normal;
+}
+
+.aspid-fasttools-welcome__hero-links {
+    margin-top: 6px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.aspid-fasttools-welcome__hero-link {
+    padding: 0;
+    cursor: link;
+    font-size: 13px;
+    -unity-font-style: bold;
+    color: var(--aspid-colors-status-success-text-dark);
+}
+
+.aspid-fasttools-welcome__hero-link:hover {
+    color: var(--aspid-colors-status-success-text-light);
+}
+
+/* The link tone of the dark palette is about 3.5:1 on the light canvas; the light skin uses the next darker tones. */
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero-link {
+    color: var(--aspid-colors-status-success-text-light);
+}
+
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__hero-link:hover {
+    color: var(--aspid-colors-status-success-text-lightness);
+}
+
+.aspid-fasttools-welcome__hero-link-separator {
+    margin: 0 6px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--aspid-colors-text-darkness);
+}
+
+.aspid-fasttools-welcome__card {
+    padding: 10px 0;
+}
+
+/* The compound selector outranks AspidBox's theme and rounded-corner rules. */
+.aspid-fasttools-welcome__sample.aspid-fasttools-background {
+    flex-grow: 0;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: var(--aspid-colors-shade-darkness);
+    background-color: var(--aspid-colors-surface-card);
+}
+
+.aspid-fasttools-welcome__sample-header-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+/* The sample scope outranks the gradient button's :root spacing rules. */
+.aspid-fasttools-welcome__sample .aspid-fasttools-welcome__sample-header {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    height: auto;
+    margin: 0;
+    padding: 4px 4px;
+    --aspid-fasttools-colors-gradient_button-bg: rgba(0, 0, 0, 0);
+}
+
+.aspid-fasttools-welcome__sample-header .aspid-fasttools-gradient-button__label {
+    -unity-text-align: middle-right;
+}
+
+.aspid-fasttools-welcome__sample .aspid-fasttools-welcome__sample-header--remove {
+    --aspid-fasttools-colors-gradient_button-accent: var(--aspid-colors-status-error-text-light);
+}
+
+.aspid-fasttools-welcome__sample-info {
+    flex-direction: row;
+    align-items: center;
+}
+
+.aspid-fasttools-welcome__sample-title {
+    font-size: 14px;
+    -unity-font-style: bold;
+    color: var(--aspid-colors-text-light);
+}
+
+.aspid-fasttools-welcome__sample-state-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    border-radius: 3px;
+    background-color: var(--aspid-colors-status-info-text-dark);
+    transition-property: background-color;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
+}
+
+.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-state-dot {
+    background-color: var(--aspid-colors-status-success-text-dark);
+}
+
+.aspid-fasttools-welcome__sample-state-dot--imported {
+    background-color: var(--aspid-colors-status-success-text-dark);
+}
+
+.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-state-dot--imported {
+    background-color: var(--aspid-colors-status-error-text-dark);
+}
+
+.aspid-fasttools-welcome__sample-divider {
+    flex-grow: 0;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+/* USS cannot select the sibling sweep from button hover; code mirrors hover onto the card modifier. */
+.aspid-fasttools-welcome__sample-sweep {
+    height: 1px;
+    /* The negative margin overlays the divider; the bottom margin restores the displaced gap. */
+    margin-top: -3px;
+    margin-bottom: 2px;
+    background-color: var(--aspid-colors-status-success-text-dark);
+    transform-origin: left;
+    scale: 0 1;
+    transition-property: scale;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
+}
+
+.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-sweep {
+    scale: 1 1;
+}
+
+.aspid-fasttools-welcome__sample-sweep--remove {
+    background-color: var(--aspid-colors-status-error-text-dark);
+}
+
+.aspid-fasttools-welcome__sample-description {
+    margin-top: 6px;
+    padding: 0 4px;
+    font-size: 12px;
+    white-space: normal;
+    -unity-font-style: normal;
+    color: var(--aspid-colors-text-dark);
+}
+
+.aspid-fasttools-welcome__card-header {
+    margin-bottom: 10px;
+    --aspid-fasttools-metrics-label_size: h2;
+}
+
+AspidDividingLine {
+    opacity: 0.5;
+}
+
+.aspid-fasttools-welcome__toast {
+    color: var(--aspid-colors-status-info-text-lightness);
+    opacity: 0;
+    padding: 10px;
+    position: absolute;
+    max-width: 80%;
+    font-size: 14px;
+    white-space: normal;
+    border-width: 1px;
+    border-radius: 10px;
+    background-color: var(--aspid-colors-status-info-dark);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+}
+
+.aspid-fasttools-welcome__toast--visible {
+    opacity: 0.75;
+}
+
+/* A translucent toast over the light canvas drops its text below 4.5:1. */
+.aspid-fasttools-skin--light .aspid-fasttools-welcome__toast--visible {
+    opacity: 1;
+}

@@ -77,19 +77,28 @@ export default function DotSpotlight() {
     if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return undefined;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
-    const spot = document.createElement('canvas');
-    spot.className = 'dot-spotlight';
-    spot.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(spot);
-    const ctx = spot.getContext('2d');
+    // The canvas is created when the light first shows, so a page without dots never holds one.
+    let spot = null;
+    let ctx = null;
 
     const resize = () => {
+      if (!spot) return;
       const dpr = Math.min(devicePixelRatio || 1, 2);
       spot.width = Math.ceil(innerWidth * dpr);
       spot.height = Math.ceil(innerHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
-    resize();
+
+    const create = () => {
+      spot = document.createElement('canvas');
+      spot.className = 'dot-spotlight';
+      spot.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(spot);
+      ctx = spot.getContext('2d');
+      resize();
+      // Reading the style lets the fade-in start from the canvas's own opacity of 0.
+      void getComputedStyle(spot).opacity;
+    };
 
     let x = -1;
     let y = -1;
@@ -211,8 +220,9 @@ export default function DotSpotlight() {
         offAt = now;
       }
       on = lit;
-      spot.toggleAttribute('data-on', lit);
-      if ((lit || now - offAt <= FADE) && !draw) draw = requestAnimationFrame(render);
+      if (lit && !spot) create();
+      spot?.toggleAttribute('data-on', lit);
+      if (spot && (lit || now - offAt <= FADE) && !draw) draw = requestAnimationFrame(render);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     const onMove = (event) => {
@@ -237,7 +247,7 @@ export default function DotSpotlight() {
       removeEventListener('resize', resize);
       if (frame) cancelAnimationFrame(frame);
       if (draw) cancelAnimationFrame(draw);
-      spot.remove();
+      spot?.remove();
     };
   }, []);
   return null;
