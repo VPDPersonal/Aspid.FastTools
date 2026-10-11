@@ -184,7 +184,9 @@ namespace Aspid.FastTools.Types.Editors
             var requireReferenceType = (special & GenericParameterAttributes.ReferenceTypeConstraint) != 0;
             var requireDefaultCtor = (special & GenericParameterAttributes.DefaultConstructorConstraint) != 0;
 
-            if (requireValueType && (!candidate.IsValueType || Nullable.GetUnderlyingType(candidate) is not null)) return false;
+            // The open Nullable<> has no underlying type yet, so the definition is compared, which covers both forms.
+            if (requireValueType && (!candidate.IsValueType ||
+                candidate.IsGenericType && candidate.GetGenericTypeDefinition() == typeof(Nullable<>))) return false;
             if (requireReferenceType && candidate.IsValueType) return false;
 
             return !requireDefaultCtor ||
