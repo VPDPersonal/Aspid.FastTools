@@ -63,9 +63,12 @@ test('index unescapes the characters DocFX escapes in generated API pages', () =
 });
 test('the search text of every page has no link or escape leftovers', () => {
   const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-  const pages = (directory) => readdirSync(directory, {withFileTypes: true, recursive: true})
-    .filter((entry) => entry.isFile() && /\.mdx?$/.test(entry.name))
-    .map((entry) => path.join(entry.parentPath, entry.name));
+  // A plain walk: `recursive` and `Dirent.parentPath` need Node 20.1 and 20.12, and engines allows 20.0.
+  const pages = (directory) => readdirSync(directory, {withFileTypes: true}).flatMap((entry) => {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) return pages(file);
+    return entry.isFile() && /\.mdx?$/.test(entry.name) ? [file] : [];
+  });
   const leftover = /\]\([^)\s]*\.md[^)]*\)|\[ \[|\] \]|\\[()[\]<>]/;
   const bad = ['docs', 'tutorials', 'api', 'i18n'].flatMap((directory) => pages(path.join(siteDir, directory)))
     .filter((file) => leftover.test(plainText(readFileSync(file, 'utf8'))));
