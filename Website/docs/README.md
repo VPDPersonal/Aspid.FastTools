@@ -22,6 +22,8 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 The URL installs the latest preview; **Update** in the Package Manager installs the next one.
 
+**Installed from the Asset Store?** Skip this section: the package is already in your project, and adding it again from the git URL gives two copies that Unity cannot compile.
+
 ## Features
 
 ### Serialization
