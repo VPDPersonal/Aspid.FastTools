@@ -111,10 +111,6 @@ namespace Aspid.FastTools.Types.Editors.Tests
             // AttributeTargets.Class does not cover interfaces, and omitting the flag makes this a compile error.
             Assert.IsTrue(TypeSelectorHelpers.IsHiddenFromPicker(typeof(IHiddenPickerContract)));
         }
-    }
-
-    [TypeSelectorDisplay(Hidden = true)]
-    internal interface IHiddenPickerContract {
 
         [Test]
         public void GetAllTypeInfos_StaticClass_IsNeverOffered_EvenWithAbstractAllowed()
@@ -128,4 +124,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             CollectionAssert.Contains(names, nameof(AbstractPickerType), "A real abstract class must survive with TypeAllow.Abstract.");
         }
     }
+
+    [TypeSelectorDisplay(Hidden = true)]
+    internal interface IHiddenPickerContract { }
 }

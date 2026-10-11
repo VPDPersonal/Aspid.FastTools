@@ -37,21 +37,21 @@ export default function AppearanceSwitcher() {
   const menu = (
     <>
       {/* The theme is a two-part switch as wide as the accent row below it, marked the way the picked accent is. */}
-      <li role="none">
+      <li>
         <div role="group" aria-label={translate({id: 'appearance.theme', message: 'Theme'})} className={styles.themeRow}>
           {themes.map(({mode, Icon, label}) => (
-            <button key={mode} type="button" role="menuitemradio" aria-checked={colorMode === mode}
+            <button key={mode} type="button" aria-pressed={colorMode === mode}
               className={styles.themeOption} onClick={() => setColorMode(mode)}>
               <Icon aria-hidden />{label}
             </button>
           ))}
         </div>
       </li>
-      <li role="separator" className={styles.menuSeparator} />
-      <li role="none">
+      <li aria-hidden="true" className={styles.menuSeparator} />
+      <li>
         <div role="group" aria-label={accentLabel} className={styles.accentRow}>
           {ACCENTS.map((option) => (
-            <button key={option} type="button" role="menuitemradio" aria-checked={option === accent}
+            <button key={option} type="button" aria-pressed={option === accent}
               className={styles.accentOption} aria-label={accentName(option)} title={accentName(option)}
               onClick={() => { applyAccent(option, baseUrl, {save: true}); setAccent(option); }}>
               <img src={withBaseUrl(accentLogo(option))} alt="" loading="lazy" />

@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -31,6 +30,15 @@ namespace Aspid.FastTools.Types.Editors
                     ? closed
                     : type;
             }
+        }
+
+        // The generic classes for a picker whose base types include a closed generic, such as Handler<int> for
+        // IHandler<int>: an open definition is never assignable to a closed type, so the ordinary scan misses them.
+        // Null when no base type is a closed generic.
+        internal static IEnumerable<Type> GetClosableGenericDefinitions(Type[] types)
+        {
+            var closed = types?.FirstOrDefault(type => type is { IsConstructedGenericType: true });
+            return closed is null ? null : GetAssignableGenericDefinitions(closed, types);
         }
 
         // Unify generic views rather than copying positional arguments; inferred arguments must pass the same
@@ -240,12 +248,7 @@ namespace Aspid.FastTools.Types.Editors
             (type.IsClass || (includeValueTypes && type is { IsValueType: true, IsByRefLike: false })) &&
             !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type) &&
-            !IsCompilerGenerated(type);
-
-        private static bool IsCompilerGenerated(Type type) =>
-            type.IsDefined(typeof(CompilerGeneratedAttribute), false)
-            || type.Name.Contains('<')
-            || type.Name.Contains('>');
+            !TypeUtility.IsCompilerGenerated(type);
 
         private static bool CanCloseToAllNarrowing(Type openDefinition, Type[] narrowTypes)
         {
