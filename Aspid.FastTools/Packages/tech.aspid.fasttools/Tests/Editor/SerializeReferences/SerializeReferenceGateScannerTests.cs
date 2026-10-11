@@ -153,6 +153,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             const string nestingPath = "Assets/__AspidGateScannerNesting__.prefab";
             const string unrelatedPath = "Assets/__AspidGateScannerUnrelated__.prefab";
 
+            // A map built earlier in the session does not know the prefabs below.
+            SerializeReferenceGateScanner.ResetPrefabDependents();
+
             var temporary = new List<GameObject>();
             try
             {
@@ -189,8 +192,58 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
+                SerializeReferenceGateScanner.ResetPrefabDependents();
                 foreach (var gameObject in temporary) Object.DestroyImmediate(gameObject);
                 foreach (var path in new[] { nestingPath, variantPath, unrelatedPath, basePath }) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        // The prefab dependency map is built once per project audit, not per rescan: a variant made after the map
+        // was built is picked up when the next Scan (or this reset) drops the map.
+        [Test]
+        public void RescanRequiredFields_KeepsThePrefabDependentsUntilTheyAreReset()
+        {
+            const string basePath = "Assets/__AspidGateScannerMapBase__.prefab";
+            const string firstPath = "Assets/__AspidGateScannerMapFirst__.prefab";
+            const string secondPath = "Assets/__AspidGateScannerMapSecond__.prefab";
+
+            SerializeReferenceGateScanner.ResetPrefabDependents();
+
+            var temporary = new List<GameObject>();
+            try
+            {
+                var baseRoot = new GameObject("Base");
+                temporary.Add(baseRoot);
+                var basePrefab = PrefabUtility.SaveAsPrefabAsset(baseRoot, basePath);
+
+                var firstRoot = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
+                temporary.Add(firstRoot);
+                PrefabUtility.SaveAsPrefabAsset(firstRoot, firstPath);
+
+                var first = SerializeReferenceGateScanner.RescanRequiredFields(
+                    new[] { new GateViolation(firstPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale") },
+                    new[] { basePath });
+                Assert.IsFalse(first.Any(v => v.FieldPath == "stale"), "The first rescan builds the map and re-audits the variant.");
+
+                var secondRoot = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
+                temporary.Add(secondRoot);
+                PrefabUtility.SaveAsPrefabAsset(secondRoot, secondPath);
+
+                var staleSecond = new[] { new GateViolation(secondPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale") };
+
+                var reused = SerializeReferenceGateScanner.RescanRequiredFields(staleSecond, new[] { basePath });
+                Assert.IsTrue(reused.Any(v => v.FieldPath == "stale"), "The map built by the first rescan is reused, so it does not know the new variant.");
+
+                SerializeReferenceGateScanner.ResetPrefabDependents();
+
+                var rebuilt = SerializeReferenceGateScanner.RescanRequiredFields(staleSecond, new[] { basePath });
+                Assert.IsFalse(rebuilt.Any(v => v.FieldPath == "stale"), "After the reset the map is rebuilt and knows the new variant.");
+            }
+            finally
+            {
+                SerializeReferenceGateScanner.ResetPrefabDependents();
+                foreach (var gameObject in temporary) Object.DestroyImmediate(gameObject);
+                foreach (var path in new[] { secondPath, firstPath, basePath }) AssetDatabase.DeleteAsset(path);
             }
         }
 

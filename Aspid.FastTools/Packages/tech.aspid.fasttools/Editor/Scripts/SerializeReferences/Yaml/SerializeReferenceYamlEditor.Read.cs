@@ -8,6 +8,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static partial class SerializeReferenceYamlEditor
     {
+        // A path read from the object's own fields rather than from a reference's data block.
+        public const long NoAnchor = long.MinValue;
+
+        private static readonly Regex _entryTypeBody = new(@"^\s*type:\s*\{(?<body>.*)\}\s*$", RegexOptions.Compiled);
+
         // Reads the rid stored at a property path, which only the YAML still carries: Unity reports an invalid id
         // for a property whose type is missing. Each path segment walks either into a managed reference's data block
         // or down through a plain serializable container, so a path at any depth resolves.
@@ -16,67 +21,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             rid = 0;
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
-
-                var lines = SerializeReferenceYamlProbeCache.ReadAllLines(assetPath);
-                var (start, end) = FindDocumentRange(lines, fileId);
-                if (start < 0) return false;
-
-                // Field pointers (and the object's inline serializable data) live before the "references:" block; the
-                // RefIds entries and the nested data each managed reference stores live after it.
-                var fieldsEnd = end;
-                var references = new Regex(@"^\s*references:\s*$");
-                for (var i = start; i < end; i++)
-                    if (references.IsMatch(lines[i])) { fieldsEnd = i; break; }
-
-                var segments = ParsePathSegments(propertyPath.Replace(".Array.data", string.Empty));
-                if (segments is null) return false;
-
-                var refIdsStart = FindRefIdsStart(lines, start, end);
-
-                // Cursor over the lines the current segment is resolved against. It starts on the object's own field
-                // block, then for each segment either descends into a plain serializable container (a nested mapping
-                // or sequence item, by indent) or jumps into a managed reference's RefIds data block (by rid).
-                var cursorStart = start;
-                var cursorEnd = fieldsEnd;
-
-                // The object's top-level fields all align with the m_Script line's indent (see TryReadScriptGuid), so
-                // the first segment is matched at exactly that indent — otherwise a same-named key nested inside an
-                // earlier field's serializable container would shadow the real top-level field. A document without a
-                // readable script guid falls back to matching at any indent.
-                var cursorIndent = TryReadScriptGuid(lines, start + 1, fieldsEnd, out _, out var fieldIndent)
-                    ? fieldIndent
-                    : -1;
-
-                for (var s = 0; s < segments.Count; s++)
-                {
-                    var kind = ResolveSegment(lines, cursorStart, cursorEnd, cursorIndent, segments[s],
-                        out var segmentRid, out var valueStart, out var valueEnd, out var valueIndent);
-
-                    if (kind == SegmentKind.NotFound) return false;
-
-                    if (s == segments.Count - 1)
-                    {
-                        if (kind != SegmentKind.Reference) return false;
-                        rid = segmentRid;
-                        return true;
-                    }
-
-                    if (kind == SegmentKind.Reference)
-                    {
-                        if (refIdsStart < 0) return false;
-                        if (!TryGetDataBlockRange(lines, refIdsStart, end, segmentRid, out cursorStart, out cursorEnd, out cursorIndent))
-                            return false;
-                    }
-                    else
-                    {
-                        cursorStart = valueStart;
-                        cursorEnd = valueEnd;
-                        cursorIndent = valueIndent;
-                    }
-                }
-
-                return false;
+                var file = SerializeReferenceYamlProbeCache.Read(assetPath);
+                return file is not null && TryReadReferenceId(file, fileId, NoAnchor, propertyPath, out rid);
             }
             catch (Exception)
             {
@@ -86,35 +32,295 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Reads the rid and its recorded type in one pass. This is how a missing reference is found even after
         // Unity drops it from the live object: the orphaned id, type and payload all survive in the file.
-        public static bool TryReadStoredType(string assetPath, long fileId, string propertyPath, out long rid, out ManagedTypeName type)
+        public static bool TryReadStoredType(string assetPath, long fileId, string propertyPath, out long rid, out ManagedTypeName type) =>
+            TryReadStoredType(assetPath, fileId, NoAnchor, propertyPath, out rid, out type);
+
+        // An anchorRid other than NoAnchor reads the path inside that reference's data block, so a field of a reference is
+        // found by the reference's id, whichever list slot holds the reference now. The result is kept with the file
+        // version: a repaint does not parse an unchanged file again.
+        public static bool TryReadStoredType(string assetPath, long fileId, long anchorRid, string propertyPath,
+            out long rid, out ManagedTypeName type) =>
+            TryReadStoredType(ReadProbedFile(assetPath), fileId, anchorRid, propertyPath, out rid, out type);
+
+        // The same read from a version of the file that ReadProbedFile returned.
+        public static bool TryReadStoredType(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid,
+            string propertyPath, out long rid, out ManagedTypeName type)
         {
             rid = 0;
             type = default;
-
-            if (!TryReadReferenceId(assetPath, fileId, propertyPath, out rid)) return false;
+            if (file is null) return false;
 
             try
             {
-                var lines = SerializeReferenceYamlProbeCache.ReadAllLines(assetPath);
-                var (start, end) = FindDocumentRange(lines, fileId);
-                if (start < 0) return false;
+                var key = (fileId, anchorRid, propertyPath);
+                if (!file.StoredTypes.TryGetValue(key, out var read))
+                {
+                    read.found = TryReadReferenceId(file, fileId, anchorRid, propertyPath, out read.rid)
+                        && TryGetEntryType(file, fileId, read.rid, out read.type);
 
-                var refIdsStart = FindRefIdsStart(lines, start, end);
-                if (refIdsStart < 0) return false;
+                    file.StoredTypes[key] = read;
+                }
 
-                var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
-                if (headerIndex < 0) return false;
-
-                var typeLine = FindEntryTypeLine(lines, headerIndex, FindEntryEnd(lines, headerIndex, end, entryIndent));
-                if (typeLine < 0) return false;
-
-                var match = new Regex(@"^\s*type:\s*\{(?<body>.*)\}\s*$").Match(lines[typeLine]);
-                return match.Success && TryParseInlineType(match.Groups["body"].Value, out type);
+                rid = read.rid;
+                type = read.type;
+                return read.found;
             }
             catch (Exception)
             {
                 return false;
             }
+        }
+
+        // The element ids of the list of references at listPath, read like TryReadStoredType; a null element reads as -2.
+        // False when the path does not end at such a list. The array is shared, so callers must treat it as read-only.
+        public static bool TryReadListIds(string assetPath, long fileId, long anchorRid, string listPath, out long[] rids) =>
+            TryReadListIds(ReadProbedFile(assetPath), fileId, anchorRid, listPath, out rids);
+
+        // The same read from a version of the file that ReadProbedFile returned.
+        public static bool TryReadListIds(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid,
+            string listPath, out long[] rids)
+        {
+            rids = null;
+            if (file is null) return false;
+
+            try
+            {
+                var key = (fileId, anchorRid, listPath);
+                if (!file.ListIds.TryGetValue(key, out rids))
+                {
+                    var read = new List<long>();
+                    rids = TryReadListIds(file, fileId, anchorRid, listPath, read) ? read.ToArray() : null;
+                    file.ListIds[key] = rids;
+                }
+
+                return rids is not null;
+            }
+            catch (Exception)
+            {
+                rids = null;
+                return false;
+            }
+        }
+
+        // The type recorded in the RefIds entry of rid. False for a rid without an entry or without a readable type.
+        public static bool TryReadEntryType(string assetPath, long fileId, long rid, out ManagedTypeName type) =>
+            TryReadEntryType(ReadProbedFile(assetPath), fileId, rid, out type);
+
+        // The same read from a version of the file that ReadProbedFile returned.
+        public static bool TryReadEntryType(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long rid,
+            out ManagedTypeName type)
+        {
+            type = default;
+            if (file is null) return false;
+
+            try
+            {
+                return TryGetEntryType(file, fileId, rid, out type);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // The current version of the file, so a series of reads checks the file on disk once. Null for a missing or
+        // unreadable path.
+        public static SerializeReferenceYamlProbeCache.ProbedFile ReadProbedFile(string assetPath)
+        {
+            try
+            {
+                return SerializeReferenceYamlProbeCache.Read(assetPath);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private static bool TryReadReferenceId(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid,
+            string propertyPath, out long rid)
+        {
+            rid = 0;
+
+            var lines = file.Lines;
+            var (start, end) = file.FindDocumentRange(fileId);
+            if (start < 0) return false;
+
+            var segments = ParsePathSegments(propertyPath.Replace(".Array.data", string.Empty));
+            if (segments is null) return false;
+
+            var last = segments.Count - 1;
+            if (!TryDescend(lines, start, end, anchorRid, segments, last, out var cursorStart, out var cursorEnd, out var cursorIndent))
+                return false;
+
+            return ResolveSegment(lines, cursorStart, cursorEnd, cursorIndent, segments[last], out rid, out _, out _, out _)
+                == SegmentKind.Reference;
+        }
+
+        private static bool TryReadListIds(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long anchorRid,
+            string listPath, List<long> rids)
+        {
+            var lines = file.Lines;
+            var (start, end) = file.FindDocumentRange(fileId);
+            if (start < 0) return false;
+
+            var segments = ParsePathSegments(listPath.Replace(".Array.data", string.Empty));
+            if (segments is null) return false;
+
+            var last = segments.Count - 1;
+            if (segments[last].HasIndex) return false;
+
+            return TryDescend(lines, start, end, anchorRid, segments, last, out var cursorStart, out var cursorEnd, out var cursorIndent)
+                && TryCollectListIds(lines, cursorStart, cursorEnd, cursorIndent, segments[last].Name, rids);
+        }
+
+        // Resolves the first count segments and returns the lines the next segment is resolved in. The path starts at the
+        // object's own fields, or in the data block of anchorRid.
+        private static bool TryDescend(string[] lines, int start, int end, long anchorRid, List<PathSegment> segments, int count,
+            out int cursorStart, out int cursorEnd, out int cursorIndent)
+        {
+            cursorStart = cursorEnd = cursorIndent = -1;
+
+            // Field pointers (and the object's inline serializable data) live before the "references:" block; the
+            // RefIds entries and the nested data each managed reference stores live after it.
+            var refIdsStart = FindRefIdsStart(lines, start, end);
+
+            if (anchorRid != NoAnchor)
+            {
+                if (refIdsStart < 0) return false;
+                if (!TryGetDataBlockRange(lines, refIdsStart, end, anchorRid, out cursorStart, out cursorEnd, out cursorIndent))
+                    return false;
+            }
+            else
+            {
+                cursorStart = start;
+                cursorEnd = end;
+                for (var i = start; i < end; i++)
+                    if (_referencesKey.IsMatch(lines[i])) { cursorEnd = i; break; }
+
+                // The object's top-level fields all align with the m_Script line's indent (see TryReadScriptGuid), so
+                // the first segment is matched at exactly that indent — otherwise a same-named key nested inside an
+                // earlier field's serializable container would shadow the real top-level field. A document without a
+                // readable script guid falls back to matching at any indent.
+                cursorIndent = TryReadScriptGuid(lines, start + 1, cursorEnd, out _, out var fieldIndent)
+                    ? fieldIndent
+                    : -1;
+            }
+
+            // Each segment either descends into a plain serializable container (a nested mapping or sequence item, by
+            // indent) or jumps into a managed reference's RefIds data block (by rid).
+            for (var s = 0; s < count; s++)
+            {
+                var kind = ResolveSegment(lines, cursorStart, cursorEnd, cursorIndent, segments[s],
+                    out var segmentRid, out var valueStart, out var valueEnd, out var valueIndent);
+
+                if (kind == SegmentKind.NotFound) return false;
+
+                if (kind == SegmentKind.Reference)
+                {
+                    if (refIdsStart < 0) return false;
+                    if (!TryGetDataBlockRange(lines, refIdsStart, end, segmentRid, out cursorStart, out cursorEnd, out cursorIndent))
+                        return false;
+                }
+                else
+                {
+                    cursorStart = valueStart;
+                    cursorEnd = valueEnd;
+                    cursorIndent = valueIndent;
+                }
+            }
+
+            return true;
+        }
+
+        // The "- rid: N" items of the list keyed name among the range's direct children; an inline "[]" is an empty list.
+        // False when the key is absent or holds anything other than a list of references.
+        private static bool TryCollectListIds(string[] lines, int rangeStart, int rangeEnd, int requiredIndent, string name,
+            List<long> rids)
+        {
+            var fieldPattern = new Regex($@"^(?<lead>\s*)(?<dash>-\s+)?{Regex.Escape(name)}:\s*(?<inline>.*?)\s*$");
+
+            for (var i = rangeStart; i < rangeEnd; i++)
+            {
+                var field = fieldPattern.Match(lines[i]);
+                if (!field.Success) continue;
+
+                var fieldIndent = field.Groups["lead"].Length + field.Groups["dash"].Length;
+                if (requiredIndent >= 0 && fieldIndent != requiredIndent) continue;
+
+                var inline = field.Groups["inline"].Value;
+                if (inline.Length > 0) return inline == "[]";
+
+                // Unity writes the items at the key's own indent.
+                for (var j = i + 1; j < rangeEnd; j++)
+                {
+                    if (lines[j].Trim().Length == 0) continue;
+
+                    var item = _listItem.Match(lines[j]);
+                    if (item.Success && item.Groups["lead"].Length == fieldIndent)
+                    {
+                        if (!long.TryParse(item.Groups["rid"].Value, out var rid)) return false;
+
+                        rids.Add(rid);
+                        continue;
+                    }
+
+                    // A dedent or the next key ends the list; an item of any other shape is not a reference.
+                    var indent = IndentOf(lines[j]);
+                    if (indent < fieldIndent) break;
+                    if (indent == fieldIndent && !lines[j].TrimStart().StartsWith("-", StringComparison.Ordinal)) break;
+
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryGetEntryType(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId, long rid,
+            out ManagedTypeName type)
+        {
+            if (!file.EntryTypes.TryGetValue(fileId, out var types))
+                file.EntryTypes[fileId] = types = IndexEntryTypes(file, fileId);
+
+            return types.TryGetValue(rid, out type) && !type.IsEmpty;
+        }
+
+        // The stored type of each RefIds entry of the document, read in one pass; an entry without a readable type maps
+        // to an empty name. The first entry of a rid wins, as FindEntryHeader finds it.
+        private static Dictionary<long, ManagedTypeName> IndexEntryTypes(SerializeReferenceYamlProbeCache.ProbedFile file, long fileId)
+        {
+            var types = new Dictionary<long, ManagedTypeName>();
+            var lines = file.Lines;
+
+            var (start, end) = file.FindDocumentRange(fileId);
+            if (start < 0) return types;
+
+            var refIdsStart = FindRefIdsStart(lines, start, end);
+            if (refIdsStart < 0) return types;
+
+            var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
+            if (entryIndent < 0) return types;
+
+            for (var i = refIdsStart + 1; i < end; i++)
+            {
+                if (!SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var rid)) continue;
+
+                var entryEnd = FindEntryEnd(lines, i, end, entryIndent);
+                if (!types.ContainsKey(rid))
+                {
+                    var typeLine = FindEntryTypeLine(lines, i, entryEnd);
+                    var match = typeLine >= 0 ? _entryTypeBody.Match(lines[typeLine]) : Match.Empty;
+
+                    types[rid] = match.Success && TryParseInlineType(match.Groups["body"].Value, out var type) ? type : default;
+                }
+
+                i = entryEnd - 1;
+            }
+
+            return types;
         }
 
         public static List<string> ParseTopLevelFieldNames(string serializedData)

@@ -3,8 +3,11 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Threading;
+using Aspid.FastTools.Types;
 using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using UnityEngine.TestTools.Constraints;
 using Is = UnityEngine.TestTools.Constraints.Is;
 
@@ -330,6 +333,63 @@ namespace Aspid.FastTools.Enums.Tests
         }
 
         [Test]
+        public void Typed_TryGetValue_ReportsWhetherAnEntryMatched()
+        {
+            SetDefaultValue("_seasons", -1);
+            AddEntry("_seasons", nameof(Season.Summer), 42);
+
+            Assert.IsTrue(_host.Seasons.TryGetValue(Season.Summer, out var found));
+            Assert.AreEqual(42, found);
+
+            Assert.IsFalse(_host.Seasons.TryGetValue(Season.Winter, out var missing));
+            Assert.AreEqual(-1, missing, "A miss yields the default value, as GetValue does.");
+        }
+
+        [Test]
+        public void Typed_TryGetValue_EntryEqualToDefault_StillMatches()
+        {
+            SetDefaultValue("_seasons", 5);
+            AddEntry("_seasons", nameof(Season.Winter), 5);
+
+            Assert.IsTrue(_host.Seasons.TryGetValue(Season.Winter, out var value));
+            Assert.AreEqual(5, value);
+        }
+
+        [Test]
+        public void Typed_TryGetValue_Flags_UsesFlagsSemantics()
+        {
+            SetDefaultValue("_sides", -1);
+            AddEntry("_sides", nameof(Sides.Left), 1);
+            AddEntry("_sides", nameof(Sides.None), 100);
+
+            Assert.IsTrue(_host.Sides.TryGetValue(Sides.Both, out var contained));
+            Assert.AreEqual(1, contained, "Containment matches when there is no exact entry.");
+
+            Assert.IsTrue(_host.Sides.TryGetValue(Sides.None, out var zero));
+            Assert.AreEqual(100, zero);
+
+            Assert.IsFalse(_host.Sides.TryGetValue(Sides.Right, out var missing));
+            Assert.AreEqual(-1, missing);
+        }
+
+        [Test]
+        public void Typed_Count_CountsOnlyResolvedEntries()
+        {
+            AddEntry("_seasons", nameof(Season.Winter), 1);
+            AddEntry("_seasons", nameof(Season.Winter), 2);
+            AddEntry("_seasons", "Bogus", 99);
+
+            LogAssert.Expect(LogType.Error, new Regex("Couldn't parse key 'Bogus'"));
+
+            Assert.AreEqual(2, _host.Seasons.Count, "Duplicate keys count, an unresolved key does not.");
+            Assert.AreEqual(_host.Seasons.Count, _host.Seasons.ToArray().Length);
+        }
+
+        [Test]
+        public void Typed_Count_EmptyTable_IsZero() =>
+            Assert.AreEqual(0, _host.Seasons.Count);
+
+        [Test]
         public void Typed_UnparseableKey_LogsErrorAndEntryNeverMatches()
         {
             SetDefaultValue("_seasons", -1);
@@ -383,6 +443,163 @@ namespace Aspid.FastTools.Enums.Tests
             AddEntry("_untyped", nameof(Season.Winter), 42, typeof(Season).AssemblyQualifiedName);
 
             Assert.AreEqual(-1, _host.Untyped.GetValue(null));
+        }
+
+        [Test]
+        public void Untyped_GenericGetValue_ReturnsMappedValueWithoutBoxing()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Summer), 42, typeof(Season).AssemblyQualifiedName);
+
+            // Warm-up: the first access resolves the keys, which allocates.
+            Assert.AreEqual(42, _host.Untyped.GetValue(Season.Summer));
+            Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
+
+            var untyped = _host.Untyped;
+
+            // A typed argument binds to GetValue<TEnum>, so the key is not boxed.
+            Assert.That(() =>
+            {
+                untyped.GetValue(Season.Summer);
+                untyped.GetValue(Season.Winter);
+            }, Is.Not.AllocatingGCMemory());
+        }
+
+        [Test]
+        public void Untyped_GenericGetValue_DifferentEnumType_ReturnsDefault()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 42, typeof(Season).AssemblyQualifiedName);
+
+            // Season.Winter and Sides.None share the numeric value 0.
+            Assert.AreEqual(-1, _host.Untyped.GetValue(Sides.None));
+        }
+
+        [Test]
+        public void Untyped_TryGetValue_ReportsWhetherAnEntryMatched()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Summer), 42, typeof(Season).AssemblyQualifiedName);
+
+            Assert.IsTrue(_host.Untyped.TryGetValue((Enum)Season.Summer, out var found));
+            Assert.AreEqual(42, found);
+
+            Assert.IsFalse(_host.Untyped.TryGetValue((Enum)Season.Winter, out var missing));
+            Assert.AreEqual(-1, missing, "A miss yields the default value, as GetValue does.");
+        }
+
+        [Test]
+        public void Untyped_TryGetValue_NullOrForeignEnum_DoesNotMatch()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 42, typeof(Season).AssemblyQualifiedName);
+
+            Assert.IsFalse(_host.Untyped.TryGetValue(null, out var nullKey));
+            Assert.AreEqual(-1, nullKey);
+
+            // Season.Winter and Sides.None share the numeric value 0.
+            Assert.IsFalse(_host.Untyped.TryGetValue((Enum)Sides.None, out var foreignKey));
+            Assert.AreEqual(-1, foreignKey);
+        }
+
+        [Test]
+        public void Untyped_GenericTryGetValue_MatchesOnlyTheConfiguredEnum()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 42, typeof(Season).AssemblyQualifiedName);
+
+            Assert.IsTrue(_host.Untyped.TryGetValue(Season.Winter, out var found));
+            Assert.AreEqual(42, found);
+
+            Assert.IsFalse(_host.Untyped.TryGetValue(Season.Spring, out var missing));
+            Assert.AreEqual(-1, missing);
+
+            Assert.IsFalse(_host.Untyped.TryGetValue(Sides.None, out var foreign));
+            Assert.AreEqual(-1, foreign);
+        }
+
+        [Test]
+        public void Untyped_Count_CountsOnlyResolvedEntries()
+        {
+            AddEntry("_untyped", nameof(Season.Winter), 1, typeof(Season).AssemblyQualifiedName);
+            AddEntry("_untyped", nameof(Season.Spring), 2);
+            AddEntry("_untyped", "Bogus", 99);
+
+            LogAssert.Expect(LogType.Error, new Regex("Couldn't parse key 'Bogus'"));
+
+            Assert.AreEqual(2, _host.Untyped.Count);
+            Assert.AreEqual(_host.Untyped.Count, _host.Untyped.ToArray().Length);
+        }
+
+        [Test]
+        public void Untyped_Count_NoEnumTypeConfigured_IsZero()
+        {
+            AddEntry("_untyped", nameof(Season.Winter), 1);
+
+            LogAssert.Expect(LogType.Warning, new Regex("No enum type configured"));
+            Assert.AreEqual(0, _host.Untyped.Count);
+        }
+
+        [Test]
+        public void Untyped_EnumPicker_DoesNotOfferTheAbstractSystemEnum()
+        {
+            var field = typeof(EnumValues<int>).GetField("_enumType",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            var attribute = (TypeSelectorAttribute)Attribute.GetCustomAttribute(field, typeof(TypeSelectorAttribute));
+            var baseTypes = attribute.AssemblyQualifiedNames.Select(name => Type.GetType(name)).ToArray();
+
+            var offered = Aspid.FastTools.Types.Editors.TypeInfo
+                .GetAllTypeInfos(baseTypes, attribute.Allow)
+                .Select(info => info.AssemblyQualifiedName)
+                .ToArray();
+
+            Assert.IsTrue(attribute.Required);
+            CollectionAssert.Contains(offered, typeof(Season).AssemblyQualifiedName);
+            CollectionAssert.DoesNotContain(offered, typeof(Enum).AssemblyQualifiedName,
+                "Picking System.Enum fills the field, so Required stays quiet, but no member can ever be keyed.");
+        }
+
+        [Test]
+        public void InitializedFlag_IsVolatile_SoThreadsSeeTheDataBeforeIt()
+        {
+            foreach (var type in new[] { typeof(EnumValues<int>), typeof(EnumValues<Season, int>) })
+            {
+                var field = type.GetField("_isInitialized",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+                CollectionAssert.Contains(field.GetRequiredCustomModifiers(), typeof(IsVolatile), type.Name);
+            }
+        }
+
+        [Test]
+        public void FirstAccessFromSeveralThreads_EveryThreadSeesTheConfiguredValue()
+        {
+            SetDefaultValue("_seasons", -1);
+            AddEntry("_seasons", nameof(Season.Summer), 42);
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Summer), 42, typeof(Season).AssemblyQualifiedName);
+
+            var typed = _host.Seasons;
+            var untyped = _host.Untyped;
+            var results = new int[16];
+
+            using var start = new ManualResetEventSlim();
+            var threads = Enumerable.Range(0, results.Length / 2).SelectMany(i => new[]
+            {
+                new Thread(() => { start.Wait(); results[i * 2] = typed.GetValue(Season.Summer); }),
+                new Thread(() => { start.Wait(); results[i * 2 + 1] = untyped.GetValue(Season.Summer); }),
+            }).ToArray();
+
+            foreach (var thread in threads)
+                thread.Start();
+
+            start.Set();
+
+            foreach (var thread in threads)
+                thread.Join();
+
+            CollectionAssert.AreEqual(Enumerable.Repeat(42, results.Length), results);
         }
 
         [Test]
