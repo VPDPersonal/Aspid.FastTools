@@ -99,7 +99,7 @@ namespace Aspid.FastTools.Enums.Editors
             if (EnumInfo.ToInt64(enumValue) is 0L && !Enum.IsDefined(enumValue.GetType(), enumValue))
                 return NothingCaption;
 
-            return enumValue.ToString();
+            return GetMemberName(enumValue.GetType(), enumValue);
         }
 
         public static Enum ToggleFlag(Enum current, Enum flag)

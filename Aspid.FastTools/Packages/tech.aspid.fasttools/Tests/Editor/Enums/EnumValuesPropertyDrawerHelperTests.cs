@@ -69,6 +69,16 @@ namespace Aspid.FastTools.Enums.Tests
         New = 1,
     }
 
+    // The flags variant of RenamedMode: a key, a menu label and a caption of value 1 must all say New.
+    [Flags]
+    internal enum RenamedFlags
+    {
+        None = 0,
+        [Obsolete] Old = 1,
+        New = 1,
+        Other = 2,
+    }
+
     /// <summary>
     /// Coverage for <see cref="EnumValuesPropertyDrawerHelper"/> and the UI Toolkit drawers: drawing never writes
     /// to the asset, a row takes its enum from the table that owns it, the header shows the given label,
@@ -384,6 +394,13 @@ namespace Aspid.FastTools.Enums.Tests
 
             CollectionAssert.AreEquivalent(new[] { "None", "New" }, GetKeys("_ints"));
             Assert.IsFalse(HasMissing("_ints"));
+        }
+
+        [Test]
+        public void FlagsAliasKey_TakesTheLiveNameInTheKeyAndTheCaption()
+        {
+            Assert.AreEqual("New", EnumValuesPropertyDrawerHelper.ToKey(RenamedFlags.New));
+            Assert.AreEqual("New", EnumValuesPropertyDrawerHelper.GetKeyCaption(key: "New", enumValue: RenamedFlags.New));
         }
 
         [Test]
