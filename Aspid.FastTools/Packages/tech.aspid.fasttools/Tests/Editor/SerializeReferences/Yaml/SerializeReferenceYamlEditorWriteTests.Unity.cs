@@ -1,4 +1,7 @@
+using System;
 using System.IO;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.TestTools;
@@ -89,6 +92,63 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var applied = SerializeReferenceBatchEditor.Null(entries, "Test");
 
             Assert.AreEqual(0, applied, "Nothing can be applied to a read-only file.");
+        }
+
+        [Test]
+        public void TryRewriteType_InvalidUtf8_RefusesAndLeavesFileByteIdentical()
+        {
+            // A Latin-1 "é" in the name: decoded as U+FFFD, a rewrite would change it on disk.
+            var name = YamlFixtures.MissingTypePrefab.IndexOf("LoadoutMissingType", StringComparison.Ordinal);
+            var bytes = Encoding.UTF8.GetBytes(YamlFixtures.MissingTypePrefab.Substring(0, name))
+                .Concat(new byte[] { 0xE9 })
+                .Concat(Encoding.UTF8.GetBytes(YamlFixtures.MissingTypePrefab.Substring(name)))
+                .ToArray();
+            File.WriteAllBytes(_path, bytes);
+
+            LogAssert.Expect(LogType.Error, new Regex("is not valid UTF-8"));
+            var rewritten = SerializeReferenceYamlEditor.TryRewriteType(
+                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol);
+
+            Assert.IsFalse(rewritten, "A file that is not valid UTF-8 must not be rewritten.");
+            CollectionAssert.AreEqual(bytes, File.ReadAllBytes(_path), "A refused rewrite must leave the file byte-identical.");
+        }
+
+        [Test]
+        public void TryWritePreservingNewlines_FileChangedAfterTheRead_RefusesAndKeepsTheNewText()
+        {
+            var source = File.ReadAllLines(_path);
+            var edited = (string[])source.Clone();
+            var type = Array.FindIndex(source, line => line.Contains("class: GhostPistol,"));
+            edited[type] = edited[type].Replace("class: GhostPistol,", "class: Pistol,");
+
+            // A save between the read and the write; the edit must not revert it.
+            var saved = File.ReadAllText(_path).Replace("_damage: 15", "_damage: 20");
+            File.WriteAllText(_path, saved);
+
+            LogAssert.Expect(LogType.Error, new Regex("changed on disk"));
+            var written = SerializeReferenceYamlEditor.TryWritePreservingNewlines(_path, source, edited,
+                YamlFixtures.MonoBehaviourFileId, removedRid: YamlFixtures.GhostPistolRid, addedRid: YamlFixtures.GhostPistolRid);
+
+            Assert.IsFalse(written, "An edit computed from an older text must not be written.");
+            Assert.AreEqual(saved, File.ReadAllText(_path), "The newer text must stay.");
+        }
+
+        [Test]
+        public void TryWritePreservingNewlines_EditFailsTheCheck_RefusesAndLeavesFileUntouched()
+        {
+            var before = File.ReadAllText(_path);
+            var source = File.ReadAllLines(_path);
+
+            // Removes the rid 1002 entry and the header of the rid 1003 entry after it.
+            var header = Array.IndexOf(source, "    - rid: 1002");
+            var edited = source.Take(header).Concat(source.Skip(header + 6)).ToArray();
+
+            LogAssert.Expect(LogType.Error, new Regex("failed its safety check"));
+            var written = SerializeReferenceYamlEditor.TryWritePreservingNewlines(_path, source, edited,
+                YamlFixtures.MonoBehaviourFileId, removedRid: YamlFixtures.GhostPistolRid);
+
+            Assert.IsFalse(written, "A mis-bounded edit must not be written.");
+            Assert.AreEqual(before, File.ReadAllText(_path), "A refused edit must leave the file byte-identical.");
         }
     }
 }
