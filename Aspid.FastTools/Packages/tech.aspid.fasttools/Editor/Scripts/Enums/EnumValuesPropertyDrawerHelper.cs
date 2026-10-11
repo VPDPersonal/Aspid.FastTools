@@ -77,6 +77,20 @@ namespace Aspid.FastTools.Enums.Editors
             return EnumInfo.IsFlags(enumType) && obsolete.Any(bits => bits is not 0L && (key & bits) == bits);
         }
 
+        // "Everything" sets every bit of the flags field, and a key with undefined bits matches no lookup value.
+        public static string ToKey(Enum value)
+        {
+            var enumType = value.GetType();
+            if (!EnumInfo.IsFlags(enumType)) return GetMemberName(enumType, value);
+
+            var bits = EnumInfo.ToInt64(value) & GetDefinedBits(enumType);
+            return Enum.ToObject(enumType, bits).ToString();
+        }
+
+        // Every key write goes through here, so no Inspector can store a key with undefined bits.
+        public static void SetKey(SerializedProperty keyProperty, Enum value) =>
+            keyProperty.SetStringAndApply(ToKey(value));
+
         public static string GetKeyCaption(string key, Enum? enumValue)
         {
             if (enumValue is null)
@@ -115,7 +129,7 @@ namespace Aspid.FastTools.Enums.Editors
             }
             else
             {
-                var all = GetDistinctMembers(enumType).Aggregate(0L, (mask, member) => mask | EnumInfo.ToInt64(member));
+                var all = GetDefinedBits(enumType);
                 var mask = EnumInfo.ToInt64(current);
 
                 AddKeyItem(NothingCaption, mask is 0L, (Enum)Enum.ToObject(enumType, 0L));
@@ -134,9 +148,7 @@ namespace Aspid.FastTools.Enums.Editors
             menu.DropDown(rect);
 
             void AddKeyItem(string text, bool isChecked, Enum key) =>
-                menu.AddItem(new GUIContent(text), isChecked, () => serializedObject
-                    .FindProperty(keyPath)
-                    .SetStringAndApply(key.ToString()));
+                menu.AddItem(new GUIContent(text), isChecked, () => SetKey(serializedObject.FindProperty(keyPath), key));
         }
 
         public static ContextualMenuManipulator CreatePopulateMenuManipulator(
@@ -280,6 +292,9 @@ namespace Aspid.FastTools.Enums.Editors
             _obsoleteValues[enumType] = obsolete;
             return obsolete;
         }
+
+        private static long GetDefinedBits(Type enumType) =>
+            GetDistinctMembers(enumType).Aggregate(0L, (bits, member) => bits | EnumInfo.ToInt64(member));
 
         private static IEnumerable<Enum> GetDistinctMembers(Type enumType)
         {

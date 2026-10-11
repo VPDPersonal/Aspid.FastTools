@@ -175,6 +175,10 @@ IMixedValueSupport
 [VisualElementExtensions.InsertStyleSheetsIf\<InspectorTypeField\>\(InspectorTypeField, bool, int, ReadOnlySpan\<StyleSheet\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__),
 [FocusableExtensions.IsFocused\(Focusable\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_IsFocused_UnityEngine_UIElements_Focusable_),
 [ProfilerMarkerExtensionsForGenerator.Marker\<InspectorTypeField\>\(InspectorTypeField, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
+[CallbackEventHandlerExtensions.RegisterCallbackOnceSelf\<InspectorTypeField, TEventType\>\(InspectorTypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackOnceSelf\<InspectorTypeField, TEventType, TUserArgsType\>\(InspectorTypeField, EventCallback\<TEventType, TUserArgsType\>, TUserArgsType, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__3___0_UnityEngine_UIElements_EventCallback___1___2____2_UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackSelf\<InspectorTypeField, TEventType\>\(InspectorTypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackSelf\<InspectorTypeField, TEventType, TUserArgsType\>\(InspectorTypeField, EventCallback\<TEventType, TUserArgsType\>, TUserArgsType, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackSelf__3___0_UnityEngine_UIElements_EventCallback___1___2____2_UnityEngine_UIElements_TrickleDown_),
 [VisualElementExtensions.RemoveBoldUnityFontStyleAndWeight\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveBoldUnityFontStyleAndWeight__1___0_),
 [VisualElementExtensions.RemoveChild\<InspectorTypeField\>\(InspectorTypeField, VisualElement?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChild__1___0_UnityEngine_UIElements_VisualElement_),
 [VisualElementExtensions.RemoveChildAt\<InspectorTypeField\>\(InspectorTypeField, int\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildAt__1___0_System_Int32_),
@@ -234,6 +238,8 @@ IMixedValueSupport
 [VisualElementExtensions.SetBackgroundColor\<InspectorTypeField\>\(InspectorTypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetBackgroundColor\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_System_String_),
 [VisualElementExtensions.SetBackgroundImage\<InspectorTypeField\>\(InspectorTypeField, StyleBackground\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_StyleBackground_),
+[VisualElementExtensions.SetBackgroundImage\<InspectorTypeField\>\(InspectorTypeField, Sprite\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_Sprite_),
+[VisualElementExtensions.SetBackgroundImage\<InspectorTypeField\>\(InspectorTypeField, VectorImage\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_VectorImage_),
 [VisualElementExtensions.SetBackgroundImageFromResources\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImageFromResources__1___0_System_String_),
 [VisualElementExtensions.SetBackgroundPosition\<InspectorTypeField\>\(InspectorTypeField, StyleBackgroundPosition\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_UnityEngine_UIElements_StyleBackgroundPosition_),
 [VisualElementExtensions.SetBackgroundPosition\<InspectorTypeField\>\(InspectorTypeField, StyleBackgroundPosition?, StyleBackgroundPosition?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__),
@@ -431,7 +437,9 @@ IMixedValueSupport
 [VisualElementExtensions.ToggleClassesIf\<InspectorTypeField\>\(InspectorTypeField, bool, List\<string\>?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__),
 [VisualElementExtensions.ToggleClassesIf\<InspectorTypeField\>\(InspectorTypeField, bool, IEnumerable\<string?\>?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__),
 [VisualElementExtensions.ToggleClassesIf\<InspectorTypeField\>\(InspectorTypeField, bool, ReadOnlySpan\<string\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__),
-[VisualElementExtensions.UnbindFrom\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_)
+[VisualElementExtensions.UnbindFrom\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_),
+[CallbackEventHandlerExtensions.UnregisterCallbackSelf\<InspectorTypeField, TEventType\>\(InspectorTypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.UnregisterCallbackSelf\<InspectorTypeField, TEventType, TUserArgsType\>\(InspectorTypeField, EventCallback\<TEventType, TUserArgsType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__3___0_UnityEngine_UIElements_EventCallback___1___2__UnityEngine_UIElements_TrickleDown_)
 
 ## Constructors
 
@@ -457,6 +465,16 @@ public InspectorTypeField(SerializedProperty property)
 
 The string property storing the assembly-qualified type name.
 
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
 ### InspectorTypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_UnityEditor_SerializedProperty_}
 
 Creates an Inspector-aligned field bound to a type-name property.
@@ -475,12 +493,43 @@ The field label, or <a href="https://learn.microsoft.com/dotnet/csharp/language-
 
 The string property storing the assembly-qualified type name.
 
+#### Remarks
+
+Before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent, a pick writes the property and calls
+[`Update`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.Update.html) on the [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code>:
+a change handler reads the picked name from <code class="paramref">property</code>, and edits it applies through that
+object keep the pick. Changes not yet applied to that object are lost.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
+### InspectorTypeField\(string\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_}
+
+Creates an unbound Inspector-aligned field without an initial type.
+
+```csharp
+public InspectorTypeField(string label)
+```
+
+#### Parameters
+
+`label` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The field label, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for no label.
+
 ### InspectorTypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_System_Type_}
 
 Creates an unbound Inspector-aligned field with an initial type.
 
 ```csharp
-public InspectorTypeField(string label, Type defaultValue = null)
+public InspectorTypeField(string label, Type defaultValue)
 ```
 
 #### Parameters

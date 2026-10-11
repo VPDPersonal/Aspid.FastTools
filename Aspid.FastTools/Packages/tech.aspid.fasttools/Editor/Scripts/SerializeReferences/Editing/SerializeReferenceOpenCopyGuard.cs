@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
@@ -20,6 +21,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // dirty asset is held back as well. IsWritable stays an open-copy check: an asset being saved is still dirty.
         public static bool IsRewriteSafe(string assetPath, string prefabStagePath) =>
             IsWritable(assetPath, prefabStagePath) && !HasUnsavedChanges(assetPath);
+
+        // verdicts keeps the answer per path for one batch filter. The answer is the same for every entry of a file,
+        // and the unsaved-changes check loads every object of the asset, so it is asked once per path.
+        public static bool IsRewriteSafe(string assetPath, string prefabStagePath, Dictionary<string, bool> verdicts)
+        {
+            if (assetPath is null) return IsRewriteSafe(assetPath, prefabStagePath);
+
+            if (!verdicts.TryGetValue(assetPath, out var safe))
+            {
+                safe = IsRewriteSafe(assetPath, prefabStagePath);
+                verdicts.Add(assetPath, safe);
+            }
+
+            return safe;
+        }
 
         // True — and explained through a dialog — when the edit must be abandoned.
         public static bool BlockedByOpenCopy(string assetPath, string title = "Asset References")

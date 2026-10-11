@@ -58,5 +58,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.IsEmpty(ranked);
         }
+
+        // A reference that fields of different types share must fit each of them.
+        [Test]
+        public void Rank_SharedWithFieldTypeTheCandidateMisses_SurfacesNothing()
+        {
+            var stored = new ManagedTypeName(Assembly, Namespace + ".Legacy", nameof(RelocatedRanged));
+
+            var fits = SerializeReferenceRepairSuggestions.Rank(
+                stored, Array.Empty<string>(), new[] { typeof(IRepairRankTarget), typeof(object) });
+            var misses = SerializeReferenceRepairSuggestions.Rank(
+                stored, Array.Empty<string>(), new[] { typeof(IRepairRankTarget), typeof(IDisposable) });
+
+            Assert.AreEqual(typeof(RelocatedRanged), fits[0].Type);
+            Assert.IsEmpty(misses);
+        }
     }
 }
