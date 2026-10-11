@@ -16,5 +16,5 @@ Provides extension methods for resolving Unity object display names.
 
  [SerializedPropertyExtensions](Aspid.FastTools.Editors.SerializedPropertyExtensions.md)
 
-Provides extension methods for synchronizing and assigning [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) values.
+Provides extension methods for synchronizing and assigning [`SerializedProperty`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/SerializedProperty.html) values.
 

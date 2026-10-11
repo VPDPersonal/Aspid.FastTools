@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements
     public static class BaseFieldExtensions
     {
         /// <summary>
-        /// Sets <see cref="BaseField{TValueType}.label"/> displayed next to the field.
+        /// Sets <c>label</c> of <see cref="BaseField{TValueType}"/> displayed next to the field.
         /// </summary>
         /// <typeparam name="TField">The field type.</typeparam>
         /// <typeparam name="TValue">The value type held by the field.</typeparam>

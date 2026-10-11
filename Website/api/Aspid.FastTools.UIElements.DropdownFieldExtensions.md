@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`DropdownField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.DropdownField.html).
+Provides extension methods for [`DropdownField`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.DropdownField.html).
 
 ```csharp
 public static class DropdownFieldExtensions
@@ -33,7 +33,7 @@ only adds support for sources other than a [`List<T>`](https://learn.microsoft.c
 
 ### SetChoices\<T\>\(T, IEnumerable\<string\>\) {#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetChoices__1___0_System_Collections_Generic_IEnumerable_System_String__}
 
-Sets [`choices`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BasePopupField_2-choices.html) to a copy of <code class="paramref">value</code>.
+Sets [`choices`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BasePopupField_2-choices.html) to a copy of <code class="paramref">value</code>.
 
 ```csharp
 public static T SetChoices<T>(this T element, IEnumerable<string> value) where T : DropdownField
@@ -68,7 +68,7 @@ Use it for an array or a query. A [`List<T>`](https://learn.microsoft.com/dotnet
 
 ### SetFormatListItemCallback\<T\>\(T, Func\<string, string\>\) {#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetFormatListItemCallback__1___0_System_Func_System_String_System_String__}
 
-Sets [`formatListItemCallback`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PopupField_1-formatListItemCallback.html), replacing any existing callback.
+Sets [`formatListItemCallback`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.PopupField_1-formatListItemCallback.html), replacing any existing callback.
 
 ```csharp
 public static T SetFormatListItemCallback<T>(this T element, Func<string, string> value) where T : DropdownField
@@ -98,7 +98,7 @@ The field type.
 
 ### SetFormatSelectedValueCallback\<T\>\(T, Func\<string, string\>\) {#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetFormatSelectedValueCallback__1___0_System_Func_System_String_System_String__}
 
-Sets [`formatSelectedValueCallback`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PopupField_1-formatSelectedValueCallback.html), replacing any existing callback.
+Sets [`formatSelectedValueCallback`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.PopupField_1-formatSelectedValueCallback.html), replacing any existing callback.
 
 ```csharp
 public static T SetFormatSelectedValueCallback<T>(this T element, Func<string, string> value) where T : DropdownField
@@ -129,11 +129,11 @@ The field type.
 #### Remarks
 
 Unity calls <code class="paramref">value</code> at once with the current value, which is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a
-[`DropdownField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.DropdownField.html) before a choice is selected.
+[`DropdownField`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.DropdownField.html) before a choice is selected.
 
 ### SetIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_DropdownFieldExtensions_SetIndex__1___0_System_Int32_}
 
-Sets [`index`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.PopupField_1-index.html).
+Sets [`index`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.PopupField_1-index.html).
 
 ```csharp
 public static T SetIndex<T>(this T element, int value) where T : DropdownField

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`ITextSelection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.html).
+Provides extension methods for [`ITextSelection`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection.html).
 
 ```csharp
 public static class ITextSelectionExtensions
@@ -27,7 +27,7 @@ public static class ITextSelectionExtensions
 
 ### AddOnCursorIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_AddOnCursorIndexChange__1___0_System_Action_}
 
-Subscribes to the [`OnCursorIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnCursorIndexChange.html) event.
+Subscribes to the [`OnCursorIndexChange`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection.OnCursorIndexChange.html) event.
 
 ```csharp
 public static T AddOnCursorIndexChange<T>(this T element, Action value) where T : ITextSelection
@@ -61,7 +61,7 @@ Available in Unity 6000.3 and newer.
 
 ### AddOnSelectIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_AddOnSelectIndexChange__1___0_System_Action_}
 
-Subscribes to the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event.
+Subscribes to the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event.
 
 ```csharp
 public static T AddOnSelectIndexChange<T>(this T element, Action value) where T : ITextSelection
@@ -95,7 +95,7 @@ Available in Unity 6000.3 and newer.
 
 ### RemoveOnCursorIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_RemoveOnCursorIndexChange__1___0_System_Action_}
 
-Unsubscribes from the [`OnCursorIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnCursorIndexChange.html) event.
+Unsubscribes from the [`OnCursorIndexChange`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection.OnCursorIndexChange.html) event.
 
 ```csharp
 public static T RemoveOnCursorIndexChange<T>(this T element, Action value) where T : ITextSelection
@@ -129,7 +129,7 @@ Available in Unity 6000.3 and newer.
 
 ### RemoveOnSelectIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_RemoveOnSelectIndexChange__1___0_System_Action_}
 
-Unsubscribes from the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event.
+Unsubscribes from the [`OnSelectIndexChange`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection.OnSelectIndexChange.html) event.
 
 ```csharp
 public static T RemoveOnSelectIndexChange<T>(this T element, Action value) where T : ITextSelection
@@ -163,7 +163,7 @@ Available in Unity 6000.3 and newer.
 
 ### SetCursorIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetCursorIndex__1___0_System_Int32_}
 
-Sets [`cursorIndex`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection-cursorIndex.html).
+Sets [`cursorIndex`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection-cursorIndex.html).
 
 ```csharp
 public static T SetCursorIndex<T>(this T element, int value) where T : ITextSelection
@@ -193,7 +193,7 @@ The element type.
 
 ### SetDoubleClickSelectsWord\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetDoubleClickSelectsWord__1___0_System_Boolean_}
 
-Sets [`doubleClickSelectsWord`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection-doubleClickSelectsWord.html).
+Sets [`doubleClickSelectsWord`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection-doubleClickSelectsWord.html).
 
 ```csharp
 public static T SetDoubleClickSelectsWord<T>(this T element, bool value) where T : ITextSelection
@@ -223,7 +223,7 @@ The element type.
 
 ### SetSelectAllOnFocus\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectAllOnFocus__1___0_System_Boolean_}
 
-Sets [`selectAllOnFocus`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection-selectAllOnFocus.html).
+Sets [`selectAllOnFocus`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection-selectAllOnFocus.html).
 
 ```csharp
 public static T SetSelectAllOnFocus<T>(this T element, bool value) where T : ITextSelection
@@ -253,7 +253,7 @@ The element type.
 
 ### SetSelectAllOnMouseUp\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectAllOnMouseUp__1___0_System_Boolean_}
 
-Sets [`selectAllOnMouseUp`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection-selectAllOnMouseUp.html).
+Sets [`selectAllOnMouseUp`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection-selectAllOnMouseUp.html).
 
 ```csharp
 public static T SetSelectAllOnMouseUp<T>(this T element, bool value) where T : ITextSelection
@@ -283,7 +283,7 @@ The element type.
 
 ### SetSelectIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectIndex__1___0_System_Int32_}
 
-Sets [`selectIndex`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection-selectIndex.html).
+Sets [`selectIndex`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection-selectIndex.html).
 
 ```csharp
 public static T SetSelectIndex<T>(this T element, int value) where T : ITextSelection
@@ -313,7 +313,7 @@ The element type.
 
 ### SetSelectable\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectable__1___0_System_Boolean_}
 
-Sets [`isSelectable`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection-isSelectable.html).
+Sets [`isSelectable`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection-isSelectable.html).
 
 ```csharp
 public static T SetSelectable<T>(this T element, bool value) where T : ITextSelection
@@ -343,7 +343,7 @@ The element type.
 
 ### SetTripleClickSelectsLine\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetTripleClickSelectsLine__1___0_System_Boolean_}
 
-Sets [`tripleClickSelectsLine`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextSelection-tripleClickSelectsLine.html).
+Sets [`tripleClickSelectsLine`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextSelection-tripleClickSelectsLine.html).
 
 ```csharp
 public static T SetTripleClickSelectsLine<T>(this T element, bool value) where T : ITextSelection

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldRectIntExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldRectIntExtensions.md#Aspid_FastTools_UIElements_BaseFieldRectIntExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`RectInt`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/RectInt.html).
+Provides [`BaseFieldRectIntExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldRectIntExtensions.md#Aspid_FastTools_UIElements_BaseFieldRectIntExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseField_1.html) of [`RectInt`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/RectInt.html).
 
 ```csharp
 public static class BaseFieldRectIntExtensions
@@ -27,7 +27,7 @@ public static class BaseFieldRectIntExtensions
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldRectIntExtensions_SetLabel__1___0_System_String_}
 
-Sets the label of the field via [`label`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.BaseField_1-label.html).
+Sets the label of the field via <code>label</code> of [`BaseField<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseField_1.html).
 
 ```csharp
 public static T SetLabel<T>(this T element, string value) where T : BaseField<RectInt>

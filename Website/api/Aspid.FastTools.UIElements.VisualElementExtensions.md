@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`VisualElement`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.html).
+Provides extension methods for [`VisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.html).
 
 ```csharp
 public static class VisualElementExtensions
@@ -27,7 +27,7 @@ public static class VisualElementExtensions
 
 ### AddBoldUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddBoldUnityFontStyleAndWeight__1___0_}
 
-Adds bold to [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline italic style.
+Adds bold to [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline italic style.
 
 ```csharp
 public static T AddBoldUnityFontStyleAndWeight<T>(this T element) where T : VisualElement
@@ -53,16 +53,16 @@ The element type.
 
 #### Remarks
 
-Transitions: [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html) → [`Bold`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Bold.html),
-[`Italic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Italic.html) → [`BoldAndItalic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.BoldAndItalic.html).
+Transitions: [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html) → [`Bold`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Bold.html),
+[`Italic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Italic.html) → [`BoldAndItalic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.BoldAndItalic.html).
 Other values are left unchanged.
-Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
-style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html)
+Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
+style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html)
 and is therefore not preserved.
 
 ### AddChild\<T\>\(T, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChild__1___0_UnityEngine_UIElements_VisualElement_}
 
-Adds an element to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Adds an element to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChild<T>(this T element, VisualElement? child) where T : VisualElement
@@ -94,11 +94,11 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildIf\<T\>\(T, bool, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
 
-Conditionally adds an element to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally adds an element to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildIf<T>(this T element, bool condition, VisualElement? child) where T : VisualElement
@@ -134,11 +134,11 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildren\<T\>\(T, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_UnityEngine_UIElements_VisualElement___}
 
-Adds an array of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Adds an array of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildren<T>(this T element, params VisualElement?[]? children) where T : VisualElement
@@ -170,11 +170,11 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildren\<T\>\(T, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildren<T>(this T element, List<VisualElement>? children) where T : VisualElement
@@ -206,11 +206,11 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildren\<T\>\(T, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
-Adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildren<T>(this T element, IEnumerable<VisualElement?>? children) where T : VisualElement
@@ -241,17 +241,17 @@ The element type.
 #### Remarks
 
 <code class="paramref">children</code> is copied before the first change, so it may be the live
-[`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of this or another element.
+[`Children`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of this or another element.
 
 #### Exceptions
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildren\<T\>\(T, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildren__1___0_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
-Adds a read-only span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Adds a read-only span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildren<T>(this T element, ReadOnlySpan<VisualElement> children) where T : VisualElement
@@ -283,11 +283,11 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildrenIf\<T\>\(T, bool, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement___}
 
-Conditionally adds an array of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally adds an array of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildrenIf<T>(this T element, bool condition, params VisualElement?[]? children) where T : VisualElement
@@ -323,11 +323,11 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildrenIf\<T\>\(T, bool, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Conditionally adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally adds a list of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildrenIf<T>(this T element, bool condition, List<VisualElement>? children) where T : VisualElement
@@ -363,11 +363,11 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildrenIf\<T\>\(T, bool, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
-Conditionally adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally adds an enumerable of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement?>? children) where T : VisualElement
@@ -402,17 +402,17 @@ The element type.
 #### Remarks
 
 <code class="paramref">children</code> is copied before the first change, so it may be the live
-[`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of this or another element.
+[`Children`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of this or another element.
 
 #### Exceptions
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddChildrenIf\<T\>\(T, bool, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddChildrenIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
-Conditionally adds a read-only span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally adds a read-only span of child elements to the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T AddChildrenIf<T>(this T element, bool condition, ReadOnlySpan<VisualElement> children) where T : VisualElement
@@ -448,7 +448,7 @@ The element type.
 
  [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
 
-A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+A non-null child is added to an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### AddClass\<T\>\(T, string?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClass__1___0_System_String_}
 
@@ -607,7 +607,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### AddClasses\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClasses__1___0_System_ReadOnlySpan_System_String__}
 
@@ -744,7 +744,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### AddClassesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
 
@@ -782,7 +782,7 @@ The element type.
 
 ### AddItalicUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddItalicUnityFontStyleAndWeight__1___0_}
 
-Adds italic to [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline bold style.
+Adds italic to [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline bold style.
 
 ```csharp
 public static T AddItalicUnityFontStyleAndWeight<T>(this T element) where T : VisualElement
@@ -808,16 +808,16 @@ The element type.
 
 #### Remarks
 
-Transitions: [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html) → [`Italic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Italic.html),
-[`Bold`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Bold.html) → [`BoldAndItalic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.BoldAndItalic.html).
+Transitions: [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html) → [`Italic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Italic.html),
+[`Bold`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Bold.html) → [`BoldAndItalic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.BoldAndItalic.html).
 Other values are left unchanged.
-Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
-style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html)
+Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
+style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html)
 and is therefore not preserved.
 
 ### AddStyleSheet\<T\>\(T, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_}
 
-Adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheet<T>(this T element, StyleSheet? styleSheet) where T : VisualElement
@@ -847,7 +847,7 @@ The element type.
 
 ### AddStyleSheetFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetFromResources__1___0_System_String_}
 
-Loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetFromResources<T>(this T element, string path) where T : VisualElement
@@ -881,7 +881,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### AddStyleSheetFromResourcesIf\<T\>\(T, bool, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_}
 
-Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetFromResourcesIf<T>(this T element, bool condition, string path) where T : VisualElement
@@ -919,7 +919,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### AddStyleSheetIf\<T\>\(T, bool, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet_}
 
-Conditionally adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetIf<T>(this T element, bool condition, StyleSheet? styleSheet) where T : VisualElement
@@ -953,7 +953,7 @@ The element type.
 
 ### AddStyleSheets\<T\>\(T, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_UnityEngine_UIElements_StyleSheet___}
 
-Adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheets<T>(this T element, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -983,7 +983,7 @@ The element type.
 
 ### AddStyleSheets\<T\>\(T, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheets<T>(this T element, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -1013,7 +1013,7 @@ The element type.
 
 ### AddStyleSheets\<T\>\(T, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheets<T>(this T element, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -1043,7 +1043,7 @@ The element type.
 
 ### AddStyleSheets\<T\>\(T, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheets__1___0_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheets<T>(this T element, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -1073,7 +1073,7 @@ The element type.
 
 ### AddStyleSheetsFromResources\<T\>\(T, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_String___}
 
-Loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResources<T>(this T element, params string[]? paths) where T : VisualElement
@@ -1107,7 +1107,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsFromResources\<T\>\(T, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_Collections_Generic_List_System_String__}
 
-Loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResources<T>(this T element, List<string>? paths) where T : VisualElement
@@ -1141,7 +1141,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsFromResources\<T\>\(T, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_Collections_Generic_IEnumerable_System_String__}
 
-Loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResources<T>(this T element, IEnumerable<string>? paths) where T : VisualElement
@@ -1175,7 +1175,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsFromResources\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResources__1___0_System_ReadOnlySpan_System_String__}
 
-Loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResources<T>(this T element, ReadOnlySpan<string> paths) where T : VisualElement
@@ -1209,7 +1209,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_String___}
 
-Conditionally loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, params string[]? paths) where T : VisualElement
@@ -1247,7 +1247,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
 
-Conditionally loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, List<string>? paths) where T : VisualElement
@@ -1285,7 +1285,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
 
-Conditionally loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, IEnumerable<string>? paths) where T : VisualElement
@@ -1323,7 +1323,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsFromResourcesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsFromResourcesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
 
-Conditionally loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsFromResourcesIf<T>(this T element, bool condition, ReadOnlySpan<string> paths) where T : VisualElement
@@ -1361,7 +1361,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### AddStyleSheetsIf\<T\>\(T, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet___}
 
-Conditionally adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsIf<T>(this T element, bool condition, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -1395,7 +1395,7 @@ The element type.
 
 ### AddStyleSheetsIf\<T\>\(T, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsIf<T>(this T element, bool condition, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -1429,7 +1429,7 @@ The element type.
 
 ### AddStyleSheetsIf\<T\>\(T, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsIf<T>(this T element, bool condition, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -1463,7 +1463,7 @@ The element type.
 
 ### AddStyleSheetsIf\<T\>\(T, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetsIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T AddStyleSheetsIf<T>(this T element, bool condition, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -1523,7 +1523,7 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### ClearChildrenIf\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearChildrenIf__1___0_System_Boolean_}
 
@@ -1557,7 +1557,7 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### ClearClasses\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearClasses__1___0_}
 
@@ -1617,7 +1617,7 @@ The element type.
 
 ### ClearStyleSheets\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearStyleSheets__1___0_}
 
-Removes all style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Removes all style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T ClearStyleSheets<T>(this T element) where T : VisualElement
@@ -1643,7 +1643,7 @@ The element type.
 
 ### ClearStyleSheetsIf\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ClearStyleSheetsIf__1___0_System_Boolean_}
 
-Conditionally removes all style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally removes all style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T ClearStyleSheetsIf<T>(this T element, bool condition) where T : VisualElement
@@ -1848,7 +1848,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### EnableClasses\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClasses__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
 
@@ -2001,7 +2001,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### EnableClassesIf\<T\>\(T, bool, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableClassesIf__1___0_System_Boolean_System_Boolean_System_ReadOnlySpan_System_String__}
 
@@ -2043,7 +2043,7 @@ The element type.
 
 ### EnableStyleSheet\<T\>\(T, StyleSheet?, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_System_Boolean_}
 
-Adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+Adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheet<T>(this T element, StyleSheet? styleSheet, bool enable) where T : VisualElement
@@ -2077,7 +2077,7 @@ The element type.
 
 ### EnableStyleSheetFromResources\<T\>\(T, string, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetFromResources__1___0_System_String_System_Boolean_}
 
-Loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+Loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetFromResources<T>(this T element, string path, bool enable) where T : VisualElement
@@ -2115,7 +2115,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### EnableStyleSheetFromResourcesIf\<T\>\(T, bool, string, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_System_Boolean_}
 
-Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and adds it to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetFromResourcesIf<T>(this T element, bool condition, string path, bool enable) where T : VisualElement
@@ -2157,7 +2157,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### EnableStyleSheetIf\<T\>\(T, bool, StyleSheet?, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet_System_Boolean_}
 
-Conditionally adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
+Conditionally adds a style sheet to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes it, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetIf<T>(this T element, bool condition, StyleSheet? styleSheet, bool enable) where T : VisualElement
@@ -2195,7 +2195,7 @@ The element type.
 
 ### EnableStyleSheets\<T\>\(T, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet___}
 
-Adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheets<T>(this T element, bool enable, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -2229,7 +2229,7 @@ The element type.
 
 ### EnableStyleSheets\<T\>\(T, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheets<T>(this T element, bool enable, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -2263,7 +2263,7 @@ The element type.
 
 ### EnableStyleSheets\<T\>\(T, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheets<T>(this T element, bool enable, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -2297,7 +2297,7 @@ The element type.
 
 ### EnableStyleSheets\<T\>\(T, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheets__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheets<T>(this T element, bool enable, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -2331,7 +2331,7 @@ The element type.
 
 ### EnableStyleSheetsFromResources\<T\>\(T, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_String___}
 
-Loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, params string[]? paths) where T : VisualElement
@@ -2369,7 +2369,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsFromResources\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
 
-Loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, List<string>? paths) where T : VisualElement
@@ -2407,7 +2407,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsFromResources\<T\>\(T, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
 
-Loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, IEnumerable<string>? paths) where T : VisualElement
@@ -2445,7 +2445,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsFromResources\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResources__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
 
-Loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResources<T>(this T element, bool enable, ReadOnlySpan<string> paths) where T : VisualElement
@@ -2483,7 +2483,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_String___}
 
-Conditionally loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally loads style sheets from an array of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, params string[]? paths) where T : VisualElement
@@ -2525,7 +2525,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_List_System_String__}
 
-Conditionally loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally loads style sheets from a list of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, List<string>? paths) where T : VisualElement
@@ -2567,7 +2567,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
 
-Conditionally loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally loads style sheets from an enumerable of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, IEnumerable<string>? paths) where T : VisualElement
@@ -2609,7 +2609,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsFromResourcesIf\<T\>\(T, bool, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Boolean_System_ReadOnlySpan_System_String__}
 
-Conditionally loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally loads style sheets from a read-only span of Resources paths and adds them to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsFromResourcesIf<T>(this T element, bool condition, bool enable, ReadOnlySpan<string> paths) where T : VisualElement
@@ -2651,7 +2651,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### EnableStyleSheetsIf\<T\>\(T, bool, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_UnityEngine_UIElements_StyleSheet___}
 
-Conditionally adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally adds an array of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -2689,7 +2689,7 @@ The element type.
 
 ### EnableStyleSheetsIf\<T\>\(T, bool, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally adds a list of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -2727,7 +2727,7 @@ The element type.
 
 ### EnableStyleSheetsIf\<T\>\(T, bool, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally adds an enumerable of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -2765,7 +2765,7 @@ The element type.
 
 ### EnableStyleSheetsIf\<T\>\(T, bool, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_EnableStyleSheetsIf__1___0_System_Boolean_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
+Conditionally adds a read-only span of style sheets to [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) or removes them, depending on <code class="paramref">enable</code>.
 
 ```csharp
 public static T EnableStyleSheetsIf<T>(this T element, bool condition, bool enable, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -2803,7 +2803,7 @@ The element type.
 
 ### InsertChild\<T\>\(T, int, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChild__1___0_System_Int32_UnityEngine_UIElements_VisualElement_}
 
-Inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChild<T>(this T element, int index, VisualElement? child) where T : VisualElement
@@ -2837,11 +2837,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildIf\<T\>\(T, bool, int, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement_}
 
-Conditionally inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally inserts a child element at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildIf<T>(this T element, bool condition, int index, VisualElement? child) where T : VisualElement
@@ -2879,11 +2879,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildren\<T\>\(T, int, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_UnityEngine_UIElements_VisualElement___}
 
-Inserts an array of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Inserts an array of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildren<T>(this T element, int index, params VisualElement?[]? children) where T : VisualElement
@@ -2917,11 +2917,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildren\<T\>\(T, int, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildren<T>(this T element, int index, List<VisualElement>? children) where T : VisualElement
@@ -2955,11 +2955,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildren\<T\>\(T, int, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
-Inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildren<T>(this T element, int index, IEnumerable<VisualElement?>? children) where T : VisualElement
@@ -2993,12 +2993,12 @@ The element type.
 
 #### Remarks
 
-<p><code class="paramref">children</code> is copied before the first change, so it may be the live [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.</p>
-<p>Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).</p>
+<p><code class="paramref">children</code> is copied before the first change, so it may be the live [`Children`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.</p>
+<p>Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).</p>
 
 ### InsertChildren\<T\>\(T, int, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildren__1___0_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
-Inserts a read-only span of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Inserts a read-only span of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildren<T>(this T element, int index, ReadOnlySpan<VisualElement> children) where T : VisualElement
@@ -3032,11 +3032,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildrenIf\<T\>\(T, bool, int, params VisualElement?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_VisualElement___}
 
-Conditionally inserts an array of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally inserts an array of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildrenIf<T>(this T element, bool condition, int index, params VisualElement?[]? children) where T : VisualElement
@@ -3074,11 +3074,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildrenIf\<T\>\(T, bool, int, List\<VisualElement\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_VisualElement__}
 
-Conditionally inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally inserts a list of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildrenIf<T>(this T element, bool condition, int index, List<VisualElement>? children) where T : VisualElement
@@ -3116,11 +3116,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertChildrenIf\<T\>\(T, bool, int, IEnumerable\<VisualElement?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_VisualElement__}
 
-Conditionally inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally inserts an enumerable of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildrenIf<T>(this T element, bool condition, int index, IEnumerable<VisualElement?>? children) where T : VisualElement
@@ -3158,12 +3158,12 @@ The element type.
 
 #### Remarks
 
-<p><code class="paramref">children</code> is copied before the first change, so it may be the live [`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.</p>
-<p>Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).</p>
+<p><code class="paramref">children</code> is copied before the first change, so it may be the live [`Children`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.Children.html) of another element.</p>
+<p>Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).</p>
 
 ### InsertChildrenIf\<T\>\(T, bool, int, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertChildrenIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
-Conditionally inserts a read-only span of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
+Conditionally inserts a read-only span of child elements starting at the specified index in the [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html) of this element.
 
 ```csharp
 public static T InsertChildrenIf<T>(this T element, bool condition, int index, ReadOnlySpan<VisualElement> children) where T : VisualElement
@@ -3201,11 +3201,11 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### InsertStyleSheet\<T\>\(T, int, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheet__1___0_System_Int32_UnityEngine_UIElements_StyleSheet_}
 
-Inserts a style sheet into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+Inserts a style sheet into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
 
 ```csharp
 public static T InsertStyleSheet<T>(this T element, int index, StyleSheet? styleSheet) where T : VisualElement
@@ -3239,11 +3239,11 @@ The element type.
 
 #### Remarks
 
-A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheetFromResources\<T\>\(T, int, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetFromResources__1___0_System_Int32_System_String_}
 
-Loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and inserts it into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+Loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and inserts it into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
 
 ```csharp
 public static T InsertStyleSheetFromResources<T>(this T element, int index, string path) where T : VisualElement
@@ -3278,11 +3278,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.</p>
-<p>A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetFromResourcesIf\<T\>\(T, bool, int, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetFromResourcesIf__1___0_System_Boolean_System_Int32_System_String_}
 
-Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and inserts it into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and inserts it into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
 
 ```csharp
 public static T InsertStyleSheetFromResourcesIf<T>(this T element, bool condition, int index, string path) where T : VisualElement
@@ -3321,11 +3321,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.</p>
-<p>A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetIf\<T\>\(T, bool, int, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_StyleSheet_}
 
-Conditionally inserts a style sheet into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
+Conditionally inserts a style sheet into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) at the specified index.
 
 ```csharp
 public static T InsertStyleSheetIf<T>(this T element, bool condition, int index, StyleSheet? styleSheet) where T : VisualElement
@@ -3363,11 +3363,11 @@ The element type.
 
 #### Remarks
 
-A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+A style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheets\<T\>\(T, int, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_UnityEngine_UIElements_StyleSheet___}
 
-Inserts an array of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Inserts an array of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheets<T>(this T element, int index, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -3401,11 +3401,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheets\<T\>\(T, int, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Inserts a list of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Inserts a list of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheets<T>(this T element, int index, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -3439,11 +3439,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheets\<T\>\(T, int, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Inserts an enumerable of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Inserts an enumerable of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheets<T>(this T element, int index, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -3477,11 +3477,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheets\<T\>\(T, int, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheets__1___0_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Inserts a read-only span of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Inserts a read-only span of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheets<T>(this T element, int index, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -3515,11 +3515,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheetsFromResources\<T\>\(T, int, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_String___}
 
-Loads style sheets from an array of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Loads style sheets from an array of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResources<T>(this T element, int index, params string[]? paths) where T : VisualElement
@@ -3554,11 +3554,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsFromResources\<T\>\(T, int, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_Collections_Generic_List_System_String__}
 
-Loads style sheets from a list of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Loads style sheets from a list of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResources<T>(this T element, int index, List<string>? paths) where T : VisualElement
@@ -3593,11 +3593,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsFromResources\<T\>\(T, int, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_Collections_Generic_IEnumerable_System_String__}
 
-Loads style sheets from an enumerable of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Loads style sheets from an enumerable of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResources<T>(this T element, int index, IEnumerable<string>? paths) where T : VisualElement
@@ -3632,11 +3632,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsFromResources\<T\>\(T, int, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResources__1___0_System_Int32_System_ReadOnlySpan_System_String__}
 
-Loads style sheets from a read-only span of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Loads style sheets from a read-only span of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResources<T>(this T element, int index, ReadOnlySpan<string> paths) where T : VisualElement
@@ -3671,11 +3671,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_String___}
 
-Conditionally loads style sheets from an array of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally loads style sheets from an array of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, params string[]? paths) where T : VisualElement
@@ -3714,11 +3714,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_System_String__}
 
-Conditionally loads style sheets from a list of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally loads style sheets from a list of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, List<string>? paths) where T : VisualElement
@@ -3757,11 +3757,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_System_String__}
 
-Conditionally loads style sheets from an enumerable of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally loads style sheets from an enumerable of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, IEnumerable<string>? paths) where T : VisualElement
@@ -3800,11 +3800,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsFromResourcesIf\<T\>\(T, bool, int, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_System_String__}
 
-Conditionally loads style sheets from a read-only span of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally loads style sheets from a read-only span of Resources paths and inserts them into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsFromResourcesIf<T>(this T element, bool condition, int index, ReadOnlySpan<string> paths) where T : VisualElement
@@ -3843,11 +3843,11 @@ The element type.
 #### Remarks
 
 <p>Logs a warning for each path where no asset is found and skips that path.</p>
-<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
+<p>Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.</p>
 
 ### InsertStyleSheetsIf\<T\>\(T, bool, int, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_UnityEngine_UIElements_StyleSheet___}
 
-Conditionally inserts an array of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally inserts an array of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -3885,11 +3885,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheetsIf\<T\>\(T, bool, int, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally inserts a list of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally inserts a list of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -3927,11 +3927,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheetsIf\<T\>\(T, bool, int, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally inserts an enumerable of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally inserts an enumerable of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -3969,11 +3969,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### InsertStyleSheetsIf\<T\>\(T, bool, int, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally inserts a read-only span of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
+Conditionally inserts a read-only span of style sheets into [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) starting at the specified index.
 
 ```csharp
 public static T InsertStyleSheetsIf<T>(this T element, bool condition, int index, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -4011,11 +4011,11 @@ The element type.
 
 #### Remarks
 
-Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
+Style sheets are inserted in order; a style sheet that [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html) already holds keeps its position.
 
 ### RemoveBoldUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveBoldUnityFontStyleAndWeight__1___0_}
 
-Removes bold from [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline italic style.
+Removes bold from [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline italic style.
 
 ```csharp
 public static T RemoveBoldUnityFontStyleAndWeight<T>(this T element) where T : VisualElement
@@ -4041,11 +4041,11 @@ The element type.
 
 #### Remarks
 
-Transitions: [`Bold`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Bold.html) → [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html),
-[`BoldAndItalic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.BoldAndItalic.html) → [`Italic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Italic.html).
+Transitions: [`Bold`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Bold.html) → [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html),
+[`BoldAndItalic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.BoldAndItalic.html) → [`Italic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Italic.html).
 Other values are left unchanged.
-Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
-style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html),
+Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
+style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html),
 so nothing is written and the USS style stays, including the bold it was meant to remove.
 
 ### RemoveChild\<T\>\(T, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChild__1___0_UnityEngine_UIElements_VisualElement_}
@@ -4110,7 +4110,7 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### RemoveChildAtIf\<T\>\(T, bool, int\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildAtIf__1___0_System_Boolean_System_Int32_}
 
@@ -4148,7 +4148,7 @@ The element type.
 
 #### Remarks
 
-Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TreeView.html).
+Does nothing on an element without a [`contentContainer`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-contentContainer.html), such as a [`ListView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ListView.html) or a [`TreeView`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.TreeView.html).
 
 ### RemoveChildIf\<T\>\(T, bool, VisualElement?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildIf__1___0_System_Boolean_UnityEngine_UIElements_VisualElement_}
 
@@ -4277,7 +4277,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">children</code> is copied before the first change, so it may be this element's own
-[`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html).
+[`Children`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.Children.html).
 
 ### RemoveChildren\<T\>\(T, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildren__1___0_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
@@ -4414,7 +4414,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">children</code> is copied before the first change, so it may be this element's own
-[`Children`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.Children.html).
+[`Children`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.Children.html).
 
 ### RemoveChildrenIf\<T\>\(T, bool, ReadOnlySpan\<VisualElement\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildrenIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_VisualElement__}
 
@@ -4607,7 +4607,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### RemoveClasses\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClasses__1___0_System_ReadOnlySpan_System_String__}
 
@@ -4744,7 +4744,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### RemoveClassesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
 
@@ -4782,7 +4782,7 @@ The element type.
 
 ### RemoveItalicUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveItalicUnityFontStyleAndWeight__1___0_}
 
-Removes italic from [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline bold style.
+Removes italic from [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html), preserving any inline bold style.
 
 ```csharp
 public static T RemoveItalicUnityFontStyleAndWeight<T>(this T element) where T : VisualElement
@@ -4808,16 +4808,16 @@ The element type.
 
 #### Remarks
 
-Transitions: [`Italic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Italic.html) → [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html),
-[`BoldAndItalic`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.BoldAndItalic.html) → [`Bold`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Bold.html).
+Transitions: [`Italic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Italic.html) → [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html),
+[`BoldAndItalic`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.BoldAndItalic.html) → [`Bold`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Bold.html).
 Other values are left unchanged.
-Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
-style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html),
+Only the inline [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) value is read; a bold or italic
+style resolved from USS (with no inline value set) reports as [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html),
 so nothing is written and the USS style stays, including the italic it was meant to remove.
 
 ### RemoveStyleSheet\<T\>\(T, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_}
 
-Removes a style sheet from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Removes a style sheet from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheet<T>(this T element, StyleSheet? styleSheet) where T : VisualElement
@@ -4847,7 +4847,7 @@ The element type.
 
 ### RemoveStyleSheetFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetFromResources__1___0_System_String_}
 
-Loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and removes it from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and removes it from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetFromResources<T>(this T element, string path) where T : VisualElement
@@ -4881,7 +4881,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### RemoveStyleSheetFromResourcesIf\<T\>\(T, bool, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_}
 
-Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and removes it from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads a [`StyleSheet`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.StyleSheet.html) from Resources and removes it from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetFromResourcesIf<T>(this T element, bool condition, string path) where T : VisualElement
@@ -4919,7 +4919,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### RemoveStyleSheetIf\<T\>\(T, bool, StyleSheet?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet_}
 
-Conditionally removes a style sheet from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally removes a style sheet from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetIf<T>(this T element, bool condition, StyleSheet? styleSheet) where T : VisualElement
@@ -4953,7 +4953,7 @@ The element type.
 
 ### RemoveStyleSheets\<T\>\(T, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_UnityEngine_UIElements_StyleSheet___}
 
-Removes an array of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Removes an array of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheets<T>(this T element, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -4983,7 +4983,7 @@ The element type.
 
 ### RemoveStyleSheets\<T\>\(T, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Removes a list of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Removes a list of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheets<T>(this T element, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -5013,7 +5013,7 @@ The element type.
 
 ### RemoveStyleSheets\<T\>\(T, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Removes an enumerable of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Removes an enumerable of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheets<T>(this T element, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -5043,7 +5043,7 @@ The element type.
 
 ### RemoveStyleSheets\<T\>\(T, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheets__1___0_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Removes a read-only span of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Removes a read-only span of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheets<T>(this T element, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -5073,7 +5073,7 @@ The element type.
 
 ### RemoveStyleSheetsFromResources\<T\>\(T, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_String___}
 
-Loads style sheets from an array of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from an array of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResources<T>(this T element, params string[]? paths) where T : VisualElement
@@ -5107,7 +5107,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsFromResources\<T\>\(T, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_Collections_Generic_List_System_String__}
 
-Loads style sheets from a list of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from a list of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResources<T>(this T element, List<string>? paths) where T : VisualElement
@@ -5141,7 +5141,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsFromResources\<T\>\(T, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_Collections_Generic_IEnumerable_System_String__}
 
-Loads style sheets from an enumerable of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from an enumerable of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResources<T>(this T element, IEnumerable<string>? paths) where T : VisualElement
@@ -5175,7 +5175,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsFromResources\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResources__1___0_System_ReadOnlySpan_System_String__}
 
-Loads style sheets from a read-only span of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Loads style sheets from a read-only span of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResources<T>(this T element, ReadOnlySpan<string> paths) where T : VisualElement
@@ -5209,7 +5209,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, params string\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_String___}
 
-Conditionally loads style sheets from an array of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from an array of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, params string[]? paths) where T : VisualElement
@@ -5247,7 +5247,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, List\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__}
 
-Conditionally loads style sheets from a list of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from a list of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, List<string>? paths) where T : VisualElement
@@ -5285,7 +5285,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, IEnumerable\<string\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__}
 
-Conditionally loads style sheets from an enumerable of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from an enumerable of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, IEnumerable<string>? paths) where T : VisualElement
@@ -5323,7 +5323,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsFromResourcesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsFromResourcesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
 
-Conditionally loads style sheets from a read-only span of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally loads style sheets from a read-only span of Resources paths and removes them from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsFromResourcesIf<T>(this T element, bool condition, ReadOnlySpan<string> paths) where T : VisualElement
@@ -5361,7 +5361,7 @@ Logs a warning for each path where no asset is found and skips that path.
 
 ### RemoveStyleSheetsIf\<T\>\(T, bool, params StyleSheet?\[\]?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_UnityEngine_UIElements_StyleSheet___}
 
-Conditionally removes an array of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally removes an array of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsIf<T>(this T element, bool condition, params StyleSheet?[]? styleSheets) where T : VisualElement
@@ -5395,7 +5395,7 @@ The element type.
 
 ### RemoveStyleSheetsIf\<T\>\(T, bool, List\<StyleSheet\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_List_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally removes a list of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally removes a list of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsIf<T>(this T element, bool condition, List<StyleSheet>? styleSheets) where T : VisualElement
@@ -5429,7 +5429,7 @@ The element type.
 
 ### RemoveStyleSheetsIf\<T\>\(T, bool, IEnumerable\<StyleSheet?\>?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally removes an enumerable of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally removes an enumerable of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsIf<T>(this T element, bool condition, IEnumerable<StyleSheet?>? styleSheets) where T : VisualElement
@@ -5463,7 +5463,7 @@ The element type.
 
 ### RemoveStyleSheetsIf\<T\>\(T, bool, ReadOnlySpan\<StyleSheet\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetsIf__1___0_System_Boolean_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__}
 
-Conditionally removes a read-only span of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
+Conditionally removes a read-only span of style sheets from [`styleSheets`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-styleSheets.html).
 
 ```csharp
 public static T RemoveStyleSheetsIf<T>(this T element, bool condition, ReadOnlySpan<StyleSheet> styleSheets) where T : VisualElement
@@ -5497,7 +5497,7 @@ The element type.
 
 ### SetAlignContent\<T\>\(T, StyleEnum\<Align\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignContent__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Align__}
 
-Sets [`alignContent`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-alignContent.html).
+Sets [`alignContent`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-alignContent.html).
 
 ```csharp
 public static T SetAlignContent<T>(this T element, StyleEnum<Align> value) where T : VisualElement
@@ -5527,7 +5527,7 @@ The element type.
 
 ### SetAlignContent\<T\>\(T, Align\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignContent__1___0_UnityEngine_UIElements_Align_}
 
-Sets [`alignContent`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-alignContent.html).
+Sets [`alignContent`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-alignContent.html).
 
 ```csharp
 public static T SetAlignContent<T>(this T element, Align value) where T : VisualElement
@@ -5557,7 +5557,7 @@ The element type.
 
 ### SetAlignItems\<T\>\(T, StyleEnum\<Align\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignItems__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Align__}
 
-Sets [`alignItems`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-alignItems.html).
+Sets [`alignItems`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-alignItems.html).
 
 ```csharp
 public static T SetAlignItems<T>(this T element, StyleEnum<Align> value) where T : VisualElement
@@ -5587,7 +5587,7 @@ The element type.
 
 ### SetAlignItems\<T\>\(T, Align\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignItems__1___0_UnityEngine_UIElements_Align_}
 
-Sets [`alignItems`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-alignItems.html).
+Sets [`alignItems`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-alignItems.html).
 
 ```csharp
 public static T SetAlignItems<T>(this T element, Align value) where T : VisualElement
@@ -5617,7 +5617,7 @@ The element type.
 
 ### SetAlignSelf\<T\>\(T, StyleEnum\<Align\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignSelf__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Align__}
 
-Sets [`alignSelf`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-alignSelf.html).
+Sets [`alignSelf`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-alignSelf.html).
 
 ```csharp
 public static T SetAlignSelf<T>(this T element, StyleEnum<Align> value) where T : VisualElement
@@ -5647,7 +5647,7 @@ The element type.
 
 ### SetAlignSelf\<T\>\(T, Align\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignSelf__1___0_UnityEngine_UIElements_Align_}
 
-Sets [`alignSelf`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-alignSelf.html).
+Sets [`alignSelf`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-alignSelf.html).
 
 ```csharp
 public static T SetAlignSelf<T>(this T element, Align value) where T : VisualElement
@@ -5677,7 +5677,7 @@ The element type.
 
 ### SetAspectRatio\<T\>\(T, StyleRatio\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetAspectRatio__1___0_UnityEngine_UIElements_StyleRatio_}
 
-Sets [`aspectRatio`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-aspectRatio.html).
+Sets [`aspectRatio`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-aspectRatio.html).
 
 ```csharp
 public static T SetAspectRatio<T>(this T element, StyleRatio value) where T : VisualElement
@@ -5711,7 +5711,7 @@ Available in Unity 6000.3 and newer.
 
 ### SetBackgroundColor\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`backgroundColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundColor.html).
+Sets [`backgroundColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundColor.html).
 
 ```csharp
 public static T SetBackgroundColor<T>(this T element, StyleColor value) where T : VisualElement
@@ -5741,7 +5741,7 @@ The element type.
 
 ### SetBackgroundColor\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_System_String_}
 
-Sets [`backgroundColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundColor.html) from an HTML color string.
+Sets [`backgroundColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundColor.html) from an HTML color string.
 
 ```csharp
 public static T SetBackgroundColor<T>(this T element, string value) where T : VisualElement
@@ -5775,7 +5775,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBackgroundImage\<T\>\(T, StyleBackground\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_StyleBackground_}
 
-Sets [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html).
+Sets [`backgroundImage`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html).
 
 ```csharp
 public static T SetBackgroundImage<T>(this T element, StyleBackground value) where T : VisualElement
@@ -5805,7 +5805,7 @@ The element type.
 
 ### SetBackgroundImage\<T\>\(T, Sprite\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_Sprite_}
 
-Sets [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`Sprite`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Sprite.html).
+Sets [`backgroundImage`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`Sprite`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Sprite.html).
 
 ```csharp
 public static T SetBackgroundImage<T>(this T element, Sprite value) where T : VisualElement
@@ -5835,7 +5835,7 @@ The element type.
 
 ### SetBackgroundImage\<T\>\(T, VectorImage\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_VectorImage_}
 
-Sets [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`VectorImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VectorImage.html).
+Sets [`backgroundImage`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) to a [`VectorImage`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VectorImage.html).
 
 ```csharp
 public static T SetBackgroundImage<T>(this T element, VectorImage value) where T : VisualElement
@@ -5865,7 +5865,7 @@ The element type.
 
 ### SetBackgroundImageFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImageFromResources__1___0_System_String_}
 
-Loads a [`Texture2D`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/Texture2D.html) from Resources and sets the [`backgroundImage`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) property.
+Loads a [`Texture2D`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Texture2D.html) from Resources and sets the [`backgroundImage`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundImage.html) property.
 
 ```csharp
 public static T SetBackgroundImageFromResources<T>(this T element, string path) where T : VisualElement
@@ -5899,7 +5899,7 @@ Logs a warning and leaves the element unchanged when no asset is found at <code 
 
 ### SetBackgroundPosition\<T\>\(T, StyleBackgroundPosition\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_UnityEngine_UIElements_StyleBackgroundPosition_}
 
-Sets [`backgroundPositionX`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionX.html) and [`backgroundPositionY`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionY.html).
+Sets [`backgroundPositionX`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionX.html) and [`backgroundPositionY`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionY.html).
 
 ```csharp
 public static T SetBackgroundPosition<T>(this T element, StyleBackgroundPosition value) where T : VisualElement
@@ -5929,7 +5929,7 @@ The element type.
 
 ### SetBackgroundPosition\<T\>\(T, StyleBackgroundPosition?, StyleBackgroundPosition?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__}
 
-Sets [`backgroundPositionX`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionX.html) and [`backgroundPositionY`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionY.html).
+Sets [`backgroundPositionX`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionX.html) and [`backgroundPositionY`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionY.html).
 
 ```csharp
 public static T SetBackgroundPosition<T>(this T element, StyleBackgroundPosition? x = null, StyleBackgroundPosition? y = null) where T : VisualElement
@@ -5963,7 +5963,7 @@ The element type.
 
 ### SetBackgroundPositionX\<T\>\(T, StyleBackgroundPosition\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPositionX__1___0_UnityEngine_UIElements_StyleBackgroundPosition_}
 
-Sets [`backgroundPositionX`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionX.html).
+Sets [`backgroundPositionX`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionX.html).
 
 ```csharp
 public static T SetBackgroundPositionX<T>(this T element, StyleBackgroundPosition value) where T : VisualElement
@@ -5993,7 +5993,7 @@ The element type.
 
 ### SetBackgroundPositionY\<T\>\(T, StyleBackgroundPosition\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPositionY__1___0_UnityEngine_UIElements_StyleBackgroundPosition_}
 
-Sets [`backgroundPositionY`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionY.html).
+Sets [`backgroundPositionY`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundPositionY.html).
 
 ```csharp
 public static T SetBackgroundPositionY<T>(this T element, StyleBackgroundPosition value) where T : VisualElement
@@ -6023,7 +6023,7 @@ The element type.
 
 ### SetBackgroundRepeat\<T\>\(T, StyleBackgroundRepeat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundRepeat__1___0_UnityEngine_UIElements_StyleBackgroundRepeat_}
 
-Sets [`backgroundRepeat`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundRepeat.html).
+Sets [`backgroundRepeat`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundRepeat.html).
 
 ```csharp
 public static T SetBackgroundRepeat<T>(this T element, StyleBackgroundRepeat value) where T : VisualElement
@@ -6053,7 +6053,7 @@ The element type.
 
 ### SetBackgroundSize\<T\>\(T, StyleBackgroundSize\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundSize__1___0_UnityEngine_UIElements_StyleBackgroundSize_}
 
-Sets [`backgroundSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-backgroundSize.html).
+Sets [`backgroundSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-backgroundSize.html).
 
 ```csharp
 public static T SetBackgroundSize<T>(this T element, StyleBackgroundSize value) where T : VisualElement
@@ -6083,8 +6083,8 @@ The element type.
 
 ### SetBorderColor\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColor__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`borderTopColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html), [`borderRightColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html),
-[`borderBottomColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html) and [`borderLeftColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
+Sets [`borderTopColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html), [`borderRightColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html),
+[`borderBottomColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html) and [`borderLeftColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
 
 ```csharp
 public static T SetBorderColor<T>(this T element, StyleColor value) where T : VisualElement
@@ -6148,8 +6148,8 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBorderColor\<T\>\(T, StyleColor?, StyleColor?, StyleColor?, StyleColor?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColor__1___0_System_Nullable_UnityEngine_UIElements_StyleColor__System_Nullable_UnityEngine_UIElements_StyleColor__System_Nullable_UnityEngine_UIElements_StyleColor__System_Nullable_UnityEngine_UIElements_StyleColor__}
 
-Sets [`borderTopColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html), [`borderRightColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html),
-[`borderBottomColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html) and [`borderLeftColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
+Sets [`borderTopColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html), [`borderRightColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html),
+[`borderBottomColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html) and [`borderLeftColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
 
 ```csharp
 public static T SetBorderColor<T>(this T element, StyleColor? top = null, StyleColor? right = null, StyleColor? bottom = null, StyleColor? left = null) where T : VisualElement
@@ -6197,7 +6197,7 @@ Name the arguments, or use [`VisualElementExtensions.SetBorderColorY<T>`](Aspid.
 
 ### SetBorderColorBottom\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorBottom__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`borderBottomColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html).
+Sets [`borderBottomColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html).
 
 ```csharp
 public static T SetBorderColorBottom<T>(this T element, StyleColor value) where T : VisualElement
@@ -6261,7 +6261,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBorderColorLeft\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorLeft__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`borderLeftColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
+Sets [`borderLeftColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
 
 ```csharp
 public static T SetBorderColorLeft<T>(this T element, StyleColor value) where T : VisualElement
@@ -6325,7 +6325,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBorderColorRight\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorRight__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`borderRightColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html).
+Sets [`borderRightColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html).
 
 ```csharp
 public static T SetBorderColorRight<T>(this T element, StyleColor value) where T : VisualElement
@@ -6389,7 +6389,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBorderColorTop\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorTop__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`borderTopColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html).
+Sets [`borderTopColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html).
 
 ```csharp
 public static T SetBorderColorTop<T>(this T element, StyleColor value) where T : VisualElement
@@ -6453,7 +6453,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBorderColorX\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorX__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`borderRightColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html) and [`borderLeftColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
+Sets [`borderRightColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightColor.html) and [`borderLeftColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftColor.html).
 
 ```csharp
 public static T SetBorderColorX<T>(this T element, StyleColor value) where T : VisualElement
@@ -6517,7 +6517,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBorderColorY\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderColorY__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`borderTopColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html) and [`borderBottomColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html).
+Sets [`borderTopColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopColor.html) and [`borderBottomColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomColor.html).
 
 ```csharp
 public static T SetBorderColorY<T>(this T element, StyleColor value) where T : VisualElement
@@ -6581,8 +6581,8 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetBorderRadius\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadius__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html), [`borderTopRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html),
-[`borderBottomRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
+Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html), [`borderTopRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html),
+[`borderBottomRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
 
 ```csharp
 public static T SetBorderRadius<T>(this T element, StyleLength value) where T : VisualElement
@@ -6612,8 +6612,8 @@ The element type.
 
 ### SetBorderRadius\<T\>\(T, StyleLength?, StyleLength?, StyleLength?, StyleLength?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadius__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__}
 
-Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html), [`borderTopRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html),
-[`borderBottomRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
+Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html), [`borderTopRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html),
+[`borderBottomRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
 
 ```csharp
 public static T SetBorderRadius<T>(this T element, StyleLength? topLeft = null, StyleLength? topRight = null, StyleLength? bottomRight = null, StyleLength? bottomLeft = null) where T : VisualElement
@@ -6660,7 +6660,7 @@ Positional arguments follow the order top-left, top-right, bottom-right, bottom-
 
 ### SetBorderRadiusBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderBottomRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
+Sets [`borderBottomRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
 
 ```csharp
 public static T SetBorderRadiusBottom<T>(this T element, StyleLength value) where T : VisualElement
@@ -6690,7 +6690,7 @@ The element type.
 
 ### SetBorderRadiusBottomLeft\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusBottomLeft__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
+Sets [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
 
 ```csharp
 public static T SetBorderRadiusBottomLeft<T>(this T element, StyleLength value) where T : VisualElement
@@ -6720,7 +6720,7 @@ The element type.
 
 ### SetBorderRadiusBottomRight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusBottomRight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderBottomRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html).
+Sets [`borderBottomRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html).
 
 ```csharp
 public static T SetBorderRadiusBottomRight<T>(this T element, StyleLength value) where T : VisualElement
@@ -6750,7 +6750,7 @@ The element type.
 
 ### SetBorderRadiusLeft\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusLeft__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
+Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html) and [`borderBottomLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomLeftRadius.html).
 
 ```csharp
 public static T SetBorderRadiusLeft<T>(this T element, StyleLength value) where T : VisualElement
@@ -6780,7 +6780,7 @@ The element type.
 
 ### SetBorderRadiusRight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusRight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderTopRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html) and [`borderBottomRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html).
+Sets [`borderTopRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html) and [`borderBottomRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomRightRadius.html).
 
 ```csharp
 public static T SetBorderRadiusRight<T>(this T element, StyleLength value) where T : VisualElement
@@ -6810,7 +6810,7 @@ The element type.
 
 ### SetBorderRadiusTop\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusTop__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html) and [`borderTopRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html).
+Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html) and [`borderTopRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html).
 
 ```csharp
 public static T SetBorderRadiusTop<T>(this T element, StyleLength value) where T : VisualElement
@@ -6840,7 +6840,7 @@ The element type.
 
 ### SetBorderRadiusTopLeft\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusTopLeft__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html).
+Sets [`borderTopLeftRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopLeftRadius.html).
 
 ```csharp
 public static T SetBorderRadiusTopLeft<T>(this T element, StyleLength value) where T : VisualElement
@@ -6870,7 +6870,7 @@ The element type.
 
 ### SetBorderRadiusTopRight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderRadiusTopRight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`borderTopRightRadius`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html).
+Sets [`borderTopRightRadius`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopRightRadius.html).
 
 ```csharp
 public static T SetBorderRadiusTopRight<T>(this T element, StyleLength value) where T : VisualElement
@@ -6900,8 +6900,8 @@ The element type.
 
 ### SetBorderWidth\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidth__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`borderTopWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html), [`borderRightWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html),
-[`borderBottomWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html) and [`borderLeftWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html).
+Sets [`borderTopWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html), [`borderRightWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html),
+[`borderBottomWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html) and [`borderLeftWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html).
 
 ```csharp
 public static T SetBorderWidth<T>(this T element, StyleFloat value) where T : VisualElement
@@ -6931,8 +6931,8 @@ The element type.
 
 ### SetBorderWidth\<T\>\(T, StyleFloat?, StyleFloat?, StyleFloat?, StyleFloat?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidth__1___0_System_Nullable_UnityEngine_UIElements_StyleFloat__System_Nullable_UnityEngine_UIElements_StyleFloat__System_Nullable_UnityEngine_UIElements_StyleFloat__System_Nullable_UnityEngine_UIElements_StyleFloat__}
 
-Sets [`borderTopWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html), [`borderRightWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html),
-[`borderBottomWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html) and [`borderLeftWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html).
+Sets [`borderTopWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html), [`borderRightWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html),
+[`borderBottomWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html) and [`borderLeftWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html).
 
 ```csharp
 public static T SetBorderWidth<T>(this T element, StyleFloat? top = null, StyleFloat? right = null, StyleFloat? bottom = null, StyleFloat? left = null) where T : VisualElement
@@ -6980,7 +6980,7 @@ Name the arguments, or use [`VisualElementExtensions.SetBorderWidthY<T>`](Aspid.
 
 ### SetBorderWidthBottom\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthBottom__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`borderBottomWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html).
+Sets [`borderBottomWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html).
 
 ```csharp
 public static T SetBorderWidthBottom<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7010,7 +7010,7 @@ The element type.
 
 ### SetBorderWidthLeft\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthLeft__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`borderLeftWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html).
+Sets [`borderLeftWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html).
 
 ```csharp
 public static T SetBorderWidthLeft<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7040,7 +7040,7 @@ The element type.
 
 ### SetBorderWidthRight\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthRight__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`borderRightWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html).
+Sets [`borderRightWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html).
 
 ```csharp
 public static T SetBorderWidthRight<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7070,7 +7070,7 @@ The element type.
 
 ### SetBorderWidthTop\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthTop__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`borderTopWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html).
+Sets [`borderTopWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html).
 
 ```csharp
 public static T SetBorderWidthTop<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7100,7 +7100,7 @@ The element type.
 
 ### SetBorderWidthX\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthX__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`borderLeftWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html) and [`borderRightWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html).
+Sets [`borderLeftWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderLeftWidth.html) and [`borderRightWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderRightWidth.html).
 
 ```csharp
 public static T SetBorderWidthX<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7130,7 +7130,7 @@ The element type.
 
 ### SetBorderWidthY\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBorderWidthY__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`borderTopWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html) and [`borderBottomWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html).
+Sets [`borderTopWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderTopWidth.html) and [`borderBottomWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-borderBottomWidth.html).
 
 ```csharp
 public static T SetBorderWidthY<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7160,7 +7160,7 @@ The element type.
 
 ### SetBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`bottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-bottom.html).
+Sets [`bottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-bottom.html).
 
 ```csharp
 public static T SetBottom<T>(this T element, StyleLength value) where T : VisualElement
@@ -7190,7 +7190,7 @@ The element type.
 
 ### SetColor\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetColor__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`color`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-color.html).
+Sets [`color`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-color.html).
 
 ```csharp
 public static T SetColor<T>(this T element, StyleColor value) where T : VisualElement
@@ -7220,7 +7220,7 @@ The element type.
 
 ### SetColor\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetColor__1___0_System_String_}
 
-Sets [`color`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-color.html) from an HTML color string.
+Sets [`color`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-color.html) from an HTML color string.
 
 ```csharp
 public static T SetColor<T>(this T element, string value) where T : VisualElement
@@ -7254,7 +7254,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetCursor\<T\>\(T, StyleCursor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetCursor__1___0_UnityEngine_UIElements_StyleCursor_}
 
-Sets [`cursor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-cursor.html).
+Sets [`cursor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-cursor.html).
 
 ```csharp
 public static T SetCursor<T>(this T element, StyleCursor value) where T : VisualElement
@@ -7284,7 +7284,7 @@ The element type.
 
 ### SetDataSource\<T\>\(T, object\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSource__1___0_System_Object_}
 
-Sets [`dataSource`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-dataSource.html).
+Sets [`dataSource`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-dataSource.html).
 
 ```csharp
 public static T SetDataSource<T>(this T element, object value) where T : VisualElement
@@ -7314,7 +7314,7 @@ The element type.
 
 ### SetDataSourcePath\<T\>\(T, PropertyPath\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSourcePath__1___0_Unity_Properties_PropertyPath_}
 
-Sets [`dataSourcePath`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-dataSourcePath.html).
+Sets [`dataSourcePath`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-dataSourcePath.html).
 
 ```csharp
 public static T SetDataSourcePath<T>(this T element, PropertyPath value) where T : VisualElement
@@ -7344,7 +7344,7 @@ The element type.
 
 ### SetDataSourceType\<T\>\(T, Type\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSourceType__1___0_System_Type_}
 
-Sets [`dataSourceType`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-dataSourceType.html).
+Sets [`dataSourceType`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-dataSourceType.html).
 
 ```csharp
 public static T SetDataSourceType<T>(this T element, Type value) where T : VisualElement
@@ -7378,7 +7378,7 @@ The type is only a design-time hint for the UI Builder; it does not affect runti
 
 ### SetDisablePlayModeTint\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDisablePlayModeTint__1___0_System_Boolean_}
 
-Sets [`disablePlayModeTint`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-disablePlayModeTint.html).
+Sets [`disablePlayModeTint`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-disablePlayModeTint.html).
 
 ```csharp
 public static T SetDisablePlayModeTint<T>(this T element, bool value) where T : VisualElement
@@ -7408,7 +7408,7 @@ The element type.
 
 ### SetDisplay\<T\>\(T, StyleEnum\<DisplayStyle\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDisplay__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_DisplayStyle__}
 
-Sets [`display`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-display.html).
+Sets [`display`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-display.html).
 
 ```csharp
 public static T SetDisplay<T>(this T element, StyleEnum<DisplayStyle> value) where T : VisualElement
@@ -7438,7 +7438,7 @@ The element type.
 
 ### SetDisplay\<T\>\(T, DisplayStyle\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDisplay__1___0_UnityEngine_UIElements_DisplayStyle_}
 
-Sets [`display`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-display.html).
+Sets [`display`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-display.html).
 
 ```csharp
 public static T SetDisplay<T>(this T element, DisplayStyle value) where T : VisualElement
@@ -7468,8 +7468,8 @@ The element type.
 
 ### SetDistance\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistance__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`top`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-top.html), [`right`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-right.html),
-[`bottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-bottom.html) and [`left`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-left.html).
+Sets [`top`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-top.html), [`right`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-right.html),
+[`bottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-bottom.html) and [`left`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-left.html).
 
 ```csharp
 public static T SetDistance<T>(this T element, StyleLength value) where T : VisualElement
@@ -7499,8 +7499,8 @@ The element type.
 
 ### SetDistance\<T\>\(T, StyleLength?, StyleLength?, StyleLength?, StyleLength?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistance__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__}
 
-Sets [`top`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-top.html), [`right`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-right.html),
-[`bottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-bottom.html) and [`left`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-left.html).
+Sets [`top`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-top.html), [`right`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-right.html),
+[`bottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-bottom.html) and [`left`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-left.html).
 
 ```csharp
 public static T SetDistance<T>(this T element, StyleLength? top = null, StyleLength? right = null, StyleLength? bottom = null, StyleLength? left = null) where T : VisualElement
@@ -7548,7 +7548,7 @@ Name the arguments, or use [`VisualElementExtensions.SetDistanceY<T>`](Aspid.Fas
 
 ### SetDistanceX\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistanceX__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`right`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-right.html) and [`left`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-left.html).
+Sets [`right`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-right.html) and [`left`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-left.html).
 
 ```csharp
 public static T SetDistanceX<T>(this T element, StyleLength value) where T : VisualElement
@@ -7578,7 +7578,7 @@ The element type.
 
 ### SetDistanceY\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistanceY__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`top`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-top.html) and [`bottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-bottom.html).
+Sets [`top`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-top.html) and [`bottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-bottom.html).
 
 ```csharp
 public static T SetDistanceY<T>(this T element, StyleLength value) where T : VisualElement
@@ -7608,7 +7608,7 @@ The element type.
 
 ### SetEnabledSelf\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetEnabledSelf__1___0_System_Boolean_}
 
-Enables or disables the element via [`SetEnabled`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.SetEnabled.html).
+Enables or disables the element via [`SetEnabled`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.SetEnabled.html).
 
 ```csharp
 public static T SetEnabledSelf<T>(this T element, bool value) where T : VisualElement
@@ -7638,7 +7638,7 @@ The element type.
 
 ### SetFilter\<T\>\(T, StyleList\<FilterFunction\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFilter__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_FilterFunction__}
 
-Sets [`filter`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-filter.html).
+Sets [`filter`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-filter.html).
 
 ```csharp
 public static T SetFilter<T>(this T element, StyleList<FilterFunction> value) where T : VisualElement
@@ -7672,7 +7672,7 @@ Available in Unity 6000.3 and newer.
 
 ### SetFlexBasis\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexBasis__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`flexBasis`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexBasis.html).
+Sets [`flexBasis`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-flexBasis.html).
 
 ```csharp
 public static T SetFlexBasis<T>(this T element, StyleLength value) where T : VisualElement
@@ -7702,7 +7702,7 @@ The element type.
 
 ### SetFlexDirection\<T\>\(T, StyleEnum\<FlexDirection\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexDirection__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_FlexDirection__}
 
-Sets [`flexDirection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexDirection.html).
+Sets [`flexDirection`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-flexDirection.html).
 
 ```csharp
 public static T SetFlexDirection<T>(this T element, StyleEnum<FlexDirection> value) where T : VisualElement
@@ -7732,7 +7732,7 @@ The element type.
 
 ### SetFlexDirection\<T\>\(T, FlexDirection\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexDirection__1___0_UnityEngine_UIElements_FlexDirection_}
 
-Sets [`flexDirection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexDirection.html).
+Sets [`flexDirection`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-flexDirection.html).
 
 ```csharp
 public static T SetFlexDirection<T>(this T element, FlexDirection value) where T : VisualElement
@@ -7762,7 +7762,7 @@ The element type.
 
 ### SetFlexGrow\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexGrow__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`flexGrow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexGrow.html).
+Sets [`flexGrow`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-flexGrow.html).
 
 ```csharp
 public static T SetFlexGrow<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7792,7 +7792,7 @@ The element type.
 
 ### SetFlexShrink\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexShrink__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`flexShrink`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexShrink.html).
+Sets [`flexShrink`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-flexShrink.html).
 
 ```csharp
 public static T SetFlexShrink<T>(this T element, StyleFloat value) where T : VisualElement
@@ -7822,7 +7822,7 @@ The element type.
 
 ### SetFlexWrap\<T\>\(T, StyleEnum\<Wrap\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexWrap__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Wrap__}
 
-Sets [`flexWrap`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexWrap.html).
+Sets [`flexWrap`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-flexWrap.html).
 
 ```csharp
 public static T SetFlexWrap<T>(this T element, StyleEnum<Wrap> value) where T : VisualElement
@@ -7852,7 +7852,7 @@ The element type.
 
 ### SetFlexWrap\<T\>\(T, Wrap\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexWrap__1___0_UnityEngine_UIElements_Wrap_}
 
-Sets [`flexWrap`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-flexWrap.html).
+Sets [`flexWrap`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-flexWrap.html).
 
 ```csharp
 public static T SetFlexWrap<T>(this T element, Wrap value) where T : VisualElement
@@ -7882,7 +7882,7 @@ The element type.
 
 ### SetFontSize\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetFontSize__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`fontSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-fontSize.html).
+Sets [`fontSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-fontSize.html).
 
 ```csharp
 public static T SetFontSize<T>(this T element, StyleLength value) where T : VisualElement
@@ -7912,7 +7912,7 @@ The element type.
 
 ### SetHeight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetHeight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`height`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-height.html).
+Sets [`height`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-height.html).
 
 ```csharp
 public static T SetHeight<T>(this T element, StyleLength value) where T : VisualElement
@@ -7942,7 +7942,7 @@ The element type.
 
 ### SetJustifyContent\<T\>\(T, StyleEnum\<Justify\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetJustifyContent__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Justify__}
 
-Sets [`justifyContent`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-justifyContent.html).
+Sets [`justifyContent`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-justifyContent.html).
 
 ```csharp
 public static T SetJustifyContent<T>(this T element, StyleEnum<Justify> value) where T : VisualElement
@@ -7972,7 +7972,7 @@ The element type.
 
 ### SetJustifyContent\<T\>\(T, Justify\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetJustifyContent__1___0_UnityEngine_UIElements_Justify_}
 
-Sets [`justifyContent`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-justifyContent.html).
+Sets [`justifyContent`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-justifyContent.html).
 
 ```csharp
 public static T SetJustifyContent<T>(this T element, Justify value) where T : VisualElement
@@ -8002,7 +8002,7 @@ The element type.
 
 ### SetLanguageDirection\<T\>\(T, LanguageDirection\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetLanguageDirection__1___0_UnityEngine_UIElements_LanguageDirection_}
 
-Sets [`languageDirection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-languageDirection.html).
+Sets [`languageDirection`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-languageDirection.html).
 
 ```csharp
 public static T SetLanguageDirection<T>(this T element, LanguageDirection value) where T : VisualElement
@@ -8032,7 +8032,7 @@ The element type.
 
 ### SetLeft\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetLeft__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`left`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-left.html).
+Sets [`left`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-left.html).
 
 ```csharp
 public static T SetLeft<T>(this T element, StyleLength value) where T : VisualElement
@@ -8062,7 +8062,7 @@ The element type.
 
 ### SetLetterSpacing\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetLetterSpacing__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`letterSpacing`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-letterSpacing.html).
+Sets [`letterSpacing`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-letterSpacing.html).
 
 ```csharp
 public static T SetLetterSpacing<T>(this T element, StyleLength value) where T : VisualElement
@@ -8092,8 +8092,8 @@ The element type.
 
 ### SetMargin\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMargin__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`marginTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginTop.html), [`marginRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginRight.html),
-[`marginBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html) and [`marginLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
+Sets [`marginTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginTop.html), [`marginRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginRight.html),
+[`marginBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html) and [`marginLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
 
 ```csharp
 public static T SetMargin<T>(this T element, StyleLength value) where T : VisualElement
@@ -8123,8 +8123,8 @@ The element type.
 
 ### SetMargin\<T\>\(T, StyleLength?, StyleLength?, StyleLength?, StyleLength?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMargin__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__}
 
-Sets [`marginTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginTop.html), [`marginRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginRight.html),
-[`marginBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html) and [`marginLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
+Sets [`marginTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginTop.html), [`marginRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginRight.html),
+[`marginBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html) and [`marginLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
 
 ```csharp
 public static T SetMargin<T>(this T element, StyleLength? top = null, StyleLength? right = null, StyleLength? bottom = null, StyleLength? left = null) where T : VisualElement
@@ -8172,7 +8172,7 @@ Name the arguments, or use [`VisualElementExtensions.SetMarginY<T>`](Aspid.FastT
 
 ### SetMarginBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`marginBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html).
+Sets [`marginBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html).
 
 ```csharp
 public static T SetMarginBottom<T>(this T element, StyleLength value) where T : VisualElement
@@ -8202,7 +8202,7 @@ The element type.
 
 ### SetMarginLeft\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginLeft__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`marginLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
+Sets [`marginLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
 
 ```csharp
 public static T SetMarginLeft<T>(this T element, StyleLength value) where T : VisualElement
@@ -8232,7 +8232,7 @@ The element type.
 
 ### SetMarginRight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginRight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`marginRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginRight.html).
+Sets [`marginRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginRight.html).
 
 ```csharp
 public static T SetMarginRight<T>(this T element, StyleLength value) where T : VisualElement
@@ -8262,7 +8262,7 @@ The element type.
 
 ### SetMarginTop\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginTop__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`marginTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginTop.html).
+Sets [`marginTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginTop.html).
 
 ```csharp
 public static T SetMarginTop<T>(this T element, StyleLength value) where T : VisualElement
@@ -8292,7 +8292,7 @@ The element type.
 
 ### SetMarginX\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginX__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`marginRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginRight.html) and [`marginLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
+Sets [`marginRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginRight.html) and [`marginLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginLeft.html).
 
 ```csharp
 public static T SetMarginX<T>(this T element, StyleLength value) where T : VisualElement
@@ -8322,7 +8322,7 @@ The element type.
 
 ### SetMarginY\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginY__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`marginTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginTop.html) and [`marginBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html).
+Sets [`marginTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginTop.html) and [`marginBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-marginBottom.html).
 
 ```csharp
 public static T SetMarginY<T>(this T element, StyleLength value) where T : VisualElement
@@ -8352,7 +8352,7 @@ The element type.
 
 ### SetMaxHeight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxHeight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`maxHeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-maxHeight.html).
+Sets [`maxHeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-maxHeight.html).
 
 ```csharp
 public static T SetMaxHeight<T>(this T element, StyleLength value) where T : VisualElement
@@ -8382,7 +8382,7 @@ The element type.
 
 ### SetMaxSize\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxSize__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`maxWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-maxWidth.html) and [`maxHeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-maxHeight.html).
+Sets [`maxWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-maxWidth.html) and [`maxHeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-maxHeight.html).
 
 ```csharp
 public static T SetMaxSize<T>(this T element, StyleLength value) where T : VisualElement
@@ -8412,7 +8412,7 @@ The element type.
 
 ### SetMaxSize\<T\>\(T, StyleLength?, StyleLength?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxSize__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__}
 
-Sets [`maxWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-maxWidth.html) and [`maxHeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-maxHeight.html).
+Sets [`maxWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-maxWidth.html) and [`maxHeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-maxHeight.html).
 
 ```csharp
 public static T SetMaxSize<T>(this T element, StyleLength? maxWidth = null, StyleLength? maxHeight = null) where T : VisualElement
@@ -8446,7 +8446,7 @@ The element type.
 
 ### SetMaxWidth\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxWidth__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`maxWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-maxWidth.html).
+Sets [`maxWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-maxWidth.html).
 
 ```csharp
 public static T SetMaxWidth<T>(this T element, StyleLength value) where T : VisualElement
@@ -8476,7 +8476,7 @@ The element type.
 
 ### SetMinHeight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMinHeight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`minHeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-minHeight.html).
+Sets [`minHeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-minHeight.html).
 
 ```csharp
 public static T SetMinHeight<T>(this T element, StyleLength value) where T : VisualElement
@@ -8506,7 +8506,7 @@ The element type.
 
 ### SetMinSize\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMinSize__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`minWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-minWidth.html) and [`minHeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-minHeight.html).
+Sets [`minWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-minWidth.html) and [`minHeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-minHeight.html).
 
 ```csharp
 public static T SetMinSize<T>(this T element, StyleLength value) where T : VisualElement
@@ -8536,7 +8536,7 @@ The element type.
 
 ### SetMinSize\<T\>\(T, StyleLength?, StyleLength?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMinSize__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__}
 
-Sets [`minWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-minWidth.html) and [`minHeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-minHeight.html).
+Sets [`minWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-minWidth.html) and [`minHeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-minHeight.html).
 
 ```csharp
 public static T SetMinSize<T>(this T element, StyleLength? minWidth = null, StyleLength? minHeight = null) where T : VisualElement
@@ -8570,7 +8570,7 @@ The element type.
 
 ### SetMinWidth\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetMinWidth__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`minWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-minWidth.html).
+Sets [`minWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-minWidth.html).
 
 ```csharp
 public static T SetMinWidth<T>(this T element, StyleLength value) where T : VisualElement
@@ -8600,7 +8600,7 @@ The element type.
 
 ### SetName\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetName__1___0_System_String_}
 
-Sets [`name`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-name.html).
+Sets [`name`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-name.html).
 
 ```csharp
 public static T SetName<T>(this T element, string value) where T : VisualElement
@@ -8630,7 +8630,7 @@ The element type.
 
 ### SetNormalUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetNormalUnityFontStyleAndWeight__1___0_}
 
-Sets [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) to [`Normal`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/FontStyle.Normal.html), removing bold and italic.
+Sets [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html) to [`Normal`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/FontStyle.Normal.html), removing bold and italic.
 
 ```csharp
 public static T SetNormalUnityFontStyleAndWeight<T>(this T element) where T : VisualElement
@@ -8660,7 +8660,7 @@ Sets the value unconditionally, regardless of any current bold or italic style.
 
 ### SetOpacity\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetOpacity__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`opacity`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-opacity.html).
+Sets [`opacity`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-opacity.html).
 
 ```csharp
 public static T SetOpacity<T>(this T element, StyleFloat value) where T : VisualElement
@@ -8690,7 +8690,7 @@ The element type.
 
 ### SetOverflow\<T\>\(T, StyleEnum\<Overflow\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetOverflow__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Overflow__}
 
-Sets [`overflow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-overflow.html).
+Sets [`overflow`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-overflow.html).
 
 ```csharp
 public static T SetOverflow<T>(this T element, StyleEnum<Overflow> value) where T : VisualElement
@@ -8720,7 +8720,7 @@ The element type.
 
 ### SetOverflow\<T\>\(T, Overflow\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetOverflow__1___0_UnityEngine_UIElements_Overflow_}
 
-Sets [`overflow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-overflow.html).
+Sets [`overflow`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-overflow.html).
 
 ```csharp
 public static T SetOverflow<T>(this T element, Overflow value) where T : VisualElement
@@ -8750,8 +8750,8 @@ The element type.
 
 ### SetPadding\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPadding__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`paddingTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html), [`paddingRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html),
-[`paddingBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html) and [`paddingLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
+Sets [`paddingTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html), [`paddingRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html),
+[`paddingBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html) and [`paddingLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
 
 ```csharp
 public static T SetPadding<T>(this T element, StyleLength value) where T : VisualElement
@@ -8781,8 +8781,8 @@ The element type.
 
 ### SetPadding\<T\>\(T, StyleLength?, StyleLength?, StyleLength?, StyleLength?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPadding__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__}
 
-Sets [`paddingTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html), [`paddingRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html),
-[`paddingBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html) and [`paddingLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
+Sets [`paddingTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html), [`paddingRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html),
+[`paddingBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html) and [`paddingLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
 
 ```csharp
 public static T SetPadding<T>(this T element, StyleLength? top = null, StyleLength? right = null, StyleLength? bottom = null, StyleLength? left = null) where T : VisualElement
@@ -8830,7 +8830,7 @@ Name the arguments, or use [`VisualElementExtensions.SetPaddingY<T>`](Aspid.Fast
 
 ### SetPaddingBottom\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingBottom__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`paddingBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html).
+Sets [`paddingBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html).
 
 ```csharp
 public static T SetPaddingBottom<T>(this T element, StyleLength value) where T : VisualElement
@@ -8860,7 +8860,7 @@ The element type.
 
 ### SetPaddingLeft\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingLeft__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`paddingLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
+Sets [`paddingLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
 
 ```csharp
 public static T SetPaddingLeft<T>(this T element, StyleLength value) where T : VisualElement
@@ -8890,7 +8890,7 @@ The element type.
 
 ### SetPaddingRight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingRight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`paddingRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html).
+Sets [`paddingRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html).
 
 ```csharp
 public static T SetPaddingRight<T>(this T element, StyleLength value) where T : VisualElement
@@ -8920,7 +8920,7 @@ The element type.
 
 ### SetPaddingTop\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingTop__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`paddingTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html).
+Sets [`paddingTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html).
 
 ```csharp
 public static T SetPaddingTop<T>(this T element, StyleLength value) where T : VisualElement
@@ -8950,7 +8950,7 @@ The element type.
 
 ### SetPaddingX\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingX__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`paddingRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html) and [`paddingLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
+Sets [`paddingRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingRight.html) and [`paddingLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingLeft.html).
 
 ```csharp
 public static T SetPaddingX<T>(this T element, StyleLength value) where T : VisualElement
@@ -8980,7 +8980,7 @@ The element type.
 
 ### SetPaddingY\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingY__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`paddingTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html) and [`paddingBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html).
+Sets [`paddingTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingTop.html) and [`paddingBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-paddingBottom.html).
 
 ```csharp
 public static T SetPaddingY<T>(this T element, StyleLength value) where T : VisualElement
@@ -9010,7 +9010,7 @@ The element type.
 
 ### SetPickingMode\<T\>\(T, PickingMode\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPickingMode__1___0_UnityEngine_UIElements_PickingMode_}
 
-Sets [`pickingMode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-pickingMode.html).
+Sets [`pickingMode`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-pickingMode.html).
 
 ```csharp
 public static T SetPickingMode<T>(this T element, PickingMode value) where T : VisualElement
@@ -9040,7 +9040,7 @@ The element type.
 
 ### SetPosition\<T\>\(T, StyleEnum\<Position\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPosition__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Position__}
 
-Sets [`position`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-position.html).
+Sets [`position`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-position.html).
 
 ```csharp
 public static T SetPosition<T>(this T element, StyleEnum<Position> value) where T : VisualElement
@@ -9070,7 +9070,7 @@ The element type.
 
 ### SetPosition\<T\>\(T, Position\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetPosition__1___0_UnityEngine_UIElements_Position_}
 
-Sets [`position`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-position.html).
+Sets [`position`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-position.html).
 
 ```csharp
 public static T SetPosition<T>(this T element, Position value) where T : VisualElement
@@ -9100,7 +9100,7 @@ The element type.
 
 ### SetRight\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetRight__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`right`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-right.html).
+Sets [`right`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-right.html).
 
 ```csharp
 public static T SetRight<T>(this T element, StyleLength value) where T : VisualElement
@@ -9130,7 +9130,7 @@ The element type.
 
 ### SetRotate\<T\>\(T, StyleRotate\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetRotate__1___0_UnityEngine_UIElements_StyleRotate_}
 
-Sets [`rotate`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-rotate.html).
+Sets [`rotate`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-rotate.html).
 
 ```csharp
 public static T SetRotate<T>(this T element, StyleRotate value) where T : VisualElement
@@ -9160,7 +9160,7 @@ The element type.
 
 ### SetScale\<T\>\(T, StyleScale\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetScale__1___0_UnityEngine_UIElements_StyleScale_}
 
-Sets [`scale`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-scale.html).
+Sets [`scale`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-scale.html).
 
 ```csharp
 public static T SetScale<T>(this T element, StyleScale value) where T : VisualElement
@@ -9190,7 +9190,7 @@ The element type.
 
 ### SetSize\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetSize__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`width`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-width.html) and [`height`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-height.html).
+Sets [`width`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-width.html) and [`height`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-height.html).
 
 ```csharp
 public static T SetSize<T>(this T element, StyleLength value) where T : VisualElement
@@ -9220,7 +9220,7 @@ The element type.
 
 ### SetSize\<T\>\(T, StyleLength?, StyleLength?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetSize__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__}
 
-Sets [`width`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-width.html) and [`height`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-height.html).
+Sets [`width`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-width.html) and [`height`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-height.html).
 
 ```csharp
 public static T SetSize<T>(this T element, StyleLength? width = null, StyleLength? height = null) where T : VisualElement
@@ -9254,7 +9254,7 @@ The element type.
 
 ### SetTextOverflow\<T\>\(T, StyleEnum\<TextOverflow\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTextOverflow__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_TextOverflow__}
 
-Sets [`textOverflow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-textOverflow.html).
+Sets [`textOverflow`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-textOverflow.html).
 
 ```csharp
 public static T SetTextOverflow<T>(this T element, StyleEnum<TextOverflow> value) where T : VisualElement
@@ -9284,7 +9284,7 @@ The element type.
 
 ### SetTextOverflow\<T\>\(T, TextOverflow\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTextOverflow__1___0_UnityEngine_UIElements_TextOverflow_}
 
-Sets [`textOverflow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-textOverflow.html).
+Sets [`textOverflow`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-textOverflow.html).
 
 ```csharp
 public static T SetTextOverflow<T>(this T element, TextOverflow value) where T : VisualElement
@@ -9314,7 +9314,7 @@ The element type.
 
 ### SetTextShadow\<T\>\(T, StyleTextShadow\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTextShadow__1___0_UnityEngine_UIElements_StyleTextShadow_}
 
-Sets [`textShadow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-textShadow.html).
+Sets [`textShadow`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-textShadow.html).
 
 ```csharp
 public static T SetTextShadow<T>(this T element, StyleTextShadow value) where T : VisualElement
@@ -9344,7 +9344,7 @@ The element type.
 
 ### SetTooltip\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTooltip__1___0_System_String_}
 
-Sets [`tooltip`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-tooltip.html).
+Sets [`tooltip`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-tooltip.html).
 
 ```csharp
 public static T SetTooltip<T>(this T element, string value) where T : VisualElement
@@ -9374,7 +9374,7 @@ The element type.
 
 ### SetTop\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTop__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`top`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-top.html).
+Sets [`top`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-top.html).
 
 ```csharp
 public static T SetTop<T>(this T element, StyleLength value) where T : VisualElement
@@ -9404,7 +9404,7 @@ The element type.
 
 ### SetTransformOrigin\<T\>\(T, StyleTransformOrigin\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransformOrigin__1___0_UnityEngine_UIElements_StyleTransformOrigin_}
 
-Sets [`transformOrigin`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-transformOrigin.html).
+Sets [`transformOrigin`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-transformOrigin.html).
 
 ```csharp
 public static T SetTransformOrigin<T>(this T element, StyleTransformOrigin value) where T : VisualElement
@@ -9434,7 +9434,7 @@ The element type.
 
 ### SetTransitionDelay\<T\>\(T, StyleList\<TimeValue\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionDelay__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_TimeValue__}
 
-Sets [`transitionDelay`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-transitionDelay.html).
+Sets [`transitionDelay`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-transitionDelay.html).
 
 ```csharp
 public static T SetTransitionDelay<T>(this T element, StyleList<TimeValue> value) where T : VisualElement
@@ -9464,7 +9464,7 @@ The element type.
 
 ### SetTransitionDuration\<T\>\(T, StyleList\<TimeValue\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionDuration__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_TimeValue__}
 
-Sets [`transitionDuration`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-transitionDuration.html).
+Sets [`transitionDuration`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-transitionDuration.html).
 
 ```csharp
 public static T SetTransitionDuration<T>(this T element, StyleList<TimeValue> value) where T : VisualElement
@@ -9494,7 +9494,7 @@ The element type.
 
 ### SetTransitionProperty\<T\>\(T, StyleList\<StylePropertyName\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionProperty__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_StylePropertyName__}
 
-Sets [`transitionProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-transitionProperty.html).
+Sets [`transitionProperty`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-transitionProperty.html).
 
 ```csharp
 public static T SetTransitionProperty<T>(this T element, StyleList<StylePropertyName> value) where T : VisualElement
@@ -9524,7 +9524,7 @@ The element type.
 
 ### SetTransitionTimingFunction\<T\>\(T, StyleList\<EasingFunction\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionTimingFunction__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_EasingFunction__}
 
-Sets [`transitionTimingFunction`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-transitionTimingFunction.html).
+Sets [`transitionTimingFunction`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-transitionTimingFunction.html).
 
 ```csharp
 public static T SetTransitionTimingFunction<T>(this T element, StyleList<EasingFunction> value) where T : VisualElement
@@ -9554,7 +9554,7 @@ The element type.
 
 ### SetTranslate\<T\>\(T, StyleTranslate\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetTranslate__1___0_UnityEngine_UIElements_StyleTranslate_}
 
-Sets [`translate`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-translate.html).
+Sets [`translate`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-translate.html).
 
 ```csharp
 public static T SetTranslate<T>(this T element, StyleTranslate value) where T : VisualElement
@@ -9584,7 +9584,7 @@ The element type.
 
 ### SetUnityBackgroundImageTintColor\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityBackgroundImageTintColor__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`unityBackgroundImageTintColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityBackgroundImageTintColor.html).
+Sets [`unityBackgroundImageTintColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityBackgroundImageTintColor.html).
 
 ```csharp
 public static T SetUnityBackgroundImageTintColor<T>(this T element, StyleColor value) where T : VisualElement
@@ -9648,7 +9648,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetUnityEditorTextRenderingMode\<T\>\(T, StyleEnum\<EditorTextRenderingMode\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityEditorTextRenderingMode__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_EditorTextRenderingMode__}
 
-Sets [`unityEditorTextRenderingMode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityEditorTextRenderingMode.html).
+Sets [`unityEditorTextRenderingMode`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityEditorTextRenderingMode.html).
 
 ```csharp
 public static T SetUnityEditorTextRenderingMode<T>(this T element, StyleEnum<EditorTextRenderingMode> value) where T : VisualElement
@@ -9678,7 +9678,7 @@ The element type.
 
 ### SetUnityEditorTextRenderingMode\<T\>\(T, EditorTextRenderingMode\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityEditorTextRenderingMode__1___0_UnityEngine_UIElements_EditorTextRenderingMode_}
 
-Sets [`unityEditorTextRenderingMode`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityEditorTextRenderingMode.html).
+Sets [`unityEditorTextRenderingMode`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityEditorTextRenderingMode.html).
 
 ```csharp
 public static T SetUnityEditorTextRenderingMode<T>(this T element, EditorTextRenderingMode value) where T : VisualElement
@@ -9708,7 +9708,7 @@ The element type.
 
 ### SetUnityFont\<T\>\(T, StyleFont\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityFont__1___0_UnityEngine_UIElements_StyleFont_}
 
-Sets [`unityFont`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFont.html).
+Sets [`unityFont`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFont.html).
 
 ```csharp
 public static T SetUnityFont<T>(this T element, StyleFont value) where T : VisualElement
@@ -9738,7 +9738,7 @@ The element type.
 
 ### SetUnityFontDefinition\<T\>\(T, StyleFontDefinition\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityFontDefinition__1___0_UnityEngine_UIElements_StyleFontDefinition_}
 
-Sets [`unityFontDefinition`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontDefinition.html).
+Sets [`unityFontDefinition`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontDefinition.html).
 
 ```csharp
 public static T SetUnityFontDefinition<T>(this T element, StyleFontDefinition value) where T : VisualElement
@@ -9768,7 +9768,7 @@ The element type.
 
 ### SetUnityFontStyleAndWeight\<T\>\(T, StyleEnum\<FontStyle\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityFontStyleAndWeight__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_FontStyle__}
 
-Sets [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html).
+Sets [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html).
 
 ```csharp
 public static T SetUnityFontStyleAndWeight<T>(this T element, StyleEnum<FontStyle> value) where T : VisualElement
@@ -9798,7 +9798,7 @@ The element type.
 
 ### SetUnityFontStyleAndWeight\<T\>\(T, FontStyle\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityFontStyleAndWeight__1___0_UnityEngine_FontStyle_}
 
-Sets [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html).
+Sets [`unityFontStyleAndWeight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityFontStyleAndWeight.html).
 
 ```csharp
 public static T SetUnityFontStyleAndWeight<T>(this T element, FontStyle value) where T : VisualElement
@@ -9828,7 +9828,7 @@ The element type.
 
 ### SetUnityMaterial\<T\>\(T, StyleMaterialDefinition\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityMaterial__1___0_UnityEngine_UIElements_StyleMaterialDefinition_}
 
-Sets [`unityMaterial`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityMaterial.html).
+Sets [`unityMaterial`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityMaterial.html).
 
 ```csharp
 public static T SetUnityMaterial<T>(this T element, StyleMaterialDefinition value) where T : VisualElement
@@ -9862,7 +9862,7 @@ Available in Unity 6000.3 and newer.
 
 ### SetUnityOverflowClipBox\<T\>\(T, StyleEnum\<OverflowClipBox\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityOverflowClipBox__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_OverflowClipBox__}
 
-Sets [`unityOverflowClipBox`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityOverflowClipBox.html).
+Sets [`unityOverflowClipBox`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityOverflowClipBox.html).
 
 ```csharp
 public static T SetUnityOverflowClipBox<T>(this T element, StyleEnum<OverflowClipBox> value) where T : VisualElement
@@ -9892,7 +9892,7 @@ The element type.
 
 ### SetUnityOverflowClipBox\<T\>\(T, OverflowClipBox\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityOverflowClipBox__1___0_UnityEngine_UIElements_OverflowClipBox_}
 
-Sets [`unityOverflowClipBox`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityOverflowClipBox.html).
+Sets [`unityOverflowClipBox`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityOverflowClipBox.html).
 
 ```csharp
 public static T SetUnityOverflowClipBox<T>(this T element, OverflowClipBox value) where T : VisualElement
@@ -9922,7 +9922,7 @@ The element type.
 
 ### SetUnityParagraphSpacing\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityParagraphSpacing__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`unityParagraphSpacing`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityParagraphSpacing.html).
+Sets [`unityParagraphSpacing`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityParagraphSpacing.html).
 
 ```csharp
 public static T SetUnityParagraphSpacing<T>(this T element, StyleLength value) where T : VisualElement
@@ -9952,8 +9952,8 @@ The element type.
 
 ### SetUnitySlice\<T\>\(T, StyleInt\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySlice__1___0_UnityEngine_UIElements_StyleInt_}
 
-Sets [`unitySliceTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html), [`unitySliceRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html),
-[`unitySliceBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html) and [`unitySliceLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
+Sets [`unitySliceTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html), [`unitySliceRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html),
+[`unitySliceBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html) and [`unitySliceLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
 
 ```csharp
 public static T SetUnitySlice<T>(this T element, StyleInt value) where T : VisualElement
@@ -9983,8 +9983,8 @@ The element type.
 
 ### SetUnitySlice\<T\>\(T, StyleInt?, StyleInt?, StyleInt?, StyleInt?\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySlice__1___0_System_Nullable_UnityEngine_UIElements_StyleInt__System_Nullable_UnityEngine_UIElements_StyleInt__System_Nullable_UnityEngine_UIElements_StyleInt__System_Nullable_UnityEngine_UIElements_StyleInt__}
 
-Sets [`unitySliceTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html), [`unitySliceRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html),
-[`unitySliceBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html) and [`unitySliceLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
+Sets [`unitySliceTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html), [`unitySliceRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html),
+[`unitySliceBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html) and [`unitySliceLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
 
 ```csharp
 public static T SetUnitySlice<T>(this T element, StyleInt? top = null, StyleInt? right = null, StyleInt? bottom = null, StyleInt? left = null) where T : VisualElement
@@ -10026,7 +10026,7 @@ The element type.
 
 ### SetUnitySliceBottom\<T\>\(T, StyleInt\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceBottom__1___0_UnityEngine_UIElements_StyleInt_}
 
-Sets [`unitySliceBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html).
+Sets [`unitySliceBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html).
 
 ```csharp
 public static T SetUnitySliceBottom<T>(this T element, StyleInt value) where T : VisualElement
@@ -10056,7 +10056,7 @@ The element type.
 
 ### SetUnitySliceLeft\<T\>\(T, StyleInt\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceLeft__1___0_UnityEngine_UIElements_StyleInt_}
 
-Sets [`unitySliceLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
+Sets [`unitySliceLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
 
 ```csharp
 public static T SetUnitySliceLeft<T>(this T element, StyleInt value) where T : VisualElement
@@ -10086,7 +10086,7 @@ The element type.
 
 ### SetUnitySliceRight\<T\>\(T, StyleInt\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceRight__1___0_UnityEngine_UIElements_StyleInt_}
 
-Sets [`unitySliceRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html).
+Sets [`unitySliceRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html).
 
 ```csharp
 public static T SetUnitySliceRight<T>(this T element, StyleInt value) where T : VisualElement
@@ -10116,7 +10116,7 @@ The element type.
 
 ### SetUnitySliceScale\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceScale__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`unitySliceScale`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceScale.html).
+Sets [`unitySliceScale`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceScale.html).
 
 ```csharp
 public static T SetUnitySliceScale<T>(this T element, StyleFloat value) where T : VisualElement
@@ -10146,7 +10146,7 @@ The element type.
 
 ### SetUnitySliceTop\<T\>\(T, StyleInt\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceTop__1___0_UnityEngine_UIElements_StyleInt_}
 
-Sets [`unitySliceTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html).
+Sets [`unitySliceTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html).
 
 ```csharp
 public static T SetUnitySliceTop<T>(this T element, StyleInt value) where T : VisualElement
@@ -10176,7 +10176,7 @@ The element type.
 
 ### SetUnitySliceType\<T\>\(T, StyleEnum\<SliceType\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceType__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_SliceType__}
 
-Sets [`unitySliceType`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceType.html).
+Sets [`unitySliceType`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceType.html).
 
 ```csharp
 public static T SetUnitySliceType<T>(this T element, StyleEnum<SliceType> value) where T : VisualElement
@@ -10206,7 +10206,7 @@ The element type.
 
 ### SetUnitySliceType\<T\>\(T, SliceType\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceType__1___0_UnityEngine_UIElements_SliceType_}
 
-Sets [`unitySliceType`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceType.html).
+Sets [`unitySliceType`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceType.html).
 
 ```csharp
 public static T SetUnitySliceType<T>(this T element, SliceType value) where T : VisualElement
@@ -10236,7 +10236,7 @@ The element type.
 
 ### SetUnitySliceX\<T\>\(T, StyleInt\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceX__1___0_UnityEngine_UIElements_StyleInt_}
 
-Sets [`unitySliceRight`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html) and [`unitySliceLeft`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
+Sets [`unitySliceRight`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceRight.html) and [`unitySliceLeft`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceLeft.html).
 
 ```csharp
 public static T SetUnitySliceX<T>(this T element, StyleInt value) where T : VisualElement
@@ -10266,7 +10266,7 @@ The element type.
 
 ### SetUnitySliceY\<T\>\(T, StyleInt\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnitySliceY__1___0_UnityEngine_UIElements_StyleInt_}
 
-Sets [`unitySliceTop`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html) and [`unitySliceBottom`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html).
+Sets [`unitySliceTop`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceTop.html) and [`unitySliceBottom`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unitySliceBottom.html).
 
 ```csharp
 public static T SetUnitySliceY<T>(this T element, StyleInt value) where T : VisualElement
@@ -10296,7 +10296,7 @@ The element type.
 
 ### SetUnityTextAlign\<T\>\(T, StyleEnum\<TextAnchor\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextAlign__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_TextAnchor__}
 
-Sets [`unityTextAlign`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextAlign.html).
+Sets [`unityTextAlign`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextAlign.html).
 
 ```csharp
 public static T SetUnityTextAlign<T>(this T element, StyleEnum<TextAnchor> value) where T : VisualElement
@@ -10326,7 +10326,7 @@ The element type.
 
 ### SetUnityTextAlign\<T\>\(T, TextAnchor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextAlign__1___0_UnityEngine_TextAnchor_}
 
-Sets [`unityTextAlign`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextAlign.html).
+Sets [`unityTextAlign`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextAlign.html).
 
 ```csharp
 public static T SetUnityTextAlign<T>(this T element, TextAnchor value) where T : VisualElement
@@ -10356,7 +10356,7 @@ The element type.
 
 ### SetUnityTextAutoSize\<T\>\(T, StyleTextAutoSize\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextAutoSize__1___0_UnityEngine_UIElements_StyleTextAutoSize_}
 
-Sets [`unityTextAutoSize`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextAutoSize.html).
+Sets [`unityTextAutoSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextAutoSize.html).
 
 ```csharp
 public static T SetUnityTextAutoSize<T>(this T element, StyleTextAutoSize value) where T : VisualElement
@@ -10390,7 +10390,7 @@ Available in Unity 6000.2 and newer.
 
 ### SetUnityTextGenerator\<T\>\(T, StyleEnum\<TextGeneratorType\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextGenerator__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_TextGeneratorType__}
 
-Sets [`unityTextGenerator`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextGenerator.html).
+Sets [`unityTextGenerator`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextGenerator.html).
 
 ```csharp
 public static T SetUnityTextGenerator<T>(this T element, StyleEnum<TextGeneratorType> value) where T : VisualElement
@@ -10420,7 +10420,7 @@ The element type.
 
 ### SetUnityTextGenerator\<T\>\(T, TextGeneratorType\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextGenerator__1___0_UnityEngine_TextGeneratorType_}
 
-Sets [`unityTextGenerator`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextGenerator.html).
+Sets [`unityTextGenerator`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextGenerator.html).
 
 ```csharp
 public static T SetUnityTextGenerator<T>(this T element, TextGeneratorType value) where T : VisualElement
@@ -10450,7 +10450,7 @@ The element type.
 
 ### SetUnityTextOutlineColor\<T\>\(T, StyleColor\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextOutlineColor__1___0_UnityEngine_UIElements_StyleColor_}
 
-Sets [`unityTextOutlineColor`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextOutlineColor.html).
+Sets [`unityTextOutlineColor`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextOutlineColor.html).
 
 ```csharp
 public static T SetUnityTextOutlineColor<T>(this T element, StyleColor value) where T : VisualElement
@@ -10514,7 +10514,7 @@ Logs a warning and leaves the element unchanged when <code class="paramref">valu
 
 ### SetUnityTextOutlineWidth\<T\>\(T, StyleFloat\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextOutlineWidth__1___0_UnityEngine_UIElements_StyleFloat_}
 
-Sets [`unityTextOutlineWidth`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextOutlineWidth.html).
+Sets [`unityTextOutlineWidth`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextOutlineWidth.html).
 
 ```csharp
 public static T SetUnityTextOutlineWidth<T>(this T element, StyleFloat value) where T : VisualElement
@@ -10544,7 +10544,7 @@ The element type.
 
 ### SetUnityTextOverflowPosition\<T\>\(T, StyleEnum\<TextOverflowPosition\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextOverflowPosition__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_TextOverflowPosition__}
 
-Sets [`unityTextOverflowPosition`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextOverflowPosition.html).
+Sets [`unityTextOverflowPosition`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextOverflowPosition.html).
 
 ```csharp
 public static T SetUnityTextOverflowPosition<T>(this T element, StyleEnum<TextOverflowPosition> value) where T : VisualElement
@@ -10574,7 +10574,7 @@ The element type.
 
 ### SetUnityTextOverflowPosition\<T\>\(T, TextOverflowPosition\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityTextOverflowPosition__1___0_UnityEngine_UIElements_TextOverflowPosition_}
 
-Sets [`unityTextOverflowPosition`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-unityTextOverflowPosition.html).
+Sets [`unityTextOverflowPosition`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-unityTextOverflowPosition.html).
 
 ```csharp
 public static T SetUnityTextOverflowPosition<T>(this T element, TextOverflowPosition value) where T : VisualElement
@@ -10604,7 +10604,7 @@ The element type.
 
 ### SetUsageHints\<T\>\(T, UsageHints\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUsageHints__1___0_UnityEngine_UIElements_UsageHints_}
 
-Sets [`usageHints`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-usageHints.html).
+Sets [`usageHints`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-usageHints.html).
 
 ```csharp
 public static T SetUsageHints<T>(this T element, UsageHints value) where T : VisualElement
@@ -10639,7 +10639,7 @@ Changing them afterwards does not throw, but triggers a render-hints update.
 
 ### SetUserData\<T\>\(T, object\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUserData__1___0_System_Object_}
 
-Sets [`userData`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-userData.html).
+Sets [`userData`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-userData.html).
 
 ```csharp
 public static T SetUserData<T>(this T element, object value) where T : VisualElement
@@ -10669,7 +10669,7 @@ The element type.
 
 ### SetViewDataKey\<T\>\(T, string\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetViewDataKey__1___0_System_String_}
 
-Sets [`viewDataKey`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-viewDataKey.html).
+Sets [`viewDataKey`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-viewDataKey.html).
 
 ```csharp
 public static T SetViewDataKey<T>(this T element, string value) where T : VisualElement
@@ -10699,7 +10699,7 @@ The element type.
 
 ### SetVisibility\<T\>\(T, StyleEnum\<Visibility\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetVisibility__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Visibility__}
 
-Sets [`visibility`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-visibility.html).
+Sets [`visibility`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-visibility.html).
 
 ```csharp
 public static T SetVisibility<T>(this T element, StyleEnum<Visibility> value) where T : VisualElement
@@ -10729,7 +10729,7 @@ The element type.
 
 ### SetVisibility\<T\>\(T, Visibility\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetVisibility__1___0_UnityEngine_UIElements_Visibility_}
 
-Sets [`visibility`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-visibility.html).
+Sets [`visibility`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-visibility.html).
 
 ```csharp
 public static T SetVisibility<T>(this T element, Visibility value) where T : VisualElement
@@ -10759,7 +10759,7 @@ The element type.
 
 ### SetVisible\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetVisible__1___0_System_Boolean_}
 
-Sets [`visible`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement-visible.html).
+Sets [`visible`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement-visible.html).
 
 ```csharp
 public static T SetVisible<T>(this T element, bool value) where T : VisualElement
@@ -10789,7 +10789,7 @@ The element type.
 
 ### SetWhiteSpace\<T\>\(T, StyleEnum\<WhiteSpace\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetWhiteSpace__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_WhiteSpace__}
 
-Sets [`whiteSpace`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-whiteSpace.html).
+Sets [`whiteSpace`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-whiteSpace.html).
 
 ```csharp
 public static T SetWhiteSpace<T>(this T element, StyleEnum<WhiteSpace> value) where T : VisualElement
@@ -10819,7 +10819,7 @@ The element type.
 
 ### SetWhiteSpace\<T\>\(T, WhiteSpace\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetWhiteSpace__1___0_UnityEngine_UIElements_WhiteSpace_}
 
-Sets [`whiteSpace`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-whiteSpace.html).
+Sets [`whiteSpace`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-whiteSpace.html).
 
 ```csharp
 public static T SetWhiteSpace<T>(this T element, WhiteSpace value) where T : VisualElement
@@ -10849,7 +10849,7 @@ The element type.
 
 ### SetWidth\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetWidth__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`width`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-width.html).
+Sets [`width`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-width.html).
 
 ```csharp
 public static T SetWidth<T>(this T element, StyleLength value) where T : VisualElement
@@ -10879,7 +10879,7 @@ The element type.
 
 ### SetWordSpacing\<T\>\(T, StyleLength\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetWordSpacing__1___0_UnityEngine_UIElements_StyleLength_}
 
-Sets [`wordSpacing`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.IStyle-wordSpacing.html).
+Sets [`wordSpacing`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.IStyle-wordSpacing.html).
 
 ```csharp
 public static T SetWordSpacing<T>(this T element, StyleLength value) where T : VisualElement
@@ -11064,7 +11064,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### ToggleClasses\<T\>\(T, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClasses__1___0_System_ReadOnlySpan_System_String__}
 
@@ -11201,7 +11201,7 @@ The element type.
 #### Remarks
 
 <code class="paramref">classNames</code> is copied before the first change, so it may read
-[`GetClasses`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
+[`GetClasses`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.GetClasses.html) of this element, directly or through a LINQ query.
 
 ### ToggleClassesIf\<T\>\(T, bool, ReadOnlySpan\<string\>\) {#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__}
 

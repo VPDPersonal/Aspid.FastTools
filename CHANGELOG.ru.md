@@ -124,6 +124,7 @@
 
 ### Исправлено
 
+- Unity 6000.6 больше не предупреждает при импорте, что семь `.meta`-файлов таблиц стилей пакета ниже поддерживаемой версии сериализации.
 - `InsertChildren` и `InsertChildrenIf` пропускают `null` без сдвига индекса: `InsertChildren(0, a, null, b)` ставит `b` сразу после `a`; раньше оставался пропуск, а в конце родителя вызов бросал `ArgumentOutOfRangeException`.
 - `SetValue`, `SetValueAndApply` и `SetValueAndApplyWithoutUndo` снова компилируются с аргументом `byte`, `sbyte`, `short`, `ushort` или `char` на Unity 6000.2 и новее: перегрузка для `EntityId` делала вызов неоднозначным (CS0121). Теперь у каждого из этих типов своя перегрузка, которая вызывает `SetInt`.
 - XML-документация расширений UI Toolkit теперь совпадает с поведением. `SetValue(value, notify: true)` шлёт событие изменения, только если элемент в панели, а значение отличается. `SetPadding(8, 4)`, как `SetMargin`, `SetBorderWidth`, `SetBorderColor`, `SetDistance`, задаёт верхнюю и правую стороны. Слайдеру нужен диапазон до `SetValue`. Встроенную лямбду, переданную в `AddValueChanged`, нельзя снять через `RemoveValueChanged`. У `ListView` и `TreeView` `AddChild` бросает исключение, а `InsertChild`, `RemoveChildAt`, `ClearChildren` ничего не делают. Каждый метод, который есть только в новых версиях Unity, содержит строку `Available in Unity 6000.x and newer`.

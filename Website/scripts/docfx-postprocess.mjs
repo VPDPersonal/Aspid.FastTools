@@ -27,7 +27,7 @@ import {
 const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const apiDir = path.join(siteDir, 'api');
 
-/** `6000.4` from the Unity project's `6000.4.0f1`: the Editor whose assemblies the Unity API links point into. */
+/** `6000.6` from the Unity project's `6000.6.5f1`: the Editor whose assemblies the Unity API links point into. */
 const unityVersion = fs
   .readFileSync(path.resolve(siteDir, '../Aspid.FastTools/ProjectSettings/ProjectVersion.txt'), 'utf8')
   .match(/^m_EditorVersion: (\d+\.\d+)/m)?.[1];

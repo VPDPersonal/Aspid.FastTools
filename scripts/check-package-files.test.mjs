@@ -132,9 +132,10 @@ test('a .cs.meta without a MonoImporter block is reported, but not in Samples~',
   assert.equal(check(t, { [sample]: 'class Sample { }', [`${sample}.meta`]: meta(10) }).status, 0);
 });
 
-test('a .uss.meta with the ThemeStyleSheetImporter is reported', (t) => {
+test('a .uss.meta without a ScriptedImporter block or with the ThemeStyleSheetImporter is reported', (t) => {
   const uss = `${PACKAGE}/Samples~/Demo/Style.uss`;
   const importer = (id) => `ScriptedImporter:\n  script: {fileID: ${id}, guid: 0000000000000000f000000000000000, type: 3}\n`;
   assert.equal(check(t, { [uss]: '', [`${uss}.meta`]: meta(10, importer(12385)) }).status, 0);
   assertFails(check(t, { [uss]: '', [`${uss}.meta`]: meta(10, importer(12388)) }), `${uss}.meta`, /importer fileID 12388/);
+  assertFails(check(t, { [uss]: '', [`${uss}.meta`]: meta(10, 'timeCreated: 1777385488\n') }), `${uss}.meta`, /no ScriptedImporter block/);
 });

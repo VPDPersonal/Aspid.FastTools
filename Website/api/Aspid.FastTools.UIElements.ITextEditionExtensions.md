@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides extension methods for [`ITextEdition`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition.html).
+Provides extension methods for [`ITextEdition`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition.html).
 
 ```csharp
 public static class ITextEditionExtensions
@@ -27,7 +27,7 @@ public static class ITextEditionExtensions
 
 ### SetAutoCorrection\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetAutoCorrection__1___0_System_Boolean_}
 
-Sets [`autoCorrection`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-autoCorrection.html).
+Sets [`autoCorrection`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-autoCorrection.html).
 
 ```csharp
 public static T SetAutoCorrection<T>(this T element, bool value) where T : ITextEdition
@@ -57,7 +57,7 @@ The element type.
 
 ### SetDelayed\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetDelayed__1___0_System_Boolean_}
 
-Sets [`isDelayed`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-isDelayed.html).
+Sets [`isDelayed`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-isDelayed.html).
 
 ```csharp
 public static T SetDelayed<T>(this T element, bool value) where T : ITextEdition
@@ -87,7 +87,7 @@ The element type.
 
 ### SetHideMobileInput\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetHideMobileInput__1___0_System_Boolean_}
 
-Sets [`hideMobileInput`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-hideMobileInput.html).
+Sets [`hideMobileInput`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-hideMobileInput.html).
 
 ```csharp
 public static T SetHideMobileInput<T>(this T element, bool value) where T : ITextEdition
@@ -117,7 +117,7 @@ The element type.
 
 ### SetHidePlaceholderOnFocus\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetHidePlaceholderOnFocus__1___0_System_Boolean_}
 
-Sets [`hidePlaceholderOnFocus`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-hidePlaceholderOnFocus.html).
+Sets [`hidePlaceholderOnFocus`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-hidePlaceholderOnFocus.html).
 
 ```csharp
 public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : ITextEdition
@@ -147,7 +147,7 @@ The element type.
 
 ### SetHideSoftKeyboard\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetHideSoftKeyboard__1___0_System_Boolean_}
 
-Sets [`hideSoftKeyboard`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-hideSoftKeyboard.html).
+Sets [`hideSoftKeyboard`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-hideSoftKeyboard.html).
 
 ```csharp
 public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : ITextEdition
@@ -181,7 +181,7 @@ Available in Unity 6000.4 and newer.
 
 ### SetKeyboardType\<T\>\(T, TouchScreenKeyboardType\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetKeyboardType__1___0_UnityEngine_TouchScreenKeyboardType_}
 
-Sets [`keyboardType`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-keyboardType.html).
+Sets [`keyboardType`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-keyboardType.html).
 
 ```csharp
 public static T SetKeyboardType<T>(this T element, TouchScreenKeyboardType value) where T : ITextEdition
@@ -211,7 +211,7 @@ The element type.
 
 ### SetMaskChar\<T\>\(T, char\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetMaskChar__1___0_System_Char_}
 
-Sets [`maskChar`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-maskChar.html).
+Sets [`maskChar`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-maskChar.html).
 
 ```csharp
 public static T SetMaskChar<T>(this T element, char value) where T : ITextEdition
@@ -241,7 +241,7 @@ The element type.
 
 ### SetMaxLength\<T\>\(T, int\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetMaxLength__1___0_System_Int32_}
 
-Sets [`maxLength`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-maxLength.html).
+Sets [`maxLength`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-maxLength.html).
 
 ```csharp
 public static T SetMaxLength<T>(this T element, int value) where T : ITextEdition
@@ -271,7 +271,7 @@ The element type.
 
 ### SetPassword\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetPassword__1___0_System_Boolean_}
 
-Sets [`isPassword`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-isPassword.html).
+Sets [`isPassword`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-isPassword.html).
 
 ```csharp
 public static T SetPassword<T>(this T element, bool value) where T : ITextEdition
@@ -301,7 +301,7 @@ The element type.
 
 ### SetPlaceholder\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetPlaceholder__1___0_System_String_}
 
-Sets [`placeholder`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-placeholder.html).
+Sets [`placeholder`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-placeholder.html).
 
 ```csharp
 public static T SetPlaceholder<T>(this T element, string value) where T : ITextEdition
@@ -331,7 +331,7 @@ The element type.
 
 ### SetReadOnly\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetReadOnly__1___0_System_Boolean_}
 
-Sets [`isReadOnly`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ITextEdition-isReadOnly.html).
+Sets [`isReadOnly`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.ITextEdition-isReadOnly.html).
 
 ```csharp
 public static T SetReadOnly<T>(this T element, bool value) where T : ITextEdition

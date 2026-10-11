@@ -152,8 +152,8 @@ The upload is manual and belongs to a **Stable** release. The user signs in and 
   needs the same symbol, and its build target must stay Standalone: on Android or iOS the entry disappears without a
   message.
 - **Editor: 6000.0.53f1**, the minimum of `package.json` and of the `ci.yml` matrix. Asset Store Tools sends the Editor version
-  with every request, and the store can record it as the minimum Unity version. An upload from the dev project (6000.4)
-  can list buyers on 6000.0–6000.3 as unsupported. Do not open the dev project in 6000.0.53f1: it is a 6000.4
+  with every request, and the store can record it as the minimum Unity version. An upload from the dev project (6000.6)
+  can list buyers on 6000.0–6000.3 as unsupported. Do not open the dev project in 6000.0.53f1: it is a 6000.6
   project, and the downgrade rewrites its files.
 - **Upload project:** a new project on 6000.0.53f1.
   1. Put the package into `Packages/tech.aspid.fasttools`. Take it from the `upm/<version>` tag after "Phase 3":
