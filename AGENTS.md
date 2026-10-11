@@ -70,6 +70,29 @@ Agent Skills for projects that consume the package in `skills/`.
 - `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
   environment. Allow there only commands that cannot run code or read the environment; put the rest in
   `.claude/settings.local.json`.
+- A change to public API or to its XML docs reaches `Website/api/` **only** after `npm run api` in `Website/`; commit the
+  result in the same PR. CI cannot run it, because DocFX compiles against a local Unity install. The steps for a worktree
+  are in `.claude/skills/docs-site/references/api-reference.md`.
+- `Aspid.FastTools/Packages/com.unity.asset-store-tools/` is Unity's Asset Store Tools (the package validator and uploader),
+  embedded in the dev project. It is third-party code with CRLF line endings, so do not edit, reformat or delete it. It
+  stays outside `Aspid.FastTools/Packages/tech.aspid.fasttools/`, so the `upm` branches do not contain it.
+- The dev project uses only the Input System (`activeInputHandler: 1`, `com.unity.inputsystem`): `UnityEngine.Input`
+  throws there. `com.unity.pipeline` needs the package for its CLI input commands (`simulate_key`, pointer commands).
+
+## Checks
+
+Run what applies before you open a PR. CI runs most of these (`ci.yml`, `docs.yml`).
+
+- Generators and analyzers: `dotnet test` in `Aspid.FastTools.Generators/` or `Aspid.FastTools.Analyzers/`.
+- YAML engine: `dotnet test Aspid.FastTools.YamlTests`.
+- Type resolver: `dotnet test Aspid.FastTools.TypeTests`.
+- Compile in the dev project with its Editor open: `unity command recompile`, then `unity command get_console_logs`
+  for the errors. It needs `com.unity.pipeline`, which the dev project manifest lists.
+- EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]` builds a throwaway
+  project, and its header shows the `-runTests` command. CI runs every version of its matrix.
+- Site, in `Website/`: `npm ci` first (a fresh worktree has no `node_modules`), then `npm run check-readme`,
+  `npm run check-translations`, `npm test` and `npm run build`.
+- Skills: `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
 
 ## C# style beyond `.editorconfig`
 
