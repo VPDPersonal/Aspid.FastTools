@@ -198,6 +198,6 @@ public bool Required { get; set; }
 
 #### Remarks
 
-<p>"Unset" means <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a <code>[SerializeReference]</code> field and an empty name for a [`String`](https://learn.microsoft.com/dotnet/api/system.string) or [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) field. A reference that is set but whose type no longer resolves is not a violation of this flag — the separate missing-type check covers that.</p>
+<p>"Unset" means <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a <code>[SerializeReference]</code> field and an empty name for a [`String`](https://learn.microsoft.com/dotnet/api/system.string) field or a [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) or [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md) field, generic ones included. Other field types ignore the flag. A reference that is set but whose type no longer resolves is not a violation of this flag — the separate missing-type check covers that.</p>
 <p>Asset References marks the field in any gate mode, Project References → Scan Project reports it when the gate is Warn or Fail, and the CI gate only with <code>-srGateRequired</code>. The player build never checks it.</p>
 
