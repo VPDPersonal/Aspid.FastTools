@@ -15,6 +15,7 @@ An <code lang="class-name">IWeapon</code> field offers concrete implementations 
 For extra constraints, required fields and list appearance, see [TypeSelector](03-type-selector.md).
 
 - <code lang="csharp">Allow</code> has no effect here: the types must be instantiable.
+- Classes derived from <code lang="class-name">UnityEngine.Object</code> are not offered: keep such an object in a plain field, without <code lang="csharp">[SerializeReference]</code>.
 - Generic arguments are inferred from the field type; when they cannot be, the picker asks for types Unity can serialize.
 
 ## Lists
@@ -46,6 +47,8 @@ Right-click the field header:
 
 | Item | What it does |
 |---|---|
+| **Revert** | On a prefab instance, returns a field with a changed class or data to the prefab's class and data; the label of such a field is bold. A change inside a nested reference marks only the changed field |
+| **Apply to Prefab 'Player'** | On a prefab instance, writes such a field into the prefab; not offered for a prefab variant selected in **Project** |
 | **Copy Serialize Reference** | Copies the field's class and data; the copy lasts until the next domain reload |
 | **Paste Serialize Reference** | Pastes the copy into a field of a compatible type; a copied empty field clears it |
 | **Find Usages of Pistol** | Searches the project for the class through Unity Search |

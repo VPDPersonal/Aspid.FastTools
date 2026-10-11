@@ -42,6 +42,17 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 | Prefab instance, class stored in the source prefab | Repair the source prefab; the tooltip names it |
 | Prefab instance, class set through an override | Choose a new class on the instance or revert the override |
 
+## Missing elements in lists
+
+A save that resizes a list, and every save of a prefab, writes the list's missing elements as `<None>` and drops their data. FastTools puts them back right after the save. It matches the other elements by their `rid`, so after you move, delete, duplicate or add an element, a missing element returns between the same neighbours. The Console lists the restored elements.
+
+| Case | What happens |
+|---|---|
+| You set a missing element to `<None>`, pick another class or paste over it | It stays replaced, also after a script reload. After **Edit → Undo** of that pick the next save keeps it |
+| You delete an element that sits among other missing or `<None>` elements | The saved file doesn't say which one went: the `<None>` elements and the first missing ones stay. The Console warns about the missing element left out and gives its index and `rid`, so you can take it from version control |
+| You make several edits to the list between two saves | The data comes back, but in the most likely slot, which is not always the original one. The Console names the slot of every restored element and marks the least certain ones **slot guessed** |
+| Lists inside another reference or a nested class, loaded scenes, Prefab Mode | Not guarded |
+
 ## Project References: repair a group
 
 Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the next tab of the same window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope).
@@ -102,6 +113,7 @@ Open **Tools → Aspid 🐍 → FastTools → Asset References** and assign a sa
 | **Migrate → Crossbow** row under a **Fix ▼** band | The class was renamed with <code lang="csharp">[MovedFrom]</code>: the row writes the new name, **Fix ▼** picks a different class |
 | Band with **Change ▼**, **Assign ▼** or **Assign Required ▼** | Changes the class of a healthy reference, fills an empty or required field; the asset is saved at once |
 | **SHARED** | Several fields point at one instance; matching colours mark the connected fields |
+| **children on another card** in a card's footer | The children of this reference are drawn once, under its first card that is not below a missing type; this card is another field that points at it |
 | **Orphaned** | An entry no field points at; **Clear** deletes it from the file, without Undo |
 
 **Fix Missing**, **Smart Fix** and **Migrate** write the class to the file at once, and **Edit → Undo** does not revert it.
@@ -131,6 +143,7 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 | Open scenes, Prefab Mode, unsaved and locked files | Fix all, Smart Fix and Migrate all skip them: save and close the file, or use [Fix in the Inspector](#fix-in-the-inspector) with its data-transfer limitations |
 | Scenes and fields under a missing parent reference | Asset References changes only missing types |
 | Binary assets and unfetched Git LFS files | Not scanned: Scan Project counts them and the Console lists them, Asset References shows **Not scanned**; use **Force Text** and fetch LFS files |
+| More than 1000 reference cards in one window | Asset References draws the first 1000 and says how many it left out; Project References repairs missing types without this limit |
 
 ## Package sample
 

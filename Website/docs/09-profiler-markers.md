@@ -57,8 +57,7 @@ public void Step()
 }
 ```
 
-> [!NOTE]
-> Pass the name as a string literal directly to <code lang="function">WithName</code>. Variables, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> and strings with interpolation holes leave the marker name unchanged; the argument is still evaluated on every call.
+The name must be a constant: a string literal, a <code lang="csharp">const</code>, <code lang="csharp">nameof</code> or a string built from them. A name known only at run time leaves the member name.
 
 ## In the Profiler
 
@@ -70,6 +69,7 @@ Markers are created once. After initialization, repeated measurements allocate n
 
 - Call <code lang="csharp">this.Marker()</code> inside its own type. Calls on another type’s instance, in a static class or in a <code lang="csharp">private</code>/<code lang="csharp">protected</code> nested type are unreliable: the measurement may be missing or use another call’s marker.
 - Use <code lang="csharp">using</code>. A standalone <code lang="csharp">this.Marker();</code> starts a measurement without ending it.
+- End the <code lang="csharp">using</code> before <code lang="csharp">yield return</code> or <code lang="csharp">await</code>. A coroutine or an <code lang="csharp">async</code> method resumes in a later frame or on another thread, so a measurement left open across them leaves the Profiler samples unbalanced.
 
 > [!WARNING]
 > Calls within one type that share a line number share a marker, even across different <code lang="csharp">partial</code> files. Give each call site a distinct line number, or measurements will be combined under the first call’s name.

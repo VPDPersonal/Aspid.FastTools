@@ -7,4 +7,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo(assemblyName: "Aspid.MVVM.StarterKit.Editor")]
 [assembly: InternalsVisibleTo(assemblyName: "Aspid.FastTools.Editor.Tests")]
 [assembly: InternalsVisibleTo(assemblyName: "Aspid.FastTools.Editor.SerializeReferences.Tests")]
+// The dev project's own assembly (Assets/DevTests, not part of the package); nothing in the package depends on it.
 [assembly: InternalsVisibleTo(assemblyName: "Aspid.FastTools.DevTests.CliCommands.Editor")]

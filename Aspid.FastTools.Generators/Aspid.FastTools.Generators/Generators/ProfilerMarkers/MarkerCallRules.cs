@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
@@ -122,6 +123,54 @@ internal static class MarkerCallRules
         }
 
         return null;
+    }
+
+    // The argument of a .WithName(...) chained directly on the call and bound to the package's WithName,
+    // or null when the call has none. Parentheses are skipped, so (this.Marker()).WithName("x") counts too.
+    public static ExpressionSyntax? FindWithNameArgument(InvocationExpressionSyntax invocation, SemanticModel model, CancellationToken ct)
+    {
+        SyntaxNode outer = invocation;
+        while (outer.Parent is ParenthesizedExpressionSyntax paren)
+            outer = paren;
+
+        if (outer.Parent is not MemberAccessExpressionSyntax { Name: IdentifierNameSyntax { Identifier.ValueText: "WithName" } } access
+            || access.Parent is not InvocationExpressionSyntax { ArgumentList.Arguments: { Count: 1 } arguments } withName)
+            return null;
+
+        return IsPackageMethod(model.GetSymbolInfo(withName, ct).Symbol as IMethodSymbol) ? arguments[0].Expression : null;
+    }
+
+    // The name a WithName argument gives the marker, or null when it is known only at run time.
+    public static string? GetConstantName(ExpressionSyntax expression, SemanticModel model, CancellationToken ct)
+    {
+        // A literal, a const, nameof(...) or a concatenation of them.
+        if (model.GetConstantValue(expression, ct) is { HasValue: true, Value: string value }) return value;
+
+        // Unity compiles C# 9, where an interpolated string is never a constant, even with constant holes only.
+        if (expression is not InterpolatedStringExpressionSyntax interpolated) return null;
+
+        var builder = new StringBuilder();
+        foreach (var content in interpolated.Contents)
+        {
+            switch (content)
+            {
+                // The text token keeps the {{ and }} escapes of an interpolated string.
+                case InterpolatedStringTextSyntax text:
+                    builder.Append(text.TextToken.ValueText.Replace("{{", "{").Replace("}}", "}"));
+                    break;
+
+                // A string constant reads the same in any culture; an alignment or a format may not.
+                case InterpolationSyntax { AlignmentClause: null, FormatClause: null } hole
+                    when model.GetConstantValue(hole.Expression, ct) is { HasValue: true, Value: string holeValue }:
+                    builder.Append(holeValue);
+                    break;
+
+                default:
+                    return null;
+            }
+        }
+
+        return builder.ToString();
     }
 
     // Type parameters of the type and all its containing types, outermost first.
