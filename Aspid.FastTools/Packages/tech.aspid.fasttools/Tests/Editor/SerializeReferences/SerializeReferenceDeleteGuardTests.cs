@@ -28,6 +28,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const string PartialPartScriptGuid = "a4d91e7c3b6f482e9c0a5f1b7e2d8c64";
         private const string ProbeAssetPath = "Assets/__AspidDeleteGuardProbe__.asset";
 
+        private const double DelayCallTimeoutSeconds = 10;
+
         // The asset name is serialized as m_Name, so the text names DeleteGuardPistol although it holds no reference.
         private const string PlainAssetPath = "Assets/__AspidDeleteGuardPlain_DeleteGuardPistol__.asset";
 
@@ -410,7 +412,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.AreEqual(1, prompts.Count);
 
-            yield return null;
+            // delayCall runs in registration order, so once this marker has run, the guard's reset has too. The
+            // batch-mode test runner can hold delayCall back for many ticks, so the wait is bounded by time, not frames.
+            var flushed = false;
+            EditorApplication.delayCall += () => flushed = true;
+
+            var deadline = EditorApplication.timeSinceStartup + DelayCallTimeoutSeconds;
+            while (!flushed && EditorApplication.timeSinceStartup < deadline)
+                yield return null;
+
+            Assert.IsTrue(flushed, "delayCall did not run in time.");
 
             SerializeReferenceDeleteGuard.GuardAsset(scripts[1]);
 
