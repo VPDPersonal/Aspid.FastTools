@@ -67,7 +67,6 @@ namespace DocumentationMedia
             var rows=p.FindPropertyRelative("_values"); rows.arraySize=1; rows.isExpanded=true;
             var row=rows.GetArrayElementAtIndex(0);
             row.FindPropertyRelative("_key").stringValue="Fire";
-            row.FindPropertyRelative("_enumType").stringValue=typeof(DamageType).AssemblyQualifiedName;
             row.FindPropertyRelative("_value").floatValue=1.5f;
             Data.ApplyModifiedPropertiesWithoutUndo();
             var root=Window.rootVisualElement; root.Clear();
