@@ -17,8 +17,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // How many violations a log lists before it says how many more there are; the CI report lists them all.
         public const int MaxListedViolations = 50;
 
-        // How many files the required-field sweep loads before it releases the ones nothing references any more.
-        // Not const so tests can lower it.
+        // How many files a sweep loads before it releases the ones nothing references any more. The required-field
+        // sweep and SerializeReferenceConstraintCache both use it. Not const so tests can lower it.
         internal static int UnloadEveryLoadedFiles = 64;
 
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
@@ -40,9 +40,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // types, and a scene's required fields, were not checked. Prefabs and assets still get the object-load
         // required check, which does not depend on the file format. A text file whose managed references are stored
         // in another registry version is added too: its missing types were not checked.
+        // `onProgress` runs before each file and returns true to stop; the result is then null, since a partial sweep
+        // would pass for a clean project.
         public static IReadOnlyList<GateViolation> Scan(
             GateOptions options,
-            Action<float, string> onProgress = null,
+            Func<float, string, bool> onProgress = null,
             ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
             var violations = new List<GateViolation>();
@@ -54,11 +56,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ResetPrefabDependents();
 
             var loadedSinceUnload = 0;
+            var stopped = false;
 
             for (var i = 0; i < paths.Length; i++)
             {
                 var path = paths[i];
-                onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
+
+                if (onProgress is not null && onProgress((float)i / Math.Max(1, paths.Length), path))
+                {
+                    stopped = true;
+                    break;
+                }
 
                 var isScene = SerializeReferenceHelpers.IsScene(path);
 
@@ -114,7 +122,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (loadedSinceUnload > 0) EditorUtility.UnloadUnusedAssetsImmediate();
 
-            return violations;
+            return stopped ? null : violations;
         }
 
         // A warning for the log, or null when nothing worth one was skipped. Outside Force Text every binary file warns.
@@ -379,7 +387,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;
                     violations.Add(new GateViolation(assetPath, fileId, rid, default,
-                        GateViolationKind.RequiredUnset, TypeSelectorRequiredGate.GetFieldPath(iterator)));
+                        GateViolationKind.RequiredUnset, TypeSelectorRequiredGate.GetFieldPath(iterator),
+                        componentName: asset.GetType().Name));
                 }
                 while (iterator.Next(enterChildren));
             }

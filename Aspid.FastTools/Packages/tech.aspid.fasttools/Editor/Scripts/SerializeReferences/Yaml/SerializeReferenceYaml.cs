@@ -99,6 +99,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
+        // Unity writes every number with an ASCII minus in any locale. A culture-aware parse or format breaks on
+        // CoreCLR, where some locales use U+2212 or a direction mark in their negative sign.
+        public static bool TryParseId(string text, out long id) =>
+            long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out id);
+
+        public static string FormatId(long id) =>
+            id.ToString(CultureInfo.InvariantCulture);
+
         public static bool TryParseInlineType(string body, out ManagedTypeName type)
         {
             type = default;
@@ -296,7 +304,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var match = _entryHeader.Match(line);
             return match.Success
                 && match.Groups["indent"].Length == entryIndent
-                && long.TryParse(match.Groups["rid"].Value, out rid);
+                && TryParseId(match.Groups["rid"].Value, out rid);
         }
 
         // Parses the rid of a "- rid: N" line at any indent, e.g. the header of an entry block captured out of its file.
@@ -305,7 +313,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             rid = 0;
 
             var match = _entryHeader.Match(line);
-            return match.Success && long.TryParse(match.Groups["rid"].Value, out rid);
+            return match.Success && TryParseId(match.Groups["rid"].Value, out rid);
         }
 
         // Returns the line of rid's own RefIds entry header, or -1. A nested "- rid: N" list element in an earlier

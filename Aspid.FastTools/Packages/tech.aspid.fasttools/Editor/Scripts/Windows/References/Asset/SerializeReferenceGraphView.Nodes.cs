@@ -172,7 +172,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Required string fields have no RefIds node; scene assets cannot be object-loaded for inline editing.
-        private VisualElement BuildRequiredOnlyCard(GateViolation violation, ViolationFieldLabels labels)
+        private VisualElement BuildRequiredOnlyCard(GateViolation violation)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
@@ -196,7 +196,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 AddBandDivider(card, band, NodeSweepMissingClass);
             }
 
-            card.AddChild(BuildFooter(labels.Describe(violation), "unassigned"));
+            card.AddChild(BuildFooter(violation.FieldLabel, "unassigned"));
 
             return card;
         }

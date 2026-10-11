@@ -137,5 +137,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 YamlFixtures.Delete(path);
             }
         }
+
+        // On CoreCLR, the Hebrew negative sign starts with a direction mark, so a culture-aware parse rejects "-5…".
+        [Test]
+        [SetCulture("he-IL")]
+        public void TryReadStoredType_NegativeAnchor_LocaleWithAnotherNegativeSign_FindsTheDocument()
+        {
+            var path = YamlFixtures.WriteTemp(YamlFixtures.NegativeSubAssetBeforeMainAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadStoredType(
+                    path, YamlFixtures.NegativeSubAssetFileId, "_payload", out var rid, out var type));
+                Assert.AreEqual(YamlFixtures.NegativeSharedRid, rid);
+                Assert.AreEqual("GhostNode", type.Class, "The negative anchor must select the sub-asset's own document.");
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
     }
 }
