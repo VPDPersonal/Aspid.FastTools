@@ -448,7 +448,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 screenRect: screenRect,
                 filter: SerializeReferenceHelpers.BuildPickerFilter(fieldType, baseTypes,
                     excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(property)),
-                currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(property, currentType),
+                assemblyQualifiedName: SerializeReferenceHelpers.GetSelectorCurrentAqn(property, currentType),
                 onSelected: assemblyQualifiedName =>
                 {
                     var type = string.IsNullOrEmpty(assemblyQualifiedName)
