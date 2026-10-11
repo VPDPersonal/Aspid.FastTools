@@ -1,7 +1,8 @@
 // Check that the files scripts/set-version.sh writes carry the package.json version whole and its channel: a stable
 // version installs from `upm` under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one.
 // Both CHANGELOGs must have the version's section and its release link.
-// The version is matched whole, so 1.0.0 does not pass on a file that still says 1.0.0-rc.8. release.yml runs it:
+// The version is matched whole, so 1.0.0 does not pass on a file that still says 1.0.0-rc.8.
+// ci.yml (in every PR and in the release) and scripts/set-version.sh run it:
 //   node scripts/check-version.mjs
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -15,8 +16,6 @@ const FILES = [
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
   'Website/docs/Images/status-badge-preview.svg',
 ];
-// Files with an install URL and no badge.
-const INSTALL_FILES = [`${PKG}/README.md`];
 const CHANGELOGS = ['CHANGELOG.md', 'CHANGELOG.ru.md'];
 const REPOSITORY = 'https://github.com/VPDPersonal/Aspid.FastTools';
 
@@ -36,8 +35,6 @@ const checkInstallUrls = (file, text) => {
   const urls = [...text.matchAll(/\.git#(upm(?:-preview)?)\b/g)].map((match) => match[1]);
   if (!urls.length || urls.some((url) => url !== branch)) fail(file, `the install URLs must use #${branch} for ${version}; ${fix}`);
 };
-
-for (const file of INSTALL_FILES) checkInstallUrls(file, readFileSync(file, 'utf8'));
 
 for (const file of FILES) {
   const text = readFileSync(file, 'utf8');

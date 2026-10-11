@@ -178,6 +178,10 @@ IMixedValueSupport
 [VisualElementExtensions.InsertStyleSheetsIf\<TypeField\>\(TypeField, bool, int, ReadOnlySpan\<StyleSheet\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__),
 [FocusableExtensions.IsFocused\(Focusable\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_IsFocused_UnityEngine_UIElements_Focusable_),
 [ProfilerMarkerExtensionsForGenerator.Marker\<TypeField\>\(TypeField, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
+[CallbackEventHandlerExtensions.RegisterCallbackOnceSelf\<TypeField, TEventType\>\(TypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackOnceSelf\<TypeField, TEventType, TUserArgsType\>\(TypeField, EventCallback\<TEventType, TUserArgsType\>, TUserArgsType, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__3___0_UnityEngine_UIElements_EventCallback___1___2____2_UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackSelf\<TypeField, TEventType\>\(TypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackSelf\<TypeField, TEventType, TUserArgsType\>\(TypeField, EventCallback\<TEventType, TUserArgsType\>, TUserArgsType, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackSelf__3___0_UnityEngine_UIElements_EventCallback___1___2____2_UnityEngine_UIElements_TrickleDown_),
 [VisualElementExtensions.RemoveBoldUnityFontStyleAndWeight\<TypeField\>\(TypeField\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveBoldUnityFontStyleAndWeight__1___0_),
 [VisualElementExtensions.RemoveChild\<TypeField\>\(TypeField, VisualElement?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChild__1___0_UnityEngine_UIElements_VisualElement_),
 [VisualElementExtensions.RemoveChildAt\<TypeField\>\(TypeField, int\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildAt__1___0_System_Int32_),
@@ -237,6 +241,8 @@ IMixedValueSupport
 [VisualElementExtensions.SetBackgroundColor\<TypeField\>\(TypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetBackgroundColor\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_System_String_),
 [VisualElementExtensions.SetBackgroundImage\<TypeField\>\(TypeField, StyleBackground\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_StyleBackground_),
+[VisualElementExtensions.SetBackgroundImage\<TypeField\>\(TypeField, Sprite\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_Sprite_),
+[VisualElementExtensions.SetBackgroundImage\<TypeField\>\(TypeField, VectorImage\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_VectorImage_),
 [VisualElementExtensions.SetBackgroundImageFromResources\<TypeField\>\(TypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImageFromResources__1___0_System_String_),
 [VisualElementExtensions.SetBackgroundPosition\<TypeField\>\(TypeField, StyleBackgroundPosition\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_UnityEngine_UIElements_StyleBackgroundPosition_),
 [VisualElementExtensions.SetBackgroundPosition\<TypeField\>\(TypeField, StyleBackgroundPosition?, StyleBackgroundPosition?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__),
@@ -439,7 +445,17 @@ IMixedValueSupport
 [VisualElementExtensions.ToggleClassesIf\<TypeField\>\(TypeField, bool, List\<string\>?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__),
 [VisualElementExtensions.ToggleClassesIf\<TypeField\>\(TypeField, bool, IEnumerable\<string?\>?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__),
 [VisualElementExtensions.ToggleClassesIf\<TypeField\>\(TypeField, bool, ReadOnlySpan\<string\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__),
-[VisualElementExtensions.UnbindFrom\<TypeField\>\(TypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_)
+[VisualElementExtensions.UnbindFrom\<TypeField\>\(TypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_),
+[CallbackEventHandlerExtensions.UnregisterCallbackSelf\<TypeField, TEventType\>\(TypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.UnregisterCallbackSelf\<TypeField, TEventType, TUserArgsType\>\(TypeField, EventCallback\<TEventType, TUserArgsType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__3___0_UnityEngine_UIElements_EventCallback___1___2__UnityEngine_UIElements_TrickleDown_)
+
+## Remarks
+
+<p>
+UXML creates an unbound field: it ignores <code>binding-path</code>, and [`TypeField.Types`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Types) and [`TypeField.Predicate`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Predicate)
+have no UXML attributes. Create a bound or constrained field in C#.
+</p>
+<p>Not designed for inheritance outside the package.</p>
 
 ## Constructors
 
@@ -465,6 +481,16 @@ public TypeField(SerializedProperty property)
 
 A string property holding the assembly-qualified type name.
 
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
 ### TypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_UnityEditor_SerializedProperty_}
 
 Creates a bound field: the picked type's name is written to the property, and external edits are
@@ -484,12 +510,43 @@ The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-ref
 
 A string property holding the assembly-qualified type name.
 
+#### Remarks
+
+Before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent, a pick writes the property and calls
+[`Update`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.Update.html) on the [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code>:
+a change handler reads the picked name from <code class="paramref">property</code>, and edits it applies through that
+object keep the pick. Changes not yet applied to that object are lost.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
+### TypeField\(string\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_}
+
+Creates an unbound field without an initial type; the picked type is reported only through the change event.
+
+```csharp
+public TypeField(string label)
+```
+
+#### Parameters
+
+`label` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
+
 ### TypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_System_Type_}
 
 Creates an unbound field; the picked type is reported only through the change event.
 
 ```csharp
-public TypeField(string label, Type defaultValue = null)
+public TypeField(string label, Type defaultValue)
 ```
 
 #### Parameters
@@ -521,6 +578,37 @@ public TypeAllow Allow { get; set; }
 
 [`TypeAllow.None`](Aspid.FastTools.Types.TypeAllow.md) by default, so only concrete types are offered, unlike
 [`TypeSelectorAttribute.Allow`](Aspid.FastTools.Types.TypeSelectorAttribute.md#Aspid_FastTools_Types_TypeSelectorAttribute_Allow), which defaults to [`TypeAllow.All`](Aspid.FastTools.Types.TypeAllow.md).
+
+### AssemblyQualifiedName {#Aspid_FastTools_Types_Editors_TypeField_AssemblyQualifiedName}
+
+Gets the assembly-qualified name of the selected type, or the stored name of a missing type; an empty
+string when no type is selected.
+
+```csharp
+public string AssemblyQualifiedName { get; }
+```
+
+#### Property Value
+
+ [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+### ExcludeEditorOnlyTypes {#Aspid_FastTools_Types_Editors_TypeField_ExcludeEditorOnlyTypes}
+
+Gets or sets a value indicating whether types from editor-only assemblies are left out, for a value that a
+player build must resolve.
+
+```csharp
+[UxmlAttribute]
+public bool ExcludeEditorOnlyTypes { get; set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+#### Remarks
+
+A bound field turns it on when its property belongs to an object of a runtime assembly.
 
 ### HideNoneOption {#Aspid_FastTools_Types_Editors_TypeField_HideNoneOption}
 
@@ -578,6 +666,11 @@ public Type[] Types { get; set; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
+
+#### Remarks
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> entries are dropped. For a closed generic type such as <code>IHandler&lt;int&gt;</code>,
+the dropdown also offers the generic classes that close to it, such as <code>Handler&lt;int&gt;</code>.
 
 ### value {#Aspid_FastTools_Types_Editors_TypeField_value}
 

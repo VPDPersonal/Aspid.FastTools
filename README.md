@@ -142,6 +142,26 @@ The URL installs the latest preview; **Update** in the Package Manager installs 
 
 <table>
 <tr>
+<td width="56%">
+
+```css
+:root {
+    --aspid-colors-bg-dark: rgb(22, 30, 52);
+    --aspid-colors-surface-card: rgba(32, 44, 72, 0.6);
+}
+```
+
+</td>
+<td width="44%">
+<h4><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/theme-override">Theme Override</a></h4>
+<p>Recolors the FastTools windows and the type picker with a USS file from your project.</p>
+<p><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/theme-override">Read more →</a></p>
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
 <td width="56%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme-previews/agent-skills.webp"><source media="(prefers-color-scheme: light)" srcset="docs/images/readme-previews/agent-skills-light.webp"><img src="docs/images/readme-previews/agent-skills.webp" alt="Agent Skills" width="100%"></picture></td>
 <td width="44%">
 <h4><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/agent-skills">Agent Skills</a></h4>
