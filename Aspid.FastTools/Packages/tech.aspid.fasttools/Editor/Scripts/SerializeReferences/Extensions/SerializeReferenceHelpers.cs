@@ -625,7 +625,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var modification in modifications)
             {
                 if (modification.target != source || modification.propertyPath != modificationPath) continue;
-                if (!long.TryParse(modification.value, out referenceId)) return false;
+                if (!SerializeReferenceYaml.TryParseId(modification.value, out referenceId)) return false;
 
                 found = true;
                 break;
@@ -1243,11 +1243,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             TryGetMissingType(property, out referenceId, out _);
 
         // Repair permits hidden types because visibility limits authoring, not recovery of existing data.
-        public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null)
+        // detach repairs through a copy opened when a type is picked, for a property that may be gone by then.
+        public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null, bool detach = false)
         {
             var fieldType = GetFieldType(property);
             if (TryGetMissingReferenceId(property, out var referenceId))
                 baseTypes = AppendAliasFieldTypes(baseTypes, FindMissingReferenceAliases(property, referenceId));
+
+            var detached = new DetachedProperty(property);
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
@@ -1268,8 +1271,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-                    if (type is not null && TryFixMissingType(property, type))
-                        onFixed?.Invoke();
+                    if (type is null) return;
+
+                    var fixedType = false;
+                    if (detach) detached.Use(persistent => fixedType = TryFixMissingType(persistent, type));
+                    else fixedType = TryFixMissingType(property, type);
+
+                    if (fixedType) onFixed?.Invoke();
                 });
         }
 
@@ -1661,7 +1669,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             foreach (Match match in Regex.Matches(data ?? string.Empty, @"(?<!\w)rid:\s*(-?\d+)"))
             {
-                if (long.TryParse(match.Groups[1].Value, out var child) && child != self)
+                if (SerializeReferenceYaml.TryParseId(match.Groups[1].Value, out var child) && child != self)
                     yield return child;
             }
         }
@@ -2024,9 +2032,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Undo.undoRedoPerformed += InvalidateReferenceMemos;
         }
 
-        public static void MakeReferenceUnique(SerializedProperty property)
+        public static void MakeReferenceUnique(SerializedProperty property) =>
+            new DetachedProperty(property).Use(MakeReferenceUniqueOnCopy);
+
+        // For a caller that already owns a copy of the property, as DetachedProperty.Use provides.
+        public static void MakeReferenceUniqueOnCopy(SerializedProperty persistent)
         {
-            var persistent = property.Persistent();
             var current = persistent.managedReferenceValue;
             if (current is null) return;
 

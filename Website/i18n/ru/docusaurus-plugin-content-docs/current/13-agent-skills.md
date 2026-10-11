@@ -4,17 +4,26 @@
 
 ## Быстрый старт
 
-[Установите Aspid.FastTools](README.md#установка) в Unity-проект и попросите агента:
+[Установите Aspid.FastTools](README.md#установка) в Unity-проект. Установщику скиллов нужен Node.js 22.20 или новее.
+
+> [!NOTE]
+> Релизы до `1.0.0-rc.8` включительно не содержат скиллов. С таким релизом сначала см. [Версии и обновление](#версии-и-обновление).
+
+Попросите агента:
 
 ```text prompt
-Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект.
+Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект,
+не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#v<version>,
+где <version> — версия установленного пакета Aspid.FastTools.
 ```
 
 Или выполните в корне проекта:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools
+npx skills add VPDPersonal/Aspid.FastTools#v<version>
 ```
+
+Замените `<version>` версией установленного пакета: `1.0.0` даёт `#v1.0.0`. В установщике выберите область **Project**: глобальная установка действует во всех Unity-проектах, какая бы версия пакета в них ни стояла.
 
 ```text prompt
 Замерь Simulate и отдельно поиск соседей
@@ -26,15 +35,23 @@ npx skills add VPDPersonal/Aspid.FastTools
 
 ## Версии и обновление
 
-Без тега `npx skills add` берёт скиллы из ветки `main`, где они могут описывать API, которого ещё нет в вашей версии пакета. Чтобы скиллы совпадали с установленным пакетом, ставьте их с тега его релиза, а после обновления пакета снова выполните `add` с новым тегом:
+Скиллы из ветки `main` могут описывать API, которого нет в вашей версии пакета, и тогда агент пишет код, который не собирается. Тег релиза хранит скиллы, подходящие этому релизу. После обновления пакета повторите установку с новым тегом.
 
-```bash
-npx skills add VPDPersonal/Aspid.FastTools#v<version>
+`npx skills update` не двигает скиллы, установленные с тега: он снова забирает тот же тег и ничего не меняет. Он обновляет только скиллы, установленные без тега, из `main`, и затрагивает все скиллы проекта, не только эти.
+
+Релизы до `1.0.0-rc.8` включительно не содержат скиллов. С ними обновите пакет до релиза со скиллами или поставьте пакет из `main` вместе со скиллами, чтобы они совпадали. В **Window → Package Manager** выберите **+ → Install package from git URL…** и вставьте этот URL:
+
+```text
+https://github.com/VPDPersonal/Aspid.FastTools.git?path=/Aspid.FastTools/Packages/tech.aspid.fasttools#main
 ```
 
-Релизы до `1.0.0-rc.8` включительно не содержат скиллов; с ними ставьте скиллы из `main`.
+Затем установите скиллы без тега:
 
-Для обновления повторите установку. `npx skills update` обновит все скиллы проекта, не только эти.
+```bash
+npx skills add VPDPersonal/Aspid.FastTools
+```
+
+Раньше скиллы поставлялись плагином `aspid-fasttools` для Claude Code. Если он у вас стоит, удалите его командой `/plugin uninstall aspid-fasttools@aspid-claude-plugins`: он учит агента API, которого больше нет.
 
 ## Скиллы
 
@@ -54,7 +71,7 @@ npx skills add VPDPersonal/Aspid.FastTools#v<version>
 
 ### aspid-serializable-type
 
-Хранение <code lang="class-name">System.Type</code> и выбор типов в инспекторе. Руководства: [Serializable Types](02-serializable-types.md), [TypeSelector](03-type-selector.md), [SerializeReference Selector](04-serialize-reference-selector.md), [ComponentTypeSelector](05-component-type-selector.md).
+Хранение <code lang="class-name">System.Type</code>, выбор типов в инспекторе и провал CI-задачи при потерянных типах. Руководства: [Serializable Types](02-serializable-types.md), [TypeSelector](03-type-selector.md), [SerializeReference Selector](04-serialize-reference-selector.md), [ComponentTypeSelector](05-component-type-selector.md), [Проверка перед сборкой и CI](07-serialize-reference-validation.md).
 
 ![Скилл aspid-serializable-type добавляет поле выбора типа оружия](../../../../docs/Images/agent-skills-serializable-type.svg)
 

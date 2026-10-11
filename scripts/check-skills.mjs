@@ -84,8 +84,17 @@ const addWithParents = name => {
   const parts = name.split('.');
   for (let length = 1; length <= parts.length; length++) known.add(parts.slice(0, length).join('.'));
 };
-for (const file of files(`:(glob)${PACKAGE}/**/*.cs`))
-  for (const m of readFileSync(file, 'utf8').matchAll(/^\s*namespace\s+(Aspid\.FastTools[\w.]*)/gm)) addWithParents(m[1]);
+// `-executeMethod` needs a fully qualified method, so a type declared in a file's namespace counts too.
+const types = new Set();
+for (const file of files(`:(glob)${PACKAGE}/**/*.cs`)) {
+  const text = readFileSync(file, 'utf8');
+  const namespaces = [...text.matchAll(/^\s*namespace\s+(Aspid\.FastTools[\w.]*)/gm)].map(m => m[1]);
+  namespaces.forEach(addWithParents);
+  if (namespaces.length !== 1) continue;
+  // A declaration starts its line, so a keyword in a comment, a string or a `where T : class` constraint is no type.
+  const declarations = /^[ \t]*(?:(?:public|internal|private|protected|static|sealed|abstract|partial|readonly|unsafe|new|ref)\s+)*(?:class|struct|interface|enum|record(?:\s+(?:class|struct))?)\s+(\w+)/gm;
+  for (const m of text.matchAll(declarations)) types.add(`${namespaces[0]}.${m[1]}`);
+}
 for (const file of files(`:(glob)${PACKAGE}/**/*.asmdef`))
   for (const m of readFileSync(file, 'utf8').matchAll(/"name"\s*:\s*"(Aspid\.FastTools[\w.]*)"/g)) addWithParents(m[1]);
 if (!known.size) fail(PACKAGE, 'no Aspid.FastTools namespace found: package not checked out (sparse checkout?) or moved');
@@ -105,12 +114,13 @@ for (const file of skillDocs) {
   const mentioned = new Set(mentionedIn(text));
   if (consumer) mentioned.forEach(code => documented.add(code));
   for (const code of mentioned) if (reported.size && !reported.has(code)) fail(file, `${code} is not reported by any analyzer`);
-  // Only a namespace or an assembly: a fully qualified type name is not known here, so write a `using` instead.
+  // A namespace, an assembly, or a type of the package with an optional member, as `-executeMethod` takes it.
   // A name in a URL path (`github.com/VPDPersonal/Aspid.FastTools.git`) or a file name is skipped.
   if (consumer) {
     const names = [...text.matchAll(/(?<![\w/.-])Aspid\.FastTools(?:\.\w+)*/g)].map(m => m[0]).filter(name => !FILE_EXTENSION.test(name));
+    const isKnown = name => known.has(name) || types.has(name) || types.has(name.slice(0, name.lastIndexOf('.')));
     for (const name of new Set(names))
-      if (known.size && !known.has(name)) fail(file, `${name} is not a namespace or an assembly of the package`);
+      if (known.size && !isKnown(name)) fail(file, `${name} is not a namespace, an assembly or a type of the package`);
   }
 }
 for (const code of [...reported].sort().filter(code => !documented.has(code)))

@@ -275,10 +275,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (restores is null || restores.Count == 0) return written;
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return written;
 
-                var lines = File.ReadAllLines(assetPath);
+                if (!TryReadAllLines(assetPath, out var lines, out var original, out var encoding)) return written;
                 if (!LooksLikeUnityYaml(lines)) return written;
 
                 var pointers = new Dictionary<int, string>();
+                var added = new List<(long FileId, long Rid)>();
                 var insertions = new Dictionary<int, List<string>>();
                 var usedRids = new Dictionary<int, HashSet<long>>();
                 var lists = new Dictionary<(int start, string field), (List<int> pointerLines, List<long> rids)>();
@@ -320,7 +321,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     foreach (var (line, field, index) in targets)
                     {
-                        pointers[line] = new string(' ', IndentOf(lines[line])) + $"- rid: {freshRid}";
+                        pointers[line] = new string(' ', IndentOf(lines[line])) + $"- rid: {FormatId(freshRid)}";
                         written.Add((restore.FileId, field, index));
                     }
 
@@ -328,6 +329,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         insertions[refIdsStart] = inserted = new List<string>();
 
                     inserted.AddRange(RewriteEntryRid(restore.EntryLines, freshRid));
+                    added.Add((restore.FileId, freshRid));
                 }
 
                 if (written.Count == 0) return written;
@@ -339,7 +341,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (insertions.TryGetValue(i, out var inserted)) result.AddRange(inserted);
                 }
 
-                if (!TryWritePreservingNewlines(assetPath, result))
+                // The writer checks every inserted entry, and that nothing else of the RefIds blocks changed.
+                var removed = Array.Empty<(long FileId, long Rid)>();
+                if (!TryWritePreservingNewlines(assetPath, lines, result, original, encoding, removed, added))
                 {
                     written.Clear();
                     return written;
@@ -395,7 +399,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var item = _listItem.Match(lines[i]);
                 if (item.Success && currentField is not null && item.Groups["lead"].Length == fieldIndent)
                 {
-                    if (long.TryParse(item.Groups["rid"].Value, out var rid) && rids.Contains(rid) && !result.Contains(currentField))
+                    if (TryParseId(item.Groups["rid"].Value, out var rid) && rids.Contains(rid) && !result.Contains(currentField))
                         result.Add(currentField);
 
                     continue;
