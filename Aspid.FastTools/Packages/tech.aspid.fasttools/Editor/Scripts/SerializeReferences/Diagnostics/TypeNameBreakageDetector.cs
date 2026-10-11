@@ -111,7 +111,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static void PersistBaseline() => _baseline.Persist();
 
         internal static string GetKey(StoredTypeNameEntry entry) =>
-            $"{entry.TypeName}{KeyPartSeparator}{entry.ScriptGuid}:{entry.ScriptFileId}";
+            $"{entry.TypeName}{KeyPartSeparator}{entry.ScriptGuid}:{SerializeReferenceYaml.FormatId(entry.ScriptFileId)}";
 
         private static void BeginEstablishing()
         {
@@ -275,7 +275,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (colon < 0) return false;
 
             guid = script[..colon];
-            return long.TryParse(script[(colon + 1)..], out fileId);
+            return SerializeReferenceYaml.TryParseId(script[(colon + 1)..], out fileId);
         }
 
         private static void CancelSweep()
