@@ -66,6 +66,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SerializeReferenceTypeUsageIndex.RebuildAssets(rebuilt);
         }
 
+        private static bool HasCandidate(string[] paths) =>
+            paths.Any(SerializeReferenceHelpers.IsScanCandidate);
+
         private static bool HasScript(string[] paths) =>
             paths.Any(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
     }
