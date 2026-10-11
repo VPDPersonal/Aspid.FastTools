@@ -48,7 +48,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf`, `RegisterCallbackSelf`, `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf` |
+| method Unity defines or may define | `...Self` on the same receiver as the Unity method - `SetEnabledSelf`, `AddManipulatorSelf`, `RemoveManipulatorSelf` (`VisualElement`), `FocusSelf`, `BlurSelf` (`Focusable`), `SetTextSelf` (`TextElement`), `MarkDirtyLayoutSelf` (`IMGUIContainer` only), `SetRootItemsSelf` (`BaseTreeView`), `RegisterCallbackSelf`, `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf` (`CallbackEventHandler`), `SetVerticalScrollerVisibilitySelf` (`TextField`) |
 
 | Unity API | FastTools |
 |---|---|
@@ -69,7 +69,14 @@ rootVisualElement.AddChild(new VisualElement()
 | `field.RegisterValueChangedCallback(cb);` | `field.AddValueChanged(cb)` |
 | `el.RegisterCallback<ClickEvent>(OnClick);` | `el.RegisterCallbackSelf<Button, ClickEvent>(OnClick)` (also `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf`) |
 | `enumField.Init(v);` | `enumField.Initialize(v)` |
+| `dropdown.choices = list; dropdown.index = 1;` | `dropdown.SetChoices(list).SetIndex(1)` (`SetChoices` also on `PopupField<T>` and `RadioButtonGroup`; `DropdownField` also takes an array) |
+| `minMax.lowLimit = 0; minMax.highLimit = 100;` | `minMax.SetLowLimit(0).SetHighLimit(100)` (also `SetMinValue`, `SetMaxValue`; see Pitfalls) |
+| `textField.multiline = true;` | `textField.SetMultiline(true)` (also `SetVerticalScrollerVisibilitySelf`, after `SetMultiline`) |
+| `floatField.formatString = "F2";` | `floatField.SetFormatString("F2")` |
 | `el.AddManipulator(new Clickable(cb));` | `el.AddClickable(cb)` (also `AddContextualMenuManipulator`) |
+| `scroll.mode = ScrollViewMode.Horizontal; scroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;` | `scroll.SetMode(ScrollViewMode.Horizontal).SetVerticalScrollerVisibility(ScrollerVisibility.Hidden)` (also `SetScrollOffset`, page sizes, `SetElasticity`) |
+| `tabs.selectedTabIndex = 1; tab.label = "Stats"; tab.closeable = true;` | `tabs.SetSelectedTabIndex(1)`, `tab.SetLabel("Stats").SetCloseable(true).AddClosed(cb)` (also `SetIconImage`, `AddActiveTabChanged`, `AddTabClosed`) |
+| `split.fixedPaneIndex = 1; split.orientation = TwoPaneSplitViewOrientation.Vertical;` | `split.SetFixedPaneIndex(1).SetOrientation(TwoPaneSplitViewOrientation.Vertical)` (also `SetFixedPaneInitialDimension`) |
 
 Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])`, `UnbindFrom()`,
 `BindPropertyTo(property)`, `SetBindingPath(path)`, `PropertyField.SetLabel(...)` / `.AddValueChanged(...)`,
@@ -88,12 +95,17 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
 - `EnableClasses` and `EnableStyleSheets` take the flag first: `EnableClasses(on, "a", "b")`, but `EnableClass("a", on)`.
   Name both flags of `EnableClassIf(condition: x, "a", enable: y)`: swapped bools compile.
 - These do not exist: `ToggleInClass`, `EnableInClass`, `...FromResource` (singular),
-  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use `RegisterCallbackSelf`).
+  `SetUnityFontStyle` (use `SetUnityFontStyleAndWeight`), `AddCallback` (use `RegisterCallbackSelf`),
+  `SetVerticalScrollerVisibility` on a `TextField` (Unity's obsolete instance method of that name hides it; use
+  `...Self`). On a `ScrollView` it exists.
 - Values are `Style*` types: sizes `StyleLength` (`12`, `Length.Percent(50)`, `StyleKeyword.Auto`),
   `SetBackgroundImage` a `Sprite`, a `VectorImage` or a `StyleBackground` (a `Texture2D` converts to it),
   transitions `StyleList<T>` from a `List<T>` (not an array).
 - String colours and `Resources` paths never throw: a bad value logs a warning and changes nothing.
   Style sheet methods skip `null` style sheets; `RemoveChild` / `RemoveChildren` skip `null` and non-children.
+- Add the tabs before `SetActiveTab` and `SetSelectedTabIndex`: Unity throws for a tab that is not in the view and
+  ignores an index out of range. Call `ScrollView.SetScrollOffset` after the content is laid out: the scrollers limit
+  the offset to the scrollable range. `Tab.AddClosing` callbacks all run, but only the last result counts.
 - Positional arguments of `SetPadding`, `SetMargin`, `SetBorderWidth`, `SetBorderColor` and `SetDistance` run top, right,
   bottom, left: `SetPadding(8, 4)` sets the top and the right side, not vertical and horizontal. For pairs use
   `SetPaddingY(8).SetPaddingX(4)`, or name the arguments. `SetBorderRadius` runs top-left, top-right, bottom-right,
@@ -110,11 +122,23 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   Fill a `ListView` or `MultiColumnListView` with `SetItemsSource`, and a `TreeView` or `MultiColumnTreeView` with
   `SetRootItemsSelf`.
 - `...If` variants evaluate their arguments even when the condition is false.
+- Unity calls the callback of `SetFormatSelectedValueCallback` at once on the current value, which is `null` for a
+  `DropdownField` without a selection: call `SetChoices` and `SetIndex` first, or null-check.
+- Call `SetChoices` before `SetIndex`: Unity resolves the index against the current choices, so `SetIndex(1)` before
+  `SetChoices(list)` selects nothing and raises no error.
+- `MinMaxSlider` clamps the range on every assignment. On the default range of 0 to 10,
+  `SetMinValue(20).SetMaxValue(30)` gives 10 to 30. Set both ends with `SetValue(new Vector2(20, 30))`, or the upper end
+  first when the range moves up (the lower end first when it moves down). `SetLowLimit` throws `ArgumentException`
+  above the current high limit, and `SetHighLimit` below the current low limit.
+- `SetVerticalScrollerVisibilitySelf` does nothing on a `TextField` that is not multiline yet: call `SetMultiline(true)`
+  first.
 - Custom value types (`BaseField<MyType>`) need explicit type arguments for `AddValueChanged`, `SetLabel` and text
-  setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`.
+  setters: `field.AddValueChanged<MyField, MyType>(evt => ...)`. Likewise `PopupField<T>`: `SetChoices` infers `T`, but
+  `SetIndex` and the two `SetFormat...Callback` setters need `popup.SetIndex<PopupField<int>, int>(1)`; `DropdownField`
+  has overloads without type arguments.
 - `RegisterCallbackSelf` infers its type arguments only from a callback with a typed parameter, such as
   `(ClickEvent evt) => ...`. For a method group or an untyped lambda name both: `RegisterCallbackSelf<Button, ClickEvent>(OnClick)`.
 - The package supports Unity 6000.0.53f1. Wrap these in `#if UNITY_6000_x_OR_NEWER` when the project must support older
   versions: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
-  `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values
-  (6000.4); the `SetTextSelf` overloads for numbers, spans, builders and arrays (6000.6).
+  `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values and
+  `GUIDField` setters (6000.4); the `SetTextSelf` overloads for numbers, spans, builders and arrays (6000.6).

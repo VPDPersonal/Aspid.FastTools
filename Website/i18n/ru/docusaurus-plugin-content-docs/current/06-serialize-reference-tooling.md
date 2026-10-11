@@ -39,6 +39,7 @@ Project References также восстанавливает имена, кот�
 |---|---|
 | Выбрано несколько объектов | Выберите один: до этого **Missing type** не показывается |
 | В сцене или Prefab Mode есть несохранённые изменения | Сохраните: до этого поле показывает `<None>` без **Missing type** |
+| После несохранённых правок списка не понять, какой элемент стоит в слоте: например, удалён один из двух соседних потерянных элементов | Сохраните: до этого слот показывает `<None>` без **Missing type** |
 | Экземпляр префаба, класс хранится в исходном префабе | Исправьте исходный префаб, его имя в подсказке |
 | Экземпляр префаба, класс задан override | Выберите новый класс на экземпляре или отмените override |
 
@@ -55,7 +56,7 @@ Project References также восстанавливает имена, кот�
 
 ## Project References: восстановить группу
 
-Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset` и `.unity` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки).
+Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset`, `.unity`, `.controller` и `.playable` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки). Каждый проход показывает индикатор прогресса; **Cancel** останавливает проверку и оставляет прежние результаты. Группа показывает первые 200 записей, а **Show more** добавляет следующие 200.
 
 ![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -65,6 +66,8 @@ Project References также восстанавливает имена, кот�
 |---|---|---|
 | Потерянный тип | **Fix all ▼** — выбрать класс для всех записей | **Smart Fix → Pistol** — применить предложенный класс; причина в подсказке |
 | Переименование с <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — выбрать другой класс вместо нового имени | **Migrate all → Crossbow** — записать новое имя, см. [Миграции](#миграции-с-movedfrom) |
+
+Подписи кнопок **Fix all**, **Reassign all**, **Migrate all** содержат число записей группы: **Fix all (4) ▼**, **Migrate all (4) → Crossbow**.
 
 Каждое действие спрашивает подтверждение **Rewrite**. `<None>` в выборе класса очищает ссылки группы и удаляет их данные, включая поля с тем же `rid`; он спрашивает **Clear** и Undo не имеет. В открытых и несохранённых файлах он очищает ссылки в памяти, до сохранения.
 
@@ -100,7 +103,7 @@ Project References также восстанавливает имена, кот�
 
 ## Asset References: разобрать один ассет
 
-Откройте **Tools → Aspid 🐍 → FastTools → Asset References** и укажите сохранённый префаб, ScriptableObject или сцену в поле рядом с **Rescan**. Щелчок по строке записи в Project References открывает её ассет здесь же.
+Откройте **Tools → Aspid 🐍 → FastTools → Asset References** и укажите сохранённый префаб, ScriptableObject или сцену в поле рядом с **Rescan**. Либо выберите ассет в окне Project и вызовите **Assets → Aspid 🐍 → FastTools → Asset References** в главном или контекстном меню: вкладка откроется на этом ассете. Щелчок по строке записи в Project References открывает её ассет здесь же.
 
 ![Asset References: потерянный GhostCrossbow, общий Pistol с меткой SHARED и запись Railgun в Orphaned](../../../../docs/Images/aspid_fasttools_serialize_reference_asset_references.png)
 
@@ -140,7 +143,8 @@ Project References также восстанавливает имена, кот�
 |---|---|
 | Открытые сцены, Prefab Mode, несохранённые и заблокированные файлы | Fix all, Smart Fix и Migrate all их пропускают: сохраните и закройте файл или используйте [Fix в инспекторе](#fix-в-инспекторе) с ограничениями переноса данных |
 | Сцены и поля под потерянной родительской ссылкой | Asset References меняет только потерянные типы |
-| Двоичные ассеты и нескачанные файлы Git LFS | Не сканируются: используйте **Force Text** и скачайте файлы LFS |
+| Двоичные ассеты и нескачанные файлы Git LFS | Не сканируются: Scan Project считает их, Console перечисляет, Asset References показывает **Not scanned**; используйте **Force Text** и скачайте файлы LFS |
+| Файлы, последний раз сохранённые до Unity 2021.2 | Их managed-ссылки не читаются: пересохраните файлы в текущей версии Unity |
 | Больше 1000 карточек ссылок в одном окне | Asset References рисует первые 1000 и сообщает, сколько пропустил; Project References исправляет потерянные типы без этого предела |
 
 ## Пример в пакете

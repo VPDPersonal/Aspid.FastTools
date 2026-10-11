@@ -1,4 +1,6 @@
+using System;
 using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
@@ -8,12 +10,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceProjectSummary
     {
+        // A card builds this many rows, then offers Show more, so thousands of entries stay cheap to build.
+        public const int RowsPerPage = 200;
+
         private const int MaxPreviewedEntries = 8;
 
         private const string RequiredNotScannedText = "Required fields have not been checked yet — Rescan to include them.";
         private const string RequiredDisabledText =
             "Required fields are not checked while gate severity is Off — set it to Warn or Fail in Project Settings → " +
             "Aspid.FastTools → SerializeReference, then Rescan.";
+        private const string TypeNamesNotScannedText = "Type names and required fields have not been checked yet — Rescan to include them.";
+        private const string StaleScanDataText = "Type names and required violations are as of the last scan — Rescan to refresh them.";
 
         // Only a sweep that actually ran the required check can call the project clean. A sweep skipped because
         // severity was Off has not checked anything once severity is on again.
@@ -25,21 +32,81 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string BuildRequiredNotCheckedText(RequiredAuditState state) =>
             state == RequiredAuditState.Disabled ? RequiredDisabledText : RequiredNotScannedText;
 
-        public static (bool Success, string Title, string Message) BuildNothingFoundState(RequiredAuditState state) =>
-            state == RequiredAuditState.Checked
-                ? (true, "Project clean", "No missing managed references, type names or unset required fields found anywhere under Assets/.")
-                : (false, "No missing references",
-                    "No missing managed references or type names found anywhere under Assets/. " + BuildRequiredNotCheckedText(state));
+        // Type names are read only by Scan Project, so a window that shows the index of another feature (Unity Search,
+        // Asset References) has not checked them.
+        public static string BuildNotCheckedText(RequiredAuditState state, bool typeNamesScanned) =>
+            typeNamesScanned ? BuildRequiredNotCheckedText(state) : TypeNamesNotScannedText;
 
-        public static StatusStyle.Type GetMissingReferencesCleanStatus(RequiredAuditState state, bool hasRequiredViolations) =>
+        // Binary files and Git LFS pointers are not text YAML, so no scan reads them; a file another program locks
+        // cannot be opened and is counted with them.
+        public static string BuildUnreadFilesText(int count) =>
+            (count == 1
+                ? "1 file was not checked (binary, a Git LFS pointer or not readable)"
+                : $"{count} files were not checked (binary, Git LFS pointers or not readable)") + " — see the Console.";
+
+        // A read-only or locked file logs its reason to the Console; an entry that changed since the scan is left
+        // alone without a log, so the text names both causes.
+        public static string BuildNotRewrittenText(int count, string verb = "rewritten") =>
+            $"{count} could not be {verb} — a file is read-only or locked (see the Console), or the entry changed since the scan.";
+
+        // An in-memory entry fails without a log when its scene or Prefab Mode stage was closed after the scan, or
+        // when the live object no longer holds that missing reference.
+        public static string BuildNoLongerOpenText(int count) =>
+            $"{count} {(count == 1 ? "was" : "were")} no longer open in Prefab Mode or a scene, or changed since the scan — Rescan.";
+
+        // The parts of a summary body that apply, in one paragraph; a part that is null or empty is left out.
+        public static string JoinSentences(params string[] sentences) =>
+            string.Join(" ", sentences.Where(sentence => !string.IsNullOrEmpty(sentence)));
+
+        // Only a sweep that read every file and checked every kind of problem can call the project clean.
+        private static bool IsFullyChecked(RequiredAuditState state, bool typeNamesScanned, int unreadFileCount) =>
+            state == RequiredAuditState.Checked && typeNamesScanned && unreadFileCount == 0;
+
+        public static (bool Success, string Title, string Message) BuildNothingFoundState(
+            RequiredAuditState state, bool typeNamesScanned = true, int unreadFileCount = 0)
+        {
+            if (IsFullyChecked(state, typeNamesScanned, unreadFileCount))
+                return (true, "Project clean", "No missing managed references, type names or unset required fields found anywhere under Assets/.");
+
+            var found = state == RequiredAuditState.Checked && typeNamesScanned
+                ? "No missing managed references, type names or unset required fields"
+                : typeNamesScanned
+                    ? "No missing managed references or type names"
+                    : "No missing managed references";
+
+            // Without Scan Project the number of unread files is unknown, so "anywhere under Assets/" would claim too much.
+            var wherever = unreadFileCount > 0 || !typeNamesScanned ? "in the files that could be read" : "anywhere under Assets/";
+            var message = $"{found} found {wherever}.";
+
+            if (state != RequiredAuditState.Checked || !typeNamesScanned)
+                message += " " + BuildNotCheckedText(state, typeNamesScanned);
+
+            if (unreadFileCount > 0)
+                message += " " + BuildUnreadFilesText(unreadFileCount);
+
+            return (false, "No missing references", message);
+        }
+
+        public static StatusStyle.Type GetMissingReferencesCleanStatus(
+            RequiredAuditState state, bool hasRequiredViolations, bool typeNamesScanned = true, int unreadFileCount = 0) =>
             hasRequiredViolations ? StatusStyle.Type.Warning
-            : state == RequiredAuditState.Checked ? StatusStyle.Type.Success
+            : IsFullyChecked(state, typeNamesScanned, unreadFileCount) ? StatusStyle.Type.Success
             : StatusStyle.Type.Info;
 
-        public static string BuildMissingReferencesCleanHintText(RequiredAuditState state, bool hasRequiredViolations) =>
-            state != RequiredAuditState.Checked ? BuildRequiredNotCheckedText(state)
-            : hasRequiredViolations ? "Click a required-violation row to jump to its asset."
-            : "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+        public static string BuildMissingReferencesCleanHintText(
+            RequiredAuditState state, bool hasRequiredViolations, bool typeNamesScanned = true, int unreadFileCount = 0)
+        {
+            var hint =
+                state != RequiredAuditState.Checked || !typeNamesScanned ? BuildNotCheckedText(state, typeNamesScanned)
+                : hasRequiredViolations ? "Click a required-violation row to jump to its asset."
+                : unreadFileCount > 0 ? "Nothing left to repair in the files that were read."
+                : "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+
+            if (typeNamesScanned && hasRequiredViolations)
+                hint += " " + StaleScanDataText;
+
+            return unreadFileCount > 0 ? hint + " " + BuildUnreadFilesText(unreadFileCount) : hint;
+        }
 
         public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount, int typeNameCount = 0)
         {
@@ -52,18 +119,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(", ", parts);
         }
 
-        public static string BuildResultsHintText(bool hasRequiredViolations, RequiredAuditState state, bool hasOverrides = false)
+        // Type names and required violations are read by Scan Project and refreshed only by this window's own edits,
+        // so a hint that follows them says they may be out of date.
+        public static string BuildResultsHintText(
+            bool hasRequiredViolations,
+            RequiredAuditState state,
+            bool hasOverrides = false,
+            bool hasBrokenGroups = true,
+            bool hasTypeNames = false,
+            bool typeNamesScanned = true,
+            int unreadFileCount = 0)
         {
-            var hint = "Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.";
+            var parts = new List<string>(5);
+
+            if (hasBrokenGroups)
+                parts.Add("Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.");
 
             if (hasOverrides)
-                hint += " Prefab instance overrides are fixed on the instance: pick a new type or Revert the override.";
+                parts.Add("Prefab instance overrides are fixed on the instance: pick a new type or Revert the override.");
 
-            if (state != RequiredAuditState.Checked) return hint + " " + BuildRequiredNotCheckedText(state);
+            if (state != RequiredAuditState.Checked || !typeNamesScanned)
+                parts.Add(BuildNotCheckedText(state, typeNamesScanned));
+            else if (hasRequiredViolations)
+                parts.Add("Click a required-violation row to jump to its asset.");
 
-            return hasRequiredViolations
-                ? hint + " Click a required-violation row to jump to its asset."
-                : hint;
+            if (typeNamesScanned && (hasTypeNames || hasRequiredViolations))
+                parts.Add(StaleScanDataText);
+
+            if (unreadFileCount > 0)
+                parts.Add(BuildUnreadFilesText(unreadFileCount));
+
+            return string.Join(" ", parts);
         }
 
         public static string BuildGroupCountText(MissingReferenceGroup group)
@@ -74,6 +160,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var fileText = files == 1 ? "1 file" : $"{files} files";
             return $"{entryText} · {fileText}";
         }
+
+        // The rows a card builds when `requested` rows were asked for: the first page at least, every entry at most.
+        public static int GetShownRows(int requested, int total) =>
+            Math.Min(total, Math.Max(requested, RowsPerPage));
+
+        public static int GetNextShownRows(int shown) => shown + RowsPerPage;
+
+        public static string BuildShowMoreText(int shown, int total) =>
+            $"Show more ({shown} of {total} shown)";
+
+        public static string BuildShowMoreTooltip(int shown, int total) =>
+            $"Show the next {BuildCountText(Math.Min(RowsPerPage, total - shown), "row")}.";
 
         public static string BuildTypeNameCountText(MissingTypeNameGroup group)
         {

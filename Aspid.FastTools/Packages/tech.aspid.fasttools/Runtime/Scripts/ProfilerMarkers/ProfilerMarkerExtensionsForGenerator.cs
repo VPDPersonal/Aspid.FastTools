@@ -12,11 +12,17 @@ public static class ProfilerMarkerExtensionsForGenerator
     /// Opens the <see cref="ProfilerMarker"/> of this call site, named <c>Type.Member (line)</c>.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// For every type that calls this method on its own instance the generator emits a closer overload that
     /// overload resolution picks instead, holding one <see cref="ProfilerMarker"/> per line of that type.
     /// This overload runs only for calls the generator cannot support; analyzer <c>AFT0010</c> reports them.
     /// It takes the same parameters as the generated overload, so the generated one also wins for a type
     /// in the global namespace; that overload takes a struct by <see langword="in"/>, so the call does not copy it.
+    /// </para>
+    /// <para>
+    /// The class has no namespace, so the method needs no <see langword="using"/> directive and code completion
+    /// offers it after any expression; only a call on an instance of the calling type gets a marker.
+    /// </para>
     /// </remarks>
     /// <typeparam name="T">The type of <paramref name="instance"/>; generic, so a struct is not boxed.</typeparam>
     /// <param name="instance">The instance the scope is opened on; its value is never read.</param>

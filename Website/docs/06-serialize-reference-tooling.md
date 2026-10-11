@@ -39,6 +39,7 @@ After a class is renamed, moved or deleted, the field shows **Missing type**, wh
 |---|---|
 | Several objects selected | Select one: until then **Missing type** is not shown |
 | Unsaved changes in the scene or Prefab Mode | Save: until then the field shows `<None>` without **Missing type** |
+| Unsaved list edits that leave it unclear which element a slot holds, such as deleting one of two missing elements side by side | Save: until then the slot shows `<None>` without **Missing type** |
 | Prefab instance, class stored in the source prefab | Repair the source prefab; the tooltip names it |
 | Prefab instance, class set through an override | Choose a new class on the instance or revert the override |
 
@@ -55,7 +56,7 @@ A save that resizes a list, and every save of a prefab, writes the list's missin
 
 ## Project References: repair a group
 
-Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the next tab of the same window. **Scan Project** reads the `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope).
+Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the next tab of the same window. **Scan Project** reads the `.prefab`, `.asset`, `.unity`, `.controller` and `.playable` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope). A progress bar shows each sweep; **Cancel** stops the scan and keeps the earlier results. A group lists its first 200 entries, and **Show more** adds the next 200.
 
 ![Project References with Fix all, Smart Fix → Pistol and Migrate all groups](Images/aspid_fasttools_serialize_reference_project_references.png)
 
@@ -65,6 +66,8 @@ Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset Refere
 |---|---|---|
 | Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Pistol** — apply the suggested class; the tooltip gives the reason |
 | Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
+
+The **Fix all**, **Reassign all** and **Migrate all** labels show the number of entries in the group, for example **Fix all (4) ▼** and **Migrate all (4) → Crossbow**.
 
 Every action asks for **Rewrite**. `<None>` in the class picker clears the group's references and deletes their data, fields sharing the same `rid` included; it asks for **Clear** and has no Undo. In open and unsaved files it clears the references in memory, until you save.
 
@@ -100,7 +103,7 @@ The scan does not find <code lang="csharp">[TypeSelector]</code> strings: repair
 
 ## Asset References: inspect one asset
 
-Open **Tools → Aspid 🐍 → FastTools → Asset References** and assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**. Clicking an entry row in Project References opens its asset here.
+Open **Tools → Aspid 🐍 → FastTools → Asset References** and assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**. Or select an asset in the Project window and choose **Assets → Aspid 🐍 → FastTools → Asset References**, from the main menu or the right-click menu: the tab opens on that asset. Clicking an entry row in Project References opens its asset here.
 
 ![Asset References with a missing GhostCrossbow, a SHARED Pistol and an orphaned Railgun entry](Images/aspid_fasttools_serialize_reference_asset_references.png)
 
@@ -140,7 +143,8 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 |---|---|
 | Open scenes, Prefab Mode, unsaved and locked files | Fix all, Smart Fix and Migrate all skip them: save and close the file, or use [Fix in the Inspector](#fix-in-the-inspector) with its data-transfer limitations |
 | Scenes and fields under a missing parent reference | Asset References changes only missing types |
-| Binary assets and unfetched Git LFS files | Not scanned: use **Force Text** and fetch LFS files |
+| Binary assets and unfetched Git LFS files | Not scanned: Scan Project counts them and the Console lists them, Asset References shows **Not scanned**; use **Force Text** and fetch LFS files |
+| Files last saved before Unity 2021.2 | Their managed references are not read: save the files again in the current Unity version |
 | More than 1000 reference cards in one window | Asset References draws the first 1000 and says how many it left out; Project References repairs missing types without this limit |
 
 ## Package sample

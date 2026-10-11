@@ -1,0 +1,6 @@
+# UI Toolkit generates a public UxmlSerializedData class for every [UxmlElement]. It serves the UXML importer, not
+# the users of the element, so the API reference leaves it out.
+apiRules:
+- exclude:
+    uidRegex: \.UxmlSerializedData$
+    type: Type

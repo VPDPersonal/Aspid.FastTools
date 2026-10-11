@@ -1,12 +1,12 @@
 ---
 name: aspid-serializable-type
-description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, analyzers AFT0001-AFT0009 and AFT0012. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, or fixing these analyzer warnings."
+description: "Aspid.FastTools type picking in the Unity Inspector: SerializableType<T>, SerializableMonoScript<T>, [TypeSelector] on string, wrapper and [SerializeReference] fields, [TypeSelectorDisplay], ComponentTypeSelector, the TypeField element and TypeSelectorWindow for editor code, analyzers AFT0001-AFT0009 and AFT0012, the CI gate for missing types. Use when storing a System.Type in a serialized field, letting designers pick a class or an interface implementation in the Inspector, adding a type dropdown to a custom inspector or editor window, failing a CI job on missing types, or fixing these analyzer warnings."
 ---
 
 # Serializable types and [TypeSelector]
 
 Namespace `Aspid.FastTools.Types`. If the user's scripts have an `.asmdef`, it must reference `Aspid.FastTools`
-(editor code using `TypeSelectorWindow` also `Aspid.FastTools.Editor`).
+(editor code using `TypeField` or `TypeSelectorWindow` also `Aspid.FastTools.Editor`).
 
 | Need | Use |
 |---|---|
@@ -15,7 +15,9 @@ Namespace `Aspid.FastTools.Types`. If the user's scripts have an `.asmdef`, it m
 | Picker on a `string` (stores the assembly-qualified name) or extra constraints | `[TypeSelector]` |
 | Store an instance with data of a chosen implementation | `[TypeSelector]` + `[SerializeReference]` |
 | Switch a MonoBehaviour/ScriptableObject to a sibling subclass | `ComponentTypeSelector`, see [references/more.md](references/more.md) |
+| Type dropdown in a custom inspector or editor window | `TypeField`, see [references/more.md](references/more.md) |
 | Open the picker from custom editor code | `TypeSelectorWindow.Show`, see [references/more.md](references/more.md) |
+| Fail a CI job on missing types or unset `Required` fields | `SerializeReferenceCiGate.RunCheck`, see [references/more.md](references/more.md) |
 
 ```csharp
 using System;
@@ -56,6 +58,8 @@ public sealed class Armory : MonoBehaviour
 - Both have a picker without any attribute; `[TypeSelector]` only adds constraints or `Required`.
 - Read: `.Type` (lazy; the result, `null` included, is cached until the stored name changes), implicit `Type?`,
   `AssemblyQualifiedName` (stored name, kept when it no longer resolves), `BaseType` (`typeof(T)`).
+- Wrappers compare by stored name: `a.Equals(b)` is `true` for the same type name whatever the wrapper class or `T`, so
+  they work as `Dictionary` and `HashSet` keys (do not serialize or deserialize a wrapper while it is a key: in the Editor, saving a `SerializableMonoScript` rewrites the name of a renamed class). `==` compares references.
 - `T` limits the picker and the constructor only: a name stored before `T` or the class's base changed still resolves,
   so check `BaseType.IsAssignableFrom(type)` before casting when that matters.
 - A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Low or
@@ -97,7 +101,8 @@ public sealed class Armory : MonoBehaviour
   it is not a runtime null check.
 - `[Conditional("UNITY_EDITOR")]`: never read it at runtime.
 - In a runtime object's Inspector the picker omits types from editor-only assemblies (`UnityEditor`, Editor asmdefs and
-  folders): a player cannot resolve them. Editor windows and editor-only settings objects still offer every type.
+  folders), and Paste, templates, a dropped script, Link to Existing and Smart Fix refuse them: a player cannot resolve
+  them. Editor windows and editor-only settings objects still offer every type.
 - `[SerializeReference]`: the field type is the first constraint, only instantiable classes are offered, nested
   managed references get the selector automatically; `UnityEngine.Object` field types are invalid (`AFT0004`).
 - Renaming or moving a `[SerializeReference]` implementation turns its stored data into a missing type. Add

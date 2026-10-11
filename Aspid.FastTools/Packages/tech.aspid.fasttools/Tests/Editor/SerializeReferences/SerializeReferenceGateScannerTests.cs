@@ -21,6 +21,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         private const string ProbeAssetPath = "Assets/__AspidGateScannerRequiredProbe__.asset";
         private const string EngineAssetPath = "Assets/__AspidGateScannerEngineProbe__.asset";
+        private const string UnreadProbePath = "Assets/__AspidGateScannerUnreadProbe__.prefab";
         private const string ExcludedFolderPath = "Assets/__AspidGateScannerExcluded__";
         private const string ExcludedProbePath = ExcludedFolderPath + "/Probe.asset";
         private const string SharedSettingsPath = "ProjectSettings/SerializeReferenceSharedSettings.asset";
@@ -45,11 +46,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     "Unset [SerializeReference, TypeSelector(Required = true)] field must be reported.");
                 Assert.IsTrue(forProbe.Any(v => v.FieldPath == nameof(RequiredTestObject.requiredString)),
                     "Unset [TypeSelector(Required = true)] string field must be reported.");
+
+                // The windows label a row from the scan itself; loading the file again for it froze a large project.
+                Assert.IsTrue(forProbe.All(v => v.ComponentName == nameof(RequiredTestObject)));
+                Assert.IsTrue(forProbe.All(v => v.FieldLabel == $"{nameof(RequiredTestObject)}.{v.FieldPath}"));
             }
             finally
             {
                 AssetDatabase.DeleteAsset(ProbeAssetPath);
             }
+        }
+
+        [Test]
+        public void FieldLabel_WithoutComponent_IsTheBareFieldPath()
+        {
+            var violation = new GateViolation("Assets/Arena.unity", 1, 0, default, GateViolationKind.RequiredUnset, "_weapon");
+
+            Assert.AreEqual("_weapon", violation.FieldLabel);
         }
 
         // ScanAssetRequiredFields is the scoped, single-asset entry point the Inspect Asset graph calls on every
@@ -127,10 +140,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (_, path) =>
                 {
-                    if (!probes.Contains(path)) return;
+                    if (!probes.Contains(path)) return false;
 
                     if (firstVisited is null) firstVisited = path;
                     else firstLoadedAtSecond = AssetDatabase.IsMainAssetAtPathLoaded(firstVisited);
+
+                    return false;
                 });
 
                 Assert.AreEqual(false, firstLoadedAtSecond,
@@ -143,6 +158,74 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // The Scan Project progress bar can be cancelled. A half-finished sweep must not pass for a clean project, so
+        // the scan returns nothing, and it still releases the assets it had loaded.
+        [Test]
+        public void Scan_RequiredOnly_ProgressStopsTheSweep_ReturnsNullAndUnloadsLoadedAssets()
+        {
+            const string secondProbePath = "Assets/__AspidGateScannerRequiredProbe2__.asset";
+
+            var probes = new[] { ProbeAssetPath, secondProbePath };
+            try
+            {
+                foreach (var path in probes)
+                {
+                    var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+                    AssetDatabase.CreateAsset(probe, path);
+                    Resources.UnloadAsset(probe);
+                    Assume.That(AssetDatabase.IsMainAssetAtPathLoaded(path), Is.False);
+                }
+
+                string firstVisited = null;
+
+                var violations = SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (_, path) =>
+                {
+                    if (!probes.Contains(path)) return false;
+                    if (firstVisited is not null) return true;
+
+                    firstVisited = path;
+                    return false;
+                });
+
+                Assert.IsNull(violations, "A cancelled sweep has no result.");
+                Assert.IsNotNull(firstVisited);
+                Assert.IsFalse(AssetDatabase.IsMainAssetAtPathLoaded(firstVisited),
+                    "An asset the cancelled sweep loaded must not stay loaded.");
+            }
+            finally
+            {
+                foreach (var path in probes) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        [Test]
+        public void Scan_RequiredOnly_ReportsProgressForEachFile()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+
+                var paths = new List<string>();
+                var fractions = new List<float>();
+
+                var violations = SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (fraction, path) =>
+                {
+                    fractions.Add(fraction);
+                    paths.Add(path);
+                    return false;
+                });
+
+                Assert.IsNotNull(violations);
+                CollectionAssert.Contains(paths, ProbeAssetPath);
+                Assert.IsTrue(fractions.All(fraction => fraction is >= 0f and < 1f));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
         // A prefab variant or a prefab nesting an edited prefab inherits the edit, so a rescan after a bulk edit of a
         // prefab must re-audit them too; an unrelated prefab keeps its cached entries.
         [Test]
@@ -152,6 +235,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             const string variantPath = "Assets/__AspidGateScannerVariant__.prefab";
             const string nestingPath = "Assets/__AspidGateScannerNesting__.prefab";
             const string unrelatedPath = "Assets/__AspidGateScannerUnrelated__.prefab";
+
+            // A map built earlier in the session does not know the prefabs below.
+            SerializeReferenceGateScanner.ResetPrefabDependents();
 
             var temporary = new List<GameObject>();
             try
@@ -189,8 +275,58 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally
             {
+                SerializeReferenceGateScanner.ResetPrefabDependents();
                 foreach (var gameObject in temporary) Object.DestroyImmediate(gameObject);
                 foreach (var path in new[] { nestingPath, variantPath, unrelatedPath, basePath }) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        // The prefab dependency map is built once per project audit, not per rescan: a variant made after the map
+        // was built is picked up when the next Scan (or this reset) drops the map.
+        [Test]
+        public void RescanRequiredFields_KeepsThePrefabDependentsUntilTheyAreReset()
+        {
+            const string basePath = "Assets/__AspidGateScannerMapBase__.prefab";
+            const string firstPath = "Assets/__AspidGateScannerMapFirst__.prefab";
+            const string secondPath = "Assets/__AspidGateScannerMapSecond__.prefab";
+
+            SerializeReferenceGateScanner.ResetPrefabDependents();
+
+            var temporary = new List<GameObject>();
+            try
+            {
+                var baseRoot = new GameObject("Base");
+                temporary.Add(baseRoot);
+                var basePrefab = PrefabUtility.SaveAsPrefabAsset(baseRoot, basePath);
+
+                var firstRoot = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
+                temporary.Add(firstRoot);
+                PrefabUtility.SaveAsPrefabAsset(firstRoot, firstPath);
+
+                var first = SerializeReferenceGateScanner.RescanRequiredFields(
+                    new[] { new GateViolation(firstPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale") },
+                    new[] { basePath });
+                Assert.IsFalse(first.Any(v => v.FieldPath == "stale"), "The first rescan builds the map and re-audits the variant.");
+
+                var secondRoot = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
+                temporary.Add(secondRoot);
+                PrefabUtility.SaveAsPrefabAsset(secondRoot, secondPath);
+
+                var staleSecond = new[] { new GateViolation(secondPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale") };
+
+                var reused = SerializeReferenceGateScanner.RescanRequiredFields(staleSecond, new[] { basePath });
+                Assert.IsTrue(reused.Any(v => v.FieldPath == "stale"), "The map built by the first rescan is reused, so it does not know the new variant.");
+
+                SerializeReferenceGateScanner.ResetPrefabDependents();
+
+                var rebuilt = SerializeReferenceGateScanner.RescanRequiredFields(staleSecond, new[] { basePath });
+                Assert.IsFalse(rebuilt.Any(v => v.FieldPath == "stale"), "After the reset the map is rebuilt and knows the new variant.");
+            }
+            finally
+            {
+                SerializeReferenceGateScanner.ResetPrefabDependents();
+                foreach (var gameObject in temporary) Object.DestroyImmediate(gameObject);
+                foreach (var path in new[] { secondPath, firstPath, basePath }) AssetDatabase.DeleteAsset(path);
             }
         }
 
@@ -241,6 +377,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
 
                 CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.LfsPointer));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        // An asset last saved before Unity 2021.2 keeps its managed references in registry version 1, without RefIds. The
+        // scan sees no references in it, so it must hand the file back as unscanned instead of passing it as clean.
+        [Test]
+        public void Scan_MissingOnly_ReportsOtherReferencesVersionAsUnscanned()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                File.WriteAllText(ProbeAssetPath,
+                    "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n--- !u!114 &11400000\nMonoBehaviour:\n" +
+                    "  m_Name: Probe\n  _weapon:\n    id: 0\n  references:\n    version: 1\n    00000000:\n" +
+                    "      type: {class: Ghost, ns: Game, asm: Assembly-CSharp}\n      data:\n        _damage: 1\n");
+
+                var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+                CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.UnsupportedReferencesVersion));
+
+                var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+                StringAssert.Contains("registry version other than 2", notice);
+                StringAssert.Contains(ProbeAssetPath, notice);
             }
             finally
             {
@@ -338,6 +502,95 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // The Project References window counts the files DescribeUnscanned names, so a binary engine asset under Force
+        // Text does not turn its summary into a warning.
+        [Test]
+        public void CountReportableUnscanned_CountsWhatDescribeUnscannedNames()
+        {
+            try
+            {
+                AssetDatabase.CreateAsset(new Mesh(), EngineAssetPath);
+
+                var unscanned = new[]
+                {
+                    (EngineAssetPath, AssetFileFormat.Binary),
+                    ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Binary),
+                    ("Assets/Weapons/Rifle.prefab", AssetFileFormat.LfsPointer),
+                };
+
+                Assert.AreEqual(2, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.ForceText));
+                Assert.AreEqual(3, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.Mixed));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(EngineAssetPath);
+            }
+        }
+
+        [Test]
+        public void CountReportableUnscanned_Nothing_IsZero() =>
+            Assert.AreEqual(0, SerializeReferenceGateScanner.CountReportableUnscanned(
+                Array.Empty<(string, AssetFileFormat)>(), SerializationMode.ForceBinary));
+
+        // Asset References reads one picked asset: a binary prefab or an LFS pointer is not a prefab without references.
+        [TestCase("version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n", AssetFileFormat.LfsPointer)]
+        [TestCase("\u0001\u0002binary", AssetFileFormat.Binary)]
+        public void TryGetUnreadFormat_FileThatIsNotTextYaml_ReturnsItsFormat(string content, AssetFileFormat expected)
+        {
+            try
+            {
+                File.WriteAllText(UnreadProbePath, content);
+
+                Assert.IsTrue(SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out var format));
+                Assert.AreEqual(expected, format);
+            }
+            finally
+            {
+                File.Delete(UnreadProbePath);
+            }
+        }
+
+        [Test]
+        public void TryGetUnreadFormat_TextYaml_IsReadable()
+        {
+            try
+            {
+                File.WriteAllText(UnreadProbePath, "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n");
+
+                Assert.IsFalse(SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out _));
+            }
+            finally
+            {
+                File.Delete(UnreadProbePath);
+            }
+        }
+
+        [Test]
+        public void TryGetUnreadFormat_MissingFile_IsNotUnread() =>
+            Assert.IsFalse(SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out _));
+
+        [Test]
+        public void TryGetUnreadFormat_ExtensionTheScansNeverRead_IsNotUnread()
+        {
+            const string path = "Assets/__AspidGateScannerUnreadProbe__.bytes";
+
+            try
+            {
+                File.WriteAllText(path, "\u0001\u0002binary");
+
+                Assert.IsFalse(SerializeReferenceGateScanner.TryGetUnreadFormat(path, SerializationMode.ForceText, out _));
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        [TestCase(AssetFileFormat.LfsPointer, "Git LFS pointer")]
+        [TestCase(AssetFileFormat.Binary, "Force Text")]
+        public void BuildUnreadAssetMessage_NamesTheCauseAndTheWayOut(AssetFileFormat format, string expected) =>
+            StringAssert.Contains(expected, SerializeReferenceGraphSummary.BuildUnreadAssetMessage(format));
+
         [Test]
         public void DescribeUnscanned_Nothing_IsSilent() =>
             Assert.IsNull(SerializeReferenceGateScanner.DescribeUnscanned(
@@ -385,6 +638,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var excludedFolders = SerializeReferenceSettings.ExcludedFolders;
             var settingsFile = File.Exists(SharedSettingsPath) ? File.ReadAllBytes(SharedSettingsPath) : null;
+            var baselines = new BreakageBaselineSnapshot();
             try
             {
                 AssetDatabase.CreateFolder(parentFolder: "Assets", newFolderName: Path.GetFileName(ExcludedFolderPath));
@@ -402,6 +656,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 }
                 finally
                 {
+                    // Changing the excluded folders resets the detector baselines, so they are restored after the last change.
+                    baselines.Restore();
+
                     if (settingsFile is null) File.Delete(SharedSettingsPath);
                     else File.WriteAllBytes(SharedSettingsPath, settingsFile);
 

@@ -85,6 +85,36 @@ The element, for chaining.
 
 The field type.
 
+### SetFormatString\<T\>\(T, string\) {#Aspid_FastTools_UIElements_TextInputBaseFieldDoubleExtensions_SetFormatString__1___0_System_String_}
+
+Sets [`formatString`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextValueField_1-formatString.html).
+
+```csharp
+public static T SetFormatString<T>(this T element, string value) where T : TextValueField<double>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The format string applied when the value is displayed.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The field type.
+
 ### SetHideMobileInput\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldDoubleExtensions_SetHideMobileInput__1___0_System_Boolean_}
 
 Sets [`hideMobileInput`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.TextInputBaseField_1-hideMobileInput.html).

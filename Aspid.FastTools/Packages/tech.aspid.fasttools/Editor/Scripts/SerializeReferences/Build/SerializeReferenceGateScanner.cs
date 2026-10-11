@@ -14,8 +14,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const int MaxListedPaths = 10;
 
-        // How many files the required-field sweep loads before it releases the ones nothing references any more.
-        // Not const so tests can lower it.
+        // How many violations a log lists before it says how many more there are; the CI report lists them all.
+        public const int MaxListedViolations = 50;
+
+        // How many files a sweep loads before it releases the ones nothing references any more. The required-field
+        // sweep and SerializeReferenceConstraintCache both use it. Not const so tests can lower it.
         internal static int UnloadEveryLoadedFiles = 64;
 
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
@@ -28,12 +31,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<string, IReadOnlyList<RequiredFieldDescriptor>> _scriptRequiredFieldsCache =
             new(StringComparer.Ordinal);
 
+        // Prefab -> the scan-candidate prefabs that depend on it (its variants and the prefabs nesting it). Built by the
+        // first rescan after a project audit and kept until the next one, since GetDependencies of every prefab is
+        // slow and a rescan follows each fix. A nesting added after the audit shows up with the next Scan.
+        private static Dictionary<string, List<string>> _prefabDependents;
+
         // `unscanned` collects the candidates the YAML pass had to skip (binary files, LFS pointers): their missing
         // types, and a scene's required fields, were not checked. Prefabs and assets still get the object-load
-        // required check, which does not depend on the file format.
+        // required check, which does not depend on the file format. A text file whose managed references are stored
+        // in another registry version is added too: its missing types were not checked.
+        // `onProgress` runs before each file and returns true to stop; the result is then null, since a partial sweep
+        // would pass for a clean project.
         public static IReadOnlyList<GateViolation> Scan(
             GateOptions options,
-            Action<float, string> onProgress = null,
+            Func<float, string, bool> onProgress = null,
             ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
             var violations = new List<GateViolation>();
@@ -42,13 +53,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _scriptRequiredFieldsCache.Clear();
             _constraintMapCache.Clear();
             MissingTypeNames.ClearCache();
+            ResetPrefabDependents();
 
             var loadedSinceUnload = 0;
+            var stopped = false;
 
             for (var i = 0; i < paths.Length; i++)
             {
                 var path = paths[i];
-                onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
+
+                if (onProgress is not null && onProgress((float)i / Math.Max(1, paths.Length), path))
+                {
+                    stopped = true;
+                    break;
+                }
 
                 var isScene = SerializeReferenceHelpers.IsScene(path);
 
@@ -67,11 +85,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!isTextYaml) unscanned?.Add((path, format));
                 }
 
+                // One read for every YAML pass: managed references, the names stored by SerializableType wrappers and
+                // the registry version, which the required-field reader of a scene cannot read either.
+                var lines = needsYaml && isTextYaml ? SerializeReferenceYaml.ReadLines(path, knownTextYaml: true) : null;
+                if (lines is not null && SerializeReferenceYaml.HasUnsupportedReferencesVersion(lines))
+                    unscanned?.Add((path, AssetFileFormat.UnsupportedReferencesVersion));
+
                 if (options.ScanMissingTypes && isTextYaml)
                 {
-                    // One read for both passes: managed references, then the names stored by SerializableType wrappers.
-                    var lines = SerializeReferenceYaml.ReadLines(path, knownTextYaml: true);
-
                     foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(lines, SerializeReferenceHelpers.StoredTypeResolves))
                     {
                         if (IsPendingMigration(path, entry)) continue;
@@ -86,7 +107,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (options.ScanRequiredFields)
                 {
                     if (!isScene) CollectRequiredViolations(path, violations);
-                    else if (isTextYaml) CollectSceneRequiredViolations(path, violations, knownTextYaml: true);
+                    else if (isTextYaml) CollectSceneRequiredViolations(path, lines, violations);
                 }
 
                 if (!wasLoaded && AssetDatabase.IsMainAssetAtPathLoaded(path)) loadedSinceUnload++;
@@ -101,36 +122,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (loadedSinceUnload > 0) EditorUtility.UnloadUnusedAssetsImmediate();
 
-            return violations;
+            return stopped ? null : violations;
         }
 
         // A warning for the log, or null when nothing worth one was skipped. Outside Force Text every binary file warns.
         // Under Force Text, Unity still writes a few assets binary (LightingData, NavMesh) that cannot hold managed
         // references, so only a binary file that can (CanHoldManagedReferences) warns: a prefab or scene saved before
         // the switch, a [PreferBinarySerialization] ScriptableObject. An LFS pointer always warns: the real file was
-        // never pulled.
+        // never pulled. A file with another managed reference registry version always warns.
         public static string DescribeUnscanned(
             IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
         {
-            if (unscanned is null || unscanned.Count == 0) return null;
+            var (pointers, binaries, otherRegistries) = SplitUnscanned(unscanned, serializationMode);
+            var count = pointers.Count + binaries.Count + otherRegistries.Count;
+            if (count == 0) return null;
 
             var forceText = serializationMode == SerializationMode.ForceText;
-
-            var pointers = unscanned
-                .Where(file => file.Format == AssetFileFormat.LfsPointer)
-                .Select(file => file.AssetPath)
-                .ToList();
-
-            var binaries = unscanned
-                .Where(file => file.Format == AssetFileFormat.Binary)
-                .Select(file => file.AssetPath)
-                .Where(path => !forceText || CanHoldManagedReferences(path))
-                .ToList();
-
-            if (pointers.Count == 0 && binaries.Count == 0) return null;
-
             var builder = new StringBuilder();
-            builder.AppendLine($"[Aspid FastTools] {pointers.Count + binaries.Count} file(s) were not checked for SerializeReference problems because they are not text YAML:");
+            builder.AppendLine($"[Aspid FastTools] {count} file(s) were not checked for SerializeReference problems:");
 
             if (binaries.Count > 0 && forceText)
             {
@@ -148,8 +157,70 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 AppendPaths(builder, pointers);
             }
 
+            if (otherRegistries.Count > 0)
+            {
+                builder.AppendLine($"  {otherRegistries.Count} file(s) keep managed references in a registry version other than 2, which the check cannot read: re-save them in this Unity version, for example with AssetDatabase.ForceReserializeAssets.");
+                AppendPaths(builder, otherRegistries);
+            }
+
             return builder.ToString();
         }
+
+        // How many skipped files DescribeUnscanned warns about: the ones whose problems the check could have missed.
+        public static int CountUnchecked(
+            IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            var (pointers, binaries, otherRegistries) = SplitUnscanned(unscanned, serializationMode);
+            return pointers.Count + binaries.Count + otherRegistries.Count;
+        }
+
+        // How many of the unscanned files DescribeUnscanned names, for a window that shows a count.
+        public static int CountReportableUnscanned(
+            IEnumerable<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            var forceText = serializationMode == SerializationMode.ForceText;
+            return unscanned.Count(file => IsReportable(file, forceText));
+        }
+
+        // For Asset References, which reads one picked asset: true when no scan can read it and DescribeUnscanned would
+        // name it. False for a readable asset, a missing file and an asset type the scans never read.
+        public static bool TryGetUnreadFormat(string assetPath, SerializationMode serializationMode, out AssetFileFormat format)
+        {
+            format = AssetFileFormat.TextYaml;
+            if (!SerializeReferenceYaml.IsCandidateAssetPath(assetPath) || !File.Exists(assetPath)) return false;
+
+            format = SerializeReferenceYaml.SniffFileFormat(assetPath);
+            return IsReportable((assetPath, format), forceText: serializationMode == SerializationMode.ForceText);
+        }
+
+        private static (List<string> Pointers, List<string> Binaries, List<string> OtherRegistries) SplitUnscanned(
+            IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            if (unscanned is null || unscanned.Count == 0) return (new List<string>(), new List<string>(), new List<string>());
+
+            var forceText = serializationMode == SerializationMode.ForceText;
+
+            var pointers = unscanned
+                .Where(file => file.Format == AssetFileFormat.LfsPointer)
+                .Select(file => file.AssetPath)
+                .ToList();
+
+            var binaries = unscanned
+                .Where(file => file.Format == AssetFileFormat.Binary && IsReportable(file, forceText))
+                .Select(file => file.AssetPath)
+                .ToList();
+
+            var otherRegistries = unscanned
+                .Where(file => file.Format == AssetFileFormat.UnsupportedReferencesVersion)
+                .Select(file => file.AssetPath)
+                .ToList();
+
+            return (pointers, binaries, otherRegistries);
+        }
+
+        private static bool IsReportable((string AssetPath, AssetFileFormat Format) file, bool forceText) =>
+            file.Format == AssetFileFormat.LfsPointer ||
+            (file.Format == AssetFileFormat.Binary && (!forceText || CanHoldManagedReferences(file.AssetPath)));
 
         // Whether a binary file may hide managed references: a prefab or scene always may; an .asset when its main
         // asset is a ScriptableObject, or of an unknown type. The binaries Unity writes under Force Text (LightingData,
@@ -206,16 +277,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // may have changed as well. Scenes store only their overrides of a prefab instance, so they are not affected.
         private static void AddDependentPrefabs(HashSet<string> paths)
         {
-            var editedPrefabs = new HashSet<string>(paths.Where(IsPrefab), StringComparer.Ordinal);
+            var editedPrefabs = paths.Where(IsPrefab).ToList();
             if (editedPrefabs.Count == 0) return;
+
+            _prefabDependents ??= BuildPrefabDependents();
+
+            foreach (var edited in editedPrefabs)
+            {
+                if (!_prefabDependents.TryGetValue(edited, out var dependents)) continue;
+
+                // The excluded folders may have changed since the map was built.
+                foreach (var dependent in dependents.Where(SerializeReferenceHelpers.IsScanCandidate))
+                    paths.Add(dependent);
+            }
+        }
+
+        internal static void ResetPrefabDependents() => _prefabDependents = null;
+
+        private static Dictionary<string, List<string>> BuildPrefabDependents()
+        {
+            var map = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
             foreach (var path in AssetDatabase.GetAllAssetPaths())
             {
-                if (!IsPrefab(path) || paths.Contains(path) || !SerializeReferenceHelpers.IsScanCandidate(path)) continue;
+                if (!IsPrefab(path) || !SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
-                if (AssetDatabase.GetDependencies(path, recursive: true).Any(editedPrefabs.Contains))
-                    paths.Add(path);
+                foreach (var dependency in AssetDatabase.GetDependencies(path, recursive: true))
+                {
+                    if (dependency == path || !IsPrefab(dependency)) continue;
+
+                    if (!map.TryGetValue(dependency, out var dependents))
+                        map[dependency] = dependents = new List<string>();
+
+                    dependents.Add(path);
+                }
             }
+
+            return map;
         }
 
         private static bool IsPrefab(string path) => path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase);
@@ -254,10 +352,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
-        private static void CollectSceneRequiredViolations(
-            string assetPath, List<GateViolation> violations, bool knownTextYaml = false)
+        private static void CollectSceneRequiredViolations(string assetPath, List<GateViolation> violations) =>
+            CollectSceneRequiredViolations(assetPath, SerializeReferenceYaml.ReadLines(assetPath), violations);
+
+        private static void CollectSceneRequiredViolations(string assetPath, string[] lines, List<GateViolation> violations)
         {
-            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript, knownTextYaml))
+            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(lines, RequiredFieldsForScript))
             {
                 violations.Add(new GateViolation(assetPath, entry.FileId, entry.Rid, default,
                     GateViolationKind.RequiredUnset, entry.FieldName));
@@ -309,7 +409,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;
                     violations.Add(new GateViolation(assetPath, fileId, rid, default,
-                        GateViolationKind.RequiredUnset, TypeSelectorRequiredGate.GetFieldPath(iterator)));
+                        GateViolationKind.RequiredUnset, TypeSelectorRequiredGate.GetFieldPath(iterator),
+                        componentName: asset.GetType().Name));
                 }
                 while (iterator.Next(enterChildren));
             }

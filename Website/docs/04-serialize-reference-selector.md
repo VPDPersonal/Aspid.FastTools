@@ -16,7 +16,7 @@ For extra constraints, required fields and list appearance, see [TypeSelector](0
 
 - <code lang="csharp">Allow</code> has no effect here: the types must be instantiable.
 - Classes derived from <code lang="class-name">UnityEngine.Object</code> are not offered: keep such an object in a plain field, without <code lang="csharp">[SerializeReference]</code>.
-- Generic arguments are inferred from the field type; when they cannot be, the picker asks for types Unity can serialize.
+- Generic arguments are inferred from the field type and the <code lang="csharp">[TypeSelector]</code> types; when they cannot be, the picker asks for types Unity can serialize.
 
 ## Lists
 
@@ -69,6 +69,8 @@ Fields that point at one instance are marked **Shared reference #N**; **Make uni
 ![Make unique creates an independent copy of a shared reference](Images/aspid_fasttools_serialize_reference_make_unique.png)
 
 A duplicated list element gets its own instance instead of a reference to the same one. The **Auto de-alias duplicated list elements** setting under **Tools → Aspid 🐍 → FastTools → Settings** controls this and is on by default; it is [shared by the team](07-serialize-reference-validation.md#scan-scope).
+
+This works for lists whose elements are references, such as <code lang="class-name">List&lt;IWeapon&gt;</code>. In a list of structs or classes that hold a <code lang="csharp">[SerializeReference]</code> field or list, **Duplicate Array Element** copies the reference too, so both elements share one instance until **Make unique** separates them.
 
 ## Missing type
 

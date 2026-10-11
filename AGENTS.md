@@ -16,7 +16,9 @@ Agent Skills for projects that consume the package in `skills/`.
 
 - A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
   `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run. Commit the rebuilt DLL:
-  `ci.yml` fails when a committed DLL differs from a Release build of its sources.
+  `ci.yml` fails when a committed DLL differs from a Release build of its sources. `PackagedAnalyzerTests` read the
+  committed DLLs, so after a change to a generator or an analyzer run the Release build first: only then do they judge
+  the new code.
 - `Aspid.FastTools.YamlTests/` runs the package's SerializeReference YAML engine and its tests outside Unity: it compiles
   those package sources as-is (C# 9, Unity 6000.0's version; the engine against .NET Standard 2.1) and stubs only
   `Debug.LogError` and `AssetDatabase.MakeEditable`, so a Unity API, a newer language feature or a newer .NET API added
@@ -24,6 +26,17 @@ Agent Skills for projects that consume the package in `skills/`.
   `GenericArgumentFilter` and `TypeUtility` with the resolver tests in the same way. It stubs only `UnityEngine.Object`
   and `CompilationPipeline.GetAssemblies`, so a new Unity API in these three files breaks it. A test that needs the
   Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
+- `Tests/Editor/PublicApi/PublicApi.txt` in the package is a snapshot of the public API, and `PublicApiSnapshotTests`
+  fails on any difference, so a removed or renamed member cannot reach a release unnoticed. After an intended API
+  change, rewrite the file on the Unity version that `WholeApiVersion` in the test names, or a newer one, and commit
+  its diff in the same PR. Close the project in the Editor first, or run the command from a worktree:
+  `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity> -batchmode -nographics -projectPath Aspid.FastTools -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "${TMPDIR:-/tmp}/public-api.xml"`.
+  An older Editor compiles only part of the API (the `UNITY_6000_x_OR_NEWER` guards), so there the test checks only
+  for additions. The `#if` around `HasWholeApi` in the test names the newest guard: move it and `WholeApiVersion`
+  when a public member gets a newer one.
+- `Tests/Burst` (Burst jobs that call `this.Marker()`) compiles only where `com.unity.burst` is installed
+  (`versionDefines`): the dev project has it through URP, the project from `scripts/make-unity-test-project.sh`
+  does not, so CI skips it.
 - The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
   READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
   which `ci.yml` checks (`scripts/check-version.mjs`) in every PR and in the release. The version also picks the channel,
