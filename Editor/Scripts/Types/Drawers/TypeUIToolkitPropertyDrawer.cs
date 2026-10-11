@@ -38,6 +38,7 @@ namespace Aspid.FastTools.Types.Editors
             };
 
             var typeField = field;
+            var detached = new DetachedProperty(property: property);
             var container = new VisualElement()
                 .AddStyleSheetFromResources(StyleSheetPath)
                 .AddChild(field);
@@ -55,14 +56,7 @@ namespace Aspid.FastTools.Types.Editors
             return container;
 
             // Each refresh reads a fresh copy of the object and releases it; no copy means the property is gone.
-            void RefreshFromObject()
-            {
-                var current = property.Persistent();
-                if (current is null) return;
-
-                using var owner = current.serializedObject;
-                Refresh(current: current);
-            }
+            void RefreshFromObject() => detached.Use(Refresh);
 
             void Refresh(SerializedProperty current)
             {

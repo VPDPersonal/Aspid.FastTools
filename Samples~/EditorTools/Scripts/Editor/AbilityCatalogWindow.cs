@@ -27,6 +27,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private TextField _search;
         private VisualElement _details;
         [NonSerialized] private AbilityConfig _shown;
+        [NonSerialized] private SerializedObject _shownObject;
         [SerializeField] private string _filter = string.Empty;
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Samples/Ability Catalog")]
@@ -178,9 +179,15 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _list?.RefreshItems();
         }
 
+        // A SerializedObject holds a native copy of the asset: dispose it when the details move to another asset and
+        // when the window closes.
+        private void OnDestroy() => _shownObject?.Dispose();
+
         private void ShowDetails(AbilityConfig config)
         {
             _details.ClearChildren();
+            _shownObject?.Dispose();
+            _shownObject = null;
             _shown = config;
 
             // Unity's == also catches an asset deleted while it was listed.
@@ -190,7 +197,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 return;
             }
 
-            var serializedObject = new SerializedObject(config);
+            var serializedObject = _shownObject = new SerializedObject(config);
             var effectType = serializedObject.FindProperty("_effectType");
 
             var effectLabel = new Label()
