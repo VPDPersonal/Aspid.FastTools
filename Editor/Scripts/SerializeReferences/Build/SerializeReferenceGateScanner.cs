@@ -174,6 +174,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return pointers.Count + binaries.Count + otherRegistries.Count;
         }
 
+        // How many of the unscanned files DescribeUnscanned names, for a window that shows a count.
+        public static int CountReportableUnscanned(
+            IEnumerable<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            var forceText = serializationMode == SerializationMode.ForceText;
+            return unscanned.Count(file => IsReportable(file, forceText));
+        }
+
+        // For Asset References, which reads one picked asset: true when no scan can read it and DescribeUnscanned would
+        // name it. False for a readable asset, a missing file and an asset type the scans never read.
+        public static bool TryGetUnreadFormat(string assetPath, SerializationMode serializationMode, out AssetFileFormat format)
+        {
+            format = AssetFileFormat.TextYaml;
+            if (!SerializeReferenceYaml.IsCandidateAssetPath(assetPath) || !File.Exists(assetPath)) return false;
+
+            format = SerializeReferenceYaml.SniffFileFormat(assetPath);
+            return IsReportable((assetPath, format), forceText: serializationMode == SerializationMode.ForceText);
+        }
+
         private static (List<string> Pointers, List<string> Binaries, List<string> OtherRegistries) SplitUnscanned(
             IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
         {
@@ -187,9 +206,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .ToList();
 
             var binaries = unscanned
-                .Where(file => file.Format == AssetFileFormat.Binary)
+                .Where(file => file.Format == AssetFileFormat.Binary && IsReportable(file, forceText))
                 .Select(file => file.AssetPath)
-                .Where(path => !forceText || CanHoldManagedReferences(path))
                 .ToList();
 
             var otherRegistries = unscanned
@@ -199,6 +217,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return (pointers, binaries, otherRegistries);
         }
+
+        private static bool IsReportable((string AssetPath, AssetFileFormat Format) file, bool forceText) =>
+            file.Format == AssetFileFormat.LfsPointer ||
+            (file.Format == AssetFileFormat.Binary && (!forceText || CanHoldManagedReferences(file.AssetPath)));
 
         // Whether a binary file may hide managed references: a prefab or scene always may; an .asset when its main
         // asset is a ScriptableObject, or of an unknown type. The binaries Unity writes under Force Text (LightingData,
