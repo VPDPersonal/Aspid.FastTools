@@ -153,6 +153,40 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             AssertDropped(Before(2001, 1003), After(1003), index: 0);
         }
 
+        // MatchSlots reads the list the editor holds, where a missing element is a null, against the list in the file.
+        [Test]
+        public void MatchSlots_UneditedList_MatchesEverySlotInPlace()
+        {
+            CollectionAssert.AreEqual(new[] { 0, 1, 2 }, MissingListAlignment.MatchSlots(Before(1003, 2001, N), After(1003, N, N)));
+        }
+
+        [Test]
+        public void MatchSlots_DeletedSibling_FollowsTheShift()
+        {
+            CollectionAssert.AreEqual(new[] { 1 }, MissingListAlignment.MatchSlots(Before(1003, 2001), After(N)));
+            CollectionAssert.AreEqual(new[] { 1, 2 }, MissingListAlignment.MatchSlots(Before(1003, 2001, 1004), After(N, 1004)));
+        }
+
+        [Test]
+        public void MatchSlots_MovedMissingElement_FollowsTheMove()
+        {
+            CollectionAssert.AreEqual(new[] { 1, 2, 0 }, MissingListAlignment.MatchSlots(Before(2001, 1003, 1004), After(1003, 1004, N)));
+        }
+
+        [Test]
+        public void MatchSlots_AddedSlot_HoldsNoElementOfTheFile()
+        {
+            CollectionAssert.AreEqual(new[] { 0, 1, -1 }, MissingListAlignment.MatchSlots(Before(2001, 1003), After(N, 1003, N)));
+        }
+
+        [Test]
+        public void MatchSlots_DeletedAmongNulls_HoldsNoMissingElement()
+        {
+            // One element of [Ghost, <None>] or of [Ghost1, Ghost2] deleted: the null left may be either of them.
+            Assert.AreEqual(1, MissingListAlignment.MatchSlots(Before(2001, N), After(N))[0]);
+            Assert.AreEqual(-1, MissingListAlignment.MatchSlots(Before(2001, 2002), After(N))[0]);
+        }
+
         [Test]
         public void ShrunkRunOfMissingElements_KeepsTheFirstInOrder()
         {

@@ -65,6 +65,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return targets;
         }
 
+        // For each slot of current, the index of the element of saved it holds, or -1 when it holds none or a missing element
+        // the lists do not pin down. current is the list the editor holds, where a missing element reads as a null id, as
+        // a save that resized the list would write it.
+        public static int[] MatchSlots(MissingListState saved, IReadOnlyList<long> current)
+        {
+            var sources = new int[current.Count];
+
+            // A list without unsaved edits, the usual case on a repaint, needs no alignment.
+            if (IsUnedited(saved, current))
+            {
+                for (var a = 0; a < sources.Length; a++) sources[a] = a;
+                return sources;
+            }
+
+            for (var a = 0; a < sources.Length; a++) sources[a] = -1;
+
+            var targets = Align(saved, current, out var guessed);
+            for (var b = 0; b < saved.Count; b++)
+            {
+                if (targets[b] >= 0 && !guessed[b]) sources[targets[b]] = b;
+            }
+
+            return sources;
+        }
+
+        // Every element fits its own slot and no missing element shows its id, which Align reads as a save without edits.
+        private static bool IsUnedited(MissingListState saved, IReadOnlyList<long> current)
+        {
+            if (saved.Count != current.Count || !AllFit(CountFits(saved, current, shift: 0), 0, saved.Count)) return false;
+
+            var ids = new HashSet<long>(current);
+            for (var b = 0; b < saved.Count; b++)
+                if (saved.Collapsible[b] && ids.Contains(saved.Rids[b])) return false;
+
+            return true;
+        }
+
         // Two readings of which matched elements kept their place. The one that needs fewer edits wins, then the one that
         // keeps more missing elements; a missing element the two readings place apart is a guess.
         private static int[] AlignByRuns(MissingListState before, IReadOnlyList<long> after,
