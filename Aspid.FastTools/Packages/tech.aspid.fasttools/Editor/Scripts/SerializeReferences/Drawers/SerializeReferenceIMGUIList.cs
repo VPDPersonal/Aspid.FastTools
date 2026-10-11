@@ -107,7 +107,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var arrayPath = listProperty.propertyPath;
 
             var list = new PickerList(listProperty.serializedObject, listProperty,
-                draggable: !listProperty.IsNonReorderable());
+                draggable: !listProperty.IsNonReorderable())
+            {
+                ElementType = elementType,
+            };
 
             list.drawHeaderCallback = rect => EditorGUI.LabelField(rect, list.Label);
 
@@ -172,10 +175,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? SerializeReferenceIMGUIPropertyDrawer.GetHeight(element, depth + 1)
                 : EditorGUI.GetPropertyHeight(element, includeChildren: true);
 
+        // The element type the cached list of the property constrains its picker to, inferred as Draw infers it.
+        internal static Type GetPickerElementType(SerializedProperty listProperty) =>
+            ((PickerList)GetOrCreate(listProperty, GUIContent.none, elementType: null, baseTypes: null, depth: 0)).ElementType;
+
         private sealed class PickerList : ReorderableList
         {
             public GUIContent Label;
             public Type[] BaseTypes;
+            public Type ElementType;
 
             public PickerList(SerializedObject serializedObject, SerializedProperty elements, bool draggable)
                 : base(serializedObject, elements, draggable, displayHeader: true, displayAddButton: true, displayRemoveButton: true) { }

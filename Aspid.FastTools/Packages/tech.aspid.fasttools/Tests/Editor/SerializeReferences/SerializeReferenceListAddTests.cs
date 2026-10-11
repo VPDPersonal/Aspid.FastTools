@@ -360,6 +360,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(typeof(ITestWeapon), SerializeReferenceHelpers.GetArrayElementType(serialized.FindProperty("sidearms")),
                     "The list overload of Draw relies on this to constrain the picker of an empty list.");
 
+                Assert.AreEqual(typeof(ITestWeapon), SerializeReferenceIMGUIList.GetPickerElementType(serialized.FindProperty("sidearms")),
+                    "The list Draw creates without an element type must constrain its picker to the declared one.");
+
                 Assert.AreEqual(typeof(ITestWeapon), SerializeReferenceHelpers.GetArrayElementType(serialized.FindProperty("selected")),
                     "A [TypeSelector] on the list field must not change the declared element type.");
             }
