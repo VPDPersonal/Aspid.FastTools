@@ -516,6 +516,11 @@ export default { api: [
           },
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions",
+            "label": "INotifyValueChangedMathExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.IStyleExtensions",
             "label": "IStyleExtensions"
           },
