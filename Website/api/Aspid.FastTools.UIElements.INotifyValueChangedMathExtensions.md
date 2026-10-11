@@ -23,6 +23,10 @@ public static class INotifyValueChangedMathExtensions
 [INotifyValueChangedMathExtensions](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md)
 
 
+## Remarks
+
+Compiled when <code>com.unity.mathematics</code> is installed, and on Unity 6000.5 and newer, where the types ship in the engine.
+
 ## Methods
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2___}
@@ -55,6 +59,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3___}
 
 Subscribes to the value-changed event of the element.
@@ -84,6 +95,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4___}
 
@@ -115,6 +133,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int2x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2x2___}
 
 Subscribes to the value-changed event of the element.
@@ -144,6 +169,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int2x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2x3___}
 
@@ -175,6 +207,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int2x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2x4___}
 
 Subscribes to the value-changed event of the element.
@@ -204,6 +243,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int3x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3x2___}
 
@@ -235,6 +281,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int3x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3x3___}
 
 Subscribes to the value-changed event of the element.
@@ -264,6 +317,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int3x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3x4___}
 
@@ -295,6 +355,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int3x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int4x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4x2___}
 
 Subscribes to the value-changed event of the element.
@@ -324,6 +391,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int4x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4x3___}
 
@@ -355,6 +429,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int4x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4x4___}
 
 Subscribes to the value-changed event of the element.
@@ -384,6 +465,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int4x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2___}
 
@@ -415,6 +503,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3___}
 
 Subscribes to the value-changed event of the element.
@@ -444,6 +539,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4___}
 
@@ -475,6 +577,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool2x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2x2___}
 
 Subscribes to the value-changed event of the element.
@@ -504,6 +613,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool2x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2x3___}
 
@@ -535,6 +651,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool2x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2x4___}
 
 Subscribes to the value-changed event of the element.
@@ -564,6 +687,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool2x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool3x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3x2___}
 
@@ -595,6 +725,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool3x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3x3___}
 
 Subscribes to the value-changed event of the element.
@@ -624,6 +761,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool3x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3x4___}
 
@@ -655,6 +799,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool3x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool4x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4x2___}
 
 Subscribes to the value-changed event of the element.
@@ -684,6 +835,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool4x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4x3___}
 
@@ -715,6 +873,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool4x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4x4___}
 
 Subscribes to the value-changed event of the element.
@@ -744,6 +909,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_bool4x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2___}
 
@@ -775,6 +947,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3___}
 
 Subscribes to the value-changed event of the element.
@@ -804,6 +983,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4___}
 
@@ -835,6 +1021,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float2x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2x2___}
 
 Subscribes to the value-changed event of the element.
@@ -864,6 +1057,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float2x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2x3___}
 
@@ -895,6 +1095,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float2x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2x4___}
 
 Subscribes to the value-changed event of the element.
@@ -924,6 +1131,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float2x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float3x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3x2___}
 
@@ -955,6 +1169,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float3x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3x3___}
 
 Subscribes to the value-changed event of the element.
@@ -984,6 +1205,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float3x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3x4___}
 
@@ -1015,6 +1243,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float3x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float4x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4x2___}
 
 Subscribes to the value-changed event of the element.
@@ -1044,6 +1279,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float4x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4x3___}
 
@@ -1075,6 +1317,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float4x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4x4___}
 
 Subscribes to the value-changed event of the element.
@@ -1104,6 +1353,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_float4x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2___}
 
@@ -1135,6 +1391,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3___}
 
 Subscribes to the value-changed event of the element.
@@ -1164,6 +1427,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4___}
 
@@ -1195,6 +1465,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double2x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2x2___}
 
 Subscribes to the value-changed event of the element.
@@ -1224,6 +1501,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double2x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2x3___}
 
@@ -1255,6 +1539,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double2x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2x4___}
 
 Subscribes to the value-changed event of the element.
@@ -1284,6 +1575,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double2x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double3x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3x2___}
 
@@ -1315,6 +1613,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double3x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3x3___}
 
 Subscribes to the value-changed event of the element.
@@ -1344,6 +1649,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double3x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3x4___}
 
@@ -1375,6 +1687,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double3x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double4x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4x2___}
 
 Subscribes to the value-changed event of the element.
@@ -1404,6 +1723,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double4x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4x3___}
 
@@ -1435,6 +1761,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double4x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4x4___}
 
 Subscribes to the value-changed event of the element.
@@ -1464,6 +1797,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_double4x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2___}
 
@@ -1495,6 +1835,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3___}
 
 Subscribes to the value-changed event of the element.
@@ -1524,6 +1871,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4___}
 
@@ -1555,6 +1909,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint2x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2x2___}
 
 Subscribes to the value-changed event of the element.
@@ -1584,6 +1945,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint2x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2x3___}
 
@@ -1615,6 +1983,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint2x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2x4___}
 
 Subscribes to the value-changed event of the element.
@@ -1644,6 +2019,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint2x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint3x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3x2___}
 
@@ -1675,6 +2057,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint3x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3x3___}
 
 Subscribes to the value-changed event of the element.
@@ -1704,6 +2093,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint3x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3x4___}
 
@@ -1735,6 +2131,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint3x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint4x2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4x2___}
 
 Subscribes to the value-changed event of the element.
@@ -1764,6 +2167,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4x2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint4x3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4x3___}
 
@@ -1795,6 +2205,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4x3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint4x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4x4___}
 
 Subscribes to the value-changed event of the element.
@@ -1824,6 +2241,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_uint4x4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<half\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half___}
 
@@ -1855,6 +2279,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<half2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half2___}
 
 Subscribes to the value-changed event of the element.
@@ -1884,6 +2315,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half2___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<half3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half3___}
 
@@ -1915,6 +2353,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half3___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<half4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half4___}
 
 Subscribes to the value-changed event of the element.
@@ -1945,6 +2390,13 @@ The element, for chaining.
 
 The element type.
 
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_half4___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<quaternion\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_quaternion___}
 
 Subscribes to the value-changed event of the element.
@@ -1974,6 +2426,13 @@ The element, for chaining.
 `T` 
 
 The element type.
+
+#### Remarks
+
+The callback stays registered until removed. Pass an equal delegate to
+[`INotifyValueChangedMathExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_quaternion___): a method group or a delegate kept in a field.
+A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
+and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedMathExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_Unity_Mathematics_int2___}
 
@@ -3945,7 +4404,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -3979,7 +4440,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4013,7 +4476,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4047,7 +4512,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4081,7 +4548,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4115,7 +4584,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4149,7 +4620,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4183,7 +4656,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4217,7 +4692,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4251,7 +4728,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4285,7 +4764,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4319,7 +4800,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4353,7 +4836,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4387,7 +4872,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4421,7 +4908,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4455,7 +4944,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4489,7 +4980,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4523,7 +5016,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4557,7 +5052,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4591,7 +5088,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4625,7 +5124,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4659,7 +5160,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4693,7 +5196,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4727,7 +5232,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4761,7 +5268,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4795,7 +5304,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4829,7 +5340,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4863,7 +5376,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4897,7 +5412,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4931,7 +5448,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4965,7 +5484,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -4999,7 +5520,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5033,7 +5556,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5067,7 +5592,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5101,7 +5628,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5135,7 +5664,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5169,7 +5700,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5203,7 +5736,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5237,7 +5772,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5271,7 +5808,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5305,7 +5844,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5339,7 +5880,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5373,7 +5916,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5407,7 +5952,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5441,7 +5988,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5475,7 +6024,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5509,7 +6060,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5543,7 +6096,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5577,7 +6132,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5611,7 +6168,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5645,7 +6204,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5679,7 +6240,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5713,7 +6276,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5747,7 +6312,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5781,7 +6348,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5815,7 +6384,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5849,7 +6420,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5883,7 +6456,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5917,7 +6492,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5951,7 +6528,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -5985,7 +6564,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -6019,7 +6600,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -6053,7 +6636,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -6087,7 +6672,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
@@ -6121,7 +6708,9 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, assigns [`value`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1-value.html), which raises the change event
+only if the element is in a panel and the value differs.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>, calls [`SetValueWithoutNotify`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.SetValueWithoutNotify.html).
 
 #### Returns
 
