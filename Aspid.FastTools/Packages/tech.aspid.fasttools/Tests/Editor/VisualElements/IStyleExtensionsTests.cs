@@ -438,7 +438,33 @@ namespace Aspid.FastTools.UIElements.Tests
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(StyleEnum<>))
                 return Activator.CreateInstance(type, Enum.GetValues(type.GetGenericArguments()[0]).Cast<object>().Last());
 
+            // Assets have no public parameterless constructor; one instance of each serves both sides of a comparison.
+            if (type == typeof(Texture2D)) return TestTexture;
+            if (type == typeof(Sprite)) return TestSprite;
+            if (type == typeof(VectorImage)) return TestVectorImage;
+
             return Activator.CreateInstance(type);
+        }
+
+        private static Texture2D _testTexture;
+        private static Sprite _testSprite;
+        private static VectorImage _testVectorImage;
+
+        private static Texture2D TestTexture =>
+            _testTexture ? _testTexture : _testTexture = new Texture2D(width: 2, height: 2);
+
+        private static Sprite TestSprite =>
+            _testSprite ? _testSprite : _testSprite = Sprite.Create(TestTexture, new Rect(0f, 0f, 2f, 2f), pivot: Vector2.zero);
+
+        private static VectorImage TestVectorImage =>
+            _testVectorImage ? _testVectorImage : _testVectorImage = ScriptableObject.CreateInstance<VectorImage>();
+
+        [OneTimeTearDown]
+        public void DestroyTestAssets()
+        {
+            if (_testSprite) UnityEngine.Object.DestroyImmediate(_testSprite);
+            if (_testTexture) UnityEngine.Object.DestroyImmediate(_testTexture);
+            if (_testVectorImage) UnityEngine.Object.DestroyImmediate(_testVectorImage);
         }
         #endregion
 
