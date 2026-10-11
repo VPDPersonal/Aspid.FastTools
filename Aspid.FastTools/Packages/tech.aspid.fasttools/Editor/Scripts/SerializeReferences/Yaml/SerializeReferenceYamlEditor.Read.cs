@@ -259,7 +259,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var item = _listItem.Match(lines[j]);
                     if (item.Success && item.Groups["lead"].Length == fieldIndent)
                     {
-                        if (!long.TryParse(item.Groups["rid"].Value, out var rid)) return false;
+                        if (!TryParseId(item.Groups["rid"].Value, out var rid)) return false;
 
                         rids.Add(rid);
                         continue;
