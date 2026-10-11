@@ -1,13 +1,16 @@
 using System;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    [FilePath("ProjectSettings/SerializeReferenceSharedSettings.asset", FilePathAttribute.Location.ProjectFolder)]
+    [FilePath(RelativePath, FilePathAttribute.Location.ProjectFolder)]
     internal sealed class SerializeReferenceSharedSettings : ScriptableSingleton<SerializeReferenceSharedSettings>
     {
+        private const string RelativePath = "ProjectSettings/SerializeReferenceSharedSettings.asset";
+
         [Tooltip("How a build and a CI run react to missing or unset-required managed references.")]
         [SerializeField] private GateSeverity _buildSeverity = GateSeverity.Warn;
 
@@ -16,6 +19,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         [Tooltip("Project folders the reference scans skip.")]
         [SerializeField] private string[] _excludedFolders = Array.Empty<string>();
+
+        // A pull or a checkout rewrites the file behind the open Editor, and the loaded copy stays old. Destroying the
+        // copy makes the next access read the file again. Hold no reference to the instance across this call.
+        public static void Reload() => DestroyImmediate(instance);
+
+        // ScriptableSingleton.Save does not check the file out, so a file that version control keeps read-only is never
+        // written. Logs the reason and returns false when the file stays read-only; a missing file is writable.
+        public static bool TryMakeEditable() =>
+            !File.Exists(RelativePath) || SerializeReferenceYamlEditor.TryMakeEditable(RelativePath);
 
         public GateSeverity BuildSeverity
         {

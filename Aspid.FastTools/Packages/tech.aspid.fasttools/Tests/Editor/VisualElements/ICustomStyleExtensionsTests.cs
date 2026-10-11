@@ -1,96 +1,140 @@
-using UnityEditor;
+using System;
 using UnityEngine;
 using NUnit.Framework;
-using System.Collections;
-using UnityEngine.TestTools;
 using UnityEngine.UIElements;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
 
 namespace Aspid.FastTools.UIElements.Tests
 {
     [TestFixture]
     internal sealed class ICustomStyleExtensionsTests
     {
-        private const string ProbeClassPrefix = "aspid-fasttools-test-custom-style--";
-        private const string ProbeStyleSheetPath =
-            "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/ICustomStyleProbe.uss";
-
-        private static readonly CustomStyleProperty<string> FontStyleProperty = new("--aspid-fasttools-test-font-style");
-
-        private TestPanel _panel;
-
-        [SetUp]
-        public void SetUp() => _panel = new TestPanel();
-
-        [TearDown]
-        public void TearDown() => _panel.Dispose();
-
-        [UnityTest]
-        public IEnumerator TryGetByEnum_UpperCaseValue_ParsesIgnoringCase()
+        internal enum Mode
         {
-            var result = new Result();
-            yield return Resolve("upper-case", result);
-
-            Assert.IsTrue(result.Found);
-            Assert.AreEqual(FontStyle.BoldAndItalic, result.Value);
+            Off = 0,
+            On = 1,
+            Auto = 2,
         }
 
-        [UnityTest]
-        public IEnumerator TryGetByEnum_LowerCaseValue_ParsesIgnoringCase()
+        [Flags]
+        internal enum Layers
         {
-            var result = new Result();
-            yield return Resolve("lower-case", result);
-
-            Assert.IsTrue(result.Found);
-            Assert.AreEqual(FontStyle.Italic, result.Value);
+            None = 0,
+            Ground = 1,
+            Water = 2,
+            Sky = 4,
         }
 
-        [UnityTest]
-        public IEnumerator TryGetByEnum_UnknownName_ReturnsFalseWithDefault()
-        {
-            var result = new Result();
-            yield return Resolve("unknown", result);
+        private static readonly CustomStyleProperty<string> Property = new("--test-value");
 
-            Assert.IsTrue(result.Resolved);
-            Assert.IsFalse(result.Found);
-            Assert.AreEqual(default(FontStyle), result.Value);
+        [TestCase("On", Mode.On)]
+        [TestCase("on", Mode.On)]
+        [TestCase("AUTO", Mode.Auto)]
+        [TestCase("1", Mode.On)]
+        public void TryGetByEnum_DefinedValue_ReturnsIt(string text, Mode expected)
+        {
+            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Mode value);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expected, value);
         }
 
-        [UnityTest]
-        public IEnumerator TryGetByEnum_PropertyNotDeclared_ReturnsFalseWithDefault()
+        [TestCase("7")]
+        [TestCase("-1")]
+        [TestCase("On, Auto")]
+        [TestCase("Off, On")]
+        [TestCase("On,On")]
+        [TestCase("Missing")]
+        [TestCase("")]
+        public void TryGetByEnum_UndefinedValue_ReturnsFalseAndDefault(string text)
         {
-            var result = new Result();
-            yield return Resolve("other", result);
+            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Mode value);
 
-            Assert.IsTrue(result.Resolved);
-            Assert.IsFalse(result.Found);
-            Assert.AreEqual(default(FontStyle), result.Value);
+            Assert.IsFalse(result);
+            Assert.AreEqual(default(Mode), value);
         }
 
-        private IEnumerator Resolve(string probe, Result result)
+        [Test]
+        public void TryGetByEnum_MissingProperty_ReturnsFalseAndDefault()
         {
-            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ProbeStyleSheetPath);
-            Assert.IsNotNull(styleSheet, "The probe style sheet must load.");
+            var result = new StubCustomStyle(null).TryGetByEnum(Property, out Mode value);
 
-            var element = new VisualElement();
-            element.styleSheets.Add(styleSheet);
-            element.AddToClassList(ProbeClassPrefix + probe);
-            element.RegisterCallback<CustomStyleResolvedEvent>(evt =>
+            Assert.IsFalse(result);
+            Assert.AreEqual(default(Mode), value);
+        }
+
+        [TestCase("None", Layers.None)]
+        [TestCase("Water", Layers.Water)]
+        [TestCase("ground, SKY", Layers.Ground | Layers.Sky)]
+        [TestCase("Ground,Water,Sky", Layers.Ground | Layers.Water | Layers.Sky)]
+        public void TryGetByEnum_FlagsNames_ReturnsCombination(string text, Layers expected)
+        {
+            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Layers value);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expected, value);
+        }
+
+        [TestCase("0")]
+        [TestCase("1")]
+        [TestCase("7")]
+        [TestCase("8")]
+        [TestCase("-1")]
+        [TestCase("+1")]
+        [TestCase(" 8")]
+        [TestCase("Ground, 8")]
+        [TestCase("Ground,8")]
+        [TestCase("Ground, -1")]
+        public void TryGetByEnum_FlagsNumber_ReturnsFalseAndDefault(string text)
+        {
+            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Layers value);
+
+            Assert.IsFalse(result);
+            Assert.AreEqual(default(Layers), value);
+        }
+
+        // Implements the members of ICustomStyle; only the string one returns data.
+        private sealed class StubCustomStyle : ICustomStyle
+        {
+            private readonly string _value;
+
+            public StubCustomStyle(string value) =>
+                _value = value;
+
+            public bool TryGetValue(CustomStyleProperty<string> property, out string value)
             {
-                result.Resolved = true;
-                result.Found = evt.customStyle.TryGetByEnum<FontStyle>(FontStyleProperty, out var value);
-                result.Value = value;
-            });
+                value = _value;
+                return _value is not null;
+            }
 
-            _panel.Root.Add(element);
-            yield return null;
-        }
+            public bool TryGetValue(CustomStyleProperty<float> property, out float value) =>
+                Unsupported(out value);
 
-        private sealed class Result
-        {
-            public bool Found;
-            public bool Resolved;
-            public FontStyle Value;
+            public bool TryGetValue(CustomStyleProperty<int> property, out int value) =>
+                Unsupported(out value);
+
+            public bool TryGetValue(CustomStyleProperty<bool> property, out bool value) =>
+                Unsupported(out value);
+
+            public bool TryGetValue(CustomStyleProperty<Color> property, out Color value) =>
+                Unsupported(out value);
+
+            public bool TryGetValue(CustomStyleProperty<Texture2D> property, out Texture2D value) =>
+                Unsupported(out value);
+
+            public bool TryGetValue(CustomStyleProperty<Sprite> property, out Sprite value) =>
+                Unsupported(out value);
+
+            public bool TryGetValue(CustomStyleProperty<VectorImage> property, out VectorImage value) =>
+                Unsupported(out value);
+
+            bool ICustomStyle.TryGetValue<T>(CustomStyleProperty<T> property, out T value) =>
+                Unsupported(out value);
+
+            private static bool Unsupported<T>(out T value)
+            {
+                value = default;
+                return false;
+            }
         }
     }
 }
