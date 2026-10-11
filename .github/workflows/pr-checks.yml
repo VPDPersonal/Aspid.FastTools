@@ -76,7 +76,7 @@ jobs:
               ['scripts/', 'area: ci'],
             ];
 
-            const { PUBLIC_API_PATH, removedMemberLines, removedMemberLinesBetween, breakingTitleError } =
+            const { PUBLIC_API_PATH, PUBLIC_API_FORMAT_PATH, removedMemberLines, removedMemberLinesBetween, breakingTitleVerdict } =
               await import(`${process.env.GITHUB_WORKSPACE}/scripts/public-api-breaks.mjs`);
 
             const pr = context.payload.pull_request;
@@ -114,8 +114,9 @@ jobs:
             for (const label of new Set(AREAS.map(([, area]) => area)))
               if (current.includes(label) && !add.has(label)) remove.add(label);
 
-            // A member line that leaves the public API snapshot is a break, and only the title can say so. GitHub leaves
-            // `patch` out of a large diff; then the two versions of the file are compared instead.
+            // A member line that leaves the public API snapshot is a break, and only the title can say so. A line that
+            // only gains text is no loss. GitHub leaves `patch` out of a large diff; then the two versions of the file
+            // are compared instead. A PR that changes the snapshot writer too only gets a warning.
             const apiFile = files.find(f => f.filename === PUBLIC_API_PATH);
             if (m && apiFile) {
               try {
@@ -132,8 +133,10 @@ jobs:
                   removed = removedMemberLinesBetween(before, after);
                 }
 
-                const error = breakingTitleError(removed, Boolean(m[3]));
-                if (error) errors.push(error);
+                const formatChanged = files.some(f => f.filename === PUBLIC_API_FORMAT_PATH);
+                const verdict = breakingTitleVerdict(removed, Boolean(m[3]), formatChanged);
+                if (verdict.error) errors.push(verdict.error);
+                if (verdict.warning) core.warning(verdict.warning);
               } catch (error) {
                 // Not a failure of the PR: PublicApiSnapshotTests still compares the snapshot with the code.
                 core.warning(`Could not read the changes of PublicApi.txt: ${error.message}`);

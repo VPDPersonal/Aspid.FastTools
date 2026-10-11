@@ -37,7 +37,8 @@ Agent Skills for projects that consume the package in `skills/`.
   for additions. The `#if` around `HasWholeApi` in the test names the newest guard: move it and `WholeApiVersion`
   when a public member gets a newer one. A diff that removes or changes a line of the file (not a `#` comment) is a
   breaking change: `pr-checks.yml` fails a PR title without `!` before the colon, and the CHANGELOG entry goes under
-  Changed with a migration note.
+  Changed with a migration note. A line that only gains an interface or a base class (class and struct) or the `[Flags]`
+  of an enum does not count, and a PR that also changes `PublicApiSnapshot.cs` only gets a warning.
 - `Tests/Burst` (Burst jobs that call `this.Marker()`) compiles only where `com.unity.burst` is installed
   (`versionDefines`): the dev project has it through URP, the project from `scripts/make-unity-test-project.sh`
   does not, so CI skips it.
