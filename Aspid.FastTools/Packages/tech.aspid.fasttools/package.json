@@ -42,12 +42,12 @@
     },
     {
       "displayName": "Types",
-      "description": "An enemy spawner storing three System.Types: SerializableMonoScript<T> (rename-safe), SerializableType<T> with [TypeSelectorDisplay] candidates, a member-referenced [TypeSelector] and ComponentTypeSelector to swap a component in place.",
+      "description": "An enemy spawner storing three System.Types: SerializableMonoScript<T> (rename-safe), SerializableType<T> with [TypeSelectorDisplay] candidates, a member-referenced [TypeSelector] and ComponentTypeSelector to swap a component in place. The scene's colliders need the built-in Physics module.",
       "path": "Samples~/Types"
     },
     {
       "displayName": "SerializeReferences",
-      "description": "A turret firing polymorphic [SerializeReference] weapons at a dummy: the [TypeSelector] picker on single fields, lists, narrowed, nested and generic fields, plus deliberately broken assets for Fix, Smart Fix, Migrate all and the References tabs, and an IMGUI inspector.",
+      "description": "A turret firing polymorphic [SerializeReference] weapons at a dummy: the [TypeSelector] picker on single fields, lists, narrowed, nested and generic fields, plus deliberately broken assets for Fix, Smart Fix, Migrate all and the References tabs, and an IMGUI inspector. The scene's colliders need the built-in Physics module.",
       "path": "Samples~/SerializeReferences"
     },
     {

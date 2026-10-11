@@ -220,7 +220,7 @@
     margin-top:                                           -2px;
     border-width:                                         0;
     border-radius:                                        2px;
-    background-color:                                     var(--aspid-colors-shade-darkness);
+    background-color:                                     var(--aspid-colors-control-border);
 }
 
 .aspid-fasttools-settings__section-content .unity-base-slider__dragger {
@@ -262,7 +262,7 @@
     -unity-text-align:                                    middle-center;
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-shade-dark);
+    border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        6px;
     color:                                                var(--aspid-colors-text-lightness);
 }
@@ -283,7 +283,7 @@
     padding:                                              1px 6px;
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-shade-dark);
+    border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        8px;
 }
 
@@ -308,9 +308,10 @@
     -unity-background-image-tint-color:                  var(--aspid-colors-text-dark);
 }
 
+/* The hover border must stay as visible as the idle control border on the light palette. */
 .aspid-fasttools-settings .unity-enum-field:hover .unity-enum-field__input,
 .aspid-fasttools-settings .unity-base-popup-field:hover .unity-base-popup-field__input {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    border-color:                                         var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-settings .unity-enum-field:hover .unity-enum-field__arrow,
@@ -336,7 +337,7 @@
     padding:                                              1px 2px 1px 6px;
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-shade-dark);
+    border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        8px;
 }
 
@@ -345,7 +346,7 @@
 }
 
 .aspid-fasttools-settings .unity-object-field:hover .unity-object-field__input {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    border-color:                                         var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-settings .unity-object-field__selector {
@@ -357,28 +358,32 @@
     background-color:                                     var(--aspid-colors-overlay-control-hover);
 }
 
+/* The fill alone matches the hover; the border marks the keyboard focus. */
 .aspid-fasttools-settings__nav-target--focused > .aspid-fasttools-settings__row-backplate {
     background-color:                                     var(--aspid-colors-bg-dark);
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-status-success-text-light);
 }
 
 .aspid-fasttools-settings__footer .aspid-fasttools-settings__row.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
 }
 
+/* The fill and the text match the hover; the strong border marks the keyboard focus. */
 .aspid-fasttools-settings__action.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    border-color:                                         var(--aspid-colors-status-success-text-light);
     color:                                                var(--aspid-colors-status-success-text-light);
     background-color:                                     var(--aspid-colors-status-success-tint);
 }
 
 .aspid-fasttools-settings__action--danger.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-error-text-dark);
+    border-color:                                         var(--aspid-colors-status-error-text-light);
     color:                                                var(--aspid-colors-status-error-text-light);
     background-color:                                     var(--aspid-colors-status-error-tint);
 }
 
 .aspid-fasttools-settings__action--info.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-info-text-dark);
+    border-color:                                         var(--aspid-colors-status-info-text-light);
     color:                                                var(--aspid-colors-status-info-text-light);
     background-color:                                     var(--aspid-colors-status-info-tint);
 }
@@ -386,6 +391,7 @@
 /* Two classes outrank the control stylesheet loaded deeper in the hierarchy. */
 .aspid-fasttools-excluded-folders__header.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
+    border-color:                                         var(--aspid-colors-status-success-text-light);
 }
 
 .aspid-fasttools-excluded-folders__header.aspid-fasttools-settings__nav-target--focused
@@ -395,6 +401,7 @@
 
 .aspid-fasttools-excluded-folders__entry.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
+    border-color:                                         var(--aspid-colors-status-success-text-light);
 }
 
 /* Scope base-slider rules to the scroller so the recent-items slider keeps its geometry. */
