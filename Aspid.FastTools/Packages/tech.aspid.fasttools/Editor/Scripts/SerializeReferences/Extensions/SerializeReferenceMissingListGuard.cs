@@ -4,7 +4,6 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -15,9 +14,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const char NoteSeparator = '\n';
         private const char FieldSeparator = '\t';
 
-        private static readonly Regex _topLevelListSlot =
-            new(@"^(?<field>[^.\[\]]+)\.Array\.data\[(?<index>\d+)\]$", RegexOptions.Compiled);
-
         // Missing elements the user replaced (<None>, another type, a paste), so the next save lets them go. They live in
         // SessionState, so a domain reload keeps them, and only a save that writes the file uses them up. A note holds
         // the stamp of the file it was made on: after a change outside a save, such as a revert in version control, it
@@ -26,8 +22,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static List<Note> Notes => _notes ??= LoadNotes();
 
+        // Grows with every change of the notes, so a cache built from them can tell it is stale.
+        internal static int NotesVersion { get; private set; }
+
+        // Raised after an undo or redo takes a replace back or restores it. Unity does not order undoRedoEvent against
+        // undoRedoPerformed, so a field that refreshed on the same step may have read the notes before they changed.
+        internal static event Action UndoChangedNotes;
+
         // Drops the loaded notes, as a domain reload does; the next access reads them back from SessionState.
-        internal static void ReloadNotes() => _notes = null;
+        internal static void ReloadNotes()
+        {
+            _notes = null;
+            NotesVersion++;
+        }
 
         [InitializeOnLoadMethod]
         private static void TrackUndo() => Undo.undoRedoEvent += OnUndoRedo;
@@ -92,9 +99,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!SerializeReferenceHelpers.TryGetMissingReferenceId(property, out var rid)) return;
 
             // A slot of a top-level list is noted too, so the other slots that share the missing reference stay guarded.
-            var slot = _topLevelListSlot.Match(property.propertyPath);
-            if (slot.Success && int.TryParse(slot.Groups["index"].Value, out var index))
-                NoteReplaced(assetPath, fileId, rid, slot.Groups["field"].Value, index);
+            if (SerializeReferenceHelpers.TryGetMissingListSlot(property, out var field, out var index))
+                NoteReplaced(assetPath, fileId, rid, field, index);
             else
                 NoteReplaced(assetPath, fileId, rid);
         }
@@ -102,8 +108,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static void NoteReplaced(string assetPath, long fileId, long rid) =>
             NoteReplaced(assetPath, fileId, rid, field: null, index: -1);
 
-        // field and index name the list slot replaced, as the editor showed it; without them every slot of the rid counts
-        // as replaced.
+        // field and index name the list slot replaced, as the file holds it; without them every slot of the rid counts as
+        // replaced.
         internal static void NoteReplaced(string assetPath, long fileId, long rid, string field, int index)
         {
             var note = new Note(assetPath, fileId, rid, field, index, Undo.GetCurrentGroup(), Stamp(assetPath));
@@ -124,6 +130,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
         }
 
+        // Whether the user replaced the missing reference since the last save, so it reads as a null until a save drops it
+        // from the file. field and index name a slot of a top-level list in the file, or are null and -1 elsewhere. A note
+        // of another slot counts only when that slot no longer holds the rid, as at save.
+        internal static bool IsReplaced(string assetPath, long fileId, long rid, string field, int index)
+        {
+            (long writeTimeTicks, long length)? stamp = null;
+
+            foreach (var note in Notes)
+            {
+                if (note.Undone || note.Rid != rid || note.FileId != fileId || note.AssetPath != assetPath) continue;
+
+                stamp ??= Stamp(assetPath);
+                if (note.Stamp != stamp.Value) continue;
+
+                if (note.Field is null || (note.Field == field && note.Index == index)) return true;
+                if (!SlotHoldsRid(note)) return true;
+            }
+
+            return false;
+        }
+
+        private static bool SlotHoldsRid(Note note) =>
+            SerializeReferenceYamlEditor.TryReadListIds(note.AssetPath, note.FileId, SerializeReferenceYamlEditor.NoAnchor,
+                note.Field, out var rids) && note.Index >= 0 && note.Index < rids.Length && rids[note.Index] == note.Rid;
+
         // Only an undo step takes a replace back. Steps run through the groups in order, so undoing a group up to the end
         // of the note's range takes it back, and redoing a group inside the range restores it; any other step leaves the
         // note as is.
@@ -143,7 +174,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 changed = true;
             }
 
-            if (changed) SaveNotes();
+            if (!changed) return;
+
+            SaveNotes();
+            SerializeReferenceHelpers.InvalidateMissingTypeMemo();
+            UndoChangedNotes?.Invoke();
         }
 
         // The state a save is about to overwrite: the lists at risk, the notes they rely on and a stamp of the file. Null
@@ -271,6 +306,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void SaveNotes()
         {
+            NotesVersion++;
+
             if (Notes.Count == 0)
             {
                 SessionState.EraseString(NotesKey);

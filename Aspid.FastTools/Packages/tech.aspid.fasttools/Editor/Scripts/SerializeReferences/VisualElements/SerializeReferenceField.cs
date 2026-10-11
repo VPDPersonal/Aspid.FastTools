@@ -219,6 +219,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // TrackPropertyValue stays silent and the bold label would stay.
                 PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
                 PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
+                // The same step can take back a <None> pick on a missing reference after this field refreshed.
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
+                SerializeReferenceMissingListGuard.UndoChangedNotes += OnUndoRedo;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -228,6 +231,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
+                SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
                 _liveFields.Remove(this);
             });
         }
