@@ -187,8 +187,9 @@ fixed.
   `git push origin --delete chore/release-<version>`): "Phase 1" creates it again, and `gh pr view` by the branch
   name could find the closed PR. Use the number of the new PR from then on.
 - **Approved:** the user clicks publish in the portal and checks the store page. Then, on the release branch, the date
-  in the `## [<version>] — <date>` heading of both CHANGELOGs becomes the publication day. The user merges the PR,
-  and "Phase 2" tags it.
+  in the `## [<version>] — <date>` heading of both CHANGELOGs becomes the publication day. That date is the one
+  expected difference between `upm/<version>` and the uploaded package, whose `CHANGELOG.md` keeps the upload day.
+  The user merges the PR, and "Phase 2" tags it.
 - **Check the install:** in a clean 6000.0.53f1 project, **My Assets → Aspid.FastTools → Install**. The package lands
   in the **Packages** list (not in `Assets/`), its **Samples** tab imports the samples, and the Test Runner lists no
   FastTools tests.
