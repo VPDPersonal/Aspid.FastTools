@@ -74,7 +74,7 @@ public class IncrementalCacheTests
         static string Names(string value) =>
             $$"""namespace Sample { internal static class Names { public const string Load = "{{value}}"; } }""";
 
-        var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };
+        var stubs = GeneratorTestHost.PackageSources.Select(package => package.Source).ToArray();
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new ProfilerMarkersGenerator());
 
         driver = driver.RunGenerators(MakeCompilation(target, Names("A"), stubs));
