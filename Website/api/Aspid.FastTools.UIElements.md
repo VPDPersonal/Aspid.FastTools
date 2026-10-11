@@ -166,6 +166,10 @@ Provides extension methods for [`BaseVerticalCollectionView`](https://docs.unity
 
 Provides extension methods for [`Button`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.Button.html).
 
+ [CallbackEventHandlerExtensions](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md)
+
+Provides extension methods for [`CallbackEventHandler`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.CallbackEventHandler.html).
+
  [EnumFieldExtensions](Aspid.FastTools.UIElements.EnumFieldExtensions.md)
 
 Provides extension methods for [`EnumField`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.EnumField.html).
@@ -198,6 +202,10 @@ Provides extension methods for [`IMixedValueSupport`](https://docs.unity3d.com/6
  [INotifyValueChangedExtensions](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md)
 
 Provides extension methods for [`INotifyValueChanged<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.html).
+
+ [INotifyValueChangedMathExtensions](Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions.md)
+
+Provides extension methods for [`INotifyValueChanged<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.INotifyValueChanged_1.html) of <code>Unity.Mathematics</code> types.
 
  [IStyleExtensions](Aspid.FastTools.UIElements.IStyleExtensions.md)
 

@@ -220,11 +220,6 @@ export default { api: [
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.Types.Editors.InspectorTypeField.UxmlSerializedData",
-            "label": "InspectorTypeField.UxmlSerializedData"
-          },
-          {
-            "type": "doc",
             "id": "Aspid.FastTools.Types.Editors.TypeExtensions",
             "label": "TypeExtensions"
           },
@@ -232,11 +227,6 @@ export default { api: [
             "type": "doc",
             "id": "Aspid.FastTools.Types.Editors.TypeField",
             "label": "TypeField"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Types.Editors.TypeField.UxmlSerializedData",
-            "label": "TypeField.UxmlSerializedData"
           },
           {
             "type": "doc",
@@ -481,6 +471,11 @@ export default { api: [
           },
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.CallbackEventHandlerExtensions",
+            "label": "CallbackEventHandlerExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.EnumFieldExtensions",
             "label": "EnumFieldExtensions"
           },
@@ -518,6 +513,11 @@ export default { api: [
             "type": "doc",
             "id": "Aspid.FastTools.UIElements.INotifyValueChangedExtensions",
             "label": "INotifyValueChangedExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions",
+            "label": "INotifyValueChangedMathExtensions"
           },
           {
             "type": "doc",

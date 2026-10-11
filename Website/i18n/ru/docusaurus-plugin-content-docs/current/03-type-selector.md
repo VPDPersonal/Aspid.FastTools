@@ -22,6 +22,9 @@
 | <code lang="csharp">string</code> | Записывается assembly-qualified name |
 | [Serializable Types](02-serializable-types.md) | Настраивается выбор обёртки |
 | <code lang="csharp">[SerializeReference]</code> | Создаётся экземпляр выбранной реализации — см. [SerializeReference Selector](04-serialize-reference-selector.md) |
+| Массив или <code lang="class-name">List&lt;T&gt;</code> из этих полей | У каждого элемента свой селектор; для <code lang="csharp">[SerializeReference]</code> см. [Списки](04-serialize-reference-selector.md#списки) |
+
+Поле должно сериализоваться Unity: быть публичным или отмеченным <code lang="csharp">[SerializeField]</code> либо <code lang="csharp">[SerializeReference]</code>.
 
 > [!WARNING]
 > В плеере строковое поле находит тип по имени, как [Serializable Types](02-serializable-types.md#типы-в-плеере): класс, который используется только через такой выбор, может быть вырезан при **Managed Stripping Level** Low и выше.
@@ -69,7 +72,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 | Свойство | По умолчанию | Поведение |
 |---|---|---|
 | <code lang="csharp">Allow</code> | <code lang="csharp">TypeAllow.All</code> | Пускает в список абстрактные классы (<code lang="csharp">Abstract</code>), интерфейсы (<code lang="csharp">Interface</code>), оба вида или ни один. На <code lang="csharp">[SerializeReference]</code> игнорируется |
-| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает о пустом имени типа или <code lang="csharp">null</code> в managed-ссылке |
+| <code lang="csharp">Required</code> | <code lang="csharp">false</code> | Предупреждает, если у поля <code lang="csharp">string</code> или обёртки из [Serializable Types](02-serializable-types.md) пустое имя типа, а у <code lang="csharp">[SerializeReference]</code> — <code lang="csharp">null</code> |
 
 ## Обязательное поле
 
@@ -141,7 +144,7 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 ## Окно выбора
 
-Окно группирует типы по namespace или <code lang="csharp">Group</code> и различает одинаковые имена по сборкам.
+Окно группирует типы по namespace или <code lang="csharp">Group</code>. Одинаковые имена оно различает по сборкам, а имена вложенных типов по внешнему классу.
 
 ![Избранные и недавние типы на корневой странице окна выбора](../../../../docs/Images/type-selector-window.png)
 
@@ -172,6 +175,33 @@ public sealed class Enchanted<T> : Weapon
 - Generic-аргумент может сам быть generic-типом: окно сначала спросит его аргументы.
 - Если все аргументы выводятся из типа поля, закрытый тип возвращается сразу.
 - Интерфейсы, абстрактные классы и скрытые типы в аргументах не предлагаются.
+
+## TypeField
+
+<code lang="class-name">TypeField</code> — поле типа из инспектора в виде элемента UI Toolkit для кастомного инспектора или окна редактора. Привязанное к свойству <code lang="csharp">string</code>, поле записывает assembly-qualified name выбранного типа и подхватывает правки, сделанные в другом месте:
+
+```csharp
+using Aspid.FastTools.Types.Editors;
+
+root.Add(new TypeField(serializedObject.FindProperty("_weaponName"))
+{
+    Types = new[] { typeof(Weapon) }
+});
+```
+
+Как и окно ниже, поле предлагает только конкретные типы, пока <code lang="csharp">Allow</code> не разрешит другие. <code lang="class-name">InspectorTypeField</code> — то же поле с подписью, выровненной по остальным строкам инспектора.
+
+Без свойства поле сообщает о выборе через событие изменения, а имя вы сохраняете сами:
+
+```csharp
+var field = new TypeField("Weapon") { Types = new[] { typeof(Weapon) } };
+field.SetValueFromAssemblyQualifiedNameWithoutNotify(_weaponName);
+field.RegisterValueChangedCallback(_ => _weaponName = field.AssemblyQualifiedName);
+```
+
+Сохранённое имя, по которому тип больше не находится, отображается как `<Missing …>`, а <code lang="csharp">AssemblyQualifiedName</code> возвращает его, пока не выбран другой тип.
+
+UXML создаёт непривязанное поле без базовых типов: привязанное или ограниченное поле создавайте в C#. Все свойства — в справочнике API: [TypeField](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeField).
 
 ## TypeSelectorWindow
 

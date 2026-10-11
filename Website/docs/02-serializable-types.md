@@ -30,6 +30,8 @@ The <code lang="class-name">T</code> variant offers only types compatible with <
 private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 ```
 
+Wrappers that store the same type name are equal, so they work as <code lang="class-name">Dictionary</code> and <code lang="class-name">HashSet</code> keys. <code lang="class-name">SerializableMonoScript</code> follows the same rule; <code lang="csharp">==</code> compares references.
+
 ### Missing type
 
 After a class, namespace or assembly rename, the stored name no longer resolves: the field shows `<Missing …>` with a **Missing type** notice under it. The caption gives the type name without its assembly; the tooltip gives the whole stored name.
@@ -39,9 +41,24 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 
 ![The missing Game.Combat.Spear type with the Fix and → Spear buttons](Images/serializable-type-missing.png)
 
-**Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**.
+**Fix** opens the type picker, and the type you pick replaces the stored name. When the class only moved to another namespace or assembly and exactly one compatible type has its name, the notice also offers it, for example **→ Spear**. The notice compares class names and does not read <code lang="csharp">[MovedFrom]</code>, so a class renamed with that attribute gets no suggestion: choose the new class with **Fix**.
 
 [Project References](06-serialize-reference-tooling.md#type-names) finds every missing name in the project and repairs them in groups. The [build check](07-serialize-reference-validation.md) and [breakage detection](07-serialize-reference-validation.md#detecting-new-breakages) report new ones.
+
+### Empty field
+
+Test an unset field with <code lang="csharp">field is null || field.IsEmpty</code>, not <code lang="csharp">field == null</code> alone:
+
+- Loaded from an asset, a scene or a prefab, a field holds a wrapper, empty when nothing is picked.
+- On an object created in code (<code lang="csharp">AddComponent</code>, <code lang="csharp">ScriptableObject.CreateInstance</code>), a field is <code lang="csharp">null</code> until Unity serializes the object.
+
+<code lang="csharp">IsEmpty</code> and <code lang="csharp">IsMissing</code> tell the states of a wrapper apart:
+
+| State | Type | IsEmpty | IsMissing |
+|---|---|---|---|
+| A type is picked | the type | <code lang="csharp">false</code> | <code lang="csharp">false</code> |
+| Nothing is picked | <code lang="csharp">null</code> | <code lang="csharp">true</code> | <code lang="csharp">false</code> |
+| The stored name no longer resolves, a [missing type](#missing-type) | <code lang="csharp">null</code> | <code lang="csharp">false</code> | <code lang="csharp">true</code> |
 
 ## SerializableMonoScript
 
@@ -54,18 +71,19 @@ After a class, namespace or assembly rename, the stored name no longer resolves:
 
 Limitations:
 
-- only a top-level, non-generic class declared in a `.cs` file of the same name can be picked;
+- only a top-level, non-generic class can be picked: one declared in a `.cs` file of the same name, or one derived from <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code> in a DLL;
 - there is no public constructor, so the field cannot be created in code.
 
 The link breaks, and the field shows a [missing type](#missing-type) with the same notice, when:
 
 - the class is renamed without its file;
-- the file is renamed outside Unity without its `.meta`.
+- the file is renamed outside Unity without its `.meta`;
+- a class from a DLL is renamed or moved to another namespace: Unity identifies its script asset by namespace and class name.
 
 ## Types in a player build
 
 > [!WARNING]
-> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, **Managed Stripping Level** Low or higher may strip it: <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> while the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`.
+> In a player, both wrappers resolve the stored type name. If a class is used only through this selection, **Managed Stripping Level** Low or higher may strip it: <code lang="csharp">.Type</code> returns <code lang="csharp">null</code> and <code lang="csharp">IsMissing</code> becomes <code lang="csharp">true</code>, although the editor resolves it. Keep the class with <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) or `link.xml`.
 
 ## Package sample
 
