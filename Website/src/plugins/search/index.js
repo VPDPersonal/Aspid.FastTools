@@ -23,9 +23,11 @@ export function plainText(markdown) {
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     // A badge is a link around an image: the image is gone above, the empty link is dropped here.
     .replace(/\[\]\([^)]*\)/g, '')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    // A link keeps its text. The text may hold an escaped bracket (`Type\[\]` in a generated API signature) or a
+    // bracket pair of its own (`[<code lang="csharp">[TypeSelector]</code>](…)`), so a bare `[^\]]+` would skip it.
+    .replace(/(?<!\\)\[((?:[^[\]\\]|\\.|\[[^\]]*\])+)\]\([^)]*\)/g, '$1')
     .replace(/<\/?(?:img|picture|source|a|div|span|p|br|details|summary|table|thead|tbody|tr|td|th|pre|code|ol|ul|li|b|i|em|strong|small|kbd|sup|sub)\b[^>]*>/gi, ' ')
-    .replace(/\\([<>_{}])/g, '$1')
+    .replace(/\\([<>_{}()[\]])/g, '$1')
     .replace(/\{#[^}]+\}/g, '')
     .replace(/^\s*(?:#{1,6}|>)\s+/gm, ' ')
     .replace(/[*`|]/g, ' ');

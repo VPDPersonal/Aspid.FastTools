@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import {test} from 'node:test';
+import {readdirSync, readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {isSearchShortcut, prepareIndex, searchEntries} from '../src/components/search.js';
 import searchPlugin, {plainText} from '../src/plugins/search/index.js';
@@ -47,6 +48,28 @@ test('index drops the banner picture and the empty links of image badges', () =>
     '[Documentation](https://example.com/docs)',
   ].join('\n');
   assert.equal(plainText(banner), 'Aspid.FastTools is a Unity package. Documentation');
+});
+test('index keeps the text of a link whose text holds brackets', () => {
+  assert.equal(
+    plainText('Display settings from [<code lang="csharp">[TypeSelectorDisplay]</code>](03-type-selector.md#typeselectordisplay) apply here.'),
+    'Display settings from [TypeSelectorDisplay] apply here.');
+  assert.equal(plainText('Use [`list[0]`](guide.md) and [Guide](guide.md).'), 'Use list[0] and Guide.');
+  assert.equal(plainText('A [lone] bracket and an escaped \\[bracket\\](not-a-link).'), 'A [lone] bracket and an escaped [bracket](not-a-link).');
+});
+test('index unescapes the characters DocFX escapes in generated API pages', () => {
+  const link = '[VisualElementExtensions.AddChildren\\<TypeField\\>\\(TypeField, params VisualElement?\\[\\]?\\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_AddChildren__1___0_UnityEngine_UIElements_VisualElement___)';
+  assert.equal(plainText(link), 'VisualElementExtensions.AddChildren<TypeField>(TypeField, params VisualElement?[]?)');
+  assert.equal(plainText('### CreateField\\(SerializedProperty, params Type\\[\\]\\) {#Aspid_CreateField}'), 'CreateField(SerializedProperty, params Type[])');
+});
+test('the search text of every page has no link or escape leftovers', () => {
+  const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+  const pages = (directory) => readdirSync(directory, {withFileTypes: true, recursive: true})
+    .filter((entry) => entry.isFile() && /\.mdx?$/.test(entry.name))
+    .map((entry) => path.join(entry.parentPath, entry.name));
+  const leftover = /\]\([^)\s]*\.md[^)]*\)|\[ \[|\] \]|\\[()[\]<>]/;
+  const bad = ['docs', 'tutorials', 'api', 'i18n'].flatMap((directory) => pages(path.join(siteDir, directory)))
+    .filter((file) => leftover.test(plainText(readFileSync(file, 'utf8'))));
+  assert.deepEqual(bad.map((file) => path.relative(siteDir, file)), []);
 });
 test('empty queries suggest documentation and samples', () => {
   assert.equal(searchEntries(entries, '  ').length, 3);
