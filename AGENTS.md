@@ -31,7 +31,7 @@ Agent Skills for projects that consume the package in `skills/`.
   change, rewrite the file on the Unity version that `WholeApiVersion` in the test names, or a newer one, and commit
   its diff in the same PR. Write it from the throwaway project of `scripts/make-unity-test-project.sh`, which references
   the package in place: the dev project does not compile on 6000.6, where the embedded Asset Store Tools call APIs
-  that are errors there. `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" 6000.6.5f1)`, then
+  that are errors there. `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" <version>)`, then
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity $v> -batchmode -nographics -projectPath "$p" -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "$p/public-api.xml"`.
   An older Editor compiles only part of the API (the `UNITY_6000_x_OR_NEWER` guards), so there the test checks only
   for additions. The `#if` around `HasWholeApi` in the test names the newest guard: move it and `WholeApiVersion`
