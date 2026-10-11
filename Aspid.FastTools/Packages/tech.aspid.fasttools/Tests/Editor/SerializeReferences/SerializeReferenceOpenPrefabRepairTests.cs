@@ -9,14 +9,16 @@ using UnityEditor.SceneManagement;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    // Coverage for the Inspector Fix on a prefab asset selected in the Project window while that prefab is open in
-    // Prefab Mode: the stage saves over the asset file, so a file rewrite under it must be refused. A MonoBehaviour
+    // Coverage for the Inspector Fix and the Asset References edits on a prefab asset while that prefab is open in
+    // Prefab Mode: the stage saves over the asset file, so a write under it must be refused. A MonoBehaviour
     // from this editor-only assembly cannot be attached, so the broken reference lives on a ScriptableObject embedded
     // in the prefab file; the guard keys on the file path either way.
     [TestFixture]
     internal sealed class SerializeReferenceOpenPrefabRepairTests
     {
         private const string ProbePrefabPath = "Assets/__AspidOpenPrefabRepairProbe__.prefab";
+
+        private long _fileId;
 
         private static readonly ManagedTypeName _goneType = new(
             ManagedTypeName.FromType(typeof(TestSword)).Assembly,
@@ -46,6 +48,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 AssetDatabase.TryGetGUIDAndLocalFileIdentifier(probe, out _, out fileId);
             }
             Assert.Greater(fileId, 0, "Precondition: the sub-asset must have a positive local id.");
+            _fileId = fileId;
 
             // Break field a on disk: its stored class no longer resolves.
             var rid = ManagedReferenceUtility.GetManagedReferenceIdForObject(probe, probe.a);
@@ -78,6 +81,50 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsFalse(SerializeReferenceHelpers.TryFixMissingType(serializedObject.FindProperty("a"), typeof(TestSword)),
                     "The open stage would overwrite a file rewrite on its next save.");
             }
+
+            Assert.AreEqual(before, File.ReadAllText(ProbePrefabPath));
+        }
+
+        [Test]
+        public void ApplyLive_AssetOpenInPrefabMode_LeavesFileUntouched()
+        {
+            if (!Application.isBatchMode) Assert.Ignore("Runs in batch mode only.");
+            LogAssert.Expect(LogType.Assert, new Regex("Cancell?ing DisplayDialog: Asset References"));
+
+            Assert.IsNotNull(PrefabStageUtility.OpenPrefab(ProbePrefabPath), "Precondition: the prefab must open.");
+            var before = File.ReadAllText(ProbePrefabPath);
+
+            Assert.IsFalse(SerializeReferenceGraphEditor.ApplyLive(
+                    assetPath: ProbePrefabPath,
+                    fileId: _fileId,
+                    graphPath: nameof(UnsavedRepairTestObject.b),
+                    assemblyQualifiedName: typeof(TestSword).AssemblyQualifiedName),
+                "The stage would overwrite the new type on its next save.");
+
+            Assert.AreEqual(before, File.ReadAllText(ProbePrefabPath));
+        }
+
+        [Test]
+        public void ApplyRequiredString_AssetOpenInPrefabMode_LeavesFileUntouched()
+        {
+            if (!Application.isBatchMode) Assert.Ignore("Runs in batch mode only.");
+            LogAssert.Expect(LogType.Assert, new Regex("Cancell?ing DisplayDialog: Asset References"));
+
+            Assert.IsNotNull(PrefabStageUtility.OpenPrefab(ProbePrefabPath), "Precondition: the prefab must open.");
+            var before = File.ReadAllText(ProbePrefabPath);
+
+            var violation = new GateViolation(
+                assetPath: ProbePrefabPath,
+                fileId: _fileId,
+                rid: 0,
+                storedType: default,
+                kind: GateViolationKind.RequiredUnset,
+                fieldPath: nameof(UnsavedRepairTestObject.requiredName));
+
+            Assert.IsFalse(SerializeReferenceGraphEditor.ApplyRequiredString(
+                    violation: violation,
+                    assemblyQualifiedName: typeof(TestSword).AssemblyQualifiedName),
+                "The stage would overwrite the assigned type on its next save.");
 
             Assert.AreEqual(before, File.ReadAllText(ProbePrefabPath));
         }

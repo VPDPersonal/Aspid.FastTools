@@ -200,6 +200,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _picker.Close();
             ClearSummaries();
 
+            // A pull may have changed the committed severity and excluded folders since the Editor loaded them.
+            SerializeReferenceSettings.ReloadShared();
+
             _requiredCheckDisabled = SerializeReferenceSettings.BuildSeverity == GateSeverity.Off;
             _requiredViolationsCache = CollectRequiredViolations();
             _requiredIsWarm = true;
