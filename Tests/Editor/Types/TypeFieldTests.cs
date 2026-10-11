@@ -178,6 +178,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
             }
         }
 
+        // The checks run in the frame that opens the selector. The selector is a dropdown, and Unity closes a dropdown
+        // when another window takes the focus. ShowUtility shows its window and focuses it later (displayImmediately is
+        // false), so on a desktop that focus can land in a frame between the submit and the checks and close the
+        // selector: the test failed at random in local runs (#346). No event reaches Unity inside one call, so nothing can
+        // close the selector before the checks read it. CI does not see the race: with no window manager the focus
+        // never moves there.
         [UnityTest]
         public IEnumerator NavigationSubmit_OpensTheSelector()
         {
@@ -189,7 +195,6 @@ namespace Aspid.FastTools.Types.Editors.Tests
             try
             {
                 Submit(field);
-                yield return null;
 
                 var selectors = Resources.FindObjectsOfTypeAll<TypeSelectorWindow>();
                 Assert.AreEqual(1, selectors.Length);

@@ -10,13 +10,17 @@ using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    // Paints the IMGUI drawer and its list in a window, because IMGUI controls need a live OnGUI.
-    // An error in the drawer then shows as a logged error or as GUI state left behind.
+    // Paints the IMGUI drawer and its list in a window, because IMGUI controls need a live OnGUI. Each test waits for a
+    // layout pass and a repaint pass, so the notices, GUIStyle.Draw and the navigation pulse run too, not only the
+    // layout. An error in the drawer then shows as a logged error, an exception that the container catches, or GUI
+    // state left behind.
     // The windows need a graphics device: these tests run in CI, not under -nographics.
     [TestFixture]
     internal sealed class SerializeReferenceIMGUIDrawTests
     {
         private const float FieldWidth = 320f;
+
+        private const int MaxFrames = 30;
 
         private const string MissingProbePath = "Assets/__AspidIMGUIDrawProbe__.asset";
 
@@ -317,6 +321,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // The harness itself: an exception that the drawer throws on the repaint pass must reach the report, or every test
+        // above would pass on a drawer that fails when it paints.
+        [UnityTest]
+        public IEnumerator Paint_ExceptionOnTheRepaintPass_ReachesTheReport()
+        {
+            var report = new PaintReport();
+
+            yield return Paint(report, () =>
+            {
+                if (Event.current.type == EventType.Repaint) throw new InvalidOperationException("repaint failure");
+            });
+
+            Assert.IsInstanceOf<InvalidOperationException>(report.Error, "The repaint pass must run the draw and report its exception.");
+            Assert.Greater(report.Layouts, 0, "Precondition: the layout pass must reach the IMGUI container.");
+            Assert.Greater(report.Repaints, 0, "Precondition: the repaint pass must reach the IMGUI container.");
+        }
+
         // Draws a field with the height it measures; returns the y where the next field starts.
         private static float DrawField(SerializedProperty property, float y = 0f)
         {
@@ -329,18 +350,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         private static void AssertPainted(PaintReport report)
         {
-            Assert.Greater(report.Passes, 0, "Precondition: the IMGUI container must be painted.");
             Assert.IsNull(report.Error, report.Error?.ToString());
-            Assert.IsTrue(report.StateBalanced, "Painting must restore the indent level, the mixed-value flag and GUI.enabled.");
+            Assert.Greater(report.Layouts, 0, "Precondition: the layout pass must reach the IMGUI container.");
 
-            // The repaint-only code (notices, GUIStyle.Draw, the navigation pulse) ran only with a repaint pass; without
-            // one the test shows up as ignored instead of passing on the layout pass alone.
-            if (report.Repaints == 0) Assert.Ignore("No repaint pass reached the IMGUI container; only the layout pass ran.");
+            // The notices, GUIStyle.Draw and the navigation pulse run only on a repaint pass. CI gets one on every Unity
+            // version, so a missing pass is a failure: an ignored test would hide that the drawing code stopped running.
+            Assert.Greater(report.Repaints, 0, "Precondition: the repaint pass must reach the IMGUI container.");
+            Assert.IsTrue(report.StateBalanced, "Painting must restore the indent level, the mixed-value flag and GUI.enabled.");
         }
 
-        // Runs the draw in an IMGUIContainer and waits until the window has run it, ideally for a layout pass and a
-        // paint pass. The container leaves again before the caller disposes what the draw reads.
-        // A batch-mode window may never send a repaint; AssertPainted then reports the test as ignored.
+        // Runs the draw in an IMGUIContainer and waits until the window has run it for a layout pass and a repaint pass.
+        // The container leaves again before the caller disposes what the draw reads.
         private IEnumerator Paint(PaintReport report, Action draw)
         {
             _window.rootVisualElement.Add(new IMGUIContainer(() =>
@@ -362,11 +382,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     report.Error ??= exception;
                 }
 
-                report.Passes++;
+                if (Event.current.type == EventType.Layout) report.Layouts++;
                 if (Event.current.type == EventType.Repaint) report.Repaints++;
             }));
 
-            for (var frame = 0; frame < 10 && (report.Passes < 2 || report.Repaints == 0); frame++)
+            for (var frame = 0; frame < MaxFrames && (report.Layouts == 0 || report.Repaints == 0); frame++)
             {
                 _window.Repaint();
                 yield return null;
@@ -377,7 +397,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         private sealed class PaintReport
         {
-            public int Passes;
+            public int Layouts;
             public int Repaints;
             public Exception Error;
             public bool StateBalanced = true;
