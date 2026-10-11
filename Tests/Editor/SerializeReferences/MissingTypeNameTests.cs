@@ -231,7 +231,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
             _established = SessionState.GetBool(TypeNameBreakageDetector.EstablishedKey, false);
-            _baseline = SessionState.GetString(TypeNameBreakageDetector.BaselineKey, string.Empty);
+            _baseline = TypeNameBreakageDetector.ExportBaseline();
 
             TypeNameBreakageDetector.ResetForTests();
 
@@ -242,7 +242,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             SerializeReferenceSettings.BreakageDetectionEnabled = true;
             SessionState.EraseBool(TypeNameBreakageDetector.EstablishedKey);
-            SessionState.EraseString(TypeNameBreakageDetector.BaselineKey);
+            TypeNameBreakageDetector.ImportBaseline(string.Empty);
         }
 
         [TearDown]
@@ -254,7 +254,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
             SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, _established);
-            SessionState.SetString(TypeNameBreakageDetector.BaselineKey, _baseline);
+            TypeNameBreakageDetector.ImportBaseline(_baseline);
+            TypeNameBreakageDetector.PersistBaseline();
         }
 
         [Test]
@@ -275,9 +276,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void Scan_ChangedAsset_WritesSessionStateOnlyWhenPersisted()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredWrapperTestObject>();
+            probe.type = new SerializableType(typeof(TestSword));
+            AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+            AssetDatabase.SaveAssets();
+
+            TypeNameBreakageDetector.Scan(changedAssets: null);
+            TypeNameBreakageDetector.CompleteSweep();
+
+            StringAssert.DoesNotContain(ProbeAssetPath, SessionState.GetString(TypeNameBreakageDetector.BaselineKey, string.Empty));
+
+            TypeNameBreakageDetector.PersistBaseline();
+
+            StringAssert.Contains(ProbeAssetPath, SessionState.GetString(TypeNameBreakageDetector.BaselineKey, string.Empty));
+        }
+
+        [Test]
+        public void ResetBaseline_DropsBaselineAndEstablishedFlag()
+        {
+            TypeNameBreakageDetector.ImportBaseline($"{ProbeAssetPath}\t{BrokenKey}");
+            SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, true);
+
+            TypeNameBreakageDetector.ResetBaseline();
+
+            Assert.IsFalse(TypeNameBreakageDetector.IsEstablished);
+            CollectionAssert.IsEmpty(TypeNameBreakageDetector.GetBaselineKeys(ProbeAssetPath));
+        }
+
+        [Test]
         public void Scan_BaselineNameNoLongerResolves_ReportsItOnce()
         {
-            SessionState.SetString(TypeNameBreakageDetector.BaselineKey, $"{ProbeAssetPath}\t{BrokenKey}");
+            TypeNameBreakageDetector.ImportBaseline($"{ProbeAssetPath}\t{BrokenKey}");
             SessionState.SetBool(TypeNameBreakageDetector.EstablishedKey, true);
 
             TypeNameBreakageDetector.Scan(changedAssets: null);
