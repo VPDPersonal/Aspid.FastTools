@@ -4,7 +4,7 @@ using UnityEditor;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    public static partial class SerializePropertyExtensions
+    public static partial class SerializedPropertyExtensions
     {
         /// <summary>
         /// Returns the backing field name, including the collection field for an array or list element.
