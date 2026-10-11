@@ -56,10 +56,49 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void SniffFileFormat_EmptyFile_IsBinary() =>
             Assert.AreEqual(AssetFileFormat.Binary, SerializeReferenceYaml.SniffFileFormat(Write(string.Empty)));
 
+        // A file that cannot be opened is not a binary one: the callers advise Force Text for Binary, which helps nothing
+        // here, and the CI report names the kind of each skipped file.
         [Test]
-        public void SniffFileFormat_MissingFile_IsBinary() =>
-            Assert.AreEqual(AssetFileFormat.Binary,
+        public void SniffFileFormat_MissingFile_IsUnreadable() =>
+            Assert.AreEqual(AssetFileFormat.Unreadable,
                 SerializeReferenceYaml.SniffFileFormat(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".prefab")));
+
+        // Opening a directory as a file fails on every platform, with no lock or permission to arrange.
+        [Test]
+        public void SniffFileFormat_DirectoryPath_IsUnreadable()
+        {
+            var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".prefab");
+            Directory.CreateDirectory(directory);
+
+            try
+            {
+                Assert.AreEqual(AssetFileFormat.Unreadable, SerializeReferenceYaml.SniffFileFormat(directory));
+            }
+            finally
+            {
+                Directory.Delete(directory);
+            }
+        }
+
+        // A text YAML asset that another program holds open without sharing (an antivirus scan, a sync client, a build
+        // step) is still text YAML, so it must not be called binary; it reads as TextYaml again once the lock is gone.
+        [Test]
+        public void SniffFileFormat_FileLockedByAnotherProgram_IsUnreadable()
+        {
+            var path = Write(YamlFixtures.MissingTypePrefab);
+
+            using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                if (CanOpenShared(path))
+                    Assert.Inconclusive("This platform does not enforce FileShare.None.");
+
+                Assert.AreEqual(AssetFileFormat.Unreadable, SerializeReferenceYaml.SniffFileFormat(path));
+                Assert.IsFalse(SerializeReferenceYaml.IsTextYamlFile(path));
+                Assert.IsNull(SerializeReferenceYaml.ReadLines(path));
+            }
+
+            Assert.AreEqual(AssetFileFormat.TextYaml, SerializeReferenceYaml.SniffFileFormat(path));
+        }
 
         // Without the %YAML / %TAG preamble the body still carries GhostPistol's RefIds entry, so a scanner that parses
         // every file line by line would report it.
@@ -89,6 +128,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var path = Write(StripPreamble(SerializeReferenceYamlPrefabOverrideTests.VariantPrefab));
             Assert.AreEqual(0, SerializeReferenceYamlEditor.FindPrefabOverrideReferences(path).Count);
+        }
+
+        private static bool CanOpenShared(string path)
+        {
+            try
+            {
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                return true;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
         }
 
         private static string StripPreamble(string yaml) =>

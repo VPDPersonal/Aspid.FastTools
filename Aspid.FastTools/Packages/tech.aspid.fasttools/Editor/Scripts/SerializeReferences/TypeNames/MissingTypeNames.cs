@@ -119,8 +119,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // `unscanned` collects the file when it exists but is not text YAML (binary, LFS pointer), so the caller can
-        // tell a file with no missing names from a file nobody read.
+        // `unscanned` collects the file when it exists but is not text YAML (binary, LFS pointer) or cannot be opened
+        // (Unreadable), so the caller can tell a file with no missing names from a file nobody read.
         public static List<MissingTypeNameLocation> FindInFile(
             string assetPath, ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {

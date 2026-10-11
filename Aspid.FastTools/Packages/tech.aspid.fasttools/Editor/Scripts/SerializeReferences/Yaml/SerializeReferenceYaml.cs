@@ -49,7 +49,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Reads only the first bytes, so a scanner can skip a binary asset (LightingData, NavMesh, anything in a
         // Force Binary / Mixed project) or an LFS pointer without decoding the whole file. A file that cannot be
-        // opened counts as Binary: it is just as unreadable to the YAML pass.
+        // opened (locked by another program, no permission, removed since the caller found it) is Unreadable, not
+        // Binary: it may well be text YAML, so a caller must not advise Force Text for it.
         public static AssetFileFormat SniffFileFormat(string path)
         {
             var buffer = new byte[FormatSniffLength];
@@ -62,7 +63,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             catch (Exception)
             {
-                return AssetFileFormat.Binary;
+                return AssetFileFormat.Unreadable;
             }
 
             return ClassifyHead(buffer, read);

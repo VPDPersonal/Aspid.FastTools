@@ -26,6 +26,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const string ExcludedProbePath = ExcludedFolderPath + "/Probe.asset";
         private const string SharedSettingsPath = "ProjectSettings/SerializeReferenceSharedSettings.asset";
 
+        // Holds the file open without sharing, as an antivirus scan or a sync client does. The platform may not enforce
+        // FileShare.None (Mono and CoreCLR emulate it with advisory locks), so a test that needs the lock is inconclusive
+        // there instead of passing for the wrong reason.
+        private static FileStream LockFile(string path)
+        {
+            var holder = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+            try
+            {
+                using var shared = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            }
+            catch (IOException)
+            {
+                return holder;
+            }
+
+            holder.Dispose();
+            Assert.Inconclusive("This platform does not enforce FileShare.None.");
+            return null;
+        }
+
         // Scan(RequiredOnly) is the exact call the Project References "Required violations" group makes; this proves
         // it surfaces both an unset managed reference and an unset [TypeSelector(Required = true)] string field on a
         // saved asset (RequiredTestObject, shared fixture — see SerializeReferenceTestFixtures.cs).
@@ -436,6 +457,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // A text asset that another program holds open is still text: the scan must hand it back as unreadable, not as
+        // a binary file, whose warning would send the user to Force Text.
+        [Test]
+        public void Scan_MissingOnly_ReportsLockedFileAsUnreadable()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+
+                var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                using (LockFile(ProbeAssetPath))
+                    SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+
+                CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.Unreadable));
+                CollectionAssert.DoesNotContain(unscanned, (ProbeAssetPath, AssetFileFormat.Binary));
+
+                // Only the probe: the project may hold binary files of its own that the notice rightly calls binary.
+                var notice = SerializeReferenceGateScanner.DescribeUnscanned(
+                    unscanned.Where(file => file.AssetPath == ProbeAssetPath).ToList(), SerializationMode.ForceText);
+
+                StringAssert.Contains(ProbeAssetPath, notice);
+                StringAssert.Contains("could not be opened", notice);
+                StringAssert.DoesNotContain("binary", notice);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
         [TestCase("Assets/Weapons/Pistol.prefab")]
         [TestCase("Assets/Scenes/Arena.unity")]
         public void DescribeUnscanned_BinaryPrefabOrSceneUnderForceText_Warns(string path)
@@ -502,6 +554,63 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // Force Text cures a binary file, not a locked one, so the warning names the cause and the way out of this one.
+        [TestCase(SerializationMode.ForceText)]
+        [TestCase(SerializationMode.ForceBinary)]
+        [TestCase(SerializationMode.Mixed)]
+        public void DescribeUnscanned_UnreadableFile_NamesTheCauseInAnyMode(SerializationMode mode)
+        {
+            var unscanned = new[] { ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Unreadable) };
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, mode);
+
+            StringAssert.Contains("1 file(s) were not checked", notice);
+            StringAssert.Contains("1 file(s) could not be opened", notice);
+            StringAssert.Contains("locked by another program", notice);
+            StringAssert.Contains("Assets/Weapons/Pistol.prefab", notice);
+            StringAssert.DoesNotContain("binary", notice);
+            StringAssert.DoesNotContain("Force Text", notice);
+        }
+
+        // Nothing is known about the content of a file that could not be opened, so unlike a binary engine asset under
+        // Force Text it is never ruled out as unable to hold managed references.
+        [Test]
+        public void DescribeUnscanned_UnreadableEngineAssetUnderForceText_Warns()
+        {
+            try
+            {
+                AssetDatabase.CreateAsset(new Mesh(), EngineAssetPath);
+
+                var unscanned = new[] { (EngineAssetPath, AssetFileFormat.Unreadable) };
+                var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+
+                StringAssert.Contains(EngineAssetPath, notice);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(EngineAssetPath);
+            }
+        }
+
+        [Test]
+        public void DescribeUnscanned_UnreadableAndBinary_ListsEachUnderItsOwnCause()
+        {
+            var unscanned = new[]
+            {
+                ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Binary),
+                ("Assets/Weapons/Rifle.prefab", AssetFileFormat.Unreadable),
+            };
+
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+
+            StringAssert.Contains("2 file(s) were not checked", notice);
+            StringAssert.Contains("1 binary prefab, scene or ScriptableObject file(s)", notice);
+            StringAssert.Contains("1 file(s) could not be opened", notice);
+            Assert.Less(notice.IndexOf("Assets/Weapons/Pistol.prefab", StringComparison.Ordinal),
+                notice.IndexOf("could not be opened", StringComparison.Ordinal));
+            Assert.Greater(notice.IndexOf("Assets/Weapons/Rifle.prefab", StringComparison.Ordinal),
+                notice.IndexOf("could not be opened", StringComparison.Ordinal));
+        }
+
         // The Project References window counts the files DescribeUnscanned names, so a binary engine asset under Force
         // Text does not turn its summary into a warning.
         [Test]
@@ -528,6 +637,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void CountReportableUnscanned_CountsUnreadableFilesInAnyMode()
+        {
+            var unscanned = new[] { ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Unreadable) };
+
+            Assert.AreEqual(1, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.ForceText));
+            Assert.AreEqual(1, SerializeReferenceGateScanner.CountReportableUnscanned(unscanned, SerializationMode.ForceBinary));
+        }
+
+        [Test]
         public void CountReportableUnscanned_Nothing_IsZero() =>
             Assert.AreEqual(0, SerializeReferenceGateScanner.CountReportableUnscanned(
                 Array.Empty<(string, AssetFileFormat)>(), SerializationMode.ForceBinary));
@@ -543,6 +661,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 Assert.IsTrue(SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out var format));
                 Assert.AreEqual(expected, format);
+            }
+            finally
+            {
+                File.Delete(UnreadProbePath);
+            }
+        }
+
+        // A text prefab another program holds open is not a binary one: Asset References must not tell the user to switch
+        // to Force Text for it.
+        [Test]
+        public void TryGetUnreadFormat_FileLockedByAnotherProgram_ReturnsUnreadable()
+        {
+            try
+            {
+                File.WriteAllText(UnreadProbePath, "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n");
+
+                bool isUnread;
+                AssetFileFormat format;
+
+                using (LockFile(UnreadProbePath))
+                    isUnread = SerializeReferenceGateScanner.TryGetUnreadFormat(UnreadProbePath, SerializationMode.ForceText, out format);
+
+                Assert.IsTrue(isUnread);
+                Assert.AreEqual(AssetFileFormat.Unreadable, format);
             }
             finally
             {
@@ -588,8 +730,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         [TestCase(AssetFileFormat.LfsPointer, "Git LFS pointer")]
         [TestCase(AssetFileFormat.Binary, "Force Text")]
+        [TestCase(AssetFileFormat.Unreadable, "locked")]
         public void BuildUnreadAssetMessage_NamesTheCauseAndTheWayOut(AssetFileFormat format, string expected) =>
             StringAssert.Contains(expected, SerializeReferenceGraphSummary.BuildUnreadAssetMessage(format));
+
+        // Force Text cures only a binary asset: advice to switch to it, or a claim of "not text YAML", is wrong for a
+        // locked file or an LFS pointer.
+        [TestCase(AssetFileFormat.LfsPointer)]
+        [TestCase(AssetFileFormat.Unreadable)]
+        public void BuildUnreadAssetMessage_NotBinary_DoesNotAdviseForceText(AssetFileFormat format)
+        {
+            var message = SerializeReferenceGraphSummary.BuildUnreadAssetMessage(format);
+
+            StringAssert.DoesNotContain("Force Text", message);
+            StringAssert.DoesNotContain("text YAML", message);
+        }
 
         [Test]
         public void DescribeUnscanned_Nothing_IsSilent() =>

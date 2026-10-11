@@ -89,7 +89,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static IReadOnlyList<MissingTypeNameLocation> TypeNamesForRender =>
             _typeNamesIsWarm ? _typeNamesCache : Array.Empty<MissingTypeNameLocation>();
 
-        // Files Scan Project could not read (binary, Git LFS pointer): their absence from the lists proves nothing.
+        // Files Scan Project could not read (binary, Git LFS pointer, locked or otherwise unopenable): their absence
+        // from the lists proves nothing.
         private static int _unreadFileCount;
 
         private static RequiredAuditState RequiredAudit =>

@@ -121,7 +121,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             builder.AppendLine($"# Not scanned: {unscanned?.Count ?? 0}");
 
             // Comment lines, so a parser of the violation lines below is unaffected. The format names the reason:
-            // Binary, LfsPointer or UnsupportedReferencesVersion.
+            // Binary, LfsPointer, Unreadable (could not be opened) or UnsupportedReferencesVersion.
             if (unscanned is not null)
             {
                 foreach (var (assetPath, format) in unscanned)

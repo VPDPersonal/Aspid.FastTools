@@ -73,6 +73,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 ("Assets/Arena.unity", AssetFileFormat.LfsPointer)));
         }
 
+        // A locked file was not checked either, and Force Text does not help it: the warning names what to do instead.
+        [Test]
+        public void Check_Fail_UnreadableFile_WarnsWithTheCauseAndDoesNotStopTheBuild()
+        {
+            LogAssert.Expect(LogType.Warning, new Regex(@"1 file\(s\) could not be opened(.|\n)*Assets/Arena\.unity"));
+
+            Assert.DoesNotThrow(() => Check(GateSeverity.Fail, Array.Empty<GateViolation>(),
+                ("Assets/Arena.unity", AssetFileFormat.Unreadable)));
+        }
+
         [Test]
         public void BuildSummary_ListsAtMostTheCapAndCountsTheRest()
         {
