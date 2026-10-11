@@ -15,8 +15,8 @@ The **Build / CI gate** setting picks how strict the check is:
 | Mode | Player build | Standalone CI run |
 |---|---|---|
 | `Off` | Skips the check | No scan and no report, an older report stays; exit code `0` |
-| `Warn` | Warns and keeps building | Report and violations in the log; exit code `0` |
-| `Fail` | Missing types stop the build | Report; exit code `1` on violations |
+| `Warn` | Warns and keeps building | Report; violations in the log as warnings; exit code `0` |
+| `Fail` | Missing types stop the build | Report; violations in the log as errors; exit code `1` on violations |
 
 The build checks every asset under `Assets/`, not only what goes into it: in `Fail` mode an unused prefab stops it too — exclude such folders with [**Excluded scan folders**](#scan-scope).
 
@@ -43,7 +43,7 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 - saved `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from **Excluded scan folders**;
 - <code lang="csharp">[SerializeReference]</code> and the names in <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields; <code lang="csharp">[TypeSelector]</code> strings are not checked;
 - pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing;
-- binary assets and unfetched Git LFS files are not scanned, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files.
+- binary assets and unfetched Git LFS files are not scanned, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files; to make CI count them as violations, pass `-srGateStrict`.
 
 **Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection.
 
@@ -61,7 +61,7 @@ Unity -batchmode -projectPath . \
   -srGateRequired -srGateFail
 ```
 
-Exit code `2` means the check itself failed.
+`RunCheck` works only with `-batchmode`: without it, it logs a warning and checks nothing. Exit code `2` means the check itself failed.
 
 ### Command-line flags
 
@@ -71,10 +71,13 @@ Exit code `2` means the check itself failed.
 | `-srGateRequired` | Also checks unset fields with <code lang="csharp">Required = true</code> |
 | `-srGateFail` | Uses `Fail` instead of the project's mode, even `Off` |
 | `-srGateWarnOnly` | Uses `Warn` instead of the project's mode, even `Off`; takes precedence over `-srGateFail` if both are passed |
+| `-srGateStrict` | Counts files that could not be checked (unfetched Git LFS files, binary assets that can hold references) as violations; in `Warn` mode the exit code stays `0` |
 
 ## Report
 
-The report lists missing types, unset required fields and skipped files. Skipped files do not change the exit code.
+The report lists missing types, unset required fields and skipped files. Skipped files do not change the exit code, unless `-srGateStrict` is passed.
+
+A player build and a CI run show the first 50 violations in the log and count the rest; the report and **Scan Project** list them all.
 
 <details>
 <summary>Report format</summary>
@@ -92,7 +95,7 @@ The report starts with a header:
 Then one line per violation, tab-separated:
 
 ```text
-KIND    assetPath    fileId    rid    className    fieldPath    origin
+KIND    assetPath    fileId    rid    className    fieldPath    origin    ns    asm
 ```
 
 | Field | Contents |
@@ -104,6 +107,8 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin
 | `className` | Stored class name for `MissingType`; the whole stored type name for `MissingTypeName` |
 | `fieldPath` | Required field path; the wrapper field for `MissingTypeName`; for a `MissingType` override, the overridden field; otherwise empty |
 | `origin` | `override` for a type set by a prefab instance override; otherwise empty |
+| `ns` | Stored namespace for `MissingType`; otherwise empty |
+| `asm` | Stored assembly for `MissingType`; otherwise empty |
 
 In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead. A `MissingTypeName` row is in its **type name** group of Project References.
 
@@ -111,6 +116,6 @@ In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with 
 
 ## Package sample
 
-The [SerializeReferences](../tutorials/SerializeReferences/README.md) sample has a required field and missing types to check.
+The [SerializeReferences](../tutorials/SerializeReferences/README.md) sample has a required field and missing types to check; add its folder to **Excluded scan folders** if they should not stop a `Fail` build.
 
 ![The dummy takes damage in the SerializeReferences scene](../tutorials/SerializeReferences/Images/demo.gif)

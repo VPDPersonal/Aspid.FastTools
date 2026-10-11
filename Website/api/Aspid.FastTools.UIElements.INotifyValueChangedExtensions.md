@@ -539,12 +539,7 @@ The element type.
 #### Remarks
 
 <p>Available in Unity 6000.4 and newer.</p>
-<p>
-The callback stays registered until removed. Pass an equal delegate to
-[`INotifyValueChangedExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_GUID___): a method group or a delegate kept in a field.
-A lambda that captures a local variable is a new delegate on every call: it cannot be removed,
-and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.
-</p>
+<p>The callback stays registered until removed. Pass an equal delegate to [`INotifyValueChangedExtensions.RemoveValueChanged<T>`](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_GUID___): a method group or a delegate kept in a field. A lambda that captures a local variable is a new delegate on every call: it cannot be removed, and registering it again, for example in [`bindItem`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ListView-bindItem.html), adds one more.</p>
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Color\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Color___}
 
