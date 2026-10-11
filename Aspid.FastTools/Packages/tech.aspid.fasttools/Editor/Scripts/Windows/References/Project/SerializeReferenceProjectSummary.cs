@@ -121,11 +121,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             builder.AppendLine("Changes:");
 
             // Failed preview computations must not inflate the hidden-entry remainder.
+            var computed = SerializeReferenceBatchEditor.ComputeRewrites(entries, newType);
             var edits = new List<(MissingReferenceLocation entry, RewriteEdit edit)>(entries.Count);
-            foreach (var entry in entries)
+            for (var i = 0; i < entries.Count; i++)
             {
-                if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, newType, out var edit))
-                    edits.Add((entry, edit));
+                if (computed[i].IsValid)
+                    edits.Add((entries[i], computed[i]));
             }
 
             for (var i = 0; i < edits.Count && i < MaxPreviewedEntries; i++)

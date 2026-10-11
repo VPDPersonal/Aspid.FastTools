@@ -1,6 +1,6 @@
 ---
 name: docs-site
-description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins in `i18n/ru/`) plus the root `CHANGELOG*.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README and short sample READMEs that link the site. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
+description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins in `i18n/ru/`) plus the root `CHANGELOG*.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README, SETUP.md and short sample READMEs that link the site. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
 user-invocable: false
 metadata:
   internal: true
@@ -14,9 +14,10 @@ Write GitHub Flavored Markdown; the site adapts to it, never the other way round
 
 The UPM package (`Aspid.FastTools/Packages/tech.aspid.fasttools/`) ships no documentation pages or images: everything in
 that folder reaches every consumer project through `git subtree split` in `release.yml`. It keeps only `README.md`
-(a description, the install URL and the site link) and a short text-only `Samples~/<Sample>/Documentation/README.md`
-(+ `README.ru.md`) per sample: what it shows, how to open it, and a link to its tutorial on the site. Never add an
-image or a full page there.
+(a description and the site link), `SETUP.md` (the offline setup steps of the Asset Store package, English only; it
+gives no git URL, because a store buyer who follows one adds a second copy) and a short text-only
+`Samples~/<Sample>/Documentation/README.md` (+ `README.ru.md`) per sample: what it shows, how to open it, and a link to
+its tutorial on the site. Never add an image or a full page there.
 
 ## Layout
 
@@ -32,7 +33,7 @@ image or a full page there.
 | Interface strings | `Website/i18n/ru/**/*.json` (`code.json`, `navbar.json`, each plugin's `current.json`) | |
 | Images | `Website/docs/Images/`, `Website/tutorials/<Sample>/Images/` | referenced relatively |
 | Root README | generated from `Website/docs/README.md` in GitHub's layout (committed); translations live on the site only | — |
-| Package README, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
+| Package README, setup notes, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `SETUP.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
 | Package changelog | generated from the root `CHANGELOG.md` with its `.meta` by `release.yml` (`scripts/package-changelog.mjs`); gitignored, only the `upm` branches carry it; Unity's Package Manager reads it | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
@@ -72,7 +73,7 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
   and rewrites a target in the other plugin instance to its site route. The samples overview is linked as the
   package `Samples~/README.md` (`README.ru.md`), which lists the samples on GitHub; the site sends it to `/tutorials`.
   Never link by site URL — except from the
-  package READMEs, which ship without the site sources and link `https://vpdpersonal.github.io/Aspid.FastTools/…`.
+  package README and SETUP.md, which ship without the site sources and link `https://vpdpersonal.github.io/Aspid.FastTools/…`.
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
   on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`). This conversion
   requires every body cell to contain only a `<pre>` element; a plain-text or inline-code result row prevents it.
@@ -95,7 +96,8 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
 - **Every `.md` in the package needs a `.meta`** (`TextScriptImporter`) — Unity would otherwise generate one in the
   consumer's project. Copy an existing one and give it a fresh GUID. Site pages and images have none.
 - English is the source. A translation has the same file name under `Website/i18n/ru/docusaurus-plugin-content-docs/current/`
-  (docs) or `…/docusaurus-plugin-content-docs-tutorials/current/` (tutorials); missing pages fall back to English.
+  (docs) or `…/docusaurus-plugin-content-docs-tutorials/current/` (tutorials). Every English page needs its twin: the site
+  shows English where one is missing, so `check-translations` fails instead.
   A translated file links translated targets so GitHub stays in the same language
   (`../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md` from a doc,
   `../../../docusaurus-plugin-content-docs/current/03-type-selector.md` from a tutorial, `../EnumValues/README.md`
@@ -323,8 +325,9 @@ Both run `npm run start` / `start:ru`, so `prestart` runs `sync-changelog` first
 which a fresh worktree's `docusaurus start` fails. The changelogs reach the site as copies: after editing them run
 `npm --prefix Website run sync-changelog` for a running dev server to see the change.
 
-`onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
-(`onBrokenAnchors` only warns — check the log for `#anchor` typos).
+`onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose.
+`onBrokenAnchors` throws when `CI` is set and only warns on a local build: check the log for `#anchor` typos, or run
+`CI=true npm run build`.
 
 ## Generated content
 
@@ -345,13 +348,26 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   After a change to `FeaturePreview`, the InstallPanel walk-through, the site theme or the install channel (the
   walk-through types its URL), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
   (`docs/media/readme-previews/README.md`), then run `sync-readme`.
-- `npm --prefix Website run check-translations` (CI) checks that every Russian page has the heading levels, code
-  blocks, images and link targets of its English page. Only prose, `//` comments, text blocks and same-page anchors
-  may differ, so make every structural change in both languages.
+- `npm --prefix Website run check-translations` (CI) checks that every English page has a Russian twin and that the twin
+  has the heading levels, code blocks, images and link targets of its source. Only prose, `//` comments, text blocks
+  and same-page anchors may differ, so make every structural change in both languages. The twin is required for
+  `Website/docs/`, `Website/tutorials/` (`.md` and `.mdx`), the sample READMEs and `CHANGELOG.md`; the package README
+  and the root README have none. The two changelogs must also list the same releases (version and date) and the same
+  number of entries in every section.
+- `npm --prefix Website run check-selectors` (CI, after the build) looks in the built stylesheets for a hashed class
+  for every name fragment that the site selects (`[class*='docMainContainer_']`). A Docusaurus update can rename such
+  a class without failing the build. A new fragment in the site CSS or JS needs no list: the script reads the sources.
+  A fragment that a class of the site's own CSS modules also produces (`card_`, `header_`) is listed as not checked,
+  because the build cannot tell the two apart. Public names (`theme-*`, `menu__link`) have no hash and are not checked.
 - `Website/scripts/sync-changelog.mjs` (also run by `prestart`/`prebuild`) builds `Website/changelog/` and
   `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/` from the root `CHANGELOG*.md`. Because the
   copies are untracked, their "Last updated" date is stamped from the **source file's last commit**. Docs and tutorial
   pages are tracked, so Docusaurus reads their dates from git itself; an uncommitted page shows no date.
+- The remark plugins and the pure parts of the site scripts have tests in `Website/scripts/*.test.mjs`.
+  `intro-banner.test.mjs` runs the English and Russian introduction through `remarkIntroBanner` and expects the banner,
+  the status badges, the install panel, a card for each feature, the resource tiles and the support panel: when you
+  change the shape of the introduction, change the plugin in the same PR. Keep the pure transforms of a script in a
+  module of their own (`changelog-page.mjs`, `docfx-markdown.mjs`) so that a test can import them.
 
 ## Versioning
 
@@ -373,9 +389,12 @@ reference still needs regenerating.
 The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as accent (`--venom-*` tokens in
 `Website/src/css/custom.css`). Green is the default; the reader can switch the accent to red, blue, yellow or mono in the
 sidebar footer appearance menu, next to the theme (`NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
-`html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. Colour things with `--venom-accent*`
+`html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. The accent's favicon is set on the plain
+`<link rel="icon">` in `headTags`, not on the `favicon` field: React Helmet owns that field's tag and resets it on every
+navigation. Colour things with `--venom-accent*`
 / `--ifm-color-primary*`, never a literal green, unless it mimics Unity or means success (`--venom-emerald`).
-Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) from Google Fonts; iA Writer Quattro, the
+Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) from Google Fonts, linked by `preconnect` and
+`stylesheet` tags in `headTags` (a CSS `@import` would start them only after the stylesheet); iA Writer Quattro, the
 samples' editor font, is self-hosted in `src/fonts/` (OFL, keep the licence file) for navigation labels only — sidebar
 and TOC, `--venom-font-family-nav`. Prism themes are Ayu-based, in `src/prism/venom.js`, with a transparent background.
 Keep the admonition style (`.theme-admonition` in `custom.css`): a 2px outline in the block colour, 12px radius, no fill,
@@ -391,4 +410,4 @@ The cards on the Introduction page (layout, captures, previews, clip recipes) ha
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package README, `package.json`
 or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md`, `docs/images/readme-previews/` or `CHANGELOG*.md`, and on PRs (build only); it runs
-`check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
+`check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build and `check-selectors` after it. Pages source must be set to "GitHub Actions" once in the repository settings.
