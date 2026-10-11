@@ -16,7 +16,7 @@ and resolved lazily on first access.
 
 ```csharp
 [Serializable]
-public class SerializableType : SerializableTypeBase, ISerializableType, ISerializationCallbackReceiver
+public class SerializableType : SerializableTypeBase, ISerializableType, IEquatable<SerializableTypeBase>, ISerializationCallbackReceiver
 ```
 
 #### Inheritance
@@ -32,6 +32,7 @@ public class SerializableType : SerializableTypeBase, ISerializableType, ISerial
 #### Implements
 
 [ISerializableType](Aspid.FastTools.Types.ISerializableType.md),
+[IEquatable\<SerializableTypeBase\>](https://learn.microsoft.com/dotnet/api/system.iequatable-1),
 ISerializationCallbackReceiver
 
 

@@ -15,7 +15,7 @@ Assembly: Aspid.FastTools.dll
 
 ```csharp
 [Serializable]
-public sealed class SerializableMonoScript<T> : SerializableMonoScript, ISerializableType, ISerializationCallbackReceiver
+public sealed class SerializableMonoScript<T> : SerializableMonoScript, ISerializableType, IEquatable<SerializableTypeBase>, ISerializationCallbackReceiver
 ```
 
 #### Type Parameters
@@ -34,6 +34,7 @@ Base constraint type; the picker offers only types assignable to it.
 #### Implements
 
 [ISerializableType](Aspid.FastTools.Types.ISerializableType.md),
+[IEquatable\<SerializableTypeBase\>](https://learn.microsoft.com/dotnet/api/system.iequatable-1),
 ISerializationCallbackReceiver
 
 

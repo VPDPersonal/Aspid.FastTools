@@ -11,6 +11,8 @@
 1. Импортируйте пример: **Tools → Aspid 🐍 → FastTools → Welcome** → **Samples** → **Import** у **SerializeReferences**.
 2. Откройте `Scenes/SerializeReferences.unity` и войдите в Play Mode: основное и запасное оружие по очереди бьют манекен, а каждый удар виден в Console.
 
+Коллайдеры сцены требуют встроенного модуля Unity **Physics**; скрипты примера компилируются и без него.
+
 ## Попробуйте
 
 Выйдите из Play Mode и выберите **Loadout**.
@@ -37,12 +39,14 @@
 Ассеты в `Presets/` и `Prefabs/` хранят потерянные или устаревшие типы.
 
 1. **Fix на одном ассете.** Выберите `Presets/BrokenWeaponPreset.asset`: **Weapon** хранит несуществующий <code lang="class-name">GhostWeapon</code>, а уведомление **Missing type** под полем предлагает **Fix**. Нажмите его и выберите <code lang="class-name">Pistol</code> — **Damage** `25` и **Magazine Size** `8` сохранятся.
-2. **Fix для группы.** Откройте **Tools → Aspid 🐍 → FastTools → Project References** и нажмите **Scan Project**: три записи <code lang="class-name">GhostWeapon</code> из `BrokenArsenalPreset.asset` собраны в одну группу, и **Fix all** исправляет их разом.
+2. **Fix для группы.** Откройте **Tools → Aspid 🐍 → FastTools → Project References** и нажмите **Scan Project**. После шага 1 в группе <code lang="class-name">GhostWeapon</code> три записи, все из `BrokenArsenalPreset.asset`; **Fix all** исправляет их разом.
 3. **Подсказка класса.** `Presets/MovedWeaponPreset.asset` хранит <code lang="class-name">Pistol</code> под старым пространством имён. Уведомление предлагает **→ Pistol**, а группа в Project References — **Smart Fix → Pistol**; сами они не применяются.
 4. **Миграция.** `Presets/RenamedWeaponPreset.asset` хранит <code lang="class-name">CrossbowLauncher</code>, а класс теперь называется <code lang="class-name">Crossbow</code> и помечен <code lang="csharp">[MovedFrom]</code>: инспектор уже показывает <code lang="class-name">Crossbow</code>, устарел только файл. **Migrate all → Crossbow** в Project References записывает новое имя в файл.
 5. **Префаб.** Выберите `Prefabs/BrokenLoadout.prefab` в окне Project. `Sidearms[2]` — потерянный <code lang="class-name">GhostCrossbow</code> с **Fix**; `Sidearms[0]` и `[1]` указывают на один <code lang="class-name">Pistol</code> и помечены **Shared reference #N**, а **Make unique** даёт элементу собственную копию. Вкладка **Asset References** показывает все ссылки префаба.
 
 Чтобы пройти ремонт заново, импортируйте пример повторно с перезаписью файлов.
+
+Проверка сборки читает и эти ассеты: при **Build / CI gate** = `Warn` она печатает их сводку перед сборкой, а при `Fail` останавливает сборку. Чтобы этого избежать, почините ассеты, удалите пример или добавьте его папку в **Excluded scan folders** ([область проверки](../../../docusaurus-plugin-content-docs/current/07-serialize-reference-validation.md#область-проверки)).
 
 ## IMGUI-инспектор
 

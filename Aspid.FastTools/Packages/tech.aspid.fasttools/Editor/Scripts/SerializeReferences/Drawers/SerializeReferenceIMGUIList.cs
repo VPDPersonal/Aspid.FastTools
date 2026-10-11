@@ -22,9 +22,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Stacked, so a list nested in another list's element restores the outer box's edge when it finishes.
         private static readonly Stack<float> _elementRightLimits = new();
 
-        // Matches TypeSelectorWindow.Show's own floor, so the right-aligned anchor reflects the picker's true width.
-        private const float PickerWidth = 350f;
-
         // Unity's default array UI insets element rects by this much past the drag handle through the internal
         // m_HasPropertyDrawer flag. That flag is unreachable from package code, so the inset is applied by hand.
         private const float PropertyDrawerPadding = 8f;
@@ -138,8 +135,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 // Anchoring the picker's right edge to the button grows it leftward, so a "+" near the inspector's
                 // right edge does not spill off screen.
-                var topLeft = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.xMax - PickerWidth, buttonRect.yMin));
-                var screenRect = new Rect(topLeft.x, topLeft.y, PickerWidth, buttonRect.height);
+                var topLeft = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.xMax - TypeSelectorWindow.MinWidth, buttonRect.yMin));
+                var screenRect = new Rect(topLeft.x, topLeft.y, TypeSelectorWindow.MinWidth, buttonRect.height);
                 SerializeReferenceListAddBehavior.ShowAppendPicker(targets, arrayPath, elementType, list.BaseTypes, screenRect);
             };
 
