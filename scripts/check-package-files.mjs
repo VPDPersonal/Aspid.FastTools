@@ -3,8 +3,9 @@
 //     (the install folder under Assets/) without the .meta files.
 //  2. Every .cs.meta of the package and the dev tests has a MonoImporter block, so all of them stay in the format Unity
 //     writes for a new file. Samples~ is skipped: it is not imported in the dev project.
-//  3. A .uss.meta importer (samples included) is the StyleSheetImporter (12385), not the ThemeStyleSheetImporter (12388);
-//     Unity rewrites 12388 in the working tree when it imports the sample.
+//  3. A .uss.meta (samples included) has a ScriptedImporter block, and its importer is the StyleSheetImporter (12385), not
+//     the ThemeStyleSheetImporter (12388). Unity 6000.6 warns on every .uss.meta without the block (an IDE writes only the
+//     guid), and it rewrites 12388 in the working tree when it imports the sample.
 //  4. Every file and folder of the package and the dev tests has a .meta, and every .meta has its asset. Unity cannot
 //     write a .meta into an installed package: it ignores the file there and warns about a .meta without an asset.
 //     Samples~ is copied into the project on import, and its .meta files keep the GUIDs that its scenes refer to.
@@ -70,8 +71,13 @@ for (const file of [...files(PACKAGE), ...files(DEV_TESTS)]) {
   if (file.endsWith('.cs.meta') && !file.startsWith(samples) && !readFileSync(file, 'utf8').includes('\nMonoImporter:')) {
     fail(file, 'no MonoImporter block; open the project in Unity once and commit the .meta it writes');
   }
-  if (file.endsWith('.uss.meta') && /^\s+script: \{fileID: 12388,/m.test(readFileSync(file, 'utf8'))) {
-    fail(file, 'importer fileID 12388 (ThemeStyleSheetImporter) on a .uss; use 12385 (StyleSheetImporter)');
+  if (file.endsWith('.uss.meta')) {
+    const text = readFileSync(file, 'utf8');
+    if (!text.includes('\nScriptedImporter:')) {
+      fail(file, 'no ScriptedImporter block; open the project in Unity once and commit the .meta it writes');
+    } else if (/^\s+script: \{fileID: 12388,/m.test(text)) {
+      fail(file, 'importer fileID 12388 (ThemeStyleSheetImporter) on a .uss; use 12385 (StyleSheetImporter)');
+    }
   }
 }
 
