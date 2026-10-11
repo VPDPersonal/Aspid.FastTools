@@ -6,8 +6,10 @@ using NUnit.Framework;
 using System.Threading;
 using Aspid.FastTools.Types;
 using UnityEngine.TestTools;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
+using Unity.Profiling.LowLevel.Unsafe;
 using UnityEngine.TestTools.Constraints;
 using Is = UnityEngine.TestTools.Constraints.Is;
 
@@ -753,5 +755,37 @@ namespace Aspid.FastTools.Enums.Tests
             Assert.AreEqual(5, _host.Untyped.GetValue(UnsignedValues.Top));
             Assert.AreEqual(-1, _host.Untyped.GetValue(UnsignedValues.Zero));
         }
+
+#if ENABLE_PROFILER && !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
+        [Test]
+        public void Lookups_OpenNoProfilerMarker()
+        {
+            // A call per entity per frame would fill the Profiler with samples, so only the first access,
+            // which builds the entries, keeps its marker.
+            AddEntry("_seasons", nameof(Season.Summer), 1);
+            AddEntry("_untyped", nameof(Season.Summer), 1, typeof(Season).AssemblyQualifiedName);
+
+            _host.Seasons.GetValue(Season.Summer);
+            _host.Seasons.TryGetValue(Season.Summer, out _);
+            _host.Untyped.GetValue(Season.Summer);
+            _host.Untyped.GetValue<Season>(Season.Summer);
+            _host.Untyped.TryGetValue(Season.Summer, out _);
+            _host.Untyped.TryGetValue<Season>(Season.Summer, out _);
+            _host.Untyped.Equals(Season.Summer, Season.Summer);
+
+            var handles = new List<ProfilerRecorderHandle>();
+            ProfilerRecorderHandle.GetAvailable(handles);
+
+            var markers = handles
+                .Select(handle => ProfilerRecorderHandle.GetDescription(handle).Name)
+                .Where(name => name.StartsWith("EnumValues<", StringComparison.Ordinal))
+                .ToArray();
+
+            Assert.That(markers.Any(name => name.Contains(".Initialize")), "The marker of the first access is missing.");
+            Assert.IsFalse(
+                markers.Any(name => name.Contains(".GetValue") || name.Contains(".TryGetValue") || name.Contains(".Equals")),
+                $"A lookup opens a Profiler marker: {string.Join(", ", markers)}");
+        }
+#endif
     }
 }

@@ -46,8 +46,9 @@ namespace Aspid.FastTools.Enums
     /// entries, as long as Unity is not deserializing the table at the same time.
     /// </para>
     /// <para>
-    /// Internal hot paths are wrapped in profiler markers; define the
-    /// <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
+    /// The first access, which builds the entries, is wrapped in a profiler marker; lookups are not, so a call per
+    /// entity per frame adds no Profiler samples. Define the <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting
+    /// symbol to compile the marker out.
     /// </para>
     /// </remarks>
     /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
@@ -172,19 +173,14 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public TValue? GetValue(Enum enumValue)
         {
-#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
-            using (this.Marker())
-#endif
-            {
-                Initialize();
+            Initialize();
 
-                // Another enum type could collide numerically.
-                if (enumValue is null || _type is null || enumValue.GetType() != _type)
-                    return _defaultValue;
+            // Another enum type could collide numerically.
+            if (enumValue is null || _type is null || enumValue.GetType() != _type)
+                return _defaultValue;
 
-                var lookup = EnumInfo.ToInt64(enumValue);
-                return EnumValueLookup.Find(_values, lookup, _isFlags, _defaultValue);
-            }
+            var lookup = EnumInfo.ToInt64(enumValue);
+            return EnumValueLookup.Find(_values, lookup, _isFlags, _defaultValue);
         }
 
         /// <summary>
@@ -200,19 +196,14 @@ namespace Aspid.FastTools.Enums
         public TValue? GetValue<TEnum>(TEnum enumValue)
             where TEnum : struct, Enum
         {
-#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
-            using (this.Marker())
-#endif
-            {
-                Initialize();
+            Initialize();
 
-                // Another enum type could collide numerically.
-                if (_type != typeof(TEnum))
-                    return _defaultValue;
+            // Another enum type could collide numerically.
+            if (_type != typeof(TEnum))
+                return _defaultValue;
 
-                var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
-                return EnumValueLookup.Find(_values, lookup, _isFlags, _defaultValue);
-            }
+            var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
+            return EnumValueLookup.Find(_values, lookup, _isFlags, _defaultValue);
         }
 
         /// <summary>
@@ -228,20 +219,15 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public bool TryGetValue(Enum enumValue, out TValue? value)
         {
-#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
-            using (this.Marker())
-#endif
-            {
-                Initialize();
+            Initialize();
 
-                // Another enum type could collide numerically.
-                if (enumValue is not null && _type is not null && enumValue.GetType() == _type &&
-                    EnumValueLookup.TryFind(_values, EnumInfo.ToInt64(enumValue), _isFlags, out value))
-                    return true;
+            // Another enum type could collide numerically.
+            if (enumValue is not null && _type is not null && enumValue.GetType() == _type &&
+                EnumValueLookup.TryFind(_values, EnumInfo.ToInt64(enumValue), _isFlags, out value))
+                return true;
 
-                value = _defaultValue;
-                return false;
-            }
+            value = _defaultValue;
+            return false;
         }
 
         /// <summary>
@@ -260,20 +246,15 @@ namespace Aspid.FastTools.Enums
         public bool TryGetValue<TEnum>(TEnum enumValue, out TValue? value)
             where TEnum : struct, Enum
         {
-#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
-            using (this.Marker())
-#endif
-            {
-                Initialize();
+            Initialize();
 
-                // Another enum type could collide numerically.
-                if (_type == typeof(TEnum) &&
-                    EnumValueLookup.TryFind(_values, EnumInfo<TEnum>.ToInt64(enumValue), _isFlags, out value))
-                    return true;
+            // Another enum type could collide numerically.
+            if (_type == typeof(TEnum) &&
+                EnumValueLookup.TryFind(_values, EnumInfo<TEnum>.ToInt64(enumValue), _isFlags, out value))
+                return true;
 
-                value = _defaultValue;
-                return false;
-            }
+            value = _defaultValue;
+            return false;
         }
 
         /// <summary>
@@ -292,23 +273,18 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public bool Equals(Enum enumValue1, Enum enumValue2)
         {
-#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
-            using (this.Marker())
-#endif
-            {
-                Initialize();
+            Initialize();
 
-                if (enumValue1 is null || enumValue2 is null || _type is null)
-                    return false;
+            if (enumValue1 is null || enumValue2 is null || _type is null)
+                return false;
 
-                if (enumValue1.GetType() != _type || enumValue2.GetType() != _type)
-                    return false;
+            if (enumValue1.GetType() != _type || enumValue2.GetType() != _type)
+                return false;
 
-                var value1 = EnumInfo.ToInt64(enumValue1);
-                var value2 = EnumInfo.ToInt64(enumValue2);
+            var value1 = EnumInfo.ToInt64(enumValue1);
+            var value2 = EnumInfo.ToInt64(enumValue2);
 
-                return _isFlags ? EnumValueLookup.FlagsEquals(value1, value2) : value1 == value2;
-            }
+            return _isFlags ? EnumValueLookup.FlagsEquals(value1, value2) : value1 == value2;
         }
 
         /// <summary>
@@ -357,8 +333,9 @@ namespace Aspid.FastTools.Enums
     /// the enum type comes from the generic argument alone.
     /// </para>
     /// <para>
-    /// Internal hot paths are wrapped in profiler markers; define the
-    /// <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
+    /// The first access, which builds the entries, is wrapped in a profiler marker; lookups are not, so a call per
+    /// entity per frame adds no Profiler samples. Define the <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting
+    /// symbol to compile the marker out.
     /// </para>
     /// </remarks>
     /// <typeparam name="TEnum">The enum type the entries are keyed by.</typeparam>
@@ -444,15 +421,10 @@ namespace Aspid.FastTools.Enums
         /// </returns>
         public TValue? GetValue(TEnum enumValue)
         {
-#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
-            using (this.Marker())
-#endif
-            {
-                Initialize();
+            Initialize();
 
-                var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
-                return EnumValueLookup.Find(_values, lookup, EnumInfo<TEnum>.IsFlags, _defaultValue);
-            }
+            var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
+            return EnumValueLookup.Find(_values, lookup, EnumInfo<TEnum>.IsFlags, _defaultValue);
         }
 
         /// <summary>
@@ -465,19 +437,14 @@ namespace Aspid.FastTools.Enums
         /// <returns><see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.</returns>
         public bool TryGetValue(TEnum enumValue, out TValue? value)
         {
-#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
-            using (this.Marker())
-#endif
-            {
-                Initialize();
+            Initialize();
 
-                var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
-                if (EnumValueLookup.TryFind(_values, lookup, EnumInfo<TEnum>.IsFlags, out value))
-                    return true;
+            var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
+            if (EnumValueLookup.TryFind(_values, lookup, EnumInfo<TEnum>.IsFlags, out value))
+                return true;
 
-                value = _defaultValue;
-                return false;
-            }
+            value = _defaultValue;
+            return false;
         }
 
         /// <summary>
