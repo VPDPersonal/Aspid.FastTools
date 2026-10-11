@@ -78,9 +78,10 @@ namespace Aspid.FastTools.Editors.Tests
                 Assert.IsNotNull(palettes, "CreateGUI must build the palette list.");
                 Assert.IsNotNull(root.Q<HelpBox>(), "CreateGUI must explain what the preview applies to.");
 
-                // A bound field builds children of the same type, so only the direct ones count.
+                // A bound field builds children of the same type, so only the direct ones count. VisualElement.parent
+                // is the logical parent (the ScrollView); hierarchy.parent is the content container.
                 var content = palettes.contentContainer;
-                var fields = content.Query<PropertyField>().Where(field => field.parent == content).ToList();
+                var fields = content.Query<PropertyField>().Where(field => field.hierarchy.parent == content).ToList();
                 Assert.AreEqual(3, fields.Count, "The window must show the light, the dark and the EnumValues light palette.");
             }
             finally
