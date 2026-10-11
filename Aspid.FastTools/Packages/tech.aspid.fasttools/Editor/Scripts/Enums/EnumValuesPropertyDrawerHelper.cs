@@ -84,7 +84,7 @@ namespace Aspid.FastTools.Enums.Editors
             if (!EnumInfo.IsFlags(enumType)) return GetMemberName(enumType, value);
 
             var bits = EnumInfo.ToInt64(value) & GetDefinedBits(enumType);
-            return Enum.ToObject(enumType, bits).ToString();
+            return GetMemberName(enumType, (Enum)Enum.ToObject(enumType, bits));
         }
 
         // Every key write goes through here, so no Inspector can store a key with undefined bits.
@@ -124,7 +124,7 @@ namespace Aspid.FastTools.Enums.Editors
                 foreach (var member in GetDistinctMembers(enumType))
                 {
                     var isChecked = current is not null && EnumInfo.ToInt64(current) == EnumInfo.ToInt64(member);
-                    AddKeyItem(member.ToString(), isChecked, member);
+                    AddKeyItem(GetMemberName(enumType, member), isChecked, member);
                 }
             }
             else
@@ -141,7 +141,7 @@ namespace Aspid.FastTools.Enums.Editors
                     var bits = EnumInfo.ToInt64(member);
                     if (bits is 0L) continue;
 
-                    AddKeyItem(member.ToString(), (mask & bits) == bits, ToggleFlag(current, member));
+                    AddKeyItem(GetMemberName(enumType, member), (mask & bits) == bits, ToggleFlag(current, member));
                 }
             }
 
