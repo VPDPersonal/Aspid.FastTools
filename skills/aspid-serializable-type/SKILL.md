@@ -57,6 +57,8 @@ public sealed class Armory : MonoBehaviour
 - Both have a picker without any attribute; `[TypeSelector]` only adds constraints or `Required`.
 - Read: `.Type` (lazy; the result, `null` included, is cached until the stored name changes), implicit `Type?`,
   `AssemblyQualifiedName` (stored name, kept when it no longer resolves), `BaseType` (`typeof(T)`).
+- Wrappers compare by stored name: `a.Equals(b)` is `true` for the same type name whatever the wrapper class or `T`, so
+  they work as `Dictionary` and `HashSet` keys (do not serialize or deserialize a wrapper while it is a key: in the Editor, saving a `SerializableMonoScript` rewrites the name of a renamed class). `==` compares references.
 - `T` limits the picker and the constructor only: a name stored before `T` or the class's base changed still resolves,
   so check `BaseType.IsAssignableFrom(type)` before casting when that matters.
 - A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Low or
