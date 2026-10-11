@@ -3,7 +3,7 @@
  * light mode is neutral paper (cool grey canvas, white surfaces) with the same green, deepened for contrast.
  * Green is the default accent; the red, blue and yellow variants are in accents.css.
  */
-/* IBM Plex is linked from the page head (`headTags` in docusaurus.config.js), so it loads beside this file, not after it. */
+/* IBM Plex is self-hosted too: its @font-face rules are in fonts.css, which the theme loads before this file. */
 
 /* iA Writer Quattro S (OFL, see src/fonts/LICENSE-iA-Writer-Quattro.md). */
 @font-face {
