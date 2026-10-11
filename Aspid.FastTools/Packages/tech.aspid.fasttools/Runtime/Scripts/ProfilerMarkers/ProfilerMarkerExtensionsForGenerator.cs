@@ -29,8 +29,9 @@ public static class ProfilerMarkerExtensionsForGenerator
     /// </summary>
     /// <param name="marker">The scope returned by <see cref="Marker{T}(T, int)"/>.</param>
     /// <param name="name">
-    /// The text replacing the member part of the marker name. Read from the source at compile time,
-    /// so it must be a string literal or an interpolated string without holes; anything else leaves the name untouched.
+    /// The text replacing the member part of the marker name. Read from the source at compile time, so it must be
+    /// a constant: a string literal, a <see langword="const"/> string, <c>nameof(...)</c>, or a concatenation or
+    /// interpolation of them. Anything else leaves the name untouched, and analyzer <c>AFT0014</c> reports it.
     /// </param>
     /// <returns><paramref name="marker"/> unchanged — at runtime the call is a pass-through.</returns>
     public static ProfilerMarker.AutoScope WithName(this in ProfilerMarker.AutoScope marker, string name) => marker;
