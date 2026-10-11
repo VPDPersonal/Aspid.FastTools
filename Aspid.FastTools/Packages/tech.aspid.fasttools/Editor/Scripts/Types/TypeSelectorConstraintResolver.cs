@@ -22,8 +22,8 @@ namespace Aspid.FastTools.Types.Editors
         // so no copy of the object is opened.
         internal static Result Resolve(DetachedProperty attributedProperty, IReadOnlyList<string> assemblyQualifiedNames) =>
             Resolve(
-                attributedProperty.GetDeclaringInstance() ?? attributedProperty.Targets[0],
-                assemblyQualifiedNames);
+                targetObject: attributedProperty.GetDeclaringInstance() ?? attributedProperty.Targets[0],
+                assemblyQualifiedNames: assemblyQualifiedNames);
 
         // CreateField, CreateList and DrawFieldLayout bypass TypeSelectorPropertyDrawer, so the [TypeSelector] on the
         // field is resolved here. On a collection it applies to the collection, not to its elements.

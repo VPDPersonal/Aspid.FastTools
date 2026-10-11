@@ -36,7 +36,7 @@ namespace Aspid.FastTools.Types.Editors
                 Allow = allow,
                 Types = types,
                 Predicate = SerializableMonoScriptUtility.HasScript,
-                ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(wrapperProperty),
+                ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(property: wrapperProperty),
             };
 
             field = typeField;
@@ -52,7 +52,7 @@ namespace Aspid.FastTools.Types.Editors
             TypeUIToolkitPropertyDrawer.IsolateNameChanges(root: container);
             RefreshFromObject();
 
-            typeField.TrackPropertyValue(wrapperProperty, _ => RefreshFromObject());
+            typeField.TrackPropertyValue(property: wrapperProperty, callback: _ => RefreshFromObject());
             container.TrackSerializedObjectValue(wrapperProperty.serializedObject,
                 _ => container.schedule.Execute(RefreshFromObject));
             typeField.RegisterValueChangedCallback(evt => Assign(type: evt.newValue));

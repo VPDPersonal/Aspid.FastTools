@@ -169,8 +169,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             using var serializedObject = new SerializedObject(component);
             var scheduled = ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
-                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(),
-                typeof(ComponentSwapNeedsSpriteRenderer), onRejected: () => rejected = true);
+                detached: new DetachedProperty(property: serializedObject.FindProperty("m_Script")), oldType: component.GetType(),
+                newType: typeof(ComponentSwapNeedsSpriteRenderer), onRejected: () => rejected = true);
 
             Assert.IsTrue(scheduled, "The pre-checks do not rule this swap out; it fails only when the component is added.");
             Assert.IsFalse(rejected, "The swap runs on the next editor tick, not inside the call.");
@@ -189,8 +189,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             using var serializedObject = new SerializedObject(component);
             Assert.IsTrue(ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
-                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(), typeof(ComponentSwapSingle),
-                onRejected: () => rejected = true));
+                detached: new DetachedProperty(property: serializedObject.FindProperty("m_Script")), oldType: component.GetType(),
+                newType: typeof(ComponentSwapSingle), onRejected: () => rejected = true));
 
             yield return WaitUntil(() => _gameObject.GetComponent<ComponentSwapSingle>());
 
@@ -208,8 +208,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             using var serializedObject = new SerializedObject(component);
             Assert.IsTrue(ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
-                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(), typeof(ComponentSwapSingle),
-                onRejected: () => rejected = true));
+                detached: new DetachedProperty(property: serializedObject.FindProperty("m_Script")), oldType: component.GetType(),
+                newType: typeof(ComponentSwapSingle), onRejected: () => rejected = true));
 
             Object.DestroyImmediate(component);
 
@@ -367,7 +367,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             using var serializedObject = new SerializedObject(component);
             return ComponentTypeSelectorPropertyDrawer.ReplaceComponentScript(
-                new DetachedProperty(serializedObject.FindProperty("m_Script")), component.GetType(), newType);
+                detached: new DetachedProperty(property: serializedObject.FindProperty("m_Script")), oldType: component.GetType(),
+                newType: newType);
         }
     }
 }

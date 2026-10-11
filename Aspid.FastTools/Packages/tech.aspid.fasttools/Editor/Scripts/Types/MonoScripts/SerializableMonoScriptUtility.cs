@@ -71,7 +71,7 @@ namespace Aspid.FastTools.Types.Editors
         // For a caller whose property may be gone when it runs, as a picker or a menu answers: the write goes through a
         // copy opened now and disposed on return. A destroyed target or a vanished path skips it.
         internal static void Assign(DetachedProperty detached, Type? type) =>
-            detached.Use(persistent => Assign(persistent, type));
+            detached.Use(persistent => Assign(wrapperProperty: persistent, type: type));
 
         internal static void SyncScriptFromName(SerializedProperty nameProperty)
         {

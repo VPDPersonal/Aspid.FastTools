@@ -240,7 +240,7 @@ namespace Aspid.FastTools.Types.Editors
                         baseTypes: GetTypesFromAttribute(property),
                         field: out var referenceField);
 
-                    applyResolvedTypes = () => referenceField.SetBaseTypes(GetTypesFromAttribute(detached));
+                    applyResolvedTypes = () => referenceField.SetBaseTypes(baseTypes: GetTypesFromAttribute(detached: detached));
                     return element;
                 }
 
@@ -252,7 +252,7 @@ namespace Aspid.FastTools.Types.Editors
                         elementType: SerializeReferenceHelpers.GetArrayElementType(property),
                         baseTypes: GetTypesFromAttribute(property));
 
-                    applyResolvedTypes = () => list.SetBaseTypes(GetTypesFromAttribute(detached));
+                    applyResolvedTypes = () => list.SetBaseTypes(baseTypes: GetTypesFromAttribute(detached: detached));
                     return list;
                 }
 
@@ -264,7 +264,7 @@ namespace Aspid.FastTools.Types.Editors
 
                     applyResolvedTypes = () =>
                     {
-                        types = GetWrapperBaseTypes(detached, wrapperBaseType);
+                        types = GetWrapperBaseTypes(detached: detached, wrapperBaseType: wrapperBaseType);
                         list.Query<InspectorTypeField>().ForEach(field => field.Types = types);
                     };
                     return list;
@@ -285,7 +285,8 @@ namespace Aspid.FastTools.Types.Editors
                         types: GetWrapperBaseTypes(property, wrapperBaseType),
                         field: out var typeField);
 
-                    applyResolvedTypes = () => typeField.Types = GetWrapperBaseTypes(detached, wrapperBaseType);
+                    applyResolvedTypes = () =>
+                        typeField.Types = GetWrapperBaseTypes(detached: detached, wrapperBaseType: wrapperBaseType);
                     return element;
                 }
             }
@@ -395,10 +396,10 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         private Type[] GetWrapperBaseTypes(SerializedProperty property, Type wrapperBaseType) =>
-            AddWrapperBaseType(GetTypesFromAttribute(property), wrapperBaseType);
+            AddWrapperBaseType(attributeTypes: GetTypesFromAttribute(property: property), wrapperBaseType: wrapperBaseType);
 
         private Type[] GetWrapperBaseTypes(DetachedProperty detached, Type wrapperBaseType) =>
-            AddWrapperBaseType(GetTypesFromAttribute(detached), wrapperBaseType);
+            AddWrapperBaseType(attributeTypes: GetTypesFromAttribute(detached: detached), wrapperBaseType: wrapperBaseType);
 
         private static Type[] AddWrapperBaseType(Type[] attributeTypes, Type wrapperBaseType)
         {
@@ -412,12 +413,14 @@ namespace Aspid.FastTools.Types.Editors
         private Type[] GetTypesFromAttribute(SerializedProperty property) =>
             TypeSelector.AssemblyQualifiedNames.Length is 0
                 ? GetNoTypesFromAttribute()
-                : TakeResolution(TypeSelectorConstraintResolver.Resolve(property, TypeSelector.AssemblyQualifiedNames));
+                : TakeResolution(resolution: TypeSelectorConstraintResolver.Resolve(
+                    attributedProperty: property, assemblyQualifiedNames: TypeSelector.AssemblyQualifiedNames));
 
         private Type[] GetTypesFromAttribute(DetachedProperty detached) =>
             TypeSelector.AssemblyQualifiedNames.Length is 0
                 ? GetNoTypesFromAttribute()
-                : TakeResolution(TypeSelectorConstraintResolver.Resolve(detached, TypeSelector.AssemblyQualifiedNames));
+                : TakeResolution(resolution: TypeSelectorConstraintResolver.Resolve(
+                    attributedProperty: detached, assemblyQualifiedNames: TypeSelector.AssemblyQualifiedNames));
 
         private Type[] GetNoTypesFromAttribute()
         {

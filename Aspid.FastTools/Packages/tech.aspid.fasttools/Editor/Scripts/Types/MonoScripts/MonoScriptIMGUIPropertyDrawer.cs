@@ -112,9 +112,10 @@ namespace Aspid.FastTools.Types.Editors
             TypeSelectorWindow.Show(
                 screenRect: GUIUtility.GUIToScreenRect(rect),
                 filter: CreateFilter(allow: allow, types: types,
-                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(wrapperProperty), hideNoneOption: repair),
+                    excludeEditorOnly: TypeSelectorHelpers.IsStoredInRuntimeObject(property: wrapperProperty), hideNoneOption: repair),
                 assemblyQualifiedName: repair ? null : currentAqn,
-                onSelected: picked => SerializableMonoScriptUtility.Assign(detached: detached, type: TypeUtility.GetTypeOrNull(picked)));
+                onSelected: picked => SerializableMonoScriptUtility.Assign(
+                    detached: detached, type: TypeUtility.GetTypeOrNull(assemblyQualifiedName: picked)));
         }
 
         internal static TypeSelectorFilter CreateFilter(

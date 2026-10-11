@@ -31,7 +31,8 @@ namespace Aspid.FastTools.Types.Editors
                     GUIUtility.GUIToScreenRect(dropdownRect),
                     CreateFilter(declaringType: fieldInfo.DeclaringType, property: property),
                     currentType.AssemblyQualifiedName,
-                    onSelected: aqn => ReplaceComponentScript(detached, currentType, TypeUtility.GetTypeOrNull(aqn)));
+                    onSelected: aqn => ReplaceComponentScript(detached: detached, oldType: currentType,
+                        newType: TypeUtility.GetTypeOrNull(assemblyQualifiedName: aqn)));
             }
 
             TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openButtonRect, currentType);
@@ -58,7 +59,7 @@ namespace Aspid.FastTools.Types.Editors
             // next editor tick, the caption must go back to the type the object actually is.
             field.RegisterValueChangedCallback(evt =>
             {
-                if (!ReplaceComponentScript(detached, currentType, evt.newValue, onRejected: RestoreCaption))
+                if (!ReplaceComponentScript(detached: detached, oldType: currentType, newType: evt.newValue, onRejected: RestoreCaption))
                     RestoreCaption();
             });
 
@@ -126,7 +127,8 @@ namespace Aspid.FastTools.Types.Editors
             EditorApplication.delayCall += () =>
             {
                 var swapped = false;
-                detached.Use(property => swapped = SwapScript(property.serializedObject, script, newType));
+                detached.Use(property =>
+                    swapped = SwapScript(serializedObject: property.serializedObject, script: script, newType: newType));
 
                 if (!swapped) onRejected?.Invoke();
             };

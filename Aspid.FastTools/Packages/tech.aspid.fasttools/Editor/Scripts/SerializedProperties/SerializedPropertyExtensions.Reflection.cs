@@ -40,14 +40,14 @@ namespace Aspid.FastTools.Editors
         /// <param name="property">The property whose declaring instance to resolve.</param>
         /// <returns>The declaring instance; otherwise, <see langword="null"/> if the path cannot be resolved.</returns>
         public static object GetDeclaringInstance(this SerializedProperty property) =>
-            GetDeclaringInstance(property.serializedObject.targetObject, property.propertyPath);
+            GetDeclaringInstance(target: property.serializedObject.targetObject, propertyPath: property.propertyPath);
 
         // For a caller that keeps a target and a path instead of a property, as DetachedProperty does.
         internal static object GetDeclaringInstance(UnityEngine.Object target, string propertyPath)
         {
             object current = target;
 
-            var path = SimplifyPropertyPath(propertyPath);
+            var path = SimplifyPropertyPath(propertyPath: propertyPath);
             var lastDotIndex = path.LastIndexOf('.');
             if (lastDotIndex < 0) return current;
 

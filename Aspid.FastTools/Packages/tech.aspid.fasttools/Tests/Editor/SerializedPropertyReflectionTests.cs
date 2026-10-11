@@ -128,11 +128,11 @@ namespace Aspid.FastTools.Editors.Tests
 
             using (var source = new SerializedObject(_book))
             {
-                abilities = new DetachedProperty(source.FindProperty(nameof(ReflectionBook.Abilities)));
-                ability = new DetachedProperty(source.FindProperty(nameof(ReflectionBook.Abilities)).GetArrayElementAtIndex(1));
-                abilityName = new DetachedProperty(source.FindProperty(nameof(ReflectionBook.Abilities)).GetArrayElementAtIndex(1)
+                abilities = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Abilities)));
+                ability = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Abilities)).GetArrayElementAtIndex(1));
+                abilityName = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Abilities)).GetArrayElementAtIndex(1)
                     .FindPropertyRelative(nameof(ReflectionAbility.Name)));
-                effectDamage = new DetachedProperty(source.FindProperty(nameof(ReflectionBook.Effect))
+                effectDamage = new DetachedProperty(property: source.FindProperty(nameof(ReflectionBook.Effect))
                     .FindPropertyRelative(nameof(ReflectionBurnEffect.Damage)));
             }
 
@@ -145,7 +145,7 @@ namespace Aspid.FastTools.Editors.Tests
         [Test]
         public void DetachedProperty_GetDeclaringInstance_ReturnsNullForIndexOutsideTheList()
         {
-            var name = new DetachedProperty(Abilities.GetArrayElementAtIndex(1).FindPropertyRelative(nameof(ReflectionAbility.Name)));
+            var name = new DetachedProperty(property: Abilities.GetArrayElementAtIndex(1).FindPropertyRelative(nameof(ReflectionAbility.Name)));
             _book.Abilities.RemoveAt(1);
 
             Assert.IsNull(name.GetDeclaringInstance());
