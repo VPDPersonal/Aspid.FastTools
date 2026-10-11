@@ -130,7 +130,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : Find(assetPath, lines);
         }
 
-        // Every scanned file under Assets/, apart from Excluded scan folders. `unscanned` is filled as in FindInFile.
+        // Every scanned file under Assets/, apart from Excluded scan folders. Null when the progress bar is cancelled,
+        // since a partial list would pass for a complete one. `unscanned` is filled as in FindInFile.
         public static List<MissingTypeNameLocation> ScanProject(
             ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
@@ -143,10 +144,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 for (var i = 0; i < paths.Length; i++)
                 {
-                    EditorUtility.DisplayProgressBar(
-                        "Scanning Type Names",
-                        $"{paths[i]}  ({i + 1}/{paths.Length})",
-                        (float)i / Math.Max(1, paths.Length));
+                    if (EditorUtility.DisplayCancelableProgressBar(
+                            "Scanning Type Names",
+                            $"{paths[i]}  ({i + 1}/{paths.Length})",
+                            (float)i / Math.Max(1, paths.Length)))
+                    {
+                        return null;
+                    }
 
                     result.AddRange(FindInFile(paths[i], unscanned: unscanned));
                 }
