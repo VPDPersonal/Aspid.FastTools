@@ -138,7 +138,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var item = itemPattern.Match(lines[i]);
                     if (item.Success && currentField != null && item.Groups["lead"].Length == fieldIndent)
                     {
-                        if (long.TryParse(item.Groups["rid"].Value, out var elementRid) && elementRid == rid)
+                        if (TryParseId(item.Groups["rid"].Value, out var elementRid) && elementRid == rid)
                         {
                             field = currentField;
                             index = count;
@@ -221,7 +221,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         continue;
                     }
 
-                    if (!long.TryParse(item.Groups["rid"].Value, out var rid)) return false;
+                    if (!TryParseId(item.Groups["rid"].Value, out var rid)) return false;
 
                     pointerLines?.Add(j);
                     rids.Add(rid);
@@ -261,7 +261,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             for (var i = start; i < end; i++)
             {
                 foreach (Match match in _anyRid.Matches(lines[i]))
-                    if (long.TryParse(match.Groups["rid"].Value, out var value))
+                    if (TryParseId(match.Groups["rid"].Value, out var value))
                         result.Add(value);
             }
 
@@ -281,7 +281,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     var match = headerPattern.Match(entryLines[0]);
                     result.Add(match.Success
-                        ? match.Groups["indent"].Value + freshRid + match.Groups["trailer"].Value
+                        ? match.Groups["indent"].Value + FormatId(freshRid) + match.Groups["trailer"].Value
                         : entryLines[0]);
                 }
                 else

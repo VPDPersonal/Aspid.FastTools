@@ -16,7 +16,7 @@ A table of values per enum member, filled in the Inspector instead of code.
 
 For an enum without <code lang="csharp">[Flags]</code>, set the shared value in **Default Value** and add rows for members that need a different value.
 
-**Populate Missing Enum Members** in the table header's context menu appends rows for missing enum members and copies **Default Value** into them.
+**Populate Missing Enum Members** in the table header's context menu appends rows for missing enum members and copies **Default Value** into them. Members with the same numeric value (aliases) share one row. The menu item is greyed out when every member already has a row.
 
 For <code lang="csharp">[Flags]</code>, only declared enum members are added automatically. For example, if the enum declares <code lang="csharp">FireAndIce = Fire | Ice</code>, the command adds a separate row with the key <code lang="csharp">FireAndIce</code>. Combinations without a name can be added manually.
 
@@ -30,11 +30,13 @@ For <code lang="csharp">[Flags]</code>, only declared enum members are added aut
 | Difference | <code lang="class-name">EnumValues&lt;TEnum, TValue&gt;</code> | <code lang="class-name">EnumValues&lt;TValue&gt;</code> |
 |---|---|---|
 | Where the enum is picked | The <code lang="class-name">TEnum</code> argument | The table header in the Inspector |
-| Key in <code lang="function">GetValue</code> and <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
-| Boxing in <code lang="function">GetValue</code> | None | The key is boxed |
+| Key in <code lang="function">GetValue</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> or any enum type |
+| Key in <code lang="csharp">foreach</code> | <code lang="class-name">TEnum</code> | <code lang="class-name">System.Enum</code> |
 | A key of another enum | Does not compile | Returns **Default Value** |
 
 Table values are configured in the Inspector and are read-only from code.
+
+A field can switch between the variants without losing rows if the enum selected in <code lang="class-name">EnumValues&lt;TValue&gt;</code> is the same as <code lang="class-name">TEnum</code>.
 
 With <code lang="class-name">EnumValues&lt;TValue&gt;</code>, the multiplier field is declared as <code lang="class-name">EnumValues&lt;float&gt;</code>, and <code lang="class-name">DamageType</code> is selected in the table header:
 
@@ -48,6 +50,9 @@ private EnumValues<float>
 
 - Selecting an enum is required: if the field is empty, the Inspector shows **Required type is not set**. The [required field check](07-serialize-reference-validation.md#what-each-run-checks) also checks this field.
 - The first access to a table with an empty enum field logs a warning to the Console, and <code lang="function">GetValue</code> returns **Default Value**.
+
+> [!WARNING]
+> In a player, <code lang="class-name">EnumValues&lt;TValue&gt;</code> finds the enum by its stored name, like [Serializable Types](02-serializable-types.md#types-in-a-player-build): an enum used only through this selection may be stripped at **Managed Stripping Level** Low or higher. The table then logs an error, and <code lang="function">GetValue</code> returns **Default Value**.
 
 ## Lookup rules
 
@@ -106,6 +111,20 @@ For this table, <code lang="function">GetValue</code> returns these results:
 >
 > A row whose value equals **Default Value** still participates in lookup. Adding a <code lang="csharp">Fire | Poison</code> row with value <code lang="csharp">0</code> makes a call for that combination return <code lang="csharp">0</code> by exact match, instead of <code lang="csharp">0.9</code> from the <code lang="csharp">Fire</code> row.
 
+## TryGetValue()
+
+<code lang="function">GetValue</code> returns the same value for a missing row and for a row that holds **Default Value**. <code lang="function">TryGetValue</code> reports which of the two it is:
+
+```csharp
+if (_multipliers.TryGetValue(
+        type, out var multiplier))
+    total *= multiplier;
+```
+
+When no row matches, <code lang="csharp">multiplier</code> is **Default Value**, as with <code lang="function">GetValue</code>.
+
+With <code lang="class-name">EnumValues&lt;TValue&gt;</code>, an argument of a concrete enum type, such as <code lang="csharp">DamageType.Fire</code>, binds to <code lang="csharp">GetValue&lt;TEnum&gt;()</code> and <code lang="csharp">TryGetValue&lt;TEnum&gt;()</code>, which do not box the key.
+
 ## Equals()
 
 The table method checks whether a key matches a request without reading values:
@@ -132,7 +151,7 @@ foreach (var entry in _multipliers)
     total += entry.Value;
 ```
 
-**Default Value** and rows with unresolved keys are not yielded. After the first access initializes the keys, a direct <code lang="csharp">foreach</code> over the table does not allocate.
+**Default Value** and rows with unresolved keys are not yielded. After the first access initializes the keys, a direct <code lang="csharp">foreach</code> over the table does not allocate. <code lang="csharp">Count</code> is the number of rows the loop yields.
 
 ## When the enum changes
 

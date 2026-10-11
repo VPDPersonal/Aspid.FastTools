@@ -66,7 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var header = DocumentHeader.Match(lines[i]);
                 if (!header.Success || header.Groups["class"].Value != PrefabInstanceClassId ||
-                    !long.TryParse(header.Groups["id"].Value, out var fileId)) continue;
+                    !TryParseId(header.Groups["id"].Value, out var fileId)) continue;
 
                 var end = NextDocumentStart(lines, i + 1);
                 var modifications = ReadModifications(lines, i + 1, end);
@@ -74,7 +74,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var modification in modifications)
                 {
                     var typePath = _managedReferenceTypePath.Match(modification.PropertyPath);
-                    if (!typePath.Success || !long.TryParse(typePath.Groups["rid"].Value, out var rid) || rid < 0) continue;
+                    if (!typePath.Success || !TryParseId(typePath.Groups["rid"].Value, out var rid) || rid < 0) continue;
                     if (!TryParseOverrideTypeValue(modification.Value, out var type)) continue;
 
                     result.Add(new PrefabOverrideReference(fileId, rid, type, modification.TargetFileId,
@@ -90,7 +90,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The modification of the same target whose value is the rid is the field that points at the reference.
         private static string FindPointerPath(List<Modification> modifications, Modification typeModification, long rid)
         {
-            var ridText = rid.ToString();
+            var ridText = FormatId(rid);
             var ownPrefix = typeModification.PropertyPath + ".";
 
             foreach (var modification in modifications)
@@ -266,7 +266,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (text.IndexOf('}') < 0) return false;
 
             var id = _targetFileId.Match(text);
-            if (!id.Success || !long.TryParse(id.Groups["id"].Value, out fileId)) return false;
+            if (!id.Success || !TryParseId(id.Groups["id"].Value, out fileId)) return false;
 
             var match = _targetGuid.Match(text);
             guid = match.Success ? match.Groups["guid"].Value : string.Empty;

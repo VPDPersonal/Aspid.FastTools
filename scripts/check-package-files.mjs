@@ -25,7 +25,7 @@ const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests';
 const INSTALL_PREFIX = 'Aspid/FastTools/';
 const PATH_LIMIT = 140;
 // Assemblies that the asmdefs of the package use and the package does not contain. A reference by GUID cannot name one.
-const EXTERNAL_ASSEMBLIES = new Set(['Unity.Mathematics', 'UnityEngine.TestRunner', 'UnityEditor.TestRunner']);
+const EXTERNAL_ASSEMBLIES = new Set(['Unity.Burst', 'Unity.Mathematics', 'UnityEngine.TestRunner', 'UnityEditor.TestRunner']);
 
 let errors = 0;
 const fail = (file, message) => {
