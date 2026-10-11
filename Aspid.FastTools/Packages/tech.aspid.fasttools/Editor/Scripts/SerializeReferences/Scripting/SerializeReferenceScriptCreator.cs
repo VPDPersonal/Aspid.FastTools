@@ -568,7 +568,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             && returnParameter.GetRequiredCustomModifiers().Any(modifier => modifier.FullName == "System.Runtime.CompilerServices.IsExternalInit");
 
         // GetInterfaces has no fixed order, and the first interface of a group names the implicit member, so the
-        // inherited interfaces go in declaration order: by assembly, then by metadata token. Two constructions of one
+        // inherited interfaces go in definition order: by assembly, then by metadata token. Two constructions of one
         // generic interface share a token and go by name.
         private static IEnumerable<MemberInfo> EnumerateInterfaceMembers(Type interfaceType)
         {
