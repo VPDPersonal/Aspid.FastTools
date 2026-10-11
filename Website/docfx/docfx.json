@@ -6,11 +6,13 @@
           "src": "projects",
           "files": [
             "Aspid.FastTools.csproj",
-            "Aspid.FastTools.Editor.csproj"
+            "Aspid.FastTools.Editor.csproj",
+            "Aspid.FastTools.VisualElements.Math.csproj"
           ]
         }
       ],
       "dest": "../api",
+      "filter": "filterConfig.yml",
       "outputFormat": "markdown",
       "includePrivateMembers": false,
       "disableGitFeatures": true,
