@@ -22,6 +22,18 @@ Configuration methods return the original element, preserving its type. All exte
 
 The suffix <code lang="csharp">Self</code> marks a name that Unity uses, or may start to use, for a method that returns <code lang="csharp">void</code>. Such a method takes precedence over an extension, so a chain through it does not compile; the FastTools method returns the element instead.
 
+On Unity 6000.6 and later, <code lang="function">SetTextSelf</code> has more overloads. They set the text through Unity's allocation-free <code lang="csharp">TextElement.SetText</code>, so text that changes every frame needs no <code lang="csharp">ToString()</code>:
+
+```csharp
+fps.SetTextSelf(frameCount);             // int, long or ulong
+speed.SetTextSelf(velocity, "0.0");      // float with an optional format
+title.SetTextSelf(characters);           // ReadOnlySpan<char>
+log.SetTextSelf(builder);                // StringBuilder
+log.SetTextSelf(buffer, start, length);  // a slice of a char[]
+```
+
+While the element is not attached to a panel, they set a string instead: it allocates, and Unity logs no warning. A bare <code lang="csharp">null</code> does not compile on 6000.6; cast it: <code lang="csharp">SetTextSelf((string)null)</code>.
+
 The full list of extensions is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements).
 
 > [!NOTE]
@@ -68,6 +80,8 @@ Other style methods follow the same pattern. See the [API reference](https://vpd
 | <pre lang="csharp"><code>var texture = Resources&#10;    .Load&lt;Texture2D&gt;("UI/Card");&#10;if (texture != null)&#10;    root.style.backgroundImage = texture;</code></pre> | <pre lang="csharp"><code>root.SetBackgroundImageFromResources(&#10;    "UI/Card");</code></pre> |
 
 <code lang="function">SetImage</code>, <code lang="function">SetSprite</code>, <code lang="function">SetVectorImage</code> and the style sheet methods also have a <code lang="csharp">…FromResources</code> variant.
+
+<code lang="function">SetBackgroundImage</code> also takes a <code lang="class-name">Sprite</code> or a <code lang="class-name">VectorImage</code>: <code lang="csharp">icon.SetBackgroundImage(sprite)</code>. To clear the background, pass <code lang="csharp">StyleKeyword.None</code>; a bare <code lang="csharp">null</code> does not compile.
 
 ### Bold and italic
 
@@ -124,6 +138,24 @@ All of these methods have a variant with the suffix <code lang="csharp">If</code
 For custom value types, use the generic <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> and <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
 
 For <code lang="csharp">Unity.Mathematics</code> types (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>), <code lang="function">SetValue</code> and <code lang="function">AddValueChanged</code> need no type arguments. The overloads are in the separate assembly `Aspid.FastTools.VisualElements.Math` ([API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), which compiles when the `com.unity.mathematics` package is installed, and on Unity 6000.5 and later, where `Unity.Mathematics` ships in the engine.
+
+Unity's methods for event callbacks return <code lang="csharp">void</code>, so their FastTools counterparts have the suffix <code lang="csharp">Self</code>:
+
+| Unity | FastTools |
+|---|---|
+| <code lang="csharp">RegisterCallback&lt;ClickEvent&gt;(OnClick)</code> | <code lang="csharp">RegisterCallbackSelf&lt;Button, ClickEvent&gt;(OnClick)</code> |
+| <code lang="csharp">RegisterCallbackOnce&lt;ClickEvent&gt;(OnClick)</code> | <code lang="csharp">RegisterCallbackOnceSelf&lt;Button, ClickEvent&gt;(OnClick)</code> |
+| <code lang="csharp">UnregisterCallback&lt;ClickEvent&gt;(OnClick)</code> | <code lang="csharp">UnregisterCallbackSelf&lt;Button, ClickEvent&gt;(OnClick)</code> |
+
+These methods take the same <code lang="csharp">TrickleDown</code> and user arguments as Unity's and return the element, so a chain continues:
+
+```csharp
+var apply = new Button()
+    .RegisterCallbackSelf((PointerEnterEvent evt) => Hover())
+    .SetTooltip("Apply");
+```
+
+The type arguments are inferred only from a callback with a typed parameter, as above. For a method group or a lambda without parameter types, name both: <code lang="csharp">RegisterCallbackSelf&lt;Button, ClickEvent&gt;(OnClick)</code>.
 
 ## Focus
 

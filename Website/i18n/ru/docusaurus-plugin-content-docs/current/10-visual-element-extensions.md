@@ -22,6 +22,18 @@
 
 Суффикс <code lang="csharp">Self</code> стоит у имён, которые Unity использует (или может начать использовать) для метода, возвращающего <code lang="csharp">void</code>. Такой метод имеет приоритет над расширением, поэтому цепочка через него не соберётся; метод FastTools возвращает элемент.
 
+В Unity 6000.6 и новее у <code lang="function">SetTextSelf</code> больше перегрузок. Они задают текст через <code lang="csharp">TextElement.SetText</code> из Unity, который не выделяет память, поэтому тексту, меняющемуся каждый кадр, не нужен <code lang="csharp">ToString()</code>:
+
+```csharp
+fps.SetTextSelf(frameCount);             // int, long или ulong
+speed.SetTextSelf(velocity, "0.0");      // float с необязательным форматом
+title.SetTextSelf(characters);           // ReadOnlySpan<char>
+log.SetTextSelf(builder);                // StringBuilder
+log.SetTextSelf(buffer, start, length);  // фрагмент char[]
+```
+
+Пока элемент не подключён к панели, они задают строку: она выделяет память, а Unity не пишет предупреждение. Голый <code lang="csharp">null</code> в 6000.6 не компилируется; приведите его: <code lang="csharp">SetTextSelf((string)null)</code>.
+
 Полный список расширений — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements).
 
 > [!NOTE]
@@ -68,6 +80,8 @@
 | <pre lang="csharp"><code>var texture = Resources&#10;    .Load&lt;Texture2D&gt;("UI/Card");&#10;if (texture != null)&#10;    root.style.backgroundImage = texture;</code></pre> | <pre lang="csharp"><code>root.SetBackgroundImageFromResources(&#10;    "UI/Card");</code></pre> |
 
 Вариант <code lang="csharp">…FromResources</code> есть также у <code lang="function">SetImage</code>, <code lang="function">SetSprite</code>, <code lang="function">SetVectorImage</code> и у методов таблиц стилей.
+
+<code lang="function">SetBackgroundImage</code> принимает также <code lang="class-name">Sprite</code> или <code lang="class-name">VectorImage</code>: <code lang="csharp">icon.SetBackgroundImage(sprite)</code>. Чтобы убрать фон, передайте <code lang="csharp">StyleKeyword.None</code>: голый <code lang="csharp">null</code> не компилируется.
 
 ### Жирный и курсив
 
@@ -124,6 +138,24 @@
 Для собственных типов значений доступны обобщённые <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> и <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
 
 Для типов <code lang="csharp">Unity.Mathematics</code> (<code lang="class-name">float3</code>, <code lang="class-name">int2</code>, <code lang="class-name">quaternion</code>) методам <code lang="function">SetValue</code> и <code lang="function">AddValueChanged</code> аргументы типа не нужны. Перегрузки лежат в отдельной сборке `Aspid.FastTools.VisualElements.Math` ([справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements.INotifyValueChangedMathExtensions)), которая компилируется, когда установлен пакет `com.unity.mathematics`, а также в Unity 6000.5 и новее, где `Unity.Mathematics` входит в движок.
+
+Методы Unity для обработчиков событий возвращают <code lang="csharp">void</code>, поэтому у их аналогов в FastTools суффикс <code lang="csharp">Self</code>:
+
+| Unity | FastTools |
+|---|---|
+| <code lang="csharp">RegisterCallback&lt;ClickEvent&gt;(OnClick)</code> | <code lang="csharp">RegisterCallbackSelf&lt;Button, ClickEvent&gt;(OnClick)</code> |
+| <code lang="csharp">RegisterCallbackOnce&lt;ClickEvent&gt;(OnClick)</code> | <code lang="csharp">RegisterCallbackOnceSelf&lt;Button, ClickEvent&gt;(OnClick)</code> |
+| <code lang="csharp">UnregisterCallback&lt;ClickEvent&gt;(OnClick)</code> | <code lang="csharp">UnregisterCallbackSelf&lt;Button, ClickEvent&gt;(OnClick)</code> |
+
+Эти методы принимают те же <code lang="csharp">TrickleDown</code> и пользовательские аргументы, что и методы Unity, и возвращают элемент, поэтому цепочка продолжается:
+
+```csharp
+var apply = new Button()
+    .RegisterCallbackSelf((PointerEnterEvent evt) => Hover())
+    .SetTooltip("Apply");
+```
+
+Аргументы типа выводятся только из обработчика с типизированным параметром, как выше. Для группы методов или лямбды без типов параметров укажите оба: <code lang="csharp">RegisterCallbackSelf&lt;Button, ClickEvent&gt;(OnClick)</code>.
 
 ## Фокус
 
