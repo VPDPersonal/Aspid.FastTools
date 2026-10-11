@@ -133,7 +133,7 @@ body:
       options:
         - label: "The upload goes to the UPM Publisher Portal (`cloud.unity.com/assetstore/publisher/products`, product `fastTools`), whose technical name `tech.aspid.fasttools` matches `package.json`; not to the `.unitypackage` portal `publisher.unity.com`"
         - label: "The Editor that uploads is **6000.0.53f1** (the minimum in `package.json`), not the dev project's 6000.6: the portal records the uploading Editor version, which can list buyers on older 6000.x as unsupported"
-        - label: "The package in the upload project comes from the head of `chore/release-X.Y.Z` with `CHANGELOG.md` and its `.meta` generated (`node scripts/package-changelog.mjs vX.Y.Z`); no other PR that changes the package merges into `main` until the release PR does"
+        - label: "The package in the upload project comes from the head of `chore/release-X.Y.Z` with `CHANGELOG.md` and its `.meta` generated (`node scripts/package-changelog.mjs vX.Y.Z`); no other PR that changes the package or the CHANGELOGs merges into `main` until the release PR does"
         - label: "Asset Store UPM Publishing Tools (`com.unity.upm-publishing-tools`, from My Assets) installed; Validator with Validation Type **UPM** run on the package: no failures. A warning about types outside a namespace for `ProfilerMarkerExtensionsForGenerator` (the generator finds it by name) is expected: name that type in the submission notes"
         - label: "Uploaded from the **UPM Packages** tab of the Uploader; the portal's package metadata lists every compatible `6000.x` and the version's CHANGELOG section as release notes"
 

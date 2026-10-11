@@ -76,7 +76,11 @@ Do every step without questions. Stop at the first failure and report it.
 1. Find the merge commit: `gh pr view chore/release-<version> --json state,mergeCommit`.
 2. The PR is not merged → say so and stop.
    **Stable:** ask the user whether this version is live on the Asset Store. Not yet → the PR was merged too
-   early: say that the READMEs and the site already point to `#upm` and stop.
+   early: the READMEs, the site and the badge point to `#upm` and `v<version>`, and neither exists before the tag.
+   Ask the user which way to recover, then act:
+   - tag now: GitHub goes first, and the install URLs work at once → go on with step 3;
+   - revert the release commit on `main` in a PR: `[Unreleased]` gets its notes back, and "Phase 1" runs again
+     after the store publishes, as "Asset Store upload" describes → stop.
 3. Check the consumer skills in the merge commit. The docs tell users to install them from the tag
    (`npx skills add VPDPersonal/Aspid.FastTools#v<version>`), and a published tag cannot be replaced.
    - `git ls-tree --name-only <merge-sha>:skills` lists the skill folders. An error or an empty list means that the
@@ -148,8 +152,9 @@ fixed.
   already switches the READMEs and the site to `#upm` and the Release badge (`set-version.sh`, `docs.yml`), while
   `upm` gets the version only with the tag. So the upload runs from the head of `chore/release-<version>` while the PR
   is open. The user merges the PR after the store publishes the version, and "Phase 2" tags it at once.
-- **Hold:** until the merge, no other PR that changes `Aspid.FastTools/Packages/tech.aspid.fasttools/` merges into
-  `main`. Otherwise the merge commit, and so `upm/<version>`, differs from the uploaded package.
+- **Hold:** until the merge, no other PR that changes `Aspid.FastTools/Packages/tech.aspid.fasttools/`, `CHANGELOG.md`
+  or `CHANGELOG.ru.md` merges into `main`. Otherwise the merge commit, and so `upm/<version>` with the package
+  `CHANGELOG.md` that `release.yml` generates from the root one, differs from the uploaded package.
 - **Portal:** the UPM Publisher Portal (`https://cloud.unity.com/assetstore/publisher/products`), product `fastTools`
   (id 2333465, store page `https://assetstore.unity.com/packages/package/2333465`). The package technical name
   `tech.aspid.fasttools` is reserved there and must stay the `name` of `package.json`. The old portal
@@ -177,7 +182,10 @@ fixed.
 - **Submit** with **Manually publish**. Unity reviews in about five business days.
 - **Rejected:** close the release PR without a merge. The fixes go to `main` in ordinary PRs, then "Phase 1" runs
   again: its notes are still under `[Unreleased]` on `main`. Keep the version if the portal takes a new upload of it,
-  else take the next one. The rejected version never reaches `main` or a tag.
+  else take the next one. The rejected version never reaches `main` or a tag. With the same version, delete the old
+  branch first, local and remote (`git branch -D chore/release-<version>`,
+  `git push origin --delete chore/release-<version>`): "Phase 1" creates it again, and `gh pr view` by the branch
+  name could find the closed PR. Use the number of the new PR from then on.
 - **Approved:** the user clicks publish in the portal and checks the store page. Then, on the release branch, the date
   in the `## [<version>] — <date>` heading of both CHANGELOGs becomes the publication day. The user merges the PR,
   and "Phase 2" tags it.
