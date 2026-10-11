@@ -4,18 +4,24 @@
 [Aspid.FastTools]
 
 Aspid.FastTools.Enums.EnumValues<TEnum, TValue>
-    public sealed class EnumValues<TEnum, TValue> : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TEnum, TValue>>, System.Collections.IEnumerable, UnityEngine.ISerializationCallbackReceiver where TEnum : struct, System.Enum
+    public sealed class EnumValues<TEnum, TValue> : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TEnum, TValue>>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<TEnum, TValue>>, System.Collections.IEnumerable, UnityEngine.ISerializationCallbackReceiver where TEnum : struct, System.Enum
     public EnumValues()
+    public int Count { get; }
     public bool Equals(TEnum enumValue1, TEnum enumValue2)
     public Aspid.FastTools.Enums.EnumValuesEnumerator<TEnum, TValue> GetEnumerator()
     public TValue GetValue(TEnum enumValue)
+    public bool TryGetValue(TEnum enumValue, out TValue value)
 
 Aspid.FastTools.Enums.EnumValues<TValue>
-    public sealed class EnumValues<TValue> : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Enum, TValue>>, System.Collections.IEnumerable, UnityEngine.ISerializationCallbackReceiver
+    public sealed class EnumValues<TValue> : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Enum, TValue>>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<System.Enum, TValue>>, System.Collections.IEnumerable, UnityEngine.ISerializationCallbackReceiver
     public EnumValues()
+    public int Count { get; }
     public bool Equals(System.Enum enumValue1, System.Enum enumValue2)
     public Aspid.FastTools.Enums.EnumValuesEnumerator<System.Enum, TValue> GetEnumerator()
     public TValue GetValue(System.Enum enumValue)
+    public TValue GetValue<TEnum>(TEnum enumValue) where TEnum : struct, System.Enum
+    public bool TryGetValue(System.Enum enumValue, out TValue value)
+    public bool TryGetValue<TEnum>(TEnum enumValue, out TValue value) where TEnum : struct, System.Enum
 
 Aspid.FastTools.Enums.EnumValuesEnumerator<TKey, TValue>
     public struct EnumValuesEnumerator<TKey, TValue> : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerator, System.IDisposable
@@ -51,9 +57,14 @@ Aspid.FastTools.Types.SerializableType<T>
     public override System.Type BaseType { get; }
 
 Aspid.FastTools.Types.SerializableTypeBase
-    public abstract class SerializableTypeBase : Aspid.FastTools.Types.ISerializableType, UnityEngine.ISerializationCallbackReceiver
+    public abstract class SerializableTypeBase : Aspid.FastTools.Types.ISerializableType, System.IEquatable<Aspid.FastTools.Types.SerializableTypeBase>, UnityEngine.ISerializationCallbackReceiver
     public string AssemblyQualifiedName { get; }
     public abstract System.Type BaseType { get; }
+    public bool Equals(Aspid.FastTools.Types.SerializableTypeBase other)
+    public override bool Equals(object obj)
+    public override int GetHashCode()
+    public bool IsEmpty { get; }
+    public bool IsMissing { get; }
     public override string ToString()
     public System.Type Type { get; }
 
@@ -148,6 +159,10 @@ Aspid.FastTools.UIElements.BaseFieldFloatExtensions
 Aspid.FastTools.UIElements.BaseFieldGradientExtensions
     public static class BaseFieldGradientExtensions
     public static T SetLabel<T>(this T element, string value) where T : UnityEngine.UIElements.BaseField<UnityEngine.Gradient>
+
+Aspid.FastTools.UIElements.BaseFieldGuidExtensions
+    public static class BaseFieldGuidExtensions
+    public static T SetLabel<T>(this T element, string value) where T : UnityEngine.UIElements.BaseField<UnityEngine.GUID>
 
 Aspid.FastTools.UIElements.BaseFieldHash128Extensions
     public static class BaseFieldHash128Extensions
@@ -286,6 +301,7 @@ Aspid.FastTools.UIElements.BaseVerticalCollectionViewExtensions
     public static T SetSelectedIndex<T>(this T element, int value) where T : UnityEngine.UIElements.BaseVerticalCollectionView
     public static T SetSelectionType<T>(this T element, UnityEngine.UIElements.SelectionType value) where T : UnityEngine.UIElements.BaseVerticalCollectionView
     public static T SetShowAlternatingRowBackgrounds<T>(this T element, UnityEngine.UIElements.AlternatingRowBackground value) where T : UnityEngine.UIElements.BaseVerticalCollectionView
+    public static T SetShowBorder<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseVerticalCollectionView
     public static T SetVirtualizationMethod<T>(this T element, UnityEngine.UIElements.CollectionVirtualizationMethod value) where T : UnityEngine.UIElements.BaseVerticalCollectionView
 
 Aspid.FastTools.UIElements.ButtonExtensions
@@ -295,6 +311,22 @@ Aspid.FastTools.UIElements.ButtonExtensions
     public static T SetClickable<T>(this T element, System.Action action) where T : UnityEngine.UIElements.Button
     public static T SetClickable<T>(this T element, UnityEngine.UIElements.Clickable value) where T : UnityEngine.UIElements.Button
     public static T SetIconImage<T>(this T element, UnityEngine.UIElements.Background value) where T : UnityEngine.UIElements.Button
+
+Aspid.FastTools.UIElements.CallbackEventHandlerExtensions
+    public static class CallbackEventHandlerExtensions
+    public static T RegisterCallbackOnceSelf<T, TEventType, TUserArgsType>(this T element, UnityEngine.UIElements.EventCallback<TEventType, TUserArgsType> callback, TUserArgsType userArgs, UnityEngine.UIElements.TrickleDown useTrickleDown = 0) where T : UnityEngine.UIElements.CallbackEventHandler where TEventType : UnityEngine.UIElements.EventBase<TEventType>, new()
+    public static T RegisterCallbackOnceSelf<T, TEventType>(this T element, UnityEngine.UIElements.EventCallback<TEventType> callback, UnityEngine.UIElements.TrickleDown useTrickleDown = 0) where T : UnityEngine.UIElements.CallbackEventHandler where TEventType : UnityEngine.UIElements.EventBase<TEventType>, new()
+    public static T RegisterCallbackSelf<T, TEventType, TUserArgsType>(this T element, UnityEngine.UIElements.EventCallback<TEventType, TUserArgsType> callback, TUserArgsType userArgs, UnityEngine.UIElements.TrickleDown useTrickleDown = 0) where T : UnityEngine.UIElements.CallbackEventHandler where TEventType : UnityEngine.UIElements.EventBase<TEventType>, new()
+    public static T RegisterCallbackSelf<T, TEventType>(this T element, UnityEngine.UIElements.EventCallback<TEventType> callback, UnityEngine.UIElements.TrickleDown useTrickleDown = 0) where T : UnityEngine.UIElements.CallbackEventHandler where TEventType : UnityEngine.UIElements.EventBase<TEventType>, new()
+    public static T UnregisterCallbackSelf<T, TEventType, TUserArgsType>(this T element, UnityEngine.UIElements.EventCallback<TEventType, TUserArgsType> callback, UnityEngine.UIElements.TrickleDown useTrickleDown = 0) where T : UnityEngine.UIElements.CallbackEventHandler where TEventType : UnityEngine.UIElements.EventBase<TEventType>, new()
+    public static T UnregisterCallbackSelf<T, TEventType>(this T element, UnityEngine.UIElements.EventCallback<TEventType> callback, UnityEngine.UIElements.TrickleDown useTrickleDown = 0) where T : UnityEngine.UIElements.CallbackEventHandler where TEventType : UnityEngine.UIElements.EventBase<TEventType>, new()
+
+Aspid.FastTools.UIElements.DropdownFieldExtensions
+    public static class DropdownFieldExtensions
+    public static T SetChoices<T>(this T element, System.Collections.Generic.IEnumerable<string> value) where T : UnityEngine.UIElements.DropdownField
+    public static T SetFormatListItemCallback<T>(this T element, System.Func<string, string> value) where T : UnityEngine.UIElements.DropdownField
+    public static T SetFormatSelectedValueCallback<T>(this T element, System.Func<string, string> value) where T : UnityEngine.UIElements.DropdownField
+    public static T SetIndex<T>(this T element, int value) where T : UnityEngine.UIElements.DropdownField
 
 Aspid.FastTools.UIElements.EnumFieldExtensions
     public static class EnumFieldExtensions
@@ -468,7 +500,9 @@ Aspid.FastTools.UIElements.IStyleExtensions
     public static T SetAspectRatio<T>(this T style, UnityEngine.UIElements.StyleRatio value) where T : UnityEngine.UIElements.IStyle
     public static T SetBackgroundColor<T>(this T style, UnityEngine.UIElements.StyleColor value) where T : UnityEngine.UIElements.IStyle
     public static T SetBackgroundColor<T>(this T style, string value) where T : UnityEngine.UIElements.IStyle
+    public static T SetBackgroundImage<T>(this T style, UnityEngine.Sprite value) where T : UnityEngine.UIElements.IStyle
     public static T SetBackgroundImage<T>(this T style, UnityEngine.UIElements.StyleBackground value) where T : UnityEngine.UIElements.IStyle
+    public static T SetBackgroundImage<T>(this T style, UnityEngine.UIElements.VectorImage value) where T : UnityEngine.UIElements.IStyle
     public static T SetBackgroundImageFromResources<T>(this T style, string path) where T : UnityEngine.UIElements.IStyle
     public static T SetBackgroundPosition<T>(this T style, UnityEngine.UIElements.StyleBackgroundPosition value) where T : UnityEngine.UIElements.IStyle
     public static T SetBackgroundPosition<T>(this T style, UnityEngine.UIElements.StyleBackgroundPosition? x = null, UnityEngine.UIElements.StyleBackgroundPosition? y = null) where T : UnityEngine.UIElements.IStyle
@@ -688,6 +722,13 @@ Aspid.FastTools.UIElements.ManipulatorExtensions
     public static T AddManipulatorSelf<T>(this T element, UnityEngine.UIElements.IManipulator manipulator) where T : UnityEngine.UIElements.VisualElement
     public static T RemoveManipulatorSelf<T>(this T element, UnityEngine.UIElements.IManipulator manipulator) where T : UnityEngine.UIElements.VisualElement
 
+Aspid.FastTools.UIElements.MinMaxSliderExtensions
+    public static class MinMaxSliderExtensions
+    public static T SetHighLimit<T>(this T element, float value) where T : UnityEngine.UIElements.MinMaxSlider
+    public static T SetLowLimit<T>(this T element, float value) where T : UnityEngine.UIElements.MinMaxSlider
+    public static T SetMaxValue<T>(this T element, float value) where T : UnityEngine.UIElements.MinMaxSlider
+    public static T SetMinValue<T>(this T element, float value) where T : UnityEngine.UIElements.MinMaxSlider
+
 Aspid.FastTools.UIElements.MultiColumnListViewExtensions
     public static class MultiColumnListViewExtensions
     public static T AddColumnSortingChanged<T>(this T element, System.Action callback) where T : UnityEngine.UIElements.MultiColumnListView
@@ -699,6 +740,32 @@ Aspid.FastTools.UIElements.MultiColumnTreeViewExtensions
     public static T AddColumnSortingChanged<T>(this T element, System.Action callback) where T : UnityEngine.UIElements.MultiColumnTreeView
     public static T RemoveColumnSortingChanged<T>(this T element, System.Action callback) where T : UnityEngine.UIElements.MultiColumnTreeView
     public static T SetSortingMode<T>(this T element, UnityEngine.UIElements.ColumnSortingMode value) where T : UnityEngine.UIElements.MultiColumnTreeView
+
+Aspid.FastTools.UIElements.PopupFieldExtensions
+    public static class PopupFieldExtensions
+    public static TField SetChoices<TField, TChoice>(this TField element, System.Collections.Generic.List<TChoice> value) where TField : UnityEngine.UIElements.PopupField<TChoice>
+    public static TField SetFormatListItemCallback<TField, TChoice>(this TField element, System.Func<TChoice, string> value) where TField : UnityEngine.UIElements.PopupField<TChoice>
+    public static TField SetFormatSelectedValueCallback<TField, TChoice>(this TField element, System.Func<TChoice, string> value) where TField : UnityEngine.UIElements.PopupField<TChoice>
+    public static TField SetIndex<TField, TChoice>(this TField element, int value) where TField : UnityEngine.UIElements.PopupField<TChoice>
+
+Aspid.FastTools.UIElements.RadioButtonGroupExtensions
+    public static class RadioButtonGroupExtensions
+    public static T SetChoices<T>(this T element, System.Collections.Generic.IEnumerable<string> value) where T : UnityEngine.UIElements.RadioButtonGroup
+
+Aspid.FastTools.UIElements.ScrollViewExtensions
+    public static class ScrollViewExtensions
+    public static T SetElasticAnimationIntervalMs<T>(this T element, long value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetElasticity<T>(this T element, float value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetHorizontalPageSize<T>(this T element, float value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetHorizontalScrollerVisibility<T>(this T element, UnityEngine.UIElements.ScrollerVisibility value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetMode<T>(this T element, UnityEngine.UIElements.ScrollViewMode value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetMouseWheelScrollSize<T>(this T element, float value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetNestedInteractionKind<T>(this T element, UnityEngine.UIElements.ScrollView.NestedInteractionKind value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetScrollDecelerationRate<T>(this T element, float value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetScrollOffset<T>(this T element, UnityEngine.Vector2 value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetTouchScrollBehavior<T>(this T element, UnityEngine.UIElements.ScrollView.TouchScrollBehavior value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetVerticalPageSize<T>(this T element, float value) where T : UnityEngine.UIElements.ScrollView
+    public static T SetVerticalScrollerVisibility<T>(this T element, UnityEngine.UIElements.ScrollerVisibility value) where T : UnityEngine.UIElements.ScrollView
 
 Aspid.FastTools.UIElements.SliderExtensions
     public static class SliderExtensions
@@ -738,6 +805,30 @@ Aspid.FastTools.UIElements.SliderIntExtensions
     public static T SetPageSize<T>(this T element, float value) where T : UnityEngine.UIElements.BaseSlider<int>
     public static T SetShowInputField<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseSlider<int>
 
+Aspid.FastTools.UIElements.TabExtensions
+    public static class TabExtensions
+    public static T AddClosed<T>(this T element, System.Action<UnityEngine.UIElements.Tab> value) where T : UnityEngine.UIElements.Tab
+    public static T AddClosing<T>(this T element, System.Func<bool> value) where T : UnityEngine.UIElements.Tab
+    public static T AddSelected<T>(this T element, System.Action<UnityEngine.UIElements.Tab> value) where T : UnityEngine.UIElements.Tab
+    public static T RemoveClosed<T>(this T element, System.Action<UnityEngine.UIElements.Tab> value) where T : UnityEngine.UIElements.Tab
+    public static T RemoveClosing<T>(this T element, System.Func<bool> value) where T : UnityEngine.UIElements.Tab
+    public static T RemoveSelected<T>(this T element, System.Action<UnityEngine.UIElements.Tab> value) where T : UnityEngine.UIElements.Tab
+    public static T SetCloseable<T>(this T element, bool value) where T : UnityEngine.UIElements.Tab
+    public static T SetIconImage<T>(this T element, UnityEngine.UIElements.Background value) where T : UnityEngine.UIElements.Tab
+    public static T SetLabel<T>(this T element, string value) where T : UnityEngine.UIElements.Tab
+
+Aspid.FastTools.UIElements.TabViewExtensions
+    public static class TabViewExtensions
+    public static T AddActiveTabChanged<T>(this T element, System.Action<UnityEngine.UIElements.Tab, UnityEngine.UIElements.Tab> value) where T : UnityEngine.UIElements.TabView
+    public static T AddTabClosed<T>(this T element, System.Action<UnityEngine.UIElements.Tab, int> value) where T : UnityEngine.UIElements.TabView
+    public static T AddTabReordered<T>(this T element, System.Action<int, int> value) where T : UnityEngine.UIElements.TabView
+    public static T RemoveActiveTabChanged<T>(this T element, System.Action<UnityEngine.UIElements.Tab, UnityEngine.UIElements.Tab> value) where T : UnityEngine.UIElements.TabView
+    public static T RemoveTabClosed<T>(this T element, System.Action<UnityEngine.UIElements.Tab, int> value) where T : UnityEngine.UIElements.TabView
+    public static T RemoveTabReordered<T>(this T element, System.Action<int, int> value) where T : UnityEngine.UIElements.TabView
+    public static T SetActiveTab<T>(this T element, UnityEngine.UIElements.Tab value) where T : UnityEngine.UIElements.TabView
+    public static T SetReorderable<T>(this T element, bool value) where T : UnityEngine.UIElements.TabView
+    public static T SetSelectedTabIndex<T>(this T element, int value) where T : UnityEngine.UIElements.TabView
+
 Aspid.FastTools.UIElements.TextElementExtensions
     public static class TextElementExtensions
     public static T SetDisplayTooltipWhenElided<T>(this T element, bool value) where T : UnityEngine.UIElements.TextElement
@@ -746,10 +837,16 @@ Aspid.FastTools.UIElements.TextElementExtensions
     public static T SetParseEscapeSequences<T>(this T element, bool value) where T : UnityEngine.UIElements.TextElement
     public static T SetTextSelf<T>(this T element, string value) where T : UnityEngine.UIElements.TextElement
 
+Aspid.FastTools.UIElements.TextFieldExtensions
+    public static class TextFieldExtensions
+    public static T SetMultiline<T>(this T element, bool value) where T : UnityEngine.UIElements.TextField
+    public static T SetVerticalScrollerVisibilitySelf<T>(this T element, UnityEngine.UIElements.ScrollerVisibility value) where T : UnityEngine.UIElements.TextField
+
 Aspid.FastTools.UIElements.TextInputBaseFieldDoubleExtensions
     public static class TextInputBaseFieldDoubleExtensions
     public static T SetAutoCorrection<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<double>
     public static T SetDelayed<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<double>
+    public static T SetFormatString<T>(this T element, string value) where T : UnityEngine.UIElements.TextValueField<double>
     public static T SetHideMobileInput<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<double>
     public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<double>
     public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<double>
@@ -778,6 +875,7 @@ Aspid.FastTools.UIElements.TextInputBaseFieldExtensions
     public static class TextInputBaseFieldExtensions
     public static TField SetAutoCorrection<TField, TValue>(this TField element, bool value) where TField : UnityEngine.UIElements.TextInputBaseField<TValue>
     public static TField SetDelayed<TField, TValue>(this TField element, bool value) where TField : UnityEngine.UIElements.TextInputBaseField<TValue>
+    public static TField SetFormatString<TField, TValue>(this TField element, string value) where TField : UnityEngine.UIElements.TextValueField<TValue>
     public static TField SetHideMobileInput<TField, TValue>(this TField element, bool value) where TField : UnityEngine.UIElements.TextInputBaseField<TValue>
     public static TField SetHidePlaceholderOnFocus<TField, TValue>(this TField element, bool value) where TField : UnityEngine.UIElements.TextInputBaseField<TValue>
     public static TField SetHideSoftKeyboard<TField, TValue>(this TField element, bool value) where TField : UnityEngine.UIElements.TextInputBaseField<TValue>
@@ -792,6 +890,7 @@ Aspid.FastTools.UIElements.TextInputBaseFieldFloatExtensions
     public static class TextInputBaseFieldFloatExtensions
     public static T SetAutoCorrection<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<float>
     public static T SetDelayed<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<float>
+    public static T SetFormatString<T>(this T element, string value) where T : UnityEngine.UIElements.TextValueField<float>
     public static T SetHideMobileInput<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<float>
     public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<float>
     public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<float>
@@ -815,6 +914,34 @@ Aspid.FastTools.UIElements.TextInputBaseFieldFloatTextSelectionExtensions
     public static T SetSelectIndex<T>(this T element, int value) where T : UnityEngine.UIElements.TextInputBaseField<float>
     public static T SetSelectable<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<float>
     public static T SetTripleClickSelectsLine<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<float>
+
+Aspid.FastTools.UIElements.TextInputBaseFieldGuidExtensions
+    public static class TextInputBaseFieldGuidExtensions
+    public static T SetAutoCorrection<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetDelayed<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetHideMobileInput<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetKeyboardType<T>(this T element, UnityEngine.TouchScreenKeyboardType value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetMaskChar<T>(this T element, char value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetMaxLength<T>(this T element, int value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetPassword<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetPlaceholder<T>(this T element, string value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetReadOnly<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+
+Aspid.FastTools.UIElements.TextInputBaseFieldGuidTextSelectionExtensions
+    public static class TextInputBaseFieldGuidTextSelectionExtensions
+    public static T AddOnCursorIndexChange<T>(this T element, System.Action value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T AddOnSelectIndexChange<T>(this T element, System.Action value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T RemoveOnCursorIndexChange<T>(this T element, System.Action value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T RemoveOnSelectIndexChange<T>(this T element, System.Action value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetCursorIndex<T>(this T element, int value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetDoubleClickSelectsWord<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetSelectAllOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetSelectAllOnMouseUp<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetSelectIndex<T>(this T element, int value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetSelectable<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
+    public static T SetTripleClickSelectsLine<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<UnityEngine.GUID>
 
 Aspid.FastTools.UIElements.TextInputBaseFieldHash128Extensions
     public static class TextInputBaseFieldHash128Extensions
@@ -848,6 +975,7 @@ Aspid.FastTools.UIElements.TextInputBaseFieldIntExtensions
     public static class TextInputBaseFieldIntExtensions
     public static T SetAutoCorrection<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<int>
     public static T SetDelayed<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<int>
+    public static T SetFormatString<T>(this T element, string value) where T : UnityEngine.UIElements.TextValueField<int>
     public static T SetHideMobileInput<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<int>
     public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<int>
     public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<int>
@@ -876,6 +1004,7 @@ Aspid.FastTools.UIElements.TextInputBaseFieldLongExtensions
     public static class TextInputBaseFieldLongExtensions
     public static T SetAutoCorrection<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<long>
     public static T SetDelayed<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<long>
+    public static T SetFormatString<T>(this T element, string value) where T : UnityEngine.UIElements.TextValueField<long>
     public static T SetHideMobileInput<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<long>
     public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<long>
     public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<long>
@@ -946,6 +1075,7 @@ Aspid.FastTools.UIElements.TextInputBaseFieldUintExtensions
     public static class TextInputBaseFieldUintExtensions
     public static T SetAutoCorrection<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<uint>
     public static T SetDelayed<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<uint>
+    public static T SetFormatString<T>(this T element, string value) where T : UnityEngine.UIElements.TextValueField<uint>
     public static T SetHideMobileInput<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<uint>
     public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<uint>
     public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<uint>
@@ -974,6 +1104,7 @@ Aspid.FastTools.UIElements.TextInputBaseFieldUlongExtensions
     public static class TextInputBaseFieldUlongExtensions
     public static T SetAutoCorrection<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<ulong>
     public static T SetDelayed<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<ulong>
+    public static T SetFormatString<T>(this T element, string value) where T : UnityEngine.UIElements.TextValueField<ulong>
     public static T SetHideMobileInput<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<ulong>
     public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<ulong>
     public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : UnityEngine.UIElements.TextInputBaseField<ulong>
@@ -1011,6 +1142,12 @@ Aspid.FastTools.UIElements.TreeViewExtensions
     public static T SetItemTemplate<T>(this T element, UnityEngine.UIElements.VisualTreeAsset value) where T : UnityEngine.UIElements.TreeView
     public static T SetMakeItem<T>(this T element, System.Func<UnityEngine.UIElements.VisualElement> value) where T : UnityEngine.UIElements.TreeView
     public static T SetUnbindItem<T>(this T element, System.Action<UnityEngine.UIElements.VisualElement, int> value) where T : UnityEngine.UIElements.TreeView
+
+Aspid.FastTools.UIElements.TwoPaneSplitViewExtensions
+    public static class TwoPaneSplitViewExtensions
+    public static T SetFixedPaneIndex<T>(this T element, int value) where T : UnityEngine.UIElements.TwoPaneSplitView
+    public static T SetFixedPaneInitialDimension<T>(this T element, float value) where T : UnityEngine.UIElements.TwoPaneSplitView
+    public static T SetOrientation<T>(this T element, UnityEngine.UIElements.TwoPaneSplitViewOrientation value) where T : UnityEngine.UIElements.TwoPaneSplitView
 
 Aspid.FastTools.UIElements.VisualElementExtensions
     public static class VisualElementExtensions
@@ -1175,7 +1312,9 @@ Aspid.FastTools.UIElements.VisualElementExtensions
     public static T SetAspectRatio<T>(this T element, UnityEngine.UIElements.StyleRatio value) where T : UnityEngine.UIElements.VisualElement
     public static T SetBackgroundColor<T>(this T element, UnityEngine.UIElements.StyleColor value) where T : UnityEngine.UIElements.VisualElement
     public static T SetBackgroundColor<T>(this T element, string value) where T : UnityEngine.UIElements.VisualElement
+    public static T SetBackgroundImage<T>(this T element, UnityEngine.Sprite value) where T : UnityEngine.UIElements.VisualElement
     public static T SetBackgroundImage<T>(this T element, UnityEngine.UIElements.StyleBackground value) where T : UnityEngine.UIElements.VisualElement
+    public static T SetBackgroundImage<T>(this T element, UnityEngine.UIElements.VectorImage value) where T : UnityEngine.UIElements.VisualElement
     public static T SetBackgroundImageFromResources<T>(this T element, string path) where T : UnityEngine.UIElements.VisualElement
     public static T SetBackgroundPosition<T>(this T element, UnityEngine.UIElements.StyleBackgroundPosition value) where T : UnityEngine.UIElements.VisualElement
     public static T SetBackgroundPosition<T>(this T element, UnityEngine.UIElements.StyleBackgroundPosition? x = null, UnityEngine.UIElements.StyleBackgroundPosition? y = null) where T : UnityEngine.UIElements.VisualElement
@@ -1360,8 +1499,8 @@ Aspid.FastTools.Editors.EditorExtensions
     public static string GetDisplayName(this UnityEngine.Object obj)
     public static string GetDisplayNameWithIndex(this UnityEngine.Component targetComponent)
 
-Aspid.FastTools.Editors.SerializePropertyExtensions
-    public static class SerializePropertyExtensions
+Aspid.FastTools.Editors.SerializedPropertyExtensions
+    public static class SerializedPropertyExtensions
     public static T AddArraySize<T>(this T property, int value = 1) where T : UnityEditor.SerializedProperty
     public static T AddArraySizeAndApply<T>(this T property, int value = 1) where T : UnityEditor.SerializedProperty
     public static T AddArraySizeAndApplyWithoutUndo<T>(this T property, int value = 1) where T : UnityEditor.SerializedProperty
@@ -1404,6 +1543,9 @@ Aspid.FastTools.Editors.SerializePropertyExtensions
     public static T SetEntityId<T>(this T property, UnityEngine.EntityId value) where T : UnityEditor.SerializedProperty
     public static T SetEntityIdAndApply<T>(this T property, UnityEngine.EntityId value) where T : UnityEditor.SerializedProperty
     public static T SetEntityIdAndApplyWithoutUndo<T>(this T property, UnityEngine.EntityId value) where T : UnityEditor.SerializedProperty
+    public static T SetEnum<T, TEnum>(this T property, TEnum value) where T : UnityEditor.SerializedProperty where TEnum : struct, System.Enum
+    public static T SetEnumAndApply<T, TEnum>(this T property, TEnum value) where T : UnityEditor.SerializedProperty where TEnum : struct, System.Enum
+    public static T SetEnumAndApplyWithoutUndo<T, TEnum>(this T property, TEnum value) where T : UnityEditor.SerializedProperty where TEnum : struct, System.Enum
     public static T SetEnumFlag<T>(this T property, int value) where T : UnityEditor.SerializedProperty
     public static T SetEnumFlagAndApply<T>(this T property, int value) where T : UnityEditor.SerializedProperty
     public static T SetEnumFlagAndApplyWithoutUndo<T>(this T property, int value) where T : UnityEditor.SerializedProperty
@@ -1417,6 +1559,9 @@ Aspid.FastTools.Editors.SerializePropertyExtensions
     public static T SetGradient<T>(this T property, UnityEngine.Gradient value) where T : UnityEditor.SerializedProperty
     public static T SetGradientAndApply<T>(this T property, UnityEngine.Gradient value) where T : UnityEditor.SerializedProperty
     public static T SetGradientAndApplyWithoutUndo<T>(this T property, UnityEngine.Gradient value) where T : UnityEditor.SerializedProperty
+    public static T SetGuid<T>(this T property, UnityEngine.GUID value) where T : UnityEditor.SerializedProperty
+    public static T SetGuidAndApply<T>(this T property, UnityEngine.GUID value) where T : UnityEditor.SerializedProperty
+    public static T SetGuidAndApplyWithoutUndo<T>(this T property, UnityEngine.GUID value) where T : UnityEditor.SerializedProperty
     public static T SetHash128<T>(this T property, UnityEngine.Hash128 value) where T : UnityEditor.SerializedProperty
     public static T SetHash128AndApply<T>(this T property, UnityEngine.Hash128 value) where T : UnityEditor.SerializedProperty
     public static T SetHash128AndApplyWithoutUndo<T>(this T property, UnityEngine.Hash128 value) where T : UnityEditor.SerializedProperty
@@ -1450,11 +1595,13 @@ Aspid.FastTools.Editors.SerializePropertyExtensions
     public static T SetUlong<T>(this T property, ulong value) where T : UnityEditor.SerializedProperty
     public static T SetUlongAndApply<T>(this T property, ulong value) where T : UnityEditor.SerializedProperty
     public static T SetUlongAndApplyWithoutUndo<T>(this T property, ulong value) where T : UnityEditor.SerializedProperty
+    public static T SetValue<T, TEnum>(this T property, TEnum value) where T : UnityEditor.SerializedProperty where TEnum : struct, System.Enum
     public static T SetValue<T>(this T property, UnityEngine.AnimationCurve value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.Bounds value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.BoundsInt value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.Color value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.EntityId value) where T : UnityEditor.SerializedProperty
+    public static T SetValue<T>(this T property, UnityEngine.GUID value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.Gradient value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.Hash128 value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.Quaternion value) where T : UnityEditor.SerializedProperty
@@ -1466,18 +1613,25 @@ Aspid.FastTools.Editors.SerializePropertyExtensions
     public static T SetValue<T>(this T property, UnityEngine.Vector3Int value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, UnityEngine.Vector4 value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, bool value) where T : UnityEditor.SerializedProperty
+    public static T SetValue<T>(this T property, byte value) where T : UnityEditor.SerializedProperty
+    public static T SetValue<T>(this T property, char value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, double value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, float value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, int value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, long value) where T : UnityEditor.SerializedProperty
+    public static T SetValue<T>(this T property, sbyte value) where T : UnityEditor.SerializedProperty
+    public static T SetValue<T>(this T property, short value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, string value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, uint value) where T : UnityEditor.SerializedProperty
     public static T SetValue<T>(this T property, ulong value) where T : UnityEditor.SerializedProperty
+    public static T SetValue<T>(this T property, ushort value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApply<T, TEnum>(this T property, TEnum value) where T : UnityEditor.SerializedProperty where TEnum : struct, System.Enum
     public static T SetValueAndApply<T>(this T property, UnityEngine.AnimationCurve value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.Bounds value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.BoundsInt value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.Color value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.EntityId value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApply<T>(this T property, UnityEngine.GUID value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.Gradient value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.Hash128 value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.Quaternion value) where T : UnityEditor.SerializedProperty
@@ -1489,18 +1643,25 @@ Aspid.FastTools.Editors.SerializePropertyExtensions
     public static T SetValueAndApply<T>(this T property, UnityEngine.Vector3Int value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, UnityEngine.Vector4 value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, bool value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApply<T>(this T property, byte value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApply<T>(this T property, char value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, double value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, float value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, int value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, long value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApply<T>(this T property, sbyte value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApply<T>(this T property, short value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, string value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, uint value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApply<T>(this T property, ulong value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApply<T>(this T property, ushort value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApplyWithoutUndo<T, TEnum>(this T property, TEnum value) where T : UnityEditor.SerializedProperty where TEnum : struct, System.Enum
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.AnimationCurve value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.Bounds value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.BoundsInt value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.Color value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.EntityId value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.GUID value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.Gradient value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.Hash128 value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.Quaternion value) where T : UnityEditor.SerializedProperty
@@ -1512,13 +1673,18 @@ Aspid.FastTools.Editors.SerializePropertyExtensions
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.Vector3Int value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, UnityEngine.Vector4 value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, bool value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApplyWithoutUndo<T>(this T property, byte value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApplyWithoutUndo<T>(this T property, char value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, double value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, float value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, int value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, long value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApplyWithoutUndo<T>(this T property, sbyte value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApplyWithoutUndo<T>(this T property, short value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, string value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, uint value) where T : UnityEditor.SerializedProperty
     public static T SetValueAndApplyWithoutUndo<T>(this T property, ulong value) where T : UnityEditor.SerializedProperty
+    public static T SetValueAndApplyWithoutUndo<T>(this T property, ushort value) where T : UnityEditor.SerializedProperty
     public static T SetVector2<T>(this T property, UnityEngine.Vector2 value) where T : UnityEditor.SerializedProperty
     public static T SetVector2AndApply<T>(this T property, UnityEngine.Vector2 value) where T : UnityEditor.SerializedProperty
     public static T SetVector2AndApplyWithoutUndo<T>(this T property, UnityEngine.Vector2 value) where T : UnityEditor.SerializedProperty
@@ -1545,6 +1711,7 @@ Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI
 
 Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList
     public static class SerializeReferenceIMGUIList
+    public static void Draw(UnityEditor.SerializedProperty listProperty, UnityEngine.GUIContent label = null, System.Type[] baseTypes = null)
     public static void Draw(UnityEditor.SerializedProperty listProperty, UnityEngine.GUIContent label, System.Type elementType, params System.Type[] baseTypes)
 
 Aspid.FastTools.Types.Editors.GenericArgumentFilter
@@ -1554,7 +1721,8 @@ Aspid.FastTools.Types.Editors.InspectorTypeField
     public sealed class InspectorTypeField : Aspid.FastTools.Types.Editors.TypeField
     public InspectorTypeField()
     public InspectorTypeField(UnityEditor.SerializedProperty property)
-    public InspectorTypeField(string label, System.Type defaultValue = null)
+    public InspectorTypeField(string label)
+    public InspectorTypeField(string label, System.Type defaultValue)
     public InspectorTypeField(string label, UnityEditor.SerializedProperty property)
 
 Aspid.FastTools.Types.Editors.TypeExtensions
@@ -1566,9 +1734,12 @@ Aspid.FastTools.Types.Editors.TypeField
     public class TypeField : UnityEngine.UIElements.BaseField<System.Type>
     public TypeField()
     public TypeField(UnityEditor.SerializedProperty property)
-    public TypeField(string label, System.Type defaultValue = null)
+    public TypeField(string label)
+    public TypeField(string label, System.Type defaultValue)
     public TypeField(string label, UnityEditor.SerializedProperty property)
     public Aspid.FastTools.Types.TypeAllow Allow { get; set; }
+    public string AssemblyQualifiedName { get; }
+    public bool ExcludeEditorOnlyTypes { get; set; }
     public bool HideNoneOption { get; set; }
     public bool IsReadOnly { get; set; }
     public System.Func<System.Type, bool> Predicate { get; set; }
@@ -1592,7 +1763,7 @@ Aspid.FastTools.Types.Editors.TypeSelectorFilter
 Aspid.FastTools.Types.Editors.TypeSelectorWindow
     public sealed class TypeSelectorWindow : UnityEditor.EditorWindow
     public TypeSelectorWindow()
-    public static void Show(UnityEngine.Rect screenRect, Aspid.FastTools.Types.Editors.TypeSelectorFilter filter = default, string currentAqn = "", System.Action<string> onSelected = null)
+    public static void Show(UnityEngine.Rect screenRect, Aspid.FastTools.Types.Editors.TypeSelectorFilter filter = default, string assemblyQualifiedName = "", System.Action<string> onSelected = null)
 
 Aspid.FastTools.UIElements.Editors.EnumFlagsFieldExtensions
     public static class EnumFlagsFieldExtensions
