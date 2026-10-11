@@ -1,7 +1,8 @@
 name: PR checks
 
 # pull_request_target: runs the base branch's copy with a write token, so labels work on fork PRs too.
-# It never checks out the PR's code — everything below reads the PR through the API only.
+# It never checks out the PR's code — everything below reads the PR through the API only. The title job checks out
+# scripts/ of the base branch, never of the PR, for the logic that scripts/*.test.mjs tests.
 on:
   pull_request_target:
     # No ready_for_review: neither job depends on the draft state.
@@ -16,12 +17,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Conventional Commits title with a known scope; sets the type, breaking-change and area labels.
+  # Conventional Commits title with a known scope; sets the type, breaking-change and area labels. A PR that takes a
+  # member line out of the public API snapshot needs `!` in the title.
   title:
     name: PR title
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # The job-level block replaces the workflow-level one: the checkout needs contents.
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts
+          persist-credentials: false
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -65,6 +76,9 @@ jobs:
               ['scripts/', 'area: ci'],
             ];
 
+            const { PUBLIC_API_PATH, PUBLIC_API_FORMAT_PATH, removedMemberLines, removedMemberLinesBetween, breakingTitleVerdict } =
+              await import(`${process.env.GITHUB_WORKSPACE}/scripts/public-api-breaks.mjs`);
+
             const pr = context.payload.pull_request;
             const { owner, repo } = context.repo;
             const title = pr.title;
@@ -99,6 +113,35 @@ jobs:
             // An area no changed file reaches any more (the PR moved on) loses its label.
             for (const label of new Set(AREAS.map(([, area]) => area)))
               if (current.includes(label) && !add.has(label)) remove.add(label);
+
+            // A member line that leaves the public API snapshot is a break, and only the title can say so. A line that
+            // only gains text is no loss. GitHub leaves `patch` out of a large diff; then the two versions of the file
+            // are compared instead. A PR that changes the snapshot writer too only gets a warning.
+            const apiFile = files.find(f => f.filename === PUBLIC_API_PATH);
+            if (m && apiFile) {
+              try {
+                let removed;
+                if (apiFile.patch !== undefined) removed = removedMemberLines(apiFile.patch);
+                else if (apiFile.status === 'added') removed = [];
+                else {
+                  const read = async (o, r, path, ref) =>
+                    String((await github.rest.repos.getContent({ owner: o, repo: r, path, ref, mediaType: { format: 'raw' } })).data);
+                  const before = await read(owner, repo, apiFile.previous_filename ?? apiFile.filename, pr.base.sha);
+                  const after = apiFile.status === 'removed'
+                    ? ''
+                    : await read(pr.head.repo.owner.login, pr.head.repo.name, apiFile.filename, pr.head.sha);
+                  removed = removedMemberLinesBetween(before, after);
+                }
+
+                const formatChanged = files.some(f => f.filename === PUBLIC_API_FORMAT_PATH);
+                const verdict = breakingTitleVerdict(removed, Boolean(m[3]), formatChanged);
+                if (verdict.error) errors.push(verdict.error);
+                if (verdict.warning) core.warning(verdict.warning);
+              } catch (error) {
+                // Not a failure of the PR: PublicApiSnapshotTests still compares the snapshot with the code.
+                core.warning(`Could not read the changes of PublicApi.txt: ${error.message}`);
+              }
+            }
 
             const toAdd = [...add].filter(l => !current.includes(l));
             if (toAdd.length) await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: toAdd });

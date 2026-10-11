@@ -95,7 +95,7 @@ The title rules, which CI checks:
 - At most **72 characters**.
 - No period at the end.
 - A type and a scope from [.claude/asp-pr.md](.claude/asp-pr.md). The scope is optional.
-- `!` before the colon for a breaking change.
+- `!` before the colon for a breaking change. CI requires it when the pull request removes or changes a line of the public API snapshot, `Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/PublicApi/PublicApi.txt` (a `#` comment line does not count, and neither does a line that only gains an interface or a base class, or the `[Flags]` of an enum). Add a migration note under Changed. A pull request that also changes `PublicApiSnapshot.cs`, the code that writes the snapshot, gets a warning instead: a maintainer judges the break by hand.
 
 Examples:
 
