@@ -49,6 +49,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [SerializeReference] public List<ITestWeapon> weapons = new();
     }
 
+    // A list of references where one kind holds references of its own, for the missing-type probe of a list with unsaved
+    // edits. The marker interface keeps these types out of the ITestWeapon pickers.
+    internal interface ITestGear { }
+
+    [Serializable]
+    internal sealed class TestBlade : ITestGear
+    {
+        public int damage;
+    }
+
+    [Serializable]
+    internal sealed class TestHolster : ITestGear
+    {
+        [SerializeReference] public ITestGear item;
+        [SerializeReference] public List<ITestGear> spares = new();
+    }
+
+    internal sealed class GearListTestObject : ScriptableObject
+    {
+        [SerializeReference] public List<ITestGear> gear = new();
+    }
+
     // A required managed reference and a required string type field.
     internal sealed class RequiredTestObject : ScriptableObject
     {
