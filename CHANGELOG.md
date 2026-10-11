@@ -124,6 +124,7 @@ First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releas
 
 ### Fixed
 
+- Unity 6000.6 no longer warns on import that seven of the package's stylesheet `.meta` files are below the supported serialized version.
 - `InsertChildren` and `InsertChildrenIf` skip a `null` entry without moving the index: `InsertChildren(0, a, null, b)` puts `b` right after `a`; it used to leave a gap or throw `ArgumentOutOfRangeException` at the end of the parent.
 - `SetValue`, `SetValueAndApply` and `SetValueAndApplyWithoutUndo` compile again with a `byte`, `sbyte`, `short`, `ushort` or `char` argument on Unity 6000.2 and later: the `EntityId` overload made the call ambiguous (CS0121). Each of these types now has its own overload that calls `SetInt`.
 - The XML documentation of the UI Toolkit extensions now matches the behavior: `SetValue(value, notify: true)` raises the change event only when the element is in a panel and the value differs; `SetPadding(8, 4)`, like `SetMargin`, `SetBorderWidth`, `SetBorderColor` and `SetDistance`, sets the top and the right side; a slider needs its range before `SetValue`; an inline lambda passed to `AddValueChanged` cannot be removed with `RemoveValueChanged`; on a `ListView` or `TreeView`, `AddChild` throws and `InsertChild`, `RemoveChildAt` and `ClearChildren` do nothing. Each method that exists only on newer Unity versions says `Available in Unity 6000.x and newer`.
