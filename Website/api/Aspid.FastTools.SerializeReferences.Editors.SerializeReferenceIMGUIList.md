@@ -66,3 +66,39 @@ Additional constraints below <code class="paramref">elementType</code>; <a href=
 
 <code class="paramref">listProperty</code> is not a managed-reference array.
 
+### Draw\(SerializedProperty, GUIContent, Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceIMGUIList_Draw_UnityEditor_SerializedProperty_UnityEngine_GUIContent_System_Type___}
+
+Draws a managed-reference list whose add button selects a type and appends an independent instance, taking the element type from the field declaration.
+
+```csharp
+public static void Draw(SerializedProperty listProperty, GUIContent label = null, Type[] baseTypes = null)
+```
+
+#### Parameters
+
+`listProperty` SerializedProperty
+
+An array/list property whose elements are managed references.
+
+`label` GUIContent
+
+The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses the display name of <code class="paramref">listProperty</code>, [`none`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/GUIContent-none.html) displays no label.
+
+`baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
+
+Additional constraints below the element type; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
+
+#### Remarks
+
+When the list is empty and its field cannot be found by reflection, the element type falls back to [`Object`](https://learn.microsoft.com/dotnet/api/system.object); call the overload with <code>elementType</code> then.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">listProperty</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">listProperty</code> is not a managed-reference array.
+

@@ -1289,7 +1289,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
                 filter: filter,
-                currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
+                assemblyQualifiedName: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
                 {
                     var type = string.IsNullOrEmpty(assemblyQualifiedName)
