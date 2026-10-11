@@ -30,6 +30,8 @@ The <code lang="class-name">T</code> variant offers only types compatible with <
 private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 ```
 
+Wrappers that store the same type name are equal, so they work as <code lang="class-name">Dictionary</code> and <code lang="class-name">HashSet</code> keys. <code lang="class-name">SerializableMonoScript</code> follows the same rule; <code lang="csharp">==</code> compares references.
+
 ### Missing type
 
 After a class, namespace or assembly rename, the stored name no longer resolves: the field shows `<Missing …>` with a **Missing type** notice under it. The caption gives the type name without its assembly; the tooltip gives the whole stored name.

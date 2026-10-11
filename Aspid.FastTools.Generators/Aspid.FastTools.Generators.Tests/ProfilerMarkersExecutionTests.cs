@@ -502,6 +502,57 @@ public class ProfilerMarkersExecutionTests
     }
 
     [Fact]
+    public void WithNameConstant_RenamesTheMarker()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    private const string Prefix = "Load";
+
+                    public void A() { using var _ = this.Marker().WithName(Prefix); /*a*/ }
+                    public void B() { using var _ = this.Marker().WithName(nameof(System.String)); /*b*/ }
+                    public void C() { using var _ = this.Marker().WithName(Prefix + ".Assets"); /*c*/ }
+                    public void D() { using var _ = this.Marker().WithName($"{Prefix}.{nameof(D)}"); /*d*/ }
+                }
+
+                public static class Probe { public static void Run() { var foo = new Foo(); foo.A(); foo.B(); foo.C(); foo.D(); } }
+            }
+            """;
+
+        Assert.Equal(new[]
+        {
+            $"Foo.Load ({LineOf(source, "a")})",
+            $"Foo.String ({LineOf(source, "b")})",
+            $"Foo.Load.Assets ({LineOf(source, "c")})",
+            $"Foo.Load.D ({LineOf(source, "d")})",
+        }, Run(source));
+    }
+
+    [Fact]
+    public void WithNameKnownOnlyAtRunTime_KeepsTheMemberName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    private static readonly string Field = "Field";
+                    private const string Prefix = "Load";
+
+                    public void A() { using var _ = this.Marker().WithName(Field); /*a*/ }
+                    public void B() { using var _ = this.Marker().WithName($"{Prefix,8}"); /*b*/ }
+                }
+
+                public static class Probe { public static void Run() { var foo = new Foo(); foo.A(); foo.B(); } }
+            }
+            """;
+
+        Assert.Equal(new[] { $"Foo.A ({LineOf(source, "a")})", $"Foo.B ({LineOf(source, "b")})" }, Run(source));
+    }
+
+    [Fact]
     public void StructAndRefStruct_OpenTheirMarkers()
     {
         const string source = """

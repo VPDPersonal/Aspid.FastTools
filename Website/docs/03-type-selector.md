@@ -24,6 +24,8 @@ The field offers only concrete two-handed weapons: classes derived from <code la
 | <code lang="csharp">[SerializeReference]</code> | Creates an instance of the selected implementation — see [SerializeReference Selector](04-serialize-reference-selector.md) |
 | An array or <code lang="class-name">List&lt;T&gt;</code> of these | Every element gets its own selector; for <code lang="csharp">[SerializeReference]</code>, see [Lists](04-serialize-reference-selector.md#lists) |
 
+The field must be one Unity serializes: public, or marked <code lang="csharp">[SerializeField]</code> or <code lang="csharp">[SerializeReference]</code>.
+
 > [!WARNING]
 > In a player, a string field is resolved by name, like [Serializable Types](02-serializable-types.md#types-in-a-player-build): a class used only through this selection may be stripped at **Managed Stripping Level** Low or higher.
 
@@ -173,6 +175,33 @@ Choose <code lang="class-name">Enchanted&lt;T&gt;</code> in the <code lang="clas
 - A generic argument can itself be generic: the window asks for its arguments first.
 - When every argument can be inferred from the field type, the closed type is returned immediately.
 - Interfaces, abstract classes, and hidden types are not offered as arguments.
+
+## TypeField
+
+<code lang="class-name">TypeField</code> is the Inspector's type field as a UI Toolkit element for a custom inspector or editor window. Bound to a <code lang="csharp">string</code> property, it stores the picked type's assembly-qualified name and follows edits made elsewhere:
+
+```csharp
+using Aspid.FastTools.Types.Editors;
+
+root.Add(new TypeField(serializedObject.FindProperty("_weaponName"))
+{
+    Types = new[] { typeof(Weapon) }
+});
+```
+
+Like the window below, it offers only concrete types until <code lang="csharp">Allow</code> lets others in. <code lang="class-name">InspectorTypeField</code> is the same field with its label aligned to the other Inspector rows.
+
+Without a property, the field reports the pick through its change event, and you store the name yourself:
+
+```csharp
+var field = new TypeField("Weapon") { Types = new[] { typeof(Weapon) } };
+field.SetValueFromAssemblyQualifiedNameWithoutNotify(_weaponName);
+field.RegisterValueChangedCallback(_ => _weaponName = field.AssemblyQualifiedName);
+```
+
+A stored name that no longer resolves shows as `<Missing …>`, and <code lang="csharp">AssemblyQualifiedName</code> keeps returning it until another type is picked.
+
+UXML creates an unbound field without base types: build a bound or constrained field in C#. For every property, see the API reference: [TypeField](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Types.Editors.TypeField).
 
 ## TypeSelectorWindow
 
