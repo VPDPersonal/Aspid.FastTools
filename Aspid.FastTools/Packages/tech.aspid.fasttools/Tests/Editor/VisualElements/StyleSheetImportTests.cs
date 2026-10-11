@@ -12,6 +12,7 @@ namespace Aspid.FastTools.UIElements.Tests
     /// <summary>
     /// Guards the package stylesheets against syntax the minimum supported Unity cannot parse. Before 6000.3 a single
     /// <c>#RGBA</c> or <c>#RRGGBBAA</c> value makes the importer drop the whole sheet, so every rule silently stops applying.
+    /// An unknown property or value only warns, and the importer drops that declaration.
     /// </summary>
     [TestFixture]
     internal sealed class StyleSheetImportTests
@@ -23,7 +24,7 @@ namespace Aspid.FastTools.UIElements.Tests
         private static readonly Regex AlphaHexColor = new(@"#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{4})\b");
 
         [Test]
-        public void PackageStyleSheets_ImportWithoutErrors()
+        public void PackageStyleSheets_ImportWithoutErrorsOrWarnings()
         {
             // A UXML also yields a StyleSheet (its inline styles), often empty, so only .uss files are checked.
             var paths = AssetDatabase.FindAssets("t:StyleSheet", new[] { PackagePath })
@@ -41,6 +42,8 @@ namespace Aspid.FastTools.UIElements.Tests
                 var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(path);
                 Assert.IsNotNull(styleSheet, $"{path} did not load as a StyleSheet.");
                 Assert.IsFalse(styleSheet.importedWithErrors, $"{path} was imported with errors.");
+                Assert.IsFalse(styleSheet.importedWithWarnings,
+                    $"{path} was imported with warnings; the importer drops each declaration it warns about.");
 
                 var rules = rulesProperty.GetValue(styleSheet) as ICollection;
                 Assert.IsNotNull(rules, $"{path} has no rules collection.");
