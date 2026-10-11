@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Reflection;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
@@ -23,6 +24,9 @@ namespace Aspid.FastTools.Editors.Tests
         private const string ActiveButtonClass = "aspid-fasttools-serialize-reference-window__toolbar-button--active";
         private const string ToolbarButtonClass = "aspid-fasttools-serialize-reference-window__toolbar-button";
         private const string FooterKeysClass = "aspid-fasttools-window-footer__keys";
+
+        // The name prompt sets this private flag in its first OnGUI. A rename there needs a rename here.
+        private const string PromptDrawnField = "_focused";
 
         private const int MaxFrames = 30;
 
@@ -94,8 +98,8 @@ namespace Aspid.FastTools.Editors.Tests
         }
 
         // The prompt is a pure IMGUI window: its OnGUI lays out a text field and two buttons by hand.
-        // The test cannot prove that OnGUI ran: it fails on a logged error or a closed window, nothing else.
-        // Closing the prompt with a sent Escape event would prove more, but it could not be tried without a display.
+        // A logged error or a closed window fails the test. The first OnGUI also sets a private flag, which proves that
+        // OnGUI ran at all: without it a window that never draws would pass.
         [UnityTest]
         public IEnumerator SerializeReferenceNamePrompt_Repaints_WithoutErrorAndStaysOpen()
         {
@@ -103,6 +107,18 @@ namespace Aspid.FastTools.Editors.Tests
             try
             {
                 prompt.ShowUtility();
+
+                var drawnField = typeof(SerializeReferenceNamePrompt)
+                    .GetField(PromptDrawnField, BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.IsNotNull(drawnField, $"The prompt must keep its {PromptDrawnField} flag.");
+
+                for (var frame = 0; frame < MaxFrames && !(bool)drawnField.GetValue(prompt); frame++)
+                {
+                    prompt.Repaint();
+                    yield return null;
+                }
+
+                Assert.IsTrue((bool)drawnField.GetValue(prompt), "OnGUI must run and focus the name field.");
 
                 for (var frame = 0; frame < 5; frame++)
                 {
