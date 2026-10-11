@@ -8,6 +8,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <remarks>
+        /// Call before <c>SetValue</c>: a slider clamps its value to the range.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
@@ -22,6 +25,9 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <remarks>
+        /// Call before <c>SetValue</c>: a slider clamps its value to the range.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>

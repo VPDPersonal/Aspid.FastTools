@@ -27,10 +27,6 @@ Provides extension methods for locating and opening the [`MonoScript`](https://d
 
 [`EditorWindow`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/EditorWindow.html) for selecting a type from a filtered hierarchy.
 
- [InspectorTypeField.UxmlSerializedData](Aspid.FastTools.Types.Editors.InspectorTypeField.UxmlSerializedData.md)
-
- [TypeField.UxmlSerializedData](Aspid.FastTools.Types.Editors.TypeField.UxmlSerializedData.md)
-
 ### Structs
 
  [TypeSelectorFilter](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md)

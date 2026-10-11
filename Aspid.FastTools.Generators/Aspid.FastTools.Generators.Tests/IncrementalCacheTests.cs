@@ -57,6 +57,36 @@ public class IncrementalCacheTests
         Assert.Contains($"\"{expectedLabel}\"", second);
     }
 
+    // A WithName() const declared in another file is read again when only that file changes.
+    [Fact]
+    public void ProfilerMarkers_ConstantEditedInAnotherFile_ChangesOutput()
+    {
+        const string target = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Run() { using var _ = this.Marker().WithName(Names.Load); }
+                }
+            }
+            """;
+
+        static string Names(string value) =>
+            $$"""namespace Sample { internal static class Names { public const string Load = "{{value}}"; } }""";
+
+        var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(new ProfilerMarkersGenerator());
+
+        driver = driver.RunGenerators(MakeCompilation(target, Names("A"), stubs));
+        var first = driver.GetRunResult().Results.Single().GeneratedSources.Single().SourceText.ToString();
+
+        driver = driver.RunGenerators(MakeCompilation(target, Names("B"), stubs));
+        var second = driver.GetRunResult().Results.Single().GeneratedSources.Single().SourceText.ToString();
+
+        Assert.Contains("\"Foo.A (5)\"", first);
+        Assert.Contains("\"Foo.B (5)\"", second);
+    }
+
     private static void AssertCachedAfterUnrelatedEdit(string targetSource, IIncrementalGenerator generator)
     {
         var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };

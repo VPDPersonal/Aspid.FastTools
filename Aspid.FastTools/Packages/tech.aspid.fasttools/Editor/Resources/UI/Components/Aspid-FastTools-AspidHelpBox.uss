@@ -44,7 +44,8 @@
     display:                                                    none;
 }
 
-/* The box always sits on the dark palette, so it keeps the dark-skin icons on either editor skin. */
+/* The icons follow the palette, not the editor skin: on the dark palette the box keeps the dark-skin icons on either
+   skin, and in an Aspid window on the light skin it sits on a light fill and takes the light-skin icons. */
 :root.aspid-fasttools-help-box--info {
     --aspid-fasttools-icons-help_box:                           resource("d_console.infoicon@2x");
 }
@@ -55,6 +56,18 @@
 
 :root.aspid-fasttools-help-box--error {
     --aspid-fasttools-icons-help_box:                           resource("d_console.erroricon@2x");
+}
+
+.aspid-fasttools-palette--light .aspid-fasttools-help-box--info {
+    --aspid-fasttools-icons-help_box:                           resource("console.infoicon@2x");
+}
+
+.aspid-fasttools-palette--light .aspid-fasttools-help-box--warning {
+    --aspid-fasttools-icons-help_box:                           resource("console.warnicon@2x");
+}
+
+.aspid-fasttools-palette--light .aspid-fasttools-help-box--error {
+    --aspid-fasttools-icons-help_box:                           resource("console.erroricon@2x");
 }
 
 .aspid-fasttools-help-box__text-container {

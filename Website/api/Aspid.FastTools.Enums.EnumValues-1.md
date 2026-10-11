@@ -16,7 +16,7 @@ Serializable dictionary that maps each member of a chosen enum to a value of typ
 
 ```csharp
 [Serializable]
-public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue?>>, IEnumerable, ISerializationCallbackReceiver
+public sealed class EnumValues<TValue> : IReadOnlyCollection<KeyValuePair<Enum, TValue?>>, IEnumerable<KeyValuePair<Enum, TValue?>>, IEnumerable, ISerializationCallbackReceiver
 ```
 
 #### Type Parameters
@@ -32,6 +32,7 @@ The type of the value associated with each enum member.
 
 #### Implements
 
+[IReadOnlyCollection\<KeyValuePair\<Enum, TValue?\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1),
 [IEnumerable\<KeyValuePair\<Enum, TValue?\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1),
 [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.ienumerable),
 ISerializationCallbackReceiver
@@ -94,6 +95,12 @@ When the enum type is already known at compile time, prefer
 [`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md) — its Inspector type-picker is read-only.
 </p>
 <p>
+A player resolves the enum by the stored name only, which managed code stripping does not see: from
+Managed Stripping Level Low up, an enum referenced only by this name can be removed from the build.
+The table then logs an error and returns the default value. Keep such enums with <code>[Preserve]</code> or
+<code>link.xml</code>.
+</p>
+<p>
 For <code>[Flags]</code> enums [`EnumValues<T>.Equals`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_Equals_System_Enum_System_Enum_) uses flag-containment semantics
 with special handling for the zero (<code>None</code>) value — two values are considered equal
 only when both are zero or both are non-zero and the first (the lookup value) has all bits
@@ -110,9 +117,28 @@ Iteration via [`EnumValues<T>.GetEnumerator`](Aspid.FastTools.Enums.EnumValues-1
 does <b>not</b> include the default value.
 </p>
 <p>
+Lookups and iteration may run on any thread, including the first access that initializes the
+entries, as long as Unity is not deserializing the table at the same time.
+</p>
+<p>
 Internal hot paths are wrapped in profiler markers; define the
 <code>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile them out.
 </p>
+
+## Properties
+
+### Count {#Aspid_FastTools_Enums_EnumValues_1_Count}
+
+Gets the number of entries [`EnumValues<T>.GetEnumerator`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_GetEnumerator) yields: the rows whose key resolved to an
+enum member, duplicate keys included. The default value is not counted.
+
+```csharp
+public int Count { get; }
+```
+
+#### Property Value
+
+ [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
 ## Methods
 
@@ -182,4 +208,89 @@ The enum member to look up.
 
 The mapped value, or the default value when no entry matches. A reference-type
 <code class="typeparamref">TValue</code> left unassigned in the Inspector is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+### GetValue\<TEnum\>\(TEnum\) {#Aspid_FastTools_Enums_EnumValues_1_GetValue__1___0_}
+
+Returns the value mapped to <code class="paramref">enumValue</code> like [`EnumValues<T>.GetValue`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_GetValue_System_Enum_),
+without boxing the key.
+
+```csharp
+public TValue? GetValue<TEnum>(TEnum enumValue) where TEnum : struct, Enum
+```
+
+#### Parameters
+
+`enumValue` TEnum
+
+The enum member to look up.
+
+#### Returns
+
+ TValue?
+
+The mapped value, or the default value when no entry matches. A <code class="typeparamref">TEnum</code>
+other than the configured enum type never matches.
+
+#### Type Parameters
+
+`TEnum` 
+
+The enum type of <code class="paramref">enumValue</code>.
+
+### TryGetValue\(Enum, out TValue?\) {#Aspid_FastTools_Enums_EnumValues_1_TryGetValue_System_Enum__0__}
+
+Looks up the value mapped to <code class="paramref">enumValue</code> and reports whether an entry matched.
+
+```csharp
+public bool TryGetValue(Enum enumValue, out TValue? value)
+```
+
+#### Parameters
+
+`enumValue` [Enum](https://learn.microsoft.com/dotnet/api/system.enum)
+
+The enum member to look up.
+
+`value` TValue?
+
+The mapped value, or the default value when no entry matches, as [`EnumValues<T>.GetValue`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_GetValue_System_Enum_) returns it.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if an entry matches; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+A <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> key, or a key of a different enum type than the configured one, never matches.
+
+### TryGetValue\<TEnum\>\(TEnum, out TValue?\) {#Aspid_FastTools_Enums_EnumValues_1_TryGetValue__1___0__0__}
+
+Looks up the value mapped to <code class="paramref">enumValue</code> like [`EnumValues<T>.TryGetValue`](Aspid.FastTools.Enums.EnumValues-1.md),
+without boxing the key.
+
+```csharp
+public bool TryGetValue<TEnum>(TEnum enumValue, out TValue? value) where TEnum : struct, Enum
+```
+
+#### Parameters
+
+`enumValue` TEnum
+
+The enum member to look up.
+
+`value` TValue?
+
+The mapped value, or the default value when no entry matches, as [`EnumValues<T>.GetValue<T>`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_GetValue__1___0_) returns it.
+
+#### Returns
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if an entry matches; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+A <code class="typeparamref">TEnum</code> other than the configured enum type never matches.
+
+#### Type Parameters
+
+`TEnum` 
+
+The enum type of <code class="paramref">enumValue</code>.
 

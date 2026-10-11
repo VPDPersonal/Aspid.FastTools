@@ -28,7 +28,7 @@ namespace Aspid.FastTools.Types.Editors
 
                 TypeSelectorWindow.Show(
                     GUIUtility.GUIToScreenRect(dropdownRect),
-                    CreateFilter(),
+                    CreateFilter(declaringType: fieldInfo.DeclaringType, property: property),
                     currentType.AssemblyQualifiedName,
                     onSelected: aqn => ReplaceComponentScript(persistent, currentType, TypeUtility.GetTypeOrNull(aqn)));
             }
@@ -43,33 +43,37 @@ namespace Aspid.FastTools.Types.Editors
         {
             var currentType = property.serializedObject.targetObject.GetType();
             var persistent = property.Persistent();
-            var filter = CreateFilter();
+            var filter = CreateFilter(declaringType: fieldInfo.DeclaringType, property: property);
 
             var field = new InspectorTypeField(label: null, defaultValue: currentType)
             {
                 Types = filter.Types,
                 Allow = filter.Allow,
                 HideNoneOption = filter.HideNoneOption,
+                ExcludeEditorOnlyTypes = filter.ExcludeEditorOnly,
             };
 
+            // The picker has already put the new type into the caption; whenever the swap is refused, now or on the
+            // next editor tick, the caption must go back to the type the object actually is.
             field.RegisterValueChangedCallback(evt =>
             {
-                // The swap is applied on the next editor tick (see ReplaceComponentScript); until then — and for good
-                // when no script is found — the caption must keep showing the type the object actually is.
-                if (!ReplaceComponentScript(persistent, currentType, evt.newValue))
-                    field.SetValueWithoutNotify(currentType);
+                if (!ReplaceComponentScript(persistent, currentType, evt.newValue, onRejected: RestoreCaption))
+                    RestoreCaption();
             });
 
             field.RegisterCallback<AttachToPanelEvent>(_ => HideScriptField(field));
 
             return field;
+
+            void RestoreCaption() => field.SetValueWithoutNotify(currentType);
         }
 
-        private TypeSelectorFilter CreateFilter() => new()
+        internal static TypeSelectorFilter CreateFilter(Type declaringType, SerializedProperty property) => new()
         {
-            Types = new[] { fieldInfo.DeclaringType },
+            Types = new[] { declaringType },
             Allow = TypeAllow.None,
             HideNoneOption = true,
+            ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
         };
 
         private static void HideScriptField(VisualElement field)
@@ -82,7 +86,13 @@ namespace Aspid.FastTools.Types.Editors
                 .ForEach(propertyField => propertyField.style.display = DisplayStyle.None);
         }
 
-        internal static bool ReplaceComponentScript(SerializedProperty property, Type oldType, Type newType)
+        // Returns false when the swap is refused at once. A true result only means it was scheduled: onRejected runs
+        // if the scheduled swap is refused later.
+        internal static bool ReplaceComponentScript(
+            SerializedProperty property,
+            Type oldType,
+            Type newType,
+            Action onRejected = null)
         {
             if (newType is null || newType == oldType) return false;
 
@@ -111,13 +121,22 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             // Deferred: the swap rebuilds the inspector, which must not happen from inside the current GUI/event pass.
-            EditorApplication.delayCall += () => SwapScript(property.serializedObject, script, newType);
+            EditorApplication.delayCall += () =>
+            {
+                if (!SwapScript(property.serializedObject, script, newType))
+                    onRejected?.Invoke();
+            };
 
             return true;
         }
 
         internal static string FindSwapConflict(Component component, Type newType)
         {
+            // An inherited component takes its script from the source prefab, and a changed m_Script is not an
+            // override: the swap would look done and be lost on save. Added components and objects have no source.
+            if (PrefabUtility.GetCorrespondingObjectFromSource(component))
+                return "it is inherited from a prefab; change its class in the source prefab.";
+
             var disallowingType = GetTypeDisallowingMultiple(newType);
 
             foreach (var other in component.GetComponents<Component>())
@@ -146,7 +165,7 @@ namespace Aspid.FastTools.Types.Editors
             return null;
         }
 
-        internal static void SwapScript(SerializedObject serializedObject, MonoScript script, Type newType)
+        internal static bool SwapScript(SerializedObject serializedObject, MonoScript script, Type newType)
         {
             Undo.IncrementCurrentGroup();
             Undo.SetCurrentGroupName($"Change Type to {newType.Name}");
@@ -164,12 +183,14 @@ namespace Aspid.FastTools.Types.Editors
                     // Unity has logged why (e.g. it conflicts with an existing component); keep the object as it was.
                     Undo.RevertAllDownToGroup(undoGroup);
                     Debug.LogWarning($"[ComponentTypeSelector] Cannot change {component.name} to {newType.Name}: it requires {required.Name}, which cannot be added.", component);
-                    return;
+                    return false;
                 }
             }
 
             serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
             Undo.CollapseUndoOperations(undoGroup);
+
+            return true;
         }
 
         // The component being swapped does not count: it is about to become newType.
