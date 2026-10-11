@@ -141,6 +141,59 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(picker.Offers(typeof(GenericPickerUnserializableBox<>)), "It has no [Serializable].");
             Assert.IsFalse(picker.Offers(typeof(Nullable<>)), "Unity does not serialize Nullable<T>.");
             Assert.IsFalse(picker.Offers(typeof(KeyValuePair<,>)), "Unity does not serialize KeyValuePair<,>.");
+            Assert.IsFalse(picker.Offers(typeof(Tuple<,>)), "Unity does not serialize Tuple<,>.");
+            Assert.IsFalse(picker.Offers(typeof(Dictionary<,>)), "Unity does not serialize Dictionary<,>.");
+            Assert.IsFalse(picker.Offers(typeof(HashSet<>)), "Unity does not serialize HashSet<T>.");
+            Assert.IsFalse(picker.Offers(typeof(Queue<>)), "Unity does not serialize Queue<T>.");
+            Assert.IsTrue(picker.Offers(typeof(List<>)), "Unity serializes List<T>.");
+        }
+
+        [Test]
+        public void ArgumentPage_FrameworkTypeUnityDrops_IsNotOffered()
+        {
+            var picker = Open(narrowingTypes: null);
+
+            picker.Pick(typeof(GenericPickerContainer<>));
+
+            Assert.IsFalse(picker.Offers(typeof(DateTime)), "DateTime carries [Serializable], but Unity drops it.");
+            Assert.IsFalse(picker.Offers(typeof(TimeSpan)), "TimeSpan carries [Serializable], but Unity drops it.");
+            Assert.IsFalse(picker.Offers(typeof(Guid)), "Guid carries [Serializable], but Unity drops it.");
+            Assert.IsFalse(picker.Offers(typeof(decimal)), "Decimal carries [Serializable], but Unity drops it.");
+            Assert.IsFalse(picker.Offers(typeof(object)), "Unity does not serialize a field of type object.");
+            Assert.IsTrue(picker.Offers(typeof(int)));
+            Assert.IsTrue(picker.Offers(typeof(string)));
+            Assert.IsTrue(picker.Offers(typeof(DayOfWeek)), "Unity serializes every enum, framework ones included.");
+        }
+
+        [Test]
+        public void ArgumentPage_List_ClosesTheArgument()
+        {
+            var picker = Open(narrowingTypes: null);
+
+            picker.Pick(typeof(GenericPickerContainer<>));
+            picker.Pick(typeof(List<>));
+
+            Assert.IsFalse(picker.Offers(typeof(DateTime)), "A List<DateTime> field is dropped as DateTime is.");
+            Assert.IsFalse(picker.Offers(typeof(GenericPickerUnserializableBox<int>)));
+
+            picker.Pick(typeof(int));
+
+            Assert.IsNull(picker.Error);
+            Assert.AreEqual(typeof(GenericPickerContainer<List<int>>).AssemblyQualifiedName, picker.Selected);
+        }
+
+        [Test]
+        public void ArgumentPage_ListOfList_IsNotStored()
+        {
+            var picker = Open(narrowingTypes: null);
+
+            picker.Pick(typeof(GenericPickerContainer<>));
+            picker.Pick(typeof(List<>));
+            picker.Pick(typeof(List<>));
+            picker.Pick(typeof(int));
+
+            Assert.IsNull(picker.Selected, "Unity keeps one level of List<T> and drops the field.");
+            StringAssert.Contains("List<List<Int32>>", picker.Error);
         }
 
         [Test]
