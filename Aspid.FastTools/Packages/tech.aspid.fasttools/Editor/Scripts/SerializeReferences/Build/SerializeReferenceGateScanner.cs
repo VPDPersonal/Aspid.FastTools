@@ -90,7 +90,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (options.ScanRequiredFields)
                 {
                     if (!isScene) CollectRequiredViolations(path, violations);
-                    else if (isTextYaml) CollectSceneRequiredViolations(path, violations, knownTextYaml: true);
+                    else if (isTextYaml) CollectSceneRequiredViolations(path, lines, violations);
                 }
 
                 if (!wasLoaded && AssetDatabase.IsMainAssetAtPathLoaded(path)) loadedSinceUnload++;
@@ -270,10 +270,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
-        private static void CollectSceneRequiredViolations(
-            string assetPath, List<GateViolation> violations, bool knownTextYaml = false)
+        private static void CollectSceneRequiredViolations(string assetPath, List<GateViolation> violations) =>
+            CollectSceneRequiredViolations(assetPath, SerializeReferenceYaml.ReadLines(assetPath), violations);
+
+        private static void CollectSceneRequiredViolations(string assetPath, string[] lines, List<GateViolation> violations)
         {
-            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript, knownTextYaml))
+            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(lines, RequiredFieldsForScript))
             {
                 violations.Add(new GateViolation(assetPath, entry.FileId, entry.Rid, default,
                     GateViolationKind.RequiredUnset, entry.FieldName));
