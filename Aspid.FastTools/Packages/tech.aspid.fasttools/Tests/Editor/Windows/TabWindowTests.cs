@@ -62,6 +62,20 @@ namespace Aspid.FastTools.Editors.Tests
         public void CurrentTabType_DefaultsToWelcome() =>
             Assert.AreEqual(TabType.Welcome, _window.CurrentTabType);
 
+        [TestCase(TabType.Welcome, false)]
+        [TestCase(TabType.AssetReference, false)]
+        [TestCase(TabType.ProjectReferences, false)]
+        [TestCase(TabType.Settings, true)]
+        public void KeysHintFor_NamesTheLeftAndRightArrowsOnlyWhereRowsStep(TabType tab, bool stepping)
+        {
+            var hint = TabWindow.KeysHintFor(tab);
+
+            StringAssert.Contains("↑↓ navigate", hint);
+            StringAssert.Contains("⏎ activate", hint);
+            StringAssert.Contains("esc dismiss", hint);
+            Assert.AreEqual(stepping, hint.Contains("←→ adjust"), $"{tab}: the left and right arrows are named only on a tab that has them.");
+        }
+
         [TestCase(TabType.AssetReference)]
         [TestCase(TabType.ProjectReferences)]
         [TestCase(TabType.Settings)]

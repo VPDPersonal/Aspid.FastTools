@@ -112,11 +112,33 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 this, preset.WaveStride, preset.WaveSpeed, preset.WaveAmplitude, onChanged: null);
 
             _animation = schedule.Execute(UpdateAnimation).Every(33);
+            _animation.Pause();
 
-            RegisterCallback<AttachToPanelEvent>(_ => _animation.Resume());
-            RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
+            RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+            RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
 
             Text = text;
+        }
+
+        internal bool IsAnimating => _animation.isActive;
+
+        private void OnAttachToPanel(AttachToPanelEvent _)
+        {
+            AspidAnimatedDotsBackgroundSettings.Changed += ApplyAnimationSetting;
+            ApplyAnimationSetting();
+        }
+
+        private void OnDetachFromPanel(DetachFromPanelEvent _)
+        {
+            AspidAnimatedDotsBackgroundSettings.Changed -= ApplyAnimationSetting;
+            _animation.Pause();
+        }
+
+        // With the "Animated background" setting off the letters keep their last frame and nothing ticks.
+        private void ApplyAnimationSetting()
+        {
+            if (AspidAnimatedDotsBackgroundSettings.Enabled) _animation.Resume();
+            else _animation.Pause();
         }
 
         private void Rebuild()

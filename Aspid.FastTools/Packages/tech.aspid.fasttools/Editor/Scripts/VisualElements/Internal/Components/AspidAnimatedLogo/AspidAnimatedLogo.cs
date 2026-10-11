@@ -24,6 +24,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private int _currentLayer;
         private bool _hovered;
+        private bool _animated = true;
         private float _pulseAmplitude;
         private IVisualElementScheduledItem _colorCycle;
         private IVisualElementScheduledItem _pulse;
@@ -113,25 +114,57 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
 
             _pulse = schedule.Execute(UpdatePulse).Every(AnimationIntervalMs);
+            _pulse.Pause();
 
-            RegisterCallback<AttachToPanelEvent>(_ =>
-            {
-                _pulse.Resume();
+            RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+            RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+        }
 
-                // Resume the existing item because StartColorCycle skips an already-created schedule.
-                if (_hovered) _colorCycle?.Resume();
-            });
-            RegisterCallback<DetachFromPanelEvent>(_ =>
+        internal bool IsPulsing => _pulse.isActive;
+
+        internal bool IsCyclingColors => _colorCycle is { isActive: true };
+
+        private void OnAttachToPanel(AttachToPanelEvent _)
+        {
+            AspidAnimatedDotsBackgroundSettings.Changed += ApplyAnimationSetting;
+            ApplyAnimationSetting();
+        }
+
+        private void OnDetachFromPanel(DetachFromPanelEvent _)
+        {
+            AspidAnimatedDotsBackgroundSettings.Changed -= ApplyAnimationSetting;
+            _pulse.Pause();
+            _colorCycle?.Pause();
+        }
+
+        // With the "Animated background" setting off neither the pulse nor the hover color cycle runs,
+        // and the logo returns to its first layer at its natural size.
+        private void ApplyAnimationSetting()
+        {
+            _animated = AspidAnimatedDotsBackgroundSettings.Enabled;
+
+            if (!_animated)
             {
                 _pulse.Pause();
-                _colorCycle?.Pause();
-            });
+                StopColorCycle();
+
+                _pulseAmplitude = 0f;
+                style.scale = StyleKeyword.Null;
+                return;
+            }
+
+            _pulse.Resume();
+            if (!_hovered) return;
+
+            // Resume the existing item because StartColorCycle skips an already-created schedule.
+            if (_colorCycle is null) StartColorCycle();
+            else _colorCycle.Resume();
         }
 
         private void OnPointerEnter(PointerEnterEvent evt)
         {
             _hovered = true;
-            StartColorCycle();
+            if (_animated) StartColorCycle();
         }
 
         private void OnPointerLeave(PointerLeaveEvent evt)
