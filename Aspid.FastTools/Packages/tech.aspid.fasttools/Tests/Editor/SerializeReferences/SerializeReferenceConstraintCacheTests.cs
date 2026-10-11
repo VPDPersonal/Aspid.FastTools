@@ -41,13 +41,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var probe = CreateUnloadedProbe(FirstPath);
 
-            Assert.AreEqual(typeof(ITestWeapon), NewGroup(probe).ResolveConstraint());
+            CollectionAssert.AreEqual(new[] { typeof(ITestWeapon) }, NewGroup(probe).ResolveConstraint());
             Assert.IsTrue(AssetDatabase.IsMainAssetAtPathLoaded(FirstPath), "The first group reads the asset.");
 
             EditorUtility.UnloadUnusedAssetsImmediate();
             Assume.That(AssetDatabase.IsMainAssetAtPathLoaded(FirstPath), Is.False);
 
-            Assert.AreEqual(typeof(ITestWeapon), NewGroup(probe).ResolveConstraint());
+            CollectionAssert.AreEqual(new[] { typeof(ITestWeapon) }, NewGroup(probe).ResolveConstraint());
             Assert.IsFalse(AssetDatabase.IsMainAssetAtPathLoaded(FirstPath),
                 "A later group must take the constraint from the cache instead of loading the asset again.");
         }
@@ -80,7 +80,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var group = NewGroup(first);
             group.Add(second.Path, new MissingReferenceEntry(second.FileId, second.Rid, group.StoredType));
 
-            Assert.AreEqual(typeof(ITestWeapon), group.ResolveConstraint());
+            CollectionAssert.AreEqual(new[] { typeof(ITestWeapon) }, group.ResolveConstraint());
             Assert.IsFalse(AssetDatabase.IsMainAssetAtPathLoaded(FirstPath),
                 "An asset loaded earlier in the pass must be unloaded before the pass ends.");
             Assert.IsFalse(AssetDatabase.IsMainAssetAtPathLoaded(SecondPath));
