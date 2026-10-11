@@ -1,4 +1,37 @@
-# TypeSelectorWindow and ComponentTypeSelector
+# TypeField, TypeSelectorWindow, ComponentTypeSelector and the CI gate
+
+## TypeField (editor code)
+
+```csharp
+using Aspid.FastTools.Types;
+using Aspid.FastTools.Types.Editors;
+
+// Bound: writes the assembly-qualified name with Undo and follows outside edits.
+root.Add(new TypeField(serializedObject.FindProperty("_weaponName"))
+{
+    Types = new[] { typeof(Weapon) },             // assignable to ALL of them; null entries are dropped
+    Allow = TypeAllow.None,                       // the default: concrete types only
+});
+
+// Unbound: store the name yourself.
+var field = new TypeField("Weapon") { Types = new[] { typeof(Weapon) } };
+field.SetValueFromAssemblyQualifiedNameWithoutNotify(_weaponName);
+field.RegisterValueChangedCallback(_ => _weaponName = field.AssemblyQualifiedName);
+```
+
+- `InspectorTypeField` is the same field with its label aligned to the Inspector rows.
+- The bound constructors accept only a string property; any other property throws `ArgumentException`.
+- A pick writes the property and calls `Update()` on the caller's `SerializedObject`, then sends
+  `ChangeEvent<Type>`: a handler can read the property and apply its own edits through that object. Edits not yet
+  applied to it are lost.
+- A stored name that no longer resolves shows `<Missing …>`. `value` is then `null`, but `AssemblyQualifiedName`
+  keeps the stored name: save `AssemblyQualifiedName`, not `value?.AssemblyQualifiedName`.
+- Other members: `Predicate`, `HideNoneOption`, `IsReadOnly`, `ExcludeEditorOnlyTypes` (a bound field sets it for
+  a property of a runtime object).
+- A closed generic base type (`IHandler<int>`) also offers the generic classes that close to it (`Handler<int>`).
+- On a prefab instance an overridden value gets a bold label and **Apply** / **Revert** in its context menu.
+- UXML creates an unbound field: `binding-path` does not bind it, and `Types` and `Predicate` have no UXML
+  attributes. Create a bound or constrained field in C#.
 
 ## TypeSelectorWindow (editor code)
 
@@ -9,13 +42,13 @@ using Aspid.FastTools.Types.Editors;
 TypeSelectorWindow.Show(
     screenRect,                                   // button rect in SCREEN coordinates
     new TypeSelectorFilter { Types = new[] { typeof(Weapon) }, Allow = TypeAllow.None },
-    currentAqn: selectedTypeName,
+    assemblyQualifiedName: selectedTypeName,
     onSelected: aqn => selectedTypeName = aqn);   // null for <None>; not called when dismissed
 ```
 
 - `TypeSelectorFilter` is a struct whose default `Allow` is `None` (the attribute's default is `All`). Other members:
   `Predicate`, `AdditionalTypes`, `ArgumentFilter`, `InferredArgumentFilter`, `IncludeHidden`, `HideNoneOption`.
-- `currentAqn: ""` (default) marks `<None>` as current; `null` marks nothing.
+- `assemblyQualifiedName: ""` (default) marks `<None>` as current; `null` marks nothing.
 - Picking an open generic type walks the user through its arguments and returns the closed type's name.
 
 ## ComponentTypeSelector
@@ -31,8 +64,32 @@ public abstract class EnemyBase : MonoBehaviour
 }
 ```
 
-The dropdown lists concrete subclasses of the declaring class (no `<None>`) and rewrites the object's script,
-keeping the fields both classes share. Each subclass must live in its own file named after the class, otherwise the
+The dropdown lists the declaring class (unless it is abstract) and its concrete subclasses, with no `<None>`, and
+rewrites the object's script, keeping the fields both classes share. On a runtime component it leaves out classes
+from editor-only assemblies. Each subclass must live in its own file named after the class, otherwise the
 switch is skipped with a Console warning. The switch adds the new class's `[RequireComponent]` components and is
 refused (with a warning) when it would duplicate a `[DisallowMultipleComponent]` class, drop a class another
-component requires, or need a component that cannot be added (an abstract class such as `Collider`).
+component requires, or need a component that cannot be added (an abstract class such as `Collider`). It is also
+refused for a component inherited from a prefab (an instance in a scene or a variant): Unity keeps no override for
+a changed script, so change the class in the source prefab. With several components selected, one refusal cancels
+the change for all of them.
+
+## CI gate
+
+Fails a CI job on missing types (`[SerializeReference]`, `SerializableType`, `SerializableMonoScript`) and, with
+`-srGateRequired`, on empty `Required = true` fields. Use this exact call. Do not invent another `-executeMethod`.
+
+```bash
+Unity -batchmode -projectPath . \
+  -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck \
+  -srGateReport SerializeReferenceGateReport.txt -srGateRequired -srGateFail
+```
+
+- `-batchmode` is required; without it the call is ignored.
+- `-srGateFail` fails on violations with exit code `1`. `-srGateWarnOnly` only logs them, exit code `0`. Without
+  either flag the **Build / CI gate** mode of the project settings applies, and `Off` skips the check.
+- Exit code `2` means the check itself failed.
+- `-srGateReport <path>` (default `SerializeReferenceGateReport.txt`; the folder must exist) gets one tab-separated
+  line per violation: `KIND assetPath fileId rid className fieldPath origin`. The report starts with `#` comment
+  lines (counts and files not scanned); skip empty lines and lines that start with `#`.
+- Details: [Build and CI checks](https://vpdpersonal.github.io/Aspid.FastTools/docs/serialize-reference-validation).

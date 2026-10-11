@@ -14,10 +14,11 @@ namespace Aspid.FastTools.Generators.Tests.Helpers;
 internal static class GeneratorTestHost
 {
     public const string StubsPath = "Stubs.cs";
+    public const string FallbackPath = "ProfilerMarkerExtensionsForGenerator.cs";
 
-    // Mirrors the runtime signatures of Unity.Profiling and ProfilerMarkerExtensionsForGenerator.
-    // The ProfilerMarker stub records every marker it opens, so Execute can show which one a call hit.
-    public const string ProfilerMarkerStubs = """
+    // Mirrors the runtime signatures of Unity.Profiling.ProfilerMarker.
+    // The stub records every marker it opens, so Execute can show which one a call hit.
+    public const string ProfilerMarkerStub = """
         namespace Unity.Profiling
         {
             public struct ProfilerMarker
@@ -33,13 +34,18 @@ internal static class GeneratorTestHost
                 public struct AutoScope : System.IDisposable { public void Dispose() { } }
             }
         }
-
-        public static class ProfilerMarkerExtensionsForGenerator
-        {
-            public static Unity.Profiling.ProfilerMarker.AutoScope Marker<T>(this T instance, [System.Runtime.CompilerServices.CallerLineNumber] int line = -1) => default;
-            public static Unity.Profiling.ProfilerMarker.AutoScope WithName(this in Unity.Profiling.ProfilerMarker.AutoScope marker, string name) => marker;
-        }
         """;
+
+    // The package's own ProfilerMarkerExtensionsForGenerator, embedded from the Unity package (see the test csproj),
+    // not a copy: a change to the real fallback must reach these tests.
+    public static readonly string FallbackSource = ReadFallbackSource();
+
+    // The package types a test compilation needs, each with the path its tree gets so the call scans can skip it.
+    public static readonly (string Path, string Source)[] PackageSources =
+    {
+        (StubsPath, ProfilerMarkerStub),
+        (FallbackPath, FallbackSource),
+    };
 
     // Unity compiles user code as C# 9 with ENABLE_PROFILER in the Editor and development builds,
     // so that is the default; without the symbol the compile checks would skip the marker fields entirely.
@@ -47,15 +53,17 @@ internal static class GeneratorTestHost
         RunProfilerMarkers(new[] { userSource }, enableProfiler);
 
     // Without stubs the package types must come from references (see EmitStubsReference).
+    // A generator from the committed DLL can replace the one built from the sources.
     public static GeneratorRun RunProfilerMarkers(
         string[] userSources,
         bool enableProfiler = true,
         MetadataReference[]? references = null,
-        bool includeStubs = true)
+        bool includeStubs = true,
+        ISourceGenerator? generator = null)
     {
         var parseOptions = ParseOptions(enableProfiler);
         var compilation = BuildCompilation(userSources, parseOptions, "TestCompilation", references ?? System.Array.Empty<MetadataReference>(), includeStubs);
-        return Run(compilation, new ProfilerMarkersGenerator(), parseOptions);
+        return Run(compilation, generator ?? new ProfilerMarkersGenerator().AsSourceGenerator(), parseOptions);
     }
 
     public static CSharpParseOptions ParseOptions(bool enableProfiler = true) =>
@@ -173,9 +181,17 @@ internal static class GeneratorTestHost
     {
         var parseOptions = ParseOptions();
         var compilation = BuildCompilation(new[] { source }, parseOptions, assemblyName, references, includeStubs: false);
-        var run = Run(compilation, new ProfilerMarkersGenerator(), parseOptions);
+        var run = Run(compilation, new ProfilerMarkersGenerator().AsSourceGenerator(), parseOptions);
         AssertNoErrors(run);
         return Emit(run.OutputCompilation);
+    }
+
+    private static string ReadFallbackSource()
+    {
+        using var stream = typeof(GeneratorTestHost).Assembly.GetManifestResourceStream(FallbackPath)
+            ?? throw new System.InvalidOperationException($"The test assembly does not embed {FallbackPath}");
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     private static MetadataReference Emit(Compilation compilation)
@@ -191,7 +207,7 @@ internal static class GeneratorTestHost
         var generatedTrees = run.RunResult.GeneratedTrees.ToHashSet();
         foreach (var tree in run.OutputCompilation.SyntaxTrees)
         {
-            if (generatedTrees.Contains(tree) || tree.FilePath == StubsPath) continue;
+            if (generatedTrees.Contains(tree) || PackageSources.Any(package => package.Path == tree.FilePath)) continue;
 
             var model = run.OutputCompilation.GetSemanticModel(tree);
             foreach (var call in tree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>())
@@ -202,10 +218,10 @@ internal static class GeneratorTestHost
         }
     }
 
-    private static GeneratorRun Run(CSharpCompilation compilation, IIncrementalGenerator generator, CSharpParseOptions parseOptions)
+    private static GeneratorRun Run(CSharpCompilation compilation, ISourceGenerator generator, CSharpParseOptions parseOptions)
     {
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            new[] { generator.AsSourceGenerator() },
+            new[] { generator },
             parseOptions: parseOptions);
 
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out _);
@@ -223,7 +239,7 @@ internal static class GeneratorTestHost
             .Select((s, i) => CSharpSyntaxTree.ParseText(s, parseOptions, path: $"User{i}.cs"));
 
         if (includeStubs)
-            trees = trees.Append(CSharpSyntaxTree.ParseText(ProfilerMarkerStubs, parseOptions, path: StubsPath));
+            trees = trees.Concat(PackageSources.Select(package => CSharpSyntaxTree.ParseText(package.Source, parseOptions, path: package.Path)));
 
         var trustedAssemblies = ((string)System.AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
         var references = trustedAssemblies

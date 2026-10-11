@@ -14,11 +14,6 @@ namespace Aspid.FastTools.Enums
         [Tooltip("The value returned for this entry's key.")]
         [SerializeField] private TValue? _value;
 
-#if UNITY_EDITOR
-        [Tooltip("The enum the key belongs to; mirrored from the parent so the drawer can pick the right field.")]
-        [SerializeField] private string? _enumType;
-#endif
-
         public Enum? Key { get; private set; }
 
         public long NumericKey { get; private set; }
@@ -29,7 +24,7 @@ namespace Aspid.FastTools.Enums
 
         public void Initialize(Type type)
         {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+#if !ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {

@@ -23,7 +23,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Observe runs for every element on every IMGUI event. Growth is the only layout change that can trigger a
         // fix, so within one editor tick an array is rescanned only when its size changes. A same-size edit that
         // skips InvalidateObservationMemo (a native drag reorder, raw user code) reaches the baseline only next tick,
-        // so a growth in that same tick is judged against the pre-edit layout.
+        // so a growth in that same tick is judged against the pre-edit layout: it no longer looks like the previous
+        // layout with one inserted element, and the guard skips it, leaving the alias for Make unique.
         private static readonly Dictionary<ArrayKey, int> _scannedSizes = new();
         private static long _scannedTick = -1;
 
@@ -154,7 +155,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // Require both a new index-to-ID binding and an increased occurrence count to exclude reorders.
+        // Require both a new index-to-ID binding and an increased occurrence count to exclude reorders, and that
+        // dropping the copy gives the previous layout back. The array path names a position, so after an outer
+        // element is deleted the same path can hold another element's list; that is not an insertion.
         internal static bool TryFindFreshDuplicate(
             IReadOnlyDictionary<int, long> previous,
             IReadOnlyDictionary<int, long> current,
@@ -186,8 +189,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (index < best) best = index;
             }
 
-            if (best == int.MaxValue) return false;
+            if (best == int.MaxValue || !IsPreviousWithInsertedElement(previous, current, best)) return false;
+
             duplicateIndex = best;
+            return true;
+        }
+
+        // The maps are sparse (an element without a valid id has no entry); only indexes after the insertion shift.
+        private static bool IsPreviousWithInsertedElement(
+            IReadOnlyDictionary<int, long> previous,
+            IReadOnlyDictionary<int, long> current,
+            int insertedIndex)
+        {
+            if (previous.Count != current.Count - 1) return false;
+
+            foreach (var pair in current)
+            {
+                if (pair.Key == insertedIndex) continue;
+
+                var previousIndex = pair.Key < insertedIndex ? pair.Key : pair.Key - 1;
+                if (!previous.TryGetValue(previousIndex, out var rid) || rid != pair.Value) return false;
+            }
+
             return true;
         }
 

@@ -26,5 +26,9 @@
         <ProjectReference Include="..\Aspid.FastTools.Generators\Aspid.FastTools.Generators.csproj" />
     </ItemGroup>
 
+    <!-- The package's real fallback class: compiled into every test compilation, so a change to it reaches these tests. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\Aspid.FastTools\Packages\tech.aspid.fasttools\Runtime\Scripts\ProfilerMarkers\ProfilerMarkerExtensionsForGenerator.cs" LogicalName="ProfilerMarkerExtensionsForGenerator.cs" />
+    </ItemGroup>
 
 </Project>

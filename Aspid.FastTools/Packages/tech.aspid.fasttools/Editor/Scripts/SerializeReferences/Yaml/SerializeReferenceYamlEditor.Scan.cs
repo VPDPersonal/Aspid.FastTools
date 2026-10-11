@@ -36,7 +36,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 for (var i = 0; i < lines.Length; i++)
                 {
                     var match = DocumentHeader.Match(lines[i]);
-                    if (match.Success && long.TryParse(match.Groups["id"].Value, out var fileId))
+                    if (match.Success && TryParseId(match.Groups["id"].Value, out var fileId))
                         headers.Add((fileId, i));
                 }
 
@@ -99,21 +99,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript,
             bool knownTextYaml = false)
         {
+            if (requiredFieldsForScript is null) return new List<RequiredViolationEntry>();
+
+            // One-shot bulk read like FindMissingReferences — bypass the probe cache so large scene files don't evict
+            // the interactive per-property entries (see SerializeReferenceYamlProbeCache remarks).
+            return FindUnsetRequiredFields(SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml), requiredFieldsForScript);
+        }
+
+        // The same check on lines already read, so a sweep that reads the file for other passes reads it once.
+        public static List<RequiredViolationEntry> FindUnsetRequiredFields(
+            string[] lines,
+            Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript)
+        {
             var result = new List<RequiredViolationEntry>();
-            if (requiredFieldsForScript is null) return result;
+            if (lines is null || requiredFieldsForScript is null) return result;
 
             try
             {
-                // One-shot bulk read like FindMissingReferences — bypass the probe cache so large scene files don't evict
-                // the interactive per-property entries (see SerializeReferenceYamlProbeCache remarks).
-                var lines = SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml);
-                if (lines is null) return result;
-
                 for (var i = 0; i < lines.Length; i++)
                 {
                     var header = DocumentHeader.Match(lines[i]);
                     if (!header.Success || header.Groups["class"].Value != MonoBehaviourClassId ||
-                        !long.TryParse(header.Groups["id"].Value, out var fileId)) continue;
+                        !TryParseId(header.Groups["id"].Value, out var fileId)) continue;
 
                     var docEnd = NextDocumentStart(lines, i + 1);
                     if (!TryReadScriptGuid(lines, i + 1, docEnd, out var guid, out var fieldIndent)) continue;
@@ -251,7 +258,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!field.Success || field.Groups["indent"].Length != fieldIndent) continue;
 
                 var inline = Regex.Match(field.Groups["inline"].Value, @"rid:\s*(-?\d+)");
-                if (inline.Success && long.TryParse(inline.Groups[1].Value, out var inlineRid))
+                if (inline.Success && TryParseId(inline.Groups[1].Value, out var inlineRid))
                 {
                     rid = inlineRid;
                     return inlineRid == NullRid ? FieldState.PresentUnset : FieldState.PresentSet;
@@ -263,7 +270,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (IndentOf(lines[j]) <= fieldIndent) break;
 
                     var child = Regex.Match(lines[j].Trim(), @"^rid:\s*(-?\d+)$");
-                    if (child.Success && long.TryParse(child.Groups[1].Value, out var childRid))
+                    if (child.Success && TryParseId(child.Groups[1].Value, out var childRid))
                     {
                         rid = childRid;
                         return childRid == NullRid ? FieldState.PresentUnset : FieldState.PresentSet;

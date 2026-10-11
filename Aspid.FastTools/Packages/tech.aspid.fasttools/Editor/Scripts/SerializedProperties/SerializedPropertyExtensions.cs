@@ -1,0 +1,98 @@
+using UnityEditor;
+using System.Collections.Generic;
+
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Editors
+{
+    /// <summary>
+    /// Provides extension methods for synchronizing and assigning <see cref="SerializedProperty"/> values.
+    /// </summary>
+    public static partial class SerializedPropertyExtensions
+    {
+        /// <summary>
+        /// Calls <see cref="SerializedObject.Update"/> on the property's serialized object and returns the property for chaining.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">The property whose serialized object should be updated.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T Update<T>(this T property)
+            where T : SerializedProperty
+        {
+            property.serializedObject.Update();
+            return property;
+        }
+
+        /// <summary>
+        /// Calls <see cref="SerializedObject.UpdateIfRequiredOrScript"/> on the property's serialized object and returns the property for chaining.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">The property whose serialized object should be conditionally updated.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T UpdateIfRequiredOrScript<T>(this T property)
+            where T : SerializedProperty
+        {
+            property.serializedObject.UpdateIfRequiredOrScript();
+            return property;
+        }
+
+        /// <summary>
+        /// Calls <see cref="SerializedObject.ApplyModifiedProperties"/> on the property's serialized object and returns the property for chaining.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">The property whose serialized object changes should be applied.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T ApplyModifiedProperties<T>(this T property)
+            where T : SerializedProperty
+        {
+            property.serializedObject.ApplyModifiedProperties();
+            return property;
+        }
+
+        /// <summary>
+        /// Calls <see cref="SerializedObject.ApplyModifiedPropertiesWithoutUndo"/> on the property's serialized object and returns the property for chaining.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">The property whose serialized object changes should be applied without registering an undo step.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T ApplyModifiedPropertiesWithoutUndo<T>(this T property)
+            where T : SerializedProperty
+        {
+            property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            return property;
+        }
+
+        /// <summary>
+        /// Returns the property at the same path on an independent <see cref="SerializedObject"/> with the same targets and context.
+        /// </summary>
+        /// <remarks>
+        /// The caller owns the serialized object of a non-<see langword="null"/> result and must dispose it when finished.
+        /// Pending changes on the source are not copied until they have been applied to its targets.
+        /// </remarks>
+        /// <param name="property">The source property.</param>
+        /// <returns>The independent property; otherwise, <see langword="null"/> if the path no longer exists on the targets.</returns>
+        public static SerializedProperty Persistent(this SerializedProperty property)
+        {
+            var source = property.serializedObject;
+            var serializedObject = new SerializedObject(source.targetObjects, source.context);
+            var persistent = serializedObject.FindProperty(property.propertyPath);
+            if (persistent is null) serializedObject.Dispose();
+
+            return persistent;
+        }
+
+        // Every yielded property is the same iterator, advanced for each child: copy it to keep one.
+        // The loop disposes both native copies, also when it ends early.
+        internal static IEnumerable<SerializedProperty> VisibleChildren(this SerializedProperty property)
+        {
+            using var iterator = property.Copy();
+            using var end = property.GetEndProperty();
+            var enterChildren = true;
+
+            while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
+            {
+                enterChildren = false;
+                yield return iterator;
+            }
+        }
+    }
+}

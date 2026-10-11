@@ -19,6 +19,120 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // occurrence count is the number of sentinels in the file.
         private const string NullSentinelType = "type: {class: , ns: , asm: }";
 
+        private const long UserRidFieldsFileId = 11400000L;
+        private const long UserRidFieldsTarget = 1002L;
+
+        // Fields of the user's own named rid hold 1002, the rid being cleared: one beside the object's other fields, the
+        // first key of a list element, the last field of a struct, the first field of a managed reference, the last
+        // field of a struct inside it, and the only field of another managed reference. Only _weapon and _list[0]
+        // point at rid 1002.
+        private const string UserRidFieldsAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: UserRidFields
+  rid: 1002
+  _weapon:
+    rid: 1002
+  _list:
+  - rid: 1002
+  - rid: 1003
+  _records:
+  - rid: 1002
+    _name: first
+  _config:
+    _name: config
+    rid: 1002
+  references:
+    version: 2
+    RefIds:
+    - rid: 1002
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+    - rid: 1003
+      type: {class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        rid: 1002
+        _pellets: 8
+        _ammo:
+          _count: 4
+          rid: 1002
+    - rid: 1004
+      type: {class: Counter, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        rid: 1002
+";
+
+        private const long BackingFieldsFileId = 11400000L;
+        private const long BackingFieldsTarget = 1002L;
+        private const long BackingFieldsDangling = 1005L;
+
+        // Scalar pointers under keys that do not start with a letter or an underscore: the backing field of a
+        // [field: SerializeReference] auto-property and a non-ASCII field name. Rid 1002 is pointed at three times, once
+        // inside another entry's data; rid 1005 has a pointer but no RefIds entry.
+        private const string BackingFieldsAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: BackingFields
+  <Weapon>k__BackingField:
+    rid: 1002
+  _оружие:
+    rid: 1002
+  <Holster>k__BackingField:
+    rid: 1003
+  <Spare>k__BackingField:
+    rid: 1005
+  references:
+    version: 2
+    RefIds:
+    - rid: 1002
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+    - rid: 1003
+      type: {class: Holster, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        <Weapon>k__BackingField:
+          rid: 1002
+";
+
+        private const long MixedIndentFileId = 11400000L;
+        private const long TabIndentedRid = 1001L;
+        private const long SpaceIndentedRid = 1002L;
+
+        // rid 1001 has a tab-indented data line, so nulling it bails after its pointer is already nulled in memory;
+        // rid 1002 is a normal space-indented entry. Built with explicit \t and \n so the indentation is unambiguous.
+        private const string MixedIndentAsset =
+            "%YAML 1.1\n" +
+            "%TAG !u! tag:unity3d.com,2011:\n" +
+            "--- !u!114 &11400000\n" +
+            "MonoBehaviour:\n" +
+            "  m_ObjectHideFlags: 0\n" +
+            "  m_Name: MixedIndentAsset\n" +
+            "  _first:\n" +
+            "    rid: 1001\n" +
+            "  _second:\n" +
+            "    rid: 1002\n" +
+            "  references:\n" +
+            "    version: 2\n" +
+            "    RefIds:\n" +
+            "    - rid: 1001\n" +
+            "      type: {class: GhostFirst, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}\n" +
+            "      data:\n" +
+            "\t\t\t\t\t\t\t\t_damage: 10\n" +
+            "    - rid: 1002\n" +
+            "      type: {class: GhostSecond, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}\n" +
+            "      data:\n" +
+            "        _damage: 20\n";
+
         [Test]
         public void TryNullReference_ListElement_NullsPointer_RemovesEntry_AddsSentinel()
         {
@@ -125,6 +239,92 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void NullReferences_SeveralEntries_WritesWhatOneNullPerEntryWrites()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, storedType: default),
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.FreezeEffectRid, storedType: default),
+            };
+
+            var path = YamlFixtures.WriteTemp(YamlFixtures.AliasedMissingTypePrefab);
+            var expectedPath = YamlFixtures.WriteTemp(YamlFixtures.AliasedMissingTypePrefab);
+            try
+            {
+                foreach (var entry in entries)
+                    Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(expectedPath, entry.FileId, entry.Rid));
+
+                Assert.AreEqual(entries.Length, SerializeReferenceYamlEditor.NullReferences(path, entries));
+
+                var after = File.ReadAllText(path);
+                Assert.AreEqual(File.ReadAllText(expectedPath), after,
+                    "One write for all entries must give the same file as one write per entry.");
+                Assert.AreEqual(1, CountOccurrences(after, NullSentinelType),
+                    "Every nulled entry shares Unity's single null sentinel.");
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+                YamlFixtures.Delete(expectedPath);
+            }
+        }
+
+        [Test]
+        public void NullReferences_EntryThatBails_KeepsItsPointer_AndTheOthersAreNulled()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(MixedIndentFileId, TabIndentedRid, storedType: default),
+                new MissingReferenceEntry(MixedIndentFileId, SpaceIndentedRid, storedType: default),
+            };
+
+            var path = YamlFixtures.WriteTemp(MixedIndentAsset);
+            try
+            {
+                Assert.AreEqual(1, SerializeReferenceYamlEditor.NullReferences(path, entries),
+                    "The tab-indented entry must bail; the space-indented one must still be nulled.");
+
+                // The bailed entry nulled its pointer before the indent check; that edit must not reach the file.
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, MixedIndentFileId, "_first", out var first));
+                Assert.AreEqual(TabIndentedRid, first, "The pointer of an entry that bailed must stay unchanged.");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, MixedIndentFileId, "_second", out var second));
+                Assert.AreEqual(-2, second);
+
+                var after = File.ReadAllText(path);
+                StringAssert.Contains("GhostFirst", after);
+                StringAssert.DoesNotContain("GhostSecond", after);
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void NullReferences_EveryEntryStale_ReturnsZero_AndLeavesFileUnchanged()
+        {
+            var entries = new[]
+            {
+                new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, rid: 987654, storedType: default),
+                new MissingReferenceEntry(fileId: 424242, YamlFixtures.GhostPistolRid, storedType: default),
+            };
+
+            var path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
+            try
+            {
+                var before = File.ReadAllText(path);
+                Assert.AreEqual(0, SerializeReferenceYamlEditor.NullReferences(path, entries));
+                Assert.AreEqual(before, File.ReadAllText(path), "A batch with nothing to null must not write the file.");
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
         public void CountPointersTo_AliasedRid_CountsEverySharedSlot()
         {
             var path = YamlFixtures.WriteTemp(YamlFixtures.AliasedMissingTypePrefab);
@@ -193,6 +393,130 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 Assert.AreEqual(0, SerializeReferenceYamlEditor.CountPointersTo(
                     path, YamlFixtures.MonoBehaviourFileId, 987654));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryNullReference_UserFieldsNamedRid_KeepTheirValues()
+        {
+            var path = YamlFixtures.WriteTemp(UserRidFieldsAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(path, UserRidFieldsFileId, UserRidFieldsTarget));
+
+                var after = File.ReadAllText(path);
+                Assert.AreEqual(6, CountOccurrences(after, "rid: 1002"), "Every field of the user's own named rid must keep 1002.");
+                StringAssert.DoesNotContain("GhostPistol", after);
+                Assert.AreEqual(1, CountOccurrences(after, NullSentinelType));
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, UserRidFieldsFileId, "_weapon", out var weapon));
+                Assert.AreEqual(-2, weapon, "The field pointer must be nulled.");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, UserRidFieldsFileId, "_list.Array.data[0]", out var first));
+                Assert.AreEqual(-2, first, "The list element pointer must be nulled.");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, UserRidFieldsFileId, "_list.Array.data[1]", out var second));
+                Assert.AreEqual(1003, second);
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void CountPointersTo_UserFieldsNamedRid_CountsOnlyPointers()
+        {
+            var path = YamlFixtures.WriteTemp(UserRidFieldsAsset);
+            try
+            {
+                Assert.AreEqual(2, SerializeReferenceYamlEditor.CountPointersTo(path, UserRidFieldsFileId, UserRidFieldsTarget));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryNullReference_PointersUnderBackingFieldAndNonAsciiKeys_AreNulled()
+        {
+            var path = YamlFixtures.WriteTemp(BackingFieldsAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(path, BackingFieldsFileId, BackingFieldsTarget));
+
+                var after = File.ReadAllText(path);
+                Assert.AreEqual(0, CountOccurrences(after, "rid: 1002"), "No pointer to the removed entry may survive.");
+                Assert.AreEqual(4, CountOccurrences(after, "rid: -2"), "Three nulled pointers and the null sentinel.");
+                StringAssert.DoesNotContain("GhostPistol", after);
+                StringAssert.Contains("Holster", after);
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, BackingFieldsFileId, "<Weapon>k__BackingField", out var weapon));
+                Assert.AreEqual(-2, weapon);
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, BackingFieldsFileId, "_оружие", out var other));
+                Assert.AreEqual(-2, other);
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void CountPointersTo_PointersUnderBackingFieldAndNonAsciiKeys_CountsThem()
+        {
+            var path = YamlFixtures.WriteTemp(BackingFieldsAsset);
+            try
+            {
+                Assert.AreEqual(3, SerializeReferenceYamlEditor.CountPointersTo(path, BackingFieldsFileId, BackingFieldsTarget));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryNullReference_DanglingPointerUnderBackingField_IsNulled()
+        {
+            var path = YamlFixtures.WriteTemp(BackingFieldsAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(path, BackingFieldsFileId, BackingFieldsDangling));
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, BackingFieldsFileId, "<Spare>k__BackingField", out var spare));
+                Assert.AreEqual(-2, spare);
+                Assert.AreEqual(1, CountOccurrences(File.ReadAllText(path), NullSentinelType));
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        // On CoreCLR, Swedish formats -2 with U+2212, which Unity cannot read.
+        [Test]
+        [SetCulture("sv-SE")]
+        public void TryNullReference_LocaleWithUnicodeMinus_WritesAsciiNullId()
+        {
+            var path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryNullReference(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid));
+
+                Assert.AreEqual(2, CountOccurrences(File.ReadAllText(path), "- rid: -2"),
+                    "The nulled pointer and the null sentinel must use an ASCII minus.");
             }
             finally
             {

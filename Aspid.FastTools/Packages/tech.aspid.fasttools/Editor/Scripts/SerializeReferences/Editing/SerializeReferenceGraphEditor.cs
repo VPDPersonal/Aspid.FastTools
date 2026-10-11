@@ -103,6 +103,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // on rescan. A path the API cannot reach is reported through a dialog and skipped.
         public static bool ApplyLive(string assetPath, long fileId, string graphPath, string assemblyQualifiedName)
         {
+            // The save below writes the asset file, which a prefab open in Prefab Mode would overwrite on its next save.
+            // A loaded scene needs no guard here: the live resolve below refuses every scene.
+            if (SerializeReferenceOpenCopyGuard.IsOpenInPrefabMode(assetPath) &&
+                SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
+
             var type = string.IsNullOrEmpty(assemblyQualifiedName)
                 ? null
                 : Type.GetType(assemblyQualifiedName, throwOnError: false);
@@ -123,9 +128,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             using (serializedObject)
             {
-                var previous = property.managedReferenceValue;
-                property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-                property.isExpanded = type is not null;
+                // A re-pick of the held type or a type the asset cannot hold writes nothing, so the asset is not saved.
+                if (!SerializeReferenceWriter.SetType(property, type)) return false;
 
                 var target = serializedObject.targetObject;
                 EditorUtility.SetDirty(target);
@@ -142,6 +146,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // routes above cannot reach, since such a field is never threaded into RefIds.
         public static bool ApplyRequiredString(GateViolation violation, string assemblyQualifiedName)
         {
+            if (SerializeReferenceOpenCopyGuard.IsOpenInPrefabMode(violation.AssetPath) &&
+                SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(violation.AssetPath)) return false;
+
             // A non-empty name that fails to load is an unresolved pick, not a clear. <None> writes an empty name,
             // which for a required field simply keeps the violation visible.
             if (!string.IsNullOrEmpty(assemblyQualifiedName) &&

@@ -14,7 +14,7 @@ pagination_next: null
 
 Provides extension methods for resolving Unity object display names.
 
- [SerializePropertyExtensions](Aspid.FastTools.Editors.SerializePropertyExtensions.md)
+ [SerializedPropertyExtensions](Aspid.FastTools.Editors.SerializedPropertyExtensions.md)
 
 Provides extension methods for synchronizing and assigning [`SerializedProperty`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedProperty.html) values.
 

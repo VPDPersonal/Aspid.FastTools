@@ -77,8 +77,6 @@ IMixedValueSupport
 [ManipulatorExtensions.AddKeyboardNavigationManipulator\<InspectorTypeField\>\(InspectorTypeField, Action\<KeyboardNavigationOperation, EventBase\>\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_AddKeyboardNavigationManipulator__1___0_System_Action_UnityEngine_UIElements_KeyboardNavigationOperation_UnityEngine_UIElements_EventBase__),
 [ManipulatorExtensions.AddKeyboardNavigationManipulator\<InspectorTypeField\>\(InspectorTypeField, Action\<KeyboardNavigationOperation, EventBase\>, out KeyboardNavigationManipulator\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_AddKeyboardNavigationManipulator__1___0_System_Action_UnityEngine_UIElements_KeyboardNavigationOperation_UnityEngine_UIElements_EventBase__UnityEngine_UIElements_KeyboardNavigationManipulator__),
 [ManipulatorExtensions.AddManipulatorSelf\<InspectorTypeField\>\(InspectorTypeField, IManipulator\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_AddManipulatorSelf__1___0_UnityEngine_UIElements_IManipulator_),
-[TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<InspectorTypeField, TValue\>\(InspectorTypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<InspectorTypeField, TValue\>\(InspectorTypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [VisualElementExtensions.AddOpenScriptCommand\<InspectorTypeField\>\(InspectorTypeField, Object\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_),
 [VisualElementExtensions.AddStyleSheet\<InspectorTypeField\>\(InspectorTypeField, StyleSheet?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_),
 [VisualElementExtensions.AddStyleSheetFromResources\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_AddStyleSheetFromResources__1___0_System_String_),
@@ -175,6 +173,10 @@ IMixedValueSupport
 [VisualElementExtensions.InsertStyleSheetsIf\<InspectorTypeField\>\(InspectorTypeField, bool, int, ReadOnlySpan\<StyleSheet\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_InsertStyleSheetsIf__1___0_System_Boolean_System_Int32_System_ReadOnlySpan_UnityEngine_UIElements_StyleSheet__),
 [FocusableExtensions.IsFocused\(Focusable\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_IsFocused_UnityEngine_UIElements_Focusable_),
 [ProfilerMarkerExtensionsForGenerator.Marker\<InspectorTypeField\>\(InspectorTypeField, int\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_),
+[CallbackEventHandlerExtensions.RegisterCallbackOnceSelf\<InspectorTypeField, TEventType\>\(InspectorTypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackOnceSelf\<InspectorTypeField, TEventType, TUserArgsType\>\(InspectorTypeField, EventCallback\<TEventType, TUserArgsType\>, TUserArgsType, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__3___0_UnityEngine_UIElements_EventCallback___1___2____2_UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackSelf\<InspectorTypeField, TEventType\>\(InspectorTypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.RegisterCallbackSelf\<InspectorTypeField, TEventType, TUserArgsType\>\(InspectorTypeField, EventCallback\<TEventType, TUserArgsType\>, TUserArgsType, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackSelf__3___0_UnityEngine_UIElements_EventCallback___1___2____2_UnityEngine_UIElements_TrickleDown_),
 [VisualElementExtensions.RemoveBoldUnityFontStyleAndWeight\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveBoldUnityFontStyleAndWeight__1___0_),
 [VisualElementExtensions.RemoveChild\<InspectorTypeField\>\(InspectorTypeField, VisualElement?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChild__1___0_UnityEngine_UIElements_VisualElement_),
 [VisualElementExtensions.RemoveChildAt\<InspectorTypeField\>\(InspectorTypeField, int\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveChildAt__1___0_System_Int32_),
@@ -200,8 +202,6 @@ IMixedValueSupport
 [VisualElementExtensions.RemoveClassesIf\<InspectorTypeField\>\(InspectorTypeField, bool, ReadOnlySpan\<string\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__),
 [VisualElementExtensions.RemoveItalicUnityFontStyleAndWeight\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveItalicUnityFontStyleAndWeight__1___0_),
 [ManipulatorExtensions.RemoveManipulatorSelf\<InspectorTypeField\>\(InspectorTypeField, IManipulator\)](Aspid.FastTools.UIElements.ManipulatorExtensions.md#Aspid_FastTools_UIElements_ManipulatorExtensions_RemoveManipulatorSelf__1___0_UnityEngine_UIElements_IManipulator_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<InspectorTypeField, TValue\>\(InspectorTypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
-[TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<InspectorTypeField, TValue\>\(InspectorTypeField, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [VisualElementExtensions.RemoveStyleSheet\<InspectorTypeField\>\(InspectorTypeField, StyleSheet?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheet__1___0_UnityEngine_UIElements_StyleSheet_),
 [VisualElementExtensions.RemoveStyleSheetFromResources\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetFromResources__1___0_System_String_),
 [VisualElementExtensions.RemoveStyleSheetFromResourcesIf\<InspectorTypeField\>\(InspectorTypeField, bool, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_RemoveStyleSheetFromResourcesIf__1___0_System_Boolean_System_String_),
@@ -230,10 +230,11 @@ IMixedValueSupport
 [VisualElementExtensions.SetAlignSelf\<InspectorTypeField\>\(InspectorTypeField, StyleEnum\<Align\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignSelf__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Align__),
 [VisualElementExtensions.SetAlignSelf\<InspectorTypeField\>\(InspectorTypeField, Align\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetAlignSelf__1___0_UnityEngine_UIElements_Align_),
 [VisualElementExtensions.SetAspectRatio\<InspectorTypeField\>\(InspectorTypeField, StyleRatio\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetAspectRatio__1___0_UnityEngine_UIElements_StyleRatio_),
-[TextInputBaseFieldExtensions.SetAutoCorrection\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetAutoCorrection__2___0_System_Boolean_),
 [VisualElementExtensions.SetBackgroundColor\<InspectorTypeField\>\(InspectorTypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetBackgroundColor\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundColor__1___0_System_String_),
 [VisualElementExtensions.SetBackgroundImage\<InspectorTypeField\>\(InspectorTypeField, StyleBackground\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_StyleBackground_),
+[VisualElementExtensions.SetBackgroundImage\<InspectorTypeField\>\(InspectorTypeField, Sprite\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_Sprite_),
+[VisualElementExtensions.SetBackgroundImage\<InspectorTypeField\>\(InspectorTypeField, VectorImage\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImage__1___0_UnityEngine_UIElements_VectorImage_),
 [VisualElementExtensions.SetBackgroundImageFromResources\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundImageFromResources__1___0_System_String_),
 [VisualElementExtensions.SetBackgroundPosition\<InspectorTypeField\>\(InspectorTypeField, StyleBackgroundPosition\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_UnityEngine_UIElements_StyleBackgroundPosition_),
 [VisualElementExtensions.SetBackgroundPosition\<InspectorTypeField\>\(InspectorTypeField, StyleBackgroundPosition?, StyleBackgroundPosition?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetBackgroundPosition__1___0_System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__System_Nullable_UnityEngine_UIElements_StyleBackgroundPosition__),
@@ -279,11 +280,9 @@ IMixedValueSupport
 [VisualElementExtensions.SetColor\<InspectorTypeField\>\(InspectorTypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetColor\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetColor__1___0_System_String_),
 [VisualElementExtensions.SetCursor\<InspectorTypeField\>\(InspectorTypeField, StyleCursor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetCursor__1___0_UnityEngine_UIElements_StyleCursor_),
-[TextInputBaseFieldTextSelectionExtensions.SetCursorIndex\<InspectorTypeField, TValue\>\(InspectorTypeField, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetCursorIndex__2___0_System_Int32_),
 [VisualElementExtensions.SetDataSource\<InspectorTypeField\>\(InspectorTypeField, object\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSource__1___0_System_Object_),
 [VisualElementExtensions.SetDataSourcePath\<InspectorTypeField\>\(InspectorTypeField, PropertyPath\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSourcePath__1___0_Unity_Properties_PropertyPath_),
 [VisualElementExtensions.SetDataSourceType\<InspectorTypeField\>\(InspectorTypeField, Type\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDataSourceType__1___0_System_Type_),
-[TextInputBaseFieldExtensions.SetDelayed\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetDelayed__2___0_System_Boolean_),
 [FocusableExtensions.SetDelegatesFocus\<InspectorTypeField\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_SetDelegatesFocus__1___0_System_Boolean_),
 [VisualElementExtensions.SetDisablePlayModeTint\<InspectorTypeField\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDisablePlayModeTint__1___0_System_Boolean_),
 [VisualElementExtensions.SetDisplay\<InspectorTypeField\>\(InspectorTypeField, StyleEnum\<DisplayStyle\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDisplay__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_DisplayStyle__),
@@ -292,7 +291,6 @@ IMixedValueSupport
 [VisualElementExtensions.SetDistance\<InspectorTypeField\>\(InspectorTypeField, StyleLength?, StyleLength?, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistance__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
 [VisualElementExtensions.SetDistanceX\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistanceX__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetDistanceY\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetDistanceY__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldTextSelectionExtensions.SetDoubleClickSelectsWord\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetDoubleClickSelectsWord__2___0_System_Boolean_),
 [VisualElementExtensions.SetEnabledSelf\<InspectorTypeField\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetEnabledSelf__1___0_System_Boolean_),
 [VisualElementExtensions.SetFilter\<InspectorTypeField\>\(InspectorTypeField, StyleList\<FilterFunction\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetFilter__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_FilterFunction__),
 [VisualElementExtensions.SetFlexBasis\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetFlexBasis__1___0_UnityEngine_UIElements_StyleLength_),
@@ -305,18 +303,12 @@ IMixedValueSupport
 [FocusableExtensions.SetFocusable\<InspectorTypeField\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.FocusableExtensions.md#Aspid_FastTools_UIElements_FocusableExtensions_SetFocusable__1___0_System_Boolean_),
 [VisualElementExtensions.SetFontSize\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetFontSize__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetHeight\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetHeight__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetHideMobileInput\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideMobileInput__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHidePlaceholderOnFocus\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHidePlaceholderOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldExtensions.SetHideSoftKeyboard\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideSoftKeyboard__2___0_System_Boolean_),
-[SliderExtensions.SetHighValue\<InspectorTypeField, TValue\>\(InspectorTypeField, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_),
 [VisualElementExtensions.SetJustifyContent\<InspectorTypeField\>\(InspectorTypeField, StyleEnum\<Justify\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetJustifyContent__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Justify__),
 [VisualElementExtensions.SetJustifyContent\<InspectorTypeField\>\(InspectorTypeField, Justify\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetJustifyContent__1___0_UnityEngine_UIElements_Justify_),
-[TextInputBaseFieldExtensions.SetKeyboardType\<InspectorTypeField, TValue\>\(InspectorTypeField, TouchScreenKeyboardType\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetKeyboardType__2___0_UnityEngine_TouchScreenKeyboardType_),
 [BaseFieldExtensions.SetLabel\<InspectorTypeField, TValue\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.BaseFieldExtensions.md#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_),
 [VisualElementExtensions.SetLanguageDirection\<InspectorTypeField\>\(InspectorTypeField, LanguageDirection\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetLanguageDirection__1___0_UnityEngine_UIElements_LanguageDirection_),
 [VisualElementExtensions.SetLeft\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetLeft__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetLetterSpacing\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetLetterSpacing__1___0_UnityEngine_UIElements_StyleLength_),
-[SliderExtensions.SetLowValue\<InspectorTypeField, TValue\>\(InspectorTypeField, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_),
 [VisualElementExtensions.SetMargin\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMargin__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMargin\<InspectorTypeField\>\(InspectorTypeField, StyleLength?, StyleLength?, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMargin__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
 [VisualElementExtensions.SetMarginBottom\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginBottom__1___0_UnityEngine_UIElements_StyleLength_),
@@ -325,9 +317,7 @@ IMixedValueSupport
 [VisualElementExtensions.SetMarginTop\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginTop__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMarginX\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginX__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMarginY\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMarginY__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetMaskChar\<InspectorTypeField, TValue\>\(InspectorTypeField, char\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaskChar__2___0_System_Char_),
 [VisualElementExtensions.SetMaxHeight\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxHeight__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetMaxLength\<InspectorTypeField, TValue\>\(InspectorTypeField, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaxLength__2___0_System_Int32_),
 [VisualElementExtensions.SetMaxSize\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxSize__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetMaxSize\<InspectorTypeField\>\(InspectorTypeField, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxSize__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
 [VisualElementExtensions.SetMaxWidth\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetMaxWidth__1___0_UnityEngine_UIElements_StyleLength_),
@@ -348,19 +338,12 @@ IMixedValueSupport
 [VisualElementExtensions.SetPaddingTop\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingTop__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetPaddingX\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingX__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetPaddingY\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPaddingY__1___0_UnityEngine_UIElements_StyleLength_),
-[TextInputBaseFieldExtensions.SetPassword\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPassword__2___0_System_Boolean_),
 [VisualElementExtensions.SetPickingMode\<InspectorTypeField\>\(InspectorTypeField, PickingMode\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPickingMode__1___0_UnityEngine_UIElements_PickingMode_),
-[TextInputBaseFieldExtensions.SetPlaceholder\<InspectorTypeField, TValue\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPlaceholder__2___0_System_String_),
 [VisualElementExtensions.SetPosition\<InspectorTypeField\>\(InspectorTypeField, StyleEnum\<Position\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPosition__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_Position__),
 [VisualElementExtensions.SetPosition\<InspectorTypeField\>\(InspectorTypeField, Position\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetPosition__1___0_UnityEngine_UIElements_Position_),
-[TextInputBaseFieldExtensions.SetReadOnly\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetReadOnly__2___0_System_Boolean_),
 [VisualElementExtensions.SetRight\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetRight__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetRotate\<InspectorTypeField\>\(InspectorTypeField, StyleRotate\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetRotate__1___0_UnityEngine_UIElements_StyleRotate_),
 [VisualElementExtensions.SetScale\<InspectorTypeField\>\(InspectorTypeField, StyleScale\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetScale__1___0_UnityEngine_UIElements_StyleScale_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnFocus\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnFocus__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnMouseUp\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnMouseUp__2___0_System_Boolean_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectIndex\<InspectorTypeField, TValue\>\(InspectorTypeField, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectIndex__2___0_System_Int32_),
-[TextInputBaseFieldTextSelectionExtensions.SetSelectable\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectable__2___0_System_Boolean_),
 [IMixedValueSupportExtensions.SetShowMixedValue\<InspectorTypeField\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.IMixedValueSupportExtensions.md#Aspid_FastTools_UIElements_IMixedValueSupportExtensions_SetShowMixedValue__1___0_System_Boolean_),
 [VisualElementExtensions.SetSize\<InspectorTypeField\>\(InspectorTypeField, StyleLength\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetSize__1___0_UnityEngine_UIElements_StyleLength_),
 [VisualElementExtensions.SetSize\<InspectorTypeField\>\(InspectorTypeField, StyleLength?, StyleLength?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetSize__1___0_System_Nullable_UnityEngine_UIElements_StyleLength__System_Nullable_UnityEngine_UIElements_StyleLength__),
@@ -376,7 +359,6 @@ IMixedValueSupport
 [VisualElementExtensions.SetTransitionProperty\<InspectorTypeField\>\(InspectorTypeField, StyleList\<StylePropertyName\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionProperty__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_StylePropertyName__),
 [VisualElementExtensions.SetTransitionTimingFunction\<InspectorTypeField\>\(InspectorTypeField, StyleList\<EasingFunction\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetTransitionTimingFunction__1___0_UnityEngine_UIElements_StyleList_UnityEngine_UIElements_EasingFunction__),
 [VisualElementExtensions.SetTranslate\<InspectorTypeField\>\(InspectorTypeField, StyleTranslate\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetTranslate__1___0_UnityEngine_UIElements_StyleTranslate_),
-[TextInputBaseFieldTextSelectionExtensions.SetTripleClickSelectsLine\<InspectorTypeField, TValue\>\(InspectorTypeField, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetTripleClickSelectsLine__2___0_System_Boolean_),
 [VisualElementExtensions.SetUnityBackgroundImageTintColor\<InspectorTypeField\>\(InspectorTypeField, StyleColor\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityBackgroundImageTintColor__1___0_UnityEngine_UIElements_StyleColor_),
 [VisualElementExtensions.SetUnityBackgroundImageTintColor\<InspectorTypeField\>\(InspectorTypeField, string\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityBackgroundImageTintColor__1___0_System_String_),
 [VisualElementExtensions.SetUnityEditorTextRenderingMode\<InspectorTypeField\>\(InspectorTypeField, StyleEnum\<EditorTextRenderingMode\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_SetUnityEditorTextRenderingMode__1___0_UnityEngine_UIElements_StyleEnum_UnityEngine_UIElements_EditorTextRenderingMode__),
@@ -431,7 +413,9 @@ IMixedValueSupport
 [VisualElementExtensions.ToggleClassesIf\<InspectorTypeField\>\(InspectorTypeField, bool, List\<string\>?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_List_System_String__),
 [VisualElementExtensions.ToggleClassesIf\<InspectorTypeField\>\(InspectorTypeField, bool, IEnumerable\<string?\>?\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_Collections_Generic_IEnumerable_System_String__),
 [VisualElementExtensions.ToggleClassesIf\<InspectorTypeField\>\(InspectorTypeField, bool, ReadOnlySpan\<string\>\)](Aspid.FastTools.UIElements.VisualElementExtensions.md#Aspid_FastTools_UIElements_VisualElementExtensions_ToggleClassesIf__1___0_System_Boolean_System_ReadOnlySpan_System_String__),
-[VisualElementExtensions.UnbindFrom\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_)
+[VisualElementExtensions.UnbindFrom\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_),
+[CallbackEventHandlerExtensions.UnregisterCallbackSelf\<InspectorTypeField, TEventType\>\(InspectorTypeField, EventCallback\<TEventType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_),
+[CallbackEventHandlerExtensions.UnregisterCallbackSelf\<InspectorTypeField, TEventType, TUserArgsType\>\(InspectorTypeField, EventCallback\<TEventType, TUserArgsType\>, TrickleDown\)](Aspid.FastTools.UIElements.CallbackEventHandlerExtensions.md#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_UnregisterCallbackSelf__3___0_UnityEngine_UIElements_EventCallback___1___2__UnityEngine_UIElements_TrickleDown_)
 
 ## Constructors
 
@@ -457,6 +441,16 @@ public InspectorTypeField(SerializedProperty property)
 
 The string property storing the assembly-qualified type name.
 
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
 ### InspectorTypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_UnityEditor_SerializedProperty_}
 
 Creates an Inspector-aligned field bound to a type-name property.
@@ -475,12 +469,43 @@ The field label, or <a href="https://learn.microsoft.com/dotnet/csharp/language-
 
 The string property storing the assembly-qualified type name.
 
+#### Remarks
+
+Before [`ChangeEvent<T>`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/UIElements.ChangeEvent_1.html) is sent, a pick writes the property and calls
+[`Update`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.Update.html) on the [`SerializedObject`](https://docs.unity3d.com/6000.4/Documentation/ScriptReference/SerializedObject.html) of <code class="paramref">property</code>:
+a change handler reads the picked name from <code class="paramref">property</code>, and edits it applies through that
+object keep the pick. Changes not yet applied to that object are lost.
+
+#### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+<code class="paramref">property</code> is not a string property, or its path no longer exists on its targets.
+
+### InspectorTypeField\(string\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_}
+
+Creates an unbound Inspector-aligned field without an initial type.
+
+```csharp
+public InspectorTypeField(string label)
+```
+
+#### Parameters
+
+`label` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The field label, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for no label.
+
 ### InspectorTypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_System_Type_}
 
 Creates an unbound Inspector-aligned field with an initial type.
 
 ```csharp
-public InspectorTypeField(string label, Type defaultValue = null)
+public InspectorTypeField(string label, Type defaultValue)
 ```
 
 #### Parameters

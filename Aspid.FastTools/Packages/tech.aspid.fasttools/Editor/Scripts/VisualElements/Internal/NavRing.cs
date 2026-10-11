@@ -77,6 +77,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             });
         }
 
+        // Does nothing when the element is not a registered target.
+        public void Focus(VisualElement element, bool scrollTo = true)
+        {
+            for (var i = 0; i < _targets.Count; i++)
+            {
+                if (_targets[i].Element != element) continue;
+
+                Focus(i, scrollTo);
+                return;
+            }
+        }
+
         public void Rebuild(Action register)
         {
             var slot = _index;
