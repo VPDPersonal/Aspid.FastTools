@@ -22,14 +22,18 @@ public sealed class DamageConfig : ScriptableObject
 }
 ```
 
-- Default to `EnumValues<TEnum, TValue>` (typed, no boxing). Use `EnumValues<TValue>` (`GetValue(Enum)`) only when
-  the asset author must pick the enum in the Inspector. Switching a field between the two keeps its data when the
-  selected enum equals `TEnum`.
+- Default to `EnumValues<TEnum, TValue>` (typed, the key is checked at compile time). Use `EnumValues<TValue>` only
+  when the asset author must pick the enum in the Inspector; `GetValue(type)` with a typed enum argument binds to
+  `GetValue<TEnum>` and does not box the key, while a `System.Enum` variable binds to `GetValue(Enum)`. Switching a
+  field between the two keeps its data when the selected enum equals `TEnum`.
 - Rows are **not** created automatically. After adding a field, tell the user to set Default Value and add rows by
   hand or via right-click on the table header -> **Populate Missing Enum Members**. For enums without `[Flags]`,
   only members whose value differs from the default need a row. A flags row set to Default Value can override a partial match.
 - `foreach (var (key, value) in table)` yields rows in list order (struct enumerator, no allocation), never the
-  default, and skips rows whose key no longer resolves.
+  default, and skips rows whose key no longer resolves. `Count` is the number of rows it yields.
+- `table.TryGetValue(key, out var value)` returns `true` when a row matches. `value` is the row's value, or Default
+  Value on a miss, so it tells a missing row from a row equal to Default Value. `EnumValues<TValue>` also has
+  `TryGetValue<TEnum>`.
 
 ## Lookup rules
 
@@ -50,4 +54,6 @@ public sealed class DamageConfig : ScriptableObject
 - A new member returns Default Value until a row is added. A row added to an empty table has an empty key (`<None>`)
   and logs `Couldn't parse key ...` until a member is picked.
 - `EnumValues<TValue>` with no enum selected, or with a type that no longer resolves, logs a warning/error and always
-  returns Default Value.
+  returns Default Value. In a player the enum is found by its stored name, so Managed Stripping Level Low or higher
+  can strip an enum that is used only through this selection: keep it with `[Preserve]` or `link.xml`.
+- Lookups, `Count` and `foreach` may run on any thread, including the first access that initializes the rows.

@@ -7,7 +7,8 @@ description: "Aspid.FastTools chainable UI Toolkit extensions (namespace Aspid.F
 
 `using Aspid.FastTools.UIElements;` (editor helpers: also `using Aspid.FastTools.UIElements.Editors;`). If the user's
 scripts have an `.asmdef`, reference `Aspid.FastTools` (editor code: also `Aspid.FastTools.Editor`; `Unity.Mathematics`
-overloads: `Aspid.FastTools.VisualElements.Math`, enabled automatically when `com.unity.mathematics` is installed).
+overloads: `Aspid.FastTools.VisualElements.Math`, enabled automatically when `com.unity.mathematics` is installed
+or on Unity 6000.5+, where the types ship in the engine).
 
 Before using a method you have not seen in this file, confirm its exact name, parameters and receiver constraint in
 the installed package source. Do not guess. The package is `Packages/tech.aspid.fasttools` (embedded or local) or
@@ -47,7 +48,7 @@ rootVisualElement.AddChild(new VisualElement()
 | property `x` / `isX`, `style.x` | `SetX(value)` - `tooltip` -> `SetTooltip`, `isReadOnly` -> `SetReadOnly`, `style.fontSize` -> `SetFontSize` |
 | event `x` | `AddX` / `RemoveX` - `clicked` -> `AddClicked` |
 | delegate property `x` | `SetX` (an `Action` also `AddX`/`RemoveX`) - `bindItem` -> `SetBindItem` |
-| method Unity already defines | `...Self` - `SetEnabledSelf`, `FocusSelf`, `BlurSelf`, `AddManipulatorSelf`, `MarkDirtyLayoutSelf`, `SetTextSelf`, `RegisterCallbackSelf`, `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf` |
+| method Unity defines or may define | `...Self` on the same receiver as the Unity method - `SetEnabledSelf`, `AddManipulatorSelf`, `RemoveManipulatorSelf` (`VisualElement`), `FocusSelf`, `BlurSelf` (`Focusable`), `SetTextSelf` (`TextElement`), `MarkDirtyLayoutSelf` (`IMGUIContainer` only), `SetRootItemsSelf` (`BaseTreeView`), `RegisterCallbackSelf`, `RegisterCallbackOnceSelf`, `UnregisterCallbackSelf` (`CallbackEventHandler`) |
 
 | Unity API | FastTools |
 |---|---|

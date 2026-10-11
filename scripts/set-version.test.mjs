@@ -24,7 +24,6 @@ const FILES = [
   'CHANGELOG.md',
   'CHANGELOG.ru.md',
   `${PACKAGE}/package.json`,
-  `${PACKAGE}/README.md`,
   `${ANALYZER_RELEASES}.Shipped.md`,
   'Website/package.json',
   'Website/scripts/sync-readme.mjs',
@@ -116,7 +115,6 @@ test('a prerelease moves the files to the preview channel', (t) => {
   }
   assert.match(read(dir, BADGE), />Preview<\/text>/);
   assert.match(read(dir, 'README.md'), /Preview 1\.0\.0-rc\.99/);
-  assert.deepEqual([...new Set(installBranches(read(dir, `${PACKAGE}/README.md`)))], ['upm-preview']);
 
   for (const file of ['CHANGELOG.md', 'CHANGELOG.ru.md']) {
     const changelog = read(dir, file);
@@ -142,7 +140,6 @@ test('a stable version moves the files to the release channel and ships the anal
     assert.deepEqual([...new Set(installBranches(read(dir, file)))], ['upm'], file);
   }
   assert.match(read(dir, BADGE), />Release<\/text>/);
-  assert.deepEqual([...new Set(installBranches(read(dir, `${PACKAGE}/README.md`)))], ['upm']);
   assert.match(read(dir, 'CHANGELOG.md'), /^## \[99\.0\.0\] — \d{4}-\d{2}-\d{2}$/m);
 
   assert.ok(read(dir, `${ANALYZER_RELEASES}.Shipped.md`).includes(`\n## Release ${STABLE}\n`));
@@ -208,7 +205,7 @@ const OUT_OF_STEP = [
   },
   {
     name: 'an install URL of the other channel',
-    file: `${PACKAGE}/README.md`,
+    file: DOCS,
     change: (text) => text.replaceAll(`.git#${branch}`, `.git#${otherBranch}`),
     message: new RegExp(`install URLs must use #${branch} `),
   },
