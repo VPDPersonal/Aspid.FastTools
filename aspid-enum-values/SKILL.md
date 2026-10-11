@@ -56,6 +56,7 @@ public sealed class DamageConfig : ScriptableObject
 - A new member returns Default Value until a row is added. A row added to an empty table has an empty key (`<None>`)
   and logs `Couldn't parse key ...` until a member is picked.
 - `EnumValues<TValue>` with no enum selected, or with a type that no longer resolves, logs a warning/error and always
-  returns Default Value. In a player the enum is found by its stored name, so Managed Stripping Level Low or higher
-  can strip an enum that is used only through this selection: keep it with `[Preserve]` or `link.xml`.
+  returns Default Value. In a player the enum is found by its stored name, so Managed Stripping Level Medium or High
+  can strip an enum that is used only through this selection (Minimal and Low keep it): keep it with `[Preserve]` or
+  `link.xml`.
 - Lookups, `Count` and `foreach` may run on any thread, including the first access that initializes the rows.
