@@ -62,9 +62,11 @@ public sealed class Armory : MonoBehaviour
   they work as `Dictionary` and `HashSet` keys (do not serialize or deserialize a wrapper while it is a key: in the Editor, saving a `SerializableMonoScript` rewrites the name of a renamed class). `==` compares references.
 - `T` limits the picker and the constructor only: a name stored before `T` or the class's base changed still resolves,
   so check `BaseType.IsAssignableFrom(type)` before casting when that matters.
-- A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Low or
-  higher, mark types picked only in the Inspector `[Preserve]` (`UnityEngine.Scripting`) or list them in `link.xml`,
-  else `.Type` is `null` and `IsMissing` is `true` in the build. Same for `[TypeSelector]` strings.
+- A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Medium or
+  High (Minimal and Low keep the type), mark types picked only in the Inspector `[Preserve]` (`UnityEngine.Scripting`)
+  or list them in `link.xml`, else `.Type` is `null` and `IsMissing` is `true` in the build; `[Preserve]` and `link.xml`
+  apply to `[TypeSelector]` strings too. `[RequireImplementors]` on an interface, or `[RequireDerived]` on a base class,
+  keeps all its implementations when the field is a `SerializableType<T>` of it.
 - Test an unset field with `field is null || field.IsEmpty`, not `field == null` alone: Unity fills a field with an
   empty wrapper when it loads an asset, a scene or a prefab, but on an object created in code (`AddComponent`,
   `ScriptableObject.CreateInstance`) the field is `null` until Unity serializes the object. `IsEmpty` means no type

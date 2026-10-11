@@ -24,9 +24,9 @@ namespace Aspid.FastTools.Types
     /// </para>
     /// <para>
     /// A player resolves the type by the stored name only, which managed code stripping does not see: from
-    /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build,
+    /// Managed Stripping Level Medium up, a class referenced only by this name can be removed from the build,
     /// <see cref="Type"/> returns <see langword="null"/> and <see cref="IsMissing"/> is <see langword="true"/>.
-    /// Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
+    /// Minimal and Low keep it. Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
     /// </para>
     /// <para>
     /// A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly

@@ -83,7 +83,13 @@ private SerializableType<Weapon> _primaryWeapon = new(typeof(Sword));
 ## Типы в плеере
 
 > [!WARNING]
-> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, при **Managed Stripping Level** Low и выше Unity может вырезать его из билда: <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>, а <code lang="csharp">IsMissing</code> станет <code lang="csharp">true</code>, хотя в редакторе тип находится. Сохраните класс через <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>) или `link.xml`.
+> В плеере обе обёртки находят тип по сохранённому имени. Если класс используется только через такой выбор, при **Managed Stripping Level** Medium или High Unity вырезает его из билда: <code lang="csharp">.Type</code> вернёт <code lang="csharp">null</code>, а <code lang="csharp">IsMissing</code> станет <code lang="csharp">true</code>, хотя в редакторе тип находится. Minimal и Low его сохраняют.
+
+Чтобы сохранить класс при Medium или High:
+
+- Пометьте класс или его конструктор атрибутом <code lang="csharp">[Preserve]</code> (<code lang="csharp">UnityEngine.Scripting</code>).
+- Перечислите класс или всю его сборку в `link.xml`.
+- Пометьте свой интерфейс атрибутом <code lang="csharp">[RequireImplementors]</code>, а свой базовый класс — <code lang="csharp">[RequireDerived]</code>, чтобы сохранить все реализации: поле должно быть <code lang="csharp">SerializableType&lt;T&gt;</code> этого интерфейса или базового класса.
 
 ## Пример в пакете
 
