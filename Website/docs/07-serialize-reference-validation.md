@@ -40,10 +40,11 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 
 ## Scan scope
 
-- saved `.prefab`, `.asset` and `.unity` files under `Assets/`, apart from **Excluded scan folders**;
+- saved `.prefab`, `.asset`, `.unity`, `.controller` (Animator Controller) and `.playable` (Timeline) files under `Assets/`, apart from **Excluded scan folders**;
 - <code lang="csharp">[SerializeReference]</code> and the names in <code lang="class-name">SerializableType</code> and <code lang="class-name">SerializableMonoScript</code> fields; <code lang="csharp">[TypeSelector]</code> strings are not checked;
 - pending [MovedFrom migrations](06-serialize-reference-tooling.md#migrations-with-movedfrom) do not count as missing;
 - binary assets and unfetched Git LFS files are not scanned, and CI lists them in its report; for a full scan, use **Asset Serialization → Mode → Force Text** and fetch LFS files; to make CI count them as violations, pass `-srGateStrict`.
+- a file last saved before Unity 2021.2 stores managed references in an older format: the build and CI warn about it instead of checking it, until it is saved again, for example with <code lang="csharp">AssetDatabase.ForceReserializeAssets()</code>.
 
 **Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection.
 
@@ -71,7 +72,7 @@ Unity -batchmode -projectPath . \
 | `-srGateRequired` | Also checks unset fields with <code lang="csharp">Required = true</code> |
 | `-srGateFail` | Uses `Fail` instead of the project's mode, even `Off` |
 | `-srGateWarnOnly` | Uses `Warn` instead of the project's mode, even `Off`; takes precedence over `-srGateFail` if both are passed |
-| `-srGateStrict` | Counts files that could not be checked (unfetched Git LFS files, binary assets that can hold references) as violations; in `Warn` mode the exit code stays `0` |
+| `-srGateStrict` | Counts files that could not be checked (unfetched Git LFS files, binary assets that can hold references, files saved before Unity 2021.2) as violations; in `Warn` mode the exit code stays `0` |
 
 ## Report
 
@@ -87,10 +88,13 @@ The report starts with a header:
 ```text
 # SerializeReference Gate Report
 # Violations: 2
-# Not scanned (not text YAML): 2
+# Not scanned: 3
 #   Binary	Assets/Legacy/OldLoadout.prefab
 #   LfsPointer	Assets/Levels/Arena.unity
+#   UnsupportedReferencesVersion	Assets/Legacy/OldWave.asset
 ```
+
+Each skipped file comes with its reason: a binary file, an unfetched Git LFS file, or managed references in a format older than Unity 2021.2.
 
 Then one line per violation, tab-separated:
 

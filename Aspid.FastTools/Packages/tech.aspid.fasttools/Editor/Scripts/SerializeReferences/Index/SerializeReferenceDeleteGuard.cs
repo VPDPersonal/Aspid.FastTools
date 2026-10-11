@@ -443,11 +443,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // The assets that do hold managed references rarely name the classes being deleted.
+        // The assets that do hold managed references rarely name the classes being deleted. Unity writes a character
+        // outside printable ASCII as a YAML escape ("\u041F"), so a non-ASCII class name never appears as written: any
+        // line with an escape may name it.
         private static bool NamesAnyClass(string[] lines, HashSet<string> classTokens)
         {
+            var namesEscaped = classTokens.Any(token => token.Any(c => c < ' ' || c > '~'));
+
             foreach (var line in lines)
             {
+                if (namesEscaped && line.IndexOf('\\') >= 0) return true;
+
                 foreach (var token in classTokens)
                 {
                     if (line.IndexOf(token, StringComparison.Ordinal) >= 0) return true;
