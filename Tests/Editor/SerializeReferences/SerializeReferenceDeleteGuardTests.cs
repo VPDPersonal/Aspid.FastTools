@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -99,6 +100,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(1, counts[typeof(DeleteGuardArmory.Crate)]);
             Assert.AreEqual(0, counts[typeof(DeleteGuardRifle)]);
             CollectionAssert.AreEqual(new[] { ProbeAssetPath }, samples);
+        }
+
+        // Unity writes the Cyrillic class name as escapes, so the file never holds the name as written.
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CountUsages_CountsTypeWithNonAsciiName(bool warmIndex)
+        {
+            CreateProbe(new ОружиеDeleteGuard(), b: null);
+            if (warmIndex) SerializeReferenceTypeUsageIndex.FindUsages("warm-up");
+
+            StringAssert.DoesNotContain("ОружиеDeleteGuard", File.ReadAllText(ProbeAssetPath));
+
+            var counts = SerializeReferenceDeleteGuard.CountUsages(Resolve(NamesakeScriptGuid), samplePaths: null);
+
+            Assert.IsNotNull(counts);
+            Assert.AreEqual(1, counts[typeof(ОружиеDeleteGuard)]);
         }
 
         [Test]
