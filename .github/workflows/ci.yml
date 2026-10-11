@@ -306,7 +306,8 @@ jobs:
 
       # Unity sometimes assigns no Personal seat ("assigned no seat") when many jobs activate the same account at once.
       # Such a run fails before any test and leaves no results file, so it gets one second attempt after a pause; a
-      # run with test failures writes its results and fails at once.
+      # run with test failures writes its results and fails at once. A compile error also leaves no results: it costs
+      # one more attempt, since the action reports no failure reason that a later step can read.
       - id: tests
         uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
         continue-on-error: true
@@ -330,7 +331,7 @@ jobs:
         id: no-results
         if: steps.tests.outcome == 'failure' && hashFiles('unity-test-results/**/*.xml') == ''
         run: |
-          echo "::warning::The Unity test run left no results (most likely no license seat); trying once more."
+          echo "::warning::The Unity test run left no results: no license seat or a compile error, see the step above. Trying once more."
           sleep $((60 + RANDOM % 60))
 
       - id: retry
