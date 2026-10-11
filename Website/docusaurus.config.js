@@ -16,8 +16,6 @@ const LOCALES = ['en', 'ru'];
 const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const ASSET_STORE = 'https://assetstore.unity.com/packages/slug/365584';
 const BASE_URL = '/Aspid.FastTools/';
-/** IBM Plex, linked from `headTags`: a CSS `@import` would start the fonts only after the stylesheet that holds it. */
-const FONTS = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap';
 /** The docs in the working tree describe the package version in the working tree. */
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json`, import.meta.url), 'utf8')).version;
 /**
@@ -120,9 +118,6 @@ const config = {
   headTags: [
     { tagName: 'script', attributes: {}, innerHTML: ACCENT_BOOT_SCRIPT },
     { tagName: 'script', attributes: {}, innerHTML: INTRO_BOOT_SCRIPT },
-    { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://fonts.googleapis.com' } },
-    { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' } },
-    { tagName: 'link', attributes: { rel: 'stylesheet', href: FONTS } },
     { tagName: 'link', attributes: { rel: 'icon', href: `${BASE_URL}img/favicon.png` } },
   ],
   clientModules: ['./src/clientModules/accent.js'],
@@ -182,13 +177,14 @@ const config = {
           remarkPlugins: [remarkStatusBadges],
         },
         blog: false,
-        theme: { customCss: ['./src/css/custom.css', './src/css/accents.css'] },
+        theme: { customCss: ['./src/css/fonts.css', './src/css/custom.css', './src/css/accents.css'] },
       }),
     ],
   ],
 
   plugins: [
     './src/plugins/search/index.js',
+    './src/plugins/fonts/index.js',
     [
       // One page per sample in `tutorials/<Sample>/README.md`, translations in
       // `i18n/<locale>/docusaurus-plugin-content-docs-tutorials/current/<Sample>/README.md`.
