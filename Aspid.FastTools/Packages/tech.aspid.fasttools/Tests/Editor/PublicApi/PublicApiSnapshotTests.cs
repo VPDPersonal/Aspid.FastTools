@@ -21,11 +21,11 @@ namespace Aspid.FastTools.Editors.Tests
             "Removed or changed (breaks user code: keep the old member as [Obsolete], or record the break in " +
             "CHANGELOG.md and CHANGELOG.ru.md and mark the PR title with '!'):";
 
-        // UNITY_6000_4_OR_NEWER is the newest version guard around public API, so an older Editor compiles a part of
+        // UNITY_6000_6_OR_NEWER is the newest version guard around public API, so an older Editor compiles a part of
         // the baseline: there the test only checks that nothing outside the baseline appears.
         // Move this guard and WholeApiVersion together with the first public member under a newer one.
-        private const string WholeApiVersion = "6000.4";
-#if UNITY_6000_4_OR_NEWER
+        private const string WholeApiVersion = "6000.6";
+#if UNITY_6000_6_OR_NEWER
         private static readonly bool HasWholeApi = true;
 #else
         private static readonly bool HasWholeApi = false;

@@ -28,8 +28,8 @@ Agent Skills for projects that consume the package in `skills/`.
   Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
 - `Tests/Editor/PublicApi/PublicApi.txt` in the package is a snapshot of the public API, and `PublicApiSnapshotTests`
   fails on any difference, so a removed or renamed member cannot reach a release unnoticed. After an intended API
-  change, rewrite the file on Unity 6000.4+ and commit its diff in the same PR. Close the project in the Editor
-  first, or run the command from a worktree:
+  change, rewrite the file on the Unity version that `WholeApiVersion` in the test names, or a newer one, and commit
+  its diff in the same PR. Close the project in the Editor first, or run the command from a worktree:
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity> -batchmode -nographics -projectPath Aspid.FastTools -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "${TMPDIR:-/tmp}/public-api.xml"`.
   An older Editor compiles only part of the API (the `UNITY_6000_x_OR_NEWER` guards), so there the test checks only
   for additions. The `#if` around `HasWholeApi` in the test names the newest guard: move it and `WholeApiVersion`
