@@ -85,6 +85,7 @@ Run what applies before you open a PR. CI runs most of these (`ci.yml`, `docs.ym
 
 - Generators and analyzers: `dotnet test` in `Aspid.FastTools.Generators/` or `Aspid.FastTools.Analyzers/`.
 - YAML engine: `dotnet test Aspid.FastTools.YamlTests`.
+- Type resolver: `dotnet test Aspid.FastTools.TypeTests`.
 - Compile in the dev project with its Editor open: `unity command recompile`, then `unity command get_console_logs`
   for the errors. It needs `com.unity.pipeline`, which the dev project manifest lists.
 - EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]` builds a throwaway
