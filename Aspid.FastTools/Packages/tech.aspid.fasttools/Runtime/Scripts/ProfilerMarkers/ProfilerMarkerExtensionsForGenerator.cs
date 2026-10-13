@@ -17,7 +17,7 @@ public static class ProfilerMarkerExtensionsForGenerator
     /// Opens the <see cref="ProfilerMarker"/> of this call site, named <c>Type.Member (line)</c>.
     /// </summary>
     /// <remarks>
-    /// Only a call on an instance of the calling type gets a marker. Any other call returns an empty scope,
+    /// Only a call on an instance of the calling type gets a marker. Any other call gets no marker of its own,
     /// and analyzer <c>AFT0010</c> reports it.
     /// </remarks>
     /// <typeparam name="T">The type of <paramref name="instance"/>.</typeparam>

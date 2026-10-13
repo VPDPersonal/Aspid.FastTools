@@ -61,7 +61,7 @@ The type of <code class="paramref">instance</code>.
 
 #### Remarks
 
-Only a call on an instance of the calling type gets a marker. Any other call returns an empty scope,
+Only a call on an instance of the calling type gets a marker. Any other call gets no marker of its own,
 and analyzer <code>AFT0010</code> reports it.
 
 ### WithName\(in AutoScope, string\) {#ProfilerMarkerExtensionsForGenerator_WithName_Unity_Profiling_ProfilerMarker_AutoScope__System_String_}
