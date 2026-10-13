@@ -23,6 +23,10 @@ public static class ProfilerMarkerExtensionsForGenerator
 [ProfilerMarkerExtensionsForGenerator](ProfilerMarkerExtensionsForGenerator.md)
 
 
+## Remarks
+
+Declared without a namespace, so code completion offers [`ProfilerMarkerExtensionsForGenerator.Marker<T>`](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_) after any expression.
+
 ## Methods
 
 ### Marker\<T\>\(T, int\) {#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_}
@@ -37,28 +41,28 @@ public static ProfilerMarker.AutoScope Marker<T>(this T instance, int line = -1)
 
 `instance` T
 
-The instance the scope is opened on; its value is never read.
+The instance of the calling type, usually <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/this">this</a>.
 
 `line` [int](https://learn.microsoft.com/dotnet/api/system.int32)
 
-The line of the call, filled in by the compiler; the value is never read.
+The line of the call; filled in by the compiler.
 
 #### Returns
 
  ProfilerMarker.AutoScope
 
-An empty scope: this overload runs only when the call gets no marker.
+The scope of the call site's marker; an empty scope when the call gets no marker.
 
 #### Type Parameters
 
 `T` 
 
-The type of <code class="paramref">instance</code>; generic, so a struct is not boxed.
+The type of <code class="paramref">instance</code>.
 
 #### Remarks
 
-<p>For every type that calls this method on its own instance the generator emits a closer overload that overload resolution picks instead, holding one [`ProfilerMarker`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Unity.Profiling.ProfilerMarker.html) per line of that type. This overload runs only for calls the generator cannot support; analyzer <code>AFT0010</code> reports them. It takes the same parameters as the generated overload, so the generated one also wins for a type in the global namespace; that overload takes a struct by <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/in">in</a>, so the call does not copy it.</p>
-<p>The class has no namespace, so the method needs no <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/using">using</a> directive and code completion offers it after any expression; only a call on an instance of the calling type gets a marker.</p>
+Only a call on an instance of the calling type gets a marker. Any other call returns an empty scope,
+and analyzer <code>AFT0010</code> reports it.
 
 ### WithName\(in AutoScope, string\) {#ProfilerMarkerExtensionsForGenerator_WithName_Unity_Profiling_ProfilerMarker_AutoScope__System_String_}
 
@@ -84,5 +88,5 @@ interpolation of them. Anything else leaves the name untouched, and analyzer <co
 
  ProfilerMarker.AutoScope
 
-<code class="paramref">marker</code> unchanged — at runtime the call is a pass-through.
+<code class="paramref">marker</code>, unchanged.
 
