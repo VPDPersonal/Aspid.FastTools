@@ -1,15 +1,24 @@
 # Tooling documentation media
 
-> Provenance only. The published `aspid_fasttools_serialize_reference_tooling.gif` (and its `-light` twin) was re-shot
-> in #264 and #275 from the DocsMedia harness (`Aspid.FastTools/Assets/DevTests/SerializeReferences/Scripts/DocsMedia`);
-> `encode.sh` rebuilds this earlier recording as `tooling.gif` here.
+> Provenance only. These are the four states of the repair that the published
+> `aspid_fasttools_serialize_reference_tooling.gif` (and its `-light` twin) shows, without a cursor; the published GIF is
+> built separately, with a composited cursor. `encode.sh` rebuilds them as `tooling.gif` here.
 
-Recorded in Unity 6000.4.0f1 on 2026-09-13 using Unity CLI and computer use.
+Re-shot after the window redesign (#442) at commit `4dc4beaf` in Unity 6000.6.5f1, in a hidden batch-mode Editor (no
+screen capture). Asset: `Presets/BrokenWeaponPreset.asset` of the SerializeReferences sample (`GhostWeapon` at
+`_weapon`, rid 7000). The FastTools window opens on the Asset References tab at 872×634 logical pixels and is grabbed
+whole, tab strip and footer included: 1744×1268 PNGs, dark skin, no compositing or padding.
 
-`capture.cs.txt` creates a temporary AssetDatabase.CopyAsset copy of BrokenWeaponPreset and an ordinary FastTools Asset References window at (100,100), 880×640 logical pixels. No UI scale override, stylesheet change or picker resizing. Open Fix Missing, search Pistol, blur the search, select the result, and press Return. A SerializedObject read verifies that the real repair preserves Damage 25 and Magazine Size 8.
+| Frame | State |
+|---|---|
+| `01-missing.png` | GhostWeapon card with **Fix Missing** |
+| `02-picker.png` | Picker open, `Pistol` searched, search field blurred |
+| `03-selection.png` | The Pistol result row selected |
+| `04-repaired.png` | **No missing references**, the card shows Pistol with **Change** |
 
-Original PNGs are lossless Retina screen captures, 1744×1268 pixels: `/usr/sbin/screencapture -x -R104,100,872,634 <file.png>`. The crop excludes native title chrome and rounded bottom corners. Move the computer-use pointer to the title bar before each capture. Keep Unity foreground. No compositing, enlargement, cursor removal or artificial padding.
+At this window size the open picker does not fit: frames 02 and 03 may show a thin scrollbar, and the window footer
+covers the card's bottom border. That is how the real window looks at 872×634.
 
-Run `sh docs/media/tooling/encode.sh`; it never writes the published GIF. States last 1.5 / 1 / 0.6 / 1 seconds; `-t 4.1` prevents the repeated terminal frame from adding an extra pause. The result holds No missing references for one second. Encoding uses 10 fps, a shared 256-color palette and sierra2_4a dithering at the original pixel dimensions.
-
-After capture the temporary window and asset folder were removed, selection restored, and the already-dirty active scene left unsaved and outside Play Mode. Session-specific instance IDs must be discovered again before reuse.
+Run `sh docs/media/tooling/encode.sh`; it never writes the published GIF. States last 1.5 / 1 / 0.6 / 1 seconds; `-t 4.1`
+prevents the repeated terminal frame from adding an extra pause. Encoding uses 10 fps, a shared 256-color palette and
+sierra2_4a dithering at the original pixel dimensions.
