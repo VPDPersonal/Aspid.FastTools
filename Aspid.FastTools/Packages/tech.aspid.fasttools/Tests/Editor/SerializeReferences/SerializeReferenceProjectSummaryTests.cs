@@ -295,6 +295,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(tooltip, SerializeReferenceProjectSummary.BuildShowMoreTooltip(shown, total));
         }
 
+        // A section never builds fewer file cards than its first page and never more than its files.
+        [TestCase(0, 3000, 50)]
+        [TestCase(100, 3000, 100)]
+        [TestCase(0, 3, 3)]
+        [TestCase(200, 120, 120)]
+        public void GetShownFileCards_StaysBetweenTheFirstPageAndTheFileCount(int requested, int total, int expected) =>
+            Assert.AreEqual(expected, SerializeReferenceProjectSummary.GetShownFileCards(requested, total));
+
+        [TestCase(50, 120, "Show more files (50 of 120 shown)", "Show the next 50 files.")]
+        [TestCase(100, 120, "Show more files (100 of 120 shown)", "Show the next 20 files.")]
+        [TestCase(50, 51, "Show more files (50 of 51 shown)", "Show the next 1 file.")]
+        public void BuildShowMoreFiles_NamesTheFilesTheNextPageAdds(int shown, int total, string text, string tooltip)
+        {
+            Assert.AreEqual(text, SerializeReferenceProjectSummary.BuildShowMoreFilesText(shown, total));
+            Assert.AreEqual(tooltip, SerializeReferenceProjectSummary.BuildShowMoreFilesTooltip(shown, total));
+            Assert.AreEqual(shown + 50, SerializeReferenceProjectSummary.GetNextShownFileCards(shown));
+        }
+
         [Test]
         public void GroupByFile_KeepsTheFirstOrderOfFilesAndCollectsTheirRids()
         {

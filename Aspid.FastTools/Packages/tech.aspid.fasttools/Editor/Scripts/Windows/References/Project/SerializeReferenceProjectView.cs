@@ -185,13 +185,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static bool IsWarm => SerializeReferenceTypeUsageIndex.IsWarm || _requiredIsWarm || _typeNamesIsWarm;
 
-        public void Initialize()
-        {
-            foreach (var summary in Summaries)
-                ShowSummary(summary);
-
-            Refresh();
-        }
+        public void Initialize() => Refresh();
 
         // The window keeps this view between visits to its tab; the index may have changed since, so the groups are
         // listed again.
@@ -418,7 +412,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             AddRequiredFileCards(requiredViolations);
         }
 
-        // An empty hint takes no line, so the legend moves up under the header.
+        // An empty hint takes no line, so the summaries or the list move up under the header.
         private void SetResultsHint(string text)
         {
             _resultsHint.text = text;

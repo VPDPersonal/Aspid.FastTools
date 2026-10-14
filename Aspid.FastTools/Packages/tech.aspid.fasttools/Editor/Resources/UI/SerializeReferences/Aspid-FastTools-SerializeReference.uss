@@ -546,6 +546,12 @@ Button.aspid-fasttools-serialize-reference__open-button {
     transition-timing-function:                            ease-out;
 }
 
+/* Show more files sits under the last file card of its section, outside the cards. */
+.aspid-fasttools-repair-references__files-more {
+    align-self:                                            flex-start;
+    margin-bottom:                                         10px;
+}
+
 .aspid-fasttools-repair-references__group-more:hover {
     background-color:                                      var(--aspid-colors-bg-dark);
     color:                                                 var(--aspid-colors-text-light);

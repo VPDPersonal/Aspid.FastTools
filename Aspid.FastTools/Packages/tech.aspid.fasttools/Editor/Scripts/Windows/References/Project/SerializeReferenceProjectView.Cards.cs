@@ -28,6 +28,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupActionClass = RootClass + "__group-action";
         private const string GroupActionInfoClass = GroupActionClass + "--info";
         private const string GroupMoreClass = RootClass + "__group-more";
+        private const string FilesMoreClass = RootClass + "__files-more";
         private const string GroupEntryClass = RootClass + "__group-entry";
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryFolderClass = RootClass + "__group-entry-folder";
@@ -205,36 +206,51 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (shown == entries.Count) return;
 
-            // Enter on the row moves the keyboard focus to the first row the page adds, so the next arrow key continues
-            // from there. A click rebuilds the rows without restoring a focused row, so the next arrow key starts again
-            // from the Scan button.
-            void ShowMore(bool focusFirstNewRow)
+            card.AddChild(BuildShowMore(
+                key,
+                shown,
+                SerializeReferenceProjectSummary.GetNextShownRows(shown),
+                SerializeReferenceProjectSummary.BuildShowMoreText(shown, entries.Count),
+                SerializeReferenceProjectSummary.BuildShowMoreTooltip(shown, entries.Count)));
+        }
+
+        // Enter on the row moves the keyboard focus to the first item the page adds, so the next arrow key continues
+        // from there. A click rebuilds the list without restoring a focused item, so the next arrow key starts again
+        // from the Scan button.
+        private Label BuildShowMore(string key, int shown, int next, string text, string tooltip)
+        {
+            void ShowMore(bool focusFirstNewItem)
             {
-                _shownRows[key] = SerializeReferenceProjectSummary.GetNextShownRows(shown);
-                if (focusFirstNewRow) _focusRow = (key, shown);
+                _shownRows[key] = next;
+                if (focusFirstNewItem) _focusRow = (key, shown);
 
                 _picker.Close();
                 RerenderList();
                 _focusRow = default;
             }
 
-            var more = new Label(SerializeReferenceProjectSummary.BuildShowMoreText(shown, entries.Count))
-                .AddClass(GroupMoreClass);
-            more.tooltip = SerializeReferenceProjectSummary.BuildShowMoreTooltip(shown, entries.Count);
-            more.RegisterCallback<ClickEvent>(_ => ShowMore(focusFirstNewRow: false));
-            RegisterNavTarget(more, () => ShowMore(focusFirstNewRow: true));
+            var more = new Label(text).AddClass(GroupMoreClass);
+            more.tooltip = tooltip;
+            more.RegisterCallback<ClickEvent>(_ => ShowMore(focusFirstNewItem: false));
+            RegisterNavTarget(more, () => ShowMore(focusFirstNewItem: true));
 
-            card.AddChild(more);
+            return more;
         }
 
         // One card per file under the section heading, headed by the file's path and its entry count, so a row names
         // only what differs: the field of a required violation, the type of an override. The files keep the order they
-        // first appear in, and the number of cards is the number of files.
+        // first appear in. The cards are paged like the rows of a card, then a Show more files row offers the rest.
         private void AddFileCards<T>(VisualElement container, string key, IReadOnlyList<T> entries, Func<T, string> pathOf,
             Func<T, VisualElement> buildRow)
         {
-            foreach (var file in entries.GroupBy(pathOf, StringComparer.Ordinal))
+            var files = entries.GroupBy(pathOf, StringComparer.Ordinal).ToList();
+            var filesKey = key + "|files";
+            var shown = SerializeReferenceProjectSummary.GetShownFileCards(_shownRows.GetValueOrDefault(filesKey), files.Count);
+            var focusIndex = _focusRow.Key == filesKey ? _focusRow.Index : -1;
+
+            for (var i = 0; i < shown; i++)
             {
+                var file = files[i];
                 var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                     .AddClass(GroupClass);
 
@@ -243,12 +259,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .AddClass(GroupCountClass)
                     .SetPickingMode(PickingMode.Ignore);
 
-                card.AddChild(BuildEntryRow(file.Key, BuildPathLabel(file.Key), count).AddClass(FileHeaderClass));
+                var header = BuildEntryRow(file.Key, BuildPathLabel(file.Key), count).AddClass(FileHeaderClass);
+                card.AddChild(header);
                 AddGroupDivider(card, withSweep: false);
                 AddPagedRows(card, $"{key}|{file.Key}", rows, buildRow);
 
                 container.AddChild(card);
+
+                if (i == focusIndex) _ring.Focus(header, scrollTo: false);
             }
+
+            if (shown == files.Count) return;
+
+            container.AddChild(BuildShowMore(
+                    filesKey,
+                    shown,
+                    SerializeReferenceProjectSummary.GetNextShownFileCards(shown),
+                    SerializeReferenceProjectSummary.BuildShowMoreFilesText(shown, files.Count),
+                    SerializeReferenceProjectSummary.BuildShowMoreFilesTooltip(shown, files.Count))
+                .AddClass(FilesMoreClass));
         }
 
         private void AddRequiredFileCards(IReadOnlyList<GateViolation> violations) =>

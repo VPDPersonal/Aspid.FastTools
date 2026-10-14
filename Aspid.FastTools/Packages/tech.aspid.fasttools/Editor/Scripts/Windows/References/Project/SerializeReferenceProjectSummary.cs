@@ -13,6 +13,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // A card builds this many rows, then offers Show more, so thousands of entries stay cheap to build.
         public const int RowsPerPage = 200;
 
+        // A section of file cards builds this many cards, then offers Show more files, so a field required in thousands
+        // of prefabs stays cheap to build too.
+        public const int FileCardsPerPage = 50;
+
         private const int MaxPreviewedEntries = 8;
 
         private const string RequiredNotScannedText = "Required fields have not been checked yet — Rescan to include them.";
@@ -164,7 +168,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{entryText} · {fileText}";
         }
 
-        // The rows a card builds when `requested` rows were asked for: the first page at least, every entry at most.
         // The entries of a group, one item per file in the order the files first appear.
         public static IReadOnlyList<FileRids> GroupByFile(IReadOnlyList<MissingReferenceLocation> entries)
         {
@@ -191,6 +194,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string DescribeRids(IReadOnlyList<long> rids) =>
             rids.Count == 1 ? $"rid {rids[0]}" : $"{rids.Count} rids";
 
+        // The rows a card builds when `requested` rows were asked for: the first page at least, every entry at most.
         public static int GetShownRows(int requested, int total) =>
             Math.Min(total, Math.Max(requested, RowsPerPage));
 
@@ -201,6 +205,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static string BuildShowMoreTooltip(int shown, int total) =>
             $"Show the next {BuildCountText(Math.Min(RowsPerPage, total - shown), "row")}.";
+
+        // The file cards a section builds when `requested` cards were asked for, paged like the rows of a card.
+        public static int GetShownFileCards(int requested, int total) =>
+            Math.Min(total, Math.Max(requested, FileCardsPerPage));
+
+        public static int GetNextShownFileCards(int shown) => shown + FileCardsPerPage;
+
+        public static string BuildShowMoreFilesText(int shown, int total) =>
+            $"Show more files ({shown} of {total} shown)";
+
+        public static string BuildShowMoreFilesTooltip(int shown, int total) =>
+            $"Show the next {BuildCountText(Math.Min(FileCardsPerPage, total - shown), "file")}.";
 
         public static string BuildTypeNameCountText(MissingTypeNameGroup group)
         {
