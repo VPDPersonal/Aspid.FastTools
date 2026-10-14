@@ -72,6 +72,11 @@ const PAIRS = [
     { where: `hovered ${s} action`, fg: `status-${s}-text-light`, bg: 'bg-dark', min: TEXT, in: WINDOW },
   ]),
   { where: 'card error', fg: 'status-error-text-light', bg: CARD, min: TEXT, in: WINDOW },
+  { where: 'settings project stripe', fg: 'scope-project', bg: CARD, min: LARGE, in: WINDOW },
+  { where: 'settings list frame', fg: 'control-border', bg: CARD, min: LARGE, in: WINDOW },
+  { where: 'settings list entry', fg: 'text-light', bg: ['surface-canvas', 'surface-card-dim'], min: TEXT, in: WINDOW },
+  { where: 'settings list empty', fg: 'text-dark', bg: ['surface-canvas', 'surface-card-dim'], min: TEXT, in: WINDOW },
+  { where: 'settings per-user stripe', fg: 'scope-user', bg: CARD, min: LARGE, in: WINDOW },
   { where: 'hovered row caption', fg: 'text-light', bg: 'bg-dark', min: TEXT, in: WINDOW },
   { where: 'hovered row detail', fg: 'text-dark', bg: 'bg-dark', min: TEXT, in: WINDOW },
 

@@ -10,12 +10,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         public static void BuildControls(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
+            // A setting is explained by the tooltip of its row, as everywhere else on the page.
             if ((scope & AspidSettingsScope.User) != 0)
-            {
                 container.Add(CreateBreakageDetectionSwitch());
-                container.Add(AspidSettingsUI.CreateRowNote(
-                    "Watches for references broken by script renames / deletes and points at Project References."));
-            }
 
             if ((scope & AspidSettingsScope.Shared) == 0) return;
 
@@ -32,8 +29,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             autoDeAlias.RegisterValueChangedCallback(evt => SerializeReferenceSettings.AutoDeAliasEnabled = evt.newValue);
             SyncFromSettings(autoDeAlias, () => SerializeReferenceSettings.AutoDeAliasEnabled);
             container.Add(autoDeAlias);
-            container.Add(AspidSettingsUI.CreateRowNote(
-                "A duplicated list element gets its own instance instead of sharing the original's reference."));
 
             var severity = new EnumField("Build / CI gate", SerializeReferenceSettings.BuildSeverity)
             {
@@ -47,9 +42,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             severity.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BuildSeverity = (GateSeverity)evt.newValue);
             SyncFromSettings<EnumField, Enum>(severity, () => SerializeReferenceSettings.BuildSeverity);
             container.Add(severity);
-            container.Add(AspidSettingsUI.CreateRowNote(
-                "Off — never check · Warn — log · Fail — abort the build / CI job. "
-                    + "Unset Required fields are checked by CI with -srGateRequired and Scan Project, not by the build."));
 
             container.Add(new SerializeReferenceExcludedFoldersField().WithScopeStripe(AspidSettingsUI.SharedScopeClass));
         }

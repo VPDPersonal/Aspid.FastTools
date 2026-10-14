@@ -22,7 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EntryClass = "aspid-fasttools-excluded-folders__entry";
         private const string EntryHoverClass = "aspid-fasttools-excluded-folders__entry--hover";
         private const string EntryDangerClass = "aspid-fasttools-excluded-folders__entry--danger";
-        private const string HintClass = "aspid-fasttools-excluded-folders__hint";
+        private const string EmptyClass = "aspid-fasttools-excluded-folders__empty";
         private const string PathClass = "aspid-fasttools-excluded-folders__path";
         private const string RemoveClass = "aspid-fasttools-excluded-folders__remove";
         private const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
@@ -31,7 +31,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private readonly VisualElement _list;
         private readonly VisualElement _header;
-        private readonly Label _hint;
 
         private readonly List<(VisualElement Row, string Path)> _rows = new();
 
@@ -44,15 +43,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetFromResources(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
 
-            // The whole header row is the add target, so the "+" and the hint are passive labels whose clicks bubble
-            // up instead of firing a second add. The add-intent wash is code-toggled, so the ring can mirror it.
-            _hint = new Label { tooltip = "Add folder" }.AddClass(HintClass);
+            // The whole header row is the add target, so the "+" is a passive label whose clicks bubble up instead of
+            // firing a second add. The add-intent wash is code-toggled, so the ring can mirror it.
             var caption = new Label("Excluded scan folders").AddClass(HeaderCaptionClass);
             var addGlyph = new Label("+") { tooltip = "Add folder" }.AddClass(AddButtonClass);
 
             _header = new VisualElement().AddClass(HeaderClass)
                 .AddChild(caption)
-                .AddChild(_hint)
                 .AddChild(addGlyph);
             _header.RegisterCallback<ClickEvent>(_ => AddFolder());
             _header.RegisterCallback<PointerEnterEvent>(_ => _header.AddToClassList(HeaderAddClass));
@@ -94,8 +91,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.Clear();
             _rows.Clear();
 
+            // The list is framed like a field even when empty, so it reads as a list to add to.
             var folders = SerializeReferenceSettings.ExcludedFolders;
-            _hint.text = folders.Length == 0 ? "No excluded folders" : string.Empty;
+            if (folders.Length == 0)
+                _list.Add(new Label("No excluded folders").AddClass(EmptyClass));
 
             foreach (var path in folders)
             {

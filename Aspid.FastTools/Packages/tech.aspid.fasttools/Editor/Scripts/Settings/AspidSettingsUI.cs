@@ -19,7 +19,6 @@ namespace Aspid.FastTools.Editors
         internal const string CanvasBackgroundClass = "aspid-fasttools-settings-canvas__background";
         internal const string HeaderClass = "aspid-fasttools-settings__header";
         internal const string HeaderTitleClass = "aspid-fasttools-settings__header-title";
-        internal const string HeaderDescriptionClass = "aspid-fasttools-settings__header-description";
         internal const string SectionClass = "aspid-fasttools-settings__section";
         internal const string SectionTitleClass = "aspid-fasttools-settings__section-title";
         internal const string SectionDividerClass = "aspid-fasttools-settings__section-divider";
@@ -41,8 +40,9 @@ namespace Aspid.FastTools.Editors
 
         internal const string RowClass = "aspid-fasttools-settings__row";
         internal const string RowCaptionClass = "aspid-fasttools-settings__row-caption";
-        internal const string RowNoteClass = "aspid-fasttools-settings__row-note";
         internal const string ActionClass = "aspid-fasttools-settings__action";
+        internal const string ControlsClass = "aspid-fasttools-settings__controls";
+        internal const string ControlsGapClass = ControlsClass + "-gap";
         internal const string ActionDangerClass = "aspid-fasttools-settings__action--danger";
         internal const string ActionInfoClass = "aspid-fasttools-settings__action--info";
 
@@ -84,7 +84,7 @@ namespace Aspid.FastTools.Editors
                 var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
                 var content = scroll.contentContainer;
 
-                content.Add(BuildSurfaceHeader(AspidSettingsScope.User, title, description: null));
+                content.Add(BuildSurfaceHeader(AspidSettingsScope.User, title));
                 AddSection(content, title: null, buildControls);
                 surface.Add(scroll);
             });
@@ -115,10 +115,7 @@ namespace Aspid.FastTools.Editors
 
         internal static void BuildSurfaceContent(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
-            container.Add(BuildSurfaceHeader(
-                scope,
-                title: "Settings",
-                description: "Every FastTools setting in one place. The stripe on each row shows where the value is stored."));
+            container.Add(BuildSurfaceHeader(scope, title: "Settings"));
 
             AddSection(container, "SerializeReference", content => SerializeReferenceSettingsUI.BuildControls(content, scope));
 
@@ -129,7 +126,7 @@ namespace Aspid.FastTools.Editors
             AddSection(container, "Welcome", WelcomeSettingsUI.BuildControls);
         }
 
-        private static VisualElement BuildSurfaceHeader(AspidSettingsScope scope, string title, string description)
+        private static VisualElement BuildSurfaceHeader(AspidSettingsScope scope, string title)
         {
             var heading = new AspidLabel(title, AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
@@ -137,13 +134,9 @@ namespace Aspid.FastTools.Editors
                     .SetLineTheme(ThemeStyle.Type.Dark))
                 .AddClass(HeaderTitleClass);
 
-            var header = new VisualElement().AddClass(HeaderClass)
-                .AddChild(heading);
-
-            if (description != null)
-                header.AddChild(new Label(description).AddClass(HeaderDescriptionClass));
-
-            return header.AddChild(BuildScopeLegend(scope));
+            return new VisualElement().AddClass(HeaderClass)
+                .AddChild(heading)
+                .AddChild(BuildScopeLegend(scope));
         }
 
         internal static void AddSection(VisualElement container, string title, Action<VisualElement> buildContent)
@@ -162,14 +155,29 @@ namespace Aspid.FastTools.Editors
             container.Add(card.AddChild(content));
         }
 
-        internal static Label CreateRowNote(string text) => new Label(text).AddClass(RowNoteClass);
+        // The buttons of a row in the column the drop-downs, sliders and object fields take, sharing its width.
+        internal static VisualElement BuildButtonGroup(params VisualElement[] buttons)
+        {
+            // USS has no :first-child, so the gap between buttons is an element: a margin on each button would leave
+            // its outer half past the column's edges.
+            var group = new VisualElement().AddClass(ControlsClass);
+            for (var i = 0; i < buttons.Length; i++)
+            {
+                if (i > 0) group.Add(new VisualElement().AddClass(ControlsGapClass));
+                group.Add(buttons[i]);
+            }
+
+            return group;
+        }
 
         internal static VisualElement BuildScopeLegend(AspidSettingsScope scope = AspidSettingsScope.All)
         {
+            // The legend itself says what the stripes mean; the tooltip says where they are.
             var legend = new VisualElement().AddClass(LegendClass);
+            legend.tooltip = "The stripe on each row shows where its value is stored.";
 
             if ((scope & AspidSettingsScope.Shared) != 0)
-                legend.Add(BuildLegendItem(SharedScopeClass, "Shared — committed, same for the whole team"));
+                legend.Add(BuildLegendItem(SharedScopeClass, "Project — committed, same for the whole team"));
 
             if ((scope & AspidSettingsScope.User) != 0)
                 legend.Add(BuildLegendItem(UserScopeClass, "Per-user — stored locally, just for you"));
@@ -193,7 +201,7 @@ namespace Aspid.FastTools.Editors
             {
                 var shared = new Button(ResetSharedToDefaults)
                 {
-                    text = "Shared",
+                    text = "Project",
                     tooltip = "Reset the team-wide settings to defaults: Auto de-alias on, Build / CI gate Warn, no excluded scan folders.\n"
                         + "Changes the committed ProjectSettings asset — affects every teammate once committed.",
                 };
@@ -219,7 +227,7 @@ namespace Aspid.FastTools.Editors
         private static void ResetSharedToDefaults()
         {
             var confirmed = EditorUtility.DisplayDialog(
-                "Reset shared settings",
+                "Reset project settings",
                 "Reset the team-wide settings to defaults?\n\n"
                 + "• Auto de-alias duplicated list elements: On\n"
                 + "• Build / CI gate: Warn\n"

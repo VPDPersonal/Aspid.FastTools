@@ -13,6 +13,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeClass = RootClass + "__node";
         private const string NodeBackEdgeClass = NodeClass + "--back-edge";
         private const string NodeEmptyClass = NodeClass + "--empty";
+        private const string NodeCompactClass = NodeClass + "--compact";
+        private const string UnassignedFieldClass = RootClass + "__unassigned-field";
         private const string NodeMigrateCardClass = NodeClass + "--migrate";
         private const string NodeHeaderHoverClass = NodeClass + "--header-hover";
         private const string NodeBandClass = RootClass + "__node-band";
@@ -32,9 +34,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeRidClass = RootClass + "__node-rid";
         private const string NodeBadgesClass = RootClass + "__node-badges";
 
-        private const string BadgeClass = RootClass + "__badge";
-        private const string BadgeSharedClass = BadgeClass + "--shared";
-        private const string BadgeTextClass = RootClass + "__badge-text";
+        private const string SharedClass = RootClass + "__shared";
+        private const string SharedTextClass = RootClass + "__shared-text";
 
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
@@ -42,6 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string FixCollapsedText = "Fix Missing  ▼";
         private const string ChangeCollapsedText = "Change  ▼";
         private const string AssignCollapsedText = "Assign  ▼";
+        private const string ClearCollapsedText = "Clear";
 
         private const string AssignRequiredCollapsedText = "Assign Required  ▼";
 
@@ -60,6 +62,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 SerializeReferenceGraphAnalysis.IsPendingMigration(assetPath, document.FileId, rid,
                     node.Value.StoredType, _constraints, out migrationTarget);
 
+            SerializeReferenceRepairSuggestions.RepairCandidate suggestion = default;
+            var hasSuggestion = missing && !isMigration &&
+                SerializeReferenceGraphAnalysis.TryGetSuggestion(assetPath, document.FileId, rid,
+                    node.Value.StoredType, _constraints, out suggestion);
+
+            var title = node?.ShortName ?? $"rid {rid}";
+            var suggestionTitle = hasSuggestion ? GetQualifiedTitle(suggestion.Type) : null;
+            if (hasSuggestion && TryQualifySameNames(node.Value.StoredType, suggestion.Type, out var storedTitle, out _))
+                title = storedTitle;
+
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
             if (isMigration) card.AddClass(NodeMigrateCardClass);
@@ -73,7 +85,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? typePreset.SetLabelStatus(StatusStyle.Type.Warning)
                     : typePreset.SetLabelTheme(ThemeStyle.Type.Lightness);
 
-            var typeLabel = new AspidLabel(node?.ShortName ?? $"rid {rid}", typePreset)
+            var typeLabel = new AspidLabel(title, typePreset)
                 .AddClass(NodeTypeClass)
                 .SetPickingMode(PickingMode.Ignore);
             if (node is not null && !node.Value.StoredType.IsEmpty)
@@ -97,7 +109,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 RegisterNavBand(band, card, () => OpenMissingPicker(assetPath, fileId, rid, band));
                 AddBandDivider(card, band, isMigration ? NodeSweepMigrateClass : NodeSweepMissingClass);
 
-                var action = BuildQuickFixRow(assetPath, fileId, rid, node.Value.StoredType, isMigration, migrationTarget);
+                var action = isMigration
+                    ? BuildMigrationRow(assetPath, fileId, rid, migrationTarget)
+                    : hasSuggestion
+                        ? BuildSmartFixRow(assetPath, fileId, rid, suggestion, suggestionTitle)
+                        : null;
                 if (action is not null) card.AddChild(action);
             }
             else if (!isOrphan)
@@ -113,24 +129,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
-                // Orphans have no live property to edit, so only the file-level Clear action is available.
-                card.AddChild(bandRow);
-                AddBandDivider(card, band: null, sweepModifier: null);
+                // Orphans have no live property to edit, so their band holds the file-level Clear, which asks before
+                // it deletes the payload.
+                var band = new AspidGradientButton(ClearCollapsedText, _ => ClearOrphan(assetPath, fileId, rid))
+                    .AddClass(NodeBandClass);
+                band.AddLeadingContent(bandRow);
+                card.AddChild(band);
+                RegisterNavBand(band, card, () => ClearOrphan(assetPath, fileId, rid));
+                AddBandDivider(card, band, sweepModifier: null);
             }
 
             var meta = BuildFooter(pathLabel, isRepeat ? $"rid {rid} · children on another card" : $"rid {rid}");
 
-            if (isOrphan)
-            {
-                var clear = new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, fileId, rid))
-                    .AddClass(ClearOrphanClass);
-                RegisterNavTarget(clear, () => ClearOrphan(assetPath, fileId, rid));
-                meta.AddChild(clear);
-            }
+            // The Fix Missing band takes the header of an orphan whose type is missing, so its Clear stays in the footer.
+            if (isOrphan && missing) meta.AddChild(BuildClearOrphanButton(assetPath, fileId, rid));
 
             card.AddChild(meta);
 
             return card;
+        }
+
+        // Clear deletes the payload from the file without Undo, so it is a plain button that turns red on hover.
+        private Button BuildClearOrphanButton(string assetPath, long fileId, long rid)
+        {
+            var clear = new Button(() => ClearOrphan(assetPath, fileId, rid)) { text = "Clear" }
+                .AddClass(AspidStyles.ActionButtonClass)
+                .AddClass(AspidStyles.ActionButtonDangerClass)
+                .AddClass(ClearOrphanClass);
+            RegisterNavTarget(clear, () => ClearOrphan(assetPath, fileId, rid));
+
+            return clear;
         }
 
         private VisualElement BuildEmptySlotCard(string assetPath, long fileId, string pathLabel)
@@ -169,6 +197,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             card.AddChild(BuildFooter(pathLabel, "unassigned"));
 
             return card;
+        }
+
+        // An optional field that holds nothing, in its place among the fields: one muted band with the field path and
+        // Assign, so it takes a line instead of a card. Only an empty field offers Assign, so no <None> is needed.
+        private VisualElement BuildUnassignedRow(string assetPath, long fileId, string pathLabel)
+        {
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(NodeClass)
+                .AddClass(NodeEmptyClass)
+                .AddClass(NodeCompactClass);
+
+            var field = new Label(pathLabel)
+                .AddClass(UnassignedFieldClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            AspidGradientButton band = null;
+            band = new AspidGradientButton(AssignCollapsedText, _ => OpenLivePicker(assetPath, fileId, pathLabel, band))
+                .AddClass(NodeBandClass);
+            band.AddLeadingContent(BuildBandRow(field, badges: null));
+            RegisterNavBand(band, card, () => OpenLivePicker(assetPath, fileId, pathLabel, band));
+
+            return card.AddChild(band);
         }
 
         // Required string fields have no RefIds node; scene assets cannot be object-loaded for inline editing.
@@ -247,42 +297,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!document.Shared.Contains(rid)) return badges;
 
-            // A Label with children is sized by them, not by its text, so the text and the chip are siblings.
+            // Read like the counts beside a Project References title: a coloured dot and a muted word, not a pill. The
+            // dot has the colour of the rid, so the cards that share one instance show the same dot.
             var chip = new VisualElement().AddClass(ChipClass);
             chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
 
             var shared = new VisualElement()
-                .AddClass(BadgeClass)
-                .AddClass(BadgeSharedClass)
-                .AddChild(new Label("SHARED").AddClass(BadgeTextClass))
-                .AddChild(chip);
+                .AddClass(SharedClass)
+                .AddChild(chip)
+                .AddChild(new Label("shared").AddClass(SharedTextClass));
+            shared.tooltip = "Several fields point at this one instance, so editing it changes each of them. "
+                + "Cards with a dot of the same colour share it.";
 
             return badges.AddChild(shared);
         }
 
-        private VisualElement BuildQuickFixRow(string assetPath, long fileId, long rid, ManagedTypeName storedType,
-            bool isMigration, Type migrationTarget)
-        {
-            if (isMigration)
-            {
-                return BuildNodeActionRow(
-                    $"Migrate → {migrationTarget.Name}",
-                    $"This entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity " +
-                    "already migrates it in memory when the asset loads. Migrating rewrites the stored type " +
-                    "name in the file so it matches the code.",
-                    info: true,
-                    () => ApplyFix(assetPath, fileId, rid, migrationTarget.AssemblyQualifiedName));
-            }
+        private VisualElement BuildMigrationRow(string assetPath, long fileId, long rid, Type migrationTarget) =>
+            BuildNodeActionRow(
+                $"Migrate → {GetQualifiedTitle(migrationTarget)}",
+                $"This entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity " +
+                "already migrates it in memory when the asset loads. Migrating rewrites the stored type " +
+                "name in the file so it matches the code.",
+                info: true,
+                () => ApplyFix(assetPath, fileId, rid, migrationTarget.AssemblyQualifiedName));
 
-            if (!SerializeReferenceGraphAnalysis.TryGetSuggestion(assetPath, fileId, rid, storedType, _constraints, out var suggestion))
-                return null;
-
-            return BuildNodeActionRow(
-                $"Smart Fix {SerializeReferenceHelpers.GetSuggestionLabel(suggestion)}",
+        private VisualElement BuildSmartFixRow(string assetPath, long fileId, long rid,
+            SerializeReferenceRepairSuggestions.RepairCandidate suggestion, string targetTitle) =>
+            BuildNodeActionRow(
+                $"Smart Fix → {targetTitle}",
                 SerializeReferenceHelpers.GetSuggestionDetail(suggestion),
                 info: false,
                 () => ApplyFix(assetPath, fileId, rid, suggestion.Type.AssemblyQualifiedName));
-        }
 
         private VisualElement BuildNodeActionRow(string text, string tooltipText, bool info, Action onClick)
         {

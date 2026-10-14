@@ -1,4 +1,8 @@
+/* Every input that is not a switch takes this width at the right edge of its row, so the controls of a section form one
+   column with the switches instead of each field splitting its row in half. */
 .aspid-fasttools-settings {
+    --aspid-fasttools-settings-control-width:             200px;
+
     padding:                                              12px 12px 0 12px;
     flex-grow:                                            1;
 }
@@ -11,16 +15,11 @@
     margin-bottom:                                        6px;
 }
 
-.aspid-fasttools-settings__header-description {
-    color:                                                var(--aspid-colors-text-dark);
-    white-space:                                          normal;
-}
-
 .aspid-fasttools-settings__section {
     margin-bottom:                                        10px;
     padding:                                              8px 10px;
     border-width:                                         1px;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     border-color:                                         var(--aspid-colors-shade-darkness);
     background-color:                                     var(--aspid-colors-surface-card);
 }
@@ -59,7 +58,7 @@
     right:                                                0;
     top:                                                  0;
     bottom:                                               0;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
 
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
@@ -74,7 +73,7 @@
 .aspid-fasttools-settings__footer .aspid-fasttools-settings__row {
     margin-left:                                          -4px;
     padding-left:                                         4px;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;
@@ -84,23 +83,20 @@
     background-color:                                     var(--aspid-colors-bg-dark);
 }
 
-.aspid-fasttools-settings__row-note {
-    margin-top:                                           -1px;
-    margin-bottom:                                        6px;
-
-    padding-left:                                         17px;
-    font-size:                                            11px;
-    color:                                                var(--aspid-colors-text-dark);
-    white-space:                                          normal;
-}
-
 .aspid-fasttools-settings__row {
     flex-direction:                                       row;
     min-height:                                           32px;
 }
 
+/* Shrinks like a field's label, so a narrow window cuts the caption, not the control column. */
 .aspid-fasttools-settings__row-caption {
     flex-grow:                                            1;
+    flex-shrink:                                          1;
+    flex-basis:                                           0;
+    min-width:                                            0;
+    overflow:                                             hidden;
+    white-space:                                          nowrap;
+    text-overflow:                                        ellipsis;
     color:                                                var(--aspid-colors-text-light);
     -unity-text-align:                                    middle-left;
 }
@@ -117,11 +113,11 @@
 }
 
 .aspid-fasttools-settings__scope-stripe.aspid-fasttools-settings-scope--shared {
-    background-color:                                     var(--aspid-colors-status-success-lightness);
+    background-color:                                     var(--aspid-colors-scope-project);
 }
 
 .aspid-fasttools-settings__scope-stripe.aspid-fasttools-settings-scope--user {
-    background-color:                                     var(--aspid-colors-status-info-lightness);
+    background-color:                                     var(--aspid-colors-scope-user);
 }
 
 .aspid-fasttools-settings__legend {
@@ -145,16 +141,39 @@
 }
 
 .aspid-fasttools-settings__legend-swatch.aspid-fasttools-settings-scope--shared {
-    background-color:                                     var(--aspid-colors-status-success-lightness);
+    background-color:                                     var(--aspid-colors-scope-project);
 }
 
 .aspid-fasttools-settings__legend-swatch.aspid-fasttools-settings-scope--user {
-    background-color:                                     var(--aspid-colors-status-info-lightness);
+    background-color:                                     var(--aspid-colors-scope-user);
 }
 
 .aspid-fasttools-settings__legend-text {
     font-size:                                            11px;
     color:                                                var(--aspid-colors-text-dark);
+}
+
+/* Buttons share the control column with the drop-downs, sliders and object fields: the same width at the right edge,
+   split evenly, with a gap element between them, so their outer edges meet the column's. */
+.aspid-fasttools-settings__controls {
+    flex-direction:                                       row;
+    flex-grow:                                            0;
+    flex-shrink:                                          1;
+    flex-basis:                                           var(--aspid-fasttools-settings-control-width);
+    min-width:                                            120px;
+}
+
+.aspid-fasttools-settings__controls > .aspid-fasttools-settings__action {
+    flex-grow:                                            1;
+    flex-shrink:                                          1;
+    flex-basis:                                           0;
+    min-width:                                            0;
+    margin:                                               0;
+}
+
+.aspid-fasttools-settings__controls-gap {
+    flex-shrink:                                          0;
+    width:                                                6px;
 }
 
 .aspid-fasttools-settings__action {
@@ -164,7 +183,7 @@
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-dark);
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     color:                                                var(--aspid-colors-text-light);
 
     transition-property:                                  background-color, border-color, color;
@@ -207,10 +226,12 @@
     min-width:                                            auto;
 }
 
-.aspid-fasttools-settings__section-content .unity-base-slider .unity-base-field__input {
-    flex-grow:                                            1;
+/* A child selector: the value box of the slider is a field too, and its input must keep its own width. */
+.aspid-fasttools-settings__section-content .unity-base-slider > .unity-base-field__input {
+    flex-grow:                                            0;
     flex-shrink:                                          1;
-    flex-basis:                                           0;
+    flex-basis:                                           var(--aspid-fasttools-settings-control-width);
+    min-width:                                            120px;
 }
 
 /* BaseSlider partly controls the handle offset; remeasure the compensating margin when track or handle height changes. */
@@ -284,7 +305,7 @@
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        8px;
+    border-radius:                                        6px;
 }
 
 .aspid-fasttools-settings .unity-enum-field__text {
@@ -298,9 +319,10 @@
 }
 
 .aspid-fasttools-settings .unity-enum-field__input {
-    flex-grow:                                            1;
+    flex-grow:                                            0;
     flex-shrink:                                          1;
-    flex-basis:                                           0;
+    flex-basis:                                           var(--aspid-fasttools-settings-control-width);
+    min-width:                                            120px;
 }
 
 .aspid-fasttools-settings .unity-enum-field__arrow,
@@ -330,15 +352,16 @@
 }
 
 .aspid-fasttools-settings .unity-object-field__input {
-    flex-grow:                                            1;
+    flex-grow:                                            0;
     flex-shrink:                                          1;
-    flex-basis:                                           0;
+    flex-basis:                                           var(--aspid-fasttools-settings-control-width);
+    min-width:                                            120px;
     min-height:                                           24px;
     padding:                                              1px 2px 1px 6px;
     background-color:                                     var(--aspid-colors-surface-card);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        8px;
+    border-radius:                                        6px;
 }
 
 .aspid-fasttools-settings .unity-object-field-display__label {

@@ -52,18 +52,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return cards;
         }
 
-        public static int CountEmptySlots(ReferenceGraphDocument document)
-        {
-            var count = document.Roots.Count(root => root.IsEmpty);
-
-            foreach (var pair in document.Edges)
-            {
-                count += pair.Value.Count(edge => edge.IsEmpty);
-            }
-
-            return count;
-        }
-
         public static (int broken, int migrations) CountUnresolved(string assetPath, ReferenceGraphDocument document,
             SerializeReferenceConstraintCache constraints)
         {

@@ -12,24 +12,16 @@ namespace Aspid.FastTools.Editors
         private const string NextTabId = Category + "Next Tab";
         private const string PreviousTabId = Category + "Previous Tab";
 
-        private const string HomeId = Category + "Home";
-        private const string AssetReferencesId = Category + "Asset References";
-        private const string ProjectReferencesId = Category + "Project References";
-        private const string SettingsId = Category + "Settings";
+        internal const string HomeId = Category + "Home";
+        internal const string AssetReferencesId = Category + "Asset References";
+        internal const string ProjectReferencesId = Category + "Project References";
+        internal const string SettingsId = Category + "Settings";
 
-        private const KeyCode HomeKey = KeyCode.Alpha1;
-        private const KeyCode SettingsKey = KeyCode.Alpha0;
-        private const KeyCode AssetReferencesKey = KeyCode.Alpha2;
-        private const KeyCode ProjectReferencesKey = KeyCode.Alpha3;
+        internal const KeyCode HomeKey = KeyCode.Alpha1;
+        internal const KeyCode SettingsKey = KeyCode.Alpha0;
+        internal const KeyCode AssetReferencesKey = KeyCode.Alpha2;
+        internal const KeyCode ProjectReferencesKey = KeyCode.Alpha3;
         private const ShortcutModifiers TabModifiers = ShortcutModifiers.Alt;
-
-        private static readonly TabData[] _tabData =
-        {
-            new(HomeId, TabType.Welcome, HomeKey),
-            new(AssetReferencesId, TabType.AssetReference, AssetReferencesKey),
-            new(ProjectReferencesId, TabType.ProjectReferences, ProjectReferencesKey),
-            new(SettingsId, TabType.Settings, SettingsKey),
-        };
 
         [Shortcut(HomeId, typeof(TabWindow), HomeKey, TabModifiers)]
         private static void OnHomeShortcut(ShortcutArguments args) =>
@@ -57,13 +49,8 @@ namespace Aspid.FastTools.Editors
 
         internal static string HintFor(TabType tab)
         {
-            foreach (var tabData in _tabData)
-            {
-                if (tabData.Tab != tab) continue;
-                return LiveBinding(tabData.Id) ?? DefaultHint(tabData.Key);
-            }
-
-            return string.Empty;
+            var definition = TabWindow.DefinitionOf(tab);
+            return LiveBinding(definition.ShortcutId) ?? DefaultHint(definition.Key);
         }
 
         private static void SwitchFrom(ShortcutArguments args, TabType tab)
@@ -76,17 +63,19 @@ namespace Aspid.FastTools.Editors
         {
             if (args.context is not TabWindow window) return;
 
+            var tabs = TabWindow.Tabs;
             var currentTabIndex = IndexOf(window.CurrentTabType);
-            var nextTabIndex = (currentTabIndex + step + _tabData.Length) % _tabData.Length;
+            var nextTabIndex = (currentTabIndex + step + tabs.Length) % tabs.Length;
 
-            window.SwitchMode(_tabData[nextTabIndex].Tab);
+            window.SwitchMode(tabs[nextTabIndex].Type);
         }
 
         private static int IndexOf(TabType tab)
         {
-            for (var i = 0; i < _tabData.Length; i++)
+            var tabs = TabWindow.Tabs;
+            for (var i = 0; i < tabs.Length; i++)
             {
-                if (_tabData[i].Tab == tab) return i;
+                if (tabs[i].Type == tab) return i;
             }
 
             return 0;
@@ -125,20 +114,6 @@ namespace Aspid.FastTools.Editors
             if ((modifiers & ShortcutModifiers.Shift) != 0) prefix += isMac ? "⇧" : "Shift+";
 
             return prefix;
-        }
-
-        private readonly struct TabData
-        {
-            internal readonly string Id;
-            internal readonly TabType Tab;
-            internal readonly KeyCode Key;
-
-            internal TabData(string id, TabType tab, KeyCode key)
-            {
-                Id = id;
-                Tab = tab;
-                Key = key;
-            }
         }
     }
 }

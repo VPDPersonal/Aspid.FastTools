@@ -22,6 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string PanelTitleClass = RootClass + "__panel-title";
         private const string PanelDescriptionClass = RootClass + "__panel-description";
         private const string ScanProjectClass = RootClass + "__scan-project";
+        private const string ScanProjectIconClass = RootClass + "__scan-project-icon";
         private const string EmptyClass = RootClass + "__empty";
         private const string EmptyHiddenClass = EmptyClass + "--hidden";
         private const string EmptyIconClass = RootClass + "__empty-icon";
@@ -33,12 +34,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ResultsHiddenClass = ResultsClass + "--hidden";
         private const string ResultsHeaderClass = RootClass + "__results-header";
         private const string ResultsHintClass = RootClass + "__results-hint";
-        private const string LegendClass = RootClass + "__legend";
-        private const string LegendHiddenClass = LegendClass + "--hidden";
-        private const string LegendItemClass = RootClass + "__legend-item";
-        private const string LegendDotClass = RootClass + "__legend-dot";
-        private const string LegendDotInfoClass = LegendDotClass + "--info";
-        private const string LegendTextClass = RootClass + "__legend-text";
+        private const string ResultsHintHiddenClass = ResultsHintClass + "--hidden";
         private const string SummaryListClass = RootClass + "__summary-list";
         private const string SummaryClass = RootClass + "__summary";
         private const string SummaryUndoClass = RootClass + "__summary-undo";
@@ -54,7 +50,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly AspidLabel _resultsHeader;
         private readonly VisualElement _summaries;
         private readonly Label _resultsHint;
-        private readonly VisualElement _legend;
         private readonly VisualElement _list;
         private readonly AspidGradientButton _scanButton;
         private readonly ScrollView _scroll;
@@ -72,7 +67,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private readonly AuditPickerHost _picker;
 
-        private static readonly LegendClasses _legendClassSet = new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
 
         // Required-field scanning has no incremental index; cache results across tab switches until an explicit rescan.
         private static bool _requiredIsWarm;
@@ -101,8 +95,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public Action<StatusStyle.Type> OnCanvasStatus;
 
-        // The host window passes a list it keeps, so the summaries and their Undo outlive this view; Rescan empties it.
-        public List<RepairSummary> Summaries = new();
+        // The window keeps this view between visits to its tab, so the summaries and their Undo survive them; Rescan
+        // empties the list.
+        public readonly List<RepairSummary> Summaries = new();
 
         public SerializeReferenceProjectView()
         {
@@ -123,8 +118,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "and bulk-fix them by type.")
                 .AddClass(PanelDescriptionClass);
 
+            // The icon and the accent label mark the band as a button; a bare label read as an empty field.
             _scanButton = new AspidGradientButton(ScanLabel, _ => ScanProject())
                 .AddClass(ScanProjectClass);
+            _scanButton.AddLeadingContent(BuildRescanIcon(ScanProjectIconClass));
 
             var panel = new VisualElement()
                 .AddClass(PanelClass)
@@ -141,13 +138,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .SetLineStatus(StatusStyle.Type.Warning))
                 .AddClass(ResultsHeaderClass);
 
-            _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass);
-
-            _legend = new VisualElement()
-                .AddClass(LegendClass)
-                .AddClass(LegendHiddenClass)
-                .AddChild(BuildLegendItem("Broken — pick a replacement", info: false, _legendClassSet))
-                .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true, _legendClassSet));
+            _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass).AddClass(ResultsHintHiddenClass);
 
             _summaries = new VisualElement().AddClass(SummaryListClass);
 
@@ -157,7 +148,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(ResultsClass)
                 .AddChild(_resultsHeader)
                 .AddChild(_resultsHint)
-                .AddChild(_legend)
                 .AddChild(_summaries)
                 .AddChild(_list);
 
@@ -169,6 +159,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _scroll = new ScrollView().AddClass(ScrollClass);
             _scroll.AddChild(content);
+            ReferenceEmptyStateLayout.PinIcon(_empty, _scroll);
 
             root.AddChild(_scroll);
 
@@ -192,16 +183,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void RegisterNavTarget(VisualElement element, Action activate) => _ring.Register(element, activate);
 
-        public void Initialize()
+        private static bool IsWarm => SerializeReferenceTypeUsageIndex.IsWarm || _requiredIsWarm || _typeNamesIsWarm;
+
+        public void Initialize() => Refresh();
+
+        // The window keeps this view between visits to its tab; the index may have changed since, so the groups are
+        // listed again.
+        internal void Refresh()
         {
-            if (!SerializeReferenceTypeUsageIndex.IsWarm && !_requiredIsWarm && !_typeNamesIsWarm)
+            _picker.Close();
+
+            if (!IsWarm)
             {
                 ShowIdle();
                 return;
             }
-
-            foreach (var summary in Summaries)
-                ShowSummary(summary);
 
             // A repair can leave nothing to list, which RenderGroups shows as the empty state with the summaries hidden.
             if (Summaries.Count > 0) RerenderAfterBulkEdit();
@@ -300,16 +296,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
+            var broken = new List<(MissingReferenceGroup Group, MissingReferenceMigration Migration)>();
             var migrations = new List<(MissingReferenceGroup Group, MissingReferenceMigration Migration)>();
             foreach (var group in groups)
             {
                 var migration = new MissingReferenceMigration(group);
-                if (migration.IsMigration) migrations.Add((group, migration));
-                else _list.AddChild(BuildGroupCard(group, migration));
+                (migration.IsMigration ? migrations : broken).Add((group, migration));
             }
-
-            foreach (var group in typeNameGroups)
-                _list.AddChild(BuildTypeNameGroupCard(group));
 
             var migrationCount = migrations.Sum(entry => entry.Group.Entries.Count) + pendingOverrides;
             ShowResults(
@@ -318,27 +311,62 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 StatusStyle.Type.Warning);
 
             // Only these cards have a Fix all; a renamed type has Reassign all and Migrate all instead.
-            var hasBrokenGroups = groups.Count > migrations.Count || typeNameGroups.Count > 0;
-            _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(
-                requiredCount > 0,
+            var hasBrokenGroups = broken.Count > 0 || typeNameGroups.Count > 0;
+            SetResultsHint(SerializeReferenceProjectSummary.BuildResultsHintText(
                 RequiredAudit,
-                overrides.Count > 0,
-                hasBrokenGroups: hasBrokenGroups,
-                hasTypeNames: typeNameGroups.Count > 0,
                 typeNamesScanned: _typeNamesIsWarm,
-                unreadFileCount: _unreadFileCount);
+                unreadFileCount: _unreadFileCount));
+            SetResultsGuide(SerializeReferenceProjectSummary.BuildResultsGuideText(
+                requiredCount > 0,
+                hasOverrides: overrides.Count > 0,
+                hasBrokenGroups: hasBrokenGroups));
 
-            var hasAmber = hasBrokenGroups || requiredCount > 0 || overrides.Count > pendingOverrides;
-            _legend.EnableInClassList(LegendHiddenClass, migrationCount == 0 || !hasAmber);
+            // The cards fall into headed sections, so the colour of a title needs no legend. Required fields and
+            // prefab instance overrides always get their heading, since their cards carry no title of their own; a list
+            // of only broken or only renamed types needs none, as its heading would repeat the results header.
+            var allOverridesPending = overrides.Count > 0 && overrides.Count == pendingOverrides;
+            var sectioned = requiredCount > 0 || overrides.Count > 0 || (hasBrokenGroups && migrations.Count > 0);
+            var isFirst = true;
 
-            if (overrides.Count > 0)
-                _list.AddChild(BuildOverrideGroupCard(overrides));
+            void AddHeading(string title, StatusStyle.Type status, string tooltip)
+            {
+                if (!sectioned) return;
+
+                _list.AddChild(BuildSectionHeading(title, status, tooltip, isFirst));
+                isFirst = false;
+            }
+
+            if (hasBrokenGroups)
+            {
+                AddHeading(BrokenSectionTitle, StatusStyle.Type.Warning, BrokenSectionTooltip);
+
+                foreach (var (group, migration) in broken)
+                    _list.AddChild(BuildGroupCard(group, migration));
+
+                foreach (var group in typeNameGroups)
+                    _list.AddChild(BuildTypeNameGroupCard(group));
+            }
 
             if (requiredCount > 0)
-                _list.AddChild(BuildRequiredGroupCard(requiredViolations));
+            {
+                AddHeading(RequiredSectionTitle, StatusStyle.Type.Warning, RequiredSectionTooltip);
+                AddRequiredFileCards(requiredViolations);
+            }
 
-            foreach (var (group, migration) in migrations)
-                _list.AddChild(BuildGroupCard(group, migration));
+            if (overrides.Count > 0)
+            {
+                AddHeading(OverridesSectionTitle, allOverridesPending ? StatusStyle.Type.Info : StatusStyle.Type.Warning,
+                    OverridesSectionTooltip);
+                AddOverrideFileCards(overrides);
+            }
+
+            if (migrations.Count > 0)
+            {
+                AddHeading(RenamedSectionTitle, StatusStyle.Type.Info, RenamedSectionTooltip);
+
+                foreach (var (group, migration) in migrations)
+                    _list.AddChild(BuildGroupCard(group, migration));
+            }
         }
 
         // Builds the list again for the data on screen, with the layout and the header it already has.
@@ -371,12 +399,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     : $"No missing references, {BuildCountText(requiredViolations.Count, "required violation")}",
                 SerializeReferenceProjectSummary.GetMissingReferencesCleanStatus(
                     RequiredAudit, requiredViolations.Count > 0, typeNamesScanned: _typeNamesIsWarm, unreadFileCount: _unreadFileCount));
-            _resultsHint.text = SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(
-                RequiredAudit, requiredViolations.Count > 0, typeNamesScanned: _typeNamesIsWarm, unreadFileCount: _unreadFileCount);
-            _legend.AddClass(LegendHiddenClass);
+            SetResultsGuide(requiredViolations.Count > 0
+                ? SerializeReferenceProjectSummary.BuildResultsGuideText(hasRequiredViolations: true, hasBrokenGroups: false)
+                : string.Empty);
+            SetResultsHint(SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(
+                RequiredAudit, requiredViolations.Count > 0, typeNamesScanned: _typeNamesIsWarm, unreadFileCount: _unreadFileCount));
 
-            if (requiredViolations.Count > 0)
-                _list.AddChild(BuildRequiredGroupCard(requiredViolations));
+            if (requiredViolations.Count == 0) return;
+
+            // The file cards carry no section name of their own, so the heading names them here too.
+            _list.AddChild(BuildSectionHeading(RequiredSectionTitle, StatusStyle.Type.Warning, RequiredSectionTooltip, isFirst: true));
+            AddRequiredFileCards(requiredViolations);
+        }
+
+        // An empty hint takes no line, so the summaries or the list move up under the header.
+        private void SetResultsHint(string text)
+        {
+            _resultsHint.text = text;
+            _resultsHint.EnableInClassList(ResultsHintHiddenClass, string.IsNullOrEmpty(text));
+        }
+
+        private void SetResultsGuide(string text)
+        {
+            _resultsHeader.tooltip = text;
         }
 
         private void ShowEmptyState(bool success, string title, string message)
@@ -431,12 +476,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             box.Message = summary.Message;
 
             if (summary.Receipt is not null)
-                box.AddChild(new AspidGradientButton("Undo", _ => UndoGroupFix(summary, box)).AddClass(SummaryUndoClass));
+                box.AddChild(BuildUndoButton(() => UndoGroupFix(summary, box)));
             else if (summary.TypeNameReceipt is not null)
-                box.AddChild(new AspidGradientButton("Undo", _ => UndoTypeNameFix(summary, box)).AddClass(SummaryUndoClass));
+                box.AddChild(BuildUndoButton(() => UndoTypeNameFix(summary, box)));
 
             _summaries.AddChild(box);
         }
+
+        private static Button BuildUndoButton(Action undo) =>
+            new Button(undo) { text = "Undo" }
+                .AddClass(AspidStyles.ActionButtonClass)
+                .AddClass(SummaryUndoClass);
 
         private void ClearSummaries()
         {

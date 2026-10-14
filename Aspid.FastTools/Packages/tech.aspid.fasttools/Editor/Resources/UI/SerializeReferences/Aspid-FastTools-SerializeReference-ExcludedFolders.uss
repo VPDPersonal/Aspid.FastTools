@@ -12,7 +12,7 @@
     padding:                                              1px 3px 1px 7px;
     border-width:                                         1px;
     border-color:                                         rgba(0, 0, 0, 0);
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;
@@ -28,10 +28,22 @@
     -unity-text-align:                                    middle-left;
 }
 
-.aspid-fasttools-excluded-folders__hint {
-    margin-right:                                         6px;
-    color:                                                var(--aspid-colors-text-darkness);
-    -unity-text-align:                                    middle-right;
+/* The folders sit in a framed box under the caption, bordered like the drop-downs and object fields, so they read as
+   a list. It starts where the caption's text starts and ends where the control column ends. */
+.aspid-fasttools-excluded-folders__list {
+    margin:                                               2px 4px 4px 19px;
+    padding:                                              2px;
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-control-border);
+    border-radius:                                        6px;
+    background-color:                                     var(--aspid-colors-surface-card-dim);
+}
+
+.aspid-fasttools-excluded-folders__empty {
+    min-height:                                           22px;
+    padding:                                              1px 8px;
+    color:                                                var(--aspid-colors-text-dark);
+    -unity-text-align:                                    middle-left;
 }
 
 .aspid-fasttools-excluded-folders__add {
@@ -55,14 +67,13 @@
 /* Code mirrors child hover onto the row because USS cannot select a parent from child hover. */
 .aspid-fasttools-excluded-folders__entry {
 
-    margin-left:                                          9px;
     flex-direction:                                       row;
     align-items:                                          center;
     min-height:                                           22px;
-    padding:                                              1px 3px 1px 19px;
+    padding:                                              1px 3px 1px 8px;
     border-width:                                         1px;
     border-color:                                         rgba(0, 0, 0, 0);
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;

@@ -1,5 +1,7 @@
 using System;
+using UnityEditor;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using CardKind = Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceGraphPlan.CardKind;
@@ -11,14 +13,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const string DocumentClass = RootClass + "__document";
         private const string DocumentHeaderClass = RootClass + "__document-header";
-        private const string DocumentHeaderIssuesClass = DocumentHeaderClass + "--issues";
-        private const string DocumentHeaderRowClass = RootClass + "__document-header-row";
-        private const string DocumentTitleClass = RootClass + "__document-title";
-        private const string DocumentCountClass = RootClass + "__document-count";
         private const string DocumentBodyClass = RootClass + "__document-body";
 
-        private const string OrphanGroupClass = RootClass + "__orphan-group";
-        private const string OrphanGroupHeaderClass = RootClass + "__orphan-group-header";
+        private const string SectionClass = RootClass + "__section";
+
+        private const string OrphanedTooltip =
+            "Entries in the file's references block that no field points at. Clear deletes one from the file after you "
+            + "confirm; it has no Undo.";
 
         private const string DocumentChevronExpanded = "▼";
         private const string DocumentChevronCollapsed = "▶";
@@ -27,13 +28,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var document = plan.Document;
             var (broken, migrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
-            var hasIssues = document.Orphans.Count > 0 || broken > 0;
 
             var body = new VisualElement().AddClass(DocumentBodyClass);
 
-            var header = showHeader ? BuildDocumentHeader(document, body, hasIssues, broken, migrations) : null;
+            var header = showHeader ? BuildDocumentHeader(document, body, broken, migrations) : null;
 
-            VisualElement orphans = null;
+            // The cards follow the fields of the object; orphans have no field, so they are built after the tree, and the
+            // keyboard visits them in the order they are drawn.
+            var orphans = new List<long>();
+
             foreach (var card in plan.Cards)
             {
                 switch (card.Kind)
@@ -47,17 +50,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         body.AddChild(BuildBackEdgeCard(card.Rid));
                         break;
                     case CardKind.Empty:
-                        body.AddChild(BuildEmptySlotCard(assetPath, document.FileId, card.Path));
+                        // An optional empty field is a one-line row in its place; an empty [Required] one keeps its amber card.
+                        body.AddChild(string.IsNullOrEmpty(card.Path) || IsFieldRequiredUnset(document.FileId, card.Path)
+                            ? BuildEmptySlotCard(assetPath, document.FileId, card.Path)
+                            : BuildUnassignedRow(assetPath, document.FileId, card.Path));
                         break;
                     case CardKind.Orphan:
-                        orphans ??= BuildOrphanGroup();
-                        orphans.AddChild(BuildNodeCard(assetPath, document, document.FindNode(card.Rid), card.Rid,
-                            pathLabel: null, isOrphan: true, isRepeat: false));
+                        orphans.Add(card.Rid);
                         break;
                 }
             }
 
-            if (orphans is not null) body.AddChild(orphans);
+            if (orphans.Count > 0)
+            {
+                // The cards below are the count, so the heading carries only its name.
+                var section = BuildSection("Orphaned", StatusStyle.Type.Warning, OrphanedTooltip);
+
+                foreach (var rid in orphans)
+                {
+                    section.AddChild(BuildNodeCard(assetPath, document, document.FindNode(rid), rid,
+                        pathLabel: null, isOrphan: true, isRepeat: false));
+                }
+
+                body.AddChild(section);
+            }
 
             if (header is null)
                 return new VisualElement().AddClass(DocumentClass).AddChild(body);
@@ -68,48 +84,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(body);
         }
 
-        private AspidGradientButton BuildDocumentHeader(ReferenceGraphDocument document, VisualElement body,
-            bool hasIssues, int broken, int migrations)
+        // The object that holds the fields: a heading a level above the sections inside it, which folds its cards.
+        private VisualElement BuildDocumentHeader(ReferenceGraphDocument document, VisualElement body, int broken,
+            int migrations)
         {
             var collapsed = false;
-            AspidGradientButton header = null;
+            ReferenceSectionHeading header = null;
 
             var toggle = new Action(() =>
             {
                 collapsed = !collapsed;
                 body.style.display = collapsed ? DisplayStyle.None : DisplayStyle.Flex;
-                header.Text = collapsed ? DocumentChevronCollapsed : DocumentChevronExpanded;
+                header.TrailingText = collapsed ? DocumentChevronCollapsed : DocumentChevronExpanded;
             });
 
-            header = new AspidGradientButton(DocumentChevronExpanded, _ => toggle())
-                .AddClass(DocumentHeaderClass);
-            if (hasIssues) header.AddClass(DocumentHeaderIssuesClass);
-            header.tooltip = $"fileId {document.FileId}";
-            RegisterNavTarget(header, toggle);
+            // A scene is read as text only, so its objects have no loaded source and no icon.
+            var icon = document.Source != null ? AssetPreview.GetMiniThumbnail(document.Source) : null;
 
-            header.AddLeadingContent(new VisualElement()
-                .AddClass(DocumentHeaderRowClass)
-                .SetPickingMode(PickingMode.Ignore)
-                .AddChild(new Label(document.TypeName)
-                    .AddClass(DocumentTitleClass)
-                    .SetPickingMode(PickingMode.Ignore))
-                .AddChild(new Label(SerializeReferenceGraphSummary.BuildDocumentCountText(document, broken, migrations))
-                    .AddClass(DocumentCountClass)
-                    .SetPickingMode(PickingMode.Ignore)));
+            // The name gets the whole row; the counts are in the tooltip, and the cards below show what is wrong.
+            header = ReferenceSectionHeading.ForObject(document.TypeName, icon)
+                .SetOnClick(toggle);
+            header.AddToClassList(DocumentHeaderClass);
+            header.TrailingText = DocumentChevronExpanded;
+            header.tooltip = $"{SerializeReferenceGraphSummary.BuildDocumentCountText(document, broken, migrations)}\nfileId {document.FileId}";
+            RegisterNavTarget(header, toggle);
 
             return header;
         }
 
-        private static VisualElement BuildOrphanGroup()
+        // Orphans under their own heading, after the cards of the tree.
+        private static VisualElement BuildSection(string title, StatusStyle.Type status, string tooltip)
         {
-            var group = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
-                .AddClass(OrphanGroupClass);
-
-            return group.AddChild(new AspidLabel("Orphaned", AspidLabelPreset.Default
-                    .SetLabelStatus(StatusStyle.Type.Warning)
-                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
-                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
-                .AddClass(OrphanGroupHeaderClass));
+            var heading = new ReferenceSectionHeading(title, status) { tooltip = tooltip };
+            return new VisualElement()
+                .AddClass(SectionClass)
+                .AddChild(heading);
         }
 
         private static VisualElement BuildHiddenNotice(int hidden)

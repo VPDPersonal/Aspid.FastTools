@@ -64,7 +64,7 @@ Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset Refere
 
 | Group | Header button | Row under the header |
 |---|---|---|
-| Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Pistol** — apply the suggested class; the tooltip gives the reason |
+| Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Game.Weapons.Pistol** — apply the suggested class; the tooltip gives the reason |
 | Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
 
 The **Fix all**, **Reassign all** and **Migrate all** labels show the number of entries in the group, for example **Fix all (4) ▼** and **Migrate all (4) → Crossbow**.
@@ -82,7 +82,7 @@ The summary after a rewrite has **Undo**: it restores the old class on entries t
 
 ### Prefab instance overrides
 
-A missing class set through a prefab instance override — in a variant, a nested prefab or an instance in a scene — is listed in a separate **Prefab instance overrides** card.
+A missing class set through a prefab instance override — in a variant, a nested prefab or an instance in a scene — is listed in a separate **Prefab instance overrides** section.
 
 ![Prefab instance overrides card with a missing GhostRailgun in the EliteLoadout variant](Images/aspid_fasttools_serialize_reference_prefab_overrides.png)
 
@@ -105,17 +105,19 @@ The scan does not find <code lang="csharp">[TypeSelector]</code> strings: repair
 
 Open **Tools → Aspid 🐍 → FastTools → Asset References** and assign a saved prefab, ScriptableObject or scene to the field next to **Rescan**. Or select an asset in the Project window and choose **Assets → Aspid 🐍 → FastTools → Asset References**, from the main menu or the right-click menu: the tab opens on that asset. Clicking an entry row in Project References opens its asset here.
 
-![Asset References with a missing GhostCrossbow, a SHARED Pistol and an orphaned Railgun entry](Images/aspid_fasttools_serialize_reference_asset_references.png)
+![Asset References with a missing GhostCrossbow, a shared Pistol and an orphaned Railgun entry](Images/aspid_fasttools_serialize_reference_asset_references.png)
 
 | Label | Meaning |
 |---|---|
 | Band with **Fix Missing ▼** | The stored class is not found; the button opens the class picker |
-| **Smart Fix → Pistol** row | A class picked as by **Smart Fix** in Project References |
-| **Migrate → Crossbow** row under a **Fix ▼** band | The class was renamed with <code lang="csharp">[MovedFrom]</code>: the row writes the new name, **Fix ▼** picks a different class |
+| **Smart Fix → Game.Weapons.Pistol** row | A class picked as by **Smart Fix** in Project References |
+| **Migrate → Game.Weapons.Crossbow** row under a **Fix ▼** band | The class was renamed with <code lang="csharp">[MovedFrom]</code>: the row writes the new name, **Fix ▼** picks a different class |
 | Band with **Change ▼**, **Assign ▼** or **Assign Required ▼** | Changes the class of a healthy reference, fills an empty or required field; the asset is saved at once |
-| **SHARED** | Several fields point at one instance; matching colours mark the connected fields |
+| **● shared** | Several fields point at one instance; dots of the same colour mark the connected fields |
 | **children on another card** in a card's footer | The children of this reference are drawn once, under its first card that is not below a missing type; this card is another field that points at it |
-| **Orphaned** | An entry no field points at; **Clear** deletes it from the file, without Undo |
+| One-line row with a field name and **Assign ▼** | An optional field that holds no reference, in its place among the fields; an empty `[Required]` field keeps an amber card |
+| **Orphaned** section | Entries no field points at; **Clear** in a card's header deletes one from the file after you confirm, without Undo |
+| Heading with **▼** | The object whose fields the cards below are, such as `Player › Loadout`; click it to fold its cards |
 
 **Fix Missing**, **Smart Fix** and **Migrate** write the class to the file at once, and **Edit → Undo** does not revert it.
 

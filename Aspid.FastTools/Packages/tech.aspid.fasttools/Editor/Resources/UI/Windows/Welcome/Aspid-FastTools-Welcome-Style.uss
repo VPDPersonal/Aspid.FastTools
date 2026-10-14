@@ -96,7 +96,7 @@ AspidAnimatedTitle {
     flex-grow: 0;
     margin-bottom: 10px;
     padding: 8px 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     border-width: 1px;
     border-color: var(--aspid-colors-shade-darkness);
     background-color: var(--aspid-colors-surface-card);
