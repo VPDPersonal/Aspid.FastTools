@@ -58,16 +58,16 @@ A save that resizes a list, and every save of a prefab, writes the list's missin
 
 Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the next tab of the same window. **Scan Project** reads the `.prefab`, `.asset`, `.unity`, `.controller` and `.playable` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope). A progress bar shows each sweep; **Cancel** stops the scan and keeps the earlier results. A group lists its first 200 entries, and **Show more** adds the next 200.
 
-![Project References with Fix all, Smart Fix → Pistol and Migrate all groups](Images/aspid_fasttools_serialize_reference_project_references.png)
+![Project References: Broken groups with Fix all and Smart Fix, a Renamed group with Migrate all](Images/aspid_fasttools_serialize_reference_project_references.png)
 
 ### Group actions
 
 | Group | Header button | Row under the header |
 |---|---|---|
 | Missing type | **Fix all ▼** — pick a class for every entry | **Smart Fix → Game.Weapons.Pistol** — apply the suggested class; the tooltip gives the reason |
-| Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
+| Renamed with <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — pick a different class instead of the new name | **Migrate all → Game.Weapons.Crossbow** — write the new name, see [Migrations](#migrations-with-movedfrom) |
 
-The **Fix all**, **Reassign all** and **Migrate all** labels show the number of entries in the group, for example **Fix all (4) ▼** and **Migrate all (4) → Crossbow**.
+The **Fix all**, **Reassign all** and **Migrate all** labels show the number of entries in the group, for example **Fix all (4) ▼** and **Migrate all (4) → Game.Weapons.Crossbow**.
 
 Every action asks for **Rewrite**. `<None>` in the class picker clears the group's references and deletes their data, fields sharing the same `rid` included; it asks for **Clear** and has no Undo. In open and unsaved files it clears the references in memory, until you save.
 
@@ -95,7 +95,7 @@ A <code lang="class-name">SerializableType</code> or <code lang="class-name">Ser
 | Action | What it does |
 |---|---|
 | **Fix all ▼** | Opens the type picker with the constraint of the fields and writes the picked type to every field of the group |
-| **Smart Fix → Spear** | Writes the only compatible type with the same class name |
+| **Smart Fix → Game.Combat.Spear** | Writes the only compatible type with the same class name |
 
 A <code lang="class-name">SerializableMonoScript</code> field also gets the script of the picked type. A prefab instance override is rewritten as well, because it stores the name as a plain value.
 

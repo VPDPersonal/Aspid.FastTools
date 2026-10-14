@@ -58,16 +58,16 @@ Project References также восстанавливает имена, кот�
 
 Откройте **Tools → Aspid 🐍 → FastTools → Project References**; Asset References — соседняя вкладка того же окна. **Scan Project** читает файлы `.prefab`, `.asset`, `.unity`, `.controller` и `.playable` под `Assets/`, кроме [**Excluded scan folders**](07-serialize-reference-validation.md#область-проверки). Каждый проход показывает индикатор прогресса; **Cancel** останавливает проверку и оставляет прежние результаты. Группа показывает первые 200 записей, а **Show more** добавляет следующие 200.
 
-![Project References с группами Fix all, Smart Fix → Pistol и Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
+![Project References: группы Broken с Fix all и Smart Fix, группа Renamed с Migrate all](../../../../docs/Images/aspid_fasttools_serialize_reference_project_references.png)
 
 ### Действия с группой
 
 | Группа | Кнопка в заголовке | Строка под заголовком |
 |---|---|---|
 | Потерянный тип | **Fix all ▼** — выбрать класс для всех записей | **Smart Fix → Game.Weapons.Pistol** — применить предложенный класс; причина в подсказке |
-| Переименование с <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — выбрать другой класс вместо нового имени | **Migrate all → Crossbow** — записать новое имя, см. [Миграции](#миграции-с-movedfrom) |
+| Переименование с <code lang="csharp">[MovedFrom]</code> | **Reassign all ▼** — выбрать другой класс вместо нового имени | **Migrate all → Game.Weapons.Crossbow** — записать новое имя, см. [Миграции](#миграции-с-movedfrom) |
 
-Подписи кнопок **Fix all**, **Reassign all**, **Migrate all** содержат число записей группы: **Fix all (4) ▼**, **Migrate all (4) → Crossbow**.
+Подписи кнопок **Fix all**, **Reassign all**, **Migrate all** содержат число записей группы: **Fix all (4) ▼**, **Migrate all (4) → Game.Weapons.Crossbow**.
 
 Каждое действие спрашивает подтверждение **Rewrite**. `<None>` в выборе класса очищает ссылки группы и удаляет их данные, включая поля с тем же `rid`; он спрашивает **Clear** и Undo не имеет. В открытых и несохранённых файлах он очищает ссылки в памяти, до сохранения.
 
@@ -95,7 +95,7 @@ Project References также восстанавливает имена, кот�
 | Действие | Что делает |
 |---|---|
 | **Fix all ▼** | Открывает выбор типа с ограничением полей и записывает выбранный тип во все поля группы |
-| **Smart Fix → Spear** | Записывает единственный подходящий тип с тем же именем класса |
+| **Smart Fix → Game.Combat.Spear** | Записывает единственный подходящий тип с тем же именем класса |
 
 Поле <code lang="class-name">SerializableMonoScript</code> получает ещё и скрипт выбранного типа. Override экземпляра префаба тоже переписывается, потому что хранит имя как обычное значение.
 
