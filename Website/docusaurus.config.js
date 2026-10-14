@@ -257,7 +257,7 @@ const config = {
         // One row: the author's contacts. Docs, GitHub, Asset Store and the changelog already live in the sidebar panel.
         links: [
           { label: 'Vladislav Panin', href: 'https://github.com/VPDPersonal' },
-          { label: 'LinkedIn', href: 'https://www.linkedin.com/in/vladislav-panin-965048314/' },
+          { label: 'LinkedIn', href: 'https://www.linkedin.com/in/vpdaspid/' },
           { label: 'X', href: 'https://x.com/VPDInc' },
           { label: 'vpd.aspid@gmail.com', href: 'mailto:vpd.aspid@gmail.com' },
         ],
