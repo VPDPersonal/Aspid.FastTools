@@ -60,8 +60,7 @@ namespace Aspid.FastTools.Types.Editors
 
             return row
                 .AddChild(caption)
-                .AddChild(clearFavorites)
-                .AddChild(clearRecents);
+                .AddChild(AspidSettingsUI.BuildButtonGroup(clearFavorites, clearRecents));
         }
 
         private static void ClearFavorites()

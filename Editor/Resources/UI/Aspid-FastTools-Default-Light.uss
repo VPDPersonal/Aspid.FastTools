@@ -19,8 +19,8 @@
     --aspid-colors-shade-lightness:                 rgb(160, 160, 160);
 
     --aspid-colors-surface-canvas:                  rgb(240, 240, 240);
-    --aspid-colors-surface-card:                    rgba(255, 255, 255, 0.72);
-    --aspid-colors-surface-card-dim:                rgba(255, 255, 255, 0.45);
+    --aspid-colors-surface-card:                    rgb(251, 251, 251);
+    --aspid-colors-surface-card-dim:                rgb(247, 247, 247);
 
     --aspid-colors-overlay-hover:                   rgba(0, 0, 0, 0.04);
     --aspid-colors-overlay-control:                 rgba(0, 0, 0, 0.05);
@@ -29,6 +29,9 @@
     --aspid-colors-overlay-scrollbar-hover:         rgba(0, 0, 0, 0.32);
     --aspid-colors-slider-handle:                   rgba(92, 92, 100, 0.85);
     --aspid-colors-control-border:                  rgb(136, 136, 136);
+
+    --aspid-colors-scope-project:                   rgb(122, 79, 208);
+    --aspid-colors-scope-user:                      rgb(140, 140, 140);
 
     --aspid-colors-status-success-darkness:         rgb(232, 245, 236);
     --aspid-colors-status-success-dark:             rgb(214, 237, 221);
@@ -51,24 +54,24 @@
     --aspid-colors-status-info-lightness:           rgb(150, 186, 230);
 
     --aspid-colors-status-success-text-darkness:    rgb(120, 170, 132);
-    --aspid-colors-status-success-text-dark:        rgb(40, 116, 63);
-    --aspid-colors-status-success-text-light:       rgb(24, 107, 50);
-    --aspid-colors-status-success-text-lightness:   rgb(16, 88, 40);
+    --aspid-colors-status-success-text-dark:        rgb(29, 132, 62);
+    --aspid-colors-status-success-text-light:       rgb(23, 112, 53);
+    --aspid-colors-status-success-text-lightness:   rgb(20, 95, 45);
 
     --aspid-colors-status-warning-text-darkness:    rgb(212, 170, 110);
-    --aspid-colors-status-warning-text-dark:        rgb(142, 92, 19);
-    --aspid-colors-status-warning-text-light:       rgb(130, 78, 0);
-    --aspid-colors-status-warning-text-lightness:   rgb(105, 62, 0);
+    --aspid-colors-status-warning-text-dark:        rgb(155, 106, 0);
+    --aspid-colors-status-warning-text-light:       rgb(128, 88, 0);
+    --aspid-colors-status-warning-text-lightness:   rgb(105, 72, 0);
 
     --aspid-colors-status-error-text-darkness:      rgb(225, 140, 140);
-    --aspid-colors-status-error-text-dark:          rgb(171, 70, 70);
-    --aspid-colors-status-error-text-light:         rgb(175, 42, 42);
-    --aspid-colors-status-error-text-lightness:     rgb(150, 30, 30);
+    --aspid-colors-status-error-text-dark:          rgb(204, 72, 96);
+    --aspid-colors-status-error-text-light:         rgb(175, 52, 75);
+    --aspid-colors-status-error-text-lightness:     rgb(150, 40, 60);
 
     --aspid-colors-status-info-text-darkness:       rgb(130, 170, 215);
-    --aspid-colors-status-info-text-dark:           rgb(46, 106, 162);
-    --aspid-colors-status-info-text-light:          rgb(19, 94, 165);
-    --aspid-colors-status-info-text-lightness:      rgb(16, 78, 140);
+    --aspid-colors-status-info-text-dark:           rgb(39, 119, 188);
+    --aspid-colors-status-info-text-light:          rgb(28, 100, 165);
+    --aspid-colors-status-info-text-lightness:      rgb(20, 82, 140);
 
     --aspid-colors-status-success-shade-darkness:   rgb(212, 234, 218);
     --aspid-colors-status-success-shade-dark:       rgb(186, 220, 196);

@@ -1,54 +1,71 @@
-.aspid-fasttools-serialize-reference-window {
+.aspid-fasttools-tab-window {
     flex-grow:                                            1;
 }
 
 /* EditorWindow.minSize does not constrain docked windows; this width floor prevents the mode content collapsing. */
-.aspid-fasttools-serialize-reference-window__container {
+.aspid-fasttools-tab-window__container {
+    flex-grow:                                            1;
     min-width:                                            340px;
 }
 
-.aspid-fasttools-serialize-reference-window__background {
+.aspid-fasttools-tab-window__background {
     background-color:                                     var(--aspid-colors-surface-canvas);
 }
 
-.aspid-fasttools-serialize-reference-window__toolbar {
+.aspid-fasttools-tab-window__toolbar {
     flex-direction:                                       row;
     flex-shrink:                                          0;
     padding-top:                                          6px;
     background-color:                                     rgba(0, 0, 0, 0);
 }
 
-/* The element-qualified selector outranks Unity's built-in button chrome. */
-Button.aspid-fasttools-serialize-reference-window__toolbar-button {
+/* The element-qualified selector outranks Unity's built-in button chrome. The text tabs share the width equally
+   (flex-basis 0), so a tab is as wide with its hint as without it: TabWindow.UpdateCompactTabs relies on that.
+   The padding and the 14px title make the 30px tab the square tabs stretch to. */
+Button.aspid-fasttools-tab-window__toolbar-button {
     flex-grow:                                            1;
+    flex-shrink:                                          1;
+    flex-basis:                                           0;
+    min-width:                                            0;
+    flex-direction:                                       row;
+    justify-content:                                      center;
+    align-items:                                          center;
     margin:                                               0 4px;
-    padding:                                              15px 16px;
+    padding:                                              6px 16px;
     background-color:                                     rgba(0, 0, 0, 0);
     border-width:                                         0;
     border-radius:                                        0;
+}
+
+Button.aspid-fasttools-tab-window__toolbar-button:hover {
+    background-color:                                     var(--aspid-colors-overlay-hover);
+}
+
+.aspid-fasttools-tab-window__tab-title {
+    flex-shrink:                                          1;
+    min-width:                                            0;
+    margin:                                               0;
+    padding:                                              0;
+    overflow:                                             hidden;
+    text-overflow:                                        ellipsis;
+    white-space:                                          nowrap;
     color:                                                var(--aspid-colors-text-dark);
     font-size:                                            14px;
     -unity-font-style:                                    normal;
     -unity-text-align:                                    middle-center;
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button:hover {
-    background-color:                                     var(--aspid-colors-overlay-hover);
+Button.aspid-fasttools-tab-window__toolbar-button:hover .aspid-fasttools-tab-window__tab-title {
     color:                                                var(--aspid-colors-text-light);
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button--active {
+Button.aspid-fasttools-tab-window__toolbar-button--active .aspid-fasttools-tab-window__tab-title {
     color:                                                var(--aspid-colors-text-lightness);
     -unity-font-style:                                    bold;
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button--active:hover {
-    background-color:                                     var(--aspid-colors-overlay-hover);
-    color:                                                var(--aspid-colors-text-lightness);
-}
-
 /* A child background repaints on tab changes; border-bottom-color changes can remain stale until relayout. */
-.aspid-fasttools-serialize-reference-window__tab-underline {
+.aspid-fasttools-tab-window__tab-underline {
     position:                                             absolute;
     left:                                                 0;
     right:                                                0;
@@ -57,27 +74,32 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--active:hover 
     background-color:                                     var(--aspid-colors-shade-darkness);
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-underline {
+Button.aspid-fasttools-tab-window__toolbar-button--active .aspid-fasttools-tab-window__tab-underline {
     background-color:                                     var(--aspid-colors-status-success-text-light);
 }
 
-.aspid-fasttools-serialize-reference-window__tab-hint {
-    position:                                             absolute;
-    right:                                                8px;
-    top:                                                  50%;
-    translate:                                            0 -50%;
+/* The hint follows the title, so the two read as one group at any tab width. TabWindow.TabHintGap is this margin. */
+.aspid-fasttools-tab-window__tab-hint {
+    flex-shrink:                                          0;
+    margin:                                               0 0 0 8px;
+    padding:                                              0;
     color:                                                var(--aspid-colors-text-dark);
     font-size:                                            10px;
     -unity-text-align:                                    middle-center;
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-hint {
+Button.aspid-fasttools-tab-window__toolbar-button--active .aspid-fasttools-tab-window__tab-hint {
     color:                                                var(--aspid-colors-text-light);
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button--square {
+Button.aspid-fasttools-tab-window__toolbar-button--compact .aspid-fasttools-tab-window__tab-hint {
+    display:                                              none;
+}
+
+Button.aspid-fasttools-tab-window__toolbar-button--square {
     flex-grow:                                            0;
     flex-shrink:                                          0;
+    flex-basis:                                           30px;
     width:                                                30px;
     padding:                                              0;
     align-self:                                           stretch;
@@ -85,43 +107,43 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--square {
     justify-content:                                      center;
 }
 
-.aspid-fasttools-serialize-reference-window__tab-icon {
+.aspid-fasttools-tab-window__tab-icon {
     width:                                                24px;
     height:                                               24px;
     -unity-background-image-tint-color:                   var(--aspid-colors-text-dark);
 }
 
-.aspid-fasttools-serialize-reference-window__tab-icon--home {
+.aspid-fasttools-tab-window__tab-icon--home {
     background-image:                                     var(--aspid-icons-home);
 }
 
-.aspid-fasttools-serialize-reference-window__tab-icon--settings {
+.aspid-fasttools-tab-window__tab-icon--settings {
     background-image:                                     var(--aspid-icons-settings);
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button--square:hover .aspid-fasttools-serialize-reference-window__tab-icon {
+Button.aspid-fasttools-tab-window__toolbar-button--square:hover .aspid-fasttools-tab-window__tab-icon {
     -unity-background-image-tint-color:                   var(--aspid-colors-text-light);
 }
 
-Button.aspid-fasttools-serialize-reference-window__toolbar-button--square.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-icon {
+Button.aspid-fasttools-tab-window__toolbar-button--square.aspid-fasttools-tab-window__toolbar-button--active .aspid-fasttools-tab-window__tab-icon {
     -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-light);
 }
 
 /* Scope base-slider rules to the scroller so ordinary sliders keep their geometry. */
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical {
+.aspid-fasttools-tab-window .unity-scroller--vertical {
     width:                                                12px;
     margin:                                               0;
     border-width:                                         0;
     background-color:                                     rgba(0, 0, 0, 0);
 }
 
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical > .unity-scroller__low-button,
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical > .unity-scroller__high-button {
+.aspid-fasttools-tab-window .unity-scroller--vertical > .unity-scroller__low-button,
+.aspid-fasttools-tab-window .unity-scroller--vertical > .unity-scroller__high-button {
     display:                                              none;
 }
 
 /* Reset offsets reserved for the removed scroller step buttons. */
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-scroller__slider {
+.aspid-fasttools-tab-window .unity-scroller--vertical .unity-scroller__slider {
     margin:                                               0;
     padding:                                              0;
     width:                                                12px;
@@ -130,12 +152,12 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--square.aspid-
     bottom:                                               0;
 }
 
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-base-slider__tracker {
+.aspid-fasttools-tab-window .unity-scroller--vertical .unity-base-slider__tracker {
     border-width:                                         0;
     background-color:                                     rgba(0, 0, 0, 0);
 }
 
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-base-slider__dragger {
+.aspid-fasttools-tab-window .unity-scroller--vertical .unity-base-slider__dragger {
     left:                                                 3px;
     width:                                                6px;
     border-width:                                         0;
@@ -146,10 +168,16 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--square.aspid-
     transition-timing-function:                           ease-out;
 }
 
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical:hover .unity-base-slider__dragger {
+.aspid-fasttools-tab-window .unity-scroller--vertical:hover .unity-base-slider__dragger {
     background-color:                                     var(--aspid-colors-overlay-scrollbar-hover);
 }
 
-.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-base-slider__dragger-border {
+.aspid-fasttools-tab-window .unity-scroller--vertical .unity-base-slider__dragger-border {
     display:                                              none;
+}
+
+/* Cards and bands take the 6px corners of the documentation site; outside this window the components keep their own. */
+.aspid-fasttools-tab-window .aspid-fasttools-background--rounded,
+.aspid-fasttools-tab-window .aspid-fasttools-gradient-button {
+    border-radius:                                        6px;
 }

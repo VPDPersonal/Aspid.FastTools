@@ -5,7 +5,7 @@
                 <Aspid.FastTools.UIElements.Editors.Internal.AspidAnimatedLogo name="welcome-logo" class="aspid-fasttools-welcome__logo"/>
                 <ui:VisualElement class="aspid-fasttools-welcome__hero-text">
                     <Aspid.FastTools.UIElements.Editors.Internal.AspidAnimatedTitle text="Welcome to Aspid.FastTools"/>
-                    <Aspid.FastTools.UIElements.Editors.Internal.AspidLabel text="Takes the routine out of serialization, profiling and editor code. Pick a type or a [SerializeReference] class in the Inspector, repair missing references in the Asset References and Project References tabs. Also included: EnumValues, ProfilerMarkers, and extensions for VisualElement and SerializedProperty." label-font-style="Normal" label-theme="Light" line-size="None" selectable="true" class="aspid-fasttools-welcome__description"/>
+                    <Aspid.FastTools.UIElements.Editors.Internal.AspidLabel text="Takes the routine out of serialization, profiling and editor code: type, [SerializeReference] and component type pickers, EnumValues, missing reference repair with build and CI checks, ProfilerMarkers, VisualElement and SerializedProperty extensions, editor helpers and Agent Skills." label-font-style="Normal" label-theme="Light" line-size="None" selectable="true" class="aspid-fasttools-welcome__description"/>
                     <ui:VisualElement name="welcome-links" class="aspid-fasttools-welcome__hero-links">
                         <ui:Label name="welcome-link-docs" text="Documentation" class="aspid-fasttools-welcome__hero-link"/>
                         <ui:Label text="·" class="aspid-fasttools-welcome__hero-link-separator"/>

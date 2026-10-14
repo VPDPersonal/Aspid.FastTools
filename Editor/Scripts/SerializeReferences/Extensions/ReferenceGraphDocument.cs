@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -8,6 +9,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         public long FileId;
         public string TypeName;
+
+        // The loaded object of the document, for its name and icon; null for a scene or a sweep that stays text-only.
+        public Object Source;
 
         public readonly List<ReferenceGraphNode> Nodes = new();
 

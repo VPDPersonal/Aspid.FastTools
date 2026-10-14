@@ -14,7 +14,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const float TrackHeight = 24f;
         private const float HandleSize = 18f;
         private const float TrackBorderWidth = 1.5f;
-        private const float OnFillAlpha = 0.30f;
+        private const float LightOffFillAlpha = 0.06f;
         private const float AnimationDuration = 0.15f;
 
         // UI Toolkit absolute offsets start inside the border, so handle travel uses the inner box.
@@ -28,8 +28,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private static readonly CustomStyleProperty<Color> HandleShadowProperty = new("--aspid-fasttools-colors-switch-handle_shadow");
 
         // Fallbacks while the --aspid-colors-switch-* palette tokens are unset; the skin is read on every style
-        // resolve, so a switch of the editor skin updates them.
-        private static readonly Color DefaultAccentColor = new(0.333f, 0.686f, 0.392f, 1f);
+        // resolve, so a switch of the editor skin updates them. The accents are the documentation site's greens.
+        // On the dark skin an on switch tints its track under a light handle; on the light skin the track fills with
+        // the accent under a white handle, since a pale tint under a dark handle reads as disabled there.
+        private static Color DefaultAccentColor => EditorGUIUtility.isProSkin
+            ? new Color(0.361f, 0.706f, 0.42f, 1f)
+            : new Color(0.133f, 0.627f, 0.294f, 1f);
 
         private static Color DefaultTrackOffBorderColor => EditorGUIUtility.isProSkin
             ? new Color(0.32f, 0.32f, 0.34f, 1f)
@@ -37,9 +41,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private static Color DefaultHandleColor => EditorGUIUtility.isProSkin
             ? new Color(0.74f, 0.74f, 0.77f, 0.85f)
-            : new Color(0.35f, 0.35f, 0.38f, 0.9f);
+            : Color.white;
 
-        private static readonly Color DefaultHandleShadowColor = new(0f, 0f, 0f, 0.15f);
+        private static Color DefaultHandleShadowColor => EditorGUIUtility.isProSkin
+            ? new Color(0f, 0f, 0f, 0.15f)
+            : new Color(0f, 0f, 0f, 0.25f);
+
+        private static float OnFillAlpha => EditorGUIUtility.isProSkin ? 0.30f : 1f;
+
+        // A solid light track would lose its outline in a border of the same colour, so the light skin darkens it.
+        private static float OnBorderDarkening => EditorGUIUtility.isProSkin ? 0f : 0.3f;
 
         private readonly VisualElement _track;
         private readonly VisualElement _handle;
@@ -162,9 +173,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             const float maxLeft = TrackInnerWidth - HandleSize - HandleInset;
             _handle.style.left = Mathf.Lerp(HandleInset, maxLeft, _handlePosition);
 
-            _track.style.backgroundColor =
-                new Color(_accentColor.r, _accentColor.g, _accentColor.b, Mathf.Lerp(0f, OnFillAlpha, _handlePosition));
-            _track.SetBorderColor(Color.Lerp(_trackOffBorderColor, _accentColor, _handlePosition));
+            // The light skin gives an off track a faint fill, so the white handle does not vanish into a white card.
+            var onFill = new Color(_accentColor.r, _accentColor.g, _accentColor.b, OnFillAlpha);
+            var offFill = EditorGUIUtility.isProSkin
+                ? new Color(_accentColor.r, _accentColor.g, _accentColor.b, 0f)
+                : new Color(0f, 0f, 0f, LightOffFillAlpha);
+
+            _track.style.backgroundColor = Color.Lerp(offFill, onFill, _handlePosition);
+
+            var onBorder = Color.Lerp(_accentColor, Color.black, OnBorderDarkening);
+            _track.SetBorderColor(Color.Lerp(_trackOffBorderColor, onBorder, _handlePosition));
         }
     }
 }

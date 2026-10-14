@@ -12,6 +12,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     {
         // The field drifts slowly, so 20 frames per second look smooth.
         private const long TickMs = 50;
+
+        // The longest step one tick may advance the field: a stalled Editor resumes the drift instead of jumping.
+        private const float MaxTickStep = TickMs * 2 / 1000f;
         private const int BlobCount = 3;
         private const int DotSegments = 10;
         private const float MinVisibleAlpha = 1f / 255f;
@@ -31,8 +34,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private Vertex[] _vertices = Array.Empty<Vertex>();
         private ushort[] _indices = Array.Empty<ushort>();
 
-        private float _time;
-        private bool _animated = true;
+        // The field's own clock: it advances only while the field is watched, so a paused field resumes where it stopped.
+        private float _time = (float)EditorApplication.timeSinceStartup;
+        private double _lastTick = EditorApplication.timeSinceStartup;
         private IVisualElementScheduledItem _animation;
 
         [UxmlAttribute]
@@ -124,17 +128,35 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         // With the setting off the field keeps its last frame and repaints only when the layout changes.
         private void UpdateAnimation()
         {
-            _animated = AspidAnimatedDotsBackgroundSettings.Enabled;
-
-            if (_animated) _animation.Resume();
+            if (AspidAnimatedDotsBackgroundSettings.Enabled) _animation.Resume();
             else _animation.Pause();
         }
 
         private void Tick()
         {
-            // The field only drifts with time, so there is nothing new to show while Unity is in the background.
-            if (InternalEditorUtility.isApplicationActive)
-                MarkDirtyRepaint();
+            var now = EditorApplication.timeSinceStartup;
+            var elapsed = (float)(now - _lastTick);
+            _lastTick = now;
+
+            // The field only drifts with time, so it stays still while nobody watches it: Unity is in the background,
+            // or its window is neither focused nor under the pointer. A redraw of the whole window 20 times a second
+            // is not free.
+            if (!InternalEditorUtility.isApplicationActive || !IsWatched()) return;
+
+            _time += Mathf.Min(elapsed, MaxTickStep);
+            MarkDirtyRepaint();
+        }
+
+        // Each dock area and floating window draws its own panel, so the focused and hovered windows are found by it.
+        private bool IsWatched()
+        {
+            if (panel is null) return false;
+
+            var focused = EditorWindow.focusedWindow;
+            if (focused != null && focused.rootVisualElement.panel == panel) return true;
+
+            var hovered = EditorWindow.mouseOverWindow;
+            return hovered != null && hovered.rootVisualElement.panel == panel;
         }
 
         private void OnGenerateVisualContent(MeshGenerationContext context)
@@ -143,7 +165,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             if (rect.width <= 0f || rect.height <= 0f) return;
             if (!(_size.ScaleReference > 0f)) return;
 
-            if (_animated) _time = (float)EditorApplication.timeSinceStartup;
             var time = _time;
 
             var scale = Mathf.Sqrt(Mathf.Min(rect.width, rect.height) / _size.ScaleReference);

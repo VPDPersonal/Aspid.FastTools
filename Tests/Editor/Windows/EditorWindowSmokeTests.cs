@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
@@ -20,9 +21,9 @@ namespace Aspid.FastTools.Editors.Tests
     internal sealed class EditorWindowSmokeTests
     {
         // The window keeps these class names private. A rename there needs a rename here.
-        private const string ContainerClass = "aspid-fasttools-serialize-reference-window__container";
-        private const string ActiveButtonClass = "aspid-fasttools-serialize-reference-window__toolbar-button--active";
-        private const string ToolbarButtonClass = "aspid-fasttools-serialize-reference-window__toolbar-button";
+        private const string ContainerClass = "aspid-fasttools-tab-window__container";
+        private const string ActiveButtonClass = "aspid-fasttools-tab-window__toolbar-button--active";
+        private const string ToolbarButtonClass = "aspid-fasttools-tab-window__toolbar-button";
         private const string FooterKeysClass = "aspid-fasttools-window-footer__keys";
 
         // The name prompt sets this private flag in its first OnGUI. A rename there needs a rename here.
@@ -31,7 +32,7 @@ namespace Aspid.FastTools.Editors.Tests
         private const int MaxFrames = 30;
 
         [UnityTest]
-        public IEnumerator TabWindow_EveryTab_ReplacesTheViewAndMarksItsButton()
+        public IEnumerator TabWindow_EveryTab_ShowsOnlyItsViewAndMarksItsButton()
         {
             var window = ScriptableObject.CreateInstance<TabWindow>();
             try
@@ -41,8 +42,10 @@ namespace Aspid.FastTools.Editors.Tests
 
                 var container = FindContainer(window);
                 Assert.IsNotNull(container, "CreateGUI must build the container that hosts the tab views.");
-                Assert.AreEqual(4, window.rootVisualElement.Query<Button>(className: ToolbarButtonClass).ToList().Count,
+                Assert.AreEqual(TabWindow.Tabs.Length, window.rootVisualElement.Query<Button>(className: ToolbarButtonClass).ToList().Count,
                     "The toolbar must hold one button per tab.");
+
+                VisualElement firstWelcome = null;
 
                 foreach (var (tab, viewType) in new (TabType, Type)[]
                          {
@@ -57,13 +60,25 @@ namespace Aspid.FastTools.Editors.Tests
                     yield return null;
 
                     Assert.AreEqual(tab, window.CurrentTabType);
-                    Assert.AreEqual(1, container.childCount, $"{tab} must replace the previous view, not stack on it.");
-                    Assert.IsInstanceOf(viewType, container[0], $"{tab} must show {viewType.Name}.");
+
+                    var shown = container.Children().Where(view => view.resolvedStyle.display == DisplayStyle.Flex).ToList();
+                    Assert.AreEqual(1, shown.Count, $"{tab} must show one view and hide the others.");
+                    Assert.IsInstanceOf(viewType, shown[0], $"{tab} must show {viewType.Name}.");
+
+                    // The window keeps a view between visits, so the second Welcome is the first one again.
+                    if (tab == TabType.Welcome)
+                    {
+                        firstWelcome ??= shown[0];
+                        Assert.AreSame(firstWelcome, shown[0], "A tab visited again must show the view it built before.");
+                    }
+
                     Assert.AreEqual(1, window.rootVisualElement.Query<Button>(className: ActiveButtonClass).ToList().Count,
                         $"Exactly one toolbar button must be active on {tab}.");
                     Assert.AreEqual(TabWindow.KeysHintFor(tab), window.rootVisualElement.Q<Label>(className: FooterKeysClass)?.text,
                         $"The footer must show the keys of {tab}.");
                 }
+
+                Assert.AreEqual(TabWindow.Tabs.Length, container.childCount, "Each tab must build its view once.");
             }
             finally
             {

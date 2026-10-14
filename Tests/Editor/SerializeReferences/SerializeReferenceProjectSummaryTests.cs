@@ -60,14 +60,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         // A clear on disk keeps the audit checked, and nulling a required field adds a violation listed below.
         [Test]
-        public void MissingReferencesClean_CheckedWithViolations_WarnsAndPointsToRows()
+        public void MissingReferencesClean_CheckedWithViolations_WarnsWithoutClaimingClean()
         {
             Assert.AreEqual(StatusStyle.Type.Warning,
                 SerializeReferenceProjectSummary.GetMissingReferencesCleanStatus(RequiredAuditState.Checked, true));
 
-            var hint = SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, true);
-            StringAssert.Contains("required-violation row", hint);
-            StringAssert.DoesNotContain("Nothing left to repair", hint);
+            // The Required heading and the header tooltip say how to act on the rows, so the line under the header stays empty.
+            Assert.IsEmpty(SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, true));
         }
 
         [TestCase(RequiredAuditState.Checked, StatusStyle.Type.Success)]
@@ -85,12 +84,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TestCase(RequiredAuditState.NotScanned, "Rescan")]
         [TestCase(RequiredAuditState.Disabled, "severity is Off")]
         public void BuildResultsHintText_RequiredNotChecked_SaysWhy(RequiredAuditState state, string reason) =>
-            StringAssert.Contains(reason, SerializeReferenceProjectSummary.BuildResultsHintText(false, state));
+            StringAssert.Contains(reason, SerializeReferenceProjectSummary.BuildResultsHintText(state));
 
         [Test]
-        public void BuildResultsHintText_CheckedWithViolations_PointsToRows() =>
+        public void BuildResultsGuideText_WithViolations_PointsToRows() =>
             StringAssert.Contains("required-violation row",
-                SerializeReferenceProjectSummary.BuildResultsHintText(true, RequiredAuditState.Checked));
+                SerializeReferenceProjectSummary.BuildResultsGuideText(hasRequiredViolations: true));
+
+        // How to act on the results is the header's tooltip; the line under it keeps only what needs attention.
+        [Test]
+        public void BuildResultsHintText_CheckedWithNothingStale_IsEmpty() =>
+            Assert.IsEmpty(SerializeReferenceProjectSummary.BuildResultsHintText(RequiredAuditState.Checked));
 
         // The index can be warm without Scan Project (Unity Search, Asset References), and then nobody read type names.
         [Test]
@@ -161,20 +165,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             StringAssert.Contains("4 files were not checked (binary, Git LFS pointers or not readable)", hint);
         }
 
-        // The rows that stay listed after a repair are those of the last scan, as in the results hint.
-        [Test]
-        public void BuildMissingReferencesCleanHintText_RequiredViolations_SaysTheyAreAsOfTheLastScan()
-        {
-            var hint = SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, true);
-
-            StringAssert.StartsWith("Click a required-violation row", hint);
-            StringAssert.Contains("as of the last scan", hint);
-        }
-
-        [Test]
-        public void BuildMissingReferencesCleanHintText_NoRequiredViolations_DoesNotMentionTheLastScan() =>
+        // Rows read by the last scan say so in their own tooltips, not in the line under the header.
+        [TestCase(true)]
+        [TestCase(false)]
+        public void BuildMissingReferencesCleanHintText_DoesNotMentionTheLastScan(bool hasRequiredViolations) =>
             StringAssert.DoesNotContain("last scan",
-                SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, false));
+                SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, hasRequiredViolations));
+
+        [Test]
+        public void BuildMissingReferencesCleanHintText_RequiredViolationsAndUnreadFiles_KeepsTheUnreadCount() =>
+            StringAssert.StartsWith("2 files were not checked",
+                SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAuditState.Checked, true, unreadFileCount: 2));
 
         [Test]
         public void BuildMissingReferencesCleanHintText_TypeNamesNotScanned_SaysToRescan()
@@ -189,46 +190,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         // Required violations alone give the results no group, so there is nothing for Fix all to act on.
         [Test]
-        public void BuildResultsHintText_NoBrokenGroups_DoesNotMentionFixAll()
+        public void BuildResultsGuideText_NoBrokenGroups_DoesNotMentionFixAll()
         {
-            var hint = SerializeReferenceProjectSummary.BuildResultsHintText(true, RequiredAuditState.Checked, hasBrokenGroups: false);
+            var guide = SerializeReferenceProjectSummary.BuildResultsGuideText(hasRequiredViolations: true, hasBrokenGroups: false);
 
-            StringAssert.DoesNotContain("Fix all", hint);
-            StringAssert.Contains("required-violation row", hint);
+            StringAssert.DoesNotContain("Fix all", guide);
+            StringAssert.Contains("required-violation row", guide);
         }
 
         [Test]
-        public void BuildResultsHintText_BrokenGroups_ExplainsFixAll() =>
-            StringAssert.StartsWith("Each group is a broken stored type", SerializeReferenceProjectSummary.BuildResultsHintText(
-                false, RequiredAuditState.Checked, hasBrokenGroups: true));
+        public void BuildResultsGuideText_BrokenGroups_ExplainsFixAll() =>
+            StringAssert.StartsWith("Each group is a broken stored type", SerializeReferenceProjectSummary.BuildResultsGuideText(
+                hasRequiredViolations: false, hasBrokenGroups: true));
 
         [Test]
-        public void BuildResultsHintText_OnlyOverrides_ExplainsOverridesWithoutFixAll()
+        public void BuildResultsGuideText_OnlyOverrides_ExplainsOverridesWithoutFixAll()
         {
-            var hint = SerializeReferenceProjectSummary.BuildResultsHintText(
-                false, RequiredAuditState.Checked, hasOverrides: true, hasBrokenGroups: false);
+            var hint = SerializeReferenceProjectSummary.BuildResultsGuideText(
+                hasRequiredViolations: false, hasOverrides: true, hasBrokenGroups: false);
 
             StringAssert.StartsWith("Prefab instance overrides are fixed on the instance", hint);
             StringAssert.DoesNotContain("Fix all", hint);
         }
 
-        // Missing references follow the live index; type names and required violations are those of the last scan.
-        [TestCase(true, false)]
-        [TestCase(false, true)]
-        public void BuildResultsHintText_ScanTimeRows_SayTheyAreAsOfTheLastScan(bool hasRequiredViolations, bool hasTypeNames) =>
-            StringAssert.Contains("as of the last scan", SerializeReferenceProjectSummary.BuildResultsHintText(
-                hasRequiredViolations, RequiredAuditState.Checked, hasTypeNames: hasTypeNames));
-
+        // Type names and required violations are those of the last scan; their tooltips say so, the hint does not.
         [Test]
-        public void BuildResultsHintText_NoScanTimeRows_DoesNotMentionTheLastScan() =>
+        public void BuildResultsHintText_Checked_DoesNotMentionTheLastScan() =>
             StringAssert.DoesNotContain("last scan",
-                SerializeReferenceProjectSummary.BuildResultsHintText(false, RequiredAuditState.Checked));
+                SerializeReferenceProjectSummary.BuildResultsHintText(RequiredAuditState.Checked));
 
         [Test]
         public void BuildResultsHintText_TypeNamesNotScanned_SaysToRescan()
         {
-            var hint = SerializeReferenceProjectSummary.BuildResultsHintText(
-                false, RequiredAuditState.NotScanned, typeNamesScanned: false);
+            var hint = SerializeReferenceProjectSummary.BuildResultsHintText(RequiredAuditState.NotScanned, typeNamesScanned: false);
 
             StringAssert.Contains("Type names and required fields have not been checked", hint);
             StringAssert.DoesNotContain("last scan", hint);
@@ -237,7 +231,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void BuildResultsHintText_UnreadFiles_AppendsTheCount() =>
             StringAssert.EndsWith("2 files were not checked (binary, Git LFS pointers or not readable) — see the Console.",
-                SerializeReferenceProjectSummary.BuildResultsHintText(false, RequiredAuditState.Checked, unreadFileCount: 2));
+                SerializeReferenceProjectSummary.BuildResultsHintText(RequiredAuditState.Checked, unreadFileCount: 2));
 
         // A read-only file is logged; an entry that changed since the scan is not, so the text names both causes.
         [Test]
@@ -300,5 +294,49 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(text, SerializeReferenceProjectSummary.BuildShowMoreText(shown, total));
             Assert.AreEqual(tooltip, SerializeReferenceProjectSummary.BuildShowMoreTooltip(shown, total));
         }
+
+        // A section never builds fewer file cards than its first page and never more than its files.
+        [TestCase(0, 3000, 50)]
+        [TestCase(100, 3000, 100)]
+        [TestCase(0, 3, 3)]
+        [TestCase(200, 120, 120)]
+        public void GetShownFileCards_StaysBetweenTheFirstPageAndTheFileCount(int requested, int total, int expected) =>
+            Assert.AreEqual(expected, SerializeReferenceProjectSummary.GetShownFileCards(requested, total));
+
+        [TestCase(50, 120, "Show more files (50 of 120 shown)", "Show the next 50 files.")]
+        [TestCase(100, 120, "Show more files (100 of 120 shown)", "Show the next 20 files.")]
+        [TestCase(50, 51, "Show more files (50 of 51 shown)", "Show the next 1 file.")]
+        public void BuildShowMoreFiles_NamesTheFilesTheNextPageAdds(int shown, int total, string text, string tooltip)
+        {
+            Assert.AreEqual(text, SerializeReferenceProjectSummary.BuildShowMoreFilesText(shown, total));
+            Assert.AreEqual(tooltip, SerializeReferenceProjectSummary.BuildShowMoreFilesTooltip(shown, total));
+            Assert.AreEqual(shown + 50, SerializeReferenceProjectSummary.GetNextShownFileCards(shown));
+        }
+
+        [Test]
+        public void GroupByFile_KeepsTheFirstOrderOfFilesAndCollectsTheirRids()
+        {
+            var stored = new ManagedTypeName("Game", "Game.Weapons", "Ghost");
+            var entries = new[]
+            {
+                new MissingReferenceLocation("Assets/B.asset", new MissingReferenceEntry(fileId: 1, rid: 10, stored)),
+                new MissingReferenceLocation("Assets/A.asset", new MissingReferenceEntry(fileId: 1, rid: 20, stored)),
+                new MissingReferenceLocation("Assets/B.asset", new MissingReferenceEntry(fileId: 1, rid: 11, stored)),
+            };
+
+            var files = SerializeReferenceProjectSummary.GroupByFile(entries);
+
+            Assert.AreEqual(2, files.Count, "Each file must get one row.");
+            Assert.AreEqual("Assets/B.asset", files[0].AssetPath);
+            CollectionAssert.AreEqual(new long[] { 10, 11 }, files[0].Rids);
+            Assert.AreEqual("Assets/A.asset", files[1].AssetPath);
+            CollectionAssert.AreEqual(new long[] { 20 }, files[1].Rids);
+        }
+
+        [TestCase(new long[] { 8000 }, "rid 8000")]
+        [TestCase(new long[] { 8000, 8001, 8003 }, "3 rids")]
+        [TestCase(new long[] { 7288617647077589203, 7288617647077589204 }, "2 rids")]
+        public void DescribeRids_NamesOneRidAndCountsSeveral(long[] rids, string expected) =>
+            Assert.AreEqual(expected, SerializeReferenceProjectSummary.DescribeRids(rids));
     }
 }
