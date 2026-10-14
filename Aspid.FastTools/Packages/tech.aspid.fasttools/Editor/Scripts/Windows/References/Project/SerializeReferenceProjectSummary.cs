@@ -20,7 +20,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             "Required fields are not checked while gate severity is Off — set it to Warn or Fail in Project Settings → " +
             "Aspid.FastTools → SerializeReference, then Rescan.";
         private const string TypeNamesNotScannedText = "Type names and required fields have not been checked yet — Rescan to include them.";
-        private const string StaleScanDataText = "Type names and required violations are as of the last scan — Rescan to refresh them.";
+        // Type names and required violations are read by Scan Project and refreshed only by this window's own edits, so
+        // the tooltips of their rows say they may be out of date; the line under the results header does not repeat it.
+        public const string ScanTimeNote = "As of the last Scan Project — Rescan to refresh.";
 
         // Only a sweep that actually ran the required check can call the project clean. A sweep skipped because
         // severity was Off has not checked anything once severity is on again.
@@ -96,16 +98,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string BuildMissingReferencesCleanHintText(
             RequiredAuditState state, bool hasRequiredViolations, bool typeNamesScanned = true, int unreadFileCount = 0)
         {
+            // Required violations are listed under their own heading, which says how to act on them.
             var hint =
                 state != RequiredAuditState.Checked || !typeNamesScanned ? BuildNotCheckedText(state, typeNamesScanned)
-                : hasRequiredViolations ? "Click a required-violation row to jump to its asset."
+                : hasRequiredViolations ? string.Empty
                 : unreadFileCount > 0 ? "Nothing left to repair in the files that were read."
                 : "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
 
-            if (typeNamesScanned && hasRequiredViolations)
-                hint += " " + StaleScanDataText;
+            if (unreadFileCount == 0) return hint;
 
-            return unreadFileCount > 0 ? hint + " " + BuildUnreadFilesText(unreadFileCount) : hint;
+            var unread = BuildUnreadFilesText(unreadFileCount);
+            return hint.Length == 0 ? unread : hint + " " + unread;
         }
 
         public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount, int typeNameCount = 0)
@@ -119,18 +122,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(", ", parts);
         }
 
-        // Type names and required violations are read by Scan Project and refreshed only by this window's own edits,
-        // so a hint that follows them says they may be out of date.
-        public static string BuildResultsHintText(
-            bool hasRequiredViolations,
-            RequiredAuditState state,
-            bool hasOverrides = false,
-            bool hasBrokenGroups = true,
-            bool hasTypeNames = false,
-            bool typeNamesScanned = true,
-            int unreadFileCount = 0)
+        // The line under the results header keeps only what needs attention now: a check that did not run, or files
+        // that could not be read.
+        public static string BuildResultsHintText(RequiredAuditState state, bool typeNamesScanned = true, int unreadFileCount = 0)
         {
-            var parts = new List<string>(5);
+            var parts = new List<string>(2);
+
+            if (state != RequiredAuditState.Checked || !typeNamesScanned)
+                parts.Add(BuildNotCheckedText(state, typeNamesScanned));
+
+            if (unreadFileCount > 0)
+                parts.Add(BuildUnreadFilesText(unreadFileCount));
+
+            return string.Join(" ", parts);
+        }
+
+        // How to act on the results. It does not change between scans, so the view puts it in the tooltip of the results
+        // header instead of the line under it.
+        public static string BuildResultsGuideText(bool hasRequiredViolations, bool hasOverrides = false, bool hasBrokenGroups = true)
+        {
+            var parts = new List<string>(3);
 
             if (hasBrokenGroups)
                 parts.Add("Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.");
@@ -138,18 +149,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (hasOverrides)
                 parts.Add("Prefab instance overrides are fixed on the instance: pick a new type or Revert the override.");
 
-            if (state != RequiredAuditState.Checked || !typeNamesScanned)
-                parts.Add(BuildNotCheckedText(state, typeNamesScanned));
-            else if (hasRequiredViolations)
+            if (hasRequiredViolations)
                 parts.Add("Click a required-violation row to jump to its asset.");
 
-            if (typeNamesScanned && (hasTypeNames || hasRequiredViolations))
-                parts.Add(StaleScanDataText);
-
-            if (unreadFileCount > 0)
-                parts.Add(BuildUnreadFilesText(unreadFileCount));
-
-            return string.Join(" ", parts);
+            return string.Join("\n", parts);
         }
 
         public static string BuildGroupCountText(MissingReferenceGroup group)
@@ -162,6 +165,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The rows a card builds when `requested` rows were asked for: the first page at least, every entry at most.
+        // The entries of a group, one item per file in the order the files first appear.
+        public static IReadOnlyList<FileRids> GroupByFile(IReadOnlyList<MissingReferenceLocation> entries)
+        {
+            var files = new List<FileRids>();
+            var indexByPath = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            foreach (var entry in entries)
+            {
+                if (!indexByPath.TryGetValue(entry.AssetPath, out var index))
+                {
+                    index = files.Count;
+                    indexByPath.Add(entry.AssetPath, index);
+                    files.Add(new FileRids(entry.AssetPath));
+                }
+
+                files[index].Rids.Add(entry.Entry.Rid);
+            }
+
+            return files;
+        }
+
+        // One rid is named, several are counted, whatever their length, so the rows of a card read alike; the row's
+        // tooltip lists them all.
+        public static string DescribeRids(IReadOnlyList<long> rids) =>
+            rids.Count == 1 ? $"rid {rids[0]}" : $"{rids.Count} rids";
+
         public static int GetShownRows(int requested, int total) =>
             Math.Min(total, Math.Max(requested, RowsPerPage));
 
@@ -266,6 +295,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             builder.AppendLine();
             return builder.ToString();
+        }
+
+        internal readonly struct FileRids
+        {
+            public readonly string AssetPath;
+            public readonly List<long> Rids;
+
+            public FileRids(string assetPath)
+            {
+                AssetPath = assetPath;
+                Rids = new List<long>();
+            }
         }
     }
 

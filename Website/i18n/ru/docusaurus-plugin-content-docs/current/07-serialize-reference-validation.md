@@ -24,13 +24,13 @@
 
 | Запуск | Потерянные типы | Пустые поля с <code lang="csharp">Required = true</code> |
 |---|---|---|
-| **Project References → Scan Project** | Да, вместе с ожидающими миграциями | Если режим не `Off`, отдельной группой **Required violations** |
+| **Project References → Scan Project** | Да, вместе с ожидающими миграциями | Если режим не `Off`, в разделе **Required** |
 | **Asset References** | Да | Да, в любом режиме |
 | Сборка плеера | Если режим не `Off` | Нет |
 | CI без `-srGateRequired` | Если режим не `Off` | Нет |
 | CI с `-srGateRequired` | Если режим не `Off` | Если режим не `Off` |
 
-![Группа Required violations: пустое поле _primary в двух префабах](../../../../docs/Images/aspid_fasttools_serialize_reference_required_violations.png)
+![Раздел Required: пустое поле _primary в двух префабах](../../../../docs/Images/aspid_fasttools_serialize_reference_required_violations.png)
 
 Обязательное поле задаёт <code lang="csharp">[TypeSelector(Required = true)]</code>, подробнее — в разделе [Обязательное поле](03-type-selector.md#обязательное-поле). В сценах не проверяются обязательные поля внутри managed-ссылок, в коллекциях и в override префабов.
 
@@ -48,9 +48,9 @@
 
 **Excluded scan folders** исключает папки из Project References, проверки сборки, CI и обнаружения новых поломок.
 
-**Build / CI gate**, **Excluded scan folders** и **Auto de-alias duplicated list elements** — общие настройки с зелёной полосой. Они хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, общем для команды и CI, а ещё открываются в **Project Settings → Aspid.FastTools → SerializeReference**.
+**Build / CI gate**, **Excluded scan folders** и **Auto de-alias duplicated list elements** — настройки проекта с фиолетовой полосой. Они хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, общем для команды и CI, а ещё открываются в **Project Settings → Aspid.FastTools → SerializeReference**.
 
-![Раздел SerializeReference на вкладке Settings: общие настройки с зелёной полосой, личные — с синей](../../../../docs/Images/aspid_fasttools_serialize_reference_settings.png)
+![Раздел SerializeReference на вкладке Settings: настройки проекта с фиолетовой полосой, личные — с серой](../../../../docs/Images/aspid_fasttools_serialize_reference_settings.png)
 
 ## Запуск в CI
 
@@ -115,7 +115,7 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin    ns    
 | `ns` | Сохранённое пространство имён для `MissingType`; иначе пусто |
 | `asm` | Сохранённая сборка для `MissingType`; иначе пусто |
 
-В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в карточке **Prefab instance overrides** в Project References. Строка `MissingTypeName` находится в своей группе **type name** в Project References.
+В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в разделе **Prefab instance overrides** в Project References. Строка `MissingTypeName` находится в своей группе **type name** в Project References.
 
 </details>
 

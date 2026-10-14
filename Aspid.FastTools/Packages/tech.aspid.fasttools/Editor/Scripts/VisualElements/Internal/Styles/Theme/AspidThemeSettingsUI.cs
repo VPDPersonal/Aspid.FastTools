@@ -31,7 +31,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             "    /* --aspid-colors-bg-lightness: rgb(56, 56, 56); */\n" +
             "\n" +
             "    /* Cards and panels */\n" +
-            "    /* --aspid-colors-surface-card: rgba(20, 20, 20, 0.55); */\n" +
+            "    /* --aspid-colors-surface-card: rgb(11, 11, 11); */\n" +
             "\n" +
             "    /* Text (high-contrast content) */\n" +
             "    /* --aspid-colors-text-lightness: rgb(220, 220, 220); */\n" +
@@ -41,7 +41,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             "    /* --aspid-colors-status-success-dark: rgb(12, 65, 30); */\n" +
             "\n" +
             "    /* Switches (unset by default, so they follow the editor skin) */\n" +
-            "    /* --aspid-colors-switch-accent:        rgb(85, 175, 100); */\n" +
+            "    /* --aspid-colors-switch-accent:        rgb(92, 180, 107); */\n" +
             "    /* --aspid-colors-switch-track-border:  rgb(82, 82, 87); */\n" +
             "    /* --aspid-colors-switch-handle:        rgba(189, 189, 196, 0.85); */\n" +
             "    /* --aspid-colors-switch-handle-shadow: rgba(0, 0, 0, 0.15); */\n" +
@@ -83,7 +83,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             return row
                 .AddChild(caption)
-                .AddChild(create);
+                .AddChild(AspidSettingsUI.BuildButtonGroup(create));
         }
 
         private static void CreateTemplate()

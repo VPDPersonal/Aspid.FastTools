@@ -17,13 +17,13 @@ namespace Aspid.FastTools.Editors.Tests
     {
         private const string TemplatePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
         private const string WelcomeStyleSheet = "UI/Windows/Welcome/Aspid-FastTools-Welcome-Style";
-        private const string WindowStyleSheet = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
+        private const string WindowStyleSheet = "UI/Windows/Aspid-FastTools-TabWindow";
 
         private const string HeroClass = "aspid-fasttools-welcome__hero";
         private const string HeroLinkClass = "aspid-fasttools-welcome__hero-link";
         private const string ToastClass = "aspid-fasttools-welcome__toast";
         private const string ToastVisibleClass = "aspid-fasttools-welcome__toast--visible";
-        private const string CanvasClass = "aspid-fasttools-serialize-reference-window__background";
+        private const string CanvasClass = "aspid-fasttools-tab-window__background";
 
         private TestPanel _panel;
 

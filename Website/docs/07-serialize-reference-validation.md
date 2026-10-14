@@ -24,13 +24,13 @@ The build checks every asset under `Assets/`, not only what goes into it: in `Fa
 
 | Run | Missing types | Empty fields with <code lang="csharp">Required = true</code> |
 |---|---|---|
-| **Project References → Scan Project** | Yes, with pending migrations | Unless the mode is `Off`, as a **Required violations** group |
+| **Project References → Scan Project** | Yes, with pending migrations | Unless the mode is `Off`, in a **Required** section |
 | **Asset References** | Yes | Yes, in any mode |
 | Player build | Unless the mode is `Off` | No |
 | CI without `-srGateRequired` | Unless the mode is `Off` | No |
 | CI with `-srGateRequired` | Unless the mode is `Off` | Unless the mode is `Off` |
 
-![Required violations group: an empty _primary field in two prefabs](Images/aspid_fasttools_serialize_reference_required_violations.png)
+![Required section: an empty _primary field in two prefabs](Images/aspid_fasttools_serialize_reference_required_violations.png)
 
 A field is made required with <code lang="csharp">[TypeSelector(Required = true)]</code>; see [Required field](03-type-selector.md#required-field). In scenes, required fields inside managed references, collections and prefab overrides are not checked.
 
@@ -48,9 +48,9 @@ A field is made required with <code lang="csharp">[TypeSelector(Required = true)
 
 **Excluded scan folders** excludes folders from Project References, player-build checks, CI and breakage detection.
 
-**Build / CI gate**, **Excluded scan folders** and **Auto de-alias duplicated list elements** are shared settings with a green stripe. They live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI, and also open in **Project Settings → Aspid.FastTools → SerializeReference**.
+**Build / CI gate**, **Excluded scan folders** and **Auto de-alias duplicated list elements** are project settings with a violet stripe. They live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, shared by the team and CI, and also open in **Project Settings → Aspid.FastTools → SerializeReference**.
 
-![SerializeReference section of the Settings tab: shared settings with a green stripe, per-user ones with a blue one](Images/aspid_fasttools_serialize_reference_settings.png)
+![SerializeReference section of the Settings tab: project settings with a violet stripe, per-user ones with a gray one](Images/aspid_fasttools_serialize_reference_settings.png)
 
 ## Running in CI
 
@@ -115,7 +115,7 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin    ns    
 | `ns` | Stored namespace for `MissingType`; otherwise empty |
 | `asm` | Stored assembly for `MissingType`; otherwise empty |
 
-In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** card of Project References instead. A `MissingTypeName` row is in its **type name** group of Project References.
+In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** section of Project References instead. A `MissingTypeName` row is in its **type name** group of Project References.
 
 </details>
 

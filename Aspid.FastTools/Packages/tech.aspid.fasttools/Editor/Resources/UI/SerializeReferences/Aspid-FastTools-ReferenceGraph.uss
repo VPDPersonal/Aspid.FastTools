@@ -10,7 +10,7 @@
     flex-grow:                                            0;
     margin-bottom:                                        12px;
     padding:                                              10px;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
     background-color:                                     var(--aspid-colors-surface-card);
@@ -45,13 +45,24 @@
 .aspid-fasttools-reference-graph__rescan .aspid-fasttools-gradient-button__label {
     margin-right:                                         8px;
     -unity-text-align:                                    middle-left;
+    color:                                                var(--aspid-colors-status-success-text-dark);
 }
 
+.aspid-fasttools-reference-graph__rescan-icon {
+    flex-shrink:                                          0;
+    width:                                                14px;
+    height:                                               14px;
+    margin:                                               0 6px 0 4px;
+    -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-dark);
+}
+
+/* Stacked from the top: ReferenceEmptyStateLayout sets the top padding that puts the icon at the middle of the
+   viewport, so the icon does not move with the text under it. */
 .aspid-fasttools-reference-graph__empty {
     flex-grow:                                            1;
     padding:                                              20px;
     align-items:                                          center;
-    justify-content:                                      center;
+    justify-content:                                      flex-start;
 }
 
 .aspid-fasttools-reference-graph__empty--hidden {
@@ -106,13 +117,7 @@
 }
 
 .aspid-fasttools-reference-graph__overview-title {
-    margin-bottom:                                        6px;
-}
-
-.aspid-fasttools-reference-graph__overview-hint {
     margin-bottom:                                        10px;
-    color:                                                var(--aspid-colors-text-dark);
-    white-space:                                          normal;
 }
 
 .aspid-fasttools-reference-graph__legend {
@@ -148,58 +153,14 @@
     color:                                                var(--aspid-colors-text-dark);
 }
 
-/* The document scope outranks the gradient button's :root layout rules. */
-.aspid-fasttools-reference-graph__document
-    .aspid-fasttools-reference-graph__document-header {
-    flex-direction:                                       row;
-    align-items:                                          center;
-    height:                                               auto;
-    padding:                                              5px 8px;
-    margin-bottom:                                        6px;
-    border-radius:                                        6px;
-    border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-shade-darkness);
-    --aspid-fasttools-colors-gradient_button-bg:          var(--aspid-colors-surface-card);
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-lightness);
+/* With the 5px under the last card, the gap before the next object matches the gap before a section. */
+.aspid-fasttools-reference-graph__document {
+    margin-bottom:                                        9px;
 }
 
-.aspid-fasttools-reference-graph__document
-    .aspid-fasttools-reference-graph__document-header--issues {
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
-}
-
-.aspid-fasttools-reference-graph__document-header .aspid-fasttools-gradient-button__label {
-    flex-grow:                                            1;
-    font-size:                                            11px;
-    -unity-text-align:                                    middle-right;
-}
-
-.aspid-fasttools-reference-graph__document-header-row {
-    flex-direction:                                       row;
-    align-items:                                          center;
-    flex-shrink:                                          1;
-}
-
-.aspid-fasttools-reference-graph__document-title {
-    flex-shrink:                                          1;
-    overflow:                                             hidden;
-    text-overflow:                                        ellipsis;
-    white-space:                                          nowrap;
-    color:                                                var(--aspid-colors-text-lightness);
-    -unity-font-style:                                    bold;
-    font-size:                                            13px;
-}
-
-.aspid-fasttools-reference-graph__document-header--issues .aspid-fasttools-reference-graph__document-title {
-    color:                                                var(--aspid-colors-status-warning-text-light);
-}
-
-.aspid-fasttools-reference-graph__document-count {
-    margin-left:                                          10px;
-    flex-shrink:                                          0;
-    color:                                                var(--aspid-colors-text-dark);
-    -unity-font-style:                                    normal;
-    font-size:                                            11px;
+/* The object that holds the fields: a folding ReferenceSectionHeading over its cards. */
+.aspid-fasttools-reference-graph__document-header {
+    margin-bottom:                                        10px;
 }
 
 /* The compound selector outranks AspidBox's theme and :root layout rules. */
@@ -207,7 +168,7 @@
     flex-grow:                                            0;
     margin-bottom:                                        5px;
     padding:                                              8px 10px;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
     background-color:                                     var(--aspid-colors-surface-card);
@@ -224,6 +185,19 @@
 .aspid-fasttools-reference-graph__node--back-edge.aspid-fasttools-background {
     border-color:                                         var(--aspid-colors-shade-dark);
     background-color:                                     var(--aspid-colors-surface-card-dim);
+}
+
+/* A one-band card of an optional empty field. */
+.aspid-fasttools-reference-graph__node--compact.aspid-fasttools-background {
+    padding:                                              4px 10px;
+}
+
+.aspid-fasttools-reference-graph__unassigned-field {
+    margin:                                               0;
+    padding:                                              0;
+    color:                                                var(--aspid-colors-text-light);
+    -unity-font-style:                                    italic;
+    font-size:                                            13px;
 }
 
 .aspid-fasttools-reference-graph__node--empty .aspid-fasttools-reference-graph__node-type {
@@ -305,8 +279,13 @@
     display:                                              none;
 }
 
+/* A long target type is cut in the middle, so both the action and the class name stay readable. */
 .aspid-fasttools-reference-graph__node-action {
     padding:                                              2px 4px;
+    overflow:                                             hidden;
+    text-overflow:                                        ellipsis;
+    white-space:                                          nowrap;
+    -unity-text-overflow-position:                        middle;
     border-radius:                                        3px;
     cursor:                                               link;
     -unity-font-style:                                    bold;
@@ -339,6 +318,19 @@
 
 .aspid-fasttools-reference-graph__node-action--info.aspid-fasttools-reference-graph__nav-target--focused {
     color:                                                var(--aspid-colors-status-info-text-light);
+}
+
+/* The keyboard focus on a plain action button looks like its hover, with the stronger border. */
+Button.aspid-fasttools-action-button.aspid-fasttools-reference-graph__nav-target--focused {
+    border-color:                                         var(--aspid-colors-status-success-text-light);
+    color:                                                var(--aspid-colors-status-success-text-light);
+    background-color:                                     var(--aspid-colors-status-success-tint);
+}
+
+Button.aspid-fasttools-action-button--danger.aspid-fasttools-reference-graph__nav-target--focused {
+    border-color:                                         var(--aspid-colors-status-error-text-light);
+    color:                                                var(--aspid-colors-status-error-text-light);
+    background-color:                                     var(--aspid-colors-status-error-tint);
 }
 
 .aspid-fasttools-reference-graph__node-band-row {
@@ -395,58 +387,51 @@
     margin-left:                                          8px;
 }
 
-.aspid-fasttools-reference-graph__badge {
-    margin-left:                                          4px;
-    padding:                                              1px 5px;
-    border-radius:                                        3px;
-    font-size:                                            9px;
-    -unity-font-style:                                    bold;
+.aspid-fasttools-reference-graph__shared {
     flex-direction:                                       row;
     align-items:                                          center;
+    margin-left:                                          4px;
 }
 
-.aspid-fasttools-reference-graph__badge--shared {
-    color:                                                var(--aspid-colors-status-info-text-lightness);
-    background-color:                                     var(--aspid-colors-status-info-dark);
-}
-
-.aspid-fasttools-reference-graph__badge-text {
+.aspid-fasttools-reference-graph__shared-text {
     margin:                                               0;
     padding:                                              0;
+    color:                                                var(--aspid-colors-text-dark);
+    -unity-font-style:                                    normal;
 }
 
 .aspid-fasttools-reference-graph__chip {
     width:                                                8px;
     height:                                               8px;
-    margin-left:                                          4px;
+    margin-right:                                         6px;
     border-radius:                                        4px;
 }
 
-.aspid-fasttools-reference-graph__orphan-group.aspid-fasttools-background {
-    flex-grow:                                            0;
-    margin-top:                                           6px;
-    padding:                                              8px 10px;
-    border-radius:                                        8px;
-    border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-status-warning-shade-darkness);
-    background-color:                                     var(--aspid-colors-status-warning-tint-darkness);
-}
-
-.aspid-fasttools-reference-graph__orphan-group-header {
-    margin-bottom:                                        4px;
+/* Orphaned: the entries no field points at, after the cards of the tree under a ReferenceSectionHeading. */
+.aspid-fasttools-reference-graph__section {
+    margin-top:                                           14px;
 }
 
 .aspid-fasttools-reference-graph__clear-orphan {
-    margin:                                               0 0 0 8px;
-    padding:                                              2px 6px;
-    --aspid-fasttools-colors-gradient_button-bg:          var(--aspid-colors-status-warning-darkness);
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
+    flex-shrink:                                          0;
+    margin-left:                                          8px;
 }
 
-.aspid-fasttools-reference-graph__clear-orphan .aspid-fasttools-gradient-button__label {
-    flex-grow:                                            0;
-    font-size:                                            11px;
-    -unity-text-align:                                    middle-center;
+/* The prefab instance notice reads like the repair summaries of Project References: a tint, a status border and a
+   small button in its top-right corner. The list scope outranks the help box's own info rule. */
+.aspid-fasttools-reference-graph__list .aspid-fasttools-reference-graph__notice.aspid-fasttools-status--info {
+    background-color:                                     var(--aspid-colors-status-info-tint);
+    border-color:                                         var(--aspid-colors-status-info-shade-dark);
+}
+
+.aspid-fasttools-reference-graph__notice
+    .aspid-fasttools-reference-graph__open-source {
+    position:                                             absolute;
+    top:                                                  6px;
+    right:                                                12px;
+    height:                                               20px;
+    padding:                                              0 12px;
+    border-color:                                         var(--aspid-colors-status-info-shade-dark);
 }
 
 /* The fixed height gives ListView the bounds required for virtualization. */
@@ -456,7 +441,7 @@
     padding:                                              0;
     overflow:                                             hidden;
     margin:                                               0 -2px 8px -2px;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-dark);
     background-color:                                     var(--aspid-colors-surface-card);
@@ -475,7 +460,7 @@
 }
 
 .aspid-fasttools-reference-graph__picker--attached .aspid-fasttools-type-selector__header {
-    border-radius:                                        8px;
+    border-radius:                                        6px;
 }
 
 .aspid-fasttools-reference-graph__picker .aspid-fasttools-type-selector__footer {
@@ -485,11 +470,11 @@
 .aspid-fasttools-reference-graph__picker--attached .aspid-fasttools-type-selector__footer {
     margin:                                               5px 0 0 0;
     border-top-width:                                    0;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
 }
 
 .aspid-fasttools-reference-graph__picker .aspid-fasttools-type-selector__item-content {
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     padding-left:                                         8px;
 }
 

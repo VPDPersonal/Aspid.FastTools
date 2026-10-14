@@ -29,7 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var lines = SerializeReferenceYaml.ReadLines(assetPath);
                 if (lines is null) return result;
 
-                AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, nodesOnly: false, result);
+                AddDocuments(lines, resolveTypeNames ? ResolveSources(assetPath) : null, nodesOnly: false, result);
             }
             catch (Exception)
             {
@@ -47,7 +47,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                if (lines is not null) AddDocuments(lines, typeNames: null, nodesOnly: true, result);
+                if (lines is not null) AddDocuments(lines, sources: null, nodesOnly: true, result);
             }
             catch (Exception)
             {
@@ -57,7 +57,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        private static void AddDocuments(string[] lines, Dictionary<long, string> typeNames, bool nodesOnly, List<ReferenceGraphDocument> result)
+        private static void AddDocuments(string[] lines, Dictionary<long, Object> sources, bool nodesOnly, List<ReferenceGraphDocument> result)
         {
             var headers = CollectHeaders(lines);
 
@@ -69,9 +69,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var document = BuildDocument(lines, fileId, start, end, nodesOnly);
                 if (document is null) continue;
 
-                document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
-                    ? name
-                    : $"!u!{classId}";
+                if (sources != null && sources.TryGetValue(fileId, out var source)) document.Source = source;
+                document.TypeName = document.Source != null ? DisplayNameOf(document.Source) : $"!u!{classId}";
 
                 result.Add(document);
             }
@@ -356,9 +355,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return headers;
         }
 
-        private static Dictionary<long, string> ResolveTypeNames(string assetPath)
+        private static Dictionary<long, Object> ResolveSources(string assetPath)
         {
-            var map = new Dictionary<long, string>();
+            var map = new Dictionary<long, Object>();
 
             // Scenes are unreadable through LoadAllAssetsAtPath, so they fall back to the YAML class id label.
             if (SerializeReferenceHelpers.IsScene(assetPath)) return map;
@@ -370,7 +369,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (obj == null) continue;
                     if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var fileId)) continue;
 
-                    map[fileId] = DisplayNameOf(obj);
+                    map[fileId] = obj;
                 }
             }
             catch (Exception)
@@ -381,10 +380,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
+        // "Player › Weapon": the object first, as the Hierarchy shows it, then its component.
         private static string DisplayNameOf(Object obj)
         {
             var typeName = obj.GetType().Name;
-            return string.IsNullOrEmpty(obj.name) ? typeName : $"{typeName}  ·  {obj.name}";
+            return string.IsNullOrEmpty(obj.name) ? typeName : $"{obj.name} › {typeName}";
         }
 
         private static int FindKey(string[] lines, Regex key, int start, int end)

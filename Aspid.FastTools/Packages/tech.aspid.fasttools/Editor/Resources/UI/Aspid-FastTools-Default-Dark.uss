@@ -23,8 +23,8 @@
     --aspid-colors-shade-lightness:                 rgb(100, 100, 100);
 
     --aspid-colors-surface-canvas:                  rgb(0, 0, 0);
-    --aspid-colors-surface-card:                    rgba(20, 20, 20, 0.55);
-    --aspid-colors-surface-card-dim:                rgba(20, 20, 20, 0.35);
+    --aspid-colors-surface-card:                    rgb(11, 11, 11);
+    --aspid-colors-surface-card-dim:                rgb(7, 7, 7);
 
     --aspid-colors-overlay-hover:                   rgba(255, 255, 255, 0.05);
     --aspid-colors-overlay-control:                 rgba(255, 255, 255, 0.06);
@@ -33,6 +33,10 @@
     --aspid-colors-overlay-scrollbar-hover:         rgba(255, 255, 255, 0.28);
     --aspid-colors-slider-handle:                   rgba(189, 189, 196, 0.85);
     --aspid-colors-control-border:                  rgb(110, 110, 110);
+
+    /* Where a setting is stored. No status uses these hues, so a stripe never reads as a state of the row. */
+    --aspid-colors-scope-project:                   rgb(180, 140, 230);
+    --aspid-colors-scope-user:                      rgb(120, 120, 120);
 
     --aspid-colors-status-success-darkness:         rgb(8, 40, 20);
     --aspid-colors-status-success-dark:             rgb(12, 65, 30);
@@ -55,23 +59,23 @@
     --aspid-colors-status-info-lightness:           rgb(35, 105, 180);
 
     --aspid-colors-status-success-text-darkness:    rgb(55, 110, 65);
-    --aspid-colors-status-success-text-dark:        rgb(85, 175, 100);
-    --aspid-colors-status-success-text-light:       rgb(120, 235, 145);
-    --aspid-colors-status-success-text-lightness:   rgb(180, 255, 200);
+    --aspid-colors-status-success-text-dark:        rgb(92, 180, 107);
+    --aspid-colors-status-success-text-light:       rgb(124, 194, 136);
+    --aspid-colors-status-success-text-lightness:   rgb(169, 219, 178);
 
     --aspid-colors-status-warning-text-darkness:    rgb(120, 85, 35);
-    --aspid-colors-status-warning-text-dark:        rgb(185, 135, 60);
-    --aspid-colors-status-warning-text-light:       rgb(245, 185, 85);
+    --aspid-colors-status-warning-text-dark:        rgb(232, 176, 74);
+    --aspid-colors-status-warning-text-light:       rgb(245, 196, 110);
     --aspid-colors-status-warning-text-lightness:   rgb(255, 235, 175);
 
     --aspid-colors-status-error-text-darkness:      rgb(125, 45, 45);
-    --aspid-colors-status-error-text-dark:          rgb(185, 65, 65);
-    --aspid-colors-status-error-text-light:         rgb(235, 95, 95);
+    --aspid-colors-status-error-text-dark:          rgb(226, 80, 106);
+    --aspid-colors-status-error-text-light:         rgb(236, 114, 136);
     --aspid-colors-status-error-text-lightness:     rgb(255, 175, 175);
 
     --aspid-colors-status-info-text-darkness:       rgb(40, 80, 125);
-    --aspid-colors-status-info-text-dark:           rgb(65, 130, 185);
-    --aspid-colors-status-info-text-light:          rgb(90, 185, 240);
+    --aspid-colors-status-info-text-dark:           rgb(74, 144, 208);
+    --aspid-colors-status-info-text-light:          rgb(112, 170, 228);
     --aspid-colors-status-info-text-lightness:      rgb(190, 240, 255);
 
     --aspid-colors-status-success-shade-darkness:   rgb(25, 55, 30);
@@ -297,4 +301,102 @@ Label.aspid-fasttools-theme--light.aspid-fasttools-status--info {
 
 Label.aspid-fasttools-theme--lightness.aspid-fasttools-status--info {
     color:                                          var(--aspid-colors-status-info-text-lightness);
+}
+
+/* A short action inside a card (AspidStyles.ActionButtonClass): a plain outlined button, the same as the actions of the
+   Settings tab. The element-qualified selectors outrank Unity's own button rules. */
+Button.aspid-fasttools-action-button {
+    height:                                         22px;
+    margin:                                         0;
+    padding:                                        0 10px;
+    background-color:                               rgba(0, 0, 0, 0);
+    border-width:                                   1px;
+    border-color:                                   var(--aspid-colors-shade-dark);
+    border-radius:                                  6px;
+    color:                                          var(--aspid-colors-text-light);
+    font-size:                                      12px;
+    -unity-font-style:                              normal;
+    -unity-text-align:                              middle-center;
+
+    transition-property:                            background-color, border-color, color;
+    transition-duration:                            0.25s;
+    transition-timing-function:                     ease-out;
+}
+
+Button.aspid-fasttools-action-button:hover {
+    border-color:                                   var(--aspid-colors-status-success-shade-light);
+    color:                                          var(--aspid-colors-status-success-text-light);
+    background-color:                               var(--aspid-colors-status-success-tint);
+}
+
+/* An action that deletes data without Undo turns red on hover. */
+Button.aspid-fasttools-action-button--danger:hover {
+    border-color:                                   var(--aspid-colors-status-error-text-dark);
+    color:                                          var(--aspid-colors-status-error-text-light);
+    background-color:                               var(--aspid-colors-status-error-tint);
+}
+
+/* ReferenceSectionHeading: the heading of a group of cards in the reference views. */
+/* As far from its first card as the cards are from each other, so the line does not crowd the card under it. */
+.aspid-fasttools-section-heading {
+    margin-bottom:                                  10px;
+}
+
+.aspid-fasttools-section-heading__row {
+    flex-direction:                                 row;
+    align-items:                                    center;
+}
+
+/* In a narrow window the name gives way with an ellipsis instead of wrapping. */
+.aspid-fasttools-section-heading__title {
+    flex-shrink:                                    1;
+    min-width:                                      0;
+    overflow:                                       hidden;
+}
+
+/* The type selector of the label's own sheet lets its text wrap; this keeps the heading on one line. */
+.aspid-fasttools-section-heading__title Label {
+    flex-shrink:                                    1;
+    min-width:                                      0;
+    overflow:                                       hidden;
+    text-overflow:                                  ellipsis;
+    white-space:                                    nowrap;
+}
+
+/* Takes the rest of the row so a chevron sits at its right end. */
+.aspid-fasttools-section-heading__trailing {
+    flex-grow:                                      1;
+    flex-shrink:                                    0;
+    margin:                                         0;
+    padding:                                        0 0 0 8px;
+    color:                                          var(--aspid-colors-text-dark);
+    font-size:                                      11px;
+    -unity-text-align:                              middle-right;
+}
+
+.aspid-fasttools-section-heading__line {
+    margin-top:                                     2px;
+}
+
+.aspid-fasttools-section-heading--clickable {
+    padding:                                        2px 4px 0 4px;
+    margin-left:                                    -4px;
+    margin-right:                                   -4px;
+    border-radius:                                  6px;
+}
+
+.aspid-fasttools-section-heading--clickable:hover {
+    background-color:                               var(--aspid-colors-overlay-hover);
+}
+
+.aspid-fasttools-section-heading--clickable:hover .aspid-fasttools-section-heading__trailing {
+    color:                                          var(--aspid-colors-text-light);
+}
+
+/* An object heading: a level above the status sections inside it. */
+.aspid-fasttools-section-heading__icon {
+    flex-shrink:                                    0;
+    width:                                          16px;
+    height:                                         16px;
+    margin-right:                                   6px;
 }

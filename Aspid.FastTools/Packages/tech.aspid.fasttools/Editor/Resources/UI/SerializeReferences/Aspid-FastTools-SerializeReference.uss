@@ -131,7 +131,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
     flex-shrink:                                          0;
     margin-bottom:                                        12px;
     padding:                                              10px;
-    border-radius:                                        8px;
+    border-radius:                                        6px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
     background-color:                                     var(--aspid-colors-surface-card);
@@ -155,13 +155,28 @@ Button.aspid-fasttools-serialize-reference__open-button {
     .aspid-fasttools-repair-references__scan-project {
     margin:                                               0;
     padding-left:                                         4px;
+    align-items:                                          center;
 }
 
+.aspid-fasttools-repair-references__scan-project .aspid-fasttools-gradient-button__label {
+    color:                                                var(--aspid-colors-status-success-text-dark);
+}
+
+.aspid-fasttools-repair-references__scan-project-icon {
+    flex-shrink:                                          0;
+    width:                                                14px;
+    height:                                               14px;
+    margin:                                               0 6px 0 2px;
+    -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-dark);
+}
+
+/* Stacked from the top: ReferenceEmptyStateLayout sets the top padding that puts the icon at the middle of the
+   viewport, so the icon does not move with the text under it. */
 .aspid-fasttools-repair-references__empty {
     flex-grow:                                             1;
     padding:                                               20px;
     align-items:                                           center;
-    justify-content:                                       center;
+    justify-content:                                       flex-start;
 }
 
 .aspid-fasttools-repair-references__empty--hidden {
@@ -206,46 +221,29 @@ Button.aspid-fasttools-serialize-reference__open-button {
 }
 
 .aspid-fasttools-repair-references__results-header {
-    margin-bottom:                                         6px;
+    margin-bottom:                                         10px;
 }
 
 .aspid-fasttools-repair-references__results-hint {
+    margin-top:                                            -4px;
     margin-bottom:                                         10px;
     color:                                                 var(--aspid-colors-text-dark);
     white-space:                                           normal;
 }
 
-.aspid-fasttools-repair-references__legend {
-    flex-direction:                                        row;
-    align-items:                                           center;
-    margin-top:                                            -4px;
-    margin-bottom:                                         10px;
-}
-
-.aspid-fasttools-repair-references__legend--hidden {
+/* With nothing that needs attention the hint takes no line; how to act on the results is the header's tooltip. */
+.aspid-fasttools-repair-references__results-hint--hidden {
     display:                                               none;
 }
 
-.aspid-fasttools-repair-references__legend-item {
-    flex-direction:                                        row;
-    align-items:                                           center;
-    margin-right:                                          16px;
+/* Broken and Renamed sections, shown when both kinds are on screen. */
+.aspid-fasttools-repair-references__section-heading {
+    margin-top:                                            14px;
+    margin-bottom:                                         10px;
 }
 
-.aspid-fasttools-repair-references__legend-dot {
-    width:                                                 6px;
-    height:                                                6px;
-    border-radius:                                         3px;
-    margin-right:                                          6px;
-    background-color:                                      var(--aspid-colors-status-warning-text-dark);
-}
-
-.aspid-fasttools-repair-references__legend-dot--info {
-    background-color:                                      var(--aspid-colors-status-info-text-dark);
-}
-
-.aspid-fasttools-repair-references__legend-text {
-    color:                                                 var(--aspid-colors-text-dark);
+.aspid-fasttools-repair-references__section-heading--first {
+    margin-top:                                            0;
 }
 
 .aspid-fasttools-repair-references__summary {
@@ -259,30 +257,15 @@ Button.aspid-fasttools-serialize-reference__open-button {
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
 }
 
-/* The summary scope outranks the gradient button's :root dimensions and text rules. */
+/* The undo of a repair sits in the corner of its summary box. */
 .aspid-fasttools-repair-references__summary
     .aspid-fasttools-repair-references__summary-undo {
     position:                                              absolute;
     top:                                                   6px;
     right:                                                 12px;
     height:                                                20px;
-    margin:                                                0;
     padding:                                               0 12px;
-    font-size:                                             12px;
-    border-radius:                                         6px;
-    border-width:                                          1px;
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
-    --aspid-fasttools-colors-gradient_button-bg: var(
-        --aspid-colors-status-warning-darkness
-    );
-    --aspid-fasttools-colors-gradient_button-accent: var(
-        --aspid-colors-status-warning-text-light
-    );
-}
-
-.aspid-fasttools-repair-references__summary-undo
-    .aspid-fasttools-gradient-button__label {
-    -unity-text-align:                                     middle-center;
 }
 
 /* Growing the content container centers short content while taller content remains scrollable. */
@@ -302,7 +285,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
     padding:                                               0;
     overflow:                                              hidden;
     margin:                                                0 -2px 8px -2px;
-    border-radius:                                         8px;
+    border-radius:                                         6px;
     border-width:                                          1px;
     border-color:                                          var(--aspid-colors-shade-dark);
     background-color:                                      var(--aspid-colors-surface-card);
@@ -323,7 +306,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
 
 .aspid-fasttools-repair-references__picker--attached
     .aspid-fasttools-type-selector__header {
-    border-radius:                                         8px;
+    border-radius:                                         6px;
 }
 
 .aspid-fasttools-repair-references__picker
@@ -335,7 +318,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
     .aspid-fasttools-type-selector__footer {
     margin: 5px 0 0 0;
     border-top-width: 0;
-    border-radius: 8px;
+    border-radius: 6px;
 }
 
 .aspid-fasttools-type-selector .aspid-fasttools-type-selector__item-content {
@@ -347,7 +330,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
     flex-grow:                                             0;
     margin-bottom:                                         10px;
     padding:                                               8px 10px;
-    border-radius:                                         8px;
+    border-radius:                                         6px;
     border-width:                                          1px;
     border-color:                                          var(--aspid-colors-shade-darkness);
     background-color:                                      var(--aspid-colors-surface-card);
@@ -433,9 +416,13 @@ Button.aspid-fasttools-serialize-reference__open-button {
     margin-bottom:                                         0;
 }
 
+/* The action takes its card's status colour, as the bands of Asset References do: amber to fix, blue to migrate. */
 .aspid-fasttools-repair-references__group-fix-all
     .aspid-fasttools-gradient-button__label {
+    flex-shrink:                                           0;
+    margin-left:                                           8px;
     -unity-text-align:                                     middle-right;
+    color:                                                 var(--aspid-colors-status-warning-text-light);
 }
 
 .aspid-fasttools-repair-references__group
@@ -443,6 +430,11 @@ Button.aspid-fasttools-serialize-reference__open-button {
     --aspid-fasttools-colors-gradient_button-accent: var(
         --aspid-colors-status-info-text-light
     );
+}
+
+.aspid-fasttools-repair-references__group-fix-all--migrate
+    .aspid-fasttools-gradient-button__label {
+    color:                                                 var(--aspid-colors-status-info-text-light);
 }
 
 /* USS cannot select the sibling sweep from button hover; code mirrors hover onto the card modifier. */
@@ -480,28 +472,48 @@ Button.aspid-fasttools-serialize-reference__open-button {
     display:                                               none;
 }
 
+/* In a narrow window the count gives way first and the title after it, both with an ellipsis; Fix all keeps its width. */
 .aspid-fasttools-repair-references__group-header-row {
     flex-direction:                                        row;
+    flex-shrink:                                           1;
     align-items:                                           center;
-}
-
-.aspid-fasttools-repair-references__group-header-row--static {
-    padding:                                               4px 4px;
-    margin-bottom:                                         6px;
+    min-width:                                             0;
+    overflow:                                              hidden;
 }
 
 .aspid-fasttools-repair-references__group-header {
     flex-shrink:                                           1;
+    min-width:                                             0;
+    overflow:                                              hidden;
+}
+
+/* The type selector of the label's own sheet lets its text wrap; this keeps the title on one line. */
+.aspid-fasttools-repair-references__group-header Label {
+    flex-shrink:                                           1;
+    min-width:                                             0;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+    white-space:                                           nowrap;
 }
 
 .aspid-fasttools-repair-references__group-count {
+    flex-shrink:                                           100;
+    min-width:                                             0;
     margin-left:                                           10px;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+    white-space:                                           nowrap;
     color:                                                 var(--aspid-colors-text-dark);
     -unity-font-style:                                     normal;
 }
 
+/* A long target type is cut in the middle, so both the action and the class name stay readable. */
 .aspid-fasttools-repair-references__group-action {
     padding:                                               2px 4px;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+    white-space:                                           nowrap;
+    -unity-text-overflow-position:                         middle;
     border-radius:                                         3px;
     cursor:                                                link;
     -unity-font-style:                                     bold;
@@ -556,15 +568,71 @@ Button.aspid-fasttools-serialize-reference__open-button {
 }
 
 .aspid-fasttools-repair-references__group-entry-path {
+    flex-direction:                                        row;
     flex-grow:                                             1;
     flex-shrink:                                           1;
     min-width:                                             0;
-    color:                                                 var(--aspid-colors-text-light);
+    overflow:                                              hidden;
+}
+
+/* The folder gives way long before the file name (flex-shrink 100 to 1) and loses its start first. */
+.aspid-fasttools-repair-references__group-entry-folder {
+    flex-shrink:                                           100;
+    min-width:                                             0;
+    margin:                                                0;
+    padding:                                               0;
     overflow:                                              hidden;
     text-overflow:                                         ellipsis;
     -unity-text-overflow-position:                         start;
-
+    white-space:                                           nowrap;
+    color:                                                 var(--aspid-colors-text-dark);
     cursor:                                                text;
+}
+
+.aspid-fasttools-repair-references__group-entry-file {
+    flex-shrink:                                           1;
+    min-width:                                             0;
+    margin:                                                0;
+    padding:                                               0;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+    white-space:                                           nowrap;
+    color:                                                 var(--aspid-colors-text-lightness);
+    cursor:                                                text;
+}
+
+/* A row of a file card: what differs between the entries of that file, a field or a type. */
+.aspid-fasttools-repair-references__group-entry-name {
+    flex-grow:                                             1;
+    flex-shrink:                                           1;
+    min-width:                                             0;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+    white-space:                                           nowrap;
+    color:                                                 var(--aspid-colors-text-light);
+    cursor:                                                text;
+}
+
+/* The path that heads a file card of the Required and Prefab instance overrides sections, with the entry count right
+   after it, as a group card's count follows its title. */
+/* Spaced like a group card's Fix all band (padding 4px, margin-bottom 6px), so the divider under it keeps the same
+   distance from the text in both kinds of cards. */
+.aspid-fasttools-repair-references__file-header {
+    padding-top:                                           4px;
+    padding-bottom:                                        4px;
+    margin-bottom:                                         6px;
+}
+
+.aspid-fasttools-repair-references__file-header .aspid-fasttools-repair-references__group-entry-file {
+    -unity-font-style:                                     bold;
+}
+
+.aspid-fasttools-repair-references__file-header .aspid-fasttools-repair-references__group-entry-path {
+    flex-grow:                                             0;
+}
+
+.aspid-fasttools-repair-references__file-header .aspid-fasttools-repair-references__group-count {
+    flex-shrink:                                           0;
 }
 
 .aspid-fasttools-repair-references__group-entry-rid {

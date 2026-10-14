@@ -22,6 +22,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string CardDescriptionClass = RootClass + "__card-description";
         private const string AssetClass = RootClass + "__asset";
         private const string RescanClass = RootClass + "__rescan";
+        private const string RescanIconClass = RootClass + "__rescan-icon";
+        private const string OpenSourceClass = RootClass + "__open-source";
+        private const string NoticeClass = RootClass + "__notice";
         private const string EmptyClass = RootClass + "__empty";
         private const string EmptyHiddenClass = EmptyClass + "--hidden";
         private const string EmptyIconClass = RootClass + "__empty-icon";
@@ -35,7 +38,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string OverviewClass = RootClass + "__overview";
         private const string OverviewHiddenClass = OverviewClass + "--hidden";
         private const string OverviewTitleClass = RootClass + "__overview-title";
-        private const string OverviewHintClass = RootClass + "__overview-hint";
 
         private const string LegendClass = RootClass + "__legend";
         private const string LegendHiddenClass = LegendClass + "--hidden";
@@ -57,7 +59,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly VisualElement _empty;
         private readonly VisualElement _overview;
         private readonly AspidLabel _overviewTitle;
-        private readonly Label _overviewHint;
         private readonly VisualElement _legend;
         private readonly VisualElement _list;
         private readonly ScrollView _scroll;
@@ -107,8 +108,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Stop the nested object field from also activating the surrounding Rescan button.
             _assetField.RegisterCallback<PointerDownEvent>(evt => evt.StopPropagation());
 
+            // The icon and the accent label mark Rescan as the action; without them it read as the field's label.
             _rescanButton = new AspidGradientButton("Rescan", _ => Rescan())
                 .AddClass(RescanClass);
+            _rescanButton.AddLeadingContent(SerializeReferenceAuditUI.BuildRescanIcon(RescanIconClass));
             _rescanButton.AddTrailingContent(_assetField);
             _rescanButton.FillWithTrailingContent();
 
@@ -127,8 +130,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .SetLineStatus(StatusStyle.Type.Warning))
                 .AddClass(OverviewTitleClass);
 
-            _overviewHint = new Label(string.Empty).AddClass(OverviewHintClass);
-
             _legend = new VisualElement()
                 .AddClass(LegendClass)
                 .AddClass(LegendHiddenClass)
@@ -139,7 +140,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(OverviewClass)
                 .AddClass(OverviewHiddenClass)
                 .AddChild(_overviewTitle)
-                .AddChild(_overviewHint)
                 .AddChild(_legend);
 
             _list = new VisualElement().AddClass(ListClass);
@@ -153,6 +153,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _scroll = new ScrollView().AddClass(ScrollClass);
             _scroll.AddChild(content);
+            ReferenceEmptyStateLayout.PinIcon(_empty, _scroll);
 
             root.AddChild(_scroll);
 
@@ -178,6 +179,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void RegisterNavBand(AspidGradientButton band, VisualElement card, Action activate) =>
             _ring.RegisterHeader(band, card, NodeHeaderHoverClass, activate);
+
+        // The window keeps this view between visits to its tab: a new target maps that asset, the same one is mapped
+        // again, since a repair elsewhere may have changed it.
+        internal void Refresh(Object target)
+        {
+            if (target != _target) SetTarget(target);
+            else Rescan();
+        }
 
         private void SetTarget(Object target)
         {
@@ -251,24 +260,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowResults();
             _onCanvasStatus?.Invoke(StatusStyle.Type.Info);
 
+            // Drawn like the repair summaries of Project References: a tinted box with a title and a small button in its
+            // corner.
             var info = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
-                .SetMessage("This is a prefab instance — its managed references live in the source prefab.");
+                .SetTitle("Prefab instance")
+                .SetMessage("Its managed references live in the source prefab.")
+                .AddClass(NoticeClass);
             _list.AddChild(info);
 
             void OpenSource() => SetTarget(AssetDatabase.LoadAssetAtPath<Object>(sourcePath));
 
-            var openSource = new AspidGradientButton("Open Source Prefab", _ => OpenSource());
+            var openSource = new Button(OpenSource) { text = "Open Source Prefab" }
+                .AddClass(AspidStyles.ActionButtonClass)
+                .AddClass(OpenSourceClass);
             RegisterNavTarget(openSource, OpenSource);
-            _list.AddChild(openSource);
+            info.AddChild(openSource);
             return true;
         }
 
         private void RenderDocuments(string assetPath, List<ReferenceGraphDocument> documents)
         {
-            var total = 0;
             var missing = 0;
             var orphans = 0;
-            var empties = 0;
             var migrations = 0;
 
             // The card budget is shared, so a scene with many documents is bounded as a whole.
@@ -279,46 +292,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var hiddenEmpties = 0;
             var drawn = 0;
 
-            var showHeaders = documents.Count > 1;
+            // Every object with a name gets its heading, even the only one: the heading says whose fields the cards
+            // are. A scene object is read as text and has only its YAML class id, so it is headed only among several.
+            var several = documents.Count > 1;
             foreach (var plan in plans)
             {
                 var document = plan.Document;
 
                 // A document that got no card would be a header over nothing, so only the notice speaks for it.
                 if (plan.Cards.Count > 0 || plan.Hidden == 0)
-                    _list.AddChild(BuildDocument(assetPath, plan, showHeaders));
+                    _list.AddChild(BuildDocument(assetPath, plan, showHeader: several || document.Source != null));
 
                 drawn += plan.Cards.Count;
                 hidden += plan.Hidden;
                 hiddenEmpties += plan.HiddenEmpty;
 
-                total += document.Nodes.Count;
                 var (broken, documentMigrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
                 missing += broken + documentMigrations;
                 migrations += documentMigrations;
                 orphans += document.Orphans.Count;
-                empties += SerializeReferenceGraphAnalysis.CountEmptySlots(document);
             }
 
             var ungraphedRequired = _requiredViolations
                 .Where(violation => !emptySlotPaths.Contains((violation.FileId, violation.FieldPath)))
                 .ToList();
 
-            // Count required empty fields only as violations, avoiding duplicate unassigned-field counts.
             var required = _requiredViolations.Count;
-            var graphedRequired = required - ungraphedRequired.Count;
 
             var requiredCards = SerializeReferenceGraphAnalysis.SelectRequiredCards(
                 ungraphedRequired, SerializeReferenceGraphPlan.MaxCards - drawn, out var hiddenRequired);
 
-            // A required field whose slot the plans left out is already in the hidden count and in the unassigned count,
-            // so it is taken out of them once. The plans keep no paths past the budget, so this counts by number.
+            // A required field whose slot the plans left out is already in the hidden count, so it is taken out of it
+            // once. The plans keep no paths past the budget, so this counts by number.
             var hiddenSlots = Math.Min(hiddenRequired, hiddenEmpties);
-            graphedRequired += hiddenSlots;
             hidden += hiddenRequired - hiddenSlots;
 
             var status = SerializeReferenceAuditUI.ResolveStatus(missing - migrations, orphans, required, migrations);
-            ShowOverview(status, total, missing, orphans, Math.Max(0, empties - graphedRequired), migrations, required);
+            ShowOverview(status, missing, orphans, migrations, required);
 
             foreach (var violation in requiredCards)
                 _list.AddChild(BuildRequiredOnlyCard(violation));
@@ -356,7 +366,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.RemoveClass(ListHiddenClass);
         }
 
-        private void ShowOverview(StatusStyle.Type status, int total, int missing, int orphans, int empties, int migrations, int required)
+        // The title counts what needs attention and the section headings count the rest, so the overview is the title
+        // alone, with how to act on it in its tooltip.
+        private void ShowOverview(StatusStyle.Type status, int missing, int orphans, int migrations, int required)
         {
             var broken = missing - migrations;
 
@@ -364,7 +376,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _overviewTitle.LabelStatus = status;
             _overviewTitle.LineStatus = status;
 
-            _overviewHint.text = SerializeReferenceGraphSummary.BuildOverviewHint(total, missing, orphans, empties, migrations, required);
+            _overviewTitle.tooltip = SerializeReferenceGraphSummary.BuildOverviewGuide(missing, orphans, migrations, required);
 
             var hasAmber = broken > 0 || orphans > 0 || required > 0;
             _legend.EnableInClassList(LegendHiddenClass, migrations == 0 || !hasAmber);
