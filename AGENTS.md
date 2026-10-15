@@ -27,26 +27,13 @@ Agent Skills for projects that consume the package in `skills/`.
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity $v> -batchmode -nographics -projectPath "$p" -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "$p/public-api.xml"`.
   When a public member gets a newer `UNITY_6000_x_OR_NEWER` guard, move the `#if` around `HasWholeApi` and
   `WholeApiVersion` to it.
-- A PR that removes or changes a line of `PublicApi.txt` (not a `#` comment) is breaking: `!` before the colon in the
-  title, and a CHANGELOG entry under Changed with a migration note. A line that only gains an interface, a base class
-  or `[Flags]` is not.
-- `Tests/Burst` compiles only where `com.unity.burst` is installed; CI skips it.
 - Bump the version only with `scripts/set-version.sh <version>`. `/asp-ft-release <version>` runs the whole release,
   the Asset Store upload included.
 - `skills/` holds skills for consumers of the package (`npx skills add VPDPersonal/Aspid.FastTools`). Skills for
-  working on this repo go into `.claude/skills/` with `metadata.internal: true`. An `AFT` code in a skill must be
-  reported by an analyzer, and a namespace or assembly in a consumer skill must exist in the package. A skill that
-  describes public API is updated in the same PR as that API.
-- Package files (`scripts/check-package-files.mjs`): a path within 123 characters; a `.meta` for every file and folder
-  (`Samples~` too) and no `.meta` without an asset; unique GUIDs; a `MonoImporter` block in every `.cs.meta` outside
-  `Samples~`; a `ScriptedImporter` block with importer id 12385 in every `.uss.meta`; asmdef references only to asmdefs
-  of the package or to `EXTERNAL_ASSEMBLIES` of the script.
-- The minimum Unity version is `unity` and `unityRelease` in `package.json`. When it changes, update it by hand in this
-  file, `.github/claude-review.md`, `.github/ISSUE_TEMPLATE/release_checklist.yml`,
-  `skills/aspid-visual-element-fluent/SKILL.md`, the package `SETUP.md` and the first Unity version of the matrix in
-  `.github/workflows/ci.yml`.
-- A new required check goes into `.github/workflows/ci.yml`, without a path filter. The PR title and CHANGELOG checks
-  live in `pr-checks.yml`.
+  working on this repo go into `.claude/skills/` with `metadata.internal: true`. A skill that describes public API is
+  updated in the same PR as that API.
+- The minimum Unity version is `unity` and `unityRelease` in `package.json`; `scripts/check-unity-minimum.mjs` names
+  the other files to update by hand.
 - In `.claude/settings.json` allow only commands that cannot run code or read the environment; put the rest in
   `.claude/settings.local.json`.
 - After a change to public API or its XML docs, run `npm run api` in `Website/` and commit `Website/api/` in the same
@@ -65,7 +52,9 @@ Run what applies before you open a PR.
 - Scripts: `npm --prefix Website ci && node --test scripts/*.test.mjs`.
 - Site, in `Website/`: `npm ci`, then `npm run check-readme`, `npm run check-translations`, `npm test` and
   `npm run build`.
-- Skills: `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
+- Repository: `node scripts/check-package-files.mjs`, `node scripts/check-version.mjs`,
+  `node scripts/check-unity-minimum.mjs`, `node scripts/check-contrast.mjs`, and
+  `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
 
 ## C# style beyond `.editorconfig`
 
