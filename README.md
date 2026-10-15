@@ -5,7 +5,7 @@
   <img src="docs/images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 
-[![Unity 6.0+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/slug/365584)
+[![Unity 6.0+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
 [![Preview 1.0.0-rc.8](Website/docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](Website/docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
@@ -34,7 +34,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
 
-**Installed from the Asset Store?** Skip this section: the package is already in your project, and adding it again from the git URL gives two copies that Unity cannot compile.
+**Installed from the Asset Store?** Skip this section: the package is already in your project.
 
 ## Features
 
