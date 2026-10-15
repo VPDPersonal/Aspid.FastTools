@@ -27,7 +27,7 @@ namespace Aspid.FastTools.Editors
 
         private const string PackageName = "tech.aspid.fasttools";
 
-        private const string AssetStoreUrl = "https://assetstore.unity.com/packages/slug/365584";
+        private const string AssetStoreUrl = "https://assetstore.unity.com/packages/package/2333465";
         private const string GitHubUrl = "https://github.com/VPDPersonal/Aspid.FastTools";
         private const string DocumentationUrl = "https://vpdpersonal.github.io/Aspid.FastTools/";
 
