@@ -128,8 +128,8 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
   Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub and the site
   then show the same image. After re-shooting a listed capture, run the script; it skips framed files and fails on a
   capture whose size no longer matches its row, which then needs new bounds. Only `enum-values-multipliers/padding/pad.py`
-  and `native-selector/crop.sh` in `docs/media` still write a listed capture, and they call it themselves; the other
-  listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
+  and `enum-values-multipliers/type-selector/crop.sh` in `docs/media` still write a listed capture, and they call it
+  themselves; the other listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
   On doc pages the site pads every listed capture on to 8px from its rounded frame, drawing it as a border image so
   the margin's bands meet the edge without a seam; `docusaurus.config.js` reads the list and `PAD` from the script
   (`customFields.framedCaptures`), so a new row needs nothing else. The introduction's cards do the same in `custom.css`.

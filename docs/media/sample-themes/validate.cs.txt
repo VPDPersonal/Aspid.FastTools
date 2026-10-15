@@ -20,16 +20,25 @@ public static class ValidateSampleThemes
     var camera=Camera.main;var originalBackground=camera.backgroundColor;
     var renderers=scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<Renderer>(true)).ToArray();
     var materials=renderers.Select(r=>r.sharedMaterial).Where(m=>m!=null&&m.HasProperty("_Color")).Distinct().ToDictionary(m=>m,m=>m.GetColor("_Color"));
+    var walker=name=="EnumValues"?GameObject.Find("Walker").GetComponent("Walker"):null;
+    var palette=walker==null?null:walker.GetType().GetField("_palette",BindingFlags.Instance|BindingFlags.NonPublic);var authored=palette?.GetValue(walker);
     Mode(2);
     if(ColorUtility.ToHtmlStringRGB(camera.backgroundColor)!="EEF0F3")throw new Exception(name+": wrong light background");
     if(!renderers.Any(r=>r.HasPropertyBlock()))throw new Exception(name+": no themed renderer");
+    if(walker!=null) {
+     var clone=palette.GetValue(walker);if(ReferenceEquals(clone,authored))throw new Exception(name+": SurfacePalette not cloned");
+     var tile=clone.GetType().GetMethod("GetTileColor");var grass=Enum.Parse(tile.GetParameters()[0].ParameterType,"Grass");
+     if(ColorUtility.ToHtmlStringRGB((Color)tile.Invoke(clone,new[]{grass}))!="9ABD9F")throw new Exception(name+": tile colour not themed");
+     if(ColorUtility.ToHtmlStringRGB((Color)clone.GetType().GetMethod("GetFootprintColor").Invoke(clone,new[]{grass}))!="78B795")throw new Exception(name+": trail colour not themed");
+    }
     Mode(1);
     if(ColorUtility.ToHtmlStringRGB(camera.backgroundColor)!="0E1015")throw new Exception(name+": wrong dark background");
     Mode(0);
     if(camera.backgroundColor!=originalBackground)throw new Exception(name+": camera not restored");
+    if(walker!=null&&!ReferenceEquals(palette.GetValue(walker),authored))throw new Exception(name+": SurfacePalette not restored");
     if(materials.Any(p=>p.Key.GetColor("_Color")!=p.Value))throw new Exception(name+": asset changed");
     if(scene.isDirty)throw new Exception(name+": preview dirtied scene");
-    results.Add(name+": light/dark/authored, no dirty scene or modified material assets");
+    results.Add(name+": light/dark/authored, no dirty scene or modified material assets"+(walker!=null?", SurfacePalette cloned and restored":""));
    }
   } finally {Mode(0);EditorSceneManager.OpenScene(originalPath);}
   return results;
