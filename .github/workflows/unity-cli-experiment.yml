@@ -1,0 +1,170 @@
+name: Unity CLI experiment
+
+# An experiment, not a required check: can the official Unity CLI replace game-ci/unity-test-runner in the Unity
+# EditMode job of ci.yml, and does it make the job simpler or faster? It runs the same throwaway project and tests on
+# the bare runner, without a container. The CLI installs the Editor, the Licensing Client inside that Editor takes the
+# Personal seat (`unity license activate --personal` rejects CI credentials), and `unity test` runs the tests.
+# This file does not match the Unity plan regex of ci.yml, so a PR that changes only this file skips the GameCI matrix
+# and the two never compete for the Personal seats of one account.
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/unity-cli-experiment.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unity-tests:
+    name: Unity CLI EditMode (${{ matrix.unity }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        unity: [6000.0.53f1]
+    env:
+      UNITY: ${{ matrix.unity }}
+      # The CLI release this job was measured with. install.sh verifies the binary against that release's manifest.
+      UNITY_CLI_VERSION: 1.0.0-beta.13
+      # A restored cache holds the Editor folder only: the CLI's install path is set to this root on every run.
+      EDITORS: ${{ github.workspace }}/../unity-editors
+      UNITY_NON_INTERACTIVE: 1
+      UNITY_NO_CONSENT_PROMPT: 1
+      UNITY_NO_CRASH_REPORT: 1
+      UNITY_NO_UPDATE_CHECK: 1
+      UNITY_NO_BANNER: 1
+    steps:
+      # What the test project reads: the package and the script that builds the project.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            Aspid.FastTools/Packages/tech.aspid.fasttools
+            scripts
+
+      - name: Install the Unity CLI
+        run: |
+          curl -fsSL https://unity.com/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/unity" --version
+
+      # The installed Editor, not the downloaded archives: restoring the folder skips both the download and the unpack.
+      - id: editor-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.EDITORS }}/${{ matrix.unity }}
+          key: unity-editor-${{ runner.os }}-${{ matrix.unity }}
+
+      - name: Install the Unity Editor
+        run: |
+          mkdir -p "$EDITORS"
+          unity install-path --set "$EDITORS"
+          if [ ! -x "$EDITORS/$UNITY/Editor/Unity" ]; then
+            unity install "$UNITY" --yes --accept-eula
+          fi
+          unity editors -i --format json
+          editor="$EDITORS/$UNITY/Editor/Unity"
+          if [ ! -x "$editor" ]; then
+            echo "::error::No Editor at $editor after the install; see the list above."
+            exit 1
+          fi
+          echo "UNITY_EDITOR=$editor" >> "$GITHUB_ENV"
+          du -sh "$EDITORS/$UNITY"
+          df -h "$EDITORS"
+
+      # Saved right after the install, so a failed test run still leaves the Editor cached for the next one.
+      - if: steps.editor-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.EDITORS }}/${{ matrix.unity }}
+          key: ${{ steps.editor-cache.outputs.cache-primary-key }}
+
+      - name: Create the test project
+        run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY"
+
+      # The client exits 0 also when Unity assigned no seat; only a "Seat ID:" line in its output means a seat. Unity
+      # sometimes assigns none when several jobs activate one account at once, so that case gets two more attempts.
+      # GitHub masks both secrets in the log.
+      - name: Activate the Personal license
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          client="$(dirname "$UNITY_EDITOR")/Data/Resources/Licensing/Client/Unity.Licensing.Client"
+          log="$RUNNER_TEMP/activate.log"
+          for attempt in 1 2 3; do
+            "$client" --activate-all --include-personal --username "$UNITY_EMAIL" --password "$UNITY_PASSWORD" 2>&1 | tee "$log" || true
+            if grep -q 'Seat ID:' "$log"; then exit 0; fi
+            if grep -qiE 'invalid (username|password|credentials)|two.?factor|verification code' "$log"; then break; fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "::warning::No Personal seat on attempt $attempt; trying again."
+              sleep $((30 * attempt))
+            fi
+          done
+          echo "::error::The Licensing Client assigned no Personal seat; see its output above."
+          exit 1
+
+      # Exit 8: the tests ran and some failed. Exit 6: no verdict (license, compile error, crash, timeout); that one
+      # gets a second attempt, as in ci.yml. The Editor log goes to a file next to the results.
+      - name: Run the EditMode tests
+        run: |
+          results="$GITHUB_WORKSPACE/unity-test-results"
+          for attempt in 1 2; do
+            code=0
+            unity test ci-unity-project --editor-path "$UNITY_EDITOR" --mode EditMode \
+              --report-format nunit,junit --output "$results/editmode-results.xml" --timeout 1200 --format github \
+              -- -nographics -aspidFastToolsStrictSetup -logFile "$results/editor-$attempt.log" || code=$?
+            echo "unity test exited with $code."
+            if [ "$code" -ne 0 ]; then
+              echo "::group::Editor log, last 200 lines"
+              tail -n 200 "$results/editor-$attempt.log" || true
+              echo "::endgroup::"
+            fi
+            if [ "$code" -ne 6 ] || [ "$attempt" -eq 2 ]; then exit "$code"; fi
+            echo "::warning::The test run gave no verdict (exit 6); trying once more."
+            sleep 30
+          done
+
+      # A Personal seat is an entitlement, not a .ulf: GameCI's log shows `--return-ulf` failing with "Ulf license file
+      # not found (1404)" and the Editor's -returnlicense handing the seat back. Both are tried in that order, and
+      # `unity license status` shows on either side whether the CLI itself sees the seat.
+      - name: Return the Personal license
+        if: always() && env.UNITY_EDITOR != ''
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          client="$(dirname "$UNITY_EDITOR")/Data/Resources/Licensing/Client/Unity.Licensing.Client"
+          log="$RUNNER_TEMP/return.log"
+          unity license status || true
+          "$client" --return-ulf 2>&1 | tee "$log" || true
+          if ! grep -q 'Successfully returned' "$log"; then
+            mkdir -p "$RUNNER_TEMP/return-license"
+            "$UNITY_EDITOR" -batchmode -nographics -quit -returnlicense -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
+              -projectPath "$RUNNER_TEMP/return-license" -logFile - 2>&1 | tee "$log" || true
+          fi
+          unity license status || true
+          if ! grep -q 'Successfully returned' "$log"; then
+            echo "::warning::The Personal seat may still be held; release it at https://id.unity.com."
+          fi
+
+      # The Editor log can name the account; the uploaded copy must not.
+      - name: Remove the account from the Editor logs
+        if: always()
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        run: |
+          [ -n "$UNITY_EMAIL" ] || exit 0
+          shopt -s nullglob
+          for f in unity-test-results/*.log; do perl -pi -e 's/\Q$ENV{UNITY_EMAIL}\E/***/g' "$f"; done
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: unity-cli-test-results-${{ matrix.unity }}
+          path: unity-test-results
