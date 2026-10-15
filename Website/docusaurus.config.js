@@ -14,7 +14,7 @@ import {INTRO_BOOT_SCRIPT} from './src/intro.js';
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
 const LOCALES = ['en', 'ru'];
 const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
-const ASSET_STORE = 'https://assetstore.unity.com/packages/slug/365584';
+const ASSET_STORE = 'https://assetstore.unity.com/packages/package/2333465';
 const BASE_URL = '/Aspid.FastTools/';
 /** The docs in the working tree describe the package version in the working tree. */
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json`, import.meta.url), 'utf8')).version;

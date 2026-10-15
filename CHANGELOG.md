@@ -131,6 +131,7 @@ First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releas
 
 ### Fixed
 
+- The **Asset Store** link and the logo of the Welcome tab open the package page on the Asset Store; they led to a page that does not exist.
 - Unity 6000.6 no longer warns on import that seven of the package's stylesheet `.meta` files are below the supported serialized version.
 - `InsertChildren` and `InsertChildrenIf` skip a `null` entry without moving the index: `InsertChildren(0, a, null, b)` puts `b` right after `a`; it used to leave a gap or throw `ArgumentOutOfRangeException` at the end of the parent.
 - `SetValue`, `SetValueAndApply` and `SetValueAndApplyWithoutUndo` compile again with a `byte`, `sbyte`, `short`, `ushort` or `char` argument on Unity 6000.2 and later: the `EntityId` overload made the call ambiguous (CS0121). Each of these types now has its own overload that calls `SetInt`.
