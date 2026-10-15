@@ -9,7 +9,8 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 namespace Aspid.FastTools.Editors.Tests
 {
     // A renamed or removed public member passes every other check and breaks users in a minor release. This test
-    // compares the public API of the package assemblies with PublicApi.txt; AGENTS.md says how to update the file.
+    // compares the public API of the package assemblies with PublicApi.txt; Aspid.FastTools/AGENTS.md says how to update
+    // the file.
     internal sealed class PublicApiSnapshotTests
     {
         private const string PackageName = "tech.aspid.fasttools";
@@ -82,7 +83,7 @@ namespace Aspid.FastTools.Editors.Tests
 
         private static string UpdateHint =>
             $"If the change is intended, run this test with {WriteVariable}=1 on Unity {WholeApiVersion} or newer " +
-            "and commit the file (AGENTS.md shows the command).";
+            "and commit the file (Aspid.FastTools/AGENTS.md shows the command).";
 
         private static List<string> GetAssemblyNames(string packagePath) =>
             new[] { "Runtime", "Editor" }

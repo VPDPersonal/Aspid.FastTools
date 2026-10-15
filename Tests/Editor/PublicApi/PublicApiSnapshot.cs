@@ -95,7 +95,7 @@ namespace Aspid.FastTools.Editors.Tests
         {
             var builder = new StringBuilder();
             builder.Append("# Public API of tech.aspid.fasttools, written by PublicApiSnapshotTests. Do not edit by hand.\n");
-            builder.Append("# Update it as AGENTS.md says: run the test with ASPID_FASTTOOLS_WRITE_PUBLIC_API=1.\n");
+            builder.Append("# Update it as Aspid.FastTools/AGENTS.md says: run the test with ASPID_FASTTOOLS_WRITE_PUBLIC_API=1.\n");
 
             foreach (var assembly in _assemblies)
             {
