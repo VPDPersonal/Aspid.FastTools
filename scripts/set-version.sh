@@ -5,7 +5,9 @@
 # AnalyzerReleases.Shipped.md. The [Unreleased] notes of CHANGELOG.md and CHANGELOG.ru.md become the version's
 # section, dated today, with its release link.
 # The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
-# from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one.
+# from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one. The skills
+# go out on every channel as the `skills/<version>` tag; the docs give its install command with a `<version>`
+# placeholder, so no file here names it.
 # Running it again with the version already set repairs files that drifted (a hand-edited package.json, say).
 #   scripts/set-version.sh 1.0.0-rc.9
 set -eu

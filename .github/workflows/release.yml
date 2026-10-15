@@ -2,10 +2,10 @@ name: Release
 
 # Publishes a release for a pushed v* tag. Everything is checked before anything is published:
 # first the checks of the tag (preflight), then every check and test of a pull request (ci.yml, Unity not skipped);
-# the upm branch and the UPM tag then go out in one atomic push (release), and the GitHub release is created last,
-# in its own job (github-release).
+# the upm and skills branches and their tags then go out in one atomic push (release), and the GitHub release is
+# created last, in its own job (github-release).
 # If a job fails, use "Re-run failed jobs", not "Re-run all jobs": the finished jobs are kept, and preflight would
-# refuse the UPM tag that the first run already published.
+# refuse the UPM and skills tags that the first run already published.
 # There is no manual run: the "Release tags" ruleset lets only admins create, move or delete v* tags, and a personal
 # repository cannot add the workflow token to the bypass list, so the workflow could not push the tag itself.
 
@@ -20,6 +20,10 @@ permissions:
 env:
   PACKAGE_PATH: Aspid.FastTools/Packages/tech.aspid.fasttools
   CHANGELOG_PATH: CHANGELOG.md
+  # The consumer skills go out as a subtree too: `npx skills add VPDPersonal/Aspid.FastTools#skills/<version>`
+  # clones only them, not the whole repository. Every version, preview or stable, moves the one skills branch.
+  SKILLS_PATH: skills
+  SKILLS_BRANCH: skills
 
 jobs:
   # The tag checks run first, so a wrong ref, version or CHANGELOG fails before CI starts. The version files and the
@@ -86,19 +90,32 @@ jobs:
           fi
           echo "Commit $(git rev-parse --short HEAD) is in main."
 
-      - name: Check the UPM tag does not already exist
+      - name: Check the UPM and skills tags do not already exist
         run: |
           set -euo pipefail
-          # The pushed v* tag is the trigger itself; only the UPM tag must be new.
-          T="$UPM_BRANCH/$VERSION"
-          if git rev-parse --verify --quiet "refs/tags/$T" >/dev/null; then
-            echo "::error::Tag $T already exists locally. Delete it or pick another version."
+          # The pushed v* tag is the trigger itself; only the UPM and skills tags must be new.
+          for T in "$UPM_BRANCH/$VERSION" "$SKILLS_BRANCH/$VERSION"; do
+            if git rev-parse --verify --quiet "refs/tags/$T" >/dev/null; then
+              echo "::error::Tag $T already exists locally. Delete it or pick another version."
+              exit 1
+            fi
+            if git ls-remote --exit-code --tags origin "$T" >/dev/null 2>&1; then
+              echo "::error::Tag $T already exists on origin. Refusing to overwrite a published tag."
+              exit 1
+            fi
+          done
+
+      # The subtree split publishes skills/ as it is, and `npx skills add` finds a skill by its SKILL.md.
+      # CI checks the skills themselves (check-skills.mjs); this catches a release without them.
+      - name: Check the skills folder
+        run: |
+          set -euo pipefail
+          COUNT=$(git ls-tree -r --name-only HEAD -- "$SKILLS_PATH" | grep -c '/SKILL.md$' || true)
+          if [[ "$COUNT" -eq 0 ]]; then
+            echo "::error::$SKILLS_PATH/ has no SKILL.md, so the $SKILLS_BRANCH/$VERSION tag would have no skills."
             exit 1
           fi
-          if git ls-remote --exit-code --tags origin "$T" >/dev/null 2>&1; then
-            echo "::error::Tag $T already exists on origin. Refusing to overwrite a published tag."
-            exit 1
-          fi
+          echo "$SKILLS_PATH/ has $COUNT skills."
 
       - name: Validate package.json version
         run: |
@@ -185,16 +202,22 @@ jobs:
           git add --force "$PACKAGE_PATH/CHANGELOG.md" "$PACKAGE_PATH/CHANGELOG.md.meta"
           git commit --quiet -m "chore(release): generate the package CHANGELOG for $TAG"
 
-      # One atomic push: the upm branch and the UPM tag are both published, or neither is.
-      - name: Publish UPM subtree
+      # One atomic push: the upm and skills branches and their tags are all published, or none is.
+      - name: Publish UPM and skills subtrees
         run: |
           set -euo pipefail
           UPM_TAG="$UPM_BRANCH/$VERSION"
-          SPLIT_SHA=$(git subtree split --prefix="$PACKAGE_PATH" HEAD)
-          echo "Subtree split SHA: $SPLIT_SHA"
-          git tag "$UPM_TAG" "$SPLIT_SHA"
-          git push --atomic origin "+$SPLIT_SHA:refs/heads/$UPM_BRANCH" "refs/tags/$UPM_TAG"
-          echo "Published $UPM_TAG and the $UPM_BRANCH branch."
+          SKILLS_TAG="$SKILLS_BRANCH/$VERSION"
+          UPM_SHA=$(git subtree split --prefix="$PACKAGE_PATH" HEAD)
+          SKILLS_SHA=$(git subtree split --prefix="$SKILLS_PATH" HEAD)
+          echo "UPM subtree split SHA: $UPM_SHA"
+          echo "Skills subtree split SHA: $SKILLS_SHA"
+          git tag "$UPM_TAG" "$UPM_SHA"
+          git tag "$SKILLS_TAG" "$SKILLS_SHA"
+          git push --atomic origin \
+            "+$UPM_SHA:refs/heads/$UPM_BRANCH" "refs/tags/$UPM_TAG" \
+            "+$SKILLS_SHA:refs/heads/$SKILLS_BRANCH" "refs/tags/$SKILLS_TAG"
+          echo "Published $UPM_TAG, $SKILLS_TAG and the $UPM_BRANCH and $SKILLS_BRANCH branches."
 
   # The gh CLI instead of a third-party action, which would run with this job's contents: write token.
   # A separate job: the tags are out when it starts, so a failure here is repaired with "Re-run failed jobs",

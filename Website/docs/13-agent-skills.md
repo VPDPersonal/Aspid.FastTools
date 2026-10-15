@@ -13,17 +13,17 @@ Ask your agent:
 
 ```text prompt
 Install the skills from VPDPersonal/Aspid.FastTools in the current project,
-not globally. Run npx skills add VPDPersonal/Aspid.FastTools#v<version>,
+not globally. Run npx skills add VPDPersonal/Aspid.FastTools#skills/<version>,
 where <version> is the version of the installed Aspid.FastTools package.
 ```
 
 Or run in the project root:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools#v<version>
+npx skills add VPDPersonal/Aspid.FastTools#skills/<version>
 ```
 
-Replace `<version>` with the version of the installed package: `1.0.0` becomes `#v1.0.0`. In the installer, choose the **Project** scope: a global install applies to every Unity project, whatever its package version.
+Replace `<version>` with the version of the installed package: `1.0.0` becomes `#skills/1.0.0`. In the installer, choose the **Project** scope: a global install applies to every Unity project, whatever its package version.
 
 ```text prompt
 Profile Simulate and the neighbor search
