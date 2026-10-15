@@ -11,7 +11,7 @@ const PACKAGE_JSON = 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json
 // Files that name the minimum in prose. Every full Unity version in them (6000.0.53f1) states the minimum, so a
 // second mention left on the old value fails too.
 const MENTIONS = [
-  'AGENTS.md',
+  'Aspid.FastTools/AGENTS.md',
   '.github/claude-review.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',
