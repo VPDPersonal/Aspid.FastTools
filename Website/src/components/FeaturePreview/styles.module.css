@@ -159,7 +159,6 @@ ul.names li + li { margin-top: 0; }
 /* The row whose call the snippet highlights; a resolved row keeps its label but not the highlight. */
 .names li[data-active] { background: color-mix(in srgb, var(--venom-accent-mark) 8%, transparent); border-color: color-mix(in srgb, var(--venom-accent-mark) 50%, var(--venom-line)); }
 .names code { display: inline-flex; flex: none; align-items: center; gap: 6px; max-width: 100%; overflow: hidden; padding: 0; color: var(--venom-muted); background: none; border: 0; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; vertical-align: baseline; transition: color 0.4s ease; }
-.namesIcon { display: inline-grid; flex: none; place-items: center; width: 15px; height: 15px; color: #2d6b39; background: #e6e6e6; border-radius: 3px; font: 700 10px/1 var(--ifm-font-family-monospace); }
 .names li[data-done] code { color: var(--venom-fg); }
 .namesArrow { color: var(--venom-divider); line-height: 1; transform: rotate(-90deg); transition: color 0.4s ease, transform 0.4s var(--preview-ease); }
 .names li[data-done] .namesArrow { transform: rotate(-90deg) translateY(2px); }
