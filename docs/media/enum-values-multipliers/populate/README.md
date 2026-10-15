@@ -1,10 +1,8 @@
-# Native macOS populate recording — revision 3
-
-Supersedes the v2 Populate GIF. The selector image comes from [native-selector](../native-selector/README.md).
+# Populate GIF: native macOS recording
 
 Real macOS context menu opened by right-clicking the genuine EnumValues PropertyField. Computer-use selected Populate Missing Enum Members and sent Cmd+Z. macOS screencapture recorded the screen region and actual cursor, including the native menu. No UI Toolkit replacement menu, painted menu or composited cursor.
 
-The in-memory DocumentationMedia.EnumMedia subject from v2 was reused with field width 475 and render scale 1.6, an 800×480 utility window. No scene or project assets were saved. The temporary window and object were removed after recording.
+The in-memory DocumentationMedia.EnumMedia subject from [`../subject.cs.txt`](../subject.cs.txt) is shown with field width 475 and render scale 1.6, an 800×480 utility window. No scene or project assets were saved. The temporary window and object were removed after recording.
 
 Source command: screencapture -x -v -C -k -V 35 -R190,104,780,352 native-menu.mov. Retina output is 1560×704. The crop excludes title bar and every other application. The original screen-region movie is in the private [Aspid.Media.Storage](https://github.com/VPDPersonal/Aspid.Media.Storage/tree/main/FastTools/Docs/enum-values-multipliers/v3) repository under `FastTools/Docs/enum-values-multipliers/v3/`; copy it next to `encode.sh` before you run it. Git ignores it here.
 
