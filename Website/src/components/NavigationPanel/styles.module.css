@@ -28,8 +28,6 @@
 .switcherItem:hover { color: var(--venom-fg-strong); background: var(--venom-glow-soft); text-decoration: none; }
 .switcherItemActive, .switcherItemActive:hover { color: var(--venom-accent); font-weight: 600; }
 /* Appearance menu: theme options, then the accent logos in one row. */
-.switcherOption { display: flex; align-items: center; gap: 0.6rem; width: 100%; border: 0; background: transparent; font-family: inherit; text-align: left; cursor: pointer; }
-.switcherOption svg { flex: none; width: 1.125rem; height: 1.125rem; }
 .menuSeparator { margin: 0.35rem 0.25rem; border-top: 1px solid var(--venom-line-strong); }
 .themeRow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem; padding: 0.1rem 0.35rem; }
 .themeOption { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 2rem; padding: 0 0.3rem; color: var(--venom-fg); background: transparent; border: 0; border-radius: 6px; font: 500 0.8125rem/1 var(--ifm-font-family-base); white-space: nowrap; cursor: pointer; transition: color 0.15s ease, background-color 0.15s ease, transform 0.12s ease; }

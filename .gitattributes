@@ -8,7 +8,5 @@
 *.jpg           binary
 *.gif           binary
 *.mp4           binary
-*.mov           binary
-*.mkv           binary
 *.ttf           binary
 *.woff2         binary

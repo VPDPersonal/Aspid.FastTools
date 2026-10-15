@@ -117,7 +117,7 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
   the webpack cache: after adding a sibling to an unchanged page, `npx docusaurus clear` before the build). Editor
   UI captures (Inspector, windows, pickers) are re-shot in Unity's light editor skin with the same steps; the
   FastTools window (Project/Asset References) switches to its light palette there too. Status badges are links,
-  not captures, and need none.
+  not captures, and need none; neither does a picture that `liveDiagrams.js` replaces with a component.
 - **Editor captures have no frame around them.** In `/docs` and `/tutorials` an image renders in a plain
   full-width wrapper (`doc-image-panel`, `src/theme/MDXComponents/Img`): no window, padding or shadow, the
   capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
@@ -145,7 +145,8 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
 - Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
 - A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
   (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
-  keeps the picture for GitHub; the caption paragraph must still repeat the alt text as plain text.
+  keeps the picture for GitHub, dark only: the site never shows it, so it has no light sibling. The caption paragraph
+  must still repeat the alt text as plain text.
 - A table can have a live site version the same way: `TABLES` in `liveDiagrams.js` maps its first body cell to a
   component (`SetPadding(8)` → `StyleSides`, the Styles table of VisualElement Extensions), which gets every row as
   `<StyleSidesRow call="…">` with the second cell as children. Markdown keeps the table, and the rows and their
