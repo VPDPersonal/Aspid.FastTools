@@ -6,108 +6,70 @@ Agent Skills for projects that consume the package in `skills/`.
 
 ## Never
 
-- Use Unity APIs newer than **6000.0.53f1** without a `#if UNITY_6000_x_OR_NEWER` guard — the dev project runs
-  6000.6, but `package.json` promises 6000.0.53f1. Unity has no define for a patch: an API from a later 6000.0 patch
-  needs a higher `unityRelease`.
-- Write to `Console` from generator or analyzer code, or reference `SourceGenerator.Foundations` —
-  it deadlocks Unity's compilation server.
+- Use Unity APIs newer than **6000.0.53f1** without a `#if UNITY_6000_x_OR_NEWER` guard. An API from a later 6000.0
+  patch needs a higher `unityRelease` instead.
+- Write to `Console` from generator or analyzer code, or reference `SourceGenerator.Foundations`.
+- Commit `com.unity.upm-publishing-tools` to the dev project manifest.
+- Use `UnityEngine.Input` in the dev project: it uses only the Input System.
 
-## Not obvious
+## Rules
 
-- A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
-  `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run. Commit the rebuilt DLL:
-  `ci.yml` fails when a committed DLL differs from a Release build of its sources. `PackagedAnalyzerTests` read the
-  committed DLLs, so after a change to a generator or an analyzer run the Release build first: only then do they judge
-  the new code.
-- `Aspid.FastTools.YamlTests/` runs the package's SerializeReference YAML engine and its tests outside Unity: it compiles
-  those package sources as-is (C# 9, Unity 6000.0's version; the engine against .NET Standard 2.1) and stubs only
-  `Debug.LogError` and `AssetDatabase.MakeEditable`, so a Unity API, a newer language feature or a newer .NET API added
-  to that engine breaks this project first. `Aspid.FastTools.TypeTests/` compiles `GenericTypeResolver`,
-  `GenericArgumentFilter` and `TypeUtility` with the resolver tests in the same way. It stubs only `UnityEngine.Object`
-  and `CompilationPipeline.GetAssemblies`, so a new Unity API in these three files breaks it. A test that needs the
-  Editor goes into its fixture's `*.Unity.cs` part, which both projects leave out; the Unity job runs it.
-- `Tests/Editor/PublicApi/PublicApi.txt` in the package is a snapshot of the public API, and `PublicApiSnapshotTests`
-  fails on any difference, so a removed or renamed member cannot reach a release unnoticed. After an intended API
-  change, rewrite the file on the Unity version that `WholeApiVersion` in the test names, or a newer one, and commit
-  its diff in the same PR. Write it from the throwaway project of `scripts/make-unity-test-project.sh`, which references
-  the package in place on any Unity version; a batch run cannot open the dev project while its Editor is open.
+- After a change to generator or analyzer source, run `dotnet build -c Release` in that solution and commit the
+  rebuilt DLL. Run it before `PackagedAnalyzerTests` too: they test the committed DLL.
+- The SerializeReference YAML engine (`Aspid.FastTools.YamlTests/`) and `GenericTypeResolver`, `GenericArgumentFilter`,
+  `TypeUtility` (`Aspid.FastTools.TypeTests/`) compile outside Unity: C# 9, .NET Standard 2.1 for the engine, and no
+  Unity API except the stubbed `Debug.LogError`, `AssetDatabase.MakeEditable`, `UnityEngine.Object` and
+  `CompilationPipeline.GetAssemblies`. A test that needs the Editor goes into its fixture's `*.Unity.cs` part.
+- `Tests/Editor/PublicApi/PublicApi.txt` in the package is the public API snapshot. After an intended API change,
+  rewrite it on the Unity version that `WholeApiVersion` in `PublicApiSnapshotTests` names, or a newer one, and commit
+  it in the same PR:
   `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" <version>)`, then
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity $v> -batchmode -nographics -projectPath "$p" -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "$p/public-api.xml"`.
-  An older Editor compiles only part of the API (the `UNITY_6000_x_OR_NEWER` guards), so there the test checks only
-  for additions. The `#if` around `HasWholeApi` in the test names the newest guard: move it and `WholeApiVersion`
-  when a public member gets a newer one. A diff that removes or changes a line of the file (not a `#` comment) is a
-  breaking change: `pr-checks.yml` fails a PR title without `!` before the colon, and the CHANGELOG entry goes under
-  Changed with a migration note. A line that only gains an interface or a base class (class and struct) or the `[Flags]`
-  of an enum does not count, and a PR that also changes `PublicApiSnapshot.cs` only gets a warning.
-- `Tests/Burst` (Burst jobs that call `this.Marker()`) compiles only where `com.unity.burst` is installed
-  (`versionDefines`): the dev project has it through URP, the project from `scripts/make-unity-test-project.sh`
-  does not, so CI skips it.
-- The version lives in `package.json`, the badge SVG and the badge alt text, release link and install URLs of both
-  READMEs, and the version's section of both CHANGELOGs; bump all of them with `scripts/set-version.sh <version>`,
-  which `ci.yml` checks (`scripts/check-version.mjs`) in every PR and in the release. The version also picks the channel,
-  and the script switches it: a prerelease installs from `#upm-preview` under a Preview badge, a stable version from
-  `#upm` under a Release one; the site derives `UPM_BRANCH` from the version. `/asp-ft-release <version>` runs the whole
-  release.
-- `skills/` is for **consumers** of the package and is installed with `npx skills add VPDPersonal/Aspid.FastTools`;
-  skills for working on this repo live in `.claude/skills/` and carry `metadata.internal: true` so that command does
-  not offer them. `scripts/check-skills.mjs` (CI, on every PR) checks every `SKILL.md` in the repository: a file outside
-  `skills/` must be internal, because the installer scans about 30 agent folders, an `AFT` code in a skill must be
+  When a public member gets a newer `UNITY_6000_x_OR_NEWER` guard, move the `#if` around `HasWholeApi` and
+  `WholeApiVersion` to it.
+- A PR that removes or changes a line of `PublicApi.txt` (not a `#` comment) is breaking: `!` before the colon in the
+  title, and a CHANGELOG entry under Changed with a migration note. A line that only gains an interface, a base class
+  or `[Flags]` is not.
+- `Tests/Burst` compiles only where `com.unity.burst` is installed; CI skips it.
+- Bump the version only with `scripts/set-version.sh <version>`. `/asp-ft-release <version>` runs the whole release,
+  the Asset Store upload included.
+- `skills/` holds skills for consumers of the package (`npx skills add VPDPersonal/Aspid.FastTools`). Skills for
+  working on this repo go into `.claude/skills/` with `metadata.internal: true`. An `AFT` code in a skill must be
   reported by an analyzer, and a namespace or assembly in a consumer skill must exist in the package. A skill that
   describes public API is updated in the same PR as that API.
-- `scripts/check-package-files.mjs` (CI) fails on a package path longer than 123 characters (the Asset Store Validator
-  limit is 140, counted from `Aspid/FastTools/`), on a `.cs.meta` outside `Samples~` without a `MonoImporter` block, on a
-  `.uss.meta` without a `ScriptedImporter` block or with importer id 12388. Unity writes the full block into every new
-  `.cs.meta` and `.uss.meta`, and a reserialize adds it to old ones, so the check keeps all of them in one format; an IDE
-  writes only the GUID, and Unity 6000.6 warns on such a `.uss.meta`. Unity rewrites id 12388 to 12385 when it imports
-  a sample.
-  It also fails on a file or folder without a `.meta` (`Samples~` content too), a `.meta` without an asset, a GUID used
-  twice, a sample path of `package.json` that is no folder, and an asmdef reference that is no asmdef of the package.
-  Unity repairs these in a local package and ignores or breaks them in an installed one. An asmdef that needs an assembly
-  from another package lists it in `EXTERNAL_ASSEMBLIES` of the script.
-- The minimum Unity version is `unity` and `unityRelease` in `package.json`. It is also written by hand in this file,
-  `.github/claude-review.md`, `.github/ISSUE_TEMPLATE/release_checklist.yml`, `skills/aspid-visual-element-fluent/SKILL.md`, the package `SETUP.md`
-  and the first Unity version of the matrix in `.github/workflows/ci.yml`; `scripts/check-unity-minimum.mjs` (CI) fails
-  when one differs.
-- `.github/workflows/ci.yml` holds every required check except the PR title and CHANGELOG (`pr-checks.yml`), and
-  `release.yml` runs it on the tagged commit. It has no path filter, so each of its jobs can be a required check. It runs
-  `check-package-files.mjs`, `check-version.mjs`, `check-unity-minimum.mjs`, `check-skills.mjs` and
-  `check-contrast.mjs`, compares the committed Roslyn DLLs with a Release build, runs `node --test scripts/*.test.mjs`,
-  the .NET tests and the Unity EditMode tests.
-  The script tests run `set-version.sh` on a copy of the repository and need `npm --prefix Website ci`.
-- `.claude/settings.json` is also loaded by the Claude agent in `claude.yml`, which keeps `GITHUB_TOKEN` in its
-  environment. Allow there only commands that cannot run code or read the environment; put the rest in
+- Package files (`scripts/check-package-files.mjs`): a path within 123 characters; a `.meta` for every file and folder
+  (`Samples~` too) and no `.meta` without an asset; unique GUIDs; a `MonoImporter` block in every `.cs.meta` outside
+  `Samples~`; a `ScriptedImporter` block with importer id 12385 in every `.uss.meta`; asmdef references only to asmdefs
+  of the package or to `EXTERNAL_ASSEMBLIES` of the script.
+- The minimum Unity version is `unity` and `unityRelease` in `package.json`. When it changes, update it by hand in this
+  file, `.github/claude-review.md`, `.github/ISSUE_TEMPLATE/release_checklist.yml`,
+  `skills/aspid-visual-element-fluent/SKILL.md`, the package `SETUP.md` and the first Unity version of the matrix in
+  `.github/workflows/ci.yml`.
+- A new required check goes into `.github/workflows/ci.yml`, without a path filter. The PR title and CHANGELOG checks
+  live in `pr-checks.yml`.
+- In `.claude/settings.json` allow only commands that cannot run code or read the environment; put the rest in
   `.claude/settings.local.json`.
-- A change to public API or to its XML docs reaches `Website/api/` **only** after `npm run api` in `Website/`; commit the
-  result in the same PR. CI cannot run it, because DocFX compiles against a local Unity install. The steps for a worktree
-  are in `.claude/skills/docs-site/references/api-reference.md`.
-- The Asset Store product is a UPM product on the UPM Publisher Portal, uploaded with Asset Store UPM Publishing Tools
-  (`com.unity.upm-publishing-tools`). Never commit that package to the dev project manifest: it resolves only for an
-  account that has it in **My Assets**, and one dependency that fails to download stops the whole package resolve, so
-  every other clone opens with an error. The release steps are in the `asp-ft-release` skill, section
-  "Asset Store upload".
-- The dev project uses only the Input System (`activeInputHandler: 1`, `com.unity.inputsystem`): `UnityEngine.Input`
-  throws there. `com.unity.pipeline` needs the package for its CLI input commands (`simulate_key`, pointer commands).
+- After a change to public API or its XML docs, run `npm run api` in `Website/` and commit `Website/api/` in the same
+  PR. Steps for a worktree: `.claude/skills/docs-site/references/api-reference.md`.
 
 ## Checks
 
-Run what applies before you open a PR. CI runs most of these (`ci.yml`, `docs.yml`).
+Run what applies before you open a PR.
 
 - Generators and analyzers: `dotnet test` in `Aspid.FastTools.Generators/` or `Aspid.FastTools.Analyzers/`.
 - YAML engine: `dotnet test Aspid.FastTools.YamlTests`.
 - Type resolver: `dotnet test Aspid.FastTools.TypeTests`.
-- Compile in the dev project with its Editor open: `unity command recompile`, then `unity command get_console_logs`
-  for the errors. It needs `com.unity.pipeline`, which the dev project manifest lists.
-- EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]` builds a throwaway
-  project, and its header shows the `-runTests` command. CI runs every version of its matrix.
-- Site, in `Website/`: `npm ci` first (a fresh worktree has no `node_modules`), then `npm run check-readme`,
-  `npm run check-translations`, `npm test` and `npm run build`.
+- Compile in the dev project with its Editor open: `unity command recompile`, then `unity command get_console_logs`.
+- EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]`; its header shows
+  the `-runTests` command.
+- Scripts: `npm --prefix Website ci && node --test scripts/*.test.mjs`.
+- Site, in `Website/`: `npm ci`, then `npm run check-readme`, `npm run check-translations`, `npm test` and
+  `npm run build`.
 - Skills: `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
 
 ## C# style beyond `.editorconfig`
 
 - Named arguments, even for a single obvious argument: `Type.GetType(_aqn, throwOnError: false)`.
 - `using` directives sorted by ascending line length, not alphabetically; `System` is not forced first.
-- Leaf classes are `sealed`; leave one open only when it is designed for inheritance. `internal` for implementation,
-  `public` for API.
-- Public API of the package carries XML docs (`<summary>`, `<param>`, `<returns>`, `<see cref/>`): the site's API
-  reference is generated from them.
+- Leaf classes are `sealed` unless designed for inheritance. `internal` for implementation, `public` for API.
+- Public API of the package carries XML docs (`<summary>`, `<param>`, `<returns>`, `<see cref/>`).
