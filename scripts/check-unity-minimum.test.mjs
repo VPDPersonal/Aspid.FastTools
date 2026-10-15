@@ -13,7 +13,7 @@ const script = fileURLToPath(new URL('check-unity-minimum.mjs', import.meta.url)
 const PACKAGE_JSON = 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json';
 const MATRIX = '.github/workflows/ci.yml';
 const MENTIONS = [
-  'AGENTS.md',
+  'Aspid.FastTools/AGENTS.md',
   '.github/claude-review.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',

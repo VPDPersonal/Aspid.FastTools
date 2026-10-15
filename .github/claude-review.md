@@ -5,7 +5,7 @@ the automatic review and the `@claude` replies. Edit the rules here, in one plac
 
 ## Always
 
-- Follow AGENTS.md: it holds the boundaries, the layout and the code rules.
+- Follow AGENTS.md and the `AGENTS.md` of the area a file is in: they hold the boundaries, the layout and the code rules.
 - Write replies, code, code comments and commit messages in English. Keep code identifiers as they are.
 
 ## When you review a pull request
@@ -13,7 +13,7 @@ the automatic review and the `@claude` replies. Edit the rules here, in one plac
 Check, in this order:
 
 1. Correctness: bugs and missed edge cases, with the input that breaks.
-2. Boundaries from AGENTS.md:
+2. Boundaries from the AGENTS.md files:
    - no Unity APIs newer than 6000.0.53f1 without a version guard;
    - no editor-only APIs reachable from runtime code;
    - generator and analyzer code does not write to `Console` and does not reference `SourceGenerator.Foundations`;
