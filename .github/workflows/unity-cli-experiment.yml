@@ -75,7 +75,7 @@ jobs:
             exit 1
           fi
           echo "UNITY_EDITOR=$editor" >> "$GITHUB_ENV"
-          du -sh "$EDITORS/$UNITY"
+          du -h -d 4 "$EDITORS/$UNITY" | sort -h | tail -n 25
           df -h "$EDITORS"
 
       # Saved right after the install, so a failed test run still leaves the Editor cached for the next one.
@@ -112,14 +112,18 @@ jobs:
 
       # Exit 8: the tests ran and some failed. Exit 6: no verdict (license, compile error, crash, timeout); that one
       # gets a second attempt, as in ci.yml. The Editor log goes to a file next to the results.
+      # The tests that open an EditorWindow or paint IMGUI need a graphics device: with -nographics 68 of them fail
+      # with "No graphic device is available to initialize the view". The Editor runs on a virtual X display instead,
+      # as in the GameCI image, whose unity-editor wrapper calls xvfb-run.
       - name: Run the EditMode tests
         run: |
           results="$GITHUB_WORKSPACE/unity-test-results"
           for attempt in 1 2; do
             code=0
-            unity test ci-unity-project --editor-path "$UNITY_EDITOR" --mode EditMode \
+            xvfb-run -a -s '-screen 0 1024x768x24' \
+              unity test ci-unity-project --editor-path "$UNITY_EDITOR" --mode EditMode \
               --report-format nunit,junit --output "$results/editmode-results.xml" --timeout 1200 --format github \
-              -- -nographics -aspidFastToolsStrictSetup -logFile "$results/editor-$attempt.log" || code=$?
+              -- -aspidFastToolsStrictSetup -logFile "$results/editor-$attempt.log" || code=$?
             echo "unity test exited with $code."
             if [ "$code" -ne 0 ]; then
               echo "::group::Editor log, last 200 lines"
@@ -131,27 +135,26 @@ jobs:
             sleep 30
           done
 
-      # A Personal seat is an entitlement, not a .ulf: GameCI's log shows `--return-ulf` failing with "Ulf license file
-      # not found (1404)" and the Editor's -returnlicense handing the seat back. Both are tried in that order, and
-      # `unity license status` shows on either side whether the CLI itself sees the seat.
+      # `unity license status` exits 0 while a license is active and 4 when none is, so it tells whether the seat is
+      # back. The CLI's own return is tried first; the Editor's -returnlicense, which GameCI uses, is the fallback.
+      # `Unity.Licensing.Client --return-ulf` cannot hand it back: a Personal seat is an entitlement, not a .ulf, and the
+      # client fails with "Ulf license file not found (1404)".
       - name: Return the Personal license
         if: always() && env.UNITY_EDITOR != ''
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
-          client="$(dirname "$UNITY_EDITOR")/Data/Resources/Licensing/Client/Unity.Licensing.Client"
-          log="$RUNNER_TEMP/return.log"
-          unity license status || true
-          "$client" --return-ulf 2>&1 | tee "$log" || true
-          if ! grep -q 'Successfully returned' "$log"; then
+          unity license status || exit 0
+          unity license return --yes || true
+          if unity license status; then
+            echo "::warning::unity license return left the seat active; returning it through the Editor."
             mkdir -p "$RUNNER_TEMP/return-license"
             "$UNITY_EDITOR" -batchmode -nographics -quit -returnlicense -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
-              -projectPath "$RUNNER_TEMP/return-license" -logFile - 2>&1 | tee "$log" || true
-          fi
-          unity license status || true
-          if ! grep -q 'Successfully returned' "$log"; then
-            echo "::warning::The Personal seat may still be held; release it at https://id.unity.com."
+              -projectPath "$RUNNER_TEMP/return-license" -logFile - || true
+            if unity license status; then
+              echo "::warning::The Personal seat may still be held; release it at https://id.unity.com."
+            fi
           fi
 
       # The Editor log can name the account; the uploaded copy must not.
