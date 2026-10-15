@@ -6,6 +6,7 @@
 # record.cs.txt writes the frames in Play Mode. Types starts right after Play Mode so its placed Archer (12 s lifetime)
 # is on screen: record both themes of a sample with this script back to back. EnumValues uses ../record.cs.txt
 # (titles kept, 60-frame warmup) and writes enum-values-<theme>.mkv one folder up.
+# The .mkv is ignored by Git: upload a new one to Aspid.Media.Storage, FastTools/Docs/sample-themes/.
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
 proj=$(cd "$1" && pwd); sample=$2; theme=$3

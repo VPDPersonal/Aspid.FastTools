@@ -6,7 +6,7 @@ Real macOS context menu opened by right-clicking the genuine EnumValues Property
 
 The in-memory DocumentationMedia.EnumMedia subject from v2 was reused with field width 475 and render scale 1.6, an 800×480 utility window. No scene or project assets were saved. The temporary window and object were removed after recording.
 
-Source command: screencapture -x -v -C -k -V 35 -R190,104,780,352 native-menu.mov. Retina output is 1560×704. The crop excludes title bar and every other application. The original screen-region movie is preserved here.
+Source command: screencapture -x -v -C -k -V 35 -R190,104,780,352 native-menu.mov. Retina output is 1560×704. The crop excludes title bar and every other application. The original screen-region movie is in the private [Aspid.Media.Storage](https://github.com/VPDPersonal/Aspid.Media.Storage/tree/main/FastTools/Docs/enum-values-multipliers/v3) repository under `FastTools/Docs/enum-values-multipliers/v3/`; copy it next to `encode.sh` before you run it. Git ignores it here.
 
 encode.sh retains source intervals 4.5–6.4, 11.4–15, and 24.7–27.5 seconds, removing idle time while retaining opening, selecting and Undo transitions. 8.3-second GIF, 20 fps, 256 colors, sierra2_4a. No spatial rescaling, recoloring or added cursor. Native macOS menu and cursor are intentionally included at the user's request.
 
