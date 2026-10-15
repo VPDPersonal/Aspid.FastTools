@@ -27,7 +27,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity: [6000.0.53f1]
+        # The versions of ci.yml. All of them start at once, as there: on the bare runner each job is a new machine
+        # and asks for a seat of its own, while the GameCI container reuses one machine id ("SameMachine").
+        unity: [6000.0.53f1, 6000.1.17f1, 6000.2.15f1, 6000.3.26f1, 6000.4.12f1, 6000.5.11f1, 6000.6.5f1]
     env:
       UNITY: ${{ matrix.unity }}
       # The CLI release this job was measured with. install.sh verifies the binary against that release's manifest.
@@ -75,11 +77,13 @@ jobs:
             exit 1
           fi
           echo "UNITY_EDITOR=$editor" >> "$GITHUB_ENV"
-          du -h -d 4 "$EDITORS/$UNITY" | sort -h | tail -n 25
+          du -h -d 4 "$EDITORS/$UNITY" | sort -h | tail -n 8
+          du -h -d 1 "$EDITORS/$UNITY/Editor/Data/Resources/PackageManager" | sort -h
           df -h "$EDITORS"
 
       # Saved right after the install, so a failed test run still leaves the Editor cached for the next one.
-      - if: steps.editor-cache.outputs.cache-hit != 'true'
+      # One entry is 4.5 GB and the repository holds 10 GB, so only the minimum version is cached here.
+      - if: steps.editor-cache.outputs.cache-hit != 'true' && matrix.unity == '6000.0.53f1'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.EDITORS }}/${{ matrix.unity }}
@@ -136,9 +140,9 @@ jobs:
           done
 
       # `unity license status` exits 0 while a license is active and 4 when none is, so it tells whether the seat is
-      # back. The CLI's own return is tried first; the Editor's -returnlicense, which GameCI uses, is the fallback.
-      # `Unity.Licensing.Client --return-ulf` cannot hand it back: a Personal seat is an entitlement, not a .ulf, and the
-      # client fails with "Ulf license file not found (1404)".
+      # back. Neither CLI route returns a Personal seat: `unity license return` answers "free Personal licenses can't
+      # be returned", and `Unity.Licensing.Client --return-ulf` fails with "Ulf license file not found (1404)", since
+      # the seat is an entitlement and not a .ulf. The Editor's -returnlicense does it, as in GameCI.
       - name: Return the Personal license
         if: always() && env.UNITY_EDITOR != ''
         env:
@@ -146,15 +150,11 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
           unity license status || exit 0
-          unity license return --yes || true
+          mkdir -p "$RUNNER_TEMP/return-license"
+          "$UNITY_EDITOR" -batchmode -nographics -quit -returnlicense -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
+            -projectPath "$RUNNER_TEMP/return-license" -logFile - || true
           if unity license status; then
-            echo "::warning::unity license return left the seat active; returning it through the Editor."
-            mkdir -p "$RUNNER_TEMP/return-license"
-            "$UNITY_EDITOR" -batchmode -nographics -quit -returnlicense -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" \
-              -projectPath "$RUNNER_TEMP/return-license" -logFile - || true
-            if unity license status; then
-              echo "::warning::The Personal seat may still be held; release it at https://id.unity.com."
-            fi
+            echo "::warning::The Personal seat may still be held; release it at https://id.unity.com."
           fi
 
       # The Editor log can name the account; the uploaded copy must not.
