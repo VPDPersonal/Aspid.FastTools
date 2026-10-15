@@ -341,11 +341,12 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
 - The root README gets GitHub's version of the site's introduction blocks (`scripts/github-readme.mjs`, tested in
   `github-readme.test.mjs`): doc-page and samples-overview links open the site; the link row's site link becomes
   `Documentation: EN, RU`; the install instruction becomes a card (the recorded InstallPanel walk-through beside its
-  steps) and the note under the URL links the site's install panel for versions and channels; an image with a `-light` sibling becomes a `<picture>` per
-  GitHub theme; each feature becomes a card (a one-row table: preview, then title, summary and «Read more»); the
+  steps) and the note under the URL links the site's install panel for versions and channels; each feature becomes a card (a one-row table: preview, then title, summary and «Read more»); the
   Resources list becomes a row of tiles and the help section the SupportPanel call to action without the licence line.
-  A code preview gives way to the recording of the site's animated preview, `docs/images/readme-previews/<name>[-light].webp`.
-  After a change to `FeaturePreview`, the InstallPanel walk-through, the site theme or the install channel (the
+  A code preview gives way to the recording of the site's animated preview, `docs/images/readme-previews/<name>.webp`.
+  The README shows only dark images: a `<picture>` per theme follows the system theme, not GitHub's, so the generator
+  drops the `-light` siblings and the recorder records the dark theme only.
+  After a change to `FeaturePreview`, the InstallPanel walk-through, the site's dark theme or the install channel (the
   walk-through types its URL), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
   (`docs/media/readme-previews/README.md`), then run `sync-readme`.
 - `npm --prefix Website run check-translations` (CI) checks that every English page has a Russian twin and that the twin

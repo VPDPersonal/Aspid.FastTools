@@ -57,18 +57,16 @@ test('the note under the install URL links the install panel on the site', () =>
 
 test('the install instruction becomes a card with the walk-through and the steps', () => {
   const install = '## Installation\n\nIn **Window → Package Manager**, paste this URL:\n\n```text\nhttps://github.com/owner/repo.git#upm\n```\n\nThe URL installs the latest release.\n';
-  const files = ['docs/images/readme-previews/install.webp', 'docs/images/readme-previews/install-light.webp'];
-  const result = layout(install, files);
-  assert.match(result, /^## Installation\n\n<table>\n<tr>\n<td width="56%"><picture>.*srcset="docs\/images\/readme-previews\/install-light.webp"><img src="docs\/images\/readme-previews\/install.webp"/);
+  const result = layout(install, ['docs/images/readme-previews/install.webp']);
+  assert.match(result, /^## Installation\n\n<table>\n<tr>\n<td width="56%"><img src="docs\/images\/readme-previews\/install.webp"/);
   assert.match(result, /<ol>\n<li>Open <b>Window → Package Manager<\/b><\/li>\n.*\n<li>Paste the URL and press <b>Install<\/b><\/li>\n<\/ol>/);
   assert.match(result, /<\/table>\n\n```text\nhttps:\/\/github.com\/owner\/repo.git#upm\n```/);
   assert.match(layout(install), /^## Installation\n\nIn \*\*Window → Package Manager\*\*, paste this URL:/);
 });
 
-test('a feature becomes a card with a themed preview, its summary as HTML', () => {
+test('a feature becomes a card with its dark preview only, its summary as HTML', () => {
   const result = layout(features, ['Images/enum-light.gif']);
-  assert.match(result, /### Serialization\n\n<table>\n<tr>\n<td width="56%"><picture>/);
-  assert.match(result, /<source media="\(prefers-color-scheme: light\)" srcset="Images\/enum-light.gif"><img src="Images\/enum.gif" alt="Populate rows" width="100%"><\/picture>/);
+  assert.match(result, /### Serialization\n\n<table>\n<tr>\n<td width="56%"><img src="Images\/enum.gif" alt="Populate rows" width="100%"><\/td>/);
   assert.match(result, /<p>Maps enum keys to <code lang="class-name">T<\/code> values/);
   assert.match(result, /<p><a href="https:\/\/site.test\/docs\/enum-values">Read more →<\/a><\/p>\n<\/td>\n<\/tr>\n<\/table>/);
   assert.doesNotMatch(result, /####/);
@@ -96,7 +94,8 @@ test('the help section becomes the call to action, without the licence line', ()
     + '<p><a href="https://github.com/owner/repo/issues"><b>Open an issue</b></a> · <a href="https://github.com/owner/repo">Star on GitHub</a></p>\n');
 });
 
-test('an image without a light sibling and the banner stay as they are', () => {
+test('images and the banner stay as they are, without a light variant', () => {
   const banner = '<picture>\n  <source srcset="a.webp" />\n  <img src="a.png" alt="Banner" />\n</picture>';
   assert.match(layout(`${banner}\n\n![Badge](badge.svg)`, ['a-light.png']), /<img src="a.png" alt="Banner" \/>\n<\/picture>\n\n!\[Badge\]\(badge.svg\)/);
+  assert.doesNotMatch(layout('![Shot](shot.png)', ['shot-light.png']), /picture|light/);
 });

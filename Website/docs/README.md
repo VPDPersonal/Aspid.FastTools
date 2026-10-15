@@ -1,6 +1,5 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="../../docs/images/aspid_fasttools_readme_banner_dark.webp" />
-  <source media="(prefers-color-scheme: light)" srcset="../../docs/images/aspid_fasttools_readme_banner_light.webp" />
+  <source srcset="../../docs/images/aspid_fasttools_readme_banner_dark.webp" />
   <img src="../../docs/images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 

@@ -3,10 +3,11 @@
 The root README cannot run the introduction's animated feature previews (`Website/src/components/FeaturePreview`) or
 the install panel's Package Manager walk-through (`Website/src/components/InstallPanel`), so
 `Website/scripts/github-readme.mjs` shows a recording of each one in its card:
-`docs/images/readme-previews/<name>[-light].webp`, `install` for the walk-through.
+`docs/images/readme-previews/<name>.webp`, `install` for the walk-through. Only the dark theme: a `<picture>` per
+theme follows the system theme, not GitHub's, so the README shows no light variants.
 
 `record.mjs` opens the built introduction in headless Chrome on virtual time and records one loop of each preview
-at 2x in the green accent, per theme: 20 fps, the Profiler's scrolling timeline 12.5 fps. `img2webp` encodes it
+at 2x in the green accent and the dark theme: 20 fps, the Profiler's scrolling timeline 12.5 fps. `img2webp` encodes it
 losslessly: lossy WebP leaves ghosts of earlier frames on these flat interfaces. The Profiler's timeline takes mixed
 frames (q 90) instead, which keeps it near 2 MB. Each loop length comes from the preview's `useLoop` steps (the
 Profiler's ticker for ProfilerMarkers, `DURATIONS` in `InstallPanel` for the walk-through); update `PREVIEWS` when they

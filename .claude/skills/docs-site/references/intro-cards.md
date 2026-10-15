@@ -1,13 +1,15 @@
 # Introduction feature cards
 
-There is no landing page: `/` redirects to `/docs`. The README banner is a `<picture>`: an animated 1280×384 WebP per
-GitHub theme (`docs/images/aspid_fasttools_readme_banner_dark.webp`, `…_light.webp`), and the static 2560×768 PNG
+There is no landing page: `/` redirects to `/docs`. The README banner is a `<picture>`: an animated 1280×384 WebP
+(`docs/images/aspid_fasttools_readme_banner_dark.webp`), and the static 2560×768 PNG
 (`aspid_fasttools_readme_banner.png`, the green dark variant) as its `<img>`, all linked by relative paths. The PNG is
 designed on the «README banner» page of the «FastTools Asset Store» Design canvas: one board per accent and theme. The
 WebPs are recorded from this site's banner in the green accent: 640 px wide (the narrow layout) at 2x, by a CDP
 screencast of headless Chrome resampled to 25 fps. They show the calm state, not the entrance: 9 s from 1.6 s after the
 logo closes, with the run light pinned to 1.4 s and a blink to 4 s, and the last second crossfaded into the first, an
-8 s loop (`img2webp -lossy -q 70 -m 6`, about 0.6 MB each). The image has no page around it, so for the recording the
+8 s loop (`img2webp -lossy -q 70 -m 6`, about 0.6 MB). The README has only the dark variant of the banner and the
+feature previews: a `<picture>` per theme follows the system theme, not GitHub's, and showed light images on a dark
+GitHub page. The site's images keep their light siblings. The image has no page around it, so for the recording the
 banner's `__ambient` layer reaches 320 px past each side (`left`/`right: -320px`): the glow's side slopes fall outside
 the frame and inside it the glow runs from edge to edge, while the site keeps the slopes. The canvas shows them in its
 «Animated» row. The plugin

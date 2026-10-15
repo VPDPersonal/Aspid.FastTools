@@ -1,6 +1,6 @@
 // Records the introduction's animated feature previews (Website/src/components/FeaturePreview) and the install panel's
 // Package Manager walk-through (Website/src/components/InstallPanel) from a built site into looping WebPs for the GitHub
-// README: docs/images/readme-previews/<name>[-light].webp. Headless Chrome runs on
+// README: docs/images/readme-previews/<name>.webp, in the dark theme only. Headless Chrome runs on
 // virtual time, so every frame lands on its exact timestamp however slow the capture is.
 //   Website/scripts/serve-all.sh
 //   node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [name …]
@@ -108,8 +108,8 @@ const once = (method, sessionId) => new Promise((resolve) => {
   listeners.add(listener);
 });
 
-/** Opens the English introduction in `theme`, with virtual time paused once it has loaded. */
-async function open(theme) {
+/** Opens the English introduction in the dark theme, with virtual time paused once it has loaded. */
+async function open() {
   const {targetId} = await send('Target.createTarget', {url: 'about:blank'});
   const {sessionId} = await send('Target.attachToTarget', {targetId, flatten: true});
   const page = (method, params) => send(method, params, sessionId);
@@ -118,7 +118,7 @@ async function open(theme) {
   // The entrance has played, so the banner rests. The frame of a card or the install panel, its rounded corner and the
   // line between preview and text go: on GitHub the table cell is the frame.
   await page('Page.addScriptToEvaluateOnNewDocument', {source: `
-    localStorage.setItem('theme', '${theme}');
+    localStorage.setItem('theme', 'dark');
     sessionStorage.setItem('aspid-intro-played', '1');
     addEventListener('DOMContentLoaded', () => document.head.insertAdjacentHTML('beforeend', '<style>'
       + '.feature-card { border: 0 !important; border-radius: 0 !important; }'
@@ -173,13 +173,11 @@ async function record(tab, doc, file) {
 
 try {
   fs.mkdirSync(OUT, {recursive: true});
-  for (const theme of ['dark', 'light']) {
-    // A fresh page per preview: each one's loop starts on its own scroll into view.
-    for (const doc of docs) {
-      const tab = await open(theme);
-      await record(tab, doc, path.join(OUT, `${doc}${theme === 'light' ? '-light' : ''}.webp`));
-      await tab.close();
-    }
+  // A fresh page per preview: each one's loop starts on its own scroll into view.
+  for (const doc of docs) {
+    const tab = await open();
+    await record(tab, doc, path.join(OUT, `${doc}.webp`));
+    await tab.close();
   }
 } finally {
   socket.close();

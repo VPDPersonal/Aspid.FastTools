@@ -9,8 +9,9 @@
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
- * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line;
- * - an image with a `-light` sibling becomes a <picture> per GitHub theme.
+ * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line.
+ * The README shows only the dark images: a <picture> per theme follows the system theme, not GitHub's, so it showed the
+ * light ones on a dark GitHub page.
  * All file URLs are already relative to the README.
  */
 
@@ -51,14 +52,8 @@ function inline(nodes) {
   }).join('');
 }
 
-/** `alt` is HTML already. The light sibling follows the site's naming: `x.gif` and `x-light.gif`. */
-function themedImage(src, alt, exists, size = '') {
-  const image = `<img src="${src}" alt="${alt}"${size}>`;
-  const light = src.replace(/(\.\w+)$/, '-light$1');
-  if (!exists(light)) return image;
-  return `<picture><source media="(prefers-color-scheme: dark)" srcset="${src}">`
-    + `<source media="(prefers-color-scheme: light)" srcset="${light}">${image}</picture>`;
-}
+/** `alt` is HTML already. */
+const image = (src, alt, size = '') => `<img src="${src}" alt="${alt}"${size}>`;
 
 /** `Website/docs/09-profiler-markers.md#x` → `<site>docs/profiler-markers#x`; the samples overview → `<site>tutorials`. */
 function siteLinks(node, site) {
@@ -97,7 +92,7 @@ function installCard(tree, {previews, exists}) {
   const file = `${previews}/install.webp`;
   if (index === -1 || !exists(file)) return;
   const steps = TEXT.steps.map((step) => `<li>${step}</li>`).join('\n');
-  tree.children[index + 1] = html(`<table>\n<tr>\n<td width="56%">${themedImage(file, TEXT.walkthrough, exists, ' width="100%"')}</td>\n`
+  tree.children[index + 1] = html(`<table>\n<tr>\n<td width="56%">${image(file, TEXT.walkthrough, ' width="100%"')}</td>\n`
     + `<td width="44%">\n<ol>\n${steps}\n</ol>\n</td>\n</tr>\n</table>`);
 }
 
@@ -124,20 +119,19 @@ function card(heading, summary, preview, options) {
     + (url ? `<p><a href="${url}">${TEXT.more} →</a></p>\n` : '')
     + '</td>\n</tr>\n</table>';
   const size = ' width="100%"';
-  let image;
+  let media;
   if (preview.type === 'html') {
     const {src, alt = ''} = attributes(preview.value);
-    image = themedImage(src, alt, options.exists, size);
+    media = image(src, alt, size);
   } else {
     // `…/docs/profiler-markers` → `profiler-markers`, the key of the site's FeaturePreview.
     const doc = link?.url.replace(/[#?].*$/, '').replace(/^.*\//, '').replace(/^\d+-/, '').replace(/\.md$/, '');
     const file = doc && recording(doc, options);
-    if (file) image = themedImage(file, escape(link.children.map((part) => part.value ?? '').join('')), options.exists, size);
+    if (file) media = image(file, escape(link.children.map((part) => part.value ?? '').join('')), size);
   }
-  // The preview is not a link: GitHub keeps a <picture> working only outside one, as the banner is.
   const open = '<table>\n<tr>\n<td width="56%">';
   // Without a recording the code stays a fenced block; the blank lines around it let GitHub parse it inside the cell.
-  return image ? [html(`${open}${image}${body}`)] : [html(open), preview, html(body)];
+  return media ? [html(`${open}${media}${body}`)] : [html(open), preview, html(body)];
 }
 
 /** On GitHub the features are grouped sections: a linked heading, a sentence and a preview. */
@@ -197,24 +191,6 @@ function supportPanel(tree, repository) {
     html(`<p>${TEXT.support} ${TEXT.hint}</p>\n<p><a href="${issues}"><b>${TEXT.issue}</b></a> · <a href="${repository}">${TEXT.star}</a></p>`));
 }
 
-/** Every other image with a light sibling: the README's `<img>` tags and Markdown images. */
-function themedImages(node, exists) {
-  node.children?.forEach((child, index) => {
-    if (child.type === 'html' && !child.value.includes('<picture')) {
-      child.value = child.value.replace(/<img\b[^>]*>/g, (tag) => {
-        const {src, alt = ''} = attributes(tag);
-        const light = src?.replace(/(\.\w+)$/, '-light$1');
-        if (!light || !exists(light)) return tag;
-        return `<picture><source media="(prefers-color-scheme: dark)" srcset="${src}">`
-          + `<source media="(prefers-color-scheme: light)" srcset="${light}">${tag}</picture>`;
-      });
-    } else if (child.type === 'image' && exists(child.url.replace(/(\.\w+)$/, '-light$1'))) {
-      node.children[index] = html(themedImage(escape(child.url), escape(child.alt ?? ''), exists));
-    } else {
-      themedImages(child, exists);
-    }
-  });
-}
 
 /**
  * @param tree the README's Markdown tree, its file URLs relative to the README
@@ -232,5 +208,4 @@ export function githubLayout(tree, options) {
   featureCards(tree, options);
   linkTiles(tree);
   supportPanel(tree, options.repository);
-  themedImages(tree, options.exists);
 }
