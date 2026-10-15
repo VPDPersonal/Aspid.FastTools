@@ -107,9 +107,12 @@ jobs:
             else if (m && current.includes('breaking-change')) remove.add('breaking-change');
 
             const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: pr.number });
-            for (const { filename } of files)
+            for (const { filename } of files) {
               for (const [prefix, label] of AREAS)
                 if (filename.startsWith(prefix)) add.add(label);
+              // A nested AGENTS.md is agent configuration wherever it lives.
+              if (filename.endsWith('/AGENTS.md')) add.add('area: claude');
+            }
             // An area no changed file reaches any more (the PR moved on) loses its label.
             for (const label of new Set(AREAS.map(([, area]) => area)))
               if (current.includes(label) && !add.has(label)) remove.add(label);

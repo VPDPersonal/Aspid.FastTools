@@ -28,6 +28,8 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 
 ## Checks
 
+From the repository root:
+
 - Compile in the dev project with its Editor open: `unity command recompile`, then `unity command get_console_logs`.
 - EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]`; its header shows
   the `-runTests` command.

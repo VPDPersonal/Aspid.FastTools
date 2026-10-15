@@ -16,7 +16,7 @@ import {
 
 const HEADER = [
   '# Public API of tech.aspid.fasttools, written by PublicApiSnapshotTests. Do not edit by hand.',
-  '# Update it as AGENTS.md says: run the test with ASPID_FASTTOOLS_WRITE_PUBLIC_API=1.',
+  '# Update it as Aspid.FastTools/AGENTS.md says: run the test with ASPID_FASTTOOLS_WRITE_PUBLIC_API=1.',
   '',
 ];
 
