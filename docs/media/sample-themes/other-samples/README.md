@@ -8,4 +8,4 @@ The Ability Catalog states in `catalog/<theme>/` are grabs of the real AbilityCa
 
 The ProfilerMarkers page's `profiler-markers.png` / `profiler-markers-light.png` (1102 × 242, the column header and the six Flock rows) are 2x grabs of the real Profiler window, CPU module in Hierarchy view, from a hidden batch-mode Editor in the dark and light editor skins; `profiler-hierarchy.cs.txt` has the step, the column widths and the crop. Both skins show the same recorded frame, so even the timings match.
 
-Run `python3 docs/media/sample-themes/other-samples/encode.py` from any directory to reproduce the scene GIFs and the Ability Catalog gallery previews. GIFs use 256 colors and sierra2_4a dithering. Existing media GUIDs are preserved.
+Run `python3 docs/media/sample-themes/other-samples/encode.py` from any directory to reproduce the scene GIFs and the Ability Catalog gallery previews. GIFs use 256 colors and sierra2_4a dithering.

@@ -12,4 +12,4 @@ The superseded populate GIF was made as follows. The native menu was observed th
 
 encode.sh crops x=10 y=30 width=1190, height=390. No recolouring, compositing, resizing or field edits.
 
-Light Editor skin was checked: the current package uses a dark stylesheet even with light Editor text, making labels unreadable. Keep the original dark capture for both website themes; do not fabricate a light sibling. Original dark Unity skin was restored; temporary windows and objects removed. Active scene remained SerializeReferences, clean, outside Play Mode; selection originally empty.
+This recipe makes the dark capture only. The site's light theme shows `enum-values-multipliers-quick-start-light.png`, a separate capture in Unity's light Editor skin (the docs-site skill requires a light twin for every image); no recipe for it is kept here. `scripts/frame-doc-captures.sh` frames both files. Temporary windows and objects removed; the active scene stayed clean, outside Play Mode.
