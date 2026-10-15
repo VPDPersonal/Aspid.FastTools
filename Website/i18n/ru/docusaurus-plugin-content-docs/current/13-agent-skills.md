@@ -13,17 +13,17 @@
 
 ```text prompt
 Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект,
-не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#v<version>,
+не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#skills/<version>,
 где <version> — версия установленного пакета Aspid.FastTools.
 ```
 
 Или выполните в корне проекта:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools#v<version>
+npx skills add VPDPersonal/Aspid.FastTools#skills/<version>
 ```
 
-Замените `<version>` версией установленного пакета: `1.0.0` даёт `#v1.0.0`. В установщике выберите область **Project**: глобальная установка действует во всех Unity-проектах, какая бы версия пакета в них ни стояла.
+Замените `<version>` версией установленного пакета: `1.0.0` даёт `#skills/1.0.0`. В установщике выберите область **Project**: глобальная установка действует во всех Unity-проектах, какая бы версия пакета в них ни стояла.
 
 ```text prompt
 Замерь Simulate и отдельно поиск соседей
