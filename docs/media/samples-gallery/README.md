@@ -4,7 +4,9 @@ The cards of `/tutorials` (`Website/src/components/SamplesGallery`) use themed i
 
 - **Scenes** (EnumValues, Types, SerializeReferences, ProfilerMarkers): `python3 docs/media/samples-gallery/scenes.py`
   writes looping `Website/static/img/samples/<slug>(-light).gif` pairs from the lossless recordings in
-  `docs/media/sample-themes`. Each pair uses the same 16:9 crop and start frame, at 1024×576 and 20 fps,
+  `docs/media/sample-themes`. Those `.mkv` files are not in this repository: copy them from the private
+  [Aspid.Media.Storage](https://github.com/VPDPersonal/Aspid.Media.Storage/tree/main/FastTools/Docs/sample-themes)
+  repository, `FastTools/Docs/sample-themes/`, into the same folders first. Each pair uses the same 16:9 crop and start frame, at 1024×576 and 20 fps,
   with 256 colors and sierra2_4a dithering. Backgrounds match `--venom-reading-surface`; rerun when that token changes.
   EnumValues uses `enum-values-dark.mkv` and `enum-values-light.mkv`, each with 355 frames (17.75 s).
   Both cropped recordings are placed at (169, 270) in camera space and start at frame 29 (zero-based).

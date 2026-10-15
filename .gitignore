@@ -13,3 +13,7 @@
 # Generated at release by scripts/package-changelog.mjs; only the upm branches carry it.
 /Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md
 /Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md.meta
+
+# Capture masters live in the private Aspid.Media.Storage repository, under FastTools/Docs/.
+/docs/media/**/*.mkv
+/docs/media/**/*.mov
