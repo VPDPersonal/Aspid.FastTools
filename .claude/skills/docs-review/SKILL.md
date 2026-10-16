@@ -25,11 +25,14 @@ A review checks one page and proposes changes. The first pass never edits anythi
    the source folders and the claims to check. If not, follow "Check without the agent".
 7. Compare the page with the Introduction and ProfilerMarkers: lead, quick start, density and visuals.
 8. Send the review in the format below. Do not edit yet.
-9. When the user answers, apply what they accepted to both languages. Rebuild and check the page.
-10. Then the user goes section by section. A stated decision is a "yes": edit at once and rebuild.
-11. If a remark is ambiguous, state your reading in one line and apply it. Ask only on «что думаешь».
-12. A user remark can apply to other pages too, and no rule may cover it yet. Then propose a rule in one line.
-13. Add the rule to `docs-site` only after the user's yes. A remark about one page only stays a page edit.
+
+## After the review
+
+When the user answers, apply what they accepted to both languages, then rebuild and check the page. The user then
+goes section by section: a stated decision is a "yes", so edit at once and rebuild. If a remark is ambiguous, state
+your reading in one line and apply it; ask only on «что думаешь». When a remark could apply to other pages and no
+rule covers it yet, propose a rule in one line and add it to `docs-site` only after the user's yes. A remark about
+one page only stays a page edit.
 
 ## Check without the agent
 
