@@ -1,14 +1,17 @@
+# Local editor and agent state.
 .claude/settings.local.json
-.worktrees/
 .claude/worktrees/
+/Aspid.FastTools/.codex/
 .zed/
 .DS_Store
+
+# `npm install --no-save js-yaml@4` for scripts/check-skills.mjs runs at the root.
+/node_modules/
 
 # UPM convention: `Samples~` is hidden from Unity importer but must be tracked.
 # Override global `*~` ignore.
 !Samples~/
 !Samples~/**
-/Aspid.FastTools/.codex/
 
 # Generated at release by scripts/package-changelog.mjs; only the upm branches carry it.
 /Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md
