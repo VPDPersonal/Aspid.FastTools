@@ -104,7 +104,7 @@ body:
     attributes:
       label: 8. USS / visuals
       options:
-        - label: USS class names follow BEM (`aspid-editor-component` skill)
+        - label: USS class names follow BEM (`asp-ft-editor-component` skill)
         - label: Base palette `Aspid-FastTools-Default-Dark.uss` loads first; `--aspid-icons-*` resolve
         - label: Checked in Dark and Light editor theme — no unreadable text
 
