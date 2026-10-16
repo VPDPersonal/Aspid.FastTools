@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <_TypeSources>$(MSBuildThisFileDirectory)../../Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/Scripts/Types/</_TypeSources>
+        <_TypeSources>$(MSBuildThisFileDirectory)../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/Scripts/Types/</_TypeSources>
     </PropertyGroup>
 
     <ItemGroup>

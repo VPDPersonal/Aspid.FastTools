@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <_YamlSources>$(MSBuildThisFileDirectory)../../Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/Scripts/SerializeReferences/Yaml/</_YamlSources>
+        <_YamlSources>$(MSBuildThisFileDirectory)../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Editor/Scripts/SerializeReferences/Yaml/</_YamlSources>
     </PropertyGroup>
 
     <ItemGroup>

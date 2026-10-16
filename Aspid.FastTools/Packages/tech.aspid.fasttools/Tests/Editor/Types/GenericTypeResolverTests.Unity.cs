@@ -18,7 +18,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
     }
 #pragma warning restore CS0169
 
-    // The tests of this fixture that need Unity or the package's Editor assembly. Aspid.FastTools.TypeTests runs the
+    // The tests of this fixture that need Unity or the package's Editor assembly. DotnetTests/Types runs the
     // rest without Unity and leaves the *.Unity.cs parts out.
     internal sealed partial class GenericTypeResolverTests
     {

@@ -32,7 +32,7 @@ committed DLLs differ from a Release build.
 ## Tests
 
 Run `dotnet test` in `Aspid.FastTools.Generators/` and `Aspid.FastTools.Analyzers/`, and
-`dotnet test Aspid.FastTools.YamlTests` and `dotnet test Aspid.FastTools.TypeTests` in the repository root. Package
+`dotnet test DotnetTests/Yaml` and `dotnet test DotnetTests/Types` in the repository root. Package
 tests run in **Window → General → Test Runner → EditMode**. Add a test for every behavior change a test project can reach.
 
 ## CHANGELOG and docs
