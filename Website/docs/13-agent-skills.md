@@ -48,7 +48,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git?path=/Aspid.FastTools/Package
 Then install the skills without a tag:
 
 ```bash
-npx skills add https://github.com/VPDPersonal/Aspid.FastTools/tree/main/skills
+npx skills add VPDPersonal/Aspid.FastTools/skills
 ```
 
 The skills used to ship as the `aspid-fasttools` Claude Code plugin. If you have it, remove it with `/plugin uninstall aspid-fasttools@aspid-claude-plugins`: it teaches the agent API that no longer exists.
