@@ -10,3 +10,7 @@ description: Explore Aspid.FastTools samples in Unity.
 import SamplesGallery from '@site/src/components/SamplesGallery';
 
 <SamplesGallery />
+
+## Render pipelines
+
+The scenes use their own unlit shader and a solid camera background, so they look the same in the Built-in Render Pipeline and URP. HDRP draws them darker, over its default sky. For the authored look in HDRP, select **Main Camera**, set **Background Type** to **Color** and **Background Color** to `#060A0F`, then add a global Volume with **Tonemapping → Mode** set to **None** and **Bloom → Intensity** set to `0`.

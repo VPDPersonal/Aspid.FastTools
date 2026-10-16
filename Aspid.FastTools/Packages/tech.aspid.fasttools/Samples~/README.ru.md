@@ -12,6 +12,10 @@
 | [EditorTools](EditorTools/Documentation/README.ru.md) | Окно редактора и инспектор: fluent-расширения `VisualElement`, сеттеры `SerializedProperty`, editor-хелперы, `TypeSelectorWindow` |
 | [ProfilerMarkers](ProfilerMarkers/Documentation/README.ru.md) | Симуляция стаи: сгенерированное дерево маркеров в Profiler |
 
+## Render pipeline
+
+Сцены используют собственный unlit-шейдер и однотонный фон камеры, поэтому в Built-in Render Pipeline и URP выглядят одинаково. HDRP рисует их темнее, поверх своего неба по умолчанию. Чтобы вернуть исходный вид в HDRP, выберите **Main Camera**, задайте **Background Type** = **Color** и **Background Color** = `#060A0F`, а затем добавьте глобальный Volume с **Tonemapping → Mode** = **None** и **Bloom → Intensity** = `0`.
+
 ## Тема для записи
 
 Откройте `Tools → Aspid 🐍 → FastTools → Sample Themes` и выберите **Light**, **Dark** или **Authored**. Предпросмотр работает в сценах EnumValues, Types, SerializeReferences и ProfilerMarkers, в том числе в Play Mode; **Authored** возвращает исходные цвета сцены.

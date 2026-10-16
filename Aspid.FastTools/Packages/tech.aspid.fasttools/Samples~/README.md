@@ -12,6 +12,10 @@ The samples are listed in the recommended learning order; each can also be explo
 | [EditorTools](EditorTools/Documentation/README.md) | An editor window and inspector: fluent `VisualElement` extensions, `SerializedProperty` setters, editor helpers, `TypeSelectorWindow` |
 | [ProfilerMarkers](ProfilerMarkers/Documentation/README.md) | A flock simulation: the generated marker tree in the Profiler |
 
+## Render pipelines
+
+The scenes use their own unlit shader and a solid camera background, so they look the same in the Built-in Render Pipeline and URP. HDRP draws them darker, over its default sky. For the authored look in HDRP, select **Main Camera**, set **Background Type** to **Color** and **Background Color** to `#060A0F`, then add a global Volume with **Tonemapping → Mode** set to **None** and **Bloom → Intensity** set to `0`.
+
 ## Theme preview
 
 Open `Tools → Aspid 🐍 → FastTools → Sample Themes` and choose **Light**, **Dark**, or **Authored**. The preview works in the EnumValues, Types, SerializeReferences and ProfilerMarkers scenes, including Play Mode; **Authored** restores the scene’s original colors.
