@@ -68,7 +68,7 @@ Do every step without questions. Stop at the first failure and report it.
 13. Open the PR with the `asp-pr` skill. Title: `chore(release): v<version>`. Body: the channel and the version's
     CHANGELOG section in one line.
 
-    The `asp-commit` and `asp-pr` skills come from the `asp-git` plugin that `.claude/settings.json` enables.
+    The `asp-commit` and `asp-pr` skills are copies from Aspid.AgentKit in `.claude/skills/`, see `skills-lock.json`.
     Without them, use `git commit`, `git push` and `gh pr create`, and follow `.claude/asp-pr.md`.
 14. Send the report (format below). The user merges the PR. **Stable:** the merge waits for the Asset Store
     publication, see "Asset Store upload".
