@@ -16,6 +16,6 @@ In scope:
 
 - The package code in `Runtime/` and `Editor/`, for example unsafe handling of project files (the SerializeReference YAML engine rewrites scenes, prefabs and assets) or of serialized type names.
 - The Roslyn generator and analyzer DLLs that the package ships, which run inside the compiler.
-- The release pipeline: the workflows in `.github/workflows/`, the `upm` and `upm-preview` branches, and committed DLLs that do not match their sources.
+- The release pipeline: the workflows in `.github/workflows/`, the `upm`, `upm-preview`, `skills` and `skills-preview` branches, and committed DLLs that do not match their sources.
 
 Out of scope: bugs with no security impact (open an [issue](https://github.com/VPDPersonal/Aspid.FastTools/issues)) and vulnerabilities in Unity or other packages (report them to their owners).
