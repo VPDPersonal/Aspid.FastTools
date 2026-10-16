@@ -21,9 +21,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую.
 
-**Установили из Asset Store?** Пропустите этот раздел: пакет уже в проекте. Asset Store и git URL ставят один и тот же пакет, `tech.aspid.fasttools`, поэтому в проекте может быть только один из них: чтобы сменить источник, сначала удалите пакет в **Window → Package Manager** (**In Project**).
-
-### Решение проблем
+**Установили из Asset Store?** Пропустите шаги выше: пакет уже в проекте. Asset Store и git URL ставят один и тот же пакет, `tech.aspid.fasttools`, поэтому в проекте может быть только один из них: чтобы сменить источник, сначала удалите пакет в **Window → Package Manager** (**In Project**).
 
 **В Console появляется `Assembly with name 'Aspid.FastTools' already exists`.** В проекте есть вторая копия пакета, например копия его папки в `Assets`. Удалите копию и оставьте пакет в Package Manager.
 

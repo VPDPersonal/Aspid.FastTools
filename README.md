@@ -34,9 +34,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
 
-**Installed from the Asset Store?** Skip this section: the package is already in your project. The Asset Store and the git URL install the same package, `tech.aspid.fasttools`, so the project holds only one of them: to switch the source, remove the package in **Window → Package Manager** (**In Project**) first.
-
-### Troubleshooting
+**Installed from the Asset Store?** Skip the steps above: the package is already in your project. The Asset Store and the git URL install the same package, `tech.aspid.fasttools`, so the project holds only one of them: to switch the source, remove the package in **Window → Package Manager** (**In Project**) first.
 
 **The Console shows `Assembly with name 'Aspid.FastTools' already exists`.** The project has a second copy of the package, for example a copy of its folder under `Assets`. Delete the copy and keep the package in the Package Manager.
 
