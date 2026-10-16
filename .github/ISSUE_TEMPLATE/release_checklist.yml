@@ -68,7 +68,6 @@ body:
       label: 4. Source generators
       options:
         - label: "ProfilerMarkersGenerator — unique marker per (type, method, line); `.WithName(literal)` & `$\"...\"` work; same-line dedup"
-        - label: Incremental cache intact — editing an unrelated file does not trigger regeneration
 
   - type: checkboxes
     id: mathematics
