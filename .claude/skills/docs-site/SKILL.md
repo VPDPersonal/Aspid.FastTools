@@ -125,8 +125,11 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
   exactly that. A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (recoloured background).
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
 - Read `references/images.md` before you re-shoot or add an Inspector, picker or window capture (cropping with
-  `scripts/frame-doc-captures.sh`), add a scene sample (`SCENE_SAMPLES`), or edit a page whose picture, table or
-  ordered list has a live site version (`liveDiagrams.js`): changing the key text there detaches the component.
+  `scripts/frame-doc-captures.sh`), add a scene sample (`SCENE_SAMPLES`), or add a live site version.
+- **Keyed live versions** (`Website/src/remark/liveDiagrams.js`): renaming or rewording the key detaches the component
+  silently. Today they are the `agent-skills-*.svg` pictures of Agent Skills, `profiler-markers-hierarchy.svg` of
+  ProfilerMarkers, the first cell `SetPadding(8)` of the Styles table in VisualElement Extensions, and the bold first
+  step `Tools → Aspid 🐍 → FastTools → Project References` of the SerializeReference Tooling quick start.
 
 ## Writing a feature page (docs/)
 

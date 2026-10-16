@@ -1,11 +1,11 @@
 # Site design: accents, fonts, Prism
 
-Details behind the Design rules of the `docs-site` skill.
+Details behind the Design rules of the `docs-site` skill. Paths are relative to `Website/`.
 
 ## Accents
 
 The reader can switch the accent from the default green to red, blue, yellow or mono in the sidebar footer appearance
-menu, next to the theme (`NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
+menu, next to the theme (`src/components/NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
 `html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. The accent's favicon is set on the plain
 `<link rel="icon">` in `headTags`, not on the `favicon` field: React Helmet owns that field's tag and resets it on every
 navigation.

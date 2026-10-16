@@ -1,6 +1,7 @@
 # Images: cropping, scenes and live versions
 
-Details behind the Images rules of the `docs-site` skill.
+Details behind the Images rules of the `docs-site` skill. Paths starting with `src/` are relative to `Website/`;
+`scripts/` and `docs/media` are at the repository root.
 
 - **Inspector and picker captures are cropped in the file, not in CSS.** `scripts/frame-doc-captures.sh` crops each
   listed capture (both themes) to its component and adds an 8px margin that continues Unity's background, the
@@ -11,11 +12,11 @@ Details behind the Images rules of the `docs-site` skill.
   themselves; the other listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
   On doc pages the site pads every listed capture on to 8px from its rounded frame, drawing it as a border image so
   the margin's bands meet the edge without a seam; `docusaurus.config.js` reads the list and `PAD` from the script
-  (`customFields.framedCaptures`), so a new row needs nothing else. The introduction's cards do the same in `custom.css`.
+  (`customFields.framedCaptures`), so a new row needs nothing else. The introduction's cards do the same in `src/css/custom.css`.
   Whole-window captures (`aspid_fasttools_serialize_reference_*` from the SerializeReferences DocsMedia harness) keep
-  the window's 24px margin; doc pages crop it to the same 8px (`WINDOW_CAPTURES` in `MDXComponents/Img`), so a new
+  the window's 24px margin; doc pages crop it to the same 8px (`WINDOW_CAPTURES` in `src/theme/MDXComponents/Img`), so a new
   window capture is added to that pattern.
-- Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
+- Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `src/remark/themedImages.js` (folder names under
   `Website/tutorials/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
   and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
 - Click or Enter opens the image in a modal (Esc closes). Bare images are capped at 640×520;
