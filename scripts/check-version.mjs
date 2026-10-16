@@ -1,5 +1,6 @@
 // Check that the files scripts/set-version.sh writes carry the package.json version whole and its channel: a stable
-// version installs from `upm` under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one.
+// version installs from `upm` under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one; the
+// Agent Skills page installs the skills from the matching `skills` or `skills-preview` branch.
 // Both CHANGELOGs must have the version's section, dated as set-version.sh writes it, and its release link.
 // The version is matched whole, so 1.0.0 does not pass on a file that still says 1.0.0-rc.8.
 // ci.yml (in every PR and in the release) and scripts/set-version.sh run it:
@@ -16,11 +17,17 @@ const FILES = [
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
   'Website/docs/Images/status-badge-preview.svg',
 ];
+const SKILLS_PAGES = [
+  'Website/docs/13-agent-skills.md',
+  'Website/i18n/ru/docusaurus-plugin-content-docs/current/13-agent-skills.md',
+];
 const CHANGELOGS = ['CHANGELOG.md', 'Website/i18n/ru/CHANGELOG.md'];
 const REPOSITORY = 'https://github.com/VPDPersonal/Aspid.FastTools';
 
 const version = JSON.parse(readFileSync(`${PKG}/package.json`, 'utf8')).version ?? '';
-const [branch, label] = version.includes('-') ? ['upm-preview', 'Preview'] : ['upm', 'Release'];
+const [branch, label, skills] = version.includes('-')
+  ? ['upm-preview', 'Preview', 'skills-preview']
+  : ['upm', 'Release', 'skills'];
 const fix = `run scripts/set-version.sh ${version}`;
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const whole = (text) => new RegExp(`(^|[^0-9A-Za-z.-])${escape(text)}([^0-9A-Za-z.-]|$)`);
@@ -45,6 +52,13 @@ for (const file of FILES) {
   }
   if (!text.includes(`/releases/tag/v${version})`)) fail(file, `the badge does not link the v${version} release; ${fix}`);
   checkInstallUrls(file, text);
+}
+
+for (const file of SKILLS_PAGES) {
+  const channels = [...readFileSync(file, 'utf8').matchAll(/Aspid\.FastTools#(skills(?:-preview)?)\b/g)].map((match) => match[1]);
+  if (!channels.length || channels.some((channel) => channel !== skills)) {
+    fail(file, `the skills install commands must use #${skills} for ${version}; ${fix}`);
+  }
 }
 
 for (const file of CHANGELOGS) {

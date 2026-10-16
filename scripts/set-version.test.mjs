@@ -15,6 +15,7 @@ const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const ANALYZER_RELEASES = 'Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/AnalyzerReleases';
 const DOCS = 'Website/docs/README.md';
 const RU_DOCS = 'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md';
+const SKILLS_PAGES = ['Website/docs/13-agent-skills.md', 'Website/i18n/ru/docusaurus-plugin-content-docs/current/13-agent-skills.md'];
 const BADGE = 'Website/docs/Images/status-badge-preview.svg';
 const RELEASES = 'https://github.com/VPDPersonal/Aspid.FastTools/releases/tag';
 const FILES = [
@@ -31,6 +32,7 @@ const FILES = [
   DOCS,
   RU_DOCS,
   BADGE,
+  ...SKILLS_PAGES,
 ];
 // The analyzer rules that a stable release ships; the real file may be empty right after a release.
 const UNSHIPPED = [
@@ -96,6 +98,7 @@ function assertVersionChecked(dir) {
 
 const version = (dir) => JSON.parse(read(dir, `${PACKAGE}/package.json`)).version;
 const installBranches = (text) => [...text.matchAll(/\.git#(upm(?:-preview)?)\b/g)].map((match) => match[1]);
+const skillsChannels = (text) => [...text.matchAll(/Aspid\.FastTools#(skills(?:-preview)?)\b/g)].map((match) => match[1]);
 const snapshot = (dir) => FILES.map((file) => read(dir, file)).concat(read(dir, `${ANALYZER_RELEASES}.Unshipped.md`));
 
 test('the repository files pass the version check as they are', (t) => {
@@ -113,6 +116,7 @@ test('a prerelease moves the files to the preview channel', (t) => {
     assert.match(read(dir, file), /\[!\[Preview 1\.0\.0-rc\.99\]/, file);
     assert.deepEqual([...new Set(installBranches(read(dir, file)))], ['upm-preview'], file);
   }
+  for (const file of SKILLS_PAGES) assert.deepEqual([...new Set(skillsChannels(read(dir, file)))], ['skills-preview'], file);
   assert.match(read(dir, BADGE), />Preview<\/text>/);
   assert.match(read(dir, 'README.md'), /Preview 1\.0\.0-rc\.99/);
 
@@ -139,6 +143,7 @@ test('a stable version moves the files to the release channel and ships the anal
     assert.doesNotMatch(read(dir, file), /\[!\[Preview /, file);
     assert.deepEqual([...new Set(installBranches(read(dir, file)))], ['upm'], file);
   }
+  for (const file of SKILLS_PAGES) assert.deepEqual([...new Set(skillsChannels(read(dir, file)))], ['skills'], file);
   assert.match(read(dir, BADGE), />Release<\/text>/);
   assert.match(read(dir, 'CHANGELOG.md'), /^## \[99\.0\.0\] — \d{4}-\d{2}-\d{2}$/m);
 

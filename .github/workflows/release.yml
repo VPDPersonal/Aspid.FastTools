@@ -20,10 +20,10 @@ permissions:
 env:
   PACKAGE_PATH: Aspid.FastTools/Packages/tech.aspid.fasttools
   CHANGELOG_PATH: CHANGELOG.md
-  # The consumer skills go out as a subtree too: `npx skills add VPDPersonal/Aspid.FastTools#skills/<version>`
-  # clones only them, not the whole repository. Every version, preview or stable, moves the one skills branch.
+  # The consumer skills go out as a subtree too, on the channel of the package: `skills-preview` next to
+  # `upm-preview`, `skills` next to `upm`. `npx skills add VPDPersonal/Aspid.FastTools#skills-preview` clones only
+  # them, and `npx skills update` follows the channel's releases, never main; `#skills-preview/<version>` pins one.
   SKILLS_PATH: skills
-  SKILLS_BRANCH: skills
 
 jobs:
   # The tag checks run first, so a wrong ref, version or CHANGELOG fails before CI starts. The version files and the
@@ -39,6 +39,7 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       prerelease: ${{ steps.version.outputs.prerelease }}
       upm-branch: ${{ steps.version.outputs.upm-branch }}
+      skills-branch: ${{ steps.version.outputs.skills-branch }}
       notes: ${{ steps.notes.outputs.notes }}
 
     steps:
@@ -54,9 +55,11 @@ jobs:
           if [[ "$VERSION" == *-* ]]; then
             PRERELEASE=true
             UPM_BRANCH=upm-preview
+            SKILLS_BRANCH=skills-preview
           else
             PRERELEASE=false
             UPM_BRANCH=upm
+            SKILLS_BRANCH=skills
           fi
           # Validated as SemVer above, so the later steps and the release job can read these.
           {
@@ -64,12 +67,14 @@ jobs:
             echo "TAG=v$VERSION"
             echo "PRERELEASE=$PRERELEASE"
             echo "UPM_BRANCH=$UPM_BRANCH"
+            echo "SKILLS_BRANCH=$SKILLS_BRANCH"
           } >> "$GITHUB_ENV"
           {
             echo "version=$VERSION"
             echo "tag=v$VERSION"
             echo "prerelease=$PRERELEASE"
             echo "upm-branch=$UPM_BRANCH"
+            echo "skills-branch=$SKILLS_BRANCH"
           } >> "$GITHUB_OUTPUT"
           echo "Releasing v$VERSION"
 
@@ -176,6 +181,7 @@ jobs:
       TAG: ${{ needs.preflight.outputs.tag }}
       PRERELEASE: ${{ needs.preflight.outputs.prerelease }}
       UPM_BRANCH: ${{ needs.preflight.outputs.upm-branch }}
+      SKILLS_BRANCH: ${{ needs.preflight.outputs.skills-branch }}
 
     steps:
       - name: Checkout repository
