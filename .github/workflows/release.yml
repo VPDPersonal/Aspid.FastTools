@@ -73,10 +73,13 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "Releasing v$VERSION"
 
+      # The checks below need every commit and tag, and no blob outside the tagged commit: the blob filter skips the
+      # history of the DLLs and media.
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          filter: blob:none
 
       # A v* tag can be pushed on any commit, for example one of an open PR. Only a commit that main already contains
       # is published. This catches a mistake, not abuse: the workflow file comes from the tagged commit.
@@ -93,13 +96,10 @@ jobs:
       - name: Check the UPM and skills tags do not already exist
         run: |
           set -euo pipefail
-          # The pushed v* tag is the trigger itself; only the UPM and skills tags must be new.
+          # The pushed v* tag is the trigger itself; only the UPM and skills tags must be new. The checkout fetched
+          # every tag of origin a moment ago, and the atomic push of the release job refuses an existing tag anyway.
           for T in "$UPM_BRANCH/$VERSION" "$SKILLS_BRANCH/$VERSION"; do
             if git rev-parse --verify --quiet "refs/tags/$T" >/dev/null; then
-              echo "::error::Tag $T already exists locally. Delete it or pick another version."
-              exit 1
-            fi
-            if git ls-remote --exit-code --tags origin "$T" >/dev/null 2>&1; then
               echo "::error::Tag $T already exists on origin. Refusing to overwrite a published tag."
               exit 1
             fi
