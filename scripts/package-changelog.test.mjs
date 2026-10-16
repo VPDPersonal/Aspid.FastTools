@@ -46,8 +46,8 @@ test('a link that leaves the package points at main, or at the given tag', (t) =
 });
 
 test('a link into the package becomes relative to the package', (t) => {
-  assert.equal(generate(t, `[Setup](${PKG}/SETUP.md) and [samples](${PKG}/Samples~/Intro/README.md).\n`).text,
-    '[Setup](SETUP.md) and [samples](Samples~/Intro/README.md).\n');
+  assert.equal(generate(t, `[License](${PKG}/LICENSE.md) and [samples](${PKG}/Samples~/Intro/README.md).\n`).text,
+    '[License](LICENSE.md) and [samples](Samples~/Intro/README.md).\n');
 });
 
 test('an absolute URL, a root path, an anchor and a mail link stay as they are', (t) => {

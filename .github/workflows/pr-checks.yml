@@ -55,7 +55,6 @@ jobs:
               [PKG + 'Tests/Editor/', 'area: editor'],
               [PKG + 'Samples~/', 'area: samples'],
               [PKG + 'README.md', 'area: docs'],
-              [PKG + 'SETUP.md', 'area: docs'],
               ['Aspid.FastTools.Generators/', 'area: generator'],
               ['Aspid.FastTools.Analyzers/', 'area: analyzer'],
               ['DotnetTests/Yaml/', 'area: editor'],
