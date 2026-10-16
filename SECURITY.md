@@ -2,7 +2,7 @@
 
 ## Report a vulnerability
 
-Report it privately through the [new advisory form](https://github.com/VPDPersonal/Aspid.FastTools/security/advisories/new), not in a public issue, discussion or pull request. Include the package version, the Unity version, the steps to reproduce and what an attacker gains.
+Report a vulnerability privately through the [new advisory form](https://github.com/VPDPersonal/Aspid.FastTools/security/advisories/new), not in a public issue, discussion or pull request. Include the package version, the Unity version, the steps to reproduce and what an attacker gains.
 
 A confirmed vulnerability is fixed in a new release and published as a GitHub security advisory that credits you, unless you prefer to stay anonymous. Please keep the details private until that release is out.
 
