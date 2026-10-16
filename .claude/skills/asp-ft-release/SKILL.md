@@ -3,8 +3,6 @@ name: asp-ft-release
 description: Release an Aspid.FastTools version end to end. Phase 1 opens the release PR (CHANGELOG section, version files, local tests, Unity EditMode); the user merges it. Phase 2 pushes the v<version> tag after the user's yes and checks what the Release workflow published. The version alone picks the channel. - `/asp-ft-release 1.0.0-rc.9`, `/asp-ft-release 1.0.0`.
 argument-hint: <version>
 disable-model-invocation: true
-metadata:
-  internal: true
 ---
 
 # Release
@@ -67,9 +65,6 @@ Do every step without questions. Stop at the first failure and report it.
 12. Commit with the `asp-commit` skill. Message: `chore(release): v<version>`.
 13. Open the PR with the `asp-pr` skill. Title: `chore(release): v<version>`. Body: the channel and the version's
     CHANGELOG section in one line.
-
-    The `asp-commit` and `asp-pr` skills come from the `asp-git` plugin that `.claude/settings.json` enables.
-    Without them, use `git commit`, `git push` and `gh pr create`, and follow `.claude/asp-pr.md`.
 14. Send the report (format below). The user merges the PR. **Stable:** the merge waits for the Asset Store
     publication, see "Asset Store upload".
 

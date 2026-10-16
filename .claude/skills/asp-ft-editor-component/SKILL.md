@@ -1,8 +1,6 @@
 ---
 name: asp-ft-editor-component
 description: "Adding or changing an internal UI Toolkit editor component of the Aspid.FastTools package (Editor/Scripts/VisualElements/Internal: AspidLabel, AspidBox, AspidDividingLine and the rest) - element class, preset struct, fluent extensions, ThemeStyle/StatusStyle, USS-driven style structs, stylesheet. For work on this repository only."
-metadata:
-  internal: true
 ---
 
 # Internal editor component

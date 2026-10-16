@@ -5,14 +5,5 @@
       "Bash(unity command editor_status *)",
       "Bash(unity command get_console_logs *)"
     ]
-  },
-  "extraKnownMarketplaces": {
-    "aspid": {
-      "source": { "source": "github", "repo": "VPDPersonal/Aspid.AgentKit" },
-      "autoUpdate": true
-    }
-  },
-  "enabledPlugins": {
-    "asp-git@aspid": true
   }
 }

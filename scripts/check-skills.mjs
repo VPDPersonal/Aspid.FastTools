@@ -1,7 +1,6 @@
 // Check every SKILL.md of the repository:
 // - the frontmatter, with a strict YAML parser, as the skills installer and the agents read it;
-// - the `internal` mark: the installer (`npx skills add`) scans about 30 agent folders (.claude/skills, .agents/skills,
-//   ...), so any SKILL.md outside skills/ must be internal, or it reaches users;
+// - no `internal` mark on a consumer skill: `npx skills add` skips such a skill;
 // - the analyzer codes (AFT0001) that the skills mention: each one must be reported by an analyzer;
 // - the namespaces and assemblies (Aspid.FastTools.Types) that the consumer skills mention: each one must exist in the
 //   package.
@@ -46,7 +45,7 @@ for (const root of SKILL_ROOTS) {
 
 for (const file of skillFiles) {
   const name = basename(dirname(file));
-  const internal = dirname(dirname(file)) !== CONSUMER_ROOT;
+  const consumer = dirname(dirname(file)) === CONSUMER_ROOT;
   const match = readFileSync(file, 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
   if (!match) {
     fail(file, 'no YAML frontmatter');
@@ -64,12 +63,9 @@ for (const file of skillFiles) {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name) || name.length > 64) fail(file, 'name must be kebab-case, at most 64 characters');
   if (typeof data?.description !== 'string' || !data.description.trim()) fail(file, 'description is missing');
   else if (Buffer.byteLength(data.description) > 1024) fail(file, 'description exceeds 1024 bytes');
-  // `npx skills add` skips skills marked internal: a skill outside skills/ must carry the mark, a consumer skill must not.
-  if ((data?.metadata?.internal === true) !== internal) {
-    fail(file, internal
-      ? 'a SKILL.md outside skills/ needs `metadata: internal: true`, or `npx skills add` offers it to users'
-      : 'consumer skill must not be internal');
-  }
+  // The docs install skills only from skills/ (the release subtree or its path on main), so repo skills need no mark.
+  // `npx skills add` skips a skill marked internal, so a consumer skill must not carry it.
+  if (consumer && data?.metadata?.internal === true) fail(file, 'consumer skill must not be internal');
 }
 
 // A skill that names a removed analyzer code sends the agent to a rule that does not exist.
