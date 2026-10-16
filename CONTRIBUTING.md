@@ -2,28 +2,25 @@
 
 ## Before you start
 
-- **A bug:** open an issue with the Bug report form. Give the Unity version, the package version and the steps to reproduce.
-- **A new feature or a large change:** open a [discussion](https://github.com/VPDPersonal/Aspid.FastTools/discussions) first, so you do not write code the package will not take.
-- **A small fix, a typo or a docs correction:** send a pull request directly.
-- **A security problem:** do not open an issue. Follow [SECURITY.md](SECURITY.md).
+Pull requests are welcome directly. To check that a change fits the package before you spend time on it, open an issue
+first. Report security problems privately, as [SECURITY.md](SECURITY.md) says.
 
 By sending a pull request you agree to license your contribution under the [MIT License](LICENSE).
 
 ## Set up
 
-1. Open `Aspid.FastTools/` as a project in the Unity version from `Aspid.FastTools/ProjectSettings/ProjectVersion.txt`.
-2. Install the .NET SDK that `global.json` pins and the .NET 6 runtime.
-3. Install Node.js 22 and run `npm --prefix Website ci`.
+- **Package code:** open `Aspid.FastTools/` in Unity 6, ideally the version in `ProjectSettings/ProjectVersion.txt`.
+- **Generators, analyzers and the test projects:** install the .NET SDK that `global.json` pins (no other version runs)
+  and the .NET 6 runtime.
+- **Docs and repository scripts:** install Node.js 22 and run `npm --prefix Website ci`.
 
 ## Code rules
 
 - Use no Unity API newer than **6000.0.53f1** without an `#if UNITY_6000_x_OR_NEWER` guard.
-- Do not reach editor-only APIs from runtime code.
 - Keep the YAML engine (`Editor/Scripts/SerializeReferences/Yaml`) and `GenericTypeResolver`, `GenericArgumentFilter`,
   `TypeUtility` on C# 9 with no new Unity API: test projects compile them outside Unity.
 
-Style and the other rules are in [AGENTS.md](AGENTS.md) and `.editorconfig`. Commit the `.meta` file of every new file;
-do not commit other changes Unity makes to `.meta` files, `ProjectSettings/` or `Packages/*.json`.
+Style and the other rules are in [AGENTS.md](AGENTS.md) and `.editorconfig`.
 
 ## Generators and analyzers
 
@@ -46,7 +43,8 @@ tests run in **Window → General → Test Runner → EditMode**. Add a test for
   The root `README.md` is generated from `Website/docs/README.md` by `npm --prefix Website run sync-readme`.
 - Update a skill in `skills/` that describes API you changed.
 
-If you do not write Russian, put the English text in the Russian file and say so in the pull request.
+If you do not write Russian, a machine translation is fine. Or put the English text in the Russian file and say so in
+the pull request.
 
 ## Pull request
 
