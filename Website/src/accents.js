@@ -18,8 +18,6 @@ export const ACCENT_BOOT_SCRIPT =
 
 export const accentLogo = (accent) => (accent === DEFAULT_ACCENT ? 'img/logo.png' : `img/logo-${accent}.png`);
 
-const accentFavicon = (accent) => (accent === DEFAULT_ACCENT ? 'img/favicon.png' : accentLogo(accent));
-
 export function readAccent() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -35,7 +33,7 @@ export function applyAccent(accent, baseUrl, {save = false} = {}) {
   if (accent === DEFAULT_ACCENT) root.removeAttribute('data-accent');
   else root.setAttribute('data-accent', accent);
 
-  for (const link of document.querySelectorAll('link[rel~="icon"]')) link.href = baseUrl + accentFavicon(accent);
+  for (const link of document.querySelectorAll('link[rel~="icon"]')) link.href = baseUrl + accentLogo(accent);
 
   if (!save) return;
   try {

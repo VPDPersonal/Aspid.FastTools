@@ -57,7 +57,7 @@ Its text is written in the component per locale, so update it when the README's 
 README repeats the English steps (`TEXT.steps` in `scripts/github-readme.mjs`) beside a recording of the walk-through
 (`docs/media/readme-previews/README.md`), so update both.
 
-`static/img/logo.png` and `favicon.png` are copies of the package icon
+`static/img/logo.png` is a copy of the package icon
 `Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`, and `logo-red.png`, `logo-blue.png`, `logo-yellow.png` of
 its colour variants, `logo-mono.png` a greyscale copy of the green one (each also the favicon for its accent); re-copy them if the icons change. `src/theme/Logo` renders
 all four and CSS shows the current accent's.

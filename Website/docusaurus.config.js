@@ -118,7 +118,7 @@ const config = {
   headTags: [
     { tagName: 'script', attributes: {}, innerHTML: ACCENT_BOOT_SCRIPT },
     { tagName: 'script', attributes: {}, innerHTML: INTRO_BOOT_SCRIPT },
-    { tagName: 'link', attributes: { rel: 'icon', href: `${BASE_URL}img/favicon.png` } },
+    { tagName: 'link', attributes: { rel: 'icon', href: `${BASE_URL}img/logo.png` } },
   ],
   clientModules: ['./src/clientModules/accent.js'],
 
