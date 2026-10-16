@@ -153,7 +153,7 @@ jobs:
 
             if (errors.length) core.setFailed(errors.join('\n'));
 
-  # User-visible package code changed → the same entry in CHANGELOG.md and CHANGELOG.ru.md, or the `no-changelog` label.
+  # User-visible package code changed → the same entry in CHANGELOG.md and Website/i18n/ru/CHANGELOG.md, or the `no-changelog` label.
   # The package copy and the release notes are built from the English file; the docs check needs both files to match.
   changelog:
     name: CHANGELOG
@@ -175,19 +175,19 @@ jobs:
               (f.startsWith(PKG + 'Samples~/') && !f.includes('/Documentation/')) ||
               (f.startsWith(PKG) && /^(?:[^/]+\.dll|package\.json)$/.test(f.slice(PKG.length))));
             if (!shipped.length) return core.info('No shipped package code changed.');
-            const english = files.includes('CHANGELOG.md'), russian = files.includes('CHANGELOG.ru.md');
+            const english = files.includes('CHANGELOG.md'), russian = files.includes('Website/i18n/ru/CHANGELOG.md');
             if (english && russian) return core.info('CHANGELOG updated.');
 
             const list = `${shipped.slice(0, 3).join(', ')}${shipped.length > 3 ? ', …' : ''}`;
             if (english)
               core.setFailed(
-                `Package code changed (${list}) and CHANGELOG.md did, but CHANGELOG.ru.md did not. ` +
-                'Add the same entry under [Unreleased] in CHANGELOG.ru.md: the docs check needs both changelogs to match.');
+                `Package code changed (${list}) and CHANGELOG.md did, but Website/i18n/ru/CHANGELOG.md did not. ` +
+                'Add the same entry under [Unreleased] in Website/i18n/ru/CHANGELOG.md: the docs check needs both changelogs to match.');
             else if (russian)
               core.setFailed(
-                `Package code changed (${list}) and CHANGELOG.ru.md did, but the English CHANGELOG.md did not. ` +
+                `Package code changed (${list}) and Website/i18n/ru/CHANGELOG.md did, but the English CHANGELOG.md did not. ` +
                 'Add the same entry under [Unreleased] in CHANGELOG.md: scripts/set-version.sh and the package changelog read it.');
             else
               core.setFailed(
-                `Package code changed (${list}) but neither CHANGELOG.md nor CHANGELOG.ru.md did. ` +
+                `Package code changed (${list}) but neither CHANGELOG.md nor Website/i18n/ru/CHANGELOG.md did. ` +
                 'Add the same entry under [Unreleased] in both, or the `no-changelog` label if users see no change.');

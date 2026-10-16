@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {changelogBody, changelogPage, changelogSidebars, versionAnchor} from './changelog-page.mjs';
 
-const english = '# Changelog\n\n> Русская версия: [CHANGELOG.ru.md](CHANGELOG.ru.md).\n\nIntro.\n\n## [Unreleased]\n\n- One.\n\n## [1.0.0-rc.8] — 2026-09-06\n\n- Two.\n\n[1.0.0-rc.8]: https://example.test\n';
+const english = '# Changelog\n\n> Русская версия: [Website/i18n/ru/CHANGELOG.md](Website/i18n/ru/CHANGELOG.md).\n\nIntro.\n\n## [Unreleased]\n\n- One.\n\n## [1.0.0-rc.8] — 2026-09-06\n\n- Two.\n\n[1.0.0-rc.8]: https://example.test\n';
 const russian = '# Журнал изменений (RU)\n\n> English version: [CHANGELOG.md](CHANGELOG.md).\n\n## [1.0.0-rc.8] — 2026-09-06\n';
 
 test('a version becomes an anchor of lower-case words joined by dashes', () => {

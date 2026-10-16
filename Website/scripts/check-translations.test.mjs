@@ -27,7 +27,7 @@ test('an English path maps to its Russian twin and back', () => {
     [`${doc}/03-type-selector.md`, `${ruDoc}/03-type-selector.md`],
     ['Website/tutorials/index.mdx', 'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/index.mdx'],
     ['Pkg/Samples~/Types/Documentation/README.md', 'Pkg/Samples~/Types/Documentation/README.ru.md'],
-    ['CHANGELOG.md', 'CHANGELOG.ru.md'],
+    ['CHANGELOG.md', 'Website/i18n/ru/CHANGELOG.md'],
   ];
   for (const [english, russian] of pairs) {
     assert.equal(russianPath(english), russian);

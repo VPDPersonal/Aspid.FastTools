@@ -189,7 +189,7 @@ export function breakingTitleVerdict(removed, hasBang, formatChanged) {
   return {
     error: `${lost}: a removed or changed public member breaks the code of the package users. ` +
       'Put `!` before the colon (`type(scope)!: summary`) and add a migration note under Changed in CHANGELOG.md and ' +
-      'CHANGELOG.ru.md.',
+      'Website/i18n/ru/CHANGELOG.md.',
     warning: '',
   };
 }

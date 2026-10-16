@@ -16,7 +16,7 @@ const FILES = [
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
   'Website/docs/Images/status-badge-preview.svg',
 ];
-const CHANGELOGS = ['CHANGELOG.md', 'CHANGELOG.ru.md'];
+const CHANGELOGS = ['CHANGELOG.md', 'Website/i18n/ru/CHANGELOG.md'];
 const REPOSITORY = 'https://github.com/VPDPersonal/Aspid.FastTools';
 
 const version = JSON.parse(readFileSync(`${PKG}/package.json`, 'utf8')).version ?? '';

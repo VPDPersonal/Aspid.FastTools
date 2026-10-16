@@ -22,7 +22,7 @@ const FILES = [
   'scripts/check-version.mjs',
   'README.md',
   'CHANGELOG.md',
-  'CHANGELOG.ru.md',
+  'Website/i18n/ru/CHANGELOG.md',
   `${PACKAGE}/package.json`,
   `${ANALYZER_RELEASES}.Shipped.md`,
   'Website/package.json',
@@ -81,7 +81,7 @@ function sandbox(t) {
 
 // Replace what is under [Unreleased] in both CHANGELOGs.
 function unreleased(dir, notes) {
-  for (const file of ['CHANGELOG.md', 'CHANGELOG.ru.md']) {
+  for (const file of ['CHANGELOG.md', 'Website/i18n/ru/CHANGELOG.md']) {
     edit(dir, file, (text) => text.replace(/^(## \[Unreleased\]\n)[\s\S]*?(?=^## \[)/m, `$1${notes}`));
   }
 }
@@ -116,7 +116,7 @@ test('a prerelease moves the files to the preview channel', (t) => {
   assert.match(read(dir, BADGE), />Preview<\/text>/);
   assert.match(read(dir, 'README.md'), /Preview 1\.0\.0-rc\.99/);
 
-  for (const file of ['CHANGELOG.md', 'CHANGELOG.ru.md']) {
+  for (const file of ['CHANGELOG.md', 'Website/i18n/ru/CHANGELOG.md']) {
     const changelog = read(dir, file);
     assert.match(changelog, /^## \[Unreleased\]\n\n## \[1\.0\.0-rc\.99\] — \d{4}-\d{2}-\d{2}\n\n### Fixed\n\n- A note/m, file);
     assert.ok(changelog.includes(`\n[1.0.0-rc.99]: ${RELEASES}/v1.0.0-rc.99\n`), file);
@@ -223,7 +223,7 @@ const OUT_OF_STEP = [
   },
   {
     name: 'a CHANGELOG without the release link',
-    file: 'CHANGELOG.ru.md',
+    file: 'Website/i18n/ru/CHANGELOG.md',
     change: (text) => text.replace(`\n[${current}]: `, '\n[0.9.0]: '),
     message: /has no \[\S+\] release link/,
   },

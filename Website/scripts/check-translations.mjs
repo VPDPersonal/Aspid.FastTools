@@ -19,9 +19,10 @@ const I18N = 'Website/i18n/ru/';
 
 /**
  * The English file a translated path stands for: `Website/i18n/ru/<plugin>/current/` maps to the plugin's folder
- * (`docs`, `tutorials`), a `.ru` suffix is dropped.
+ * (`docs`, `tutorials`), `Website/i18n/ru/CHANGELOG.md` to the root changelog, a `.ru` suffix is dropped.
  */
 export function englishPath(file) {
+  if (file === `${I18N}CHANGELOG.md`) return 'CHANGELOG.md';
   return file
     .replace(/^Website\/i18n\/ru\/docusaurus-plugin-content-docs\/current\//, 'Website/docs/')
     .replace(/^Website\/i18n\/ru\/docusaurus-plugin-content-docs-tutorials\/current\//, 'Website/tutorials/')
@@ -30,6 +31,7 @@ export function englishPath(file) {
 
 /** The Russian twin an English path needs: the inverse of `englishPath`. */
 export function russianPath(file) {
+  if (file === 'CHANGELOG.md') return `${I18N}CHANGELOG.md`;
   if (file.startsWith('Website/docs/')) return file.replace('Website/docs/', `${I18N}docusaurus-plugin-content-docs/current/`);
   if (file.startsWith('Website/tutorials/')) return file.replace('Website/tutorials/', `${I18N}docusaurus-plugin-content-docs-tutorials/current/`);
   return file.replace(/\.(mdx?)$/, '.ru.$1');
@@ -135,10 +137,10 @@ function list(dir, accept) {
 function translations() {
   const found = [
     ...list(packageDir, file => /\.ru\.mdx?$/.test(file)),
-    // The changelog folder in i18n is generated from CHANGELOG.ru.md, which is checked below.
+    // The changelog folder in i18n is generated from Website/i18n/ru/CHANGELOG.md, which is checked below.
     ...list(`${I18N}docusaurus-plugin-content-docs`, file => /\.mdx?$/.test(file)),
     ...list(`${I18N}docusaurus-plugin-content-docs-tutorials`, file => /\.mdx?$/.test(file)),
-    'CHANGELOG.ru.md',
+    `${I18N}CHANGELOG.md`,
   ];
   return found.sort();
 }

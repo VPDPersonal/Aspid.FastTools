@@ -1,6 +1,6 @@
 ---
 name: docs-site
-description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins in `i18n/ru/`) plus the root `CHANGELOG*.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README, SETUP.md and short sample READMEs that link the site. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
+description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins and the Russian changelog in `i18n/ru/`) plus the root `CHANGELOG.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README, SETUP.md and short sample READMEs that link the site. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
 user-invocable: false
 metadata:
   internal: true
@@ -27,7 +27,7 @@ its tutorial on the site. Never add an image or a full page there.
 | Main docs | `Website/docs/NN-*.md` | `/docs/<name>` (`02-serializable-types.md` → `/docs/serializable-types`) |
 | Samples | `Website/tutorials/<Sample>/README.md` | `/tutorials/<slug>` (`SerializeReferences` → `serialize-references`; an optional `NN. ` folder prefix orders and is stripped) |
 | Samples overview | `Website/tutorials/index.mdx` → `<SamplesGallery/>` | `/tutorials` |
-| Changelog | root `CHANGELOG.md`, `CHANGELOG.ru.md` | `/changelog` |
+| Changelog | root `CHANGELOG.md`, `Website/i18n/ru/CHANGELOG.md` | `/changelog` |
 | API reference | generated into `Website/api/` by DocFX (committed) | `/api` |
 | Translations | `Website/i18n/ru/docusaurus-plugin-content-docs/current/**`, `…-docs-tutorials/current/**` (same names) | `/ru/...` |
 | Interface strings | `Website/i18n/ru/**/*.json` (`code.json`, `navbar.json`, each plugin's `current.json`) | |
@@ -103,9 +103,9 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
   `../../../docusaurus-plugin-content-docs/current/03-type-selector.md` from a tutorial, `../EnumValues/README.md`
   between tutorials) and the English images (`../../../../docs/Images/x.png`,
   `../../../../../tutorials/Types/Images/demo.gif`); images are never copied. The site drops the locale itself.
-- Adding a language: create `Website/i18n/<locale>/` with the pages and the interface strings
-  (`npm --prefix Website run write-translations -- --locale <locale>`), add `CHANGELOG.<locale>.md`, and add the locale
-  to `LOCALES` in `docusaurus.config.js` and to `check-translations.mjs`.
+- Adding a language: create `Website/i18n/<locale>/` with the pages, the interface strings
+  (`npm --prefix Website run write-translations -- --locale <locale>`) and `CHANGELOG.md`, and add the locale to
+  `LOCALES` in `docusaurus.config.js` and to `check-translations.mjs`.
 
 ### Images
 
@@ -362,7 +362,8 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   A fragment that a class of the site's own CSS modules also produces (`card_`, `header_`) is listed as not checked,
   because the build cannot tell the two apart. Public names (`theme-*`, `menu__link`) have no hash and are not checked.
 - `Website/scripts/sync-changelog.mjs` (also run by `prestart`/`prebuild`) builds `Website/changelog/` and
-  `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/` from the root `CHANGELOG*.md`. Because the
+  `Website/i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/` from the root `CHANGELOG.md` and
+  `Website/i18n/<locale>/CHANGELOG.md`. Because the
   copies are untracked, their "Last updated" date is stamped from the **source file's last commit**. Docs and tutorial
   pages are tracked, so Docusaurus reads their dates from git itself; an uncommitted page shows no date.
 - The remark plugins and the pure parts of the site scripts have tests in `Website/scripts/*.test.mjs`.
@@ -414,5 +415,5 @@ The cards on the Introduction page (layout, captures, previews, clip recipes) ha
 ## Deploy
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package README, `package.json`
-or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md`, `docs/images/readme-previews/` or `CHANGELOG*.md`, and on PRs (build only); it runs
+or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md`, `docs/images/readme-previews/` or `CHANGELOG.md`, and on PRs (build only); it runs
 `check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build and `check-selectors` after it. Pages source must be set to "GitHub Actions" once in the repository settings.
