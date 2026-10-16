@@ -165,7 +165,7 @@ test('a second run with the same version repairs files and changes nothing else'
 test('a version that is not SemVer is refused before any file changes', (t) => {
   const dir = sandbox(t);
   const before = snapshot(dir);
-  for (const bad of ['1.0', '1.0.0.0', 'v1.0.0', '1.0.0-', '1.0.0 ', '1.0.0\nx', 'latest']) {
+  for (const bad of ['1.0', '1.0.0.0', 'v1.0.0', '1.0.0-', '1.0.0 ', '1.0.0\nx', 'latest', '01.0.0', '1.0.0-rc.01', '1.0.0-rc..1']) {
     const result = setVersion(dir, bad);
     assert.notEqual(result.status, 0, JSON.stringify(bad));
     assert.match(result.stderr, /is not a SemVer version/, JSON.stringify(bad));
@@ -181,6 +181,51 @@ test('a CHANGELOG with nothing under [Unreleased] is refused before any file cha
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /no "## \[Unreleased\]" line with notes/);
   assert.deepEqual(snapshot(dir), before);
+});
+
+test('a CHANGELOG that has the version section without its release link gets the link', (t) => {
+  const dir = sandbox(t);
+  assert.equal(setVersion(dir, '1.0.0-rc.99').status, 0);
+  const link = `[1.0.0-rc.99]: ${RELEASES}/v1.0.0-rc.99\n`;
+  edit(dir, 'CHANGELOG.md', (text) => text.replace(link, ''));
+  assert.notEqual(checkVersion(dir).status, 0);
+
+  const result = setVersion(dir, '1.0.0-rc.99');
+  assert.equal(result.status, 0, output(result));
+  assert.equal(read(dir, 'CHANGELOG.md').split(link).length, 2);
+  assert.equal(read(dir, 'CHANGELOG.md').match(/^## \[1\.0\.0-rc\.99\]/gm).length, 1);
+});
+
+for (const heading of ['## [1.0.0-rc.99]', '## [1.0.0-rc.99] ', '## [1.0.0-rc.99] draft']) {
+  test(`a version section headed ${JSON.stringify(heading)} is refused before any file changes`, (t) => {
+    const dir = sandbox(t);
+    edit(dir, 'CHANGELOG.md', (text) => text.replace('## [Unreleased]\n', `## [Unreleased]\n\n${heading}\n`));
+    const before = snapshot(dir);
+    const result = setVersion(dir, '1.0.0-rc.99');
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /CHANGELOG\.md: the "## \[1\.0\.0-rc\.99\]" heading has no date/);
+    assert.deepEqual(snapshot(dir), before);
+  });
+}
+
+test('a release link of the version to another URL is replaced, not defined twice', (t) => {
+  const dir = sandbox(t);
+  assert.equal(setVersion(dir, '1.0.0-rc.99').status, 0);
+  const link = `[1.0.0-rc.99]: ${RELEASES}/v1.0.0-rc.99`;
+  edit(dir, 'CHANGELOG.md', (text) => text.replace(link, '[1.0.0-rc.99]: https://example.com/old'));
+
+  const result = setVersion(dir, '1.0.0-rc.99');
+  assert.equal(result.status, 0, output(result));
+  assert.equal(read(dir, 'CHANGELOG.md').match(/^\[1\.0\.0-rc\.99\]: /gm).length, 1);
+  assert.ok(read(dir, 'CHANGELOG.md').includes(`\n${link}\n`));
+});
+
+test('the version check reports a version section without its date', (t) => {
+  const dir = sandbox(t);
+  edit(dir, 'CHANGELOG.md', (text) => text.replace(new RegExp(`^(## \\[${literal(current)}\\]) — .*$`, 'm'), '$1 draft'));
+  const result = checkVersion(dir);
+  assert.equal(result.status, 1, output(result));
+  assert.match(result.stdout, /has no "## \[\S+\]" section dated/);
 });
 
 // Each change leaves one file out of step with package.json.

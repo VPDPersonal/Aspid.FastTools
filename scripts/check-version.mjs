@@ -1,6 +1,6 @@
 // Check that the files scripts/set-version.sh writes carry the package.json version whole and its channel: a stable
 // version installs from `upm` under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one.
-// Both CHANGELOGs must have the version's section and its release link.
+// Both CHANGELOGs must have the version's section, dated as set-version.sh writes it, and its release link.
 // The version is matched whole, so 1.0.0 does not pass on a file that still says 1.0.0-rc.8.
 // ci.yml (in every PR and in the release) and scripts/set-version.sh run it:
 //   node scripts/check-version.mjs
@@ -49,7 +49,9 @@ for (const file of FILES) {
 
 for (const file of CHANGELOGS) {
   const text = readFileSync(file, 'utf8');
-  if (!new RegExp(`^## \\[${escape(version)}\\] `, 'm').test(text)) fail(file, `has no "## [${version}]" section; ${fix}`);
+  if (!new RegExp(`^## \\[${escape(version)}\\] — \\d{4}-\\d{2}-\\d{2}$`, 'm').test(text)) {
+    fail(file, `has no "## [${version}]" section dated "— YYYY-MM-DD"; ${fix}`);
+  }
   if (!text.includes(`\n[${version}]: ${REPOSITORY}/releases/tag/v${version}\n`)) fail(file, `has no [${version}] release link; ${fix}`);
 }
 

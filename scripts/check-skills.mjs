@@ -1,4 +1,4 @@
-// Check every SKILL.md of the repository, from the repository root:
+// Check every SKILL.md of the repository:
 // - the frontmatter, with a strict YAML parser, as the skills installer and the agents read it;
 // - the `internal` mark: the installer (`npx skills add`) scans about 30 agent folders (.claude/skills, .agents/skills,
 //   ...), so any SKILL.md outside skills/ must be internal, or it reaches users;
@@ -10,7 +10,10 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
+
+process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
 // Consumer skills live in skills/<name>/SKILL.md; every other SKILL.md is a repo skill.
 const CONSUMER_ROOT = 'skills';

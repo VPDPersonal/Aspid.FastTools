@@ -4,7 +4,7 @@
 # per-capture CSS. Run it after re-shooting a capture listed below; both the dark file and its -light twin are framed.
 # A file already at its framed size is skipped, so running it again is safe; a file of any other size is an error,
 # because the bounds below would no longer match it: measure the new capture and update its row.
-# Needs ImageMagick 6 (`convert`, `identify`) and gifsicle.
+# Needs ImageMagick 6 (`convert`, `identify`, `compare`) and gifsicle.
 #   scripts/frame-doc-captures.sh
 set -eu
 cd "$(dirname "$0")/../Website/docs/Images"
@@ -39,7 +39,8 @@ while read -r NAME SIZE LEFT TOP RIGHT BOTTOM STYLE; do
   FW=$((W + 2 * PAD)) FH=$((H + 2 * PAD))
   for LIGHT in 0 1; do
     SUFFIX=''; [ "$LIGHT" = 1 ] && SUFFIX='-light'
-    FILE=$(ls "$NAME$SUFFIX".png "$NAME$SUFFIX".gif 2>/dev/null | head -n 1 || true)
+    FILE=''
+    for CANDIDATE in "$NAME$SUFFIX.gif" "$NAME$SUFFIX.png"; do [ -e "$CANDIDATE" ] && { FILE=$CANDIDATE; break; }; done
     [ -n "$FILE" ] || { echo "$NAME$SUFFIX: not found" >&2; FAILED=1; continue; }
     ACTUAL=$(identify -format '%wx%h\n' "$FILE" | head -n 1)
     if [ "$ACTUAL" = "${FW}x$FH" ]; then continue; fi
@@ -49,6 +50,8 @@ while read -r NAME SIZE LEFT TOP RIGHT BOTTOM STYLE; do
       *.gif)
         # gifsicle crops every frame without re-quantizing; ImageMagick would rebuild the palettes and shift colours.
         # Frame 0 is laid over the canvas, every later frame keeps its own palette, delay and disposal, moved by PAD.
+        # Only frame 0 goes through ImageMagick, which keeps its colours while it and the margin fit in 256; past that
+        # it would quantize them, and the later frames, drawn over frame 0, would show seams. That is an error.
         gifsicle --no-warnings --crop "$LEFT,$TOP+${W}x$H" "$FILE" -o "$TMP/crop.gif"
         gifsicle --info "$TMP/crop.gif" | grep '+ image' >"$TMP/info"
         head -n 1 "$TMP/info" | grep -q "^  + image #0 ${W}x$H" || { echo "$FILE: frame 0 is not a full frame" >&2; exit 1; }
@@ -57,6 +60,8 @@ while read -r NAME SIZE LEFT TOP RIGHT BOTTOM STYLE; do
         gifsicle --no-warnings "$TMP/crop.gif" '#0' -o "$TMP/first.gif"
         convert "$TMP/canvas.png" "$TMP/first.gif" -geometry "+$PAD+$PAD" -composite "$TMP/first.png"
         convert "$TMP/first.png" "$TMP/first.gif"
+        compare -metric AE "$TMP/first.png" "$TMP/first.gif" null: 2>/dev/null ||
+          { echo "$FILE: frame 0 and the margin need more than 256 colours" >&2; exit 1; }
         set --
         while read -r _ _ INDEX _ AT POSITION _; do
           [ "$INDEX" = '#0' ] && continue
