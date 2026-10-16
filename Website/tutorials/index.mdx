@@ -13,4 +13,4 @@ import SamplesGallery from '@site/src/components/SamplesGallery';
 
 ## Render pipelines
 
-The scenes use their own unlit shader and a solid camera background, so they look the same in the Built-in Render Pipeline and URP. HDRP draws them darker, over its default sky. For the authored look in HDRP, select **Main Camera**, set **Background Type** to **Color** and **Background Color** to `#060A0F`, then add a global Volume with **Tonemapping → Mode** set to **None** and **Bloom → Intensity** set to `0`.
+The scenes use their own unlit shader and a solid camera background, so they look the same in the Built-in Render Pipeline and URP. HDRP draws them darker, over its default sky. For the authored look in HDRP, select **Main Camera**, set **Background Type** to **Color** and **Background Color** to `#060A0F`, then add a global Volume with **Tonemapping → Mode** set to **None** and **Bloom → Intensity** set to `0`. **Sample Themes** then recolours everything but the background, which stays at **Background Color**.

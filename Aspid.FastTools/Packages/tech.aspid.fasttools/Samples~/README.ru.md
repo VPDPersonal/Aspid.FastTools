@@ -14,7 +14,7 @@
 
 ## Render pipeline
 
-Сцены используют собственный unlit-шейдер и однотонный фон камеры, поэтому в Built-in Render Pipeline и URP выглядят одинаково. HDRP рисует их темнее, поверх своего неба по умолчанию. Чтобы вернуть исходный вид в HDRP, выберите **Main Camera**, задайте **Background Type** = **Color** и **Background Color** = `#060A0F`, а затем добавьте глобальный Volume с **Tonemapping → Mode** = **None** и **Bloom → Intensity** = `0`.
+Сцены используют собственный unlit-шейдер и однотонный фон камеры, поэтому в Built-in Render Pipeline и URP выглядят одинаково. HDRP рисует их темнее, поверх своего неба по умолчанию. Чтобы вернуть исходный вид в HDRP, выберите **Main Camera**, задайте **Background Type** = **Color** и **Background Color** = `#060A0F`, а затем добавьте глобальный Volume с **Tonemapping → Mode** = **None** и **Bloom → Intensity** = `0`. Тогда **Sample Themes** перекрашивает всё, кроме фона: он остаётся **Background Color**.
 
 ## Тема для записи
 
