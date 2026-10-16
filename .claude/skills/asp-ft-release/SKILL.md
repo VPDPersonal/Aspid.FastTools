@@ -3,8 +3,6 @@ name: asp-ft-release
 description: Release an Aspid.FastTools version end to end. Phase 1 opens the release PR (CHANGELOG section, version files, local tests, Unity EditMode); the user merges it. Phase 2 pushes the v<version> tag after the user's yes and checks what the Release workflow published. The version alone picks the channel. - `/asp-ft-release 1.0.0-rc.9`, `/asp-ft-release 1.0.0`.
 argument-hint: <version>
 disable-model-invocation: true
-metadata:
-  internal: true
 ---
 
 # Release

@@ -2,8 +2,6 @@
 name: docs-site
 description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins and the Russian changelog in `i18n/ru/`) plus the root `CHANGELOG.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README, SETUP.md and short sample READMEs that link the site. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
 user-invocable: false
-metadata:
-  internal: true
 ---
 
 # Documentation site

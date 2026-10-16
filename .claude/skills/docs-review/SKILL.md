@@ -1,8 +1,6 @@
 ---
 name: docs-review
 description: Review one Aspid.FastTools documentation page (English file and its ru twin) against the docs-site rules and the source, and report the findings in chat in a fixed, readable format. - «посмотрим страницу X», «ревью страницы», «проверь страницу на правила», a localhost …/docs/<page> link with a request to look at it.
-metadata:
-  internal: true
 ---
 
 # Docs page review
