@@ -12,6 +12,8 @@ const PACKAGE_JSON = 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json
 // second mention left on the old value fails too.
 const MENTIONS = [
   'Aspid.FastTools/AGENTS.md',
+  'Website/docs/README.md',
+  'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
   '.github/claude-review.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',

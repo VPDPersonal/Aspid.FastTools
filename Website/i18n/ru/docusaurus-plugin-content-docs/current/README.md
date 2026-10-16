@@ -21,7 +21,13 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую.
 
-**Установили из Asset Store?** Пропустите этот раздел: пакет уже в проекте.
+**Установили из Asset Store?** Пропустите этот раздел: пакет уже в проекте. Asset Store и git URL ставят один и тот же пакет, `tech.aspid.fasttools`, поэтому в проекте может быть только один из них: чтобы сменить источник, сначала удалите пакет в **Window → Package Manager** (**In Project**).
+
+### Решение проблем
+
+**В Console появляется `Assembly with name 'Aspid.FastTools' already exists`.** В проекте есть вторая копия пакета, например копия его папки в `Assets`. Удалите копию и оставьте пакет в Package Manager.
+
+**Сразу после установки появляются ошибки компиляции.** Пакету нужна Unity 6000.0.53f1 или новее: в более ранних патчах 6000.0 нет API UI Toolkit, которые он использует. Проверьте версию в **Help → About Unity** (**Unity → About Unity** на macOS).
 
 ## Возможности
 

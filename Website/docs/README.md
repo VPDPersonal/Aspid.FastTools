@@ -21,7 +21,13 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 The URL installs the latest preview; **Update** in the Package Manager installs the next one.
 
-**Installed from the Asset Store?** Skip this section: the package is already in your project.
+**Installed from the Asset Store?** Skip this section: the package is already in your project. The Asset Store and the git URL install the same package, `tech.aspid.fasttools`, so the project holds only one of them: to switch the source, remove the package in **Window → Package Manager** (**In Project**) first.
+
+### Troubleshooting
+
+**The Console shows `Assembly with name 'Aspid.FastTools' already exists`.** The project has a second copy of the package, for example a copy of its folder under `Assets`. Delete the copy and keep the package in the Package Manager.
+
+**Compile errors appear right after the install.** The package needs Unity 6000.0.53f1 or newer: earlier 6000.0 patches lack UI Toolkit APIs that it uses. Check the version in **Help → About Unity** (**Unity → About Unity** on macOS).
 
 ## Features
 
