@@ -2,14 +2,15 @@
 
 ## Before you start
 
-Pull requests are welcome directly. To check that a change fits the package before you spend time on it, open an issue
-first. Report security problems privately, as [SECURITY.md](SECURITY.md) says.
+Pull requests are welcome directly. To check that a change fits the package before you spend time on it, open a Bug
+report or a Feature request first. Report security problems privately, as [SECURITY.md](SECURITY.md) says.
 
 By sending a pull request you agree to license your contribution under the [MIT License](LICENSE).
 
 ## Set up
 
-- **Package code:** open `Aspid.FastTools/` in Unity 6, ideally the version in `ProjectSettings/ProjectVersion.txt`.
+- **Package code:** open `Aspid.FastTools/` in Unity 6, ideally the version in
+  `Aspid.FastTools/ProjectSettings/ProjectVersion.txt`.
 - **Generators, analyzers and the test projects:** install the .NET SDK that `global.json` pins (no other version runs)
   and the .NET 6 runtime.
 - **Docs and repository scripts:** install Node.js 22 and run `npm --prefix Website ci`.
