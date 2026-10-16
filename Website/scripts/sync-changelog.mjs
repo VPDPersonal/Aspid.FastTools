@@ -1,8 +1,8 @@
 /**
- * Builds the changelog pages from the root changelogs, which GitHub and Unity read as they are:
+ * Builds the changelog pages from the changelogs, which GitHub and Unity read as they are:
  *
- *   CHANGELOG.md          → changelog/index.md (+ changelog/sidebars.json)
- *   CHANGELOG.<locale>.md → i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/index.md
+ *   CHANGELOG.md (repository root) → changelog/index.md (+ changelog/sidebars.json)
+ *   i18n/<locale>/CHANGELOG.md     → i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/index.md
  *
  * Both outputs are gitignored and rebuilt before `start` and `build`. A copy is not tracked by git, so Docusaurus
  * cannot read its history; each page gets `last_update.date` from the source file's last commit instead.
@@ -19,9 +19,8 @@ const changelogDir = path.join(siteDir, 'changelog');
 const i18nDir = path.join(siteDir, 'i18n');
 
 const locales = fs
-  .readdirSync(repoDir)
-  .map((file) => file.match(/^CHANGELOG\.([a-z]{2}(?:-[A-Za-z]{2,4})?)\.md$/)?.[1])
-  .filter(Boolean);
+  .readdirSync(i18nDir)
+  .filter((locale) => fs.existsSync(path.join(i18nDir, locale, 'CHANGELOG.md')));
 
 fs.rmSync(changelogDir, { recursive: true, force: true });
 
@@ -55,7 +54,7 @@ for (const locale of locales) {
   const title = fs.existsSync(navbar) ? JSON.parse(fs.readFileSync(navbar, 'utf8'))['item.label.Changelog']?.message : undefined;
   const destination = path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-changelog', 'current');
   fs.rmSync(destination, { recursive: true, force: true });
-  writeChangelog(path.join(repoDir, `CHANGELOG.${locale}.md`), path.join(destination, 'index.md'), title);
+  writeChangelog(path.join(i18nDir, locale, 'CHANGELOG.md'), path.join(destination, 'index.md'), title);
 }
 
 console.log(`[sync-changelog] locales: en${locales.map((locale) => `, ${locale}`).join('')}`);

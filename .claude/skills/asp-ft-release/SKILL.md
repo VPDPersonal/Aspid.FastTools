@@ -61,7 +61,7 @@ Do every step without questions. Stop at the first failure and report it.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.
 9. Run `npm --prefix Website run check-readme`.
 10. Find the old version in prose:
-    `git grep -n -F '<old>' -- . ':!CHANGELOG*' ':!scripts/'`.
+    `git grep -n -F '<old>' -- . ':!CHANGELOG.md' ':!Website/i18n/ru/CHANGELOG.md' ':!scripts/'`.
     Do not edit the hits. Put them into the report.
 11. Wait for both `unity-verify` agents. A failed test stops the release.
 12. Commit with the `asp-commit` skill. Message: `chore(release): v<version>`.
@@ -157,7 +157,7 @@ fixed.
   `upm` gets the version only with the tag. So the upload runs from the head of `chore/release-<version>` while the PR
   is open. The user merges the PR after the store publishes the version, and "Phase 2" tags it at once.
 - **Hold:** until the merge, no other PR that changes `Aspid.FastTools/Packages/tech.aspid.fasttools/`, `CHANGELOG.md`
-  or `CHANGELOG.ru.md` merges into `main`. Otherwise the merge commit, and so `upm/<version>` with the package
+  or `Website/i18n/ru/CHANGELOG.md` merges into `main`. Otherwise the merge commit, and so `upm/<version>` with the package
   `CHANGELOG.md` that `release.yml` generates from the root one, differs from the uploaded package.
 - **Portal:** the UPM Publisher Portal (`https://cloud.unity.com/assetstore/publisher/products`), product `fastTools`
   (id 2333465, store page `https://assetstore.unity.com/packages/package/2333465`). The package technical name

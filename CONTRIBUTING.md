@@ -38,8 +38,8 @@ tests run in **Window → General → Test Runner → EditMode**. Add a test for
 ## CHANGELOG and docs
 
 - A change users can see in the package goes under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md) and
-  [CHANGELOG.ru.md](CHANGELOG.ru.md), next to the most related entry. A breaking change says how to migrate. No visible
-  change? Ask for the `no-changelog` label.
+  [Website/i18n/ru/CHANGELOG.md](Website/i18n/ru/CHANGELOG.md), next to the most related entry. A breaking change says
+  how to migrate. No visible change? Ask for the `no-changelog` label.
 - Docs pages live in `Website/docs/` and `Website/tutorials/`, each with a Russian twin under `Website/i18n/ru/`.
   The root `README.md` is generated from `Website/docs/README.md` by `npm --prefix Website run sync-readme`.
 - Update a skill in `skills/` that describes API you changed.

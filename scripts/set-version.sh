@@ -2,7 +2,7 @@
 # Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text,
 # release link and install URLs in both README translations (Website/docs, Website/i18n/ru). The root README is
 # regenerated from the English one; on a stable version the unshipped analyzer rules move to
-# AnalyzerReleases.Shipped.md. The [Unreleased] notes of CHANGELOG.md and CHANGELOG.ru.md become the version's
+# AnalyzerReleases.Shipped.md. The [Unreleased] notes of CHANGELOG.md and Website/i18n/ru/CHANGELOG.md become the version's
 # section, dated today, with its release link.
 # The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
 # from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one. The skills
@@ -20,7 +20,7 @@ perl -e 'exit($ARGV[0] !~ /\A[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?\z/)' "$NEW
 # A CHANGELOG that already has the version's section keeps it. Otherwise its [Unreleased] must have notes to release.
 # The heading is matched whole, as the move below needs it: a trailing space or a CRLF fails here, before any change.
 has_section() { perl -ne 'BEGIN { $v = shift } $f = 1 if /^## \[\Q$v\E\]/; END { exit !$f }' "$NEW" "$1"; }
-for f in CHANGELOG.md CHANGELOG.ru.md; do
+for f in CHANGELOG.md Website/i18n/ru/CHANGELOG.md; do
   has_section "$f" && continue
   awk '/^## \[Unreleased\]$/ { on = 1; next } /^## \[/ { exit } on && NF && !/^#/ { notes = 1 } END { exit !notes }' "$f" \
     || { echo "$f: no \"## [Unreleased]\" line with notes to release as $NEW" >&2; exit 1; }
@@ -74,7 +74,7 @@ esac
 # CHANGELOG.md is generated at release (scripts/package-changelog.mjs).
 DATE=$(date +%Y-%m-%d) REPO=https://github.com/VPDPersonal/Aspid.FastTools
 export DATE REPO
-for f in CHANGELOG.md CHANGELOG.ru.md; do
+for f in CHANGELOG.md Website/i18n/ru/CHANGELOG.md; do
   has_section "$f" && continue
   perl -0pi -e 's/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW}] — $ENV{DATE}\n/m or die "$ARGV: no [Unreleased] line\n";
     my $link = "[$ENV{NEW}]: $ENV{REPO}/releases/tag/v$ENV{NEW}\n";

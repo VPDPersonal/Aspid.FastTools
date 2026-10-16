@@ -1,6 +1,6 @@
 # Changelog
 
-> Русская версия: [CHANGELOG.ru.md](CHANGELOG.ru.md).
+> Русская версия: [Website/i18n/ru/CHANGELOG.md](Website/i18n/ru/CHANGELOG.md).
 
 All notable changes to **Aspid.FastTools** will be documented in this file.
 

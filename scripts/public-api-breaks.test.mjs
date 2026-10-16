@@ -178,7 +178,7 @@ test('the title verdict fails with the lost lines and what to do', () => {
   assert.match(error, /lost 1 member line \(`public int Next \{ get; \}`\)/);
   assert.match(error, /`!` before the colon/);
   assert.match(error, /migration note under Changed/);
-  assert.match(error, /CHANGELOG\.md and CHANGELOG\.ru\.md/);
+  assert.match(error, /CHANGELOG\.md and Website\/i18n\/ru\/CHANGELOG\.md/);
 });
 
 test('the title verdict shows three lines and counts the rest', () => {
