@@ -13,9 +13,10 @@
 //  5. Every .meta has a guid, and no guid is used twice in the package and the dev tests.
 //  6. Every "path" in the "samples" of package.json is a folder of the package.
 //  7. Every reference of an asmdef of the package is an asmdef of the package, or an assembly of EXTERNAL_ASSEMBLIES.
+//  8. LICENSE.md of the package is a byte-for-byte copy of the root LICENSE, which GitHub shows and "licensesUrl" links.
 // ci.yml runs it. It has no dependencies:
 //   node scripts/check-package-files.mjs
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +26,8 @@ const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests';
 const INSTALL_PREFIX = 'Aspid/FastTools/';
 const PATH_LIMIT = 140;
+const LICENSE = 'LICENSE';
+const PACKAGE_LICENSE = `${PACKAGE}/LICENSE.md`;
 // Assemblies that the asmdefs of the package use and the package does not contain. A reference by GUID cannot name one.
 const EXTERNAL_ASSEMBLIES = new Set(['Unity.Burst', 'Unity.Mathematics', 'UnityEngine.TestRunner', 'UnityEditor.TestRunner']);
 
@@ -138,6 +141,14 @@ for (const { path, json } of asmdefs) {
       fail(path, `the reference "${reference}" is no asmdef of the package; fix it, or add the assembly to EXTERNAL_ASSEMBLIES`);
     }
   }
+}
+
+if (!existsSync(LICENSE)) {
+  fail(LICENSE, 'no LICENSE at the repository root');
+} else if (!existsSync(PACKAGE_LICENSE)) {
+  fail(PACKAGE_LICENSE, `no LICENSE.md in the package; copy ${LICENSE} there`);
+} else if (!readFileSync(LICENSE).equals(readFileSync(PACKAGE_LICENSE))) {
+  fail(PACKAGE_LICENSE, `differs from ${LICENSE}; change both files the same way`);
 }
 
 if (errors) process.exit(1);

@@ -19,8 +19,13 @@ const MONO = 'MonoImporter:\n  externalObjects: {}\n  serializedVersion: 2\n';
 const FOLDER = 'folderAsset: yes\nDefaultImporter:\n  externalObjects: {}\n';
 const asmdef = (name, references = []) => JSON.stringify({ name, references });
 
-// A package that passes: a runtime and an editor assembly, a sample, a hidden file, and a dev test.
+const LICENSE = 'MIT License\n\nCopyright (c) 2025 Vladislav Panin\n';
+
+// A package that passes: a runtime and an editor assembly, a sample, a hidden file, a dev test, and the license copy.
 const valid = () => ({
+  LICENSE,
+  [`${PACKAGE}/LICENSE.md`]: LICENSE,
+  [`${PACKAGE}/LICENSE.md.meta`]: meta(11),
   [`${PACKAGE}/package.json`]: JSON.stringify({ name: 'tech.aspid.fasttools', samples: [{ displayName: 'Demo', path: 'Samples~/Demo' }] }),
   [`${PACKAGE}/package.json.meta`]: meta(1),
   [`${PACKAGE}/.DS_Store`]: '',
@@ -138,4 +143,13 @@ test('a .uss.meta without a ScriptedImporter block or with the ThemeStyleSheetIm
   assert.equal(check(t, { [uss]: '', [`${uss}.meta`]: meta(10, importer(12385)) }).status, 0);
   assertFails(check(t, { [uss]: '', [`${uss}.meta`]: meta(10, importer(12388)) }), `${uss}.meta`, /importer fileID 12388/);
   assertFails(check(t, { [uss]: '', [`${uss}.meta`]: meta(10, 'timeCreated: 1777385488\n') }), `${uss}.meta`, /no ScriptedImporter block/);
+});
+
+test('a package LICENSE.md that is missing or differs from the root LICENSE is reported', (t) => {
+  const copy = `${PACKAGE}/LICENSE.md`;
+  assertFails(check(t, { [copy]: LICENSE.replace('2025', '2026') }), copy, /differs from LICENSE/);
+  // A different line ending is a different file too.
+  assertFails(check(t, { [copy]: LICENSE.replaceAll('\n', '\r\n') }), copy, /differs from LICENSE/);
+  assertFails(check(t, { [copy]: null, [`${copy}.meta`]: null }), copy, /no LICENSE\.md in the package/);
+  assertFails(check(t, { LICENSE: null }), 'LICENSE', /no LICENSE at the repository root/);
 });
