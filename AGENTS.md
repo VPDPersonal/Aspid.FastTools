@@ -11,7 +11,7 @@ Agent Skills for projects that consume the package in `skills/`. The rules of ea
 - Bump the version only with `scripts/set-version.sh <version>`. `/asp-ft-release <version>` runs the whole release,
   the Asset Store upload included.
 - `asp-branch`, `asp-commit` and `asp-pr` in `.claude/skills/` are copies from Aspid.AgentKit. Do not edit them;
-  update them only with `scripts/sync-agentkit-skills.sh`.
+  update them with `npx skills add VPDPersonal/Aspid.AgentKit -a claude-code -s asp-branch -s asp-commit -s asp-pr --copy -y`.
 - In `.claude/settings.json` allow only commands that cannot run code or read the environment; put the rest in
   `.claude/settings.local.json`.
 

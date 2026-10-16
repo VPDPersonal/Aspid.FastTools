@@ -3,8 +3,6 @@ name: asp-branch
 description: Git branch naming convention. Use when creating a branch or choosing its name.
 when_to_use: "«создай ветку», «new branch», branching off main before a commit."
 effort: low
-metadata:
-  internal: true
 ---
 
 # Branch naming
