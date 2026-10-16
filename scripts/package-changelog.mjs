@@ -34,9 +34,24 @@ function rebase(url) {
   return path.posix.relative(PKG, target) + suffix;
 }
 
-const markdown = readFileSync(SOURCE, 'utf8')
-  .replace(/(\]\()([^)\s]+)(\))/g, (_, open, url, close) => open + rebase(url) + close)
-  .replace(/^(\[[^\]]+\]:\s*)(\S+)/gm, (_, label, url) => label + rebase(url));
+// A destination may be written in angle brackets, and an inline link may carry a title.
+const destination = (url) => (url.startsWith('<') ? `<${rebase(url.slice(1, -1))}>` : rebase(url));
+
+// One pass over the text, so a link in code (a fenced block or a code span) is code and stays as it is. A match starts
+// at the first place that any of the four can, and the first one that matches there wins.
+const TOKENS = new RegExp([
+  /^(?<fence>`{3,}|~{3,})[^\n]*\n[\s\S]*?^\k<fence>[^\n]*$/.source,
+  /(?<ticks>`+)[\s\S]*?\k<ticks>/.source,
+  /(?<open>\]\()(?<url><[^>\n]*>|[^)\s]+)(?<close>(?:\s+(?:"[^"\n]*"|'[^'\n]*'))?\))/.source,
+  /^(?<label>\[[^\]\n]+\]:[ \t]*)(?<reference><[^>\n]*>|\S+)/.source,
+].join('|'), 'gm');
+
+const markdown = readFileSync(SOURCE, 'utf8').replace(TOKENS, (match, ...rest) => {
+  const groups = rest.at(-1);
+  if (groups.url !== undefined) return groups.open + destination(groups.url) + groups.close;
+  if (groups.reference !== undefined) return groups.label + destination(groups.reference);
+  return match;
+});
 writeFileSync(DESTINATION, `<!-- Generated at release from the repository's ${SOURCE}. Edit that file. -->\n\n${markdown}`);
 writeFileSync(`${DESTINATION}.meta`, META);
 console.log(`Generated ${DESTINATION} and its .meta from ${SOURCE}.`);

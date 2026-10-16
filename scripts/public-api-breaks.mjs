@@ -17,17 +17,36 @@ const isMemberLine = (line) => line.trim() !== '' && !line.startsWith('#');
 // The member lines that the `patch` field of the files API removes, without the ones that an added line only extends.
 // A changed line is a removed line plus an added one. The field holds hunks only (no `---` header), and context lines
 // start with a space, so only "-" and "+" lines count.
+// An added line extends a removed one only in the same type. A line sits in the type of the last unindented line above
+// it on its side of the diff, or, before the first one, in the type that git names after the `@@` of the hunk (git
+// names the last line above the hunk that starts with a letter, and only a type line does).
 export function removedMemberLines(patch) {
   const removed = [];
   const added = [];
+  let oldScope = '';
+  let newScope = '';
 
   for (const line of patch.split('\n')) {
-    if (!isMemberLine(line.slice(1))) continue;
-    if (line.startsWith('-')) removed.push(line.slice(1).trim());
-    else if (line.startsWith('+')) added.push(line.slice(1).trim());
+    const hunk = /^@@ [^@]*@@(.*)$/.exec(line);
+    if (hunk) {
+      oldScope = newScope = hunk[1].trim();
+      continue;
+    }
+
+    const text = line.slice(1);
+    if (!isMemberLine(text)) continue;
+    const isTypeLine = !/^\s/.test(text);
+    const marker = line[0];
+
+    if (marker === '-') removed.push({ line: text.trim(), scope: oldScope });
+    else if (marker === '+') added.push({ line: text.trim(), scope: newScope });
+    else if (marker !== ' ') continue;
+
+    if (isTypeLine && marker !== '+') oldScope = text.trim();
+    if (isTypeLine && marker !== '-') newScope = text.trim();
   }
 
-  return withoutExtended(removed, added);
+  return withoutExtended(removed, added).map(({ line }) => line);
 }
 
 // The member lines of `before` that `after` no longer has, for a file whose patch GitHub left out (a large diff).
@@ -39,25 +58,21 @@ export function removedMemberLinesBetween(before, after) {
   const beforeKeys = new Set(beforeEntries.map(({ key }) => key));
   const afterKeys = new Set(afterEntries.map(({ key }) => key));
 
-  // A line that appeared in a type may extend a line that left the same type.
-  const addedByType = new Map();
-  for (const { line, key, scope } of afterEntries) {
-    if (scope === undefined || beforeKeys.has(key)) continue;
-    addedByType.set(scope, [...(addedByType.get(scope) ?? []), line]);
-  }
+  // A line that appeared in a type may extend a line that left the same type. An assembly or a type line has no scope,
+  // so it extends nothing.
+  const removed = beforeEntries.filter(({ key }) => !afterKeys.has(key));
+  const added = afterEntries.filter(({ key, scope }) => scope !== undefined && !beforeKeys.has(key));
 
-  return beforeEntries
-    .filter(({ key }) => !afterKeys.has(key))
-    .filter(({ line, scope }) => scope === undefined || withoutExtended([line], addedByType.get(scope) ?? []).length > 0)
-    .map(({ line }) => line);
+  return withoutExtended(removed, added).map(({ line }) => line);
 }
 
-// A removed line that an added line extends is no loss. Each added line extends at most one removed line.
+// A removed line that an added line of the same scope extends is no loss. Each added line extends at most one removed
+// line.
 function withoutExtended(removed, added) {
   const pool = [...added];
 
-  return removed.filter((line) => {
-    const index = pool.findIndex((candidate) => isAdditiveChange(line, candidate));
+  return removed.filter(({ line, scope }) => {
+    const index = pool.findIndex((candidate) => candidate.scope === scope && isAdditiveChange(line, candidate.line));
     if (index < 0) return true;
 
     pool.splice(index, 1);

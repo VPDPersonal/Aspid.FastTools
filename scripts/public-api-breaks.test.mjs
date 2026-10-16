@@ -331,3 +331,44 @@ test('two versions: an extended declaration in one type does not hide the loss i
 
   assert.deepEqual(removedMemberLinesBetween(before, after), ['public class Id : IBar']);
 });
+
+test('a patch: an extended declaration in another type does not hide the loss', () => {
+  const lost = removedMemberLines(patch(
+    '-    public sealed class Nested',
+    ' ',
+    ' Aspid.FastTools.Ids.IdMap',
+    '+    public sealed class Nested : IBar'));
+
+  assert.deepEqual(lost, ['public sealed class Nested']);
+});
+
+test('a patch: a type line that only one side has moves the scope of that side', () => {
+  const lost = removedMemberLines(patch(
+    '-Aspid.FastTools.Ids.Old',
+    '+Aspid.FastTools.Ids.New',
+    '-    public sealed class Nested',
+    '+    public sealed class Nested : IBar'));
+
+  assert.deepEqual(lost, ['Aspid.FastTools.Ids.Old', 'public sealed class Nested']);
+});
+
+test('a patch: the type that a hunk header names is the scope of its first lines', () => {
+  const lost = removedMemberLines([
+    '@@ -10,3 +10,3 @@ Aspid.FastTools.Ids.Id',
+    '-    public sealed class Nested',
+    '+    public sealed class Nested : IBar',
+    '@@ -40,3 +40,3 @@',
+    '-    public sealed class Other',
+    '@@ -80,3 +80,3 @@ Aspid.FastTools.Ids.IdMap',
+    '+    public sealed class Other : IBar',
+  ].join('\n'));
+
+  assert.deepEqual(lost, ['public sealed class Other']);
+});
+
+test('two versions: one added line extends only one removed line of its type', () => {
+  const before = snapshot('[Aspid.FastTools]', '', 'Aspid.FastTools.Ids.Id', '    public class Id : IBar', '    public class Id : IBar');
+  const after = snapshot('[Aspid.FastTools]', '', 'Aspid.FastTools.Ids.Id', '    public class Id : IBar, IBaz');
+
+  assert.deepEqual(removedMemberLinesBetween(before, after), ['public class Id : IBar']);
+});

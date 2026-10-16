@@ -13,15 +13,22 @@
 set -eu
 cd "$(dirname "$0")/.."
 NEW="${1:?usage: scripts/set-version.sh <version>}"
-# \A..\z on the whole argument: a line-by-line grep would let "1.0.0<newline>x" through into package.json.
-perl -e 'exit($ARGV[0] !~ /\A[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?\z/)' "$NEW" || { echo "$NEW is not a SemVer version" >&2; exit 1; }
+# \A..\z on the whole argument: a line-by-line grep would let "1.0.0<newline>x" through into package.json. SemVer
+# forbids a leading zero in a number and an empty prerelease identifier (01.0.0, 1.0.0-rc.01, 1.0.0-rc..1).
+perl -e '$n = qr/0|[1-9][0-9]*/; $id = qr/$n|[0-9]*[A-Za-z-][0-9A-Za-z-]*/;
+  exit($ARGV[0] !~ /\A$n\.$n\.$n(?:-$id(?:\.$id)*)?\z/)' "$NEW" || { echo "$NEW is not a SemVer version" >&2; exit 1; }
 # Checked before any file changes, so a missing install never leaves the root README out of step.
 [ -d Website/node_modules ] || { echo "Website/node_modules is missing; run: npm --prefix Website ci" >&2; exit 1; }
-# A CHANGELOG that already has the version's section keeps it. Otherwise its [Unreleased] must have notes to release.
+# A CHANGELOG that already has the version's section keeps it, if the heading is dated as check-version.mjs reads it
+# ("## [1.0.0] — 2026-10-16"). Otherwise its [Unreleased] must have notes to release.
 # The heading is matched whole, as the move below needs it: a trailing space or a CRLF fails here, before any change.
-has_section() { perl -ne 'BEGIN { $v = shift } $f = 1 if /^## \[\Q$v\E\]/; END { exit !$f }' "$NEW" "$1"; }
+#   has_section <file> [<pattern after the "]">]
+has_section() { perl -ne 'BEGIN { ($v, $t) = splice @ARGV, 0, 2 } $f = 1 if /^## \[\Q$v\E\]$t/; END { exit !$f }' "$NEW" "${2:-}" "$1"; }
 for f in CHANGELOG.md Website/i18n/ru/CHANGELOG.md; do
-  has_section "$f" && continue
+  if has_section "$f"; then
+    has_section "$f" ' ' || { echo "$f: the \"## [$NEW]\" heading has no date; write \"## [$NEW] — YYYY-MM-DD\"" >&2; exit 1; }
+    continue
+  fi
   awk '/^## \[Unreleased\]$/ { on = 1; next } /^## \[/ { exit } on && NF && !/^#/ { notes = 1 } END { exit !notes }' "$f" \
     || { echo "$f: no \"## [Unreleased]\" line with notes to release as $NEW" >&2; exit 1; }
 done
@@ -70,15 +77,16 @@ case "$NEW" in *-*) ;; *)
     mv "$REL.Unshipped.md.tmp" "$REL.Unshipped.md"
   fi ;;
 esac
-# The new section goes under an empty [Unreleased], and its release link above the older ones. The package copy of
-# CHANGELOG.md is generated at release (scripts/package-changelog.mjs).
+# The new section goes under an empty [Unreleased], and its release link above the older ones. A CHANGELOG that kept
+# its section still gets the link it misses. The package copy of CHANGELOG.md is generated at release
+# (scripts/package-changelog.mjs).
 DATE=$(date +%Y-%m-%d) REPO=https://github.com/VPDPersonal/Aspid.FastTools
 export DATE REPO
 for f in CHANGELOG.md Website/i18n/ru/CHANGELOG.md; do
-  has_section "$f" && continue
-  perl -0pi -e 's/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW}] — $ENV{DATE}\n/m or die "$ARGV: no [Unreleased] line\n";
-    my $link = "[$ENV{NEW}]: $ENV{REPO}/releases/tag/v$ENV{NEW}\n";
-    s/^(?=\[[0-9][^\]]*\]: )/$link/m or $_ .= "\n$link"' "$f"
+  has_section "$f" ||
+    perl -0pi -e 's/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW}] — $ENV{DATE}\n/m or die "$ARGV: no [Unreleased] line\n"' "$f"
+  perl -0pi -e 'my $link = "[$ENV{NEW}]: $ENV{REPO}/releases/tag/v$ENV{NEW}\n";
+    index($_, "\n$link") >= 0 or s/^(?=\[[0-9][^\]]*\]: )/$link/m or $_ .= "\n$link"' "$f"
 done
 npm --prefix Website run --silent sync-readme
 # Whatever a pattern above missed (a reworded badge, say) fails here instead of at the release.
