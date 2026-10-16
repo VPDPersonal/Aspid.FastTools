@@ -63,7 +63,8 @@ for (const file of skillFiles) {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(name) || name.length > 64) fail(file, 'name must be kebab-case, at most 64 characters');
   if (typeof data?.description !== 'string' || !data.description.trim()) fail(file, 'description is missing');
   else if (Buffer.byteLength(data.description) > 1024) fail(file, 'description exceeds 1024 bytes');
-  // Users install skills from the skills/ subtree, and `npx skills add` skips a skill marked internal.
+  // The docs install skills only from skills/ (the release subtree or its path on main), so repo skills need no mark.
+  // `npx skills add` skips a skill marked internal, so a consumer skill must not carry it.
   if (consumer && data?.metadata?.internal === true) fail(file, 'consumer skill must not be internal');
 }
 

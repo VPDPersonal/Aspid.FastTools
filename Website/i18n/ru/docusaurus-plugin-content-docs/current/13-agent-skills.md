@@ -48,7 +48,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git?path=/Aspid.FastTools/Package
 Затем установите скиллы без тега:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools
+npx skills add https://github.com/VPDPersonal/Aspid.FastTools/tree/main/skills
 ```
 
 Раньше скиллы поставлялись плагином `aspid-fasttools` для Claude Code. Если он у вас стоит, удалите его командой `/plugin uninstall aspid-fasttools@aspid-claude-plugins`: он учит агента API, которого больше нет.
