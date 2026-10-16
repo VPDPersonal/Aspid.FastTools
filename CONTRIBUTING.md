@@ -1,8 +1,5 @@
 # Contributing to Aspid.FastTools
 
-This page says how to set up the repository, what a pull request must contain and what CI checks.
-[AGENTS.md](AGENTS.md) holds the same code rules in short form for coding agents.
-
 ## Before you start
 
 - **A bug:** open an issue with the Bug report form. Give the Unity version, the package version and the steps to reproduce.
@@ -12,106 +9,52 @@ This page says how to set up the repository, what a pull request must contain an
 
 By sending a pull request you agree to license your contribution under the [MIT License](LICENSE).
 
-## Repository layout
-
-| Path | What it holds |
-|---|---|
-| `Aspid.FastTools/Packages/tech.aspid.fasttools/` | The Unity package: `Runtime/`, `Editor/`, `Tests/`, `Samples~/` and the two committed Roslyn DLLs |
-| `Aspid.FastTools/` | The Unity project that opens the package for development |
-| `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/` | .NET solutions whose Release build produces the DLLs in the package |
-| `Aspid.FastTools.YamlTests/` | Tests of the SerializeReference YAML engine, run without Unity |
-| `Aspid.FastTools.TypeTests/` | Tests of the generic type resolver, run without Unity |
-| `Website/` | The documentation site: pages, tutorials, Russian translations and the API reference |
-| `skills/` | Agent Skills for projects that use the package |
-
 ## Set up
 
-1. Install the Unity version in `Aspid.FastTools/ProjectSettings/ProjectVersion.txt` and open the `Aspid.FastTools/` folder as a project.
-2. Install the .NET SDK that `global.json` pins. It allows no other version. The test projects target `net6.0`, so install the .NET 6 runtime too.
-3. Install Node.js 22 and run `npm --prefix Website ci`. The documentation site and the repository scripts need it.
+1. Open `Aspid.FastTools/` as a project in the Unity version from `Aspid.FastTools/ProjectSettings/ProjectVersion.txt`.
+2. Install the .NET SDK that `global.json` pins and the .NET 6 runtime.
+3. Install Node.js 22 and run `npm --prefix Website ci`.
 
 ## Code rules
 
-A pull request that breaks one of these does not merge:
-
-- Use no Unity API newer than **6000.0.53f1** without an `#if UNITY_6000_x_OR_NEWER` guard. The development project runs a newer Unity than `package.json` promises. Unity has no define for a patch: an API from a later 6000.0 patch needs a higher `unityRelease`.
+- Use no Unity API newer than **6000.0.53f1** without an `#if UNITY_6000_x_OR_NEWER` guard.
 - Do not reach editor-only APIs from runtime code.
-- Do not write to `Console` or reference `SourceGenerator.Foundations` in generator or analyzer code. It deadlocks Unity's compilation server.
-- Keep the SerializeReference YAML engine (`Editor/Scripts/SerializeReferences/Yaml`) on C# 9 with no Unity API: `Aspid.FastTools.YamlTests` compiles it outside Unity.
-- Keep `GenericTypeResolver`, `GenericArgumentFilter` and `TypeUtility` on C# 9 with no new Unity API: `Aspid.FastTools.TypeTests` compiles them outside Unity.
+- Keep the YAML engine (`Editor/Scripts/SerializeReferences/Yaml`) and `GenericTypeResolver`, `GenericArgumentFilter`,
+  `TypeUtility` on C# 9 with no new Unity API: test projects compile them outside Unity.
 
-Style is set by `.editorconfig` and the "C# style" section of [AGENTS.md](AGENTS.md): named arguments, `using` directives sorted by line length, `sealed` leaf classes, `internal` for implementation. Public API carries XML docs.
-
-Unity writes a `.meta` file for every new file or folder under `Aspid.FastTools/`. Commit it with the file. Do not commit changes Unity makes to other `.meta` files, to `ProjectSettings/` or to `Packages/*.json`.
+Style and the other rules are in [AGENTS.md](AGENTS.md) and `.editorconfig`. Commit the `.meta` file of every new file;
+do not commit other changes Unity makes to `.meta` files, `ProjectSettings/` or `Packages/*.json`.
 
 ## Generators and analyzers
 
-A change to generator or analyzer source reaches Unity only through the DLLs committed into the package.
-
-1. Run the tests in the solution folder: `dotnet test`. This is a Debug build and does not copy the DLL.
-2. Build in Release in the same folder: `dotnet build -c Release`. This copies the DLL into the package.
-3. Commit the changed DLL together with the source.
-
-Build with the SDK from `global.json`. CI rebuilds both DLLs on every pull request and fails when they differ from the committed ones.
+Unity sees a change to generator or analyzer source only through the DLLs committed into the package. In the solution
+folder run `dotnet test`, then `dotnet build -c Release`, and commit the changed DLL with the source. CI fails when the
+committed DLLs differ from a Release build.
 
 ## Tests
 
-| Area | Command |
-|---|---|
-| Generators | `dotnet test` in `Aspid.FastTools.Generators/` |
-| Analyzers | `dotnet test` in `Aspid.FastTools.Analyzers/` |
-| YAML engine | `dotnet test Aspid.FastTools.YamlTests` in the repository root |
-| Type resolver | `dotnet test Aspid.FastTools.TypeTests` in the repository root |
-| Package | **Window → General → Test Runner → EditMode** in the development project |
+Run `dotnet test` in `Aspid.FastTools.Generators/` and `Aspid.FastTools.Analyzers/`, and
+`dotnet test Aspid.FastTools.YamlTests` and `dotnet test Aspid.FastTools.TypeTests` in the repository root. Package
+tests run in **Window → General → Test Runner → EditMode**. Add a test for every behavior change a test project can reach.
 
-Add or extend a test for every behavior change a test project can reach. EditMode tests live in `Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/`. To run them on another Unity version, use the batch command in the header of `scripts/make-unity-test-project.sh`.
+## CHANGELOG and docs
 
-## CHANGELOG
+- A change users can see in the package goes under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md) and
+  [CHANGELOG.ru.md](CHANGELOG.ru.md), next to the most related entry. A breaking change says how to migrate. No visible
+  change? Ask for the `no-changelog` label.
+- Docs pages live in `Website/docs/` and `Website/tutorials/`, each with a Russian twin under `Website/i18n/ru/`.
+  The root `README.md` is generated from `Website/docs/README.md` by `npm --prefix Website run sync-readme`.
+- Update a skill in `skills/` that describes API you changed.
 
-A change to `Runtime/`, `Editor/`, `Samples~/` (except `Documentation`) or the package DLLs that users can see needs an entry under `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md), under Added, Changed, Fixed or Removed.
-
-- Put the entry next to the most related one, not at the end of the section. Parallel pull requests then do not conflict on the same line.
-- Add the same entry in Russian to [CHANGELOG.ru.md](CHANGELOG.ru.md): the check fails when only one of the two files changes. If you do not write Russian, put the English entry there and say so in the pull request; a maintainer translates it.
-- A breaking change goes under Changed and says how to migrate.
-- Users see no change (a refactor, a test)? Ask for the `no-changelog` label instead.
-
-## Documentation and skills
-
-- Pages live in `Website/docs/` and `Website/tutorials/`. Each page has a Russian twin under `Website/i18n/ru/`. Change both: CI compares their headings, code blocks, images and links. If you do not write Russian, say so in the pull request.
-- The root `README.md` is generated. Edit `Website/docs/README.md` and run `npm --prefix Website run sync-readme`.
-- Build the site with `npm --prefix Website run build`.
-- A change to public API or to its XML docs regenerates the API reference with `npm run api` in `Website/` and commits `Website/api/`. It needs a Unity install and DocFX. Without them, say in the pull request that the reference still needs regenerating.
-- A skill in `skills/` that describes API you changed is updated in the same pull request. Check skill files with `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`, and do not commit the resulting `node_modules`.
+If you do not write Russian, put the English text in the Russian file and say so in the pull request.
 
 ## Pull request
 
-1. Branch from `main`. Keep one logical change in one pull request.
-2. Do not change the package version. A maintainer does it at release with `scripts/set-version.sh`.
-3. Title the pull request `type(scope): summary`, in [Conventional Commits](https://www.conventionalcommits.org/) form. Pull requests are squash-merged, so the title becomes the commit subject.
-4. Fill in the pull request template: why, what and how you checked it.
+- Branch from `main`, one logical change per pull request. Do not change the package version.
+- Title: `type(scope): summary` in [Conventional Commits](https://www.conventionalcommits.org/) form, up to 72
+  characters, no period at the end, with types and scopes from [.claude/asp-pr.md](.claude/asp-pr.md). Add `!` before
+  the colon for a breaking change.
+- Fill in the pull request template: why, what and how you checked it.
 
-The title rules, which CI checks:
-
-- At most **72 characters**.
-- No period at the end.
-- A type and a scope from [.claude/asp-pr.md](.claude/asp-pr.md). The scope is optional.
-- `!` before the colon for a breaking change. CI requires it when the pull request removes or changes a line of the public API snapshot, `Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/PublicApi/PublicApi.txt` (a `#` comment line does not count, and neither does a line that only gains an interface or a base class, or the `[Flags]` of an enum). Add a migration note under Changed. A pull request that also changes `PublicApiSnapshot.cs`, the code that writes the snapshot, gets a warning instead: a maintainer judges the break by hand.
-
-Examples:
-
-```text
-fix(types): stop the type picker selection refresh loop on Unity 6000.6
-feat(visual-elements)!: add plural class and style sheet extensions
-docs(enums): review the EnumValues page
-```
-
-CI sets the `type:`, `area:` and `breaking-change` labels from the title and the changed paths. Do not add them yourself.
-
-### What CI checks
-
-- **PR title** and **CHANGELOG**: the rules above.
-- **Tests** on every pull request: the generator, analyzer, YAML engine and type resolver tests, and the tests of the repository scripts.
-- **Unity:** the EditMode tests on every Unity version in the matrix of `.github/workflows/ci.yml`, from the minimum one up, when a change reaches the package code. They need repository secrets, which a pull request from a fork does not get. On such a pull request the required **Unity** check fails instead of skipping: this is expected, not your mistake. A maintainer reads the change, runs the tests on a branch of this repository and merges. Say how you tested in Unity.
-- **Repository files** on every pull request: the committed Roslyn DLLs match a Release build, package files and their `.meta` files, the version and the minimum Unity version in every file that holds them, every `SKILL.md` (front matter, `AFT` codes, namespaces), and the contrast of the Editor palette.
-- **Docs:** the site builds when `Website/`, a README or a CHANGELOG changes.
-- **Review:** a bot reviews non-draft pull requests opened from branches of this repository, by the rules in [.github/claude-review.md](.github/claude-review.md).
+The Unity tests in CI need repository secrets, so on a pull request from a fork the **Unity** check fails. This is
+expected: a maintainer runs the tests and merges. Say how you tested in Unity.
