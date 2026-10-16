@@ -123,40 +123,10 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
   capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
   which keeps the bare scene look. So name inspector captures anything but `demo`/`scene`, and name scene footage
   exactly that. A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (recoloured background).
-- **Inspector and picker captures are cropped in the file, not in CSS.** `scripts/frame-doc-captures.sh` crops each
-  listed capture (both themes) to its component and adds an 8px margin that continues Unity's background, the
-  Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub and the site
-  then show the same image. After re-shooting a listed capture, run the script; it skips framed files and fails on a
-  capture whose size no longer matches its row, which then needs new bounds. Only `enum-values-multipliers/padding/pad.py`
-  and `enum-values-multipliers/type-selector/crop.sh` in `docs/media` still write a listed capture, and they call it
-  themselves; the other listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
-  On doc pages the site pads every listed capture on to 8px from its rounded frame, drawing it as a border image so
-  the margin's bands meet the edge without a seam; `docusaurus.config.js` reads the list and `PAD` from the script
-  (`customFields.framedCaptures`), so a new row needs nothing else. The introduction's cards do the same in `custom.css`.
-  Whole-window captures (`aspid_fasttools_serialize_reference_*` from the SerializeReferences DocsMedia harness) keep
-  the window's 24px margin; doc pages crop it to the same 8px (`WINDOW_CAPTURES` in `MDXComponents/Img`), so a new
-  window capture is added to that pattern.
-- Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
-  `Website/tutorials/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
-  and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
-- Click or Enter opens the image in a modal (Esc closes). Bare images are capped at 640×520;
-  captures in `doc-image-panel` and `.sample-scene` media fill the article.
-- Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
-- A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
-  (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
-  keeps the picture for GitHub, dark only: the site never shows it, so it has no light sibling. The caption paragraph
-  must still repeat the alt text as plain text.
-- A table can have a live site version the same way: `TABLES` in `liveDiagrams.js` maps its first body cell to a
-  component (`SetPadding(8)` → `StyleSides`, the Styles table of VisualElement Extensions), which gets every row as
-  `<StyleSidesRow call="…">` with the second cell as children. Markdown keeps the table, and the rows and their
-  translations stay in the page; changing that first cell detaches the component.
-- An ordered list can have one too: `LISTS` in `liveDiagrams.js` maps the bold text of its first item to a component
-  (`Tools → Aspid 🐍 → FastTools → Project References` → `ProjectReferencesPanel`, the SerializeReference repair quick
-  start), which gets each item's text as a `<span>` child, so the steps and their translation stay in the page; changing
-  that bold text detaches it. The panel reuses the install panel's card and steps and draws the Aspid FastTools window
-  without its tab strip; in the light site theme it takes Unity's light skin and the window's light palette
-  (`Aspid-FastTools-Default-Light.uss`), so update both when the package palette changes.
+- Read `references/images.md` before you re-shoot or add an Inspector, picker or window capture (cropping with
+  `scripts/frame-doc-captures.sh`), add a scene sample (`SCENE_SAMPLES`), or edit a page whose picture, table or
+  ordered list has a live site version (`liveDiagrams.js`): changing the key text there detaches the component.
 
 ## Writing a feature page (docs/)
 
@@ -195,7 +165,7 @@ Apply these rules to every main doc page, always to the English file and its `ru
   «а затем», or split the sentence: «…по всему проекту и восстанавливает их группами», not «…в префабах, сценах и
   ScriptableObject и восстанавливает…».
 - **The ASD-STE100 style does not apply to site pages**, in English or Russian. Do not shorten sentences or remove
-  phrasal verbs for STE; the Introduction sets the tone.
+  phrasal verbs for STE.
 - **Say each fact once, in the section it belongs to.** Explain behaviour beside the methods or task it describes.
   No repeat between a table's cell comments and the paragraph under it, or between quick start and a later section.
 - **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`",
@@ -232,7 +202,7 @@ Apply these rules to every main doc page, always to the English file and its `ru
   long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
 - **No caption under a capture on a feature page**: the section text already says what it shows, so the image keeps
   only its alt text (Serializable Types, ProfilerMarkers). The caption paragraph stays for live diagrams and tutorial
-  pages; the `## Package sample` gif has none either.
+  pages.
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
   and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
   Cut empty UI out of every frame of a capture: the picker's empty rows above its footer go, as in the Serializable
@@ -339,17 +309,10 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
   its runner before the subtree split. The script turns links that leave the package into GitHub URLs at the release
   tag and writes the `.meta` with a fixed GUID, so a release never changes it. A PR that edits the root `CHANGELOG.md`
   needs no sync.
-- The root README gets GitHub's version of the site's introduction blocks (`scripts/github-readme.mjs`, tested in
-  `github-readme.test.mjs`): doc-page and samples-overview links open the site; the link row's site link becomes
-  `Documentation: EN, RU`; the install instruction becomes a card (the recorded InstallPanel walk-through beside its
-  steps) and the note under the URL links the site's install panel for versions and channels; each feature becomes a card (a one-row table: preview, then title, summary and «Read more»); the
-  Resources list becomes a row of tiles and the help section the SupportPanel call to action without the licence line.
-  A code preview gives way to the recording of the site's animated preview, `docs/images/readme-previews/<name>.webp`.
-  The README shows only dark images: a `<picture>` per theme follows the system theme, not GitHub's, so the generator
-  drops the `-light` siblings and the recorder records the dark theme only.
-  After a change to `FeaturePreview`, the InstallPanel walk-through, the site's dark theme or the install channel (the
-  walk-through types its URL), rebuild the site and re-record: `node docs/media/readme-previews/record.mjs <served URL> [name …]`
-  (`docs/media/readme-previews/README.md`), then run `sync-readme`.
+- The root README gets GitHub's version of the site's introduction blocks (`Website/scripts/github-readme.mjs`): cards,
+  tiles and recorded previews instead of the site components, dark images only. Read `references/github-readme.md`
+  before you change that generator or the introduction's shape, and after a change to `FeaturePreview`, the
+  InstallPanel walk-through, the site's dark theme or the install channel: those need the previews re-recorded.
 - `npm --prefix Website run check-translations` (CI) checks that every English page has a Russian twin and that the twin
   has the heading levels, code blocks, images and link targets of its source. Only prose, `//` comments, text blocks
   and same-page anchors may differ, so make every structural change in both languages. The twin is required for
@@ -389,20 +352,11 @@ reference still needs regenerating.
 
 ## Design
 
-The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as accent (`--venom-*` tokens in
-`Website/src/css/custom.css`). Green is the default; the reader can switch the accent to red, blue, yellow or mono in the
-sidebar footer appearance menu, next to the theme (`NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
-`html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. The accent's favicon is set on the plain
-`<link rel="icon">` in `headTags`, not on the `favicon` field: React Helmet owns that field's tag and resets it on every
-navigation. Colour things with `--venom-accent*`
-/ `--ifm-color-primary*`, never a literal green, unless it mimics Unity or means success (`--venom-emerald`).
-Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) are self-hosted: the site makes no request to
-Google. `src/css/fonts.css` declares the woff2 files of the exact-pinned `@fontsource/ibm-plex-*` packages, Latin and
-Cyrillic only, each with its `unicode-range` (the packages' own per-subset CSS has none and adds woff copies). A new
-language outside those two needs `latin-ext` or `cyrillic-ext` rules there. `src/plugins/fonts` makes Docusaurus emit
-fonts as files, because it inlines anything under 10 kB into the stylesheet of every page. iA Writer Quattro, the
-samples' editor font, is self-hosted in `src/fonts/` (OFL, keep the licence file) for navigation labels only — sidebar
-and TOC, `--venom-font-family-nav`. Prism themes are Ayu-based, in `src/prism/venom.js`, with a transparent background.
+The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as the default accent (`--venom-*`
+tokens in `Website/src/css/custom.css`); the reader can switch the accent. Colour things with `--venom-accent*` /
+`--ifm-color-primary*`, never a literal green, unless it mimics Unity or means success (`--venom-emerald`). Fonts are
+self-hosted: never add a request to Google Fonts. Read `references/design.md` before you change accents, the favicon,
+fonts or the Prism theme.
 Keep the admonition style (`.theme-admonition` in `custom.css`): a 2px outline in the block colour, 12px radius, no fill,
 the heading and icon in the block colour, the body in the text colour. The user likes it; reuse it first when another
 block (table, details, card) needs a cleaner look.
@@ -414,6 +368,7 @@ The cards on the Introduction page (layout, captures, previews, clip recipes) ha
 
 ## Deploy
 
-`.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package README, `package.json`
-or a sample's `Documentation/`, `scripts/frame-doc-captures.sh`, the root `README.md`, `docs/images/readme-previews/` or `CHANGELOG.md`, and on PRs (build only); it runs
-`check-readme`, `check-translations` and the site tests (`node --test scripts/*.test.mjs`) before the build and `check-selectors` after it. Pages source must be set to "GitHub Actions" once in the repository settings.
+`.github/workflows/docs.yml` deploys on a push to `main` that touches one of its `paths`, and only builds on PRs; it
+runs `check-readme`, `check-translations` and the site tests before the build and `check-selectors` after it. When the
+site starts reading a new file outside `Website/`, add it to those `paths`. Pages source must be set to "GitHub Actions"
+once in the repository settings.
