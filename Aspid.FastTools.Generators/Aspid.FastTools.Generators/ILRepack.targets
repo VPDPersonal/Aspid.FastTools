@@ -32,4 +32,14 @@
                   OutputFile="$(UnityAnalyzerMergedPath)" />
     </Target>
 
+    <!-- Ships the merged DLL into the Unity package. Release-only: the Tests and Sample projects reference the
+         generator, so a Debug `dotnet test` run would otherwise overwrite the shipped Release DLL with a Debug build. -->
+    <Target Name="CopyToUnity" AfterTargets="ILRepacker" Condition="'$(Configuration)' == 'Release'">
+        <PropertyGroup>
+            <_UnityDestination>$(MSBuildThisFileDirectory)../../Aspid.FastTools/Packages/tech.aspid.fasttools/</_UnityDestination>
+        </PropertyGroup>
+        <MakeDir Directories="$(_UnityDestination)" />
+        <Copy SourceFiles="$(UnityAnalyzerMergedPath)" DestinationFolder="$(_UnityDestination)" SkipUnchangedFiles="true" />
+    </Target>
+
 </Project>

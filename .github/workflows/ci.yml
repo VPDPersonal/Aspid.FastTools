@@ -101,7 +101,7 @@ jobs:
       - run: node --test scripts/*.test.mjs
 
   # A change to a generator or an analyzer reaches Unity only through the DLL in the package. A Release build rewrites
-  # both DLLs there (Directory.Build.targets); a clean `git diff` shows that the committed ones come from these sources.
+  # both DLLs there (the CopyToUnity targets); a clean `git diff` shows that the committed ones come from these sources.
   roslyn-dlls:
     name: Roslyn DLLs
     runs-on: ubuntu-latest
