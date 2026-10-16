@@ -20,7 +20,7 @@ namespace Aspid.FastTools.Editors.Tests
 
         private const string BreakTitle =
             "Removed or changed (breaks user code: keep the old member as [Obsolete], or record the break in " +
-            "CHANGELOG.md and CHANGELOG.ru.md and mark the PR title with '!'):";
+            "CHANGELOG.md and Website/i18n/ru/CHANGELOG.md and mark the PR title with '!'):";
 
         // UNITY_6000_6_OR_NEWER is the newest version guard around public API, so an older Editor compiles a part of
         // the baseline: there the test only checks that nothing outside the baseline appears.
