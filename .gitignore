@@ -10,6 +10,9 @@
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+.Spotlight-V100
+.Trashes
+$RECYCLE.BIN/
 
 # `npm install --no-save js-yaml@4` for scripts/check-skills.mjs runs at the root.
 /node_modules/

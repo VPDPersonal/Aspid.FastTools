@@ -54,3 +54,6 @@ ExportedObj/
 *.mdb
 *.tmp
 *.unitypackage
+
+# Written by the Editor on a crash.
+sysinfo.txt
