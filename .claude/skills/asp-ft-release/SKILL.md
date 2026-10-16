@@ -16,7 +16,8 @@ The version picks the channel. It is the same rule as in `scripts/set-version.sh
 - A version with a hyphen (`1.0.0-rc.9`) → `upm-preview`: a Preview badge, a GitHub prerelease.
 - A version without a hyphen (`1.0.0`) → `upm`: a stable release. Only it has the steps marked **Stable**.
 
-Every version, on either channel, also publishes `skills/` as the `skills` branch and the `skills/<version>` tag.
+Every version also publishes `skills/` on the skills channel that matches: `skills-preview` next to `upm-preview`,
+`skills` next to `upm`, each as a branch and a `<skills channel>/<version>` tag.
 
 ## Which phase
 
@@ -78,9 +79,9 @@ Do every step without questions. Stop at the first failure and report it.
    - tag now: GitHub goes first, and the install URLs work at once → go on with step 3;
    - revert the release commit on `main` in a PR: `[Unreleased]` gets its notes back, and "Phase 1" runs again
      after the store publishes, as "Asset Store upload" describes → stop.
-3. Check the consumer skills in the merge commit. The Release workflow splits them into the `skills/<version>` tag,
-   the docs tell users to install them from it (`npx skills add VPDPersonal/Aspid.FastTools#skills/<version>`), and
-   a published tag cannot be replaced.
+3. Check the consumer skills in the merge commit. The Release workflow splits them into the skills channel branch and
+   its `<skills channel>/<version>` tag, the docs tell users to install them from the branch
+   (`npx skills add VPDPersonal/Aspid.FastTools#skills-preview`), and a published tag cannot be replaced.
    - `git ls-tree --name-only <merge-sha>:skills` lists the skill folders. An error or an empty list means that the
      tag has no skills.
    - Every folder has a `SKILL.md`: `git ls-tree -r --name-only <merge-sha>:skills | grep -c '/SKILL.md$'` gives the
@@ -106,14 +107,15 @@ Do every step without questions. Stop at the first failure and report it.
 4. Check the GitHub release: `gh release view v<version> --json url,isPrerelease`.
    `isPrerelease` must be true on `upm-preview` and false on `upm`.
 5. Check that `refs/heads/<channel>` and `refs/tags/<channel>/<version>` point to one commit, and so do
-   `refs/heads/skills` and `refs/tags/skills/<version>`:
-   `git ls-remote origin refs/heads/<channel> refs/tags/<channel>/<version> refs/heads/skills refs/tags/skills/<version>`.
+   `refs/heads/<skills channel>` and `refs/tags/<skills channel>/<version>`:
+   `git ls-remote origin refs/heads/<channel> refs/tags/<channel>/<version> refs/heads/<skills channel> refs/tags/<skills channel>/<version>`.
 6. Check the package version on the channel:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/package.json?ref=<channel>' --jq .content | base64 -d`.
 7. Check that the package CHANGELOG on the channel has the version's section. The release generates that copy:
    `gh api 'repos/VPDPersonal/Aspid.FastTools/contents/CHANGELOG.md?ref=<channel>' --jq .content | base64 -d`.
 8. Confirm that the published skills tag has the consumer skills that "Phase 2" step 3 listed. The skill folders lie
-   at its root: `git fetch origin tag skills/<version>`, then `git ls-tree --name-only refs/tags/skills/<version>`.
+   at its root: `git fetch origin tag <skills channel>/<version>`, then
+   `git ls-tree --name-only refs/tags/<skills channel>/<version>`.
    An error or an empty list means that `npx skills add` finds no skills in the tag. Put it into the report.
    This step only reports: a published tag cannot be replaced.
 9. **Stable:** find the milestone. Its title is `<version>` or `v<version>`:

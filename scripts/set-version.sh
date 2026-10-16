@@ -6,8 +6,7 @@
 # section, dated today, with its release link.
 # The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
 # from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one. The skills
-# go out on every channel as the `skills/<version>` tag; the docs give its install command with a `<version>`
-# placeholder, so no file here names it.
+# follow it: the Agent Skills page installs them from `skills-preview` or `skills`.
 # Running it again with the version already set repairs files that drifted (a hand-edited package.json, say).
 #   scripts/set-version.sh 1.0.0-rc.9
 set -eu
@@ -39,10 +38,10 @@ RU_DOCS=Website/i18n/ru/docusaurus-plugin-content-docs/current
 OLD=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "$PKG/package.json")
 [ -n "$OLD" ] || { echo "package.json version not found" >&2; exit 1; }
 case "$NEW" in
-  *-*) BRANCH=upm-preview LABEL=Preview EN='latest preview' RU='последнюю preview-версию' ;;
-  *) BRANCH=upm LABEL=Release EN='latest release' RU='последнюю версию' ;;
+  *-*) BRANCH=upm-preview SKILLS=skills-preview LABEL=Preview EN='latest preview' RU='последнюю preview-версию' ;;
+  *) BRANCH=upm SKILLS=skills LABEL=Release EN='latest release' RU='последнюю версию' ;;
 esac
-export NEW BRANCH LABEL EN RU
+export NEW BRANCH SKILLS LABEL EN RU
 # Only the "version" line: a dependency can be at the same number.
 OLD=$OLD perl -pi -e 's/^(  "version": ")\Q$ENV{OLD}\E(",)$/$1$ENV{NEW}$2/' "$PKG/package.json"
 # Each file replaces the version its own badge carries, whole: 1.0.0 does not rewrite 1.0.0-rc.8 or 11.0.0.
@@ -54,6 +53,10 @@ for f in "$DOCS/README.md" "$RU_DOCS/README.md"; do
     s/\.git#upm(?:-preview)?\b/.git#$ENV{BRANCH}/g;
     s/the latest (?:preview|release);/the $ENV{EN};/;
     s/на последнюю (?:preview-)?версию;/на $ENV{RU};/' "$f"
+done
+# The skills install commands name the channel; a pinned `#skills-preview/<version>` keeps its placeholder.
+for f in "$DOCS/13-agent-skills.md" "$RU_DOCS/13-agent-skills.md"; do
+  perl -pi -e 's/Aspid\.FastTools#skills(?:-preview)?\b/Aspid.FastTools#$ENV{SKILLS}/g' "$f"
 done
 # The badge is as wide as its version text: an estimated 13px glyph width per character, plus 14px of padding,
 # which keeps 1.0.0-rc.8 at the original 162.

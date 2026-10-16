@@ -13,17 +13,16 @@
 
 ```text prompt
 Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект,
-не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#skills/<version>,
-где <version> — версия установленного пакета Aspid.FastTools.
+не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#skills-preview.
 ```
 
 Или выполните в корне проекта:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools#skills/<version>
+npx skills add VPDPersonal/Aspid.FastTools#skills-preview
 ```
 
-Замените `<version>` версией установленного пакета: `1.0.0` даёт `#skills/1.0.0`. В установщике выберите область **Project**: глобальная установка действует во всех Unity-проектах, какая бы версия пакета в них ни стояла.
+В установщике выберите область **Project**: глобальная установка действует во всех Unity-проектах, какая бы версия пакета в них ни стояла.
 
 ```text prompt
 Замерь Simulate и отдельно поиск соседей
@@ -35,21 +34,15 @@ npx skills add VPDPersonal/Aspid.FastTools#skills/<version>
 
 ## Версии и обновление
 
-Скиллы из ветки `main` могут описывать API, которого нет в вашей версии пакета, и тогда агент пишет код, который не собирается. Тег релиза хранит скиллы, подходящие этому релизу. После обновления пакета повторите установку с новым тегом.
+Скиллы приходят из веток релизов, а не из `main`. У каждого канала пакета своя ветка: в `skills-preview` попадает каждый preview-релиз, как в `upm-preview`, а в `skills` — каждый стабильный, как в `upm`. Ставьте скиллы из канала вашего пакета. `npx skills update` переводит их на последний релиз этого канала и обновляет все скиллы проекта, не только эти.
 
-`npx skills update` не двигает скиллы, установленные с тега: он снова забирает тот же тег и ничего не меняет. Он обновляет только скиллы, установленные без тега, из `main`, и затрагивает все скиллы проекта, не только эти.
-
-Релизы до `1.0.0-rc.8` включительно не содержат скиллов. С ними обновите пакет до релиза со скиллами или поставьте пакет из `main` вместе со скиллами, чтобы они совпадали. В **Window → Package Manager** выберите **+ → Install package from git URL…** и вставьте этот URL:
-
-```text
-https://github.com/VPDPersonal/Aspid.FastTools.git?path=/Aspid.FastTools/Packages/tech.aspid.fasttools#main
-```
-
-Затем установите скиллы без тега:
+Обновляйте пакет одновременно со скиллами: скиллы новее пакета могут описывать API, которого в нём нет, и тогда агент пишет код, который не собирается. Чтобы скиллы оставались на версии вашего пакета, поставьте их с её тега — `npx skills update` его не двигает:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools/skills
+npx skills add VPDPersonal/Aspid.FastTools#skills-preview/<version>
 ```
+
+Релизы до `1.0.0-rc.8` включительно не содержат скиллов. С ними сначала обновите пакет до релиза со скиллами.
 
 Раньше скиллы поставлялись плагином `aspid-fasttools` для Claude Code. Если он у вас стоит, удалите его командой `/plugin uninstall aspid-fasttools@aspid-claude-plugins`: он учит агента API, которого больше нет.
 
