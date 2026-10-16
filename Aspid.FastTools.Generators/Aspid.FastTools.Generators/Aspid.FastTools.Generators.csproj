@@ -38,7 +38,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference ExcludeAssets="runtime" Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0"/>
-        <!-- Merges Aspid.Generators.Helper* into the single DLL Unity references (see Directory.Build.targets).
+        <!-- Merges Aspid.Generators.Helper* into the single DLL Unity references (see ILRepack.targets).
              Never add SourceGenerator.Foundations here: its injected module initializer writes to Console,
              which deadlocks VBCSCompiler when the stdout pipe buffer fills. -->
         <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.45" PrivateAssets="all" />
