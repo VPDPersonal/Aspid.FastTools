@@ -115,7 +115,6 @@ body:
       options:
         - label: "Site docs (`Website/docs/`, `Website/tutorials/`, their `Website/i18n/ru/` twins) and the short sample READMEs match the API"
         - label: The package README links the site, and the unpacked package has no images outside `Editor/Resources`
-        - label: "`SETUP.md` matches a fresh install from **My Assets**: the install steps, the menu paths and the minimum Unity version of `package.json`"
         - label: The version badge renders and links the `vX.Y.Z` release
         - label: Asset Store card screenshots proofread (no typos)
 
