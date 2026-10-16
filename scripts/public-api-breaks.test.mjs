@@ -372,3 +372,31 @@ test('two versions: one added line extends only one removed line of its type', (
 
   assert.deepEqual(removedMemberLinesBetween(before, after), ['public class Id : IBar']);
 });
+
+test('a patch: a type line that an earlier hunk added is the scope of the new side in a later hunk', () => {
+  // git names the type of the old file after the `@@`, so the second header still says Id.
+  const lost = removedMemberLines([
+    '@@ -10,4 +10,5 @@ Aspid.FastTools.Ids.Id',
+    '     public int Value { get; }',
+    '+Aspid.FastTools.Ids.IdMap',
+    '     public int Count { get; }',
+    '@@ -40,3 +41,3 @@ Aspid.FastTools.Ids.Id',
+    '-    public sealed class Nested',
+    '+    public sealed class Nested : IBar',
+  ].join('\n'));
+
+  assert.deepEqual(lost, ['public sealed class Nested']);
+});
+
+test('a patch: a hunk header cut at 80 bytes names the type that a type line above it names in full', () => {
+  const type = `Aspid.FastTools.Ids.${'Long'.repeat(20)}`;
+  const lost = removedMemberLines([
+    '@@ -10,3 +10,4 @@ Aspid.FastTools.Ids.Id',
+    ` ${type}`,
+    '+    public sealed class Nested : IBar',
+    `@@ -40,3 +41,2 @@ ${type.slice(0, 80)}`,
+    '-    public sealed class Nested',
+  ].join('\n'));
+
+  assert.deepEqual(lost, []);
+});

@@ -18,8 +18,11 @@ const isMemberLine = (line) => line.trim() !== '' && !line.startsWith('#');
 // A changed line is a removed line plus an added one. The field holds hunks only (no `---` header), and context lines
 // start with a space, so only "-" and "+" lines count.
 // An added line extends a removed one only in the same type. A line sits in the type of the last unindented line above
-// it on its side of the diff, or, before the first one, in the type that git names after the `@@` of the hunk (git
-// names the last line above the hunk that starts with a letter, and only a type line does).
+// it on its side of the diff. Above a hunk's first one, git names a type after the `@@`: the last line above the hunk,
+// in the old file, that starts with a letter (only a type line does), cut at 80 bytes. If that is the type the old side
+// was in at the end of the previous hunk, the lines between the hunks hold no type line, and both sides stay in their
+// types: the new side may be in another type, which a previous hunk added. Otherwise the type line the header names
+// sits between the hunks, so it is the type of both sides.
 export function removedMemberLines(patch) {
   const removed = [];
   const added = [];
@@ -29,7 +32,8 @@ export function removedMemberLines(patch) {
   for (const line of patch.split('\n')) {
     const hunk = /^@@ [^@]*@@(.*)$/.exec(line);
     if (hunk) {
-      oldScope = newScope = hunk[1].trim();
+      const named = hunk[1].trim();
+      if (named !== oldScope && !(named && oldScope.startsWith(named))) oldScope = newScope = named;
       continue;
     }
 

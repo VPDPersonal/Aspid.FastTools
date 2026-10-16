@@ -196,14 +196,36 @@ test('a CHANGELOG that has the version section without its release link gets the
   assert.equal(read(dir, 'CHANGELOG.md').match(/^## \[1\.0\.0-rc\.99\]/gm).length, 1);
 });
 
-test('a version section without a date is refused before any file changes', (t) => {
+for (const heading of ['## [1.0.0-rc.99]', '## [1.0.0-rc.99] ', '## [1.0.0-rc.99] draft']) {
+  test(`a version section headed ${JSON.stringify(heading)} is refused before any file changes`, (t) => {
+    const dir = sandbox(t);
+    edit(dir, 'CHANGELOG.md', (text) => text.replace('## [Unreleased]\n', `## [Unreleased]\n\n${heading}\n`));
+    const before = snapshot(dir);
+    const result = setVersion(dir, '1.0.0-rc.99');
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /CHANGELOG\.md: the "## \[1\.0\.0-rc\.99\]" heading has no date/);
+    assert.deepEqual(snapshot(dir), before);
+  });
+}
+
+test('a release link of the version to another URL is replaced, not defined twice', (t) => {
   const dir = sandbox(t);
-  edit(dir, 'CHANGELOG.md', (text) => text.replace('## [Unreleased]\n', '## [Unreleased]\n\n## [1.0.0-rc.99]\n'));
-  const before = snapshot(dir);
+  assert.equal(setVersion(dir, '1.0.0-rc.99').status, 0);
+  const link = `[1.0.0-rc.99]: ${RELEASES}/v1.0.0-rc.99`;
+  edit(dir, 'CHANGELOG.md', (text) => text.replace(link, '[1.0.0-rc.99]: https://example.com/old'));
+
   const result = setVersion(dir, '1.0.0-rc.99');
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /CHANGELOG\.md: the "## \[1\.0\.0-rc\.99\]" heading has no date/);
-  assert.deepEqual(snapshot(dir), before);
+  assert.equal(result.status, 0, output(result));
+  assert.equal(read(dir, 'CHANGELOG.md').match(/^\[1\.0\.0-rc\.99\]: /gm).length, 1);
+  assert.ok(read(dir, 'CHANGELOG.md').includes(`\n${link}\n`));
+});
+
+test('the version check reports a version section without its date', (t) => {
+  const dir = sandbox(t);
+  edit(dir, 'CHANGELOG.md', (text) => text.replace(new RegExp(`^(## \\[${literal(current)}\\]) — .*$`, 'm'), '$1 draft'));
+  const result = checkVersion(dir);
+  assert.equal(result.status, 1, output(result));
+  assert.match(result.stdout, /has no "## \[\S+\]" section dated/);
 });
 
 // Each change leaves one file out of step with package.json.

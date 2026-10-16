@@ -38,10 +38,11 @@ function rebase(url) {
 const destination = (url) => (url.startsWith('<') ? `<${rebase(url.slice(1, -1))}>` : rebase(url));
 
 // One pass over the text, so a link in code (a fenced block or a code span) is code and stays as it is. A match starts
-// at the first place that any of the four can, and the first one that matches there wins.
+// at the first place that any of the four can, and the first one that matches there wins. As in CommonMark, a code span
+// ends at a run of as many backticks and never crosses a blank line, and an escaped backtick opens none.
 const TOKENS = new RegExp([
   /^(?<fence>`{3,}|~{3,})[^\n]*\n[\s\S]*?^\k<fence>[^\n]*$/.source,
-  /(?<ticks>`+)[\s\S]*?\k<ticks>/.source,
+  /(?<![\\`])(?<ticks>`+)(?:(?!\n[ \t]*\n)[\s\S])*?(?<!`)\k<ticks>(?!`)/.source,
   /(?<open>\]\()(?<url><[^>\n]*>|[^)\s]+)(?<close>(?:\s+(?:"[^"\n]*"|'[^'\n]*'))?\))/.source,
   /^(?<label>\[[^\]\n]+\]:[ \t]*)(?<reference><[^>\n]*>|\S+)/.source,
 ].join('|'), 'gm');

@@ -26,7 +26,8 @@ perl -e '$n = qr/0|[1-9][0-9]*/; $id = qr/$n|[0-9]*[A-Za-z-][0-9A-Za-z-]*/;
 has_section() { perl -ne 'BEGIN { ($v, $t) = splice @ARGV, 0, 2 } $f = 1 if /^## \[\Q$v\E\]$t/; END { exit !$f }' "$NEW" "${2:-}" "$1"; }
 for f in CHANGELOG.md Website/i18n/ru/CHANGELOG.md; do
   if has_section "$f"; then
-    has_section "$f" ' ' || { echo "$f: the \"## [$NEW]\" heading has no date; write \"## [$NEW] — YYYY-MM-DD\"" >&2; exit 1; }
+    has_section "$f" ' — [0-9]{4}-[0-9]{2}-[0-9]{2}$' ||
+      { echo "$f: the \"## [$NEW]\" heading has no date; write \"## [$NEW] — YYYY-MM-DD\"" >&2; exit 1; }
     continue
   fi
   awk '/^## \[Unreleased\]$/ { on = 1; next } /^## \[/ { exit } on && NF && !/^#/ { notes = 1 } END { exit !notes }' "$f" \
@@ -78,15 +79,15 @@ case "$NEW" in *-*) ;; *)
   fi ;;
 esac
 # The new section goes under an empty [Unreleased], and its release link above the older ones. A CHANGELOG that kept
-# its section still gets the link it misses. The package copy of CHANGELOG.md is generated at release
-# (scripts/package-changelog.mjs).
+# its section still gets the link it misses, and a link of the version to another URL is replaced, not defined twice.
+# The package copy of CHANGELOG.md is generated at release (scripts/package-changelog.mjs).
 DATE=$(date +%Y-%m-%d) REPO=https://github.com/VPDPersonal/Aspid.FastTools
 export DATE REPO
 for f in CHANGELOG.md Website/i18n/ru/CHANGELOG.md; do
   has_section "$f" ||
     perl -0pi -e 's/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW}] — $ENV{DATE}\n/m or die "$ARGV: no [Unreleased] line\n"' "$f"
-  perl -0pi -e 'my $link = "[$ENV{NEW}]: $ENV{REPO}/releases/tag/v$ENV{NEW}\n";
-    index($_, "\n$link") >= 0 or s/^(?=\[[0-9][^\]]*\]: )/$link/m or $_ .= "\n$link"' "$f"
+  perl -0pi -e 'my $link = "[$ENV{NEW}]: $ENV{REPO}/releases/tag/v$ENV{NEW}";
+    s/^\[\Q$ENV{NEW}\E\]: .*$/$link/m or s/^(?=\[[0-9][^\]]*\]: )/$link\n/m or $_ .= "\n$link\n"' "$f"
 done
 npm --prefix Website run --silent sync-readme
 # Whatever a pattern above missed (a reworded badge, say) fails here instead of at the release.

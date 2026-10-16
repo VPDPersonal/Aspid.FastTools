@@ -87,3 +87,19 @@ test('a link in a code span or a fenced code block stays as it is', (t) => {
     .replace('(docs/g.md)', `(${BLOB}/main/docs/g.md)`);
   assert.equal(generate(t, changelog).text, expected);
 });
+
+test('a stray or an escaped backtick opens no code span, and a span ends at a run as long as its opening', (t) => {
+  const changelog = [
+    'A stray ` backtick.',
+    '',
+    'See [a](docs/a.md), then `code`.',
+    'An escaped \\` here, [b](docs/b.md), and \\` there.',
+    '``a span with ` inside [c](docs/c.md)`` and [d](docs/d.md).',
+    '',
+  ].join('\n');
+  const expected = changelog
+    .replace('(docs/a.md)', `(${BLOB}/main/docs/a.md)`)
+    .replace('(docs/b.md)', `(${BLOB}/main/docs/b.md)`)
+    .replace('(docs/d.md)', `(${BLOB}/main/docs/d.md)`);
+  assert.equal(generate(t, changelog).text, expected);
+});
