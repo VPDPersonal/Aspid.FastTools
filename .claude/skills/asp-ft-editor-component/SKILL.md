@@ -1,5 +1,5 @@
 ---
-name: aspid-editor-component
+name: asp-ft-editor-component
 description: "Adding or changing an internal UI Toolkit editor component of the Aspid.FastTools package (Editor/Scripts/VisualElements/Internal: AspidLabel, AspidBox, AspidDividingLine and the rest) - element class, preset struct, fluent extensions, ThemeStyle/StatusStyle, USS-driven style structs, stylesheet. For work on this repository only."
 metadata:
   internal: true
@@ -17,7 +17,8 @@ Read and mirror, in full, before writing:
 - `.../Components/AspidLabels/` - child components, nested preset. Its extensions lack `SetLabelFontStyle` and
   `SetLineDirection`: do not copy that gap;
 - `.../Internal/Styles/` - `ThemeStyle`, `StatusStyle`, `InlineStyle<T>`, `AspidStyles`;
-- the component's sheet in `PKG/Editor/Resources/UI/Components/Aspid-FastTools-Aspid<Name>.uss`.
+- the component's sheet in `PKG/Editor/Resources/UI/Components/Aspid-FastTools-Aspid<Name>.uss`
+  (`AspidWindowFooter`'s is `Aspid-FastTools-WindowFooter.uss`).
 
 ## Files
 
