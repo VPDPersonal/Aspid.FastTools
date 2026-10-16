@@ -3,7 +3,13 @@
 .claude/worktrees/
 /Aspid.FastTools/.codex/
 .zed/
+
+# OS files.
 .DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # `npm install --no-save js-yaml@4` for scripts/check-skills.mjs runs at the root.
 /node_modules/
