@@ -177,11 +177,11 @@ jobs:
           # The SerializeReference YAML engine (on .NET Standard 2.1) and its NUnit tests, compiled from the package
           # sources without Unity.
           - name: YAML engine
-            path: Aspid.FastTools.YamlTests
+            path: DotnetTests/Yaml
           # GenericTypeResolver, GenericArgumentFilter and TypeUtility (on .NET Standard 2.1) and their NUnit tests,
           # compiled from the package sources without Unity.
           - name: Generic type resolver
-            path: Aspid.FastTools.TypeTests
+            path: DotnetTests/Types
     steps:
       # Only what the solutions read: docs/ and Website/ hold most of the repository's size. The analyzer tests embed
       # the docs pages to check the help-link anchors of every AFT rule.
@@ -190,8 +190,8 @@ jobs:
           sparse-checkout: |
             Aspid.FastTools.Generators
             Aspid.FastTools.Analyzers
-            Aspid.FastTools.YamlTests
-            Aspid.FastTools.TypeTests
+            DotnetTests/Yaml
+            DotnetTests/Types
             Aspid.FastTools/Packages/tech.aspid.fasttools
             Website/docs
 

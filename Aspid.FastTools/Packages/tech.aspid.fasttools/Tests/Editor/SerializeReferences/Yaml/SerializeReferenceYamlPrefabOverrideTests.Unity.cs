@@ -8,7 +8,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    // The tests of this fixture that need Unity or the package's Editor assembly. Aspid.FastTools.YamlTests runs
+    // The tests of this fixture that need Unity or the package's Editor assembly. DotnetTests/Yaml runs
     // the rest without Unity and leaves the *.Unity.cs parts out.
     internal sealed partial class SerializeReferenceYamlPrefabOverrideTests
     {

@@ -54,8 +54,8 @@ Do every step without questions. Stop at the first failure and report it.
    covers it.
 7. Run the .NET checks of `.github/workflows/ci.yml`. The release PR runs the other `ci.yml` checks:
    - the `dotnet-tests` jobs: `dotnet test --nologo` in `Aspid.FastTools.Generators/` and in
-     `Aspid.FastTools.Analyzers/`, and `dotnet test Aspid.FastTools.YamlTests --nologo` and
-     `dotnet test Aspid.FastTools.TypeTests --nologo` in the repository root;
+     `Aspid.FastTools.Analyzers/`, and `dotnet test DotnetTests/Yaml --nologo` and
+     `dotnet test DotnetTests/Types --nologo` in the repository root;
    - the `roslyn-dlls` job: the two Release builds of the step
      "Rebuild both DLLs in Release", then the `git diff` of the next step.
 8. A DLL diff in step 7 means stale DLLs on `main`. Run `git checkout --` on both DLLs. Stop and report.
