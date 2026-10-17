@@ -19,7 +19,8 @@ The bot review rules with the verdict format are in `.github/claude-review.md`.
 Logic paths:
 
 - package: `Aspid.FastTools/Packages/tech.aspid.fasttools/` (except `README.md`), `Aspid.FastTools/Packages/manifest.json`,
-  `Aspid.FastTools/Packages/packages-lock.json`, `Aspid.FastTools/Assets/DevTests/`;
+  `Aspid.FastTools/Packages/packages-lock.json`, `Aspid.FastTools/Assets/DevTests~/`,
+  `Aspid.FastTools/Assets/CliCommands/`;
 - .NET: `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/`, `DotnetTests/Yaml/`,
   `DotnetTests/Types/`, `global.json`;
 - site: `Website/` except `docs/`, `i18n/`, `tutorials/`, `api/`, `static/`;

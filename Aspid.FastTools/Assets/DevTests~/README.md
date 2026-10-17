@@ -3,6 +3,19 @@
 Manual harnesses for `tech.aspid.fasttools`, kept in the development project only: nothing here is part
 of the package or of its samples, and nothing here ships to users.
 
+Unity does not import this folder (its name ends with `~`): several fixtures are broken on purpose and log
+warnings on every import, which would bury the warnings of the package under test. Link it into the project for a
+manual test, and unlink it afterwards:
+
+```bash
+scripts/devtests.sh on   # Assets/DevTests -> Assets/DevTests~
+scripts/devtests.sh off
+```
+
+Unity reads and writes the fixtures through the link at `Assets/DevTests`, so an edit made in the Editor lands here
+and shows in `git status`. Paths, the folder's guid and the **Excluded folders** entry below stay those of
+`Assets/DevTests`.
+
 The package's own `Tests/Editor` assembly covers the logic, and `Samples~` covers the ordinary,
 user-facing flows in UI Toolkit. What is left for this folder is what neither can do: render a drawer
 through the IMGUI path, and hold assets that are deliberately broken.
@@ -44,9 +57,3 @@ instance behind both fields) and `BrokenWeaponPreset` (a stored class name that 
 `EnumValuesIMGUITest` and `EnumValuesUIToolkitTest` pair the same tables on
 `Prefabs/EnumValuesDevTest.prefab`: the untyped variant with its type-picker row, single-line and
 multi-field values, `[Flags]` keys, object-reference values, and tables inside an array.
-
-## CliCommands
-
-`sr_gate` exposes the SerializeReference gate scanner to `unity command`, so the scan returns JSON from
-the running Editor instead of a batchmode relaunch. It is the only assembly here, because it needs the
-package's internals.
