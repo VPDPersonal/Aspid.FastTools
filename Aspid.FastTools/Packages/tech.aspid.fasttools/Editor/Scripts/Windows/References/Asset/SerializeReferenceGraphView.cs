@@ -75,6 +75,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private IReadOnlyList<GateViolation> _requiredViolations = Array.Empty<GateViolation>();
         private IReadOnlyList<TypeNameField> _typeNames = Array.Empty<TypeNameField>();
 
+        // An asset still dirty after Save Asset, such as a read-only package file: it is mapped as saved from then on.
+        private string _unsavablePath;
+
         public SerializeReferenceGraphView(Object target, Action<StatusStyle.Type> onCanvasStatus, Action<Object> onTargetChanged = null)
         {
             _target = target;
@@ -222,7 +225,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             // The map reads the saved file and the required scan the loaded objects, so unsaved edits would mix both.
-            if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
+            if (SerializeReferenceYaml.IsCandidateAssetPath(assetPath) && assetPath != _unsavablePath &&
+                SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
             {
                 ShowUnsavedChanges(assetPath);
                 return;
@@ -231,8 +235,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var documents = prebuilt ?? SerializeReferenceGraphScanner.Build(assetPath);
 
             // Required string fields may exist without a RefIds block, so scan them before the empty-graph return.
-            _requiredViolations = SerializeReferenceGateScanner.ScanAssetRequiredFields(assetPath);
-            _typeNames = SerializeReferenceGraphAnalysis.CollectTypeNameFields(assetPath);
+            var typeNames = new List<TypeNameField>();
+            _requiredViolations = SerializeReferenceGateScanner.ScanAssetRequiredFields(assetPath, typeNames);
+            _typeNames = typeNames;
 
             if (documents.Count == 0 && _requiredViolations.Count == 0 && _typeNames.Count == 0)
             {
@@ -302,6 +307,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             void Save()
             {
                 SerializeReferenceOpenCopyGuard.Save(assetPath);
+                if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath)) _unsavablePath = assetPath;
                 Rescan();
             }
 
