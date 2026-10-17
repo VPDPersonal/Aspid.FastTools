@@ -1,16 +1,16 @@
 // Check the package files that Unity or the Asset Store Validator complain about later:
 //  1. Path length: the Validator warns when a path is 140 characters or longer, counted from "Aspid/FastTools/"
 //     (the install folder under Assets/) without the .meta files.
-//  2. Every .cs.meta of the package and the dev tests has a MonoImporter block, so all of them stay in the format Unity
+//  2. Every .cs.meta of the package and the dev project has a MonoImporter block, so all of them stay in the format Unity
 //     writes for a new file. Samples~ is skipped: it is not imported in the dev project.
 //  3. A .uss.meta (samples included) has a ScriptedImporter block, and its importer is the StyleSheetImporter (12385), not
 //     the ThemeStyleSheetImporter (12388). Unity 6000.6 warns on every .uss.meta without the block (an IDE writes only the
 //     guid), and it rewrites 12388 in the working tree when it imports the sample.
-//  4. Every file and folder of the package and the dev tests has a .meta, and every .meta has its asset. Unity cannot
+//  4. Every file and folder of the package and the dev project has a .meta, and every .meta has its asset. Unity cannot
 //     write a .meta into an installed package: it ignores the file there and warns about a .meta without an asset.
 //     Samples~ is copied into the project on import, and its .meta files keep the GUIDs that its scenes refer to.
 //     Another folder that ends with "~" is ignored with its content.
-//  5. Every .meta has a guid, and no guid is used twice in the package and the dev tests.
+//  5. Every .meta has a guid, and no guid is used twice in the package and the dev project.
 //  6. Every "path" in the "samples" of package.json is a folder of the package.
 //  7. Every reference of an asmdef of the package is an asmdef of the package, or an assembly of EXTERNAL_ASSEMBLIES.
 //  8. LICENSE.md of the package is a byte-for-byte copy of the root LICENSE, which GitHub shows and "licensesUrl" links.
@@ -23,7 +23,8 @@ import { fileURLToPath } from 'node:url';
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
-const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests';
+// The dev project's own files: the fixtures that the Import DevTests menu links into Assets/, and its dev tools.
+const DEV = ['Aspid.FastTools/Assets/DevTests~', 'Aspid.FastTools/Assets/DevTools'];
 const INSTALL_PREFIX = 'Aspid/FastTools/';
 const PATH_LIMIT = 140;
 const LICENSE = 'LICENSE';
@@ -70,7 +71,7 @@ for (const file of files(PACKAGE)) {
   if (length >= PATH_LIMIT) fail(file, `path is ${length} characters from "${INSTALL_PREFIX}"; the limit is ${PATH_LIMIT - 1}`);
 }
 
-for (const file of [...files(PACKAGE), ...files(DEV_TESTS)]) {
+for (const file of [...files(PACKAGE), ...DEV.flatMap(files)]) {
   if (file.endsWith('.cs.meta') && !file.startsWith(samples) && !readFileSync(file, 'utf8').includes('\nMonoImporter:')) {
     fail(file, 'no MonoImporter block; open the project in Unity once and commit the .meta it writes');
   }
@@ -86,7 +87,7 @@ for (const file of [...files(PACKAGE), ...files(DEV_TESTS)]) {
 
 const guidOf = new Map(); // .meta path -> guid
 const ownerOf = new Map(); // guid -> .meta path
-for (const root of [PACKAGE, DEV_TESTS]) {
+for (const root of [PACKAGE, ...DEV]) {
   const all = entries(root);
   const present = new Set(all);
   for (const path of all) {

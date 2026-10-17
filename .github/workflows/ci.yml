@@ -47,7 +47,8 @@ jobs:
           sparse-checkout: |
             scripts
             Aspid.FastTools/Packages/tech.aspid.fasttools
-            Aspid.FastTools/Assets/DevTests
+            Aspid.FastTools/Assets/DevTests~
+            Aspid.FastTools/Assets/DevTools
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22

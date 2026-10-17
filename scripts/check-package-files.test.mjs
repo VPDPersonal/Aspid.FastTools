@@ -11,7 +11,8 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 
 const script = fileURLToPath(new URL('check-package-files.mjs', import.meta.url));
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
-const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests';
+const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests~';
+const DEV_TOOLS = 'Aspid.FastTools/Assets/DevTools';
 
 const guid = (number) => number.toString(16).padStart(32, '0');
 const meta = (number, importer = '') => `fileFormatVersion: 2\nguid: ${guid(number)}\n${importer}`;
@@ -21,7 +22,8 @@ const asmdef = (name, references = []) => JSON.stringify({ name, references });
 
 const LICENSE = 'MIT License\n\nCopyright (c) 2025 Vladislav Panin\n';
 
-// A package that passes: a runtime and an editor assembly, a sample, a hidden file, a dev test, and the license copy.
+// A package that passes: a runtime and an editor assembly, a sample, a hidden file, a dev test, a dev tool, and
+// the license copy.
 const valid = () => ({
   LICENSE,
   [`${PACKAGE}/LICENSE.md`]: LICENSE,
@@ -42,6 +44,8 @@ const valid = () => ({
   [`${PACKAGE}/Samples~/Demo/Readme.md.meta`]: meta(8),
   [`${DEV_TESTS}/DevItem.cs`]: 'class DevItem { }',
   [`${DEV_TESTS}/DevItem.cs.meta`]: meta(9, MONO),
+  [`${DEV_TOOLS}/DevTool.cs`]: 'class DevTool { }',
+  [`${DEV_TOOLS}/DevTool.cs.meta`]: meta(12, MONO),
 });
 
 // Run the script on the fixture files; a value of null removes a file of the valid package.
@@ -70,8 +74,8 @@ test('a package with a .meta for every file, unique guids and resolving referenc
   assert.match(result.stdout, /Package files OK/);
 });
 
-test('a file without a .meta is reported, also in Samples~, in a folder and in the dev tests', (t) => {
-  const metas = [`${PACKAGE}/Runtime/Item.cs.meta`, `${PACKAGE}/Samples~/Demo/Readme.md.meta`, `${PACKAGE}/Runtime.meta`, `${DEV_TESTS}/DevItem.cs.meta`];
+test('a file without a .meta is reported, also in Samples~, in a folder and in the dev project', (t) => {
+  const metas = [`${PACKAGE}/Runtime/Item.cs.meta`, `${PACKAGE}/Samples~/Demo/Readme.md.meta`, `${PACKAGE}/Runtime.meta`, `${DEV_TESTS}/DevItem.cs.meta`, `${DEV_TOOLS}/DevTool.cs.meta`];
   for (const file of metas) assertFails(check(t, { [file]: null }), file.slice(0, -'.meta'.length), /no \.meta;/);
 });
 

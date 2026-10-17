@@ -12,6 +12,10 @@
 /[Pp]rofilerCaptures/
 /[Rr]ecordings/
 
+# The link to the manual fixtures in Assets/DevTests~ that Tools > Aspid > FastTools > Import DevTests writes.
+/[Aa]ssets/DevTests
+/[Aa]ssets/DevTests.meta
+
 # Package samples imported into the dev project via Package Manager.
 # Source of truth is the package's `Samples~/`; the imported copy is local-only.
 /[Aa]ssets/[Ss]amples/
