@@ -13,6 +13,7 @@
 
 ### Добавлено
 
+- Окно FastTools переключает вкладки по Alt+← и Alt+→ (Option на macOS), в дополнение к Ctrl+Tab. Переназначить их можно в окне Shortcuts, раздел Aspid FastTools/Window.
 - Добавлены `RemoveChildren` и `RemoveChildrenIf`: удаляют несколько дочерних элементов за один вызов и принимают те же перегрузки `params`, `IEnumerable`, `List` и `ReadOnlySpan`, что и `AddChildren`.
 - Добавлены `AddClasses`, `RemoveClasses`, `ToggleClasses` и `EnableClasses`: меняют несколько USS-классов за один вызов, принимают те же перегрузки `params`, `IEnumerable`, `List` и `ReadOnlySpan`, что и `AddChildren`. `IEnumerable` может читать `GetClasses()` того же элемента. `EnableClasses` принимает флаг первым: `EnableClasses(isFree, "selected", "free")`.
 - `InsertStyleSheet` вставляет таблицу стилей по индексу, `EnableStyleSheet(sheet, enable)` добавляет или убирает её, а `ClearStyleSheets` удаляет все таблицы стилей.
