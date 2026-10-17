@@ -11,6 +11,8 @@ namespace Aspid.FastTools.Editors
 
         private const string NextTabId = Category + "Next Tab";
         private const string PreviousTabId = Category + "Previous Tab";
+        private const string NextTabArrowId = Category + "Next Tab (Arrow)";
+        private const string PreviousTabArrowId = Category + "Previous Tab (Arrow)";
 
         internal const string HomeId = Category + "Home";
         internal const string AssetReferencesId = Category + "Asset References";
@@ -45,6 +47,15 @@ namespace Aspid.FastTools.Editors
 
         [Shortcut(PreviousTabId, typeof(TabWindow), KeyCode.Tab, ShortcutModifiers.Control | ShortcutModifiers.Shift)]
         private static void OnPreviousTabShortcut(ShortcutArguments args) =>
+            CycleFrom(args, -1);
+
+        // A shortcut has one default binding, so the arrow pair is a second id next to Ctrl+Tab.
+        [Shortcut(NextTabArrowId, typeof(TabWindow), KeyCode.RightArrow, TabModifiers)]
+        private static void OnNextTabArrowShortcut(ShortcutArguments args) =>
+            CycleFrom(args, +1);
+
+        [Shortcut(PreviousTabArrowId, typeof(TabWindow), KeyCode.LeftArrow, TabModifiers)]
+        private static void OnPreviousTabArrowShortcut(ShortcutArguments args) =>
             CycleFrom(args, -1);
 
         internal static string HintFor(TabType tab)
