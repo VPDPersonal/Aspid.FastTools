@@ -43,7 +43,8 @@ ISerializationCallbackReceiver
 ## Remarks
 
 A player resolves only the stored name, which managed code stripping does not see: from Managed Stripping
-Level Medium up, keep a class referenced only here with <code>[Preserve]</code> or <code>link.xml</code>.
+Level Medium up, keep a class referenced only here with <code>[Preserve]</code> or <code>link.xml</code>. A failed lookup
+is cached until the name changes or the object is deserialized again, so an assembly loaded later is missed.
 
 ## Properties
 

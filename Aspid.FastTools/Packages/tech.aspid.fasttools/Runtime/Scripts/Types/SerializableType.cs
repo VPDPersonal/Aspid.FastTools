@@ -43,6 +43,9 @@ namespace Aspid.FastTools.Types
     /// <summary>
     /// <see cref="SerializableType"/> constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
+    /// <remarks>
+    /// Assigned to a field declared as <see cref="SerializableType"/>, it is reloaded without the constraint.
+    /// </remarks>
     /// <typeparam name="T">The base type that the picker and the constructor require.</typeparam>
     /// <example>
     /// <code><![CDATA[

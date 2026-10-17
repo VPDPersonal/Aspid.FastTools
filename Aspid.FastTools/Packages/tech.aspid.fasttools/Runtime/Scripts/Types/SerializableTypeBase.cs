@@ -11,7 +11,8 @@ namespace Aspid.FastTools.Types
     /// </summary>
     /// <remarks>
     /// A player resolves only the stored name, which managed code stripping does not see: from Managed Stripping
-    /// Level Medium up, keep a class referenced only here with <c>[Preserve]</c> or <c>link.xml</c>.
+    /// Level Medium up, keep a class referenced only here with <c>[Preserve]</c> or <c>link.xml</c>. A failed lookup
+    /// is cached until the name changes or the object is deserialized again, so an assembly loaded later is missed.
     /// </remarks>
     [Serializable]
     public abstract class SerializableTypeBase :

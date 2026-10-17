@@ -50,6 +50,10 @@ ISerializationCallbackReceiver
 ```
 
 
+## Remarks
+
+Assigned to a field declared as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md), it is reloaded without the constraint.
+
 ## Constructors
 
 ### SerializableType\(Type?\) {#Aspid_FastTools_Types_SerializableType_1__ctor_System_Type_}

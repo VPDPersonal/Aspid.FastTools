@@ -50,6 +50,10 @@ ISerializationCallbackReceiver
 ```
 
 
+## Remarks
+
+Assigned to a field declared as [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md), it is reloaded without the constraint.
+
 ## Properties
 
 ### BaseType {#Aspid_FastTools_Types_SerializableMonoScript_1_BaseType}

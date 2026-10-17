@@ -88,6 +88,9 @@ namespace Aspid.FastTools.Types
     /// <summary>
     /// <see cref="SerializableMonoScript"/> constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
+    /// <remarks>
+    /// Assigned to a field declared as <see cref="SerializableMonoScript"/>, it is reloaded without the constraint.
+    /// </remarks>
     /// <typeparam name="T">The base type that the Inspector requires when a type is picked or dropped.</typeparam>
     /// <example>
     /// <code><![CDATA[
