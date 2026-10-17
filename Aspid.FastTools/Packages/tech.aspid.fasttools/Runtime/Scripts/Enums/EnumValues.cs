@@ -9,61 +9,30 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Enums
 {
     /// <summary>
-    /// Serializable dictionary that maps each member of a chosen enum to a value of type
-    /// <typeparamref name="TValue"/>. Supports both regular and <c>[Flags]</c> enums.
+    /// Serializable table that maps members of an enum chosen in the Inspector to <typeparamref name="TValue"/> values.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The enum type is selected in the Inspector via a <see cref="TypeSelectorAttribute"/>
-    /// and stored as an assembly-qualified name. All entries are initialized lazily on first access.
-    /// When the enum type is already known at compile time, prefer
-    /// <see cref="EnumValues{TEnum,TValue}"/> — its Inspector type-picker is read-only.
+    /// For a <c>[Flags]</c> enum, an entry matches when the lookup value contains all its bits, and zero matches only
+    /// zero. An exact key wins; otherwise, the first match in serialized order.
     /// </para>
     /// <para>
-    /// A player resolves the enum by the stored name only, which managed code stripping does not see: from
-    /// Managed Stripping Level Medium up, an enum referenced only by this name can be removed from the build.
-    /// The table then logs an error and returns the default value. Minimal and Low keep it. Keep such enums with
-    /// <c>[Preserve]</c> or <c>link.xml</c>.
+    /// A player finds the enum by its stored assembly-qualified name. From Managed Stripping Level Medium up, keep an
+    /// enum used only through this table with <c>[Preserve]</c> or <c>link.xml</c>, or every lookup returns the
+    /// default value.
     /// </para>
     /// <para>
-    /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses flag-containment semantics
-    /// with special handling for the zero (<c>None</c>) value — two values are considered equal
-    /// only when both are zero or both are non-zero and the first (the lookup value) has all bits
-    /// of the second (the stored key) set.
-    /// </para>
-    /// <para>
-    /// <see cref="GetValue(Enum)"/> returns the configured default value when no entry matches the lookup key.
-    /// For <c>[Flags]</c> enums multiple entries may match a single lookup value; an exact-key entry
-    /// always wins first, and only if none exists does the first entry (in serialized order) whose
-    /// bits are all contained in the lookup value win.
-    /// </para>
-    /// <para>
-    /// Iteration via <see cref="GetEnumerator"/> yields only the explicitly configured entries and
-    /// does <b>not</b> include the default value.
-    /// </para>
-    /// <para>
-    /// Lookups and iteration may run on any thread, including the first access that initializes the
-    /// entries, as long as Unity is not deserializing the table at the same time.
-    /// </para>
-    /// <para>
-    /// The first access, which builds the entries, is wrapped in a profiler marker; lookups are not, so a call per
-    /// entity per frame adds no Profiler samples. Define the <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting
-    /// symbol to compile the marker out.
+    /// Lookups and iteration are thread-safe, the first access included, unless Unity deserializes the table at the
+    /// same time.
     /// </para>
     /// </remarks>
-    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
+    /// <typeparam name="TValue">The type of the mapped values.</typeparam>
     /// <example>
-    /// Map a damage type to a color:
     /// <code>
-    /// public class HitEffect : MonoBehaviour
-    /// {
-    ///     [SerializeField] private EnumValues&lt;Color&gt; _damageColors;
-    ///
-    ///     public Color GetColor(DamageType type) =>
-    ///         _damageColors.GetValue(type);
-    /// }
+    /// [SerializeField] private EnumValues&lt;Color&gt; _damageColors;
     /// </code>
     /// </example>
+    /// <seealso cref="EnumValues{TEnum, TValue}"/>
     [Serializable]
     public sealed class EnumValues<TValue> :
         IReadOnlyCollection<KeyValuePair<Enum, TValue?>>,
@@ -87,8 +56,7 @@ namespace Aspid.FastTools.Enums
         private volatile bool _isInitialized;
 
         /// <summary>
-        /// Gets the number of entries <see cref="GetEnumerator"/> yields: the rows whose key resolved to an
-        /// enum member, duplicate keys included. The default value is not counted.
+        /// Gets the number of entries with a resolved key, duplicates included; the default value is not counted.
         /// </summary>
         public int Count
         {
@@ -162,15 +130,12 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Returns the value mapped to <paramref name="enumValue"/>,
-        /// or the configured default value if no mapping exists.
-        /// A value of a different enum type than the configured one never matches.
+        /// Returns the value mapped to <paramref name="enumValue"/>.
         /// </summary>
-        /// <param name="enumValue">The enum member to look up.</param>
-        /// <returns>
-        /// The mapped value, or the default value when no entry matches. A reference-type
-        /// <typeparamref name="TValue"/> left unassigned in the Inspector is <see langword="null"/>.
-        /// </returns>
+        /// <param name="enumValue">
+        /// The enum member to look up; <see langword="null"/> or a member of another enum never matches.
+        /// </param>
+        /// <returns>The mapped value; otherwise, the default value.</returns>
         public TValue? GetValue(Enum enumValue)
         {
             Initialize();
@@ -184,15 +149,11 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Returns the value mapped to <paramref name="enumValue"/> like <see cref="GetValue(Enum)"/>,
-        /// without boxing the key.
+        /// Returns the value mapped to <paramref name="enumValue"/> without boxing it.
         /// </summary>
-        /// <typeparam name="TEnum">The enum type of <paramref name="enumValue"/>.</typeparam>
+        /// <typeparam name="TEnum">The configured enum; another enum never matches.</typeparam>
         /// <param name="enumValue">The enum member to look up.</param>
-        /// <returns>
-        /// The mapped value, or the default value when no entry matches. A <typeparamref name="TEnum"/>
-        /// other than the configured enum type never matches.
-        /// </returns>
+        /// <returns>The mapped value; otherwise, the default value.</returns>
         public TValue? GetValue<TEnum>(TEnum enumValue)
             where TEnum : struct, Enum
         {
@@ -207,16 +168,13 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Looks up the value mapped to <paramref name="enumValue"/> and reports whether an entry matched.
+        /// Looks up the value mapped to <paramref name="enumValue"/>.
         /// </summary>
-        /// <param name="enumValue">The enum member to look up.</param>
-        /// <param name="value">
-        /// The mapped value, or the default value when no entry matches, as <see cref="GetValue(Enum)"/> returns it.
+        /// <param name="enumValue">
+        /// The enum member to look up; <see langword="null"/> or a member of another enum never matches.
         /// </param>
-        /// <returns>
-        /// <see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.
-        /// A <see langword="null"/> key, or a key of a different enum type than the configured one, never matches.
-        /// </returns>
+        /// <param name="value">The mapped value; otherwise, the default value.</param>
+        /// <returns><see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.</returns>
         public bool TryGetValue(Enum enumValue, out TValue? value)
         {
             Initialize();
@@ -231,18 +189,12 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Looks up the value mapped to <paramref name="enumValue"/> like <see cref="TryGetValue(Enum,out TValue)"/>,
-        /// without boxing the key.
+        /// Looks up the value mapped to <paramref name="enumValue"/> without boxing it.
         /// </summary>
-        /// <typeparam name="TEnum">The enum type of <paramref name="enumValue"/>.</typeparam>
+        /// <typeparam name="TEnum">The configured enum; another enum never matches.</typeparam>
         /// <param name="enumValue">The enum member to look up.</param>
-        /// <param name="value">
-        /// The mapped value, or the default value when no entry matches, as <see cref="GetValue{TEnum}(TEnum)"/> returns it.
-        /// </param>
-        /// <returns>
-        /// <see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.
-        /// A <typeparamref name="TEnum"/> other than the configured enum type never matches.
-        /// </returns>
+        /// <param name="value">The mapped value; otherwise, the default value.</param>
+        /// <returns><see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.</returns>
         public bool TryGetValue<TEnum>(TEnum enumValue, out TValue? value)
             where TEnum : struct, Enum
         {
@@ -258,18 +210,15 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Determines whether two enum values should be considered equal for lookup purposes.
-        /// The first argument is the value being looked up; the second is the entry's stored key.
+        /// Determines whether the lookup value <paramref name="enumValue1"/> matches the entry key
+        /// <paramref name="enumValue2"/>.
         /// </summary>
-        /// <param name="enumValue1">The lookup value (must contain the entry's bits to match).</param>
-        /// <param name="enumValue2">The stored entry key.</param>
+        /// <param name="enumValue1">The lookup value.</param>
+        /// <param name="enumValue2">The entry key.</param>
         /// <returns>
-        /// For regular enums: <see langword="true"/> when both values are identical.<br/>
-        /// For <c>[Flags]</c> enums: <see langword="true"/> when <paramref name="enumValue1"/>
-        /// has all bits of <paramref name="enumValue2"/> set, with the additional rule that
-        /// the zero (<c>None</c>) value is only equal to another zero value.<br/>
-        /// Values of a different enum type than the configured one are never equal,
-        /// and neither is <see langword="null"/>.
+        /// <see langword="true"/> if the values are equal or, for a <c>[Flags]</c> enum, <paramref name="enumValue1"/>
+        /// contains all bits of <paramref name="enumValue2"/> and zero matches only zero; otherwise, including for
+        /// <see langword="null"/> or another enum, <see langword="false"/>.
         /// </returns>
         public bool Equals(Enum enumValue1, Enum enumValue2)
         {
@@ -288,9 +237,7 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Returns a struct enumerator over the explicitly configured (key, value) pairs in
-        /// serialized order — <see langword="foreach"/> binds to it directly and does not allocate.
-        /// Does <b>not</b> include the default value or entries with an unresolved key.
+        /// Returns an enumerator over the entries with a resolved key in serialized order, without the default value.
         /// </summary>
         public EnumValuesEnumerator<Enum, TValue> GetEnumerator()
         {
@@ -312,44 +259,17 @@ namespace Aspid.FastTools.Enums
     }
 
     /// <summary>
-    /// Serializable dictionary that maps members of <typeparamref name="TEnum"/> to values of
-    /// type <typeparamref name="TValue"/>. The typed counterpart of <see cref="EnumValues{TValue}"/>
-    /// for the common case where the enum type is known at compile time — the Inspector type-picker
-    /// is read-only, and lookups are compile-time safe.
+    /// Serializable table that maps members of <typeparamref name="TEnum"/> to <typeparamref name="TValue"/> values.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Lookup semantics (including <c>[Flags]</c> handling) and thread safety are identical to
-    /// <see cref="EnumValues{TValue}"/> — see its remarks for details. Steady-state
-    /// <see cref="GetValue"/>, <see cref="Equals(TEnum,TEnum)"/> and <see langword="foreach"/> (which binds to the struct
-    /// <see cref="EnumValuesEnumerator{TKey,TValue}"/>) never allocate.
-    /// </para>
-    /// <para>
-    /// In the editor the serialized layout is compatible with <see cref="EnumValues{TValue}"/>:
-    /// the enum type is still stored in a hidden editor-only <c>_enumType</c> field, auto-filled
-    /// with <typeparamref name="TEnum"/>'s assembly-qualified name on serialization. Switching a
-    /// field between the two variants therefore migrates existing data, as long as the configured
-    /// enum type matches <typeparamref name="TEnum"/>. Player builds strip the field — at runtime
-    /// the enum type comes from the generic argument alone.
-    /// </para>
-    /// <para>
-    /// The first access, which builds the entries, is wrapped in a profiler marker; lookups are not, so a call per
-    /// entity per frame adds no Profiler samples. Define the <c>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</c> scripting
-    /// symbol to compile the marker out.
-    /// </para>
+    /// Lookup rules, thread safety and the serialized layout match <see cref="EnumValues{TValue}"/>: a field can switch
+    /// between the two types without losing entries if the enum is the same.
     /// </remarks>
-    /// <typeparam name="TEnum">The enum type the entries are keyed by.</typeparam>
-    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
+    /// <typeparam name="TEnum">The enum the entries are keyed by.</typeparam>
+    /// <typeparam name="TValue">The type of the mapped values.</typeparam>
     /// <example>
-    /// Map a damage type to a color, with the enum fixed at compile time:
     /// <code>
-    /// public class HitEffect : MonoBehaviour
-    /// {
-    ///     [SerializeField] private EnumValues&lt;DamageType, Color&gt; _damageColors;
-    ///
-    ///     public Color GetColor(DamageType type) =>
-    ///         _damageColors.GetValue(type);
-    /// }
+    /// [SerializeField] private EnumValues&lt;DamageType, Color&gt; _damageColors;
     /// </code>
     /// </example>
     [Serializable]
@@ -377,10 +297,7 @@ namespace Aspid.FastTools.Enums
         // Volatile: a thread that sees the flag must also see the data written before it.
         private volatile bool _isInitialized;
 
-        /// <summary>
-        /// Gets the number of entries <see cref="GetEnumerator"/> yields: the rows whose key resolved to an
-        /// enum member, duplicate keys included. The default value is not counted.
-        /// </summary>
+        /// <inheritdoc cref="EnumValues{TValue}.Count"/>
         public int Count
         {
             get
@@ -411,14 +328,10 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Returns the value mapped to <paramref name="enumValue"/>,
-        /// or the configured default value if no mapping exists.
+        /// Returns the value mapped to <paramref name="enumValue"/>.
         /// </summary>
         /// <param name="enumValue">The enum member to look up.</param>
-        /// <returns>
-        /// The mapped value, or the default value when no entry matches. A reference-type
-        /// <typeparamref name="TValue"/> left unassigned in the Inspector is <see langword="null"/>.
-        /// </returns>
+        /// <returns>The mapped value; otherwise, the default value.</returns>
         public TValue? GetValue(TEnum enumValue)
         {
             Initialize();
@@ -428,12 +341,10 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Looks up the value mapped to <paramref name="enumValue"/> and reports whether an entry matched.
+        /// Looks up the value mapped to <paramref name="enumValue"/>.
         /// </summary>
         /// <param name="enumValue">The enum member to look up.</param>
-        /// <param name="value">
-        /// The mapped value, or the default value when no entry matches, as <see cref="GetValue"/> returns it.
-        /// </param>
+        /// <param name="value">The mapped value; otherwise, the default value.</param>
         /// <returns><see langword="true"/> if an entry matches; otherwise, <see langword="false"/>.</returns>
         public bool TryGetValue(TEnum enumValue, out TValue? value)
         {
@@ -448,16 +359,15 @@ namespace Aspid.FastTools.Enums
         }
 
         /// <summary>
-        /// Determines whether two enum values should be considered equal for lookup purposes.
-        /// The first argument is the value being looked up; the second is the entry's stored key.
+        /// Determines whether the lookup value <paramref name="enumValue1"/> matches the entry key
+        /// <paramref name="enumValue2"/>.
         /// </summary>
-        /// <param name="enumValue1">The lookup value (must contain the entry's bits to match).</param>
-        /// <param name="enumValue2">The stored entry key.</param>
+        /// <param name="enumValue1">The lookup value.</param>
+        /// <param name="enumValue2">The entry key.</param>
         /// <returns>
-        /// For regular enums: <see langword="true"/> when both values are identical.<br/>
-        /// For <c>[Flags]</c> enums: <see langword="true"/> when <paramref name="enumValue1"/>
-        /// has all bits of <paramref name="enumValue2"/> set, with the additional rule that
-        /// the zero (<c>None</c>) value is only equal to another zero value.
+        /// <see langword="true"/> if the values are equal or, for a <c>[Flags]</c> enum, <paramref name="enumValue1"/>
+        /// contains all bits of <paramref name="enumValue2"/> and zero matches only zero; otherwise,
+        /// <see langword="false"/>.
         /// </returns>
         public bool Equals(TEnum enumValue1, TEnum enumValue2)
         {

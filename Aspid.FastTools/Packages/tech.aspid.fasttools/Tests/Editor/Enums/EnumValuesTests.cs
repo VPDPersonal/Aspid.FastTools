@@ -213,6 +213,18 @@ namespace Aspid.FastTools.Enums.Tests
         }
 
         [Test]
+        public void Enumerator_AfterTheEnd_CurrentIsDefault()
+        {
+            AddEntry("_seasons", nameof(Season.Spring), 2);
+
+            var enumerator = _host.Seasons.GetEnumerator();
+
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.AreEqual(default(KeyValuePair<Season, int>), enumerator.Current);
+        }
+
+        [Test]
         public void Typed_Foreach_YieldsEntriesAndDoesNotAllocate()
         {
             AddEntry("_seasons", nameof(Season.Winter), 1);
