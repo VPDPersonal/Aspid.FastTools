@@ -74,6 +74,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return cards;
         }
 
+        // The type name fields that get a card, in field order. An empty required one is drawn from its violation, which
+        // is always kept, so it does not count; the rest share what the budget leaves.
+        public static List<TypeNameField> SelectTypeNameCards(IReadOnlyList<TypeNameField> fields, int budget, out int hidden)
+        {
+            var cards = new List<TypeNameField>();
+            hidden = 0;
+
+            foreach (var field in fields)
+            {
+                if (!field.Required || !string.IsNullOrEmpty(field.TypeName))
+                {
+                    if (budget <= 0)
+                    {
+                        hidden++;
+                        continue;
+                    }
+
+                    budget--;
+                }
+
+                cards.Add(field);
+            }
+
+            return cards;
+        }
+
         // In field order. A scene cannot be object-loaded, so it has none here; its empty required ones still come from
         // the required scan.
         public static List<TypeNameField> CollectTypeNameFields(string assetPath)

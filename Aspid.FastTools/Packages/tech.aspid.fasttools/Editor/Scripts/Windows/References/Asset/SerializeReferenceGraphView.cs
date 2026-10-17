@@ -335,8 +335,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var requiredCards = SerializeReferenceGraphAnalysis.SelectRequiredCards(
                 ungraphedRequired, SerializeReferenceGraphPlan.MaxCards - drawn, out var hiddenRequired);
 
+            var typeNames = SerializeReferenceGraphAnalysis.SelectTypeNameCards(
+                _typeNames, SerializeReferenceGraphPlan.MaxCards - drawn - requiredCards.Count, out var hiddenTypeNames);
+            hidden += hiddenTypeNames;
+
             var unplacedRequired = new List<GateViolation>(requiredCards);
-            var unplacedTypeNames = new List<TypeNameField>(_typeNames);
+            var unplacedTypeNames = new List<TypeNameField>(typeNames);
 
             // Every object with a name gets its heading, even the only one: the heading says whose fields the cards
             // are. A scene object is read as text and has only its YAML class id, so it is headed only among several.
@@ -345,7 +349,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var document = plan.Document;
                 var documentRequired = requiredCards.Where(violation => violation.FileId == document.FileId).ToList();
-                var documentTypeNames = _typeNames.Where(field => field.FileId == document.FileId).ToList();
+                var documentTypeNames = typeNames.Where(field => field.FileId == document.FileId).ToList();
 
                 // A document that got no card would be a header over nothing, so only the notice speaks for it.
                 if (plan.Cards.Count > 0 || plan.Hidden == 0 || documentRequired.Count > 0 || documentTypeNames.Count > 0)
