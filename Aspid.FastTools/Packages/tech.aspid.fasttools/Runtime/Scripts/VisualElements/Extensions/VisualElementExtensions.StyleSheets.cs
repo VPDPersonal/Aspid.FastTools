@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable MemberCanBePrivate.Global
 namespace Aspid.FastTools.UIElements
 {
     public static partial class VisualElementExtensions

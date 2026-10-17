@@ -70,7 +70,7 @@ namespace Aspid.FastTools.Types
                 return null;
             }
 
-            return _script ? _script!.GetClass() : null;
+            return _script ? _script.GetClass() : null;
         }
 #endif
 

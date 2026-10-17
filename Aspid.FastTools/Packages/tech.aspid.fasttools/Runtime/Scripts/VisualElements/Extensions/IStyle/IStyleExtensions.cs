@@ -2714,6 +2714,7 @@ namespace Aspid.FastTools.UIElements
         {
             return style.SetUnitySlice(left: value);
         }
+
         /// <summary>
         /// Sets <see cref="IStyle.unitySliceType"/>.
         /// </summary>
