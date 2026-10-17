@@ -11,10 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Enums](Aspid.FastTools.Enums.md)  
 Assembly: Aspid.FastTools.dll  
 
-Allocation-free enumerator over the resolved entries of an [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md)
-(<code class="typeparamref">TKey</code> = [`Enum`](https://learn.microsoft.com/dotnet/api/system.enum)) or an [`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md)
-(<code class="typeparamref">TKey</code> = the enum type). Boxed only when consumed through the
-[`IEnumerable<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1) interface (e.g. LINQ).
+Allocation-free enumerator over the entries of [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) and
+[`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md).
 
 ```csharp
 public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue?>>, IEnumerator, IDisposable
@@ -24,11 +22,11 @@ public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey
 
 `TKey` 
 
-The key type the entries are yielded as.
+[`Enum`](https://learn.microsoft.com/dotnet/api/system.enum) for [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md); the enum for [`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md).
 
 `TValue` 
 
-The type of the value associated with each enum member.
+The type of the mapped values.
 
 #### Implements
 
@@ -45,8 +43,8 @@ The type of the value associated with each enum member.
 
 ### Current {#Aspid_FastTools_Enums_EnumValuesEnumerator_2_Current}
 
-The entry at the current position; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/default">default</a> before the first
-[`EnumValuesEnumerator<T1, T2>.MoveNext`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md#Aspid_FastTools_Enums_EnumValuesEnumerator_2_MoveNext) and after the last one.
+Gets the entry at the current position; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/default">default</a> before the first [`EnumValuesEnumerator<T1, T2>.MoveNext`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md#Aspid_FastTools_Enums_EnumValuesEnumerator_2_MoveNext)
+and after the end.
 
 ```csharp
 public readonly KeyValuePair<TKey, TValue?> Current { get; }
@@ -60,7 +58,7 @@ public readonly KeyValuePair<TKey, TValue?> Current { get; }
 
 ### MoveNext\(\) {#Aspid_FastTools_Enums_EnumValuesEnumerator_2_MoveNext}
 
-Advances to the next resolved entry, skipping entries whose key could not be parsed.
+Advances to the next entry with a resolved key.
 
 ```csharp
 public bool MoveNext()
@@ -70,5 +68,5 @@ public bool MoveNext()
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if an entry was found; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> at the end.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the enumerator advanced; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 

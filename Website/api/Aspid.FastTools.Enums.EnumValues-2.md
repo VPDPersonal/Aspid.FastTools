@@ -11,10 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Enums](Aspid.FastTools.Enums.md)  
 Assembly: Aspid.FastTools.dll  
 
-Serializable dictionary that maps members of <code class="typeparamref">TEnum</code> to values of
-type <code class="typeparamref">TValue</code>. The typed counterpart of [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md)
-for the common case where the enum type is known at compile time — the Inspector type-picker
-is read-only, and lookups are compile-time safe.
+Serializable table that maps members of <code class="typeparamref">TEnum</code> to <code class="typeparamref">TValue</code> values.
 
 ```csharp
 [Serializable]
@@ -25,11 +22,11 @@ public sealed class EnumValues<TEnum, TValue> : IReadOnlyCollection<KeyValuePair
 
 `TEnum` 
 
-The enum type the entries are keyed by.
+The enum the entries are keyed by.
 
 `TValue` 
 
-The type of the value associated with each enum member.
+The type of the mapped values.
 
 #### Inheritance
 
@@ -50,32 +47,22 @@ ISerializationCallbackReceiver
 
 ## Examples
 
-Map a damage type to a color, with the enum fixed at compile time:
-
 
 ```csharp
-public class HitEffect : MonoBehaviour
-{
-    [SerializeField] private EnumValues<DamageType, Color> _damageColors;
-
-    public Color GetColor(DamageType type) =>
-        _damageColors.GetValue(type);
-}
+[SerializeField] private EnumValues<DamageType, Color> _damageColors;
 ```
 
 
 ## Remarks
 
-<p>Lookup semantics (including <code>[Flags]</code> handling) and thread safety are identical to [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) — see its remarks for details. Steady-state [`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_Equals__0__0_) and <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">foreach</a> (which binds to the struct [`EnumValuesEnumerator<T1, T2>`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md)) never allocate.</p>
-<p>In the editor the serialized layout is compatible with [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md): the enum type is still stored in a hidden editor-only <code>_enumType</code> field, auto-filled with <code class="typeparamref">TEnum</code>'s assembly-qualified name on serialization. Switching a field between the two variants therefore migrates existing data, as long as the configured enum type matches <code class="typeparamref">TEnum</code>. Player builds strip the field — at runtime the enum type comes from the generic argument alone.</p>
-<p>The first access, which builds the entries, is wrapped in a profiler marker; lookups are not, so a call per entity per frame adds no Profiler samples. Define the <code>ASPID_FASTTOOLS_UNITY_PROFILER_DISABLED</code> scripting symbol to compile the marker out.</p>
+Lookup rules, thread safety and the serialized layout match [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md): a field can switch
+between the two types without losing entries if the enum is the same.
 
 ## Properties
 
 ### Count {#Aspid_FastTools_Enums_EnumValues_2_Count}
 
-Gets the number of entries [`EnumValues<T1, T2>.GetEnumerator`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetEnumerator) yields: the rows whose key resolved to an
-enum member, duplicate keys included. The default value is not counted.
+Gets the number of entries with a resolved key, duplicates included; the default value is not counted.
 
 ```csharp
 public int Count { get; }
@@ -89,8 +76,8 @@ public int Count { get; }
 
 ### Equals\(TEnum, TEnum\) {#Aspid_FastTools_Enums_EnumValues_2_Equals__0__0_}
 
-Determines whether two enum values should be considered equal for lookup purposes.
-The first argument is the value being looked up; the second is the entry's stored key.
+Determines whether the lookup value <code class="paramref">enumValue1</code> matches the entry key
+<code class="paramref">enumValue2</code>.
 
 ```csharp
 public bool Equals(TEnum enumValue1, TEnum enumValue2)
@@ -100,26 +87,23 @@ public bool Equals(TEnum enumValue1, TEnum enumValue2)
 
 `enumValue1` TEnum
 
-The lookup value (must contain the entry's bits to match).
+The lookup value.
 
 `enumValue2` TEnum
 
-The stored entry key.
+The entry key.
 
 #### Returns
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-For regular enums: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when both values are identical.<br />
-For <code>[Flags]</code> enums: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when <code class="paramref">enumValue1</code>
-has all bits of <code class="paramref">enumValue2</code> set, with the additional rule that
-the zero (<code>None</code>) value is only equal to another zero value.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the values are equal or, for a <code>[Flags]</code> enum, <code class="paramref">enumValue1</code>
+contains all bits of <code class="paramref">enumValue2</code> and zero matches only zero; otherwise,
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
 ### GetEnumerator\(\) {#Aspid_FastTools_Enums_EnumValues_2_GetEnumerator}
 
-Returns a struct enumerator over the explicitly configured (key, value) pairs in
-serialized order — <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">foreach</a> binds to it directly and does not allocate.
-Does <b>not</b> include the default value or entries with an unresolved key.
+Returns an enumerator over the entries with a resolved key in serialized order, without the default value.
 
 ```csharp
 public EnumValuesEnumerator<TEnum, TValue> GetEnumerator()
@@ -131,8 +115,7 @@ public EnumValuesEnumerator<TEnum, TValue> GetEnumerator()
 
 ### GetValue\(TEnum\) {#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_}
 
-Returns the value mapped to <code class="paramref">enumValue</code>,
-or the configured default value if no mapping exists.
+Returns the value mapped to <code class="paramref">enumValue</code>.
 
 ```csharp
 public TValue? GetValue(TEnum enumValue)
@@ -148,12 +131,11 @@ The enum member to look up.
 
  TValue?
 
-The mapped value, or the default value when no entry matches. A reference-type
-<code class="typeparamref">TValue</code> left unassigned in the Inspector is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+The mapped value; otherwise, the default value.
 
 ### TryGetValue\(TEnum, out TValue?\) {#Aspid_FastTools_Enums_EnumValues_2_TryGetValue__0__1__}
 
-Looks up the value mapped to <code class="paramref">enumValue</code> and reports whether an entry matched.
+Looks up the value mapped to <code class="paramref">enumValue</code>.
 
 ```csharp
 public bool TryGetValue(TEnum enumValue, out TValue? value)
@@ -167,7 +149,7 @@ The enum member to look up.
 
 `value` TValue?
 
-The mapped value, or the default value when no entry matches, as [`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_) returns it.
+The mapped value; otherwise, the default value.
 
 #### Returns
 
