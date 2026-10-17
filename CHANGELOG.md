@@ -13,6 +13,7 @@ First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releas
 
 ### Added
 
+- The FastTools window switches tabs with Alt+Left and Alt+Right (Option on macOS), next to Ctrl+Tab. Rebind them under Aspid FastTools/Window in the Shortcuts window.
 - `RemoveChildren` and `RemoveChildrenIf` remove several children in one call and take the same `params`, `IEnumerable`, `List` and `ReadOnlySpan` overloads as `AddChildren`.
 - `AddClasses`, `RemoveClasses`, `ToggleClasses` and `EnableClasses` change several USS classes in one call and take the same `params`, `IEnumerable`, `List` and `ReadOnlySpan` overloads as `AddChildren`. An `IEnumerable` may read `GetClasses()` of the same element. `EnableClasses` takes the flag first: `EnableClasses(isFree, "selected", "free")`.
 - `InsertStyleSheet` inserts a style sheet at an index, `EnableStyleSheet(sheet, enable)` adds or removes it, and `ClearStyleSheets` removes every style sheet.
