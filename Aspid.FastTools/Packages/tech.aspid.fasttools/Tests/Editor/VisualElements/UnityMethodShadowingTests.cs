@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System.Reflection;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using System.Runtime.CompilerServices;
 
 namespace Aspid.FastTools.UIElements.Tests
@@ -76,7 +77,7 @@ namespace Aspid.FastTools.UIElements.Tests
         // The runtime and Editor fluent extensions, and the Math ones when com.unity.mathematics is loaded.
         private static IEnumerable<MethodInfo> GetExtensionMethods() =>
             new[] { typeof(VisualElementExtensions).Assembly, typeof(Editors.PropertyFieldExtensions).Assembly }
-                .Concat(AppDomain.CurrentDomain.GetAssemblies().Where(assembly => assembly.GetName().Name == "Aspid.FastTools.VisualElements.Math"))
+                .Concat(TypeUtility.GetLoadedAssemblies().Where(assembly => assembly.GetName().Name == "Aspid.FastTools.VisualElements.Math"))
                 .Distinct()
                 .SelectMany(assembly => assembly.GetTypes())
                 .Where(type => type.IsPublic && type.IsAbstract && type.IsSealed

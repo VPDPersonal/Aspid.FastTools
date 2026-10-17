@@ -43,6 +43,14 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
+        // AppDomain.GetAssemblies can return assemblies Unity already unloaded; CurrentAssemblies (6000.4+) cannot.
+        internal static IReadOnlyList<Assembly> GetLoadedAssemblies() =>
+#if UNITY_6000_4_OR_NEWER
+            UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies();
+#else
+            AppDomain.CurrentDomain.GetAssemblies();
+#endif
+
         // Walking the types can load another assembly, and the walk then misses its types. The walk repeats until a
         // pass loads nothing; a repeat pass reads only the assemblies that no pass read yet. loads is the count the
         // last pass started at, so a walk cut off by the cap is redone later.

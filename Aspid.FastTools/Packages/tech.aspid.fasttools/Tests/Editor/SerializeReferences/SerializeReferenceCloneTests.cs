@@ -272,6 +272,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         // A by-value cycle: CycleInner reaches a reference only through CycleOuter.
+        // The cycle is what the memoization tests walk, so the deep-cycle warning is expected here.
+#pragma warning disable UAC1007
         [Serializable]
         private sealed class CycleOuter
         {
@@ -284,6 +286,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             public CycleOuter back;
         }
+#pragma warning restore UAC1007
 
         [Test]
         public void ByValueTypesWithoutReferences_AreMemoizedOnTheFirstWalk()
