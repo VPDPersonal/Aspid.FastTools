@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-Supplies presentation metadata for a type in the type-selector window — display name, group, tooltip and
-icon — or keeps the type out of the picker entirely with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden).
+Sets how the type-selector window shows a type, or hides the type with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden).
 
 ```csharp
 [Conditional("UNITY_EDITOR")]
@@ -52,17 +51,15 @@ public sealed class DelegateModifier : IModifier { }
 
 ## Remarks
 
-<code>[Conditional("UNITY_EDITOR")]</code> keeps this metadata out of player builds. The compiler evaluates the
-symbol at the use site, so a type compiled outside Unity — a plugin <code>.dll</code> built by
-<code>dotnet build</code> — carries no usage at all and none of these settings apply to it,
-[`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden) included. Declare the attribute from inside the Unity project.
+Has no effect on a type compiled outside Unity, such as a <code>dotnet build</code> DLL:
+<code>[Conditional("UNITY_EDITOR")]</code> drops the usage there.
 
 ## Properties
 
 ### Group {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Group}
 
-Gets or sets an explicit picker path, with <code>/</code> separating levels (<code>"Combat/Melee"</code>).
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace keeps the type under its namespace.
+Gets or sets the picker path that replaces the namespace, with <code>/</code> separating levels
+(<code>"Combat/Melee"</code>); <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace keeps the namespace.
 
 ```csharp
 public string? Group { get; set; }
@@ -72,15 +69,9 @@ public string? Group { get; set; }
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)?
 
-#### Remarks
-
-The path replaces the type's namespace placement, so the type appears only under it. Empty segments are
-ignored.
-
 ### Hidden {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden}
 
-Gets or sets a value indicating whether the picker never offers this type — for types that are assignable
-but not meant to be authored in the Inspector.
+Gets or sets a value indicating whether the picker hides this type.
 
 ```csharp
 public bool Hidden { get; set; }
@@ -92,15 +83,13 @@ public bool Hidden { get; set; }
 
 #### Remarks
 
-Assigning from code is unaffected, and a value already stored in a field keeps rendering. Not inherited,
-so hiding a base type never hides the subclasses meant to be picked instead.
+Not inherited by subclasses. Assigning from code and values already stored are unaffected.
 
 ### Icon {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Icon}
 
 Gets or sets the icon shown left of the label: an <code>EditorGUIUtility.IconContent</code> name
-(<code>"d_ScriptableObject Icon"</code>), a project-relative asset path with extension
-(<code>"Assets/Art/Icons/Damage.png"</code>), or a <code>Resources</code> path without extension
-(<code>"Icons/Damage"</code>). Resolved lazily; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> means no icon.
+(<code>"d_ScriptableObject Icon"</code>), an asset path with extension (<code>"Assets/Art/Icons/Damage.png"</code>) or
+a <code>Resources</code> path without one (<code>"Icons/Damage"</code>); <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
 
 ```csharp
 public string? Icon { get; set; }
@@ -112,8 +101,8 @@ public string? Icon { get; set; }
 
 ### Name {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Name}
 
-Gets or sets the name shown instead of the type's short name. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace means
-no override.
+Gets or sets the name shown instead of the type's short name; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace keeps
+the short name.
 
 ```csharp
 public string? Name { get; set; }
@@ -125,8 +114,8 @@ public string? Name { get; set; }
 
 #### Remarks
 
-Search still matches the real name, the tooltip still shows the full identity, and a generic type keeps
-its formatted arguments appended (<code>Mod&lt;Single&gt;</code>).
+Search still matches the real name, and a generic type keeps its arguments appended
+(<code>Mod&lt;Single&gt;</code>).
 
 ### Tooltip {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Tooltip}
 

@@ -11,11 +11,8 @@ namespace Aspid.FastTools.Types
     /// Draws the field with the type-selector window.
     /// </summary>
     /// <remarks>
-    /// <para>With several base types the picker shows only types assignable to all of them.</para>
-    /// <para>
-    /// On an array or <see cref="System.Collections.Generic.List{T}"/> field it applies to the collection itself: each
-    /// element gets a picker, and the add button of a <c>[SerializeReference]</c> list opens one, even when empty.
-    /// </para>
+    /// On an array or <see cref="System.Collections.Generic.List{T}"/> field each element gets a picker, and the add
+    /// button of a <c>[SerializeReference]</c> list opens one.
     /// </remarks>
     /// <example>
     /// <code>
@@ -23,12 +20,17 @@ namespace Aspid.FastTools.Types
     /// [SerializeField] private string _behaviorType;
     /// </code>
     /// <code>
-    /// [TypeSelector]
-    /// [SerializeField] private string _anyType;
-    /// </code>
-    /// <code>
     /// [TypeSelector(typeof(IDisposable), typeof(ScriptableObject))]
     /// [SerializeField] private string _type;
+    /// </code>
+    /// <code>
+    /// [SerializeField] private SerializableType _category;
+    /// [TypeSelector(nameof(_category))]
+    /// [SerializeField] private string _subType;
+    /// </code>
+    /// <code>
+    /// [TypeSelector(typeof(IWeapon), Required = true)]
+    /// [SerializeReference] private IWeapon _weapon;
     /// </code>
     /// </example>
     [Conditional(conditionString: "UNITY_EDITOR")]
@@ -50,27 +52,13 @@ namespace Aspid.FastTools.Types
         public TypeAllow Allow { get; set; } = TypeAllow.All;
 
         /// <summary>
-        /// Gets or sets a value indicating whether an unset field shows an inline "required" warning and is reported
-        /// as a required violation.
+        /// Gets or sets a value indicating whether an unset field shows a "required" warning and is reported as a
+        /// violation.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// "Unset" means <see langword="null"/> for a <c>[SerializeReference]</c> field and an empty name for a
-        /// <see cref="string"/> field or a <see cref="SerializableType"/> or <see cref="SerializableMonoScript"/>
-        /// field, generic ones included. Other field types ignore the flag. A reference that is set but whose type no
-        /// longer resolves is not a violation of this flag — the separate missing-type check covers that.
-        /// </para>
-        /// <para>
-        /// Asset References marks the field in any gate mode, Project References → Scan Project reports it when the
-        /// gate is Warn or Fail, and the CI gate only with <c>-srGateRequired</c>. The player build never checks it.
-        /// </para>
+        /// Applies to <c>[SerializeReference]</c>, <see cref="string"/> and <see cref="SerializableTypeBase"/> fields;
+        /// a type that no longer resolves is reported by the missing-type check instead.
         /// </remarks>
-        /// <example>
-        /// <code>
-        /// [TypeSelector(typeof(IWeapon), Required = true)]
-        /// [SerializeReference] private IWeapon _weapon;
-        /// </code>
-        /// </example>
         public bool Required { get; set; }
 
         /// <summary>
@@ -82,14 +70,14 @@ namespace Aspid.FastTools.Types
         /// <summary>
         /// Creates an attribute constrained to a single base type.
         /// </summary>
-        /// <param name="type">The base constraint type.</param>
+        /// <param name="type">The base type.</param>
         public TypeSelectorAttribute(Type type)
             : this(types: type) { }
 
         /// <summary>
         /// Creates an attribute constrained to one or more base types.
         /// </summary>
-        /// <param name="types">The base constraint types.</param>
+        /// <param name="types">The base types; the picker offers only types assignable to all of them.</param>
         public TypeSelectorAttribute(params Type[]? types)
             : base(applyToCollection: true)
         {
@@ -101,35 +89,25 @@ namespace Aspid.FastTools.Types
         }
 
         /// <summary>
-        /// Creates an attribute constrained to a single base type named by a string.
+        /// Creates an attribute constrained by a type name or by a member that supplies the base types.
         /// </summary>
         /// <remarks>
-        /// Resolved member-first: an identifier matching an instance field or property on the target object supplies
-        /// the constraint from its current value, so it can be driven live by another field; anything else is treated
-        /// as an assembly-qualified type name. A member may be a <see cref="System.Type"/>, a <see cref="string"/>, a
-        /// <see cref="SerializableType"/>, or an array of these. Prefer <c>nameof(...)</c> so a rename keeps the
-        /// reference intact. A name that resolves to nothing is surfaced as an inline inspector notice.
+        /// An instance field or property of that name supplies the types from its current value: a
+        /// <see cref="System.Type"/>, a <see cref="string"/>, an <see cref="ISerializableType"/> or an array of these.
+        /// Any other string is an assembly-qualified type name.
         /// </remarks>
         /// <param name="assemblyQualifiedName">
-        /// An assembly-qualified type name (<c>"MyGame.IWeapon, MyGame"</c>) or the name of a member supplying the
-        /// constraint — see the remarks.
+        /// An assembly-qualified type name (<c>"MyGame.IWeapon, MyGame"</c>) or a member name
+        /// (<c>nameof(_category)</c>).
         /// </param>
-        /// <example>
-        /// <code>
-        /// [SerializeField] private SerializableType _category;
-        ///
-        /// [TypeSelector(nameof(_category))]
-        /// [SerializeField] private string _subType;
-        /// </code>
-        /// </example>
         public TypeSelectorAttribute(string assemblyQualifiedName)
             : this(assemblyQualifiedNames: assemblyQualifiedName) { }
 
         /// <summary>
-        /// Creates an attribute constrained to one or more base types, each named by a string.
+        /// Creates an attribute constrained by one or more type or member names.
         /// </summary>
         /// <param name="assemblyQualifiedNames">
-        /// Each entry is resolved independently, member-first; see <see cref="TypeSelectorAttribute(string)"/>.
+        /// Type or member names, each resolved as in <see cref="TypeSelectorAttribute(string)"/>.
         /// </param>
         public TypeSelectorAttribute(params string[]? assemblyQualifiedNames)
             : base(applyToCollection: true)

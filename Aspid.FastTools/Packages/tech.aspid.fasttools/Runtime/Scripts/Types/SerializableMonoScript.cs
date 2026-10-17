@@ -14,34 +14,16 @@ namespace Aspid.FastTools.Types
     /// asset, so renaming or moving the class does not break the field.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// In the editor the script asset is the source of truth: on every serialization the stored assembly-qualified
-    /// name is re-read from the script's class. The script reference is editor-only, so a player build carries just
-    /// the name and resolves it exactly as <see cref="SerializableType"/> does. When that name no longer resolves in
-    /// the editor, a main-thread read takes the type from the script, so an asset not saved since a class rename still
-    /// works in Play Mode; another thread gets <see langword="null"/> then.
-    /// </para>
-    /// <para>
-    /// Only types Unity maps to a script asset can be referenced this way: a top-level, non-generic class declared
-    /// in a file of the same name or compiled into a DLL. From a DLL, Unity maps only
-    /// <see cref="UnityEngine.MonoBehaviour"/> and <see cref="UnityEngine.ScriptableObject"/> classes, by namespace
-    /// and name, so renaming the class or its namespace breaks the reference. Use <see cref="SerializableType"/> for
-    /// nested and generic types and for other DLL classes.
-    /// </para>
+    /// A script asset exists only for a top-level, non-generic class in a file of the same name, or for a
+    /// <see cref="UnityEngine.MonoBehaviour"/> or <see cref="UnityEngine.ScriptableObject"/> in a DLL, matched by
+    /// namespace and name; use <see cref="SerializableType"/> for other types. A player keeps only the name and
+    /// resolves it as <see cref="SerializableType"/> does.
     /// </remarks>
     /// <example>
     /// <code>
-    /// public class Spawner : MonoBehaviour
-    /// {
-    ///     [SerializeField] private SerializableMonoScript _componentType;
+    /// [SerializeField] private SerializableMonoScript _componentType;
     ///
-    ///     private void Start()
-    ///     {
-    ///         Type type = _componentType;  // implicit conversion
-    ///         if (type != null)
-    ///             gameObject.AddComponent(type);
-    ///     }
-    /// }
+    /// Type type = _componentType; // implicit conversion
     /// </code>
     /// </example>
     [Serializable]
@@ -60,6 +42,9 @@ namespace Aspid.FastTools.Types
         private protected sealed override void OnBeforeSerialize()
         {
 #if UNITY_EDITOR
+            // GetClass throws off the main thread: a worker keeps the stored name for the next main-thread save.
+            if (!InternalEditorUtility.CurrentThreadIsMainThread()) return;
+
             // A live script asset re-syncs the stored name after a class rename. A script whose class Unity can no
             // longer find keeps the last known name, which the Inspector shows as missing instead of clearing it.
             if (!_script) return;
@@ -103,26 +88,10 @@ namespace Aspid.FastTools.Types
     /// <summary>
     /// <see cref="SerializableMonoScript"/> constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
-    /// <remarks>
-    /// Unity serializes a field by its declared type, so a <see cref="SerializableMonoScript{T}"/> assigned from code
-    /// to a field declared as <see cref="SerializableMonoScript"/> is reloaded unconstrained: the type survives, the
-    /// constraint does not. Only the Inspector checks <typeparamref name="T"/> when a type is picked or dropped: a
-    /// loaded name is not re-checked, so after <typeparamref name="T"/> or the stored class's base changes, the type
-    /// may no longer be assignable to it.
-    /// </remarks>
-    /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
+    /// <typeparam name="T">The base type that the Inspector requires when a type is picked or dropped.</typeparam>
     /// <example>
     /// <code><![CDATA[
-    /// public class EnemySpawner : MonoBehaviour
-    /// {
-    ///     [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
-    ///
-    ///     private void Spawn()
-    ///     {
-    ///         if (_enemyType.Type is { } type)
-    ///             gameObject.AddComponent(type);
-    ///     }
-    /// }
+    /// [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
     /// ]]></code>
     /// </example>
     [Serializable]

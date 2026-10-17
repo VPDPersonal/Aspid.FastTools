@@ -40,21 +40,28 @@ PropertyAttribute ←
 
 
 ```csharp
-[TypeSelector]
-[SerializeField] private string _anyType;
-```
-
-
-```csharp
 [TypeSelector(typeof(IDisposable), typeof(ScriptableObject))]
 [SerializeField] private string _type;
 ```
 
 
+```csharp
+[SerializeField] private SerializableType _category;
+[TypeSelector(nameof(_category))]
+[SerializeField] private string _subType;
+```
+
+
+```csharp
+[TypeSelector(typeof(IWeapon), Required = true)]
+[SerializeReference] private IWeapon _weapon;
+```
+
+
 ## Remarks
 
-<p>With several base types the picker shows only types assignable to all of them.</p>
-<p>On an array or [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1) field it applies to the collection itself: each element gets a picker, and the add button of a <code>[SerializeReference]</code> list opens one, even when empty.</p>
+On an array or [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1) field each element gets a picker, and the add
+button of a <code>[SerializeReference]</code> list opens one.
 
 ## Constructors
 
@@ -78,7 +85,7 @@ public TypeSelectorAttribute(Type type)
 
 `type` [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
-The base constraint type.
+The base type.
 
 ### TypeSelectorAttribute\(params Type\[\]?\) {#Aspid_FastTools_Types_TypeSelectorAttribute__ctor_System_Type___}
 
@@ -92,11 +99,11 @@ public TypeSelectorAttribute(params Type[]? types)
 
 `types` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]?
 
-The base constraint types.
+The base types; the picker offers only types assignable to all of them.
 
 ### TypeSelectorAttribute\(string\) {#Aspid_FastTools_Types_TypeSelectorAttribute__ctor_System_String_}
 
-Creates an attribute constrained to a single base type named by a string.
+Creates an attribute constrained by a type name or by a member that supplies the base types.
 
 ```csharp
 public TypeSelectorAttribute(string assemblyQualifiedName)
@@ -106,31 +113,18 @@ public TypeSelectorAttribute(string assemblyQualifiedName)
 
 `assemblyQualifiedName` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-An assembly-qualified type name (<code>"MyGame.IWeapon, MyGame"</code>) or the name of a member supplying the
-constraint — see the remarks.
-
-#### Examples
-
-
-```csharp
-[SerializeField] private SerializableType _category;
-
-[TypeSelector(nameof(_category))]
-[SerializeField] private string _subType;
-```
-
+An assembly-qualified type name (<code>"MyGame.IWeapon, MyGame"</code>) or a member name
+(<code>nameof(_category)</code>).
 
 #### Remarks
 
-Resolved member-first: an identifier matching an instance field or property on the target object supplies
-the constraint from its current value, so it can be driven live by another field; anything else is treated
-as an assembly-qualified type name. A member may be a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), a [`String`](https://learn.microsoft.com/dotnet/api/system.string), a
-[`SerializableType`](Aspid.FastTools.Types.SerializableType.md), or an array of these. Prefer <code>nameof(...)</code> so a rename keeps the
-reference intact. A name that resolves to nothing is surfaced as an inline inspector notice.
+An instance field or property of that name supplies the types from its current value: a
+[`Type`](https://learn.microsoft.com/dotnet/api/system.type), a [`String`](https://learn.microsoft.com/dotnet/api/system.string), an [`ISerializableType`](Aspid.FastTools.Types.ISerializableType.md) or an array of these.
+Any other string is an assembly-qualified type name.
 
 ### TypeSelectorAttribute\(params string\[\]?\) {#Aspid_FastTools_Types_TypeSelectorAttribute__ctor_System_String___}
 
-Creates an attribute constrained to one or more base types, each named by a string.
+Creates an attribute constrained by one or more type or member names.
 
 ```csharp
 public TypeSelectorAttribute(params string[]? assemblyQualifiedNames)
@@ -140,7 +134,7 @@ public TypeSelectorAttribute(params string[]? assemblyQualifiedNames)
 
 `assemblyQualifiedNames` [string](https://learn.microsoft.com/dotnet/api/system.string)\[\]?
 
-Each entry is resolved independently, member-first; see [`TypeSelectorAttribute.%23ctor`](Aspid.FastTools.Types.TypeSelectorAttribute.md).
+Type or member names, each resolved as in [`TypeSelectorAttribute.%23ctor`](Aspid.FastTools.Types.TypeSelectorAttribute.md).
 
 ## Properties
 
@@ -176,8 +170,8 @@ public string[] AssemblyQualifiedNames { get; }
 
 ### Required {#Aspid_FastTools_Types_TypeSelectorAttribute_Required}
 
-Gets or sets a value indicating whether an unset field shows an inline "required" warning and is reported
-as a required violation.
+Gets or sets a value indicating whether an unset field shows a "required" warning and is reported as a
+violation.
 
 ```csharp
 public bool Required { get; set; }
@@ -187,17 +181,8 @@ public bool Required { get; set; }
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-#### Examples
-
-
-```csharp
-[TypeSelector(typeof(IWeapon), Required = true)]
-[SerializeReference] private IWeapon _weapon;
-```
-
-
 #### Remarks
 
-<p>"Unset" means <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for a <code>[SerializeReference]</code> field and an empty name for a [`String`](https://learn.microsoft.com/dotnet/api/system.string) field or a [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) or [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md) field, generic ones included. Other field types ignore the flag. A reference that is set but whose type no longer resolves is not a violation of this flag — the separate missing-type check covers that.</p>
-<p>Asset References marks the field in any gate mode, Project References → Scan Project reports it when the gate is Warn or Fail, and the CI gate only with <code>-srGateRequired</code>. The player build never checks it.</p>
+Applies to <code>[SerializeReference]</code>, [`String`](https://learn.microsoft.com/dotnet/api/system.string) and [`SerializableTypeBase`](Aspid.FastTools.Types.SerializableTypeBase.md) fields;
+a type that no longer resolves is reported by the missing-type check instead.
 
