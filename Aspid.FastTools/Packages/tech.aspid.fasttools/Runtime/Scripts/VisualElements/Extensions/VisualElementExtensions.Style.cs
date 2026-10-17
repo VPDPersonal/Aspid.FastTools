@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable MemberCanBePrivate.Global
 namespace Aspid.FastTools.UIElements
 {
     public static partial class VisualElementExtensions
@@ -133,9 +134,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : VisualElement
         {
-            return element.SetSize(
+            element.SetSize(
                 width: value,
                 height: value);
+
+            return element;
         }
 
         /// <summary>
@@ -208,9 +211,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : VisualElement
         {
-            return element.SetMaxSize(
+            element.SetMaxSize(
                 maxWidth: value,
                 maxHeight: value);
+
+            return element;
         }
 
         /// <summary>

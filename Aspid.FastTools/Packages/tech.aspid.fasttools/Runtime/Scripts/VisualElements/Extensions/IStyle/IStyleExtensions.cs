@@ -136,9 +136,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetSize(
+            style.SetSize(
                 width: value,
                 height: value);
+
+            return style;
         }
 
         /// <summary>
@@ -173,9 +175,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMinSize(
+            style.SetMinSize(
                 minWidth: value,
                 minHeight: value);
+
+            return style;
         }
 
         /// <summary>
@@ -210,9 +214,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMaxSize(
+            style.SetMaxSize(
                 maxWidth: value,
                 maxHeight: value);
+
+            return style;
         }
 
         /// <summary>
@@ -247,7 +253,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetSize(width: value);
+            style.SetSize(width: value);
+            return style;
         }
 
         /// <summary>
@@ -262,7 +269,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMinSize(minWidth: value);
+            style.SetMinSize(minWidth: value);
+            return style;
         }
 
         /// <summary>
@@ -277,7 +285,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMaxSize(maxWidth: value);
+            style.SetMaxSize(maxWidth: value);
+            return style;
         }
 
         /// <summary>
@@ -292,7 +301,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetSize(height: value);
+            style.SetSize(height: value);
+            return style;
         }
 
         /// <summary>
@@ -307,7 +317,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMinSize(minHeight: value);
+            style.SetMinSize(minHeight: value);
+            return style;
         }
 
         /// <summary>
@@ -322,7 +333,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMaxSize(maxHeight: value);
+            style.SetMaxSize(maxHeight: value);
+            return style;
         }
         #endregion
 
@@ -927,11 +939,13 @@ namespace Aspid.FastTools.UIElements
             StyleColor value)
             where T : IStyle
         {
-            return style.SetBorderColor(
+            style.SetBorderColor(
                 top: value,
                 right: value,
                 bottom: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1002,9 +1016,11 @@ namespace Aspid.FastTools.UIElements
             StyleColor value)
             where T : IStyle
         {
-            return style.SetBorderColor(
+            style.SetBorderColor(
                 right: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1043,9 +1059,11 @@ namespace Aspid.FastTools.UIElements
             StyleColor value)
             where T : IStyle
         {
-            return style.SetBorderColor(
+            style.SetBorderColor(
                 top: value,
                 bottom: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1084,7 +1102,8 @@ namespace Aspid.FastTools.UIElements
             StyleColor value)
             where T : IStyle
         {
-            return style.SetBorderColor(top: value);
+            style.SetBorderColor(top: value);
+            return style;
         }
 
         /// <summary>
@@ -1123,7 +1142,8 @@ namespace Aspid.FastTools.UIElements
             StyleColor value)
             where T : IStyle
         {
-            return style.SetBorderColor(right: value);
+            style.SetBorderColor(right: value);
+            return style;
         }
 
         /// <summary>
@@ -1162,7 +1182,8 @@ namespace Aspid.FastTools.UIElements
             StyleColor value)
             where T : IStyle
         {
-            return style.SetBorderColor(bottom: value);
+            style.SetBorderColor(bottom: value);
+            return style;
         }
 
         /// <summary>
@@ -1201,7 +1222,8 @@ namespace Aspid.FastTools.UIElements
             StyleColor value)
             where T : IStyle
         {
-            return style.SetBorderColor(left: value);
+            style.SetBorderColor(left: value);
+            return style;
         }
 
         /// <summary>
@@ -1241,11 +1263,13 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(
+            style.SetBorderRadius(
                 topLeft: value,
                 topRight: value,
                 bottomRight: value,
                 bottomLeft: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1291,9 +1315,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(
+            style.SetBorderRadius(
                 topLeft: value,
                 topRight: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1308,9 +1334,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(
+            style.SetBorderRadius(
                 bottomRight: value,
                 bottomLeft: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1325,9 +1353,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(
+            style.SetBorderRadius(
                 topLeft: value,
                 bottomLeft: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1342,9 +1372,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(
+            style.SetBorderRadius(
                 topRight: value,
                 bottomRight: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1359,7 +1391,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(topLeft: value);
+            style.SetBorderRadius(topLeft: value);
+            return style;
         }
 
         /// <summary>
@@ -1374,7 +1407,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(topRight: value);
+            style.SetBorderRadius(topRight: value);
+            return style;
         }
 
         /// <summary>
@@ -1389,7 +1423,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(bottomRight: value);
+            style.SetBorderRadius(bottomRight: value);
+            return style;
         }
 
         /// <summary>
@@ -1404,7 +1439,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetBorderRadius(bottomLeft: value);
+            style.SetBorderRadius(bottomLeft: value);
+            return style;
         }
 
         /// <summary>
@@ -1420,11 +1456,13 @@ namespace Aspid.FastTools.UIElements
             StyleFloat value)
             where T : IStyle
         {
-            return style.SetBorderWidth(
+            style.SetBorderWidth(
                 top: value,
                 right: value,
                 bottom: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1471,7 +1509,8 @@ namespace Aspid.FastTools.UIElements
             StyleFloat value)
             where T : IStyle
         {
-            return style.SetBorderWidth(right: value, left: value);
+            style.SetBorderWidth(right: value, left: value);
+            return style;
         }
 
         /// <summary>
@@ -1486,7 +1525,8 @@ namespace Aspid.FastTools.UIElements
             StyleFloat value)
             where T : IStyle
         {
-            return style.SetBorderWidth(top: value, bottom: value);
+            style.SetBorderWidth(top: value, bottom: value);
+            return style;
         }
 
         /// <summary>
@@ -1501,7 +1541,8 @@ namespace Aspid.FastTools.UIElements
             StyleFloat value)
             where T : IStyle
         {
-            return style.SetBorderWidth(top: value);
+            style.SetBorderWidth(top: value);
+            return style;
         }
 
         /// <summary>
@@ -1516,7 +1557,8 @@ namespace Aspid.FastTools.UIElements
             StyleFloat value)
             where T : IStyle
         {
-            return style.SetBorderWidth(right: value);
+            style.SetBorderWidth(right: value);
+            return style;
         }
 
         /// <summary>
@@ -1531,7 +1573,8 @@ namespace Aspid.FastTools.UIElements
             StyleFloat value)
             where T : IStyle
         {
-            return style.SetBorderWidth(bottom: value);
+            style.SetBorderWidth(bottom: value);
+            return style;
         }
 
         /// <summary>
@@ -1546,7 +1589,8 @@ namespace Aspid.FastTools.UIElements
             StyleFloat value)
             where T : IStyle
         {
-            return style.SetBorderWidth(left: value);
+            style.SetBorderWidth(left: value);
+            return style;
         }
         #endregion
 
@@ -1582,11 +1626,13 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMargin(
+            style.SetMargin(
                 top: value,
                 right: value,
                 bottom: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1633,9 +1679,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMargin(
+            style.SetMargin(
                 right: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1650,9 +1698,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMargin(
+            style.SetMargin(
                 top: value,
                 bottom: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1667,7 +1717,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMargin(top: value);
+            style.SetMargin(top: value);
+            return style;
         }
 
         /// <summary>
@@ -1682,7 +1733,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMargin(right: value);
+            style.SetMargin(right: value);
+            return style;
         }
 
         /// <summary>
@@ -1697,7 +1749,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMargin(bottom: value);
+            style.SetMargin(bottom: value);
+            return style;
         }
 
         /// <summary>
@@ -1712,7 +1765,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMargin(left: value);
+            style.SetMargin(left: value);
+            return style;
         }
         #endregion
 
@@ -1730,11 +1784,13 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetPadding(
+            style.SetPadding(
                 top: value,
                 right: value,
                 bottom: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1781,9 +1837,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetPadding(
+            style.SetPadding(
                 right: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1798,9 +1856,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetPadding(
+            style.SetPadding(
                 top: value,
                 bottom: value);
+
+            return style;
         }
 
         /// <summary>
@@ -1815,7 +1875,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetPadding(top: value);
+            style.SetPadding(top: value);
+            return style;
         }
 
         /// <summary>
@@ -1830,7 +1891,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetPadding(right: value);
+            style.SetPadding(right: value);
+            return style;
         }
 
         /// <summary>
@@ -1845,7 +1907,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetPadding(bottom: value);
+            style.SetPadding(bottom: value);
+            return style;
         }
 
         /// <summary>
@@ -1860,7 +1923,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetPadding(left: value);
+            style.SetPadding(left: value);
+            return style;
         }
         #endregion
 
@@ -1978,11 +2042,13 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetDistance(
+            style.SetDistance(
                 top: value,
                 right: value,
                 bottom: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -2029,9 +2095,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetDistance(
+            style.SetDistance(
                 right: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -2046,9 +2114,11 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetDistance(
+            style.SetDistance(
                 top: value,
                 bottom: value);
+
+            return style;
         }
 
         /// <summary>
@@ -2063,7 +2133,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetDistance(top: value);
+            style.SetDistance(top: value);
+            return style;
         }
 
         /// <summary>
@@ -2078,7 +2149,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetDistance(right: value);
+            style.SetDistance(right: value);
+            return style;
         }
 
         /// <summary>
@@ -2093,7 +2165,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetDistance(bottom: value);
+            style.SetDistance(bottom: value);
+            return style;
         }
 
         /// <summary>
@@ -2108,7 +2181,8 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : IStyle
         {
-            return style.SetDistance(left: value);
+            style.SetDistance(left: value);
+            return style;
         }
         #endregion
 
@@ -2435,9 +2509,11 @@ namespace Aspid.FastTools.UIElements
             StyleBackgroundPosition value)
             where T : IStyle
         {
-            return style.SetBackgroundPosition(
+            style.SetBackgroundPosition(
                 x: value,
                 y: value);
+
+            return style;
         }
 
         /// <summary>
@@ -2472,7 +2548,8 @@ namespace Aspid.FastTools.UIElements
             StyleBackgroundPosition value)
             where T : IStyle
         {
-            return style.SetBackgroundPosition(x: value);
+            style.SetBackgroundPosition(x: value);
+            return style;
         }
 
         /// <summary>
@@ -2487,7 +2564,8 @@ namespace Aspid.FastTools.UIElements
             StyleBackgroundPosition value)
             where T : IStyle
         {
-            return style.SetBackgroundPosition(y: value);
+            style.SetBackgroundPosition(y: value);
+            return style;
         }
         #endregion
 
@@ -2587,11 +2665,13 @@ namespace Aspid.FastTools.UIElements
             StyleInt value)
             where T : IStyle
         {
-            return style.SetUnitySlice(
+            style.SetUnitySlice(
                 top: value,
                 right: value,
                 bottom: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -2633,9 +2713,11 @@ namespace Aspid.FastTools.UIElements
             StyleInt value)
             where T : IStyle
         {
-            return style.SetUnitySlice(
+            style.SetUnitySlice(
                 right: value,
                 left: value);
+
+            return style;
         }
 
         /// <summary>
@@ -2650,9 +2732,11 @@ namespace Aspid.FastTools.UIElements
             StyleInt value)
             where T : IStyle
         {
-            return style.SetUnitySlice(
+            style.SetUnitySlice(
                 top: value,
                 bottom: value);
+
+            return style;
         }
 
         /// <summary>
@@ -2667,7 +2751,8 @@ namespace Aspid.FastTools.UIElements
             StyleInt value)
             where T : IStyle
         {
-            return style.SetUnitySlice(top: value);
+            style.SetUnitySlice(top: value);
+            return style;
         }
 
         /// <summary>
@@ -2682,7 +2767,8 @@ namespace Aspid.FastTools.UIElements
             StyleInt value)
             where T : IStyle
         {
-            return style.SetUnitySlice(right: value);
+            style.SetUnitySlice(right: value);
+            return style;
         }
 
         /// <summary>
@@ -2697,7 +2783,8 @@ namespace Aspid.FastTools.UIElements
             StyleInt value)
             where T : IStyle
         {
-            return style.SetUnitySlice(bottom: value);
+            style.SetUnitySlice(bottom: value);
+            return style;
         }
 
         /// <summary>
@@ -2712,8 +2799,10 @@ namespace Aspid.FastTools.UIElements
             StyleInt value)
             where T : IStyle
         {
-            return style.SetUnitySlice(left: value);
+            style.SetUnitySlice(left: value);
+            return style;
         }
+
         /// <summary>
         /// Sets <see cref="IStyle.unitySliceType"/>.
         /// </summary>

@@ -16,10 +16,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T SetNormalUnityFontStyleAndWeight<T>(this T style)
-            where T : IStyle
-        {
-            return style.SetUnityFontStyleAndWeight(FontStyle.Normal);
-        }
+            where T : IStyle => style.SetUnityFontStyleAndWeight(FontStyle.Normal);
 
         /// <summary>
         /// Adds bold to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline italic style.
@@ -36,15 +33,12 @@ namespace Aspid.FastTools.UIElements
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T AddBoldUnityFontStyleAndWeight<T>(this T style)
-            where T : IStyle
+            where T : IStyle => style.unityFontStyleAndWeight.value switch
         {
-            return style.unityFontStyleAndWeight.value switch
-            {
-                FontStyle.Normal => style.SetUnityFontStyleAndWeight(FontStyle.Bold),
-                FontStyle.Italic => style.SetUnityFontStyleAndWeight(FontStyle.BoldAndItalic),
-                _ => style
-            };
-        }
+            FontStyle.Normal => style.SetUnityFontStyleAndWeight(FontStyle.Bold),
+            FontStyle.Italic => style.SetUnityFontStyleAndWeight(FontStyle.BoldAndItalic),
+            _ => style
+        };
 
         /// <summary>
         /// Removes bold from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline italic style.
@@ -61,15 +55,12 @@ namespace Aspid.FastTools.UIElements
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T RemoveBoldUnityFontStyleAndWeight<T>(this T style)
-            where T : IStyle
+            where T : IStyle => style.unityFontStyleAndWeight.value switch
         {
-            return style.unityFontStyleAndWeight.value switch
-            {
-                FontStyle.Bold => style.SetUnityFontStyleAndWeight(FontStyle.Normal),
-                FontStyle.BoldAndItalic => style.SetUnityFontStyleAndWeight(FontStyle.Italic),
-                _ => style
-            };
-        }
+            FontStyle.Bold => style.SetUnityFontStyleAndWeight(FontStyle.Normal),
+            FontStyle.BoldAndItalic => style.SetUnityFontStyleAndWeight(FontStyle.Italic),
+            _ => style
+        };
 
         /// <summary>
         /// Adds italic to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline bold style.
@@ -86,15 +77,12 @@ namespace Aspid.FastTools.UIElements
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T AddItalicUnityFontStyleAndWeight<T>(this T style)
-            where T : IStyle
+            where T : IStyle => style.unityFontStyleAndWeight.value switch
         {
-            return style.unityFontStyleAndWeight.value switch
-            {
-                FontStyle.Normal => style.SetUnityFontStyleAndWeight(FontStyle.Italic),
-                FontStyle.Bold => style.SetUnityFontStyleAndWeight(FontStyle.BoldAndItalic),
-                _ => style
-            };
-        }
+            FontStyle.Normal => style.SetUnityFontStyleAndWeight(FontStyle.Italic),
+            FontStyle.Bold => style.SetUnityFontStyleAndWeight(FontStyle.BoldAndItalic),
+            _ => style
+        };
 
         /// <summary>
         /// Removes italic from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline bold style.
@@ -111,14 +99,11 @@ namespace Aspid.FastTools.UIElements
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T RemoveItalicUnityFontStyleAndWeight<T>(this T style)
-            where T : IStyle
+            where T : IStyle => style.unityFontStyleAndWeight.value switch
         {
-            return style.unityFontStyleAndWeight.value switch
-            {
-                FontStyle.Italic => style.SetUnityFontStyleAndWeight(FontStyle.Normal),
-                FontStyle.BoldAndItalic => style.SetUnityFontStyleAndWeight(FontStyle.Bold),
-                _ => style
-            };
-        }
+            FontStyle.Italic => style.SetUnityFontStyleAndWeight(FontStyle.Normal),
+            FontStyle.BoldAndItalic => style.SetUnityFontStyleAndWeight(FontStyle.Bold),
+            _ => style
+        };
     }
 }

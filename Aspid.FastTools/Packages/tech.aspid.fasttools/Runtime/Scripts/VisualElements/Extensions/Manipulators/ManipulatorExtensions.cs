@@ -45,10 +45,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="handler">The action to invoke when the element is clicked.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddClickable<T>(this T element, Action handler)
-            where T : VisualElement
-        {
-            return element.AddManipulatorSelf(new Clickable(handler));
-        }
+            where T : VisualElement => element.AddManipulatorSelf(new Clickable(handler));
 
         /// <summary>
         /// Adds a new <see cref="Clickable"/> manipulator that invokes the specified handler and outputs the created manipulator.
@@ -73,10 +70,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="handler">The action to invoke when the element is clicked, receiving the triggering event.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddClickable<T>(this T element, Action<EventBase> handler)
-            where T : VisualElement
-        {
-            return element.AddManipulatorSelf(new Clickable(handler));
-        }
+            where T : VisualElement => element.AddManipulatorSelf(new Clickable(handler));
 
         /// <summary>
         /// Adds a new <see cref="Clickable"/> manipulator that invokes the specified handler with the triggering <see cref="EventBase"/> and outputs the created manipulator.
@@ -103,10 +97,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="interval">The interval, in milliseconds, between subsequent invocations while pressed.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddClickable<T>(this T element, Action handler, long delay, long interval)
-            where T : VisualElement
-        {
-            return element.AddManipulatorSelf(new Clickable(handler, delay, interval));
-        }
+            where T : VisualElement => element.AddManipulatorSelf(new Clickable(handler, delay, interval));
 
         /// <summary>
         /// Adds a new repeating <see cref="Clickable"/> manipulator that invokes the specified handler after an initial delay and then at a fixed interval while pressed, and outputs the created manipulator.
@@ -133,10 +124,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="action">The action to invoke with the <see cref="KeyboardNavigationOperation"/> and triggering <see cref="EventBase"/>.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddKeyboardNavigationManipulator<T>(this T element, Action<KeyboardNavigationOperation, EventBase> action)
-            where T : VisualElement
-        {
-            return element.AddManipulatorSelf(new KeyboardNavigationManipulator(action));
-        }
+            where T : VisualElement => element.AddManipulatorSelf(new KeyboardNavigationManipulator(action));
 
         /// <summary>
         /// Adds a new <see cref="KeyboardNavigationManipulator"/> that invokes the specified action for keyboard navigation operations, and outputs the created manipulator.
@@ -161,10 +149,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="menuBuilder">The action invoked to populate the menu when it is shown.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddContextualMenuManipulator<T>(this T element, Action<ContextualMenuPopulateEvent> menuBuilder)
-            where T : VisualElement
-        {
-            return element.AddManipulatorSelf(new ContextualMenuManipulator(menuBuilder));
-        }
+            where T : VisualElement => element.AddManipulatorSelf(new ContextualMenuManipulator(menuBuilder));
 
         /// <summary>
         /// Adds a new <see cref="ContextualMenuManipulator"/> that uses the specified menu builder to populate the contextual menu, and outputs the created manipulator.

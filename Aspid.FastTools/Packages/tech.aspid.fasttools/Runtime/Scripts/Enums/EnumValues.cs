@@ -6,6 +6,7 @@ using Aspid.FastTools.Types;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 namespace Aspid.FastTools.Enums
 {
     /// <summary>

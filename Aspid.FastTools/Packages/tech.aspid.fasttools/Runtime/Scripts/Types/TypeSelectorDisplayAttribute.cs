@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 namespace Aspid.FastTools.Types
 {
     /// <summary>

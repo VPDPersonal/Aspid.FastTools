@@ -35,7 +35,7 @@ namespace Aspid.FastTools.UIElements
                 && TryParseDefined(propertyValue, out value);
         }
 
-        // Enum.TryParse accepts any number and any comma list, so both are rejected afterwards.
+        // Enum.TryParse accepts any number and any comma list, so both are rejected afterward.
         private static bool TryParseDefined<T>(string text, out T value)
             where T : struct, Enum
         {

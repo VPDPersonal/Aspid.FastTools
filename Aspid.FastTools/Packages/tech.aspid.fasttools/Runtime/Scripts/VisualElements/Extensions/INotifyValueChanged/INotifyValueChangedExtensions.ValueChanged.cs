@@ -28,7 +28,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -42,7 +42,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -62,7 +62,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -76,7 +76,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -96,7 +96,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -110,7 +110,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -130,7 +130,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -145,7 +145,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Long
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -166,7 +166,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -180,7 +180,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -200,7 +200,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -215,7 +215,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Byte
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -236,7 +236,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -250,7 +250,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -270,7 +270,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -285,7 +285,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Bool
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -306,7 +306,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -321,7 +321,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Char
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -342,7 +342,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -357,7 +357,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Rect
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -378,7 +378,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -392,7 +392,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -412,7 +412,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -427,7 +427,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-                
+
         #region Enum
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -448,7 +448,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -463,7 +463,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Guid
 #if UNITY_6000_4_OR_NEWER
         /// <summary>
@@ -488,7 +488,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -507,7 +507,7 @@ namespace Aspid.FastTools.UIElements
         }
 #endif
         #endregion
-        
+
         #region Color
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -528,7 +528,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -543,7 +543,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Short
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -564,7 +564,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -578,7 +578,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -598,7 +598,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -613,7 +613,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Float
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -634,7 +634,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -649,7 +649,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Double
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -670,7 +670,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -685,7 +685,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region String
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -706,7 +706,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -721,7 +721,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Bounds
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -742,7 +742,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -756,7 +756,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -776,7 +776,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -791,7 +791,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Hash128
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -812,7 +812,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -827,7 +827,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Decimal
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -848,7 +848,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -863,7 +863,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Vector2
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -884,7 +884,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -898,7 +898,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -918,7 +918,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -933,7 +933,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Vector3
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -954,7 +954,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -968,7 +968,7 @@ namespace Aspid.FastTools.UIElements
             element.UnregisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -988,7 +988,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1003,7 +1003,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Vector4
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1024,7 +1024,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1039,7 +1039,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Delegate
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1060,7 +1060,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1075,7 +1075,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Gradient
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1096,7 +1096,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1111,7 +1111,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Matrix4x4
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1132,7 +1132,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1147,7 +1147,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region Quaternion
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1168,7 +1168,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1183,7 +1183,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region System.Object
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1219,7 +1219,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region AnimationCurve
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1240,7 +1240,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1255,7 +1255,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region ToggleButtonGroupState
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1276,7 +1276,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1291,7 +1291,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         #region UnityEngine.Object
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1312,7 +1312,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
@@ -1327,7 +1327,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -1348,7 +1348,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterValueChangedCallback(callback);
             return element;
         }
-        
+
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>

@@ -120,7 +120,7 @@ namespace Aspid.FastTools.UIElements
         /// <typeparam name="TField">The field type.</typeparam>
         /// <typeparam name="TValue">The value type held by the field.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, the soft keyboard auto-corrects input.</param>
+        /// <param name="value">When <see langword="true"/>, the soft keyboard autocorrects input.</param>
         /// <returns>The element, for chaining.</returns>
         public static TField SetAutoCorrection<TField, TValue>(this TField element, bool value)
             where TField : TextInputBaseField<TValue>
