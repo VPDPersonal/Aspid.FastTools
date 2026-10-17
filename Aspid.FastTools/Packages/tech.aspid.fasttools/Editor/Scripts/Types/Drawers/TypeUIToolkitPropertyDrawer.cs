@@ -13,7 +13,6 @@ namespace Aspid.FastTools.Types.Editors
     {
         internal const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeProperty";
         internal const string MissingClass = "aspid-fasttools-type-property--missing";
-        internal const string RequiredClass = "aspid-fasttools-type-property--required";
         internal const string StripeClass = "aspid-fasttools-type-property__stripe";
 
         internal static VisualElement Draw(
@@ -77,10 +76,7 @@ namespace Aspid.FastTools.Types.Editors
                     return;
                 }
 
-                var required = !current.hasMultipleDifferentValues && TypeSelectorRequiredGate.IsViolation(current);
-                container.EnableInClassList(className: RequiredClass, enable: required);
-
-                if (required)
+                if (!current.hasMultipleDifferentValues && TypeSelectorRequiredGate.IsViolation(current))
                 {
                     notice ??= new InspectorNotice();
                     ShowRequired(container: container, stripe: stripe, notice: notice);

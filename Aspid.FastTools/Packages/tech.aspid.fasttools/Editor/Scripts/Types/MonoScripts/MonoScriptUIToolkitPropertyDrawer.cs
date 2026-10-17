@@ -122,10 +122,7 @@ namespace Aspid.FastTools.Types.Editors
                     return;
                 }
 
-                var required = !current.hasMultipleDifferentValues && TypeSelectorRequiredGate.IsViolation(nameProperty);
-                container.EnableInClassList(className: TypeUIToolkitPropertyDrawer.RequiredClass, enable: required);
-
-                if (required)
+                if (!current.hasMultipleDifferentValues && TypeSelectorRequiredGate.IsViolation(nameProperty))
                 {
                     notice ??= new InspectorNotice();
                     TypeUIToolkitPropertyDrawer.ShowRequired(container: container, stripe: stripe, notice: notice);

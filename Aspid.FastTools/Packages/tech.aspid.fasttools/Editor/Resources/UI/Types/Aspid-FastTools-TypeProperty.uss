@@ -1,5 +1,6 @@
+/* In the gutter left of the label, where the [SerializeReference] field draws its stripe. */
 .aspid-fasttools-type-property__stripe {
-    left: 0;
+    left: -9px;
     top: 2px;
     width: 2px;
     bottom: 2px;
@@ -7,7 +8,3 @@
     background-color: var(--unity-colors-warning-text);
 }
 
-.aspid-fasttools-type-property--missing,
-.aspid-fasttools-type-property--required {
-    padding-left: 5px;
-}
