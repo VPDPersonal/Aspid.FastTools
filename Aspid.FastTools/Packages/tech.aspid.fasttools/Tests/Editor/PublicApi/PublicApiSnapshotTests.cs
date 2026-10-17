@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace Aspid.FastTools.Editors.Tests
@@ -38,7 +39,7 @@ namespace Aspid.FastTools.Editors.Tests
             var package = PackageInfo.FindForAssetPath($"Packages/{PackageName}");
             Assert.IsNotNull(package, $"Package {PackageName} is not resolved.");
 
-            var loaded = AppDomain.CurrentDomain.GetAssemblies()
+            var loaded = TypeUtility.GetLoadedAssemblies()
                 .GroupBy(assembly => assembly.GetName().Name)
                 .ToDictionary(group => group.Key, group => group.First());
 

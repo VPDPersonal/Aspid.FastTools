@@ -360,7 +360,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (string.IsNullOrEmpty(assemblyName)) return Array.Empty<Type>();
             if (cache.TryGetValue(assemblyName, out var cached)) return cached;
 
-            var assembly = AppDomain.CurrentDomain.GetAssemblies()
+            var assembly = TypeUtility.GetLoadedAssemblies()
                 .FirstOrDefault(candidate => candidate.GetName().Name == assemblyName);
 
             Type[] types;

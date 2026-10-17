@@ -3,6 +3,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -155,7 +156,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var direct = Type.GetType(fullName, throwOnError: false);
             if (direct is not null) return direct;
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var assembly in TypeUtility.GetLoadedAssemblies())
             {
                 var type = assembly.GetType(fullName, throwOnError: false);
                 if (type is not null) return type;
