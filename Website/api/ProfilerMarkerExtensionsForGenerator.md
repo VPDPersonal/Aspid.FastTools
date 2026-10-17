@@ -57,7 +57,7 @@ The scope of the call site's marker; an empty scope when the call gets no marker
 
 `T` 
 
-The calling type.
+The type of <code class="paramref">instance</code>.
 
 #### Remarks
 
@@ -66,7 +66,7 @@ and analyzer <code>AFT0010</code> reports it.
 
 ### WithName\(in AutoScope, string\) {#ProfilerMarkerExtensionsForGenerator_WithName_Unity_Profiling_ProfilerMarker_AutoScope__System_String_}
 
-Renames the [`ProfilerMarker`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Unity.Profiling.ProfilerMarker.html) of the preceding [`ProfilerMarkerExtensionsForGenerator.Marker<T>`](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_) call.
+Names the [`ProfilerMarker`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Unity.Profiling.ProfilerMarker.html) created for the preceding [`ProfilerMarkerExtensionsForGenerator.Marker<T>`](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_System_Int32_) call.
 
 ```csharp
 public static ProfilerMarker.AutoScope WithName(this in ProfilerMarker.AutoScope marker, string name)
@@ -80,8 +80,9 @@ The scope returned by [`ProfilerMarkerExtensionsForGenerator.Marker<T>`](Profile
 
 `name` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-Replaces the member part of the marker name. Must be a compile-time constant: a literal, a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/const">const</a>
-string, <code>nameof(...)</code>, or their concatenation or interpolation; otherwise analyzer <code>AFT0014</code> reports it.
+Replaces the member part of the marker name. Must be a compile-time constant: a literal,
+a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/const">const</a> string, <code>nameof(...)</code>, or their concatenation or interpolation;
+otherwise the name stays unchanged and analyzer <code>AFT0014</code> reports it.
 
 #### Returns
 
