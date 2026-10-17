@@ -60,4 +60,4 @@ expected: a maintainer runs the tests and merges. Say how you tested in Unity.
 
 The Unity tests run on every Unity 6000.x line. When a change cannot depend on the line, a maintainer can set the
 `unity-quick` label: the PR then tests only the minimum and the newest Unity version, and `main` tests all of them after
-the merge.
+the merge. Any label change on a pull request restarts its CI, the Unity tests included.
