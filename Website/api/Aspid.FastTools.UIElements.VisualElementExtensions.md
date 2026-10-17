@@ -10635,7 +10635,7 @@ The element type.
 #### Remarks
 
 Unity recommends setting the hints before the element is added to a panel.
-Changing them afterwards does not throw, but triggers a render-hints update.
+Changing them afterward does not throw, but triggers a render-hints update.
 
 ### SetUserData\<T\>\(T, object\) {#Aspid_FastTools_UIElements_VisualElementExtensions_SetUserData__1___0_System_Object_}
 
