@@ -12,7 +12,7 @@
 /[Pp]rofilerCaptures/
 /[Rr]ecordings/
 
-# The link scripts/devtests.sh writes to the manual fixtures in Assets/DevTests~.
+# The link to the manual fixtures in Assets/DevTests~ that Tools > Aspid > FastTools > Import DevTests writes.
 /[Aa]ssets/DevTests
 /[Aa]ssets/DevTests.meta
 

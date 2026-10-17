@@ -20,7 +20,7 @@ Logic paths:
 
 - package: `Aspid.FastTools/Packages/tech.aspid.fasttools/` (except `README.md`), `Aspid.FastTools/Packages/manifest.json`,
   `Aspid.FastTools/Packages/packages-lock.json`, `Aspid.FastTools/Assets/DevTests~/`,
-  `Aspid.FastTools/Assets/CliCommands/`;
+  `Aspid.FastTools/Assets/DevTools/`;
 - .NET: `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/`, `DotnetTests/Yaml/`,
   `DotnetTests/Types/`, `global.json`;
 - site: `Website/` except `docs/`, `i18n/`, `tutorials/`, `api/`, `static/`;

@@ -1,5 +1,5 @@
 {
-    "name": "Aspid.FastTools.DevTests.CliCommands.Editor",
+    "name": "Aspid.FastTools.DevTools.Editor",
     "rootNamespace": "",
     "references": [
         "Aspid.FastTools.Editor",

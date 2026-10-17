@@ -3,7 +3,7 @@ using Unity.Pipeline.Commands;
 using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.DevTests.Editors
+namespace Aspid.FastTools.DevTools.Editors
 {
     /// <summary>
     /// Dev-only Unity CLI wrapper over the SerializeReference gate scanner: <c>unity command sr_gate</c> returns the

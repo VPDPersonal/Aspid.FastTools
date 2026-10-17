@@ -60,7 +60,7 @@ jobs:
               ['DotnetTests/Yaml/', 'area: editor'],
               ['DotnetTests/Types/', 'area: editor'],
               ['Aspid.FastTools/Assets/DevTests~/', 'area: editor'],
-              ['Aspid.FastTools/Assets/CliCommands/', 'area: editor'],
+              ['Aspid.FastTools/Assets/DevTools/', 'area: editor'],
               ['Website/', 'area: website'],
               ['Website/docs/', 'area: docs'],
               ['Website/tutorials/', 'area: docs'],

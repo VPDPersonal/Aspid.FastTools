@@ -6,5 +6,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Aspid.FastTools.Editor")]
 [assembly: InternalsVisibleTo("Aspid.FastTools.Editor.SerializeReferences.Tests")]
 [assembly: InternalsVisibleTo("Aspid.FastTools.Editor.Tests")]
-// The dev project's own assembly (Assets/CliCommands, not part of the package); nothing in the package depends on it.
-[assembly: InternalsVisibleTo("Aspid.FastTools.DevTests.CliCommands.Editor")]
+// The dev project's own assembly (Assets/DevTools, not part of the package); nothing in the package depends on it.
+[assembly: InternalsVisibleTo("Aspid.FastTools.DevTools.Editor")]

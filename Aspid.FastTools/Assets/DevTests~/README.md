@@ -5,15 +5,12 @@ of the package or of its samples, and nothing here ships to users.
 
 Unity does not import this folder (its name ends with `~`): several fixtures are broken on purpose and log
 warnings on every import, which would bury the warnings of the package under test. Link it into the project for a
-manual test, and unlink it afterwards:
-
-```bash
-scripts/devtests.sh on   # Assets/DevTests -> Assets/DevTests~
-scripts/devtests.sh off
-```
+manual test with **Tools > Aspid > FastTools > Import DevTests**, and click it again afterwards to unlink it. The
+item is checked while the fixtures are in; it lives in `Assets/DevTools`, outside the package.
 
 Unity reads and writes the fixtures through the link at `Assets/DevTests`, so an edit made in the Editor lands here
-and shows in `git status`. Paths, the folder's guid and the **Excluded folders** entry below stay those of
+and shows in `git status`. Unlink the folder with the menu, never delete `Assets/DevTests` from the Project window:
+Unity would delete the files behind the link. Paths, the folder's guid and the **Excluded folders** entry below stay those of
 `Assets/DevTests`.
 
 The package's own `Tests/Editor` assembly covers the logic, and `Samples~` covers the ordinary,

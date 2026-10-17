@@ -11,9 +11,11 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 
 ## Rules
 
-- The manual fixtures are in `Assets/DevTests~`, which Unity does not import. `scripts/devtests.sh on` links them in
-  as `Assets/DevTests` for a manual test or a docs capture, `off` unlinks them; edit them through either path and
-  commit `Assets/DevTests~`. `Assets/CliCommands` (the `sr_gate` command for `unity command`) is always imported.
+- The manual fixtures are in `Assets/DevTests~`, which Unity does not import. **Tools > Aspid > FastTools > Import
+  DevTests** (`Assets/DevTools`) links them in as `Assets/DevTests` for a manual test or a docs capture and unlinks
+  them on the next click; in a batch Editor, `ln -s DevTests~ Assets/DevTests` does the same. Edit them through either
+  path and commit `Assets/DevTests~`. Never delete `Assets/DevTests` from the Project window: Unity deletes the files
+  behind the link. `Assets/DevTools` (the menu and the `sr_gate` command for `unity command`) is always imported.
 - The SerializeReference YAML engine (`DotnetTests/Yaml/`) and `GenericTypeResolver`, `GenericArgumentFilter`,
   `TypeUtility` (`DotnetTests/Types/`) compile outside Unity: C# 9, .NET Standard 2.1 for the engine, and no
   Unity API except the stubbed `Debug.LogError`, `AssetDatabase.MakeEditable`, `UnityEngine.Object` and
