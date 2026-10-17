@@ -34,11 +34,24 @@
     color:                                                  var(--unity-colors-warning-text);
 }
 
+/* Nothing to expand: the arrow keeps its slot, so the label stays in the column of the fields around it. */
 .aspid-fasttools-serialize-reference--empty
     > .unity-foldout
     > .unity-foldout__toggle
     .unity-foldout__checkmark,
 .aspid-fasttools-serialize-reference--childless
+    > .unity-foldout
+    > .unity-foldout__toggle
+    .unity-foldout__checkmark {
+    visibility:                                             hidden;
+}
+
+/* Beside a stripe the slot collapses, so the label hugs the stripe as in the IMGUI drawer. */
+.aspid-fasttools-serialize-reference--striped.aspid-fasttools-serialize-reference--empty
+    > .unity-foldout
+    > .unity-foldout__toggle
+    .unity-foldout__checkmark,
+.aspid-fasttools-serialize-reference--striped.aspid-fasttools-serialize-reference--childless
     > .unity-foldout
     > .unity-foldout__toggle
     .unity-foldout__checkmark {

@@ -380,11 +380,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
-        // "Player › Weapon": the object first, as the Hierarchy shows it, then its component.
+        // "Player › Weapon": the object first, as the Hierarchy shows it, then its component. An object named after its
+        // class is named once.
         private static string DisplayNameOf(Object obj)
         {
             var typeName = obj.GetType().Name;
-            return string.IsNullOrEmpty(obj.name) ? typeName : $"{obj.name} › {typeName}";
+            return string.IsNullOrEmpty(obj.name) || obj.name == typeName ? typeName : $"{obj.name} › {typeName}";
         }
 
         private static int FindKey(string[] lines, Regex key, int start, int end)

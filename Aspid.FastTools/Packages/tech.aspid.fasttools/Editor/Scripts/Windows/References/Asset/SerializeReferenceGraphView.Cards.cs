@@ -24,7 +24,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string DocumentChevronExpanded = "▼";
         private const string DocumentChevronCollapsed = "▶";
 
-        private VisualElement BuildDocument(string assetPath, SerializeReferenceGraphPlan plan, bool showHeader)
+        // required holds the required fields of this object that the graph draws no slot for.
+        private VisualElement BuildDocument(string assetPath, SerializeReferenceGraphPlan plan,
+            IReadOnlyList<GateViolation> required, bool showHeader)
         {
             var document = plan.Document;
             var (broken, migrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
@@ -60,6 +62,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         break;
                 }
             }
+
+            // Fields too, so they follow the cards of the tree and come before the orphans.
+            foreach (var violation in required)
+                body.AddChild(BuildRequiredOnlyCard(violation, SerializeReferenceGraphEditor.ToGraphPath(violation.FieldPath)));
 
             if (orphans.Count > 0)
             {

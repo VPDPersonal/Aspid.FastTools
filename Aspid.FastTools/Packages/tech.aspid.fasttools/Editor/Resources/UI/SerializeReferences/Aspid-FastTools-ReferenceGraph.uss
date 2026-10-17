@@ -425,7 +425,7 @@ Button.aspid-fasttools-action-button--danger.aspid-fasttools-reference-graph__na
 }
 
 .aspid-fasttools-reference-graph__notice
-    .aspid-fasttools-reference-graph__open-source {
+    .aspid-fasttools-reference-graph__notice-action {
     position:                                             absolute;
     top:                                                  6px;
     right:                                                12px;

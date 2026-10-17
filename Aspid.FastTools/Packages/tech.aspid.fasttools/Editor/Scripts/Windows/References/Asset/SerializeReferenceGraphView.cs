@@ -23,7 +23,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string AssetClass = RootClass + "__asset";
         private const string RescanClass = RootClass + "__rescan";
         private const string RescanIconClass = RootClass + "__rescan-icon";
-        private const string OpenSourceClass = RootClass + "__open-source";
+        private const string NoticeActionClass = RootClass + "__notice-action";
         private const string NoticeClass = RootClass + "__notice";
         private const string EmptyClass = RootClass + "__empty";
         private const string EmptyHiddenClass = EmptyClass + "--hidden";
@@ -219,6 +219,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
+            // The map reads the saved file and the required scan reads the loaded objects, so unsaved edits would show
+            // both states at once: a reference the file still holds beside a violation for the same, now empty, field.
+            if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
+            {
+                ShowUnsavedChanges(assetPath);
+                return;
+            }
+
             var documents = prebuilt ?? SerializeReferenceGraphScanner.Build(assetPath);
 
             // Required string fields may exist without a RefIds block, so scan them before the empty-graph return.
@@ -272,10 +280,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var openSource = new Button(OpenSource) { text = "Open Source Prefab" }
                 .AddClass(AspidStyles.ActionButtonClass)
-                .AddClass(OpenSourceClass);
+                .AddClass(NoticeActionClass);
             RegisterNavTarget(openSource, OpenSource);
             info.AddChild(openSource);
             return true;
+        }
+
+        // Drawn like the source-prefab notice. Save writes the loaded objects to the file, so the map then shows them.
+        private void ShowUnsavedChanges(string assetPath)
+        {
+            ShowResults();
+            _onCanvasStatus?.Invoke(StatusStyle.Type.Info);
+
+            var info = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
+                .SetTitle("Unsaved changes")
+                .SetMessage("This view maps the saved file. Save the asset to map its current fields.")
+                .AddClass(NoticeClass);
+            _list.AddChild(info);
+
+            void Save()
+            {
+                SerializeReferenceOpenCopyGuard.Save(assetPath);
+                Rescan();
+            }
+
+            var save = new Button(Save) { text = "Save Asset" }
+                .AddClass(AspidStyles.ActionButtonClass)
+                .AddClass(NoticeActionClass);
+            RegisterNavTarget(save, Save);
+            info.AddChild(save);
         }
 
         private void RenderDocuments(string assetPath, List<ReferenceGraphDocument> documents)
@@ -290,28 +323,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var hidden = 0;
             var hiddenEmpties = 0;
-            var drawn = 0;
-
-            // Every object with a name gets its heading, even the only one: the heading says whose fields the cards
-            // are. A scene object is read as text and has only its YAML class id, so it is headed only among several.
-            var several = documents.Count > 1;
-            foreach (var plan in plans)
-            {
-                var document = plan.Document;
-
-                // A document that got no card would be a header over nothing, so only the notice speaks for it.
-                if (plan.Cards.Count > 0 || plan.Hidden == 0)
-                    _list.AddChild(BuildDocument(assetPath, plan, showHeader: several || document.Source != null));
-
-                drawn += plan.Cards.Count;
-                hidden += plan.Hidden;
-                hiddenEmpties += plan.HiddenEmpty;
-
-                var (broken, documentMigrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
-                missing += broken + documentMigrations;
-                migrations += documentMigrations;
-                orphans += document.Orphans.Count;
-            }
+            var drawn = plans.Sum(plan => plan.Cards.Count);
 
             var ungraphedRequired = _requiredViolations
                 .Where(violation => !emptySlotPaths.Contains((violation.FileId, violation.FieldPath)))
@@ -322,6 +334,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var requiredCards = SerializeReferenceGraphAnalysis.SelectRequiredCards(
                 ungraphedRequired, SerializeReferenceGraphPlan.MaxCards - drawn, out var hiddenRequired);
 
+            // A required card goes among the cards of its object, so its path reads like theirs. One whose object has
+            // no document keeps its component in the label and follows the documents.
+            var unplacedRequired = new List<GateViolation>(requiredCards);
+
+            // Every object with a name gets its heading, even the only one: the heading says whose fields the cards
+            // are. A scene object is read as text and has only its YAML class id, so it is headed only among several.
+            var several = documents.Count > 1;
+            foreach (var plan in plans)
+            {
+                var document = plan.Document;
+                var documentRequired = requiredCards.Where(violation => violation.FileId == document.FileId).ToList();
+
+                // A document that got no card would be a header over nothing, so only the notice speaks for it.
+                if (plan.Cards.Count > 0 || plan.Hidden == 0 || documentRequired.Count > 0)
+                {
+                    _list.AddChild(BuildDocument(assetPath, plan, documentRequired,
+                        showHeader: several || document.Source != null));
+                    unplacedRequired.RemoveAll(violation => violation.FileId == document.FileId);
+                }
+
+                hidden += plan.Hidden;
+                hiddenEmpties += plan.HiddenEmpty;
+
+                var (broken, documentMigrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
+                missing += broken + documentMigrations;
+                migrations += documentMigrations;
+                orphans += document.Orphans.Count;
+            }
+
             // A required field whose slot the plans left out is already in the hidden count, so it is taken out of it
             // once. The plans keep no paths past the budget, so this counts by number.
             var hiddenSlots = Math.Min(hiddenRequired, hiddenEmpties);
@@ -330,8 +371,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var status = SerializeReferenceAuditUI.ResolveStatus(missing - migrations, orphans, required, migrations);
             ShowOverview(status, missing, orphans, migrations, required);
 
-            foreach (var violation in requiredCards)
-                _list.AddChild(BuildRequiredOnlyCard(violation));
+            foreach (var violation in unplacedRequired)
+                _list.AddChild(BuildRequiredOnlyCard(violation, violation.FieldLabel));
 
             if (hidden > 0) _list.AddChild(BuildHiddenNotice(hidden));
 

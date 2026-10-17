@@ -221,13 +221,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card.AddChild(band);
         }
 
-        // Required string fields have no RefIds node; scene assets cannot be object-loaded for inline editing.
-        private VisualElement BuildRequiredOnlyCard(GateViolation violation)
+        // A required string field has no RefIds node, and a required reference gets this card only when the graph drew
+        // no slot for it. Scene assets cannot be object-loaded for inline editing.
+        private VisualElement BuildRequiredOnlyCard(GateViolation violation, string pathLabel)
         {
+            // Only a managed reference has a rid; the string picker cannot write one.
+            var isReference = violation.Rid != 0;
+
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
 
-            var bandRow = BuildBandRow(BuildRequiredNoneLabel("Required type is not set"), badges: null);
+            var bandRow = BuildBandRow(
+                BuildRequiredNoneLabel(isReference ? "Required reference is not set" : "Required type is not set"),
+                badges: null);
 
             if (SerializeReferenceHelpers.IsScene(violation.AssetPath))
             {
@@ -236,17 +242,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
+                var graphPath = SerializeReferenceGraphEditor.ToGraphPath(violation.FieldPath);
                 AspidGradientButton band = null;
-                band = new AspidGradientButton(AssignRequiredCollapsedText, _ => OpenRequiredStringPicker(violation, band))
+
+                void OpenPicker()
+                {
+                    if (isReference) OpenLivePicker(violation.AssetPath, violation.FileId, graphPath, band);
+                    else OpenRequiredStringPicker(violation, band);
+                }
+
+                band = new AspidGradientButton(AssignRequiredCollapsedText, _ => OpenPicker())
                     .AddClass(NodeBandClass)
                     .AddClass(NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
-                RegisterNavBand(band, card, () => OpenRequiredStringPicker(violation, band));
+                RegisterNavBand(band, card, OpenPicker);
                 AddBandDivider(card, band, NodeSweepMissingClass);
             }
 
-            card.AddChild(BuildFooter(violation.FieldLabel, "unassigned"));
+            card.AddChild(BuildFooter(pathLabel, "unassigned"));
 
             return card;
         }
