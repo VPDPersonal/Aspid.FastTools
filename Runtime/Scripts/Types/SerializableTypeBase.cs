@@ -6,38 +6,13 @@ using UnityEngine;
 namespace Aspid.FastTools.Types
 {
     /// <summary>
-    /// Shared implementation of the serializable <see cref="System.Type"/> wrappers: stores the type by its
-    /// assembly-qualified name and resolves it lazily on first access.
+    /// Shared base of the serializable <see cref="System.Type"/> wrappers: stores the type by its assembly-qualified
+    /// name and resolves it lazily.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// Not meant to be derived from outside the package — use <see cref="SerializableType"/> or
-    /// <see cref="SerializableMonoScript"/>. Unity serializes the name under the same field for all of them,
-    /// so every wrapper shares one serialized layout.
-    /// </para>
-    /// <para>
-    /// Unity fills a serialized field with an empty wrapper when it loads the object from an asset, a scene or
-    /// a prefab, so <c>field == null</c> does not detect an unset field there. On an object created in code
-    /// (<c>AddComponent</c>, <c>ScriptableObject.CreateInstance</c>) the field stays <see langword="null"/> until
-    /// Unity serializes the object. Test an unset field with <c>field is null || field.IsEmpty</c>, or a usable
-    /// type with <c>field?.Type is not null</c>.
-    /// </para>
-    /// <para>
-    /// A player resolves the type by the stored name only, which managed code stripping does not see: from
-    /// Managed Stripping Level Medium up, a class referenced only by this name can be removed from the build,
-    /// <see cref="Type"/> returns <see langword="null"/> and <see cref="IsMissing"/> is <see langword="true"/>.
-    /// Minimal and Low keep it. Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
-    /// </para>
-    /// <para>
-    /// A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
-    /// loaded later is not picked up before that.
-    /// </para>
-    /// <para>
-    /// Two wrappers are equal when they store the same assembly-qualified name, whatever their wrapper class or
-    /// constraint, so they work as dictionary keys. <c>==</c> still compares references. The hash code follows the
-    /// stored name: do not change a wrapper that is a key, which includes serializing or deserializing it again
-    /// (in the Editor, saving a <see cref="SerializableMonoScript"/> rewrites the name of a renamed class).
-    /// </para>
+    /// A player resolves only the stored name, which managed code stripping does not see: from Managed Stripping
+    /// Level Medium up, keep a class referenced only here with <c>[Preserve]</c> or <c>link.xml</c>. A failed lookup
+    /// is cached until the name changes or the object is deserialized again, so an assembly loaded later is missed.
     /// </remarks>
     [Serializable]
     public abstract class SerializableTypeBase :
@@ -67,9 +42,6 @@ namespace Aspid.FastTools.Types
         /// <summary>
         /// Gets the stored assembly-qualified type name, or an empty string when no type is stored.
         /// </summary>
-        /// <remarks>
-        /// Kept even when it no longer resolves, so the Inspector can show what the field used to point at.
-        /// </remarks>
         public string AssemblyQualifiedName => _assemblyQualifiedName ?? string.Empty;
 
         /// <inheritdoc />
@@ -99,18 +71,16 @@ namespace Aspid.FastTools.Types
         /// Gets a value indicating whether no type is stored.
         /// </summary>
         /// <remarks>
-        /// <see cref="Type"/> is <see langword="null"/>. Mutually exclusive with <see cref="IsMissing"/>.
+        /// On an object created in code the field itself stays <see langword="null"/> until Unity serializes it:
+        /// test an unset field with <c>field is null || field.IsEmpty</c>.
         /// </remarks>
         public bool IsEmpty =>
             string.IsNullOrWhiteSpace(_assemblyQualifiedName) && Type is null;
 
         /// <summary>
-        /// Gets a value indicating whether a type name is stored but does not resolve.
+        /// Gets a value indicating whether a type name is stored but does not resolve, for example after the class
+        /// was renamed, moved or stripped from a player build.
         /// </summary>
-        /// <remarks>
-        /// <see cref="Type"/> is <see langword="null"/> and <see cref="AssemblyQualifiedName"/> keeps the old name,
-        /// for example after the class was renamed, moved or stripped from a player build.
-        /// </remarks>
         public bool IsMissing =>
             !string.IsNullOrWhiteSpace(_assemblyQualifiedName) && Type is null;
 
@@ -124,8 +94,12 @@ namespace Aspid.FastTools.Types
             Type?.Name ?? AssemblyQualifiedName;
 
         /// <summary>
-        /// Determines whether <paramref name="other"/> stores the same assembly-qualified name.
+        /// Determines whether <paramref name="other"/> stores the same assembly-qualified name, whatever its wrapper
+        /// class or constraint.
         /// </summary>
+        /// <remarks>
+        /// <c>==</c> still compares references.
+        /// </remarks>
         /// <param name="other">The wrapper to compare with.</param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="other"/> is not <see langword="null"/> and stores the same
@@ -139,8 +113,7 @@ namespace Aspid.FastTools.Types
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>
-        /// <see langword="true"/> if <see cref="Equals(SerializableTypeBase)"/> is <see langword="true"/> for
-        /// <paramref name="obj"/>; otherwise, <see langword="false"/>.
+        /// <see langword="true"/> if <paramref name="obj"/> is such a wrapper; otherwise, <see langword="false"/>.
         /// </returns>
         public override bool Equals(object? obj) =>
             Equals(obj as SerializableTypeBase);
@@ -148,6 +121,9 @@ namespace Aspid.FastTools.Types
         /// <summary>
         /// Returns a hash code of the stored assembly-qualified name.
         /// </summary>
+        /// <remarks>
+        /// Follows the stored name: do not change a wrapper used as a key, also through Unity serialization.
+        /// </remarks>
         public override int GetHashCode() =>
             AssemblyQualifiedName.GetHashCode();
 

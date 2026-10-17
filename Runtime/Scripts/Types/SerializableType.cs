@@ -5,22 +5,13 @@ using System;
 namespace Aspid.FastTools.Types
 {
     /// <summary>
-    /// Unity-serializable wrapper around a <see cref="System.Type"/>, stored by its <c>AssemblyQualifiedName</c>
-    /// and resolved lazily on first access.
+    /// Unity-serializable wrapper around a <see cref="System.Type"/>, stored by its assembly-qualified name.
     /// </summary>
     /// <example>
     /// <code>
-    /// public class MyComponent : MonoBehaviour
-    /// {
-    ///     [SerializeField] private SerializableType _targetType;
+    /// [SerializeField] private SerializableType _targetType;
     ///
-    ///     private void Start()
-    ///     {
-    ///         Type type = _targetType;  // implicit conversion
-    ///         if (type != null)
-    ///             Debug.Log(type.FullName);
-    ///     }
-    /// }
+    /// Type type = _targetType; // implicit conversion
     /// </code>
     /// </example>
     [Serializable]
@@ -53,33 +44,17 @@ namespace Aspid.FastTools.Types
     /// <see cref="SerializableType"/> constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
     /// <remarks>
-    /// Unity serializes a field by its declared type, so a <see cref="SerializableType{T}"/> assigned from code to a
-    /// field declared as <see cref="SerializableType"/> is reloaded unconstrained: the type survives, the constraint
-    /// does not. Only the picker and the constructor check <typeparamref name="T"/>: a loaded name is not re-checked,
-    /// so after <typeparamref name="T"/> or the stored class's base changes, the type may no longer be assignable to it.
+    /// Assigned to a field declared as <see cref="SerializableType"/>, it is reloaded without the constraint.
     /// </remarks>
-    /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
+    /// <typeparam name="T">The base type that the picker and the constructor require.</typeparam>
     /// <example>
     /// <code><![CDATA[
-    /// public class MyComponent : MonoBehaviour
-    /// {
-    ///     [SerializeField] private SerializableType<MonoBehaviour> _behaviorType;
-    ///
-    ///     private void Start()
-    ///     {
-    ///         Type type = _behaviorType;
-    ///         if (type != null)
-    ///             gameObject.AddComponent(type);
-    ///     }
-    /// }
+    /// [SerializeField] private SerializableType<MonoBehaviour> _behaviorType;
     /// ]]></code>
     /// </example>
     [Serializable]
     public sealed class SerializableType<T> : SerializableType
     {
-        /// <summary>
-        /// Creates an empty wrapper.
-        /// </summary>
         private SerializableType() { }
 
         /// <summary>
