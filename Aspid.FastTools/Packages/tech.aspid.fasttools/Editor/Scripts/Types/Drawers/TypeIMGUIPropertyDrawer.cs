@@ -64,12 +64,14 @@ namespace Aspid.FastTools.Types.Editors
         private static void DrawRow(Rect position, GUIContent label, SerializedProperty property, TypeAllow allow, Type[] types)
         {
             var isMissing = TypeMissingRepair.IsMissing(property: property);
+            var isRequired = !isMissing && !property.hasMultipleDifferentValues &&
+                TypeSelectorRequiredGate.IsViolation(property);
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;
-            if (isMissing)
+            if (isMissing || isRequired)
             {
                 rowRect.xMin += 5f;
-                DrawMissingStripe(position: position);
+                DrawWarningStripe(position: position);
             }
 
             var isArrayElement = property.propertyPath.EndsWith("]");
@@ -124,7 +126,7 @@ namespace Aspid.FastTools.Types.Editors
                 return;
             }
 
-            if (property.hasMultipleDifferentValues || !TypeSelectorRequiredGate.IsViolation(property)) return;
+            if (!isRequired) return;
 
             InspectorNoticeGUI.DrawRequiredNotice(noticeRect, "Required type is not set",
                 "This [TypeSelector] field is marked required but has no type.");
@@ -153,8 +155,8 @@ namespace Aspid.FastTools.Types.Editors
         internal static void SetName(DetachedProperty detached, string assemblyQualifiedName) =>
             detached.Use(persistent => persistent.SetStringAndApply(value: assemblyQualifiedName ?? string.Empty));
 
-        // The warning stripe on the left edge of a field whose stored type is missing.
-        internal static void DrawMissingStripe(Rect position)
+        // The warning stripe on the left edge of a field whose stored type is missing or required and unset.
+        internal static void DrawWarningStripe(Rect position)
         {
             var stripeRect = EditorGUI.IndentedRect(source: position);
             EditorGUI.DrawRect(rect: new Rect(stripeRect.x, position.y + 2f, 2f, position.height - 4f),

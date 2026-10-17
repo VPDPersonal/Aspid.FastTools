@@ -28,12 +28,15 @@ namespace Aspid.FastTools.Types.Editors
             params Type[] types)
         {
             var isMissing = TypeMissingRepair.IsMissingMonoScript(wrapperProperty: wrapperProperty);
+            var nameProperty = SerializableTypeUtility.GetBackingProperty(wrapperProperty);
+            var isRequired = !isMissing && !nameProperty.hasMultipleDifferentValues &&
+                TypeSelectorRequiredGate.IsViolation(nameProperty);
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;
-            if (isMissing)
+            if (isMissing || isRequired)
             {
                 rowRect.xMin += 5f;
-                TypeIMGUIPropertyDrawer.DrawMissingStripe(position: position);
+                TypeIMGUIPropertyDrawer.DrawWarningStripe(position: position);
             }
 
             var isArrayElement = wrapperProperty.propertyPath.EndsWith("]");
@@ -96,8 +99,7 @@ namespace Aspid.FastTools.Types.Editors
                 return;
             }
 
-            var nameProperty = SerializableTypeUtility.GetBackingProperty(wrapperProperty);
-            if (nameProperty.hasMultipleDifferentValues || !TypeSelectorRequiredGate.IsViolation(nameProperty)) return;
+            if (!isRequired) return;
 
             InspectorNoticeGUI.DrawRequiredNotice(noticeRect, "Required type is not set",
                 "This [TypeSelector] field is marked required but has no type.");
