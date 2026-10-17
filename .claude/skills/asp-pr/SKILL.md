@@ -78,9 +78,12 @@ English only. The reader is the repo owner, who decides in 30 seconds. Put the a
 > [!WARNING]
 > `Foo.Bar()` is removed. Use `Foo.Baz()` instead.
 
-**Why.** 1–2 sentences: the problem a user or maintainer hit, not a diff recap.
+### Why
 
-**What**
+1–2 sentences: the problem a user or maintainer hit, not a diff recap.
+
+### What
+
 - One fact per bullet, ≤12 words, at most one `code` span
 - ≤5 bullets; merge or drop the rest
 
@@ -90,13 +93,13 @@ English only. The reader is the repo owner, who decides in 30 seconds. Put the a
 |---|---|
 | ![Before](./before.png) | ![After](./after.png) |
 
-<details><summary>Verification</summary>
+<details><summary><b>Verification</b></summary>
 
 - One check per line: command or scenario → result
 
 </details>
 
-<details><summary>Context</summary>
+<details><summary><b>Context</b></summary>
 
 Replaces #N (reason). Not done: X (why). Audit: F001 F002
 
@@ -110,15 +113,16 @@ Closes #N
 - `[!IMPORTANT]` only when the owner must act: a secret, a decision, a manual step, something left unfixed. Each ask is a checkbox.
 - `[!WARNING]` only for a breaking change. Say what breaks and how to migrate.
 - Keep the order of the template. A block without content is left out.
+- Headings: `### Why` and `### What` only. Each fold title is bold: `<summary><b>…</b></summary>`.
 - `**Start with:**` only when `FILES` is more than 3. `Context` only when it has content.
-- Small PR (one change, `FILES` 3 or fewer): **Why**, up to 2 bullets, the Verification fold.
+- Small PR (one change, `FILES` 3 or fewer): Why, What with up to 2 bullets, the Verification fold.
 - No emoji. No bold labels inside bullets. Audit IDs only in Context.
 
 ## Visuals
 
 ### Screenshots and video
 
-Add them only when the change is visible. Put them after **What**, not folded. More than one pair → show the first, put the rest in `<details>`.
+Add them only when the change is visible. Put them after the What bullets, not folded. More than one pair → show the first, put the rest in `<details>`.
 
 | Change | Show |
 |---|---|
@@ -134,7 +138,7 @@ Add them only when the change is visible. Put them after **What**, not folded. M
 
 ### Mermaid diagrams
 
-Draw a ` ```mermaid ` diagram when it shows the change faster than the **What** bullets. Put it after **What**, not folded. A second diagram goes in `<details>`.
+Draw a ` ```mermaid ` diagram when it shows the change faster than the What bullets. Put it after them, not folded. A second diagram goes in `<details>`.
 
 | Change | Diagram |
 |---|---|
@@ -151,7 +155,7 @@ Do not draw a diagram for:
 
 - a small PR with a linear change;
 - a rename, a docs text edit, a code edit that does not change the structure;
-- a diagram that only repeats the **What** bullets.
+- a diagram that only repeats the What bullets.
 
 Rules:
 
