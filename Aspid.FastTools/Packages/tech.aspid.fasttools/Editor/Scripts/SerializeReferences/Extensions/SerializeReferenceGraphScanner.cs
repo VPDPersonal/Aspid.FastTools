@@ -355,7 +355,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return headers;
         }
 
-        private static Dictionary<long, Object> ResolveSources(string assetPath)
+        internal static Dictionary<long, Object> ResolveSources(string assetPath)
         {
             var map = new Dictionary<long, Object>();
 
@@ -381,7 +381,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // "Player › Weapon": the object first, as the Hierarchy shows it, then its component.
-        private static string DisplayNameOf(Object obj)
+        internal static string DisplayNameOf(Object obj)
         {
             var typeName = obj.GetType().Name;
             return string.IsNullOrEmpty(obj.name) || obj.name == typeName ? typeName : $"{obj.name} › {typeName}";

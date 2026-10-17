@@ -25,8 +25,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             TypeName = typeName;
             Required = required;
         }
-
-        public string FieldLabel => string.IsNullOrEmpty(ComponentName) ? FieldPath : $"{ComponentName}.{FieldPath}";
     }
 
     internal static class SerializeReferenceGraphAnalysis

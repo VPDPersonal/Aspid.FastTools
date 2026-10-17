@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Types.Editors;
@@ -31,6 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeFooterClass = RootClass + "__node-footer";
         private const string NodeRootLabelClass = RootClass + "__node-root-label";
         private const string NodeTypeClass = RootClass + "__node-type";
+        private const string NodeTypeIconClass = RootClass + "__node-type-icon";
         private const string NodeRidClass = RootClass + "__node-rid";
         private const string NodeBadgesClass = RootClass + "__node-badges";
 
@@ -91,7 +93,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (node is not null && !node.Value.StoredType.IsEmpty)
                 typeLabel.tooltip = node.Value.FullName;
 
-            var bandRow = BuildBandRow(typeLabel, BuildBadges(document, rid));
+            var nodeType = node is { Resolves: true } ? SerializeReferenceHelpers.ResolveStoredType(node.Value.StoredType) : null;
+            var bandRow = BuildBandRow(typeLabel, BuildBadges(document, rid), nodeType);
 
             // Reference IDs are only unique within a serialized document.
             var fileId = document.FileId;
@@ -289,7 +292,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             band = new AspidGradientButton(ChangeCollapsedText, _ => OpenPicker())
                 .AddClass(NodeBandClass);
-            band.AddLeadingContent(BuildBandRow(typeLabel, badges: null));
+            band.AddLeadingContent(BuildBandRow(typeLabel, badges: null, type));
             card.AddChild(band);
             RegisterNavBand(band, card, OpenPicker);
             AddBandDivider(card, band, sweepModifier: null);
@@ -315,11 +318,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        private static VisualElement BuildBandRow(VisualElement typeLabel, VisualElement badges)
+        // type adds the icon the type picker shows for it.
+        private static VisualElement BuildBandRow(VisualElement typeLabel, VisualElement badges, Type type = null)
         {
-            var row = new VisualElement()
-                .AddClass(NodeBandRowClass)
-                .AddChild(typeLabel);
+            var row = new VisualElement().AddClass(NodeBandRowClass);
+
+            var icon = TypeSelectorIconResolver.ResolveForType(type);
+            if (icon) row.AddChild(new Image { image = icon, scaleMode = ScaleMode.ScaleToFit }.AddClass(NodeTypeIconClass));
+
+            row.AddChild(typeLabel);
             if (badges is not null) row.AddChild(badges);
             row.pickingMode = PickingMode.Ignore;
             return row;

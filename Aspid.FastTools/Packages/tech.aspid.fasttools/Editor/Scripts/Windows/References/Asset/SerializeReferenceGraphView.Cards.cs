@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
+using Object = UnityEngine.Object;
 using CardKind = Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceGraphPlan.CardKind;
 
 // ReSharper disable once CheckNamespace
@@ -33,7 +34,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var body = new VisualElement().AddClass(DocumentBodyClass);
 
-            var header = showHeader ? BuildDocumentHeader(document, body, broken, migrations) : null;
+            var header = showHeader
+                ? BuildDocumentHeader(document.TypeName, document.Source, body,
+                    $"{SerializeReferenceGraphSummary.BuildDocumentCountText(document, broken, migrations)}\nfileId {document.FileId}")
+                : null;
 
             // The cards follow the fields of the object; orphans have no field, so they are built after the tree, and the
             // keyboard visits them in the order they are drawn.
@@ -88,9 +92,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(body);
         }
 
+        // An object with type name fields but no managed references, which the graph has no document for.
+        private VisualElement BuildFieldsDocument(string assetPath, Object source, long fileId,
+            IReadOnlyList<TypeNameField> typeNames, IReadOnlyList<GateViolation> required)
+        {
+            var body = new VisualElement().AddClass(DocumentBodyClass);
+            var header = BuildDocumentHeader(SerializeReferenceGraphScanner.DisplayNameOf(source), source, body,
+                $"fileId {fileId}");
+
+            AddFieldCards(body, assetPath, typeNames, required, qualify: false);
+
+            return new VisualElement()
+                .AddClass(DocumentClass)
+                .AddChild(header)
+                .AddChild(body);
+        }
+
         // The object that holds the fields: a heading a level above the sections inside it, which folds its cards.
-        private VisualElement BuildDocumentHeader(ReferenceGraphDocument document, VisualElement body, int broken,
-            int migrations)
+        private VisualElement BuildDocumentHeader(string title, Object source, VisualElement body, string tooltip)
         {
             var collapsed = false;
             ReferenceSectionHeading header = null;
@@ -103,14 +122,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             });
 
             // A scene is read as text only, so its objects have no loaded source and no icon.
-            var icon = document.Source != null ? AssetPreview.GetMiniThumbnail(document.Source) : null;
+            var icon = source != null ? AssetPreview.GetMiniThumbnail(source) : null;
 
             // The name gets the whole row; the counts are in the tooltip, and the cards below show what is wrong.
-            header = ReferenceSectionHeading.ForObject(document.TypeName, icon)
+            header = ReferenceSectionHeading.ForObject(title, icon)
                 .SetOnClick(toggle);
             header.AddToClassList(DocumentHeaderClass);
             header.TrailingText = DocumentChevronExpanded;
-            header.tooltip = $"{SerializeReferenceGraphSummary.BuildDocumentCountText(document, broken, migrations)}\nfileId {document.FileId}";
+            header.tooltip = tooltip;
             RegisterNavTarget(header, toggle);
 
             return header;
@@ -125,7 +144,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var field in typeNames)
             {
-                var label = qualify ? field.FieldLabel : SerializeReferenceGraphEditor.ToGraphPath(field.FieldPath);
+                var label = FieldLabel(field.ComponentName, field.FieldPath, qualify);
                 var violation = required.FirstOrDefault(entry =>
                     entry.Rid == 0 && entry.FileId == field.FileId && entry.FieldPath == field.FieldPath);
 
@@ -149,9 +168,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (covered.Contains((violation.FileId, violation.FieldPath))) continue;
 
-                parent.AddChild(BuildRequiredOnlyCard(violation,
-                    qualify ? violation.FieldLabel : SerializeReferenceGraphEditor.ToGraphPath(violation.FieldPath)));
+                parent.AddChild(BuildRequiredOnlyCard(violation, FieldLabel(violation.ComponentName, violation.FieldPath, qualify)));
             }
+        }
+
+        private static string FieldLabel(string componentName, string fieldPath, bool qualify)
+        {
+            var path = SerializeReferenceGraphEditor.ToGraphPath(fieldPath);
+            return qualify && !string.IsNullOrEmpty(componentName) ? $"{componentName}.{path}" : path;
         }
 
         // Orphans under their own heading, after the cards of the tree.

@@ -373,7 +373,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var status = SerializeReferenceAuditUI.ResolveStatus(missing - migrations, orphans, required, migrations);
             ShowOverview(status, missing, orphans, migrations, required);
 
-            AddFieldCards(_list, assetPath, unplacedTypeNames, unplacedRequired, qualify: true);
+            // An object without managed references has no document, so it gets a heading here. A scene object cannot be
+            // loaded, so its cards name the component instead.
+            var sources = SerializeReferenceGraphScanner.ResolveSources(assetPath);
+            var fileIds = unplacedTypeNames.Select(field => field.FileId)
+                .Concat(unplacedRequired.Select(violation => violation.FileId))
+                .Distinct();
+
+            foreach (var fileId in fileIds)
+            {
+                var fields = unplacedTypeNames.Where(field => field.FileId == fileId).ToList();
+                var violations = unplacedRequired.Where(violation => violation.FileId == fileId).ToList();
+
+                if (sources.TryGetValue(fileId, out var source))
+                    _list.AddChild(BuildFieldsDocument(assetPath, source, fileId, fields, violations));
+                else
+                    AddFieldCards(_list, assetPath, fields, violations, qualify: true);
+            }
 
             if (hidden > 0) _list.AddChild(BuildHiddenNotice(hidden));
 
