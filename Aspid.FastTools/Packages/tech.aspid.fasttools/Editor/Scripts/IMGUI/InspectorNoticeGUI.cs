@@ -64,8 +64,10 @@ namespace Aspid.FastTools.Editors
             float messageX;
             if (shared)
             {
+                // The dot sits under the foldout arrow and the text under the field label, which IMGUI draws closer
+                // together than UI Toolkit.
                 DrawDot(rect.x, rect, ridColor.Value);
-                messageX = rect.x + DotSize + 6f;
+                messageX = rect.x + DotSize + 3f;
             }
             else
             {

@@ -1,10 +1,31 @@
 using System;
+using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
+    // A required type name field that holds a name. FieldPath is a property path, as in GateViolation.
+    internal readonly struct RequiredTypeName
+    {
+        public readonly long FileId;
+        public readonly string FieldPath;
+        public readonly string ComponentName;
+        public readonly string TypeName;
+
+        public RequiredTypeName(long fileId, string fieldPath, string componentName, string typeName)
+        {
+            FileId = fileId;
+            FieldPath = fieldPath;
+            ComponentName = componentName;
+            TypeName = typeName;
+        }
+
+        public string FieldLabel => string.IsNullOrEmpty(ComponentName) ? FieldPath : $"{ComponentName}.{FieldPath}";
+    }
+
     internal static class SerializeReferenceGraphAnalysis
     {
         public static string CombinePath(string parent, string child)
@@ -50,6 +71,48 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return cards;
+        }
+
+        // The required scan reports only the empty ones, so a field would leave the map once it is set. A scene cannot be
+        // object-loaded, so it has none here.
+        public static List<RequiredTypeName> CollectSetRequiredTypeNames(string assetPath)
+        {
+            var fields = new List<RequiredTypeName>();
+            if (SerializeReferenceHelpers.IsScene(assetPath)) return fields;
+
+            foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+            {
+                if (asset == null) continue;
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out _, out var fileId)) continue;
+
+                using var serializedObject = new SerializedObject(asset);
+                using var iterator = serializedObject.GetIterator();
+                if (!iterator.Next(enterChildren: true)) continue;
+
+                var visited = new HashSet<long>();
+                bool enterChildren;
+
+                do
+                {
+                    enterChildren = true;
+
+                    if (iterator.propertyType == SerializedPropertyType.ManagedReference)
+                    {
+                        var id = iterator.managedReferenceId;
+                        if (id >= 0 && !visited.Add(id)) enterChildren = false;
+                        continue;
+                    }
+
+                    if (iterator.propertyType != SerializedPropertyType.String || string.IsNullOrEmpty(iterator.stringValue)) continue;
+                    if (!TypeSelectorRequiredGate.TryGetRequired(iterator, out _)) continue;
+
+                    fields.Add(new RequiredTypeName(fileId, TypeSelectorRequiredGate.GetFieldPath(iterator),
+                        asset.GetType().Name, iterator.stringValue));
+                }
+                while (iterator.Next(enterChildren));
+            }
+
+            return fields;
         }
 
         public static (int broken, int migrations) CountUnresolved(string assetPath, ReferenceGraphDocument document,

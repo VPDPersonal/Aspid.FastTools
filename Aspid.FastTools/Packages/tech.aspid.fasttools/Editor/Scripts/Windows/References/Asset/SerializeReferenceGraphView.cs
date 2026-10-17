@@ -73,6 +73,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
 
         private IReadOnlyList<GateViolation> _requiredViolations = Array.Empty<GateViolation>();
+        private IReadOnlyList<RequiredTypeName> _requiredTypeNames = Array.Empty<RequiredTypeName>();
 
         public SerializeReferenceGraphView(Object target, Action<StatusStyle.Type> onCanvasStatus, Action<Object> onTargetChanged = null)
         {
@@ -205,6 +206,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.Clear();
             ResetNavTargets();
             _requiredViolations = Array.Empty<GateViolation>();
+            _requiredTypeNames = Array.Empty<RequiredTypeName>();
 
             var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
             if (string.IsNullOrEmpty(assetPath))
@@ -230,8 +232,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Required string fields may exist without a RefIds block, so scan them before the empty-graph return.
             _requiredViolations = SerializeReferenceGateScanner.ScanAssetRequiredFields(assetPath);
+            _requiredTypeNames = SerializeReferenceGraphAnalysis.CollectSetRequiredTypeNames(assetPath);
 
-            if (documents.Count == 0 && _requiredViolations.Count == 0)
+            if (documents.Count == 0 && _requiredViolations.Count == 0 && _requiredTypeNames.Count == 0)
             {
                 // A variant or a scene may hold its managed references only as prefab instance overrides, which have
                 // no RefIds graph to map.
@@ -333,6 +336,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ungraphedRequired, SerializeReferenceGraphPlan.MaxCards - drawn, out var hiddenRequired);
 
             var unplacedRequired = new List<GateViolation>(requiredCards);
+            var unplacedTypeNames = new List<RequiredTypeName>(_requiredTypeNames);
 
             // Every object with a name gets its heading, even the only one: the heading says whose fields the cards
             // are. A scene object is read as text and has only its YAML class id, so it is headed only among several.
@@ -341,13 +345,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var document = plan.Document;
                 var documentRequired = requiredCards.Where(violation => violation.FileId == document.FileId).ToList();
+                var documentTypeNames = _requiredTypeNames.Where(field => field.FileId == document.FileId).ToList();
 
                 // A document that got no card would be a header over nothing, so only the notice speaks for it.
-                if (plan.Cards.Count > 0 || plan.Hidden == 0 || documentRequired.Count > 0)
+                if (plan.Cards.Count > 0 || plan.Hidden == 0 || documentRequired.Count > 0 || documentTypeNames.Count > 0)
                 {
-                    _list.AddChild(BuildDocument(assetPath, plan, documentRequired,
+                    _list.AddChild(BuildDocument(assetPath, plan, documentRequired, documentTypeNames,
                         showHeader: several || document.Source != null));
                     unplacedRequired.RemoveAll(violation => violation.FileId == document.FileId);
+                    unplacedTypeNames.RemoveAll(field => field.FileId == document.FileId);
                 }
 
                 hidden += plan.Hidden;
@@ -369,6 +375,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var violation in unplacedRequired)
                 _list.AddChild(BuildRequiredOnlyCard(violation, violation.FieldLabel));
+
+            foreach (var field in unplacedTypeNames)
+                _list.AddChild(BuildRequiredTypeNameCard(assetPath, field, field.FieldLabel));
 
             if (hidden > 0) _list.AddChild(BuildHiddenNotice(hidden));
 

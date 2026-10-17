@@ -246,7 +246,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 void OpenPicker()
                 {
                     if (isReference) OpenLivePicker(violation.AssetPath, violation.FileId, graphPath, band);
-                    else OpenRequiredStringPicker(violation, band);
+                    else OpenRequiredStringPicker(violation.AssetPath, violation.FileId, violation.FieldPath, band);
                 }
 
                 band = new AspidGradientButton(AssignRequiredCollapsedText, _ => OpenPicker())
@@ -259,6 +259,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             card.AddChild(BuildFooter(pathLabel, "unassigned"));
+
+            return card;
+        }
+
+        // A required type name that is set, drawn like a reference card so the field stays on the map.
+        private VisualElement BuildRequiredTypeNameCard(string assetPath, RequiredTypeName field, string pathLabel)
+        {
+            var type = Type.GetType(field.TypeName, throwOnError: false);
+
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(NodeClass);
+
+            var typePreset = AspidLabelPreset.Default
+                .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                .SetLineSize(AspidDividingLineSizeStyle.Type.None);
+            typePreset = type is null
+                ? typePreset.SetLabelStatus(StatusStyle.Type.Warning)
+                : typePreset.SetLabelTheme(ThemeStyle.Type.Lightness);
+
+            var typeLabel = new AspidLabel(TypeSelectorHelpers.GetTypeSelectorTitle(type,
+                        assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(field.TypeName)), typePreset)
+                .AddClass(NodeTypeClass)
+                .SetPickingMode(PickingMode.Ignore);
+            typeLabel.tooltip = type?.FullName ?? field.TypeName;
+
+            AspidGradientButton band = null;
+            void OpenPicker() => OpenRequiredStringPicker(assetPath, field.FileId, field.FieldPath, band);
+
+            band = new AspidGradientButton(ChangeCollapsedText, _ => OpenPicker())
+                .AddClass(NodeBandClass);
+            band.AddLeadingContent(BuildBandRow(typeLabel, badges: null));
+            card.AddChild(band);
+            RegisterNavBand(band, card, OpenPicker);
+            AddBandDivider(card, band, sweepModifier: null);
+
+            card.AddChild(BuildFooter(pathLabel, "type name"));
 
             return card;
         }

@@ -46,12 +46,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 assemblyQualifiedName => ApplyLive(assetPath, fileId, graphPath, assemblyQualifiedName));
         }
 
-        private void OpenRequiredStringPicker(GateViolation violation, AspidGradientButton anchor)
+        private void OpenRequiredStringPicker(string assetPath, long fileId, string fieldPath, AspidGradientButton anchor)
         {
             var filter = default(TypeSelectorFilter);
             var currentAqn = string.Empty;
 
-            if (SerializeReferenceGraphEditor.TryResolveRequiredStringProperty(violation, out var serializedObject, out var property))
+            if (SerializeReferenceGraphEditor.TryResolveRequiredStringProperty(assetPath, fileId, fieldPath,
+                    out var serializedObject, out var property))
             {
                 using (serializedObject)
                 {
@@ -61,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             TogglePicker(anchor, filter, currentAqn,
-                assemblyQualifiedName => ApplyRequiredString(violation, assemblyQualifiedName));
+                assemblyQualifiedName => ApplyRequiredString(assetPath, fileId, fieldPath, assemblyQualifiedName));
         }
 
         internal static TypeSelectorFilter BuildRequiredStringFilter(SerializedObject serializedObject, SerializedProperty property)
@@ -123,9 +124,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (SerializeReferenceGraphEditor.ApplyLive(assetPath, fileId, graphPath, assemblyQualifiedName)) Rescan();
         }
 
-        private void ApplyRequiredString(GateViolation violation, string assemblyQualifiedName)
+        private void ApplyRequiredString(string assetPath, long fileId, string fieldPath, string assemblyQualifiedName)
         {
-            if (SerializeReferenceGraphEditor.ApplyRequiredString(violation, assemblyQualifiedName)) Rescan();
+            if (SerializeReferenceGraphEditor.ApplyRequiredString(assetPath, fileId, fieldPath, assemblyQualifiedName))
+                Rescan();
         }
 
         private void ClearOrphan(string assetPath, long fileId, long rid)

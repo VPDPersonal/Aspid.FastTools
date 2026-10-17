@@ -25,7 +25,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string DocumentChevronCollapsed = "▶";
 
         private VisualElement BuildDocument(string assetPath, SerializeReferenceGraphPlan plan,
-            IReadOnlyList<GateViolation> required, bool showHeader)
+            IReadOnlyList<GateViolation> required, IReadOnlyList<RequiredTypeName> typeNames, bool showHeader)
         {
             var document = plan.Document;
             var (broken, migrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
@@ -64,6 +64,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var violation in required)
                 body.AddChild(BuildRequiredOnlyCard(violation, SerializeReferenceGraphEditor.ToGraphPath(violation.FieldPath)));
+
+            foreach (var field in typeNames)
+                body.AddChild(BuildRequiredTypeNameCard(assetPath, field, SerializeReferenceGraphEditor.ToGraphPath(field.FieldPath)));
 
             if (orphans.Count > 0)
             {

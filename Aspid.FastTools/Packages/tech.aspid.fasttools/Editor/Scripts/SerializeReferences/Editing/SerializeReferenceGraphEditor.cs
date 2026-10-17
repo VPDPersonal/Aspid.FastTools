@@ -144,10 +144,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Writes a type name into the backing string of a required [TypeSelector] field — the one required shape the
         // routes above cannot reach, since such a field is never threaded into RefIds.
-        public static bool ApplyRequiredString(GateViolation violation, string assemblyQualifiedName)
+        public static bool ApplyRequiredString(GateViolation violation, string assemblyQualifiedName) =>
+            ApplyRequiredString(violation.AssetPath, violation.FileId, violation.FieldPath, assemblyQualifiedName);
+
+        public static bool ApplyRequiredString(string assetPath, long fileId, string fieldPath, string assemblyQualifiedName)
         {
-            if (SerializeReferenceOpenCopyGuard.IsOpenInPrefabMode(violation.AssetPath) &&
-                SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(violation.AssetPath)) return false;
+            if (SerializeReferenceOpenCopyGuard.IsOpenInPrefabMode(assetPath) &&
+                SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
 
             // A non-empty name that fails to load is an unresolved pick, not a clear. <None> writes an empty name,
             // which for a required field simply keeps the violation visible.
@@ -155,7 +158,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Type.GetType(assemblyQualifiedName, throwOnError: false) is null)
                 return false;
 
-            if (!TryResolveRequiredStringProperty(violation, out var serializedObject, out var property))
+            if (!TryResolveRequiredStringProperty(assetPath, fileId, fieldPath, out var serializedObject, out var property))
             {
                 EditorUtility.DisplayDialog(
                     "Assign Required Type",
@@ -175,7 +178,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var target = serializedObject.targetObject;
                 EditorUtility.SetDirty(target);
-                PersistEdit(violation.AssetPath, target);
+                PersistEdit(assetPath, target);
             }
 
             SerializeReferenceYamlProbeCache.ClearCache();
@@ -201,17 +204,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // unlike the graph route no conversion applies; for a SerializableType field it names the wrapper, whose type
         // name lives in the backing string.
         public static bool TryResolveRequiredStringProperty(GateViolation violation,
+            out SerializedObject serializedObject, out SerializedProperty property) =>
+            TryResolveRequiredStringProperty(violation.AssetPath, violation.FileId, violation.FieldPath,
+                out serializedObject, out property);
+
+        public static bool TryResolveRequiredStringProperty(string assetPath, long fileId, string fieldPath,
             out SerializedObject serializedObject, out SerializedProperty property)
         {
             serializedObject = null;
             property = null;
 
-            if (SerializeReferenceHelpers.IsScene(violation.AssetPath)) return false;
+            if (SerializeReferenceHelpers.IsScene(assetPath)) return false;
 
-            return TryResolveProperty(violation.AssetPath, violation.FileId, violation.FieldPath,
+            return TryResolveProperty(assetPath, fileId, fieldPath,
                     SerializedPropertyType.String, out serializedObject, out property) ||
-                TryResolveProperty(violation.AssetPath, violation.FileId,
-                    $"{violation.FieldPath}.{SerializableTypeUtility.BackingFieldName}",
+                TryResolveProperty(assetPath, fileId, $"{fieldPath}.{SerializableTypeUtility.BackingFieldName}",
                     SerializedPropertyType.String, out serializedObject, out property);
         }
 
