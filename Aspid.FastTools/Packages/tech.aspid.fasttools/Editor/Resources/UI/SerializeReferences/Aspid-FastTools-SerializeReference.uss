@@ -128,10 +128,11 @@ Button.aspid-fasttools-serialize-reference__open-button {
     bottom:                                                0;
 }
 
+/* The swatch of a shared notice sits under the arrow, and its text starts under the label. */
 .aspid-fasttools-serialize-reference--striped
     > .unity-foldout
     > .aspid-fasttools-serialize-reference__notices {
-    margin-left:                                           -17px;
+    margin-left:                                           -15px;
 }
 
 /* Prevent flex compression so tall content scrolls instead of collapsing its cards. */
