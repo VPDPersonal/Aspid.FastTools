@@ -131,7 +131,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
 .aspid-fasttools-serialize-reference--striped
     > .unity-foldout
     > .aspid-fasttools-serialize-reference__notices {
-    margin-left:                                           -14px;
+    margin-left:                                           -17px;
 }
 
 /* Prevent flex compression so tall content scrolls instead of collapsing its cards. */
