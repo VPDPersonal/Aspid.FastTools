@@ -23,5 +23,5 @@ Serializable table that maps members of an enum chosen in the Inspector to <code
  [EnumValuesEnumerator\<TKey, TValue\>](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md)
 
 Allocation-free enumerator over the entries of [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) and
-[`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md).
+[`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md); boxed when used through [`IEnumerable<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1).
 

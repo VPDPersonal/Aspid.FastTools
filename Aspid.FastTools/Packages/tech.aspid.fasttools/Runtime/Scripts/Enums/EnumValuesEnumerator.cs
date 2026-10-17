@@ -8,7 +8,7 @@ namespace Aspid.FastTools.Enums
 {
     /// <summary>
     /// Allocation-free enumerator over the entries of <see cref="EnumValues{TValue}"/> and
-    /// <see cref="EnumValues{TEnum, TValue}"/>.
+    /// <see cref="EnumValues{TEnum, TValue}"/>; boxed when used through <see cref="IEnumerable{T}"/>.
     /// </summary>
     /// <typeparam name="TKey">
     /// <see cref="Enum"/> for <see cref="EnumValues{TValue}"/>; the enum for <see cref="EnumValues{TEnum, TValue}"/>.
