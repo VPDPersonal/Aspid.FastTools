@@ -380,8 +380,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
-        // "Player › Weapon": the object first, as the Hierarchy shows it, then its component. An object named after its
-        // class is named once.
+        // "Player › Weapon": the object first, as the Hierarchy shows it, then its component.
         private static string DisplayNameOf(Object obj)
         {
             var typeName = obj.GetType().Name;

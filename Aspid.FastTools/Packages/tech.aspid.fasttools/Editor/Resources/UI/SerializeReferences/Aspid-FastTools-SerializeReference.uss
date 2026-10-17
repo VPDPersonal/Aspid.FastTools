@@ -34,7 +34,7 @@
     color:                                                  var(--unity-colors-warning-text);
 }
 
-/* Nothing to expand: the arrow keeps its slot, so the label stays in the column of the fields around it. */
+/* The hidden arrow keeps its slot so the label stays in column; beside a stripe it collapses to hug the stripe. */
 .aspid-fasttools-serialize-reference--empty
     > .unity-foldout
     > .unity-foldout__toggle
@@ -46,7 +46,6 @@
     visibility:                                             hidden;
 }
 
-/* Beside a stripe the slot collapses, so the label hugs the stripe as in the IMGUI drawer. */
 .aspid-fasttools-serialize-reference--striped.aspid-fasttools-serialize-reference--empty
     > .unity-foldout
     > .unity-foldout__toggle

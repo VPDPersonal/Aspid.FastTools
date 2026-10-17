@@ -221,11 +221,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card.AddChild(band);
         }
 
-        // A required string field has no RefIds node, and a required reference gets this card only when the graph drew
-        // no slot for it. Scene assets cannot be object-loaded for inline editing.
+        // Required fields with no slot card; scene assets cannot be object-loaded for inline editing.
         private VisualElement BuildRequiredOnlyCard(GateViolation violation, string pathLabel)
         {
-            // Only a managed reference has a rid; the string picker cannot write one.
             var isReference = violation.Rid != 0;
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))

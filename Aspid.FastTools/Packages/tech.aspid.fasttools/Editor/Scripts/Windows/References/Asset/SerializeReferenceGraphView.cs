@@ -219,8 +219,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // The map reads the saved file and the required scan reads the loaded objects, so unsaved edits would show
-            // both states at once: a reference the file still holds beside a violation for the same, now empty, field.
+            // The map reads the saved file and the required scan the loaded objects, so unsaved edits would mix both.
             if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
             {
                 ShowUnsavedChanges(assetPath);
@@ -286,7 +285,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Drawn like the source-prefab notice. Save writes the loaded objects to the file, so the map then shows them.
         private void ShowUnsavedChanges(string assetPath)
         {
             ShowResults();
@@ -334,8 +332,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var requiredCards = SerializeReferenceGraphAnalysis.SelectRequiredCards(
                 ungraphedRequired, SerializeReferenceGraphPlan.MaxCards - drawn, out var hiddenRequired);
 
-            // A required card goes among the cards of its object, so its path reads like theirs. One whose object has
-            // no document keeps its component in the label and follows the documents.
             var unplacedRequired = new List<GateViolation>(requiredCards);
 
             // Every object with a name gets its heading, even the only one: the heading says whose fields the cards

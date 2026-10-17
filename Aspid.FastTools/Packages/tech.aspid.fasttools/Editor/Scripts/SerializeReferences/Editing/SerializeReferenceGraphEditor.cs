@@ -218,7 +218,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string ToSerializedPropertyPath(string graphPath) =>
             Regex.Replace(graphPath, @"\[(\d+)\]", ".Array.data[$1]");
 
-        // The inverse of ToSerializedPropertyPath: "list.Array.data[0]" reads "list[0]", as the graph names its fields.
         public static string ToGraphPath(string propertyPath) =>
             Regex.Replace(propertyPath, @"\.Array\.data\[(\d+)\]", "[$1]");
 
