@@ -7,6 +7,9 @@ name: CI
 
 on:
   pull_request:
+    # The default types plus the label events, so that adding or removing `unity-quick` reruns the checks. A label that
+    # pr-checks.yml sets with GITHUB_TOKEN starts no workflow; any label a person changes reruns all of them.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
   # A maintainer starts it on a branch of this repository, for a commit whose PR cannot run the Unity tests itself
@@ -213,6 +216,8 @@ jobs:
   # workflow_dispatch on a branch of this repository; for Dependabot PRs the owner can also add UNITY_EMAIL and
   # UNITY_PASSWORD as Dependabot secrets. The failed PR check stays red after a manual run: the maintainer merges with
   # the bypass of the Main ruleset. Only a push without the secrets (a fork's own push) skips with a notice.
+  # A PR with the `unity-quick` label tests only the first and the last version of UNITY_VERSIONS: the minimum still
+  # catches a newer API, the newest line a removed one. The push to main after the merge runs every version.
   # Secrets: UNITY_EMAIL and UNITY_PASSWORD of a Unity account with a Personal license; GameCI activates a seat with
   # them in each job. Do not add the .ulf from Unity Hub (UNITY_LICENSE): it is bound to the Hub machine, and on
   # 6000.0.53f1 GameCI keeps retrying it instead of falling back to the account.
@@ -225,6 +230,7 @@ jobs:
       pull-requests: read
     outputs:
       run: ${{ steps.plan.outputs.run }}
+      versions: ${{ steps.plan.outputs.versions }}
     steps:
       - id: plan
         env:
@@ -235,7 +241,17 @@ jobs:
           EVENT: ${{ github.event_name }}
           PR: ${{ github.event.pull_request.number }}
           BEFORE: ${{ github.event.before }}
+          QUICK: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'unity-quick') }}
+          # Every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
+          # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
+          UNITY_VERSIONS: 6000.0.53f1 6000.1.17f1 6000.2.15f1 6000.3.26f1 6000.4.12f1 6000.5.11f1 6000.6.5f1
         run: |
+          read -ra versions <<<"$UNITY_VERSIONS"
+          if [ "$QUICK" = true ]; then
+            versions=("${versions[0]}" "${versions[-1]}")
+          fi
+          echo "versions=$(jq -cn '$ARGS.positional' --args "${versions[@]}")" >> "$GITHUB_OUTPUT"
+
           # What the Unity jobs read: the package except its Markdown, and their own setup.
           relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|scripts/make-unity-test-project\.sh$|\.github/workflows/ci\.yml$)'
 
@@ -266,13 +282,14 @@ jobs:
             echo "::notice::UNITY_EMAIL or UNITY_PASSWORD is not available; the Unity EditMode tests are skipped."
             echo "run=false" >> "$GITHUB_OUTPUT"
           else
+            [ "$QUICK" != true ] || echo "::notice::The unity-quick label is set; only Unity ${versions[*]} are tested."
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
   # Compiles the package, its tests, its Math assembly and all samples in a throwaway project and runs the EditMode
-  # tests on every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
+  # tests on every version of UNITY_VERSIONS in the plan job (only the first and the last with `unity-quick`).
   # A line without a version is not tested: Unity changes APIs and behaviour without a define (see #319 and #325).
-  # Each version needs a GameCI image (unityci/editor). Add a version when a new Unity line ships.
+  # Each version needs a GameCI image (unityci/editor). Add a version to UNITY_VERSIONS when a new Unity line ships.
   # The tests include PlayerCompilationTests, which compiles every script for a standalone player: the Editor compile
   # alone accepts a UnityEditor call in Runtime/ that breaks the user's player build. The job is part of the required
   # "Unity" check below.
@@ -290,8 +307,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
-        unity: [6000.0.53f1, 6000.1.17f1, 6000.2.15f1, 6000.3.26f1, 6000.4.12f1, 6000.5.11f1, 6000.6.5f1]
+        unity: ${{ fromJSON(needs.unity-plan.outputs.versions) }}
     steps:
       # What the test project reads: the package and the script that builds the project.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
