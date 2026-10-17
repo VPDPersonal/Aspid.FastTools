@@ -99,7 +99,7 @@ A <code lang="class-name">SerializableType</code> or <code lang="class-name">Ser
 
 A <code lang="class-name">SerializableMonoScript</code> field also gets the script of the picked type. A prefab instance override is rewritten as well, because it stores the name as a plain value.
 
-The scan does not find <code lang="csharp">[TypeSelector]</code> strings: repair them in the Inspector. Asset References does not list type names.
+The scan does not find <code lang="csharp">[TypeSelector]</code> strings: repair them in the Inspector, or with **Change ▼** in Asset References.
 
 ## Asset References: inspect one asset
 
@@ -114,10 +114,12 @@ Open **Tools → Aspid 🐍 → FastTools → Asset References** and assign a sa
 | **Migrate → Game.Weapons.Crossbow** row under a **Fix ▼** band | The class was renamed with <code lang="csharp">[MovedFrom]</code>: the row writes the new name, **Fix ▼** picks a different class |
 | Band with **Change ▼**, **Assign ▼** or **Assign Required ▼** | Changes the class of a healthy reference, fills an empty or required field; the asset is saved at once |
 | **● shared** | Several fields point at one instance; dots of the same colour mark the connected fields |
+| **type name** in a card's footer | A <code lang="csharp">[TypeSelector]</code> string, <code lang="class-name">SerializableType</code> or <code lang="class-name">SerializableMonoScript</code> field; it is listed whether it holds a type or not |
 | **children on another card** in a card's footer | The children of this reference are drawn once, under its first card that is not below a missing type; this card is another field that points at it |
-| One-line row with a field name and **Assign ▼** | An optional field that holds no reference, in its place among the fields; an empty `[Required]` field keeps an amber card |
+| One-line row with a field name and **Assign ▼** | An optional field that holds no reference or type, in its place among the fields; an empty `[Required]` field keeps an amber card |
 | **Orphaned** section | Entries no field points at; **Clear** in a card's header deletes one from the file after you confirm, without Undo |
 | Heading with **▼** | The object whose fields the cards below are, such as `Player › Loadout`; click it to fold its cards |
+| **Unsaved changes** with **Save Asset** | The asset has edits that are not saved, and the map reads the saved file: the button saves the asset and maps it again |
 
 **Fix Missing**, **Smart Fix** and **Migrate** write the class to the file at once, and **Edit → Undo** does not revert it.
 
@@ -144,7 +146,7 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 | Where | Limitation |
 |---|---|
 | Open scenes, Prefab Mode, unsaved and locked files | Fix all, Smart Fix and Migrate all skip them: save and close the file, or use [Fix in the Inspector](#fix-in-the-inspector) with its data-transfer limitations |
-| Scenes and fields under a missing parent reference | Asset References changes only missing types |
+| Scenes and fields under a missing parent reference | Asset References changes only missing types; in a scene it lists only the empty required type names |
 | Binary assets and unfetched Git LFS files | Not scanned: Scan Project counts them and the Console lists them, Asset References shows **Not scanned**; use **Force Text** and fetch LFS files |
 | Files last saved before Unity 2021.2 | Their managed references are not read: save the files again in the current Unity version |
 | More than 1000 reference cards in one window | Asset References draws the first 1000 and says how many it left out; Project References repairs missing types without this limit |

@@ -34,6 +34,7 @@
     color:                                                  var(--unity-colors-warning-text);
 }
 
+/* The hidden arrow keeps its slot, so the label stays in column and a stripe hangs in the slot. */
 .aspid-fasttools-serialize-reference--empty
     > .unity-foldout
     > .unity-foldout__toggle
@@ -42,7 +43,21 @@
     > .unity-foldout
     > .unity-foldout__toggle
     .unity-foldout__checkmark {
-    display:                                                none;
+    visibility:                                             hidden;
+}
+
+.aspid-fasttools-serialize-reference--striped.aspid-fasttools-serialize-reference--empty > .unity-foldout,
+.aspid-fasttools-serialize-reference--striped.aspid-fasttools-serialize-reference--childless > .unity-foldout {
+    padding-left:                                           0;
+}
+
+.aspid-fasttools-serialize-reference--striped.aspid-fasttools-serialize-reference--empty
+    > .unity-foldout
+    > .aspid-fasttools-serialize-reference__notices,
+.aspid-fasttools-serialize-reference--striped.aspid-fasttools-serialize-reference--childless
+    > .unity-foldout
+    > .aspid-fasttools-serialize-reference__notices {
+    margin-left:                                            0;
 }
 
 /* A class, not a type selector: buttons of nested drawers and lists share this subtree. */
@@ -113,10 +128,11 @@ Button.aspid-fasttools-serialize-reference__open-button {
     bottom:                                                0;
 }
 
+/* The swatch of a shared notice sits under the arrow, and its text starts under the label. */
 .aspid-fasttools-serialize-reference--striped
     > .unity-foldout
     > .aspid-fasttools-serialize-reference__notices {
-    margin-left:                                           -14px;
+    margin-left:                                           -15px;
 }
 
 /* Prevent flex compression so tall content scrolls instead of collapsing its cards. */

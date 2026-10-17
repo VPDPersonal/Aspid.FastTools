@@ -348,6 +348,13 @@ Button.aspid-fasttools-action-button--danger.aspid-fasttools-reference-graph__na
     flex-shrink:                                          1;
 }
 
+.aspid-fasttools-reference-graph__node-type-icon {
+    width:                                                16px;
+    height:                                               16px;
+    margin-right:                                         6px;
+    flex-shrink:                                          0;
+}
+
 .aspid-fasttools-reference-graph__node--back-edge .aspid-fasttools-reference-graph__node-type {
     color:                                                var(--aspid-colors-text-darkness);
     -unity-font-style:                                    italic;
@@ -425,7 +432,7 @@ Button.aspid-fasttools-action-button--danger.aspid-fasttools-reference-graph__na
 }
 
 .aspid-fasttools-reference-graph__notice
-    .aspid-fasttools-reference-graph__open-source {
+    .aspid-fasttools-reference-graph__notice-action {
     position:                                             absolute;
     top:                                                  6px;
     right:                                                12px;

@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
@@ -46,27 +47,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 assemblyQualifiedName => ApplyLive(assetPath, fileId, graphPath, assemblyQualifiedName));
         }
 
-        private void OpenRequiredStringPicker(GateViolation violation, AspidGradientButton anchor)
+        private void OpenTypeNamePicker(string assetPath, long fileId, string fieldPath, AspidGradientButton anchor)
         {
             var filter = default(TypeSelectorFilter);
             var currentAqn = string.Empty;
 
-            if (SerializeReferenceGraphEditor.TryResolveRequiredStringProperty(violation, out var serializedObject, out var property))
+            if (SerializeReferenceGraphEditor.TryResolveTypeNameProperty(assetPath, fileId, fieldPath,
+                    out var serializedObject, out var property))
             {
                 using (serializedObject)
                 {
                     currentAqn = property.stringValue ?? string.Empty;
-                    filter = BuildRequiredStringFilter(serializedObject, property);
+                    filter = BuildTypeNameFilter(serializedObject, property);
                 }
             }
 
             TogglePicker(anchor, filter, currentAqn,
-                assemblyQualifiedName => ApplyRequiredString(violation, assemblyQualifiedName));
+                assemblyQualifiedName => ApplyTypeName(assetPath, fileId, fieldPath, assemblyQualifiedName));
         }
 
-        internal static TypeSelectorFilter BuildRequiredStringFilter(SerializedObject serializedObject, SerializedProperty property)
+        // The [TypeSelector] of the field and the base type of its wrapper; a plain SerializableType offers every kind
+        // of its base type, as its drawer does.
+        internal static TypeSelectorFilter BuildTypeNameFilter(SerializedObject serializedObject, SerializedProperty property)
         {
-            if (!TypeSelectorRequiredGate.TryGetRequired(property, out var selector)) return default;
+            if (!TypeSelectorRequiredGate.IsTypeNameField(property, out var selector)) return default;
 
             var types = new List<Type>();
             var owner = property.GetDeclaringInstance();
@@ -90,13 +94,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
-            types.AddRange(TypeSelectorConstraintResolver.Resolve(
-                owner ?? serializedObject.targetObject, selector.AssemblyQualifiedNames).Types);
+            if (selector is not null)
+            {
+                types.AddRange(TypeSelectorConstraintResolver.Resolve(
+                    owner ?? serializedObject.targetObject, selector.AssemblyQualifiedNames).Types);
+            }
 
             return new TypeSelectorFilter
             {
                 Types = types.Count > 0 ? types.ToArray() : null,
-                Allow = selector.Allow,
+                Allow = selector?.Allow ?? TypeAllow.All,
                 // A SerializableMonoScript keeps its type through the script asset, so only script-backed types fit it.
                 Predicate = scriptBacked ? SerializableMonoScriptUtility.HasScript : null,
             };
@@ -123,9 +130,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (SerializeReferenceGraphEditor.ApplyLive(assetPath, fileId, graphPath, assemblyQualifiedName)) Rescan();
         }
 
-        private void ApplyRequiredString(GateViolation violation, string assemblyQualifiedName)
+        private void ApplyTypeName(string assetPath, long fileId, string fieldPath, string assemblyQualifiedName)
         {
-            if (SerializeReferenceGraphEditor.ApplyRequiredString(violation, assemblyQualifiedName)) Rescan();
+            if (SerializeReferenceGraphEditor.ApplyTypeName(assetPath, fileId, fieldPath, assemblyQualifiedName))
+                Rescan();
         }
 
         private void ClearOrphan(string assetPath, long fileId, long rid)
