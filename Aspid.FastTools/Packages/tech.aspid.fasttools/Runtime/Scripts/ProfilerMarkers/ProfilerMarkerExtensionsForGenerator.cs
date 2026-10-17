@@ -2,7 +2,6 @@ using Unity.Profiling;
 using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
-// The namespace is intentionally omitted, as this block serves only as a marker for the Source Generator.
 /// <summary>
 /// Provides the extension methods that mark call sites for the profiler-marker source generator.
 /// </summary>
@@ -27,13 +26,13 @@ public static class ProfilerMarkerExtensionsForGenerator
     public static ProfilerMarker.AutoScope Marker<T>(this T instance, [CallerLineNumber] int line = -1) => default;
 
     /// <summary>
-    /// Names the <see cref="ProfilerMarker"/> that the generator creates for the preceding <see cref="Marker{T}(T, int)"/> call.
+    /// Names the <see cref="ProfilerMarker"/> created for the preceding <see cref="Marker{T}(T, int)"/> call.
     /// </summary>
     /// <param name="marker">The scope returned by <see cref="Marker{T}(T, int)"/>.</param>
     /// <param name="name">
-    /// The text replacing the member part of the marker name. Read from the source at compile time, so it must be
-    /// a constant: a string literal, a <see langword="const"/> string, <c>nameof(...)</c>, or a concatenation or
-    /// interpolation of them. Anything else leaves the name untouched, and analyzer <c>AFT0014</c> reports it.
+    /// Replaces the member part of the marker name. Must be a compile-time constant: a literal,
+    /// a <see langword="const"/> string, <c>nameof(...)</c>, or their concatenation or interpolation;
+    /// otherwise the name stays unchanged and analyzer <c>AFT0014</c> reports it.
     /// </param>
     /// <returns><paramref name="marker"/>, unchanged.</returns>
     public static ProfilerMarker.AutoScope WithName(this in ProfilerMarker.AutoScope marker, string name) => marker;
