@@ -7,21 +7,21 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Enums
 {
     /// <summary>
-    /// Allocation-free enumerator over the resolved entries of an <see cref="EnumValues{TValue}"/>
-    /// (<typeparamref name="TKey"/> = <see cref="Enum"/>) or an <see cref="EnumValues{TEnum,TValue}"/>
-    /// (<typeparamref name="TKey"/> = the enum type). Boxed only when consumed through the
-    /// <see cref="IEnumerable{T}"/> interface (e.g. LINQ).
+    /// Allocation-free enumerator over the entries of <see cref="EnumValues{TValue}"/> and
+    /// <see cref="EnumValues{TEnum, TValue}"/>; boxed when used through <see cref="IEnumerable{T}"/>.
     /// </summary>
-    /// <typeparam name="TKey">The key type the entries are yielded as.</typeparam>
-    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
+    /// <typeparam name="TKey">
+    /// <see cref="Enum"/> for <see cref="EnumValues{TValue}"/>; the enum for <see cref="EnumValues{TEnum, TValue}"/>.
+    /// </typeparam>
+    /// <typeparam name="TValue">The type of the mapped values.</typeparam>
     public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue?>>
     {
         private int _index;
         private readonly EnumValue<TValue>[] _values;
 
         /// <summary>
-        /// The entry at the current position; <see langword="default"/> before the first
-        /// <see cref="MoveNext"/> and after the last one.
+        /// Gets the entry at the current position; <see langword="default"/> before the first <see cref="MoveNext"/>
+        /// and after the end.
         /// </summary>
         public KeyValuePair<TKey, TValue?> Current { get; private set; }
 
@@ -35,9 +35,9 @@ namespace Aspid.FastTools.Enums
         readonly object IEnumerator.Current => Current;
 
         /// <summary>
-        /// Advances to the next resolved entry, skipping entries whose key could not be parsed.
+        /// Advances to the next entry with a resolved key.
         /// </summary>
-        /// <returns><see langword="true"/> if an entry was found; <see langword="false"/> at the end.</returns>
+        /// <returns><see langword="true"/> if the enumerator advanced; otherwise, <see langword="false"/>.</returns>
         public bool MoveNext()
         {
             while (_index < _values.Length)
@@ -50,6 +50,7 @@ namespace Aspid.FastTools.Enums
                 return true;
             }
 
+            Current = default;
             return false;
         }
 
