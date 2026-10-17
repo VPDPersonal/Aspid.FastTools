@@ -44,24 +44,18 @@ ISerializationCallbackReceiver
 
 
 ```csharp
-public class Spawner : MonoBehaviour
-{
-    [SerializeField] private SerializableMonoScript _componentType;
+[SerializeField] private SerializableMonoScript _componentType;
 
-    private void Start()
-    {
-        Type type = _componentType;  // implicit conversion
-        if (type != null)
-            gameObject.AddComponent(type);
-    }
-}
+Type type = _componentType; // implicit conversion
 ```
 
 
 ## Remarks
 
-<p>In the editor the script asset is the source of truth: on every serialization the stored assembly-qualified name is re-read from the script's class. The script reference is editor-only, so a player build carries just the name and resolves it exactly as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) does. When that name no longer resolves in the editor, a main-thread read takes the type from the script, so an asset not saved since a class rename still works in Play Mode; another thread gets <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> then.</p>
-<p>Only types Unity maps to a script asset can be referenced this way: a top-level, non-generic class declared in a file of the same name or compiled into a DLL. From a DLL, Unity maps only [`MonoBehaviour`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/MonoBehaviour.html) and [`ScriptableObject`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/ScriptableObject.html) classes, by namespace and name, so renaming the class or its namespace breaks the reference. Use [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) for nested and generic types and for other DLL classes.</p>
+A script asset exists only for a top-level, non-generic class in a file of the same name, or for a
+[`MonoBehaviour`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/MonoBehaviour.html) or [`ScriptableObject`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/ScriptableObject.html) in a DLL, matched by
+namespace and name; use [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) for other types. A player keeps only the name and
+resolves it as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) does.
 
 ## Properties
 

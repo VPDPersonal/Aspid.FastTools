@@ -22,7 +22,7 @@ public sealed class SerializableMonoScript<T> : SerializableMonoScript, ISeriali
 
 `T` 
 
-Base constraint type; the picker offers only types assignable to it.
+The base type that the Inspector requires when a type is picked or dropped.
 
 #### Inheritance
 
@@ -46,26 +46,13 @@ ISerializationCallbackReceiver
 
 
 ```csharp
-public class EnemySpawner : MonoBehaviour
-{
-    [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
-
-    private void Spawn()
-    {
-        if (_enemyType.Type is { } type)
-            gameObject.AddComponent(type);
-    }
-}
+[SerializeField] private SerializableMonoScript<Enemy> _enemyType;
 ```
 
 
 ## Remarks
 
-Unity serializes a field by its declared type, so a [`SerializableMonoScript<T>`](Aspid.FastTools.Types.SerializableMonoScript-1.md) assigned from code
-to a field declared as [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md) is reloaded unconstrained: the type survives, the
-constraint does not. Only the Inspector checks <code class="typeparamref">T</code> when a type is picked or dropped: a
-loaded name is not re-checked, so after <code class="typeparamref">T</code> or the stored class's base changes, the type
-may no longer be assignable to it.
+Assigned to a field declared as [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md), it is reloaded without the constraint.
 
 ## Properties
 

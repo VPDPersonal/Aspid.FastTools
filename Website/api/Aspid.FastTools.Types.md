@@ -25,8 +25,7 @@ asset, so renaming or moving the class does not break the field.
 
  [SerializableType](Aspid.FastTools.Types.SerializableType.md)
 
-Unity-serializable wrapper around a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), stored by its <code>AssemblyQualifiedName</code>
-and resolved lazily on first access.
+Unity-serializable wrapper around a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), stored by its assembly-qualified name.
 
  [SerializableType\<T\>](Aspid.FastTools.Types.SerializableType-1.md)
 
@@ -34,8 +33,8 @@ and resolved lazily on first access.
 
  [SerializableTypeBase](Aspid.FastTools.Types.SerializableTypeBase.md)
 
-Shared implementation of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers: stores the type by its
-assembly-qualified name and resolves it lazily on first access.
+Shared base of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers: stores the type by its assembly-qualified
+name and resolves it lazily.
 
  [TypeSelectorAttribute](Aspid.FastTools.Types.TypeSelectorAttribute.md)
 
@@ -43,8 +42,7 @@ Draws the field with the type-selector window.
 
  [TypeSelectorDisplayAttribute](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md)
 
-Supplies presentation metadata for a type in the type-selector window — display name, group, tooltip and
-icon — or keeps the type out of the picker entirely with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden).
+Sets how the type-selector window shows a type, or hides the type with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden).
 
 ### Structs
 

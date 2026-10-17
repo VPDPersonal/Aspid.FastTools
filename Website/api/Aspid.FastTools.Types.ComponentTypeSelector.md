@@ -26,22 +26,12 @@ public struct ComponentTypeSelector
 
 ## Examples
 
-Place a field of this type in the root class; the Inspector lists all subtypes of <code>BaseEnemy</code>:
-
 
 ```csharp
 public abstract class BaseEnemy : MonoBehaviour
 {
     [SerializeField] private ComponentTypeSelector _typeSelector;
 }
-
-public class FastEnemy : BaseEnemy { }
-public class TankEnemy : BaseEnemy { }
 ```
 
-
-## Remarks
-
-Picking a type writes the matching <code>MonoScript</code> asset to <code>m_Script</code>, turning the object into that
-subtype. The picker is constrained to the declaring class automatically.
 

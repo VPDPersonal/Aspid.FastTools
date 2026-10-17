@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-Unity-serializable wrapper around a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), stored by its <code>AssemblyQualifiedName</code>
-and resolved lazily on first access.
+Unity-serializable wrapper around a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), stored by its assembly-qualified name.
 
 ```csharp
 [Serializable]
@@ -44,17 +43,9 @@ ISerializationCallbackReceiver
 
 
 ```csharp
-public class MyComponent : MonoBehaviour
-{
-    [SerializeField] private SerializableType _targetType;
+[SerializeField] private SerializableType _targetType;
 
-    private void Start()
-    {
-        Type type = _targetType;  // implicit conversion
-        if (type != null)
-            Debug.Log(type.FullName);
-    }
-}
+Type type = _targetType; // implicit conversion
 ```
 
 

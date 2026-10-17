@@ -22,7 +22,7 @@ public sealed class SerializableType<T> : SerializableType, ISerializableType, I
 
 `T` 
 
-Base constraint type; the picker offers only types assignable to it.
+The base type that the picker and the constructor require.
 
 #### Inheritance
 
@@ -46,26 +46,13 @@ ISerializationCallbackReceiver
 
 
 ```csharp
-public class MyComponent : MonoBehaviour
-{
-    [SerializeField] private SerializableType<MonoBehaviour> _behaviorType;
-
-    private void Start()
-    {
-        Type type = _behaviorType;
-        if (type != null)
-            gameObject.AddComponent(type);
-    }
-}
+[SerializeField] private SerializableType<MonoBehaviour> _behaviorType;
 ```
 
 
 ## Remarks
 
-Unity serializes a field by its declared type, so a [`SerializableType<T>`](Aspid.FastTools.Types.SerializableType-1.md) assigned from code to a
-field declared as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) is reloaded unconstrained: the type survives, the constraint
-does not. Only the picker and the constructor check <code class="typeparamref">T</code>: a loaded name is not re-checked,
-so after <code class="typeparamref">T</code> or the stored class's base changes, the type may no longer be assignable to it.
+Assigned to a field declared as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md), it is reloaded without the constraint.
 
 ## Constructors
 

@@ -11,8 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-Shared implementation of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers: stores the type by its
-assembly-qualified name and resolves it lazily on first access.
+Shared base of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers: stores the type by its assembly-qualified
+name and resolves it lazily.
 
 ```csharp
 [Serializable]
@@ -42,11 +42,9 @@ ISerializationCallbackReceiver
 
 ## Remarks
 
-<p>Not meant to be derived from outside the package — use [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) or [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md). Unity serializes the name under the same field for all of them, so every wrapper shares one serialized layout.</p>
-<p>Unity fills a serialized field with an empty wrapper when it loads the object from an asset, a scene or a prefab, so <code>field == null</code> does not detect an unset field there. On an object created in code (<code>AddComponent</code>, <code>ScriptableObject.CreateInstance</code>) the field stays <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> until Unity serializes the object. Test an unset field with <code>field is null || field.IsEmpty</code>, or a usable type with <code>field?.Type is not null</code>.</p>
-<p>A player resolves the type by the stored name only, which managed code stripping does not see: from Managed Stripping Level Medium up, a class referenced only by this name can be removed from the build, [`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> and [`SerializableTypeBase.IsMissing`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsMissing) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>. Minimal and Low keep it. Keep such classes with <code>[Preserve]</code> or <code>link.xml</code>.</p>
-<p>A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly loaded later is not picked up before that.</p>
-<p>Two wrappers are equal when they store the same assembly-qualified name, whatever their wrapper class or constraint, so they work as dictionary keys. <code>==</code> still compares references. The hash code follows the stored name: do not change a wrapper that is a key, which includes serializing or deserializing it again (in the Editor, saving a [`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md) rewrites the name of a renamed class).</p>
+A player resolves only the stored name, which managed code stripping does not see: from Managed Stripping
+Level Medium up, keep a class referenced only here with <code>[Preserve]</code> or <code>link.xml</code>. A failed lookup
+is cached until the name changes or the object is deserialized again, so an assembly loaded later is missed.
 
 ## Properties
 
@@ -61,10 +59,6 @@ public string AssemblyQualifiedName { get; }
 #### Property Value
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
-
-#### Remarks
-
-Kept even when it no longer resolves, so the Inspector can show what the field used to point at.
 
 ### BaseType {#Aspid_FastTools_Types_SerializableTypeBase_BaseType}
 
@@ -96,11 +90,13 @@ public bool IsEmpty { get; }
 
 #### Remarks
 
-[`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>. Mutually exclusive with [`SerializableTypeBase.IsMissing`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_IsMissing).
+On an object created in code the field itself stays <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> until Unity serializes it:
+test an unset field with <code>field is null || field.IsEmpty</code>.
 
 ### IsMissing {#Aspid_FastTools_Types_SerializableTypeBase_IsMissing}
 
-Gets a value indicating whether a type name is stored but does not resolve.
+Gets a value indicating whether a type name is stored but does not resolve, for example after the class
+was renamed, moved or stripped from a player build.
 
 ```csharp
 public bool IsMissing { get; }
@@ -109,11 +105,6 @@ public bool IsMissing { get; }
 #### Property Value
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-#### Remarks
-
-[`SerializableTypeBase.Type`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Type) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> and [`SerializableTypeBase.AssemblyQualifiedName`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_AssemblyQualifiedName) keeps the old name,
-for example after the class was renamed, moved or stripped from a player build.
 
 ### Type {#Aspid_FastTools_Types_SerializableTypeBase_Type}
 
@@ -131,7 +122,8 @@ public Type? Type { get; }
 
 ### Equals\(SerializableTypeBase?\) {#Aspid_FastTools_Types_SerializableTypeBase_Equals_Aspid_FastTools_Types_SerializableTypeBase_}
 
-Determines whether <code class="paramref">other</code> stores the same assembly-qualified name.
+Determines whether <code class="paramref">other</code> stores the same assembly-qualified name, whatever its wrapper
+class or constraint.
 
 ```csharp
 public bool Equals(SerializableTypeBase? other)
@@ -149,6 +141,10 @@ The wrapper to compare with.
 
 <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">other</code> is not <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> and stores the same
 name, also when neither stores a type; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+
+#### Remarks
+
+<code>==</code> still compares references.
 
 ### Equals\(object?\) {#Aspid_FastTools_Types_SerializableTypeBase_Equals_System_Object_}
 
@@ -168,8 +164,7 @@ The object to compare with.
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if [`SerializableTypeBase.Equals`](Aspid.FastTools.Types.SerializableTypeBase.md#Aspid_FastTools_Types_SerializableTypeBase_Equals_Aspid_FastTools_Types_SerializableTypeBase_) is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> for
-<code class="paramref">obj</code>; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">obj</code> is such a wrapper; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
 ### GetHashCode\(\) {#Aspid_FastTools_Types_SerializableTypeBase_GetHashCode}
 
@@ -182,6 +177,10 @@ public override int GetHashCode()
 #### Returns
 
  [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+#### Remarks
+
+Follows the stored name: do not change a wrapper used as a key, also through Unity serialization.
 
 ### ToString\(\) {#Aspid_FastTools_Types_SerializableTypeBase_ToString}
 
