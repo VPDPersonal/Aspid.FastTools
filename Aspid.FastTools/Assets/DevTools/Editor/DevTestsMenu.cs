@@ -48,8 +48,12 @@ namespace Aspid.FastTools.DevTools.Editors
 
         private static void Import()
         {
-            if (Application.platform is RuntimePlatform.WindowsEditor) Run(fileName: "cmd", arguments: $"/c mklink /J {Link} {Source}");
-            else Run(fileName: "ln", arguments: $"-s {Source} {Link}");
+            var isLinked = Application.platform is RuntimePlatform.WindowsEditor
+                ? Run(fileName: "cmd", arguments: $"/c mklink /J {Link} {Source}")
+                : Run(fileName: "ln", arguments: $"-s {Source} {Link}");
+
+            // The .meta goes in only next to the link: alone, Unity would delete it with a warning.
+            if (!isLinked) return;
 
             File.WriteAllText(
                 path: LinkPath + ".meta",
@@ -60,13 +64,15 @@ namespace Aspid.FastTools.DevTools.Editors
         // Only the link goes: "rm" without -r and "rmdir" without /s never follow it into Assets/DevTests~.
         private static void Remove()
         {
-            File.Delete(path: LinkPath + ".meta");
+            var isUnlinked = Application.platform is RuntimePlatform.WindowsEditor
+                ? Run(fileName: "cmd", arguments: $"/c rmdir {Link}")
+                : Run(fileName: "rm", arguments: Link);
 
-            if (Application.platform is RuntimePlatform.WindowsEditor) Run(fileName: "cmd", arguments: $"/c rmdir {Link}");
-            else Run(fileName: "rm", arguments: Link);
+            // A link that stays keeps its .meta, so the refresh does not import it under a new guid.
+            if (isUnlinked) File.Delete(path: LinkPath + ".meta");
         }
 
-        private static void Run(string fileName, string arguments)
+        private static bool Run(string fileName, string arguments)
         {
             var startInfo = new ProcessStartInfo(fileName: fileName, arguments: arguments)
             {
@@ -80,8 +86,10 @@ namespace Aspid.FastTools.DevTools.Editors
             var error = process.StandardError.ReadToEnd();
             process.WaitForExit();
 
-            if (process.ExitCode is not 0)
-                Debug.LogError(message: $"Aspid.FastTools DevTests: \"{fileName} {arguments}\" failed: {error}");
+            if (process.ExitCode is 0) return true;
+
+            Debug.LogError(message: $"Aspid.FastTools DevTests: \"{fileName} {arguments}\" failed: {error}");
+            return false;
         }
     }
 }
