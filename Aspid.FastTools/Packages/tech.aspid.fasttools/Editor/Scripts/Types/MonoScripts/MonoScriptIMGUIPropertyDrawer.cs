@@ -33,11 +33,7 @@ namespace Aspid.FastTools.Types.Editors
                 TypeSelectorRequiredGate.IsViolation(nameProperty);
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;
-            if (isMissing || isRequired)
-            {
-                rowRect.xMin += 5f;
-                TypeIMGUIPropertyDrawer.DrawWarningStripe(position: position);
-            }
+            if (isMissing || isRequired) TypeIMGUIPropertyDrawer.DrawWarningStripe(position: position);
 
             var isArrayElement = wrapperProperty.propertyPath.EndsWith("]");
             var openButtonSize = isArrayElement ? rowRect.height - 2 : rowRect.height;

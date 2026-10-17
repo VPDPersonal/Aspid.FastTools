@@ -22,12 +22,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Space the foldout arrow reserves left of the label; notices pull back by it to line up under the arrow.
         private const float FoldoutArrowIndent = 11f;
 
-        // Left status stripe: the gutter shifts the field body right to clear room for the bar, the offset places the
-        // bar inside it measured from the indented content (so the gap is depth-independent), and the inset keeps
-        // adjacent full-height stripes from merging.
+        // Left status stripe: the gutter shifts the body of a field with an arrow right to clear room for the bar, the
+        // offset places the bar in the arrow's spot measured from the indented field (so the gap is depth-independent),
+        // and the inset keeps adjacent full-height stripes from merging.
         private const float StripeGutter = 5f;
         private const float StripeWidth = 2f;
-        private const float StripeOffset = 16f;
+        private const float StripeOffset = 11f;
         private const float StripeInsetY = 2f;
 
         static SerializeReferenceIMGUIPropertyDrawer() { }
@@ -84,10 +84,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // color tracks its number instead of a rid hash that could alias two groups onto one hue.
             var sharedIndex = showShared ? SerializeReferenceHelpers.GetSharedReferenceIndex(property) : 0;
 
-            // Only a field that shows a stripe reserves the gutter. Missing / required fields keep it but pull their
-            // arrow-less label and notice left onto the foldout-arrow spot.
-            var flat = showMissing || showRequired;
-            var gutter = showMissing || showShared || showRequired ? StripeGutter : 0f;
+            // A missing or required field is empty and has no arrow, so its stripe takes the arrow's spot and its label
+            // stays where a filled field puts it. Only a shared one needs the gutter.
+            var gutter = showShared ? StripeGutter : 0f;
             var body = new Rect(position.x + gutter, position.y, position.width - gutter, position.height);
 
             var line = new Rect(body.x, body.y, body.width, EditorGUIUtility.singleLineHeight);
@@ -134,10 +133,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
-                var labelPull = flat ? FoldoutArrowIndent : 0f;
-                EditorGUI.LabelField(new Rect(labelRect.x - labelPull, labelRect.y,
-                    labelRect.width + labelPull, labelRect.height), label,
-                    overridden ? EditorStyles.boldLabel : EditorStyles.label);
+                EditorGUI.LabelField(labelRect, label, overridden ? EditorStyles.boldLabel : EditorStyles.label);
             }
 
             var dropdownRect = new Rect(
@@ -211,16 +207,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (stripeColor.HasValue)
                     EditorGUI.DrawRect(
-                        new Rect(content.x - StripeOffset, position.y + StripeInsetY,
+                        new Rect(EditorGUI.IndentedRect(position).x - StripeOffset, position.y + StripeInsetY,
                             StripeWidth, position.height - 2f * StripeInsetY),
                         stripeColor.Value);
             }
 
             if (showMissing)
             {
-                // Flat field (no arrow): pull the notice left onto the arrow's spot so it lines up with the label above.
-                var noticeRect = new Rect(content.x - FoldoutArrowIndent, y,
-                    content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
+                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
                 var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
                 var canFix = SerializeReferenceHelpers.TryGetRepairLocation(property, out _, out _, out _);
 
@@ -258,9 +252,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (showRequired)
             {
-                // Flat field (no arrow): pull the notice left onto the arrow's spot so it lines up with the label above.
-                var noticeRect = new Rect(content.x - FoldoutArrowIndent, y,
-                    content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
+                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
                 var message = "Required reference is not set";
 
                 InspectorNoticeGUI.DrawRequiredNotice(noticeRect, message,

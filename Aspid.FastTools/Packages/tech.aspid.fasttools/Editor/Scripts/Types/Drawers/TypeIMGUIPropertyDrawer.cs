@@ -68,11 +68,7 @@ namespace Aspid.FastTools.Types.Editors
                 TypeSelectorRequiredGate.IsViolation(property);
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;
-            if (isMissing || isRequired)
-            {
-                rowRect.xMin += 5f;
-                DrawWarningStripe(position: position);
-            }
+            if (isMissing || isRequired) DrawWarningStripe(position: position);
 
             var isArrayElement = property.propertyPath.EndsWith("]");
             var openButtonSize = isArrayElement ? rowRect.height - 2 : rowRect.height;
@@ -155,11 +151,12 @@ namespace Aspid.FastTools.Types.Editors
         internal static void SetName(DetachedProperty detached, string assemblyQualifiedName) =>
             detached.Use(persistent => persistent.SetStringAndApply(value: assemblyQualifiedName ?? string.Empty));
 
-        // The warning stripe on the left edge of a field whose stored type is missing or required and unset.
+        // The warning stripe of a field whose stored type is missing or required and unset, left of the label where the
+        // [SerializeReference] field draws its stripe.
         internal static void DrawWarningStripe(Rect position)
         {
             var stripeRect = EditorGUI.IndentedRect(source: position);
-            EditorGUI.DrawRect(rect: new Rect(stripeRect.x, position.y + 2f, 2f, position.height - 4f),
+            EditorGUI.DrawRect(rect: new Rect(stripeRect.x - 11f, position.y + 2f, 2f, position.height - 4f),
                 color: InspectorNoticeGUI.NoticeColor);
         }
 
