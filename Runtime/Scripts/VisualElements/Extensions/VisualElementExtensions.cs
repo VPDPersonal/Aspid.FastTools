@@ -116,7 +116,7 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <remarks>
         /// Unity recommends setting the hints before the element is added to a panel.
-        /// Changing them afterwards does not throw, but triggers a render-hints update.
+        /// Changing them afterward does not throw, but triggers a render-hints update.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
