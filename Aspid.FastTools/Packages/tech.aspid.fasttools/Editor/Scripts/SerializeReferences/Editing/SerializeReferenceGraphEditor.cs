@@ -142,12 +142,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Writes a type name into the backing string of a required [TypeSelector] field — the one required shape the
+        // Writes a type name into a [TypeSelector] string or the backing string of a SerializableType field, which the
         // routes above cannot reach, since such a field is never threaded into RefIds.
         public static bool ApplyRequiredString(GateViolation violation, string assemblyQualifiedName) =>
-            ApplyRequiredString(violation.AssetPath, violation.FileId, violation.FieldPath, assemblyQualifiedName);
+            ApplyTypeName(violation.AssetPath, violation.FileId, violation.FieldPath, assemblyQualifiedName);
 
-        public static bool ApplyRequiredString(string assetPath, long fileId, string fieldPath, string assemblyQualifiedName)
+        public static bool ApplyTypeName(string assetPath, long fileId, string fieldPath, string assemblyQualifiedName)
         {
             if (SerializeReferenceOpenCopyGuard.IsOpenInPrefabMode(assetPath) &&
                 SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
@@ -158,10 +158,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Type.GetType(assemblyQualifiedName, throwOnError: false) is null)
                 return false;
 
-            if (!TryResolveRequiredStringProperty(assetPath, fileId, fieldPath, out var serializedObject, out var property))
+            if (!TryResolveTypeNameProperty(assetPath, fileId, fieldPath, out var serializedObject, out var property))
             {
                 EditorUtility.DisplayDialog(
-                    "Assign Required Type",
+                    "Assign Type",
                     "This field cannot be edited here — it is not reachable through the serialization API. " +
                     "Edit it in the Inspector instead.",
                     "OK");
@@ -205,10 +205,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // name lives in the backing string.
         public static bool TryResolveRequiredStringProperty(GateViolation violation,
             out SerializedObject serializedObject, out SerializedProperty property) =>
-            TryResolveRequiredStringProperty(violation.AssetPath, violation.FileId, violation.FieldPath,
+            TryResolveTypeNameProperty(violation.AssetPath, violation.FileId, violation.FieldPath,
                 out serializedObject, out property);
 
-        public static bool TryResolveRequiredStringProperty(string assetPath, long fileId, string fieldPath,
+        public static bool TryResolveTypeNameProperty(string assetPath, long fileId, string fieldPath,
             out SerializedObject serializedObject, out SerializedProperty property)
         {
             serializedObject = null;

@@ -201,7 +201,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // An optional field that holds nothing, in its place among the fields: one muted band with the field path and
         // Assign, so it takes a line instead of a card. Only an empty field offers Assign, so no <None> is needed.
-        private VisualElement BuildUnassignedRow(string assetPath, long fileId, string pathLabel)
+        private VisualElement BuildUnassignedRow(string pathLabel, Action<AspidGradientButton> openPicker)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass)
@@ -213,10 +213,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .SetPickingMode(PickingMode.Ignore);
 
             AspidGradientButton band = null;
-            band = new AspidGradientButton(AssignCollapsedText, _ => OpenLivePicker(assetPath, fileId, pathLabel, band))
+            band = new AspidGradientButton(AssignCollapsedText, _ => openPicker(band))
                 .AddClass(NodeBandClass);
             band.AddLeadingContent(BuildBandRow(field, badges: null));
-            RegisterNavBand(band, card, () => OpenLivePicker(assetPath, fileId, pathLabel, band));
+            RegisterNavBand(band, card, () => openPicker(band));
 
             return card.AddChild(band);
         }
@@ -246,7 +246,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 void OpenPicker()
                 {
                     if (isReference) OpenLivePicker(violation.AssetPath, violation.FileId, graphPath, band);
-                    else OpenRequiredStringPicker(violation.AssetPath, violation.FileId, violation.FieldPath, band);
+                    else OpenTypeNamePicker(violation.AssetPath, violation.FileId, violation.FieldPath, band);
                 }
 
                 band = new AspidGradientButton(AssignRequiredCollapsedText, _ => OpenPicker())
@@ -263,8 +263,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        // A required type name that is set, drawn like a reference card so the field stays on the map.
-        private VisualElement BuildRequiredTypeNameCard(string assetPath, RequiredTypeName field, string pathLabel)
+        // A type name field that holds a type, drawn like a reference card.
+        private VisualElement BuildTypeNameCard(string assetPath, TypeNameField field, string pathLabel)
         {
             var type = Type.GetType(field.TypeName, throwOnError: false);
 
@@ -285,7 +285,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             typeLabel.tooltip = type?.FullName ?? field.TypeName;
 
             AspidGradientButton band = null;
-            void OpenPicker() => OpenRequiredStringPicker(assetPath, field.FileId, field.FieldPath, band);
+            void OpenPicker() => OpenTypeNamePicker(assetPath, field.FileId, field.FieldPath, band);
 
             band = new AspidGradientButton(ChangeCollapsedText, _ => OpenPicker())
                 .AddClass(NodeBandClass);

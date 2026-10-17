@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string DocumentChevronCollapsed = "▶";
 
         private VisualElement BuildDocument(string assetPath, SerializeReferenceGraphPlan plan,
-            IReadOnlyList<GateViolation> required, IReadOnlyList<RequiredTypeName> typeNames, bool showHeader)
+            IReadOnlyList<GateViolation> required, IReadOnlyList<TypeNameField> typeNames, bool showHeader)
         {
             var document = plan.Document;
             var (broken, migrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
@@ -54,7 +55,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         // An optional empty field is a one-line row in its place; an empty [Required] one keeps its amber card.
                         body.AddChild(string.IsNullOrEmpty(card.Path) || IsFieldRequiredUnset(document.FileId, card.Path)
                             ? BuildEmptySlotCard(assetPath, document.FileId, card.Path)
-                            : BuildUnassignedRow(assetPath, document.FileId, card.Path));
+                            : BuildUnassignedRow(card.Path, band => OpenLivePicker(assetPath, document.FileId, card.Path, band)));
                         break;
                     case CardKind.Orphan:
                         orphans.Add(card.Rid);
@@ -62,11 +63,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
-            foreach (var violation in required)
-                body.AddChild(BuildRequiredOnlyCard(violation, SerializeReferenceGraphEditor.ToGraphPath(violation.FieldPath)));
-
-            foreach (var field in typeNames)
-                body.AddChild(BuildRequiredTypeNameCard(assetPath, field, SerializeReferenceGraphEditor.ToGraphPath(field.FieldPath)));
+            AddFieldCards(body, assetPath, typeNames, required, qualify: false);
 
             if (orphans.Count > 0)
             {
@@ -117,6 +114,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RegisterNavTarget(header, toggle);
 
             return header;
+        }
+
+        // The type name fields in their field order, an empty required one as its amber card, then the required
+        // violations none of them covers. qualify names the component, for cards outside their object's heading.
+        private void AddFieldCards(VisualElement parent, string assetPath, IReadOnlyList<TypeNameField> typeNames,
+            IReadOnlyList<GateViolation> required, bool qualify)
+        {
+            var covered = new HashSet<(long, string)>();
+
+            foreach (var field in typeNames)
+            {
+                var label = qualify ? field.FieldLabel : SerializeReferenceGraphEditor.ToGraphPath(field.FieldPath);
+                var violation = required.FirstOrDefault(entry =>
+                    entry.Rid == 0 && entry.FileId == field.FileId && entry.FieldPath == field.FieldPath);
+
+                if (!string.IsNullOrEmpty(field.TypeName))
+                {
+                    parent.AddChild(BuildTypeNameCard(assetPath, field, label));
+                }
+                else if (violation.FieldPath is not null)
+                {
+                    covered.Add((field.FileId, field.FieldPath));
+                    parent.AddChild(BuildRequiredOnlyCard(violation, label));
+                }
+                else
+                {
+                    parent.AddChild(BuildUnassignedRow(label,
+                        band => OpenTypeNamePicker(assetPath, field.FileId, field.FieldPath, band)));
+                }
+            }
+
+            foreach (var violation in required)
+            {
+                if (covered.Contains((violation.FileId, violation.FieldPath))) continue;
+
+                parent.AddChild(BuildRequiredOnlyCard(violation,
+                    qualify ? violation.FieldLabel : SerializeReferenceGraphEditor.ToGraphPath(violation.FieldPath)));
+            }
         }
 
         // Orphans under their own heading, after the cards of the tree.

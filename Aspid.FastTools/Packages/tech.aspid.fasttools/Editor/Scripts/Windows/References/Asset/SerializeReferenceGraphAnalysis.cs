@@ -7,20 +7,23 @@ using Aspid.FastTools.Types.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // A required type name field that holds a name. FieldPath is a property path, as in GateViolation.
-    internal readonly struct RequiredTypeName
+    // A [TypeSelector] string, SerializableType or SerializableMonoScript field. FieldPath is a property path, as in
+    // GateViolation; TypeName is empty while the field holds no type.
+    internal readonly struct TypeNameField
     {
         public readonly long FileId;
         public readonly string FieldPath;
         public readonly string ComponentName;
         public readonly string TypeName;
+        public readonly bool Required;
 
-        public RequiredTypeName(long fileId, string fieldPath, string componentName, string typeName)
+        public TypeNameField(long fileId, string fieldPath, string componentName, string typeName, bool required)
         {
             FileId = fileId;
             FieldPath = fieldPath;
             ComponentName = componentName;
             TypeName = typeName;
+            Required = required;
         }
 
         public string FieldLabel => string.IsNullOrEmpty(ComponentName) ? FieldPath : $"{ComponentName}.{FieldPath}";
@@ -73,11 +76,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return cards;
         }
 
-        // The required scan reports only the empty ones, so a field would leave the map once it is set. A scene cannot be
-        // object-loaded, so it has none here.
-        public static List<RequiredTypeName> CollectSetRequiredTypeNames(string assetPath)
+        // In field order. A scene cannot be object-loaded, so it has none here; its empty required ones still come from
+        // the required scan.
+        public static List<TypeNameField> CollectTypeNameFields(string assetPath)
         {
-            var fields = new List<RequiredTypeName>();
+            var fields = new List<TypeNameField>();
             if (SerializeReferenceHelpers.IsScene(assetPath)) return fields;
 
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
@@ -103,11 +106,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         continue;
                     }
 
-                    if (iterator.propertyType != SerializedPropertyType.String || string.IsNullOrEmpty(iterator.stringValue)) continue;
-                    if (!TypeSelectorRequiredGate.TryGetRequired(iterator, out _)) continue;
+                    if (!TypeSelectorRequiredGate.IsTypeNameField(iterator, out var selector)) continue;
 
-                    fields.Add(new RequiredTypeName(fileId, TypeSelectorRequiredGate.GetFieldPath(iterator),
-                        asset.GetType().Name, iterator.stringValue));
+                    fields.Add(new TypeNameField(fileId, TypeSelectorRequiredGate.GetFieldPath(iterator),
+                        asset.GetType().Name, iterator.stringValue, required: selector is { Required: true }));
                 }
                 while (iterator.Next(enterChildren));
             }
