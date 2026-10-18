@@ -1,44 +1,45 @@
-/* Unity: the colours of Unity's own editor skin, so an Aspid window reads as one more editor panel. The canvas takes
-   a grey just under its panels (#2E2E2E on the dark skin), the cards its panels (#383838) with near-black separators,
-   the buttons and drop-downs its lighter controls (#464646), and the object fields and value boxes its darker input
-   fields. The accent is mono, light greys without a hue, with the grey logo; the status text is lifted on the dark skin
-   and deepened on the light skin, so it keeps its contrast on the grey cards.
+/* Unity: the colours of Unity's own Inspector, so an Aspid window reads as one more editor panel. The canvas and the
+   cards share the Inspector background (#383838) and the cards stand out only by thin dark separators; rows hover
+   with the list row grey (#464646), the buttons and drop-downs take the drop-down grey (#515151), and the object fields
+   and value boxes the input field grey (#2A2A2A). The text takes Unity's label greys. The accent is mono, light greys
+   without a hue, with the grey logo; the status text is lifted on the dark skin and deepened on the light skin, so it
+   keeps its contrast on the grey cards.
    The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
    light block follows :root in this sheet. */
 :root {
     --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_mono_256x253");
 
-    --aspid-colors-bg-darkness:                     rgb(48, 48, 48);
-    --aspid-colors-bg-dark:                         rgb(64, 64, 64);
-    --aspid-colors-bg-light:                        rgb(74, 74, 74);
-    --aspid-colors-bg-lightness:                    rgb(86, 86, 86);
+    --aspid-colors-bg-darkness:                     rgb(62, 62, 62);
+    --aspid-colors-bg-dark:                         rgb(70, 70, 70);
+    --aspid-colors-bg-light:                        rgb(78, 78, 78);
+    --aspid-colors-bg-lightness:                    rgb(88, 88, 88);
 
-    --aspid-colors-text-lightness:                  rgb(232, 232, 232);
-    --aspid-colors-text-light:                      rgb(212, 212, 212);
-    --aspid-colors-text-dark:                       rgb(178, 178, 178);
+    --aspid-colors-text-lightness:                  rgb(210, 210, 210);
+    --aspid-colors-text-light:                      rgb(196, 196, 196);
+    --aspid-colors-text-dark:                       rgb(180, 180, 180);
     --aspid-colors-text-darkness:                   rgb(140, 140, 140);
 
-    --aspid-colors-shade-darkness:                  rgb(26, 26, 26);
-    --aspid-colors-shade-dark:                      rgb(82, 82, 82);
+    --aspid-colors-shade-darkness:                  rgb(36, 36, 36);
+    --aspid-colors-shade-dark:                      rgb(48, 48, 48);
     --aspid-colors-shade-light:                     rgb(100, 100, 100);
     --aspid-colors-shade-lightness:                 rgb(118, 118, 118);
 
-    --aspid-colors-surface-canvas:                  rgb(46, 46, 46);
+    --aspid-colors-surface-canvas:                  rgb(56, 56, 56);
     --aspid-colors-surface-card:                    rgb(56, 56, 56);
     --aspid-colors-surface-card-dim:                rgb(42, 42, 42);
     --aspid-colors-surface-field:                   rgb(42, 42, 42);
-    --aspid-colors-surface-control:                 rgb(70, 70, 70);
+    --aspid-colors-surface-control:                 rgb(81, 81, 81);
 
     --aspid-colors-slider-handle:                   rgba(200, 200, 200, 0.85);
     --aspid-colors-control-border:                  rgb(132, 132, 132);
     --aspid-colors-scope-user:                      rgb(138, 138, 138);
-    --aspid-colors-dark-skin-text-darkness:         rgb(178, 178, 178);
+    --aspid-colors-dark-skin-text-darkness:         rgb(186, 186, 186);
 
     --aspid-colors-status-info-text-dark:           rgb(112, 170, 228);
     --aspid-colors-status-info-text-light:          rgb(140, 190, 240);
     --aspid-colors-status-error-text-light:         rgb(244, 136, 156);
-    /* The dots behind the settings take a grey barely off the canvas, so the window reads as a flat editor panel. */
-    --aspid-colors-status-info-blob:                rgb(52, 52, 52);
+    /* The dots behind the settings take a grey barely off the canvas, so the window reads as a flat Inspector. */
+    --aspid-colors-status-info-blob:                rgb(61, 61, 61);
 
     /* Mono accent: light greys without a hue, as the mono accent of the documentation site. */
     --aspid-colors-accent-shade-dark:               rgb(72, 72, 72);
@@ -74,7 +75,7 @@
     --aspid-colors-shade-light:                     rgb(153, 153, 153);
     --aspid-colors-shade-lightness:                 rgb(128, 128, 128);
 
-    --aspid-colors-surface-canvas:                  rgb(190, 190, 190);
+    --aspid-colors-surface-canvas:                  rgb(200, 200, 200);
     --aspid-colors-surface-card:                    rgb(200, 200, 200);
     --aspid-colors-surface-card-dim:                rgb(240, 240, 240);
     --aspid-colors-surface-field:                   rgb(240, 240, 240);
@@ -83,7 +84,7 @@
     --aspid-colors-slider-handle:                   rgba(80, 80, 80, 0.85);
     --aspid-colors-control-border:                  rgb(102, 102, 102);
     --aspid-colors-scope-user:                      rgb(100, 100, 100);
-    --aspid-colors-status-info-blob:                rgb(184, 184, 184);
+    --aspid-colors-status-info-blob:                rgb(194, 194, 194);
 
     --aspid-colors-status-info-text-dark:           rgb(18, 80, 134);
     --aspid-colors-status-info-text-light:          rgb(16, 74, 124);
