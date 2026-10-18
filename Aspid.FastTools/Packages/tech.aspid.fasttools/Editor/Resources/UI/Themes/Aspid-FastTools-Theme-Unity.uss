@@ -1,7 +1,8 @@
 /* Unity: the colours of Unity's own editor skin, so an Aspid window reads as one more editor panel. The canvas takes
    the tab strip of the editor (#141414 on the dark skin), the cards its panels (#383838) with their darker separators,
-   and the drop-downs and value boxes its darker input fields. The accent stays green; the status and accent text is
-   lifted on the dark skin and deepened on the light skin, so it keeps its contrast on the grey cards.
+   the buttons and drop-downs its lighter controls (#464646), and the object fields and value boxes its darker input
+   fields. The accent stays green; the status and accent text is lifted on the dark skin and deepened on the light skin,
+   so it keeps its contrast on the grey cards.
    The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
    light block follows :root in this sheet. */
 :root {
@@ -24,6 +25,7 @@
     --aspid-colors-surface-card:                    rgb(56, 56, 56);
     --aspid-colors-surface-card-dim:                rgb(42, 42, 42);
     --aspid-colors-surface-field:                   rgb(42, 42, 42);
+    --aspid-colors-surface-control:                 rgb(70, 70, 70);
 
     --aspid-colors-slider-handle:                   rgba(200, 200, 200, 0.85);
     --aspid-colors-control-border:                  rgb(132, 132, 132);
@@ -55,6 +57,7 @@
     --aspid-colors-surface-card:                    rgb(200, 200, 200);
     --aspid-colors-surface-card-dim:                rgb(240, 240, 240);
     --aspid-colors-surface-field:                   rgb(240, 240, 240);
+    --aspid-colors-surface-control:                 rgb(228, 228, 228);
 
     --aspid-colors-slider-handle:                   rgba(80, 80, 80, 0.85);
     --aspid-colors-control-border:                  rgb(102, 102, 102);

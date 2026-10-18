@@ -180,7 +180,7 @@
     height:                                               22px;
     margin:                                               0 0 0 6px;
     padding:                                              0 10px;
-    background-color:                                     var(--aspid-colors-surface-card);
+    background-color:                                     var(--aspid-colors-surface-control);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-dark);
     border-radius:                                        6px;
@@ -302,7 +302,7 @@
 .aspid-fasttools-settings .unity-base-popup-field__input {
     min-height:                                           24px;
     padding:                                              1px 6px;
-    background-color:                                     var(--aspid-colors-surface-field);
+    background-color:                                     var(--aspid-colors-surface-control);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        6px;

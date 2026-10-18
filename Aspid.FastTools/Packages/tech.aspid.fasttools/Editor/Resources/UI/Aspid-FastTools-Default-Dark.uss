@@ -26,8 +26,10 @@
     --aspid-colors-surface-canvas:                  rgb(0, 0, 0);
     --aspid-colors-surface-card:                    rgb(11, 11, 11);
     --aspid-colors-surface-card-dim:                rgb(7, 7, 7);
-    /* The fill of the drop-downs, object fields and value boxes in a card: the card itself unless a theme sets it. */
+    /* The fills of the controls in a card, the card itself unless a theme sets them: field for the object fields and
+       value boxes, control for the drop-downs and buttons. */
     --aspid-colors-surface-field:                   var(--aspid-colors-surface-card);
+    --aspid-colors-surface-control:                 var(--aspid-colors-surface-card);
 
     --aspid-colors-overlay-hover:                   rgba(255, 255, 255, 0.05);
     --aspid-colors-overlay-control:                 rgba(255, 255, 255, 0.06);
