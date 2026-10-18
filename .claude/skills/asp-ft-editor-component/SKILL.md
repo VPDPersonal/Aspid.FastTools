@@ -50,7 +50,7 @@ owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` 
   A nested component preset must be a **field**, not an auto-property, or its setters modify a copy.
 - Extensions: one `Set<Property>` per `[UxmlAttribute]`, returning the concrete element type.
 - USS: style against `aspid-fasttools-theme--*` / `aspid-fasttools-status--*` (added by the style structs), use the
-  shared palette `var(--aspid-colors-*)` / `var(--aspid-icons-*)` so theme overrides work, own classes
+  shared palette `var(--aspid-colors-*)` / `var(--aspid-icons-*)` so themes work, own classes
   `aspid-fasttools-<block>[__<element>][--<modifier>]`, own custom properties
   `--aspid-fasttools-{colors|prop|metrics|icons}-<name>`. No inline `style.*` for anything a theme should control.
   A new colour goes into `Aspid-FastTools-Default-Dark.uss` as a token, never as a literal in a component sheet,

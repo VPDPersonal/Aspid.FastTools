@@ -345,55 +345,6 @@
     border-color:                                         var(--aspid-colors-accent-text-light);
 }
 
-.aspid-fasttools-settings .unity-object-field .unity-base-field__label {
-    flex-grow:                                            1;
-    flex-basis:                                           0;
-    min-width:                                            auto;
-}
-
-.aspid-fasttools-settings .unity-object-field__input {
-    flex-grow:                                            0;
-    flex-shrink:                                          1;
-    flex-basis:                                           var(--aspid-fasttools-settings-control-width);
-    min-width:                                            120px;
-    min-height:                                           24px;
-    padding:                                              1px 2px 1px 6px;
-    background-color:                                     var(--aspid-colors-surface-field);
-    border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        var(--aspid-radius-control);
-    align-items:                                          center;
-}
-
-/* Unity aligns the display label to the upper left with a 1px top padding, which in this taller input left the text
-   1.5px above the middle; the label is centered in the input instead. */
-.aspid-fasttools-settings .unity-object-field__object {
-    align-self:                                           stretch;
-    align-items:                                          center;
-    margin:                                               0;
-    padding:                                              0;
-}
-
-.aspid-fasttools-settings .unity-object-field-display__label {
-    margin:                                               0 0 0 2px;
-    padding:                                              0;
-    color:                                                var(--aspid-colors-text-lightness);
-    -unity-text-align:                                    middle-left;
-}
-
-.aspid-fasttools-settings .unity-object-field:hover .unity-object-field__input {
-    border-color:                                         var(--aspid-colors-accent-text-dark);
-}
-
-.aspid-fasttools-settings .unity-object-field__selector {
-    background-color:                                     var(--aspid-colors-overlay-control);
-    border-radius:                                        var(--aspid-radius-control);
-}
-
-.aspid-fasttools-settings .unity-object-field__selector:hover {
-    background-color:                                     var(--aspid-colors-overlay-control-hover);
-}
-
 /* The fill alone matches the hover; the border marks the keyboard focus. */
 .aspid-fasttools-settings__nav-target--focused > .aspid-fasttools-settings__row-backplate {
     background-color:                                     var(--aspid-colors-bg-dark);

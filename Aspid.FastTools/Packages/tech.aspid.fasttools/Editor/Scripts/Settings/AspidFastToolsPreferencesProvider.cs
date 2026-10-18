@@ -31,7 +31,7 @@ namespace Aspid.FastTools.Editors
                 "USS",
                 "Color",
                 "Palette",
-                "Override",
+                "Custom",
                 "Welcome",
                 "Dropdown",
                 "Animated",
@@ -80,7 +80,7 @@ namespace Aspid.FastTools.Editors
 
                 keywords = new[]
                 {
-                    "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Override",
+                    "Aspid", "FastTools", "Appearance", "Theme", "Style", "USS", "Color", "Palette", "Custom",
                     "Animated", "Animation", "Background", "Icon", "Type",
                 },
             };

@@ -5,7 +5,6 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
-using UnityEditor.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
@@ -17,7 +16,7 @@ namespace Aspid.FastTools.Editors.Tests
     /// <summary>
     /// Behavioural coverage for the Settings tab: the keyboard handling of the Build / CI gate row (arrows step the
     /// value without wrapping, Fail and Off ask for confirmation first, Enter does not change the value), the
-    /// Theme override field in the keyboard ring, the contrast of the field borders and the slider track, and the
+    /// Theme dropdown in the keyboard ring, the contrast of the field borders and the slider track, and the
     /// keyboard focus border, on both palettes.
     /// </summary>
     [TestFixture]
@@ -145,48 +144,55 @@ namespace Aspid.FastTools.Editors.Tests
         }
 
         [UnityTest]
-        public IEnumerator ThemeOverrideField_IsFocusableAndReachedByTheArrows()
+        public IEnumerator ThemeField_IsReachedByTheArrows_AndStepsTheTheme()
         {
             var panel = new TestPanel();
+            var savedTheme = AspidThemeSettings.Theme;
+            var savedCustom = AspidThemeSettings.CustomTheme;
 
             try
             {
+                AspidThemeSettings.Theme = AspidTheme.Default;
+
                 var view = new SettingsView();
                 panel.Root.Add(view);
                 yield return null;
 
-                var field = view.Q<ObjectField>();
-                Assert.IsNotNull(field, "The Settings tab must contain the Theme override field.");
-
-                // Tab walks the focusable elements; the field delegates the focus to the display that holds it.
-                var display = field.Q(className: ObjectField.objectUssClassName);
-                Assert.IsTrue(field.focusable && field.tabIndex >= 0, "The Theme override field must take part in Tab navigation.");
-                Assert.IsTrue(display.focusable && display.tabIndex >= 0, "The display of the field must be able to hold the focus.");
-
+                var field = view.Q<AspidThemeField>();
+                Assert.IsNotNull(field, "The Settings tab must contain the Theme dropdown.");
+                Assert.IsTrue(field.focusable && field.tabIndex >= 0, "The Theme dropdown must take part in Tab navigation.");
                 Assert.IsTrue(field.ClassListContains(AspidSettingsUI.NavTargetClass),
-                    "The Theme override field must be a target of the keyboard ring.");
+                    "The Theme dropdown must be a target of the keyboard ring.");
 
                 FocusInRing(view, field);
                 Assert.IsTrue(field.ClassListContains(AspidSettingsUI.NavTargetFocusedClass),
-                    "The Down arrow must reach the Theme override field.");
+                    "The Down arrow must reach the Theme dropdown.");
+
+                SendKey(view, KeyCode.RightArrow);
+                Assert.AreEqual(AspidTheme.Venom, AspidThemeSettings.Theme, "The Right arrow must step to the next theme.");
+
+                SendKey(view, KeyCode.LeftArrow);
+                Assert.AreEqual(AspidTheme.Default, AspidThemeSettings.Theme, "The Left arrow must step back.");
 
                 SendKey(view, KeyCode.DownArrow);
                 Assert.IsFalse(field.ClassListContains(AspidSettingsUI.NavTargetFocusedClass),
-                    "The Down arrow must move on from the Theme override field.");
+                    "The Down arrow must move on from the Theme dropdown.");
 
                 SendKey(view, KeyCode.UpArrow);
                 Assert.IsTrue(field.ClassListContains(AspidSettingsUI.NavTargetFocusedClass),
-                    "The Up arrow must come back to the Theme override field.");
+                    "The Up arrow must come back to the Theme dropdown.");
             }
             finally
             {
                 panel.Root.Clear();
                 panel.Dispose();
+                AspidThemeSettings.Theme = savedTheme;
+                if (savedCustom != null) AspidThemeSettings.CustomTheme = savedCustom;
             }
         }
 
         [UnityTest]
-        public IEnumerator ThemeOverrideField_Focused_GetsTheStrongBorder()
+        public IEnumerator ThemeField_Focused_GetsTheStrongBorder()
         {
             var panel = new TestPanel();
 
@@ -200,8 +206,8 @@ namespace Aspid.FastTools.Editors.Tests
                 yield return null;
                 yield return null;
 
-                var field = view.Q<ObjectField>();
-                Assert.IsNotNull(field, "The Settings tab must contain the Theme override field.");
+                var field = view.Q<AspidThemeField>();
+                Assert.IsNotNull(field, "The Settings tab must contain the Theme dropdown.");
 
                 FocusInRing(view, field);
                 yield return null;
