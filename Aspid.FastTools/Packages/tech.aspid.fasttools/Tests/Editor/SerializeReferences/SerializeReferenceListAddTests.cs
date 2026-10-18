@@ -31,6 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // one independent instance per selected object, the "+" of an empty [TypeSelector] list in the default inspector,
     // and the argument checks of the public IMGUI list.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class SerializeReferenceListAddTests
     {
         private static readonly string SwordName = typeof(TestSword).AssemblyQualifiedName;

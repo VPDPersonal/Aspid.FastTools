@@ -28,6 +28,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
     // [TypeSelector] applies to the collection, so Unity hands its drawer the list instead of each element; the drawer
     // must then draw every element with the picker itself, in UI Toolkit and in IMGUI.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class TypeSelectorCollectionTests
     {
         private TypeSelectorCollectionTestObject _target;

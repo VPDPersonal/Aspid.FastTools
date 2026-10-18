@@ -321,6 +321,10 @@ jobs:
           UNITY: ${{ matrix.unity }}
         run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY"
 
+      # Two passes. The runner has no GPU: Unity draws through llvmpipe (software OpenGL under xvfb), where UI tests run
+      # up to 250 times slower than on a GPU. So every test that opens no window runs under -nographics, and only the
+      # fixtures of the Graphics category, which need a shown window, run with a graphics device. The second pass
+      # reuses the Library of the first.
       # Unity sometimes assigns no Personal seat ("assigned no seat") when many jobs activate the same account at once.
       # Such a run fails before any test and leaves no results file, so it gets one second attempt after a pause; a
       # run with test failures writes its results and fails at once. A compile error also leaves no results: it costs
@@ -334,19 +338,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with: &unity-with
+        with: &unity-nographics
           unityVersion: ${{ matrix.unity }}
           projectPath: ci-unity-project
           testMode: editmode
           # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
-          customParameters: -aspidFastToolsStrictSetup
-          artifactsPath: unity-test-results
+          customParameters: -aspidFastToolsStrictSetup -nographics -testCategory !Graphics
+          artifactsPath: unity-test-results/nographics
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Unity EditMode results (${{ matrix.unity }})
+          checkName: Unity EditMode results (${{ matrix.unity }}, no graphics)
 
       - name: Wait before a second license request
         id: no-results
-        if: steps.tests.outcome == 'failure' && hashFiles('unity-test-results/**/*.xml') == ''
+        if: steps.tests.outcome == 'failure' && hashFiles('unity-test-results/nographics/**/*.xml') == ''
         run: |
           echo "::warning::The Unity test run left no results: no license seat or a compile error, see the step above. Trying once more."
           sleep $((60 + RANDOM % 60))
@@ -355,12 +359,42 @@ jobs:
         if: steps.no-results.outcome == 'success'
         uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
         env: *unity-env
-        with: *unity-with
+        with: *unity-nographics
+
+      - id: tests-graphics
+        if: ${{ !cancelled() }}
+        uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
+        continue-on-error: true
+        env: *unity-env
+        with: &unity-graphics
+          unityVersion: ${{ matrix.unity }}
+          projectPath: ci-unity-project
+          testMode: editmode
+          customParameters: -aspidFastToolsStrictSetup -testCategory Graphics
+          artifactsPath: unity-test-results/graphics
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity EditMode results (${{ matrix.unity }}, graphics)
+
+      - name: Wait before a second license request (graphics)
+        id: no-results-graphics
+        if: steps.tests-graphics.outcome == 'failure' && hashFiles('unity-test-results/graphics/**/*.xml') == ''
+        run: |
+          echo "::warning::The Unity test run with graphics left no results: no license seat or a compile error, see the step above. Trying once more."
+          sleep $((60 + RANDOM % 60))
+
+      - id: retry-graphics
+        if: ${{ !cancelled() && steps.no-results-graphics.outcome == 'success' }}
+        uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
+        env: *unity-env
+        with: *unity-graphics
 
       - name: Fail on a failed test run
-        if: steps.tests.outcome == 'failure' && steps.retry.outcome != 'success'
+        if: >-
+          ${{ !cancelled() && (
+            (steps.tests.outcome == 'failure' && steps.retry.outcome != 'success') ||
+            (steps.tests-graphics.outcome == 'failure' && steps.retry-graphics.outcome != 'success')) }}
         run: |
-          echo "::error::Unity EditMode failed; see the test runner step above."
+          echo "::error::Unity EditMode failed; see the test runner steps above."
           exit 1
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

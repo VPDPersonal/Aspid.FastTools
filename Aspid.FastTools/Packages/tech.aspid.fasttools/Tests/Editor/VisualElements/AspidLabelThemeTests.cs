@@ -9,6 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 {
     // A label's text color follows its own LabelTheme, not the theme class of a container around it.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class AspidLabelThemeTests
     {
         private EditorWindow _window;

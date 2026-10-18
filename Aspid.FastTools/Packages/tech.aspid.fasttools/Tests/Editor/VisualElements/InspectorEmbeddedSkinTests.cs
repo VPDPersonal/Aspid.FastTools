@@ -19,6 +19,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     /// theme variables in the same window, and the folder icons are checked through the light-skin class directly.
     /// </remarks>
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class InspectorEmbeddedSkinTests
     {
         private const string EnumValuesStyleSheet = "UI/Enums/Aspid-FastTools-EnumValues";

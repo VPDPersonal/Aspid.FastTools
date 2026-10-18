@@ -14,6 +14,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         public string typeName;
     }
 
+    [Category("Graphics")]
     internal sealed class TypeFieldTests
     {
         private const string MissingName = "Missing.Namespace.GoneType, Missing.Assembly";
