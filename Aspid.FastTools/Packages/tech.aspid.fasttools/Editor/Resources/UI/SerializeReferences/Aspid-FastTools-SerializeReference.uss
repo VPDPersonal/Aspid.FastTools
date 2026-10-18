@@ -435,7 +435,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
     margin-bottom:                                         6px;
     --aspid-fasttools-colors-gradient_button-bg:           rgba(0, 0, 0, 0);
     --aspid-fasttools-colors-gradient_button-accent: var(
-        --aspid-colors-status-warning-text-lightness
+        --aspid-colors-status-warning-text-light
     );
 }
 
@@ -444,25 +444,27 @@ Button.aspid-fasttools-serialize-reference__open-button {
     margin-bottom:                                         0;
 }
 
-/* The action takes its card's status colour, as the bands of Asset References do: amber to fix, blue to migrate. */
+/* The action takes its card's status colour, as the bands of Asset References do: amber to fix, blue to migrate. The
+   label rests a shade under the accent of the band's wash, so a hover, which recolors it with that accent, brightens it
+   while the wash keeps its full colour. */
 .aspid-fasttools-repair-references__group-fix-all
     .aspid-fasttools-gradient-button__label {
     flex-shrink:                                           0;
     margin-left:                                           8px;
     -unity-text-align:                                     middle-right;
-    color:                                                 var(--aspid-colors-status-warning-text-light);
+    color:                                                 var(--aspid-colors-status-warning-text-dark);
 }
 
 .aspid-fasttools-repair-references__group
     .aspid-fasttools-repair-references__group-fix-all--migrate {
     --aspid-fasttools-colors-gradient_button-accent: var(
-        --aspid-colors-status-info-text-lightness
+        --aspid-colors-status-info-text-light
     );
 }
 
 .aspid-fasttools-repair-references__group-fix-all--migrate
     .aspid-fasttools-gradient-button__label {
-    color:                                                 var(--aspid-colors-status-info-text-light);
+    color:                                                 var(--aspid-colors-status-info-text-dark);
 }
 
 /* USS cannot select the sibling sweep from button hover; code mirrors hover onto the card modifier. */

@@ -224,7 +224,7 @@
 
 .aspid-fasttools-reference-graph__node
     .aspid-fasttools-reference-graph__node-band--missing {
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-lightness);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
 }
 
 .aspid-fasttools-reference-graph__node-band .aspid-fasttools-gradient-button__label {
@@ -233,17 +233,18 @@
     color:                                                var(--aspid-colors-text-dark);
 }
 
+/* The label rests a shade under the band's accent, so a hover brightens it while the wash keeps its full colour. */
 .aspid-fasttools-reference-graph__node-band--missing .aspid-fasttools-gradient-button__label {
-    color:                                                var(--aspid-colors-status-warning-text-light);
+    color:                                                var(--aspid-colors-status-warning-text-dark);
 }
 
 .aspid-fasttools-reference-graph__node
     .aspid-fasttools-reference-graph__node-band--migrate {
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-info-text-lightness);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-info-text-light);
 }
 
 .aspid-fasttools-reference-graph__node-band--migrate .aspid-fasttools-gradient-button__label {
-    color:                                                var(--aspid-colors-status-info-text-light);
+    color:                                                var(--aspid-colors-status-info-text-dark);
 }
 
 /* USS cannot select the sibling sweep from button hover; code mirrors hover onto the card modifier. */
