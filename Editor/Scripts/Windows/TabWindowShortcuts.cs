@@ -9,6 +9,9 @@ namespace Aspid.FastTools.Editors
     {
         private const string Category = "Aspid FastTools/Window/";
 
+        // Global, so it opens the window from any focused Editor window.
+        private const string OpenAssetReferencesId = "Aspid FastTools/Open Asset References";
+
         private const string NextTabId = Category + "Next Tab";
         private const string PreviousTabId = Category + "Previous Tab";
         private const string NextTabArrowId = Category + "Next Tab (Arrow)";
@@ -24,6 +27,11 @@ namespace Aspid.FastTools.Editors
         internal const KeyCode AssetReferencesKey = KeyCode.Alpha2;
         internal const KeyCode ProjectReferencesKey = KeyCode.Alpha3;
         private const ShortcutModifiers TabModifiers = ShortcutModifiers.Alt;
+
+        // Alt+Shift+R: Unity 6, ProBuilder and Hot Reload leave it free by default.
+        [Shortcut(OpenAssetReferencesId, KeyCode.R, ShortcutModifiers.Alt | ShortcutModifiers.Shift)]
+        private static void OnOpenAssetReferencesShortcut() =>
+            TabWindow.OpenAssetReferences();
 
         [Shortcut(HomeId, typeof(TabWindow), HomeKey, TabModifiers)]
         private static void OnHomeShortcut(ShortcutArguments args) =>
