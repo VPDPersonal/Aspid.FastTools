@@ -5,7 +5,7 @@
    so their frames stay under 3:1; check-contrast.mjs holds them at a baseline. The corners stay those of Default.
    The text takes Unity's label greys. The accent is Unity's blue, with the blue logo; the status text is lifted on the
    dark skin and deepened on the light skin, so it keeps its contrast on the grey cards. The dots behind the windows
-   are off.
+   take one grey.
    The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
    light block follows :root in this sheet. */
 :root {
@@ -96,8 +96,14 @@
     --aspid-colors-status-error-shade-lightness:    rgb(232, 116, 116);
     --aspid-colors-status-error-tint:               rgba(255, 110, 110, 0.14);
 
-    /* No dots behind the windows, so the window reads as a flat Inspector. */
-    --aspid-dots-radius:                            0;
+    /* The dots behind the windows in one grey, without the status hues. */
+    --aspid-colors-dots-1:                          rgb(124, 124, 124);
+    --aspid-colors-dots-2:                          rgb(124, 124, 124);
+    --aspid-colors-dots-3:                          rgb(124, 124, 124);
+    --aspid-colors-status-success-blob:             rgb(124, 124, 124);
+    --aspid-colors-status-warning-blob:             rgb(124, 124, 124);
+    --aspid-colors-status-error-blob:               rgb(124, 124, 124);
+    --aspid-colors-status-info-blob:                rgb(124, 124, 124);
 
     /* Unity's blue: its selection (#2C5D87) and focus (#3A79BB) on fills, lighter shades of it on text. */
     --aspid-colors-accent-shade-dark:               rgb(44, 93, 135);
@@ -210,4 +216,13 @@
     --aspid-colors-status-error-shade-light:        rgb(210, 140, 140);
     --aspid-colors-status-error-shade-lightness:    rgb(185, 90, 90);
     --aspid-colors-status-error-tint:               rgba(220, 60, 60, 0.12);
+
+    /* The dots in one grey on the light skin too. */
+    --aspid-colors-dots-1:                          rgb(172, 172, 172);
+    --aspid-colors-dots-2:                          rgb(172, 172, 172);
+    --aspid-colors-dots-3:                          rgb(172, 172, 172);
+    --aspid-colors-status-success-blob:             rgb(172, 172, 172);
+    --aspid-colors-status-warning-blob:             rgb(172, 172, 172);
+    --aspid-colors-status-error-blob:               rgb(172, 172, 172);
+    --aspid-colors-status-info-blob:                rgb(172, 172, 172);
 }

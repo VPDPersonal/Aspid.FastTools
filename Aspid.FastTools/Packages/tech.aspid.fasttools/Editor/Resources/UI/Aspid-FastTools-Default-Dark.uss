@@ -140,6 +140,10 @@
        bg-dark, so its dimmest text takes the text-dark shade. */
     --aspid-colors-dark-skin-text-darkness:         rgb(150, 150, 150);
 
+    /* The dots behind the windows: three status hues for the wave, the blobs for a window in one status. */
+    --aspid-colors-dots-1:                          var(--aspid-colors-status-success-text-dark);
+    --aspid-colors-dots-2:                          var(--aspid-colors-status-warning-text-dark);
+    --aspid-colors-dots-3:                          var(--aspid-colors-status-error-text-dark);
     --aspid-colors-status-success-blob:             rgb(41, 71, 54);
     --aspid-colors-status-warning-blob:             rgb(77, 64, 31);
     --aspid-colors-status-error-blob:               rgb(82, 41, 41);

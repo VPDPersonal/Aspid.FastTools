@@ -9,30 +9,31 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
+    // A list in the look of Unity's own, framed in one block with its caption: a "−" at the end of each row and a "+"
+    // at the end of the last one, a click that selects a row and a double click that picks another folder for it.
     internal sealed class SerializeReferenceExcludedFoldersField : VisualElement
     {
         private const string StyleSheetPath =
             "UI/SerializeReferences/Aspid-FastTools-SerializeReference-ExcludedFolders";
 
         private const string RootClass = "aspid-fasttools-excluded-folders";
-        private const string HeaderClass = "aspid-fasttools-excluded-folders__header";
-        private const string HeaderCaptionClass = "aspid-fasttools-excluded-folders__header-caption";
-        private const string HeaderAddClass = "aspid-fasttools-excluded-folders__header--add";
+        private const string BoxClass = "aspid-fasttools-excluded-folders__box";
+        private const string CaptionClass = "aspid-fasttools-excluded-folders__caption";
         private const string ListClass = "aspid-fasttools-excluded-folders__list";
         private const string EntryClass = "aspid-fasttools-excluded-folders__entry";
-        private const string EntryHoverClass = "aspid-fasttools-excluded-folders__entry--hover";
-        private const string EntryDangerClass = "aspid-fasttools-excluded-folders__entry--danger";
+        private const string EntrySelectedClass = "aspid-fasttools-excluded-folders__entry--selected";
         private const string EmptyClass = "aspid-fasttools-excluded-folders__empty";
         private const string PathClass = "aspid-fasttools-excluded-folders__path";
-        private const string RemoveClass = "aspid-fasttools-excluded-folders__remove";
-        private const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
-
-        private static readonly string[] HoverTints = { EntryHoverClass, EntryDangerClass };
+        private const string RowButtonClass = "aspid-fasttools-excluded-folders__row-button";
+        private const string RowSlotClass = "aspid-fasttools-excluded-folders__row-slot";
+        internal const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
+        internal const string RemoveButtonClass = "aspid-fasttools-excluded-folders__remove";
 
         private readonly VisualElement _list;
-        private readonly VisualElement _header;
+        private readonly Button _addButton;
 
         private readonly List<(VisualElement Row, string Path)> _rows = new();
+        private string _selected;
 
         // The hosting keyboard ring listens to re-collect its targets, since a rebuild replaces every row element.
         internal event Action RowsRebuilt;
@@ -43,22 +44,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetFromResources(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
 
-            // The whole header row is the add target, so the "+" is a passive label whose clicks bubble up instead of
-            // firing a second add. The add-intent wash is code-toggled, so the ring can mirror it.
-            var caption = new Label("Excluded scan folders").AddClass(HeaderCaptionClass);
-            var addGlyph = new Label("+") { tooltip = "Add folder" }.AddClass(AddButtonClass);
-
-            _header = new VisualElement().AddClass(HeaderClass)
-                .AddChild(caption)
-                .AddChild(addGlyph);
-            _header.RegisterCallback<ClickEvent>(_ => AddFolder());
-            _header.RegisterCallback<PointerEnterEvent>(_ => _header.AddToClassList(HeaderAddClass));
-            _header.RegisterCallback<PointerLeaveEvent>(_ => _header.RemoveFromClassList(HeaderAddClass));
-
+            var caption = new Label("Excluded scan folders").AddClass(CaptionClass);
             _list = new VisualElement().AddClass(ListClass);
 
-            Add(_header);
-            Add(_list);
+            // One "+" moves to the end of the last row on every rebuild, so the ring keeps a single add target.
+            _addButton = new Button(AddFolder) { text = "+", tooltip = "Add a folder" }
+                .AddClass(RowButtonClass)
+                .AddClass(AddButtonClass);
+
+            // The frame is an inner block, so the scope stripe of the row stays at the row's edge.
+            Add(new VisualElement().AddClass(BoxClass)
+                .AddChild(caption)
+                .AddChild(_list));
 
             Rebuild();
 
@@ -91,50 +88,72 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.Clear();
             _rows.Clear();
 
-            // The list is framed like a field even when empty, so it reads as a list to add to.
             var folders = SerializeReferenceSettings.ExcludedFolders;
+            if (!folders.Contains(_selected, StringComparer.Ordinal)) _selected = null;
+
+            // The box stays framed when empty: its one row says so and holds the "+".
             if (folders.Length == 0)
-                _list.Add(new Label("No excluded folders").AddClass(EmptyClass));
+            {
+                _list.Add(new VisualElement().AddClass(EntryClass)
+                    .AddChild(new Label("List is empty").AddClass(EmptyClass))
+                    .AddChild(_addButton));
+            }
 
             foreach (var path in folders)
             {
-                var label = new Label(path) { tooltip = path }.AddClass(PathClass);
-                label.RegisterCallback<ClickEvent>(_ => Edit(path));
+                var remove = new Button(() => Remove(path)) { text = "−", tooltip = "Remove this folder" }
+                    .AddClass(RowButtonClass)
+                    .AddClass(RemoveButtonClass);
 
-                var remove = new Button(() => Remove(path)) { text = "✕", tooltip = "Remove" }.AddClass(RemoveClass);
-
-                var row = new VisualElement().AddClass(EntryClass)
-                    .AddChild(label)
+                var row = new VisualElement { tooltip = path }.AddClass(EntryClass)
+                    .AddChild(new Label(path).AddClass(PathClass))
                     .AddChild(remove);
 
-                TintWhileOver(row, label, EntryHoverClass, null);
-                TintWhileOver(row, remove, EntryDangerClass, null);
+                row.RegisterCallback<ClickEvent>(evt =>
+                {
+                    // The buttons handle their own clicks; the row only selects and edits.
+                    if (evt.target is Button) return;
+
+                    if (evt.clickCount >= 2) Edit(path);
+                    else Select(path);
+                });
 
                 _list.Add(row);
                 _rows.Add((row, path));
             }
 
+            // Every other row keeps an empty slot where the last one has its "+", so the "−" buttons stay in one
+            // column.
+            for (var i = 0; i < _rows.Count; i++)
+            {
+                if (i == _rows.Count - 1) _rows[i].Row.Add(_addButton);
+                else _rows[i].Row.Add(new VisualElement().AddClass(RowButtonClass).AddClass(RowSlotClass));
+            }
+
+            UpdateSelection();
             RowsRebuilt?.Invoke();
         }
 
-        // USS cannot tint a row from a child's hover state, so the tint is driven from code.
-        private static void TintWhileOver(VisualElement entry, VisualElement zone, string tint, string fallback)
+        private void Select(string path)
         {
-            zone.RegisterCallback<PointerEnterEvent>(_ => SetTint(entry, tint));
-            zone.RegisterCallback<PointerLeaveEvent>(_ => SetTint(entry, fallback));
+            _selected = path;
+            UpdateSelection();
         }
 
-        private static void SetTint(VisualElement entry, string tint)
+        private void UpdateSelection()
         {
-            foreach (var cls in HoverTints) entry.EnableInClassList(cls, cls == tint);
+            foreach (var (row, path) in _rows)
+                row.EnableInClassList(EntrySelectedClass, string.Equals(path, _selected, StringComparison.Ordinal));
         }
 
         internal IEnumerable<(VisualElement Element, Action Activate, Action Remove)> GetNavTargets()
         {
-            yield return (_header, AddFolder, null);
-
+            // A focused row stands for its "−": Enter and Delete remove the folder, and the stylesheet lights the "−"
+            // up. Picking another folder for a row stays on the double click.
             foreach (var (row, path) in _rows)
-                yield return (row, () => Edit(path), () => Remove(path));
+                yield return (row, () => Remove(path), () => Remove(path));
+
+            yield return (_addButton, AddFolder, null);
         }
 
         private void AddFolder()

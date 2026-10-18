@@ -110,6 +110,9 @@
     --aspid-colors-status-error-tint:               rgba(220, 60, 60, 0.12);
     --aspid-colors-status-info-tint:                rgba(50, 120, 210, 0.12);
 
+    --aspid-colors-dots-1:                          var(--aspid-colors-status-success-text-dark);
+    --aspid-colors-dots-2:                          var(--aspid-colors-status-warning-text-dark);
+    --aspid-colors-dots-3:                          var(--aspid-colors-status-error-text-dark);
     --aspid-colors-status-success-blob:             rgb(178, 212, 189);
     --aspid-colors-status-warning-blob:             rgb(226, 200, 150);
     --aspid-colors-status-error-blob:               rgb(230, 180, 180);
