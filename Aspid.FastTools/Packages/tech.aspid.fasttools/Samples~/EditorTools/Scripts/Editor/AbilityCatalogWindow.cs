@@ -233,7 +233,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var effectField = new Button()
                 .SetFlexGrow(1)
                 .AddChild(effectName)
-                .AddChild(new VisualElement().AddClasses("unity-base-popup-field__arrow", "ability-effect__arrow"))
+                .AddChild(new VisualElement().AddClasses(EnumField.arrowUssClassName, "ability-effect__arrow"))
                 .AddClass("ability-effect");
 
             effectField.AddClicked(() => TypeSelectorWindow.Show(
