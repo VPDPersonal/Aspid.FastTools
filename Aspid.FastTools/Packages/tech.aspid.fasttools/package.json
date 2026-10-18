@@ -47,7 +47,7 @@
     },
     {
       "displayName": "SerializeReferences",
-      "description": "A turret firing polymorphic [SerializeReference] weapons at a dummy: the [TypeSelector] picker on single fields, lists, narrowed, nested and generic fields, plus deliberately broken assets for Fix, Smart Fix, Migrate all and the References tabs, and an IMGUI inspector. The scene's colliders need the built-in Physics module. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references",
+      "description": "A turret firing polymorphic [SerializeReference] weapons at a dummy: the [TypeSelector] picker on single fields, lists, narrowed, nested and generic fields, plus deliberately broken assets for Fix, Smart Fix, Migrate all and the References tabs, and an IMGUI inspector. The scene's colliders need the built-in Physics module. With Build / CI gate on Fail, the broken assets stop a build: repair them, delete the sample or add its folder to Excluded scan folders. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references",
       "path": "Samples~/SerializeReferences"
     },
     {
