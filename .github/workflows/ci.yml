@@ -368,7 +368,8 @@ jobs:
       # Exit code 0: every test passed; 2: some failed; anything else: the run broke before it wrote results.
       # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with
       # -aspidFastToolsStrictSetup. The project has no Code Coverage package, so coverage is off: it only added
-      # -debugCodeOptimization.
+      # -debugCodeOptimization. Both container variables go in one --dockerEnv, one per line: of repeated
+      # --dockerEnv flags the CLI keeps only the last.
       - id: nographics
         name: EditMode tests without graphics
         env: *unity-account
@@ -377,7 +378,7 @@ jobs:
           "$GAMECI" test --docker --engine=unity ci-unity-project --testPlatforms=editmode \
             --engineVersion="$UNITY_VERSION" --artifactsPath=unity-test-results/nographics \
             --customParameters="-aspidFastToolsStrictSetup -nographics -testCategory !Graphics" \
-            --dockerEnv=SKIP_ACTIVATION=true --dockerEnv=COVERAGE_ENABLED=false || code=$?
+            --dockerEnv="$(printf 'SKIP_ACTIVATION=true\nCOVERAGE_ENABLED=false')" || code=$?
           echo "exit-code=$code" >> "$GITHUB_OUTPUT"
 
       - id: graphics
@@ -388,7 +389,7 @@ jobs:
           "$GAMECI" test --docker --engine=unity ci-unity-project --testPlatforms=editmode \
             --engineVersion="$UNITY_VERSION" --artifactsPath=unity-test-results/graphics \
             --customParameters="-aspidFastToolsStrictSetup -testCategory Graphics" \
-            --dockerEnv=SKIP_ACTIVATION=true --dockerEnv=COVERAGE_ENABLED=false || code=$?
+            --dockerEnv="$(printf 'SKIP_ACTIVATION=true\nCOVERAGE_ENABLED=false')" || code=$?
           echo "exit-code=$code" >> "$GITHUB_OUTPUT"
 
       # Also after a failed or cancelled pass, and after a failed activation that may still hold a seat: a seat that
