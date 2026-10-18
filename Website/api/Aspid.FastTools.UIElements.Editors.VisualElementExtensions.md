@@ -54,7 +54,7 @@ A [`VisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReferenc
 
 #### Remarks
 
-<p>The element declares the <code>--aspid-colors-*</code>, <code>--aspid-radius-*</code> and <code>--aspid-icons-*</code> tokens of the palette: the dark one, or the light one on the light editor skin. A built-in theme or a theme of the project overrides them, and the element follows a change of the theme or the skin without a rebuild.</p>
+<p>The element declares the tokens of the palette, such as <code>--aspid-colors-surface-card</code>: the dark palette, or the light one on the light editor skin. A built-in theme or a theme of the project overrides them, and the element follows a change of the theme or the skin without a rebuild.</p>
 <p>Call it once per element, usually on [`rootVisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorWindow-rootVisualElement.html), and add your own style sheets after it, so that they read the tokens.</p>
 
 ### AddOpenScriptCommand\<T\>\(T, Object\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_}

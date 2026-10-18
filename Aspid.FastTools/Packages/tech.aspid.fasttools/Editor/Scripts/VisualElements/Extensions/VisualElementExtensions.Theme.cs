@@ -12,9 +12,9 @@ namespace Aspid.FastTools.UIElements.Editors
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The element declares the <c>--aspid-colors-*</c>, <c>--aspid-radius-*</c> and <c>--aspid-icons-*</c> tokens of
-        /// the palette: the dark one, or the light one on the light editor skin. A built-in theme or a theme of the
-        /// project overrides them, and the element follows a change of the theme or the skin without a rebuild.
+        /// The element declares the tokens of the palette, such as <c>--aspid-colors-surface-card</c>: the dark palette,
+        /// or the light one on the light editor skin. A built-in theme or a theme of the project overrides them, and the
+        /// element follows a change of the theme or the skin without a rebuild.
         /// </para>
         /// <para>
         /// Call it once per element, usually on <see cref="UnityEditor.EditorWindow.rootVisualElement"/>, and add your
