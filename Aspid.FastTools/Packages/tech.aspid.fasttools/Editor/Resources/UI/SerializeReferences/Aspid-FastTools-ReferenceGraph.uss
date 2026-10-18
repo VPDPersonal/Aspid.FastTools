@@ -40,12 +40,15 @@
     align-items:                                          center;
     padding:                                              3px 8px 3px 4px;
     margin:                                               0;
+
+    /* An action, not a status: the band takes a lighter shade of its label's accent, so a hover brightens the label. */
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-accent-text-light);
 }
 
 .aspid-fasttools-reference-graph__rescan .aspid-fasttools-gradient-button__label {
     margin-right:                                         8px;
     -unity-text-align:                                    middle-left;
-    color:                                                var(--aspid-colors-status-success-text-dark);
+    color:                                                var(--aspid-colors-accent-text-dark);
 }
 
 .aspid-fasttools-reference-graph__rescan-icon {
@@ -53,7 +56,7 @@
     width:                                                14px;
     height:                                               14px;
     margin:                                               0 6px 0 4px;
-    -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-dark);
+    -unity-background-image-tint-color:                   var(--aspid-colors-accent-text-dark);
 }
 
 /* Stacked from the top: ReferenceEmptyStateLayout sets the top padding that puts the icon at the middle of the
@@ -205,7 +208,9 @@
     -unity-font-style:                                    italic;
 }
 
-/* The node scope outranks the gradient button's :root layout rules. */
+/* The node scope outranks the gradient button's :root layout rules. A hovered or focused band recolors its label with
+   the accent, so the neutral band takes a text shade brighter than the label's own: the label lights up instead of
+   dimming like a disabled one. */
 .aspid-fasttools-reference-graph__node
     .aspid-fasttools-reference-graph__node-band {
     flex-direction:                                       row;
@@ -214,7 +219,7 @@
     margin:                                               0;
     padding:                                              4px 4px;
     --aspid-fasttools-colors-gradient_button-bg:          rgba(0, 0, 0, 0);
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-shade-lightness);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-light);
 }
 
 .aspid-fasttools-reference-graph__node
@@ -228,8 +233,9 @@
     color:                                                var(--aspid-colors-text-dark);
 }
 
+/* The label rests a shade under the band's accent, so a hover brightens it while the wash keeps its full colour. */
 .aspid-fasttools-reference-graph__node-band--missing .aspid-fasttools-gradient-button__label {
-    color:                                                var(--aspid-colors-status-warning-text-light);
+    color:                                                var(--aspid-colors-status-warning-text-dark);
 }
 
 .aspid-fasttools-reference-graph__node
@@ -238,7 +244,7 @@
 }
 
 .aspid-fasttools-reference-graph__node-band--migrate .aspid-fasttools-gradient-button__label {
-    color:                                                var(--aspid-colors-status-info-text-light);
+    color:                                                var(--aspid-colors-status-info-text-dark);
 }
 
 /* USS cannot select the sibling sweep from button hover; code mirrors hover onto the card modifier. */
@@ -322,9 +328,9 @@
 
 /* The keyboard focus on a plain action button looks like its hover, with the stronger border. */
 Button.aspid-fasttools-action-button.aspid-fasttools-reference-graph__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-success-text-light);
-    color:                                                var(--aspid-colors-status-success-text-light);
-    background-color:                                     var(--aspid-colors-status-success-tint);
+    border-color:                                         var(--aspid-colors-accent-text-light);
+    color:                                                var(--aspid-colors-accent-text-light);
+    background-color:                                     var(--aspid-colors-accent-tint);
 }
 
 Button.aspid-fasttools-action-button--danger.aspid-fasttools-reference-graph__nav-target--focused {

@@ -1,0 +1,5 @@
+/* A theme of the project that recolors one palette token, so tests can see it win over the built-in palette. Its
+   label lists it among the custom themes; it lies outside Assets, so the Theme dropdown does not. */
+:root {
+    --aspid-colors-bg-dark:                                rgb(1, 2, 3);
+}

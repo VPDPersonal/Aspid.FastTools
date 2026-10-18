@@ -1,11 +1,13 @@
 // Check the WCAG contrast of the Editor palette without Unity: text against the background it sits on, with
 // Default-Dark on either skin, Default-Light in an Aspid window on the light skin, and the type picker dropdown's
-// overrides on either skin. Text needs 4.5:1; large text, glyph icons and UI borders need 3:1.
+// overrides on either skin; then the same pairs once more under each built-in theme of UI/Themes.
+// Text needs 4.5:1; large text, glyph icons and UI borders need 3:1.
 //   node scripts/check-contrast.mjs [--all]
 // Pairs come from two sources: the list below, for a background and a text set in different rules (a component box and
 // the labels in it), and every package rule that sets both `color` and `background-color`, checked in the contexts its
 // sheet is drawn in. A pair with a `baseline` is known to be below the minimum: it passes while it stays at that ratio and
-// fails if it drops lower.
+// fails if it drops lower. A baseline key is a context name, or a theme's prefix and a context name ('unity/dark') for a
+// theme that departs from the minimum on purpose.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +18,7 @@ const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const UI = join(PACKAGE, 'Editor/Resources/UI');
 const DARK_SHEET = join(UI, 'Aspid-FastTools-Default-Dark.uss');
 const LIGHT_SHEET = join(UI, 'Aspid-FastTools-Default-Light.uss');
+const THEMES = join(UI, 'Themes');
 const TYPE_SELECTOR_SHEET = join(UI, 'Types/Aspid-FastTools-TypeSelector.uss');
 const INSPECTOR_NOTICE_SHEET = join(UI, 'Components/Aspid-FastTools-InspectorNotice.uss');
 const DROPDOWN_SELECTOR = '.aspid-fasttools-type-selector.aspid-fasttools-type-selector--dropdown';
@@ -64,8 +67,11 @@ const PAIRS = [
   { where: 'card title', fg: 'text-lightness', bg: CARD, min: TEXT, in: WINDOW },
   { where: 'card caption', fg: 'text-light', bg: CARD, min: TEXT, in: WINDOW },
   { where: 'card description', fg: 'text-dark', bg: CARD, min: TEXT, in: WINDOW },
-  { where: 'card link', fg: 'status-success-text-dark', bg: CARD, min: TEXT, in: WINDOW },
-  { where: 'card link hover', fg: 'status-success-text-light', bg: CARD, min: TEXT, in: WINDOW },
+  { where: 'card link', fg: 'accent-text-dark', bg: CARD, min: TEXT, in: WINDOW },
+  { where: 'card link hover', fg: 'accent-text-light', bg: CARD, min: TEXT, in: WINDOW },
+  { where: 'hovered action', fg: 'accent-text-light', bg: [...CARD, 'accent-tint'], min: TEXT, in: WINDOW },
+  { where: 'focus border', fg: 'accent-text-light', bg: CARD, min: LARGE, in: WINDOW },
+  { where: 'card success label', fg: 'status-success-text-light', bg: CARD, min: TEXT, in: WINDOW },
   ...['warning', 'info'].flatMap(s => [
     { where: `card ${s} action`, fg: `status-${s}-text-dark`, bg: CARD, min: TEXT, in: WINDOW },
     { where: `card ${s} label`, fg: `status-${s}-text-light`, bg: CARD, min: TEXT, in: WINDOW },
@@ -73,7 +79,11 @@ const PAIRS = [
   ]),
   { where: 'card error', fg: 'status-error-text-light', bg: CARD, min: TEXT, in: WINDOW },
   { where: 'settings project stripe', fg: 'scope-project', bg: CARD, min: LARGE, in: WINDOW },
-  { where: 'settings list frame', fg: 'control-border', bg: CARD, min: LARGE, in: WINDOW },
+  // The Unity theme copies the Inspector's dark control borders, which sit far under 3:1 on its grey cards.
+  {
+    where: 'settings list frame', fg: 'control-border', bg: CARD, min: LARGE, in: WINDOW,
+    baseline: { 'unity/dark': 1.64, 'unity/light-window': 1.7 },
+  },
   { where: 'settings list entry', fg: 'text-light', bg: ['surface-canvas', 'surface-card-dim'], min: TEXT, in: WINDOW },
   { where: 'settings list empty', fg: 'text-dark', bg: ['surface-canvas', 'surface-card-dim'], min: TEXT, in: WINDOW },
   { where: 'settings per-user stripe', fg: 'scope-user', bg: CARD, min: LARGE, in: WINDOW },
@@ -105,7 +115,7 @@ const PAIRS = [
   { where: 'picker favorite star', fg: 'status-warning-text-light', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
   { where: 'picker favorite star hover', fg: 'status-warning-text-lightness', bg: ROW_HOVER, min: LARGE, in: DROPDOWN },
   { where: 'picker favorite toggle', fg: 'text-darkness', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
-  { where: 'picker check mark', fg: 'status-success-text-dark', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
+  { where: 'picker check mark', fg: 'accent-text-dark', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
 ];
 
 // --- USS parsing ---
@@ -133,13 +143,27 @@ const dropdownTokens = tokens(TYPE_SELECTOR_SHEET, DROPDOWN_SELECTOR);
 const lightDropdownTokens = tokens(TYPE_SELECTOR_SHEET, LIGHT_DROPDOWN_SELECTOR);
 
 // Custom properties of one element resolve against that element's own values, so each context is one flat map.
-const CONTEXTS = {
-  'dark': { ...darkTokens, ...UNITY.dark },
-  'light-window': { ...darkTokens, ...lightTokens, ...UNITY.light },
-  'light-inspector': { ...darkTokens, ...UNITY.light },
-  'dark-dropdown': { ...darkTokens, ...UNITY.dark, ...dropdownTokens },
-  'light-dropdown': { ...darkTokens, ...UNITY.light, ...dropdownTokens, ...lightDropdownTokens },
-};
+// A theme sheet comes after both palettes: its :root ties with Default-Light's class and wins by order, and its own
+// light block follows its :root. The dropdown's two-class rules outrank both blocks.
+const contexts = ({ root = {}, light = {} } = {}) => ({
+  'dark': { ...darkTokens, ...root, ...UNITY.dark },
+  'light-window': { ...darkTokens, ...lightTokens, ...root, ...light, ...UNITY.light },
+  'light-inspector': { ...darkTokens, ...root, ...UNITY.light },
+  'dark-dropdown': { ...darkTokens, ...root, ...UNITY.dark, ...dropdownTokens },
+  'light-dropdown': { ...darkTokens, ...root, ...UNITY.light, ...dropdownTokens, ...lightDropdownTokens },
+});
+
+const CONTEXTS = contexts();
+
+// Each built-in theme, by the name after the last "-" of its file.
+const THEME_CONTEXTS = readdirSync(THEMES).filter(name => name.endsWith('.uss')).map(name => {
+  const file = join(THEMES, name);
+  const theme = { root: tokens(file, ':root'), light: tokens(file, '.aspid-fasttools-palette--light') };
+  // A token of Default-Light that the light block leaves out would take the dark value of :root in a light window.
+  const missing = Object.keys(theme.root).filter(token => token in lightTokens && !(token in theme.light));
+  if (missing.length) throw new Error(`${file}: the light block must repeat ${missing.join(', ')}`);
+  return { prefix: `${name.slice(name.lastIndexOf('-') + 1, -'.uss'.length).toLowerCase()}/`, contexts: contexts(theme) };
+});
 
 // --- Colours ---
 
@@ -245,14 +269,16 @@ function isOpaque(value) {
 // --- Report ---
 
 const showAll = process.argv.includes('--all');
-const checks = [...PAIRS, ...ruleChecks].flatMap(pair => pair.in.map(name => ({ ...pair, name })));
+const PALETTES = [{ prefix: '', contexts: CONTEXTS }, ...THEME_CONTEXTS];
+const checks = PALETTES.flatMap(palette => [...PAIRS, ...ruleChecks]
+  .flatMap(pair => pair.in.map(name => ({ ...pair, name, palette }))));
 let failures = 0;
 let known = 0;
 
 for (const check of checks) {
-  const context = CONTEXTS[check.name];
+  const context = check.palette.contexts[check.name];
   const fg = typeof check.fg === 'object' ? check.fg[check.name] : check.fg;
-  const baseline = check.baseline?.[check.name];
+  const baseline = check.baseline?.[check.palette.prefix + check.name] ?? check.baseline?.[check.name];
   let value, error;
   const name = check.fromRule ? v => v : expand;
   try {
@@ -272,7 +298,7 @@ for (const check of checks) {
   if (status === 'base') known++;
   if (status === 'ok' && !showAll) continue;
   console.log(`${status.padEnd(4)} ${error ? 'error' : shown.toFixed(2).padStart(5)} / ${check.min}  ` +
-    `${check.name.padEnd(15)} ${check.where}: ${fg} on ${[].concat(check.bg).join(' + ')}` +
+    `${(check.palette.prefix + check.name).padEnd(24)} ${check.where}: ${fg} on ${[].concat(check.bg).join(' + ')}` +
     (error ? ` (${error})` : '') + (status === 'base' ? ` (baseline ${baseline})` : ''));
 }
 

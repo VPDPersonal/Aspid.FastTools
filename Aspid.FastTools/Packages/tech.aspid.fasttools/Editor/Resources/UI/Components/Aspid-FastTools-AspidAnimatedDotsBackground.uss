@@ -5,16 +5,16 @@
     bottom:                                                     0;
     position:                                                   absolute;
 
-    --aspid-fasttools-colors-dot_blob-color_1:                  var(--aspid-colors-status-success-text-dark);
-    --aspid-fasttools-colors-dot_blob-color_2:                  var(--aspid-colors-status-warning-text-dark);
-    --aspid-fasttools-colors-dot_blob-color_3:                  var(--aspid-colors-status-error-text-dark);
+    --aspid-fasttools-colors-dot_blob-color_1:                  var(--aspid-colors-dots-1);
+    --aspid-fasttools-colors-dot_blob-color_2:                  var(--aspid-colors-dots-2);
+    --aspid-fasttools-colors-dot_blob-color_3:                  var(--aspid-colors-dots-3);
 
     --aspid-fasttools-colors-dot_blob-info:                     var(--aspid-colors-status-info-blob);
     --aspid-fasttools-colors-dot_blob-success:                  var(--aspid-colors-status-success-blob);
     --aspid-fasttools-colors-dot_blob-warning:                  var(--aspid-colors-status-warning-blob);
     --aspid-fasttools-colors-dot_blob-error:                    var(--aspid-colors-status-error-blob);
 
-    --aspid-fasttools-metrics-dot_radius:                       1.55;
+    --aspid-fasttools-metrics-dot_radius:                       var(--aspid-dots-radius);
     --aspid-fasttools-metrics-dot_spacing:                      18;
     --aspid-fasttools-metrics-dot_scale_reference:              420;
 }

@@ -103,7 +103,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             this.AddStyleSheetFromResources(StyleSheetPath);
 
             _colors = new AspidAnimatedTitleColorsStyle(
-                this, preset.Color1, preset.Color2, preset.Color3, onChanged: null);
+                this, preset.Color1, preset.Color2, preset.Color3, onChanged: OnColorsChanged);
 
             _colorAnimation = new AspidAnimatedTitleColorAnimationStyle(
                 this, preset.ColorStride, preset.ColorSpeed, onChanged: null);
@@ -134,11 +134,40 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _animation.Pause();
         }
 
-        // With the "Animated background" setting off the letters keep their last frame and nothing ticks.
+        // With the "Animated background" setting off nothing ticks and the title rests: the letters sit on one line in
+        // the middle colour of the palette, the accent of the title.
         private void ApplyAnimationSetting()
         {
-            if (AspidAnimatedDotsBackgroundSettings.Enabled) _animation.Resume();
-            else _animation.Pause();
+            if (AspidAnimatedDotsBackgroundSettings.Enabled)
+            {
+                _animation.Resume();
+                return;
+            }
+
+            _animation.Pause();
+            ApplyRest();
+        }
+
+        // A theme change while the title rests recolors it; while it animates the next tick does. The colour store calls
+        // this from its constructor, before the timer exists, and before it saves a new value, so the recolor waits a
+        // frame and reads the saved colours.
+        private void OnColorsChanged()
+        {
+            if (_animation is null || _animation.isActive) return;
+
+            schedule.Execute(() =>
+            {
+                if (!_animation.isActive) ApplyRest();
+            });
+        }
+
+        private void ApplyRest()
+        {
+            foreach (var label in _chars)
+            {
+                label.style.color = _colors.Color2;
+                label.style.translate = new Translate(0f, 0f);
+            }
         }
 
         private void Rebuild()
@@ -172,6 +201,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             }
 
             _chars = charsList.ToArray();
+            if (!_animation.isActive) ApplyRest();
         }
 
         private void UpdateAnimation()

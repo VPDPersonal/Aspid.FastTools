@@ -38,6 +38,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private float _time = (float)EditorApplication.timeSinceStartup;
         private double _lastTick = EditorApplication.timeSinceStartup;
         private IVisualElementScheduledItem _animation;
+        private bool _dotsVisible = true;
 
         [UxmlAttribute]
         public StatusStyle.Type Status
@@ -113,6 +114,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         internal bool IsAnimating => _animation.isActive;
 
+        internal bool AreDotsVisible => _dotsVisible;
+
         private void OnAttachToPanel(AttachToPanelEvent _)
         {
             AspidAnimatedDotsBackgroundSettings.Changed += UpdateAnimation;
@@ -125,10 +128,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _animation.Pause();
         }
 
-        // With the setting off the field keeps its last frame and repaints only when the layout changes.
+        // With the setting off the dots are not drawn and their timer stops. The element stays: a host may paint the
+        // window's canvas on it, and that fill must not go with the dots.
         private void UpdateAnimation()
         {
-            if (AspidAnimatedDotsBackgroundSettings.Enabled) _animation.Resume();
+            var enabled = AspidAnimatedDotsBackgroundSettings.Enabled;
+            if (_dotsVisible != enabled)
+            {
+                _dotsVisible = enabled;
+                MarkDirtyRepaint();
+            }
+
+            if (enabled) _animation.Resume();
             else _animation.Pause();
         }
 
@@ -142,6 +153,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             // or its window is neither focused nor under the pointer. A redraw of the whole window 20 times a second
             // is not free.
             if (!InternalEditorUtility.isApplicationActive || !IsWatched()) return;
+
+            // A theme that hides the dots (a zero radius) leaves nothing to redraw.
+            if (!(_size.DotRadius > 0f)) return;
 
             _time += Mathf.Min(elapsed, MaxTickStep);
             MarkDirtyRepaint();
@@ -161,6 +175,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private void OnGenerateVisualContent(MeshGenerationContext context)
         {
+            if (!_dotsVisible) return;
+
             var rect = contentRect;
             if (rect.width <= 0f || rect.height <= 0f) return;
             if (!(_size.ScaleReference > 0f)) return;

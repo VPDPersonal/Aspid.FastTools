@@ -2,96 +2,65 @@
     margin-bottom:                                        2px;
 }
 
-/* The transparent border reserves the space of the keyboard focus border, so the rows do not shift on focus. */
-.aspid-fasttools-excluded-folders__header {
-
-    margin-left:                                          9px;
-    flex-direction:                                       row;
-    align-items:                                          center;
-    min-height:                                           26px;
-    padding:                                              1px 3px 1px 7px;
+/* The caption and the list share one framed block, as the fields of an EnumValues row do. The block starts so that
+   the caption's text sits where the captions of the other rows sit, and it ends where the control column ends. */
+.aspid-fasttools-excluded-folders__box {
+    margin:                                               2px 4px 2px 8px;
+    padding:                                              0 4px 4px 4px;
     border-width:                                         1px;
-    border-color:                                         rgba(0, 0, 0, 0);
-    border-radius:                                        6px;
-    transition-property:                                  background-color;
-    transition-duration:                                  0.25s;
-    transition-timing-function:                           ease-out;
+    border-color:                                         var(--aspid-colors-control-border);
+    border-radius:                                        var(--aspid-radius-card);
 }
 
-.aspid-fasttools-excluded-folders__header--add {
-    background-color:                                     var(--aspid-colors-bg-dark);
-}
-
-.aspid-fasttools-excluded-folders__header-caption {
-    flex-grow:                                            1;
+.aspid-fasttools-excluded-folders__caption {
+    min-height:                                           24px;
+    margin:                                               0;
+    padding:                                              0 0 0 5px;
     color:                                                var(--aspid-colors-text-light);
     -unity-text-align:                                    middle-left;
 }
 
-/* The folders sit in a framed box under the caption, bordered like the drop-downs and object fields, so they read as
-   a list. It starts where the caption's text starts and ends where the control column ends. */
 .aspid-fasttools-excluded-folders__list {
-    margin:                                               2px 4px 4px 19px;
-    padding:                                              2px;
+    margin:                                               0;
+    padding:                                              2px 0;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
     background-color:                                     var(--aspid-colors-surface-card-dim);
 }
 
 .aspid-fasttools-excluded-folders__empty {
-    min-height:                                           22px;
-    padding:                                              1px 8px;
+    flex-grow:                                            1;
+    padding:                                              0;
     color:                                                var(--aspid-colors-text-dark);
     -unity-text-align:                                    middle-left;
 }
 
-.aspid-fasttools-excluded-folders__add {
-    flex-shrink:                                          0;
-    width:                                                18px;
-    height:                                               18px;
-    margin:                                               0 2px 0 4px;
-    padding:                                              0;
-    border-width:                                         0;
-    border-radius:                                        3px;
-    background-color:                                     rgba(0, 0, 0, 0);
-    color:                                                var(--aspid-colors-text-light);
-    font-size:                                            16px;
-    -unity-text-align:                                    middle-center;
-}
-
-.aspid-fasttools-excluded-folders__header--add .aspid-fasttools-excluded-folders__add {
-    color:                                                var(--aspid-colors-status-success-text-light);
-}
-
-/* Code mirrors child hover onto the row because USS cannot select a parent from child hover. */
+/* The transparent border reserves the space of the keyboard focus border, so the rows do not shift on focus. */
 .aspid-fasttools-excluded-folders__entry {
-
     flex-direction:                                       row;
     align-items:                                          center;
     min-height:                                           22px;
-    padding:                                              1px 3px 1px 8px;
+    margin:                                               0 2px;
+    padding:                                              0 1px 0 6px;
     border-width:                                         1px;
     border-color:                                         rgba(0, 0, 0, 0);
-    border-radius:                                        6px;
-    transition-property:                                  background-color;
-    transition-duration:                                  0.25s;
-    transition-timing-function:                           ease-out;
+    border-radius:                                        var(--aspid-radius-control);
 }
 
-.aspid-fasttools-excluded-folders__entry--hover {
-    background-color:                                     var(--aspid-colors-bg-dark);
+.aspid-fasttools-excluded-folders__entry:hover {
+    background-color:                                     var(--aspid-colors-overlay-hover);
 }
 
-.aspid-fasttools-excluded-folders__entry--danger {
-    background-color:                                     var(--aspid-colors-status-error-tint);
+.aspid-fasttools-excluded-folders__entry--selected,
+.aspid-fasttools-excluded-folders__entry--selected:hover {
+    background-color:                                     var(--aspid-colors-accent-shade-dark);
 }
 
 .aspid-fasttools-excluded-folders__path {
     flex-grow:                                            1;
     flex-shrink:                                          1;
     min-width:                                            0;
-    align-self:                                           stretch;
     color:                                                var(--aspid-colors-text-light);
     text-overflow:                                        ellipsis;
     overflow:                                             hidden;
@@ -99,21 +68,57 @@
     -unity-text-align:                                    middle-left;
 }
 
-.aspid-fasttools-excluded-folders__remove {
+.aspid-fasttools-excluded-folders__entry--selected .aspid-fasttools-excluded-folders__path {
+    color:                                                var(--aspid-colors-text-lightness);
+}
+
+/* The "−" of a row and the "+" of the last row. The transparent border reserves the space of the keyboard focus
+   border. */
+.aspid-fasttools-excluded-folders__row-button {
     flex-shrink:                                          0;
-    width:                                                18px;
+    width:                                                20px;
     height:                                               18px;
-    margin:                                               0 2px 0 4px;
-    padding:                                              0;
-    border-width:                                         0;
+    margin:                                               0 0 0 2px;
+    /* The font sets "+" and "−" 1px under the middle of the line and half a pixel left, so the padding centres them. */
+    padding:                                              0 0 2px 1px;
+    border-width:                                         1px;
+    border-color:                                         rgba(0, 0, 0, 0);
     border-radius:                                        3px;
     background-color:                                     rgba(0, 0, 0, 0);
     color:                                                var(--aspid-colors-text-dark);
-    font-size:                                            12px;
+    font-size:                                            14px;
     -unity-text-align:                                    middle-center;
 }
 
-.aspid-fasttools-excluded-folders__entry--danger .aspid-fasttools-excluded-folders__remove {
-    background-color:                                     var(--aspid-colors-status-error-light);
-    color:                                                var(--aspid-colors-status-error-text-lightness);
+/* Holds the place of the "+" on every row; on the last row the "+" layer draws over it. */
+.aspid-fasttools-excluded-folders__row-slot {
+    border-width:                                         0;
+}
+
+/* The layer of the "+": it covers the last row's border box behind the row's text, so the keyboard focus outlines and
+   fills the whole row, and its border and padding put the "+" exactly over the row's slot. */
+.aspid-fasttools-excluded-folders__add-target {
+    position:                                             absolute;
+    left:                                                 -1px;
+    right:                                                -1px;
+    top:                                                  -1px;
+    bottom:                                               -1px;
+    flex-direction:                                       row;
+    justify-content:                                      flex-end;
+    align-items:                                          center;
+    padding:                                              0 1px 0 0;
+    border-width:                                         1px;
+    border-color:                                         rgba(0, 0, 0, 0);
+    border-radius:                                        var(--aspid-radius-control);
+}
+
+.aspid-fasttools-excluded-folders__add:hover {
+    background-color:                                     var(--aspid-colors-overlay-hover);
+    color:                                                var(--aspid-colors-text-lightness);
+}
+
+/* Removing has no Undo, so the "−" turns red on hover. */
+.aspid-fasttools-excluded-folders__remove:hover {
+    background-color:                                     var(--aspid-colors-status-error-tint);
+    color:                                                var(--aspid-colors-status-error-text-light);
 }

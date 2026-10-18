@@ -44,7 +44,6 @@ namespace Aspid.FastTools.Editors
         internal const string ControlsClass = "aspid-fasttools-settings__controls";
         internal const string ControlsGapClass = ControlsClass + "-gap";
         internal const string ActionDangerClass = "aspid-fasttools-settings__action--danger";
-        internal const string ActionInfoClass = "aspid-fasttools-settings__action--info";
 
         internal static T AsSurface<T>(this T element) where T : VisualElement =>
             element.AddStyleSheetFromResources(StyleSheetPath).AddClass(RootClass);
@@ -214,10 +213,10 @@ namespace Aspid.FastTools.Editors
                 {
                     text = "Per-user",
                     tooltip = "Reset your per-user settings to defaults: Breakage detection on, "
-                        + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, no theme override, auto-show Welcome on, animated background on, type icons on.\n"
+                        + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, Default theme, auto-show Welcome on, animated background on, type icons on, field stripes on.\n"
                         + "Only this machine; the saved Favorites / Recent lists are kept.",
                 };
-                row.AddChild(user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass));
+                row.AddChild(user.AddClass(ActionClass).AddClass(UserScopeClass));
             }
 
             return new VisualElement().AddClass(FooterClass)
@@ -247,10 +246,11 @@ namespace Aspid.FastTools.Editors
                 + "• Breakage detection: On\n"
                 + "• Favorites section: On\n"
                 + $"• Recent items: {TypeSelectorSettings.DefaultRecentsCapacity}\n"
-                + "• Theme override: none\n"
+                + "• Theme: Default\n"
                 + "• Auto-show Welcome: On\n"
                 + "• Animated background: On\n"
-                + "• Type icons: On\n\n"
+                + "• Type icons: On\n"
+                + "• Field stripes: On\n\n"
                 + "Only this machine is affected; the saved Favorites / Recent lists are kept.",
                 "Reset",
                 "Cancel");
@@ -259,10 +259,11 @@ namespace Aspid.FastTools.Editors
 
             SerializeReferenceSettings.ResetUserToDefaults();
             TypeSelectorSettings.ResetToDefaults();
-            AspidThemeSettings.OverrideStyleSheet = null;
+            AspidThemeSettings.Theme = AspidTheme.Default;
             WelcomeSettings.ResetToDefaults();
             AspidAnimatedDotsBackgroundSettings.ResetToDefaults();
             TypeFieldIconSettings.ResetToDefaults();
+            FieldStripeSettings.ResetToDefaults();
         }
 
         internal static void SyncFromSettings<TControl, TValue>(
