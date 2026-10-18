@@ -25,6 +25,38 @@ public static class VisualElementExtensions
 
 ## Methods
 
+### AddAspidTheme\<T\>\(T\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidTheme__1___0_}
+
+Styles <code class="paramref">element</code> and its children with the Aspid.FastTools palette and the theme picked under
+<code>Appearance</code> in the FastTools settings.
+
+```csharp
+public static T AddAspidTheme<T>(this T element) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element that declares the tokens.
+
+#### Returns
+
+ T
+
+<code class="paramref">element</code> for chaining.
+
+#### Type Parameters
+
+`T` 
+
+A [`VisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.html) element to configure.
+
+#### Remarks
+
+<p>The element declares the <code>--aspid-colors-*</code>, <code>--aspid-radius-*</code> and <code>--aspid-icons-*</code> tokens of the palette: the dark one, or the light one on the light editor skin. A built-in theme or a theme of the project overrides them, and the element follows a change of the theme or the skin without a rebuild.</p>
+<p>Call it once per element, usually on [`rootVisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorWindow-rootVisualElement.html), and add your own style sheets after it, so that they read the tokens.</p>
+
 ### AddOpenScriptCommand\<T\>\(T, Object\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_}
 
 Registers a double-click handler that opens <code class="paramref">obj</code>'s script in the IDE.

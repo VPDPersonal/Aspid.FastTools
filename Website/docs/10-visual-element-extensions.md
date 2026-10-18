@@ -230,6 +230,22 @@ var window = title.GetOwnerWindow();
 
 Returns the element’s window. If none is found, falls back to the focused window, then the window under the pointer; returns <code lang="csharp">null</code> if none is available.
 
+### The FastTools theme
+
+```csharp
+rootVisualElement
+    .AddAspidTheme()
+    .AddStyleSheet(catalogSheet);
+```
+
+The window takes the colours of the FastTools windows: the theme picked under **Appearance** in the FastTools settings, a theme of the project included, and the light palette on the light editor skin. A new pick recolours it at once. Colour your own style sheet with the `--aspid-colors-*` tokens:
+
+```css
+.ability-sidebar {
+    background-color: var(--aspid-colors-surface-card);
+}
+```
+
 ## Package sample
 
 The catalog window and the <code lang="class-name">AbilityConfig</code> inspector in the [EditorTools](../tutorials/EditorTools/README.md) sample are built with these extensions.

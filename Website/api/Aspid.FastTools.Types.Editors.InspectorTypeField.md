@@ -46,6 +46,7 @@ INotifyValueChanged\<Type\>
 
 #### Extension Methods
 
+[VisualElementExtensions.AddAspidTheme\<InspectorTypeField\>\(InspectorTypeField\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidTheme__1___0_),
 [VisualElementExtensions.AddOpenScriptCommand\<InspectorTypeField\>\(InspectorTypeField, Object\)](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_),
 [INotifyValueChangedExtensions.AddValueChanged\<InspectorTypeField, TValue\>\(InspectorTypeField, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
 [IBindableExtensions.BindPropertyTo\<InspectorTypeField\>\(InspectorTypeField, SerializedProperty\)](Aspid.FastTools.UIElements.Editors.IBindableExtensions.md#Aspid_FastTools_UIElements_Editors_IBindableExtensions_BindPropertyTo__1___0_UnityEditor_SerializedProperty_),
