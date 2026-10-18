@@ -38,6 +38,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static StyleSheet ThemeStyleSheet => Theme switch
         {
             AspidTheme.Venom => Resources.Load<StyleSheet>(AspidStyles.VenomThemeStyleSheet),
+            AspidTheme.Unity => Resources.Load<StyleSheet>(AspidStyles.UnityThemeStyleSheet),
             _ => null,
         };
 

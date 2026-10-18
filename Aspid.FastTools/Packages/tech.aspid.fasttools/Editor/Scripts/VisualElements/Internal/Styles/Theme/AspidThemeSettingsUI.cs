@@ -59,7 +59,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             {
                 tooltip = "The colors of the Aspid FastTools windows, settings pages and type picker.\n"
                     + "Default: near-black cards with the green accent. Venom: the blue-black palette of the "
-                    + "documentation site with its blue accent. The success status stays green in both.\n"
+                    + "documentation site with its blue accent. Unity: the greys of Unity's editor skin with the "
+                    + "green accent. The success status stays green in all of them.\n"
                     + "Each theme has a light variant for the light editor skin. A theme override is layered on top.\n"
                     + "Per-user setting — stored locally, for every project on this machine.",
             };

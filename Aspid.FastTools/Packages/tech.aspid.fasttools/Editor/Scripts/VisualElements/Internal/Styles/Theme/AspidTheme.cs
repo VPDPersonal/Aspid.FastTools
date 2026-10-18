@@ -6,5 +6,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     {
         Default,
         Venom,
+        Unity,
     }
 }
