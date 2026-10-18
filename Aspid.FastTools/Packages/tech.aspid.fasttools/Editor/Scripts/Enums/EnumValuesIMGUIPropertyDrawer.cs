@@ -15,7 +15,7 @@ namespace Aspid.FastTools.Enums.Editors
         private const float SeamPadding = 2f;
         private const int StyleStateCount = 8;
 
-        private static int _plainFoldoutHeaderDepth;
+        private static bool _isPlainFoldoutHeader;
         private static FontStyle _savedFontStyle;
         private static Texture2D _transparentTexture;
         private static readonly GUIStyleState[] _states = new GUIStyleState[StyleStateCount];
@@ -110,13 +110,13 @@ namespace Aspid.FastTools.Enums.Editors
         }
 
         // Unity draws the list header with EditorStyles.foldoutHeader: bold text on a band. UI Toolkit shows a plain
-        // foldout, so the style is swapped while the list draws and restored right after. The depth counter keeps
-        // the saved original when an EnumValues is nested inside another one.
+        // foldout, so the style is swapped while the list draws and restored right after. The elements suspend the
+        // swap, so a list inside an element value keeps the stock header.
         // The background must stay non-null: a style without one is painted from the editor USS, band included.
         private static void DrawValues(Rect rect, SerializedProperty valuesProperty)
         {
-            var style = EditorStyles.foldoutHeader;
-            if (_plainFoldoutHeaderDepth++ is 0) ApplyPlainFoldoutHeader(style);
+            var wasPlain = _isPlainFoldoutHeader;
+            if (!wasPlain) ApplyPlainFoldoutHeader();
 
             try
             {
@@ -125,8 +125,21 @@ namespace Aspid.FastTools.Enums.Editors
             }
             finally
             {
-                if (--_plainFoldoutHeaderDepth is 0) RestoreFoldoutHeader(style);
+                if (!wasPlain) RestoreFoldoutHeader();
             }
+        }
+
+        /// <returns>Whether the plain header was on; pass it to <see cref="ResumePlainFoldoutHeader"/>.</returns>
+        internal static bool SuspendPlainFoldoutHeader()
+        {
+            var wasPlain = _isPlainFoldoutHeader;
+            if (wasPlain) RestoreFoldoutHeader();
+            return wasPlain;
+        }
+
+        internal static void ResumePlainFoldoutHeader(bool wasPlain)
+        {
+            if (wasPlain) ApplyPlainFoldoutHeader();
         }
 
         // The editor USS paints the foldout header arrow together with its band, so the arrow goes with it.
@@ -145,8 +158,11 @@ namespace Aspid.FastTools.Enums.Editors
             EditorStyles.foldout.Draw(arrowRect, GUIContent.none, isHover, isActive: false, on: valuesProperty.isExpanded, hasKeyboardFocus: false);
         }
 
-        private static void ApplyPlainFoldoutHeader(GUIStyle style)
+        private static void ApplyPlainFoldoutHeader()
         {
+            var style = EditorStyles.foldoutHeader;
+            _isPlainFoldoutHeader = true;
+
             _savedFontStyle = style.fontStyle;
             style.fontStyle = FontStyle.Normal;
 
@@ -161,8 +177,11 @@ namespace Aspid.FastTools.Enums.Editors
             }
         }
 
-        private static void RestoreFoldoutHeader(GUIStyle style)
+        private static void RestoreFoldoutHeader()
         {
+            var style = EditorStyles.foldoutHeader;
+            _isPlainFoldoutHeader = false;
+
             style.fontStyle = _savedFontStyle;
 
             var states = GetStates(style);
