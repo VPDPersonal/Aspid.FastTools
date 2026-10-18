@@ -21,8 +21,10 @@ namespace Aspid.FastTools.Types.Editors
             var dropdownRect = new Rect(position.x, position.y, position.width - rowHeight - 2f, rowHeight);
             var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, rowHeight, rowHeight);
 
-            if (EditorGUI.DropdownButton(dropdownRect,
-                    new GUIContent(TypeSelectorHelpers.GetTypeSelectorTitle(currentType)), FocusType.Passive))
+            var caption = new GUIContent(TypeSelectorHelpers.GetTypeSelectorTitle(currentType),
+                TypeIMGUIPropertyDrawer.GetCaptionIcon(currentType));
+
+            if (TypeIMGUIPropertyDrawer.DrawDropdownButton(dropdownRect, caption, EditorStyles.miniPullDown))
             {
                 // The picker answers after this draw, and a cancelled one never answers: no copy is open until then.
                 var detached = new DetachedProperty(property: property);
