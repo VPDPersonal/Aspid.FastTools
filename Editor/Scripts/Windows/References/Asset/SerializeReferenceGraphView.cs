@@ -23,7 +23,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string AssetClass = RootClass + "__asset";
         private const string RescanClass = RootClass + "__rescan";
         private const string RescanIconClass = RootClass + "__rescan-icon";
-        private const string OpenSourceClass = RootClass + "__open-source";
+        private const string NoticeActionClass = RootClass + "__notice-action";
         private const string NoticeClass = RootClass + "__notice";
         private const string EmptyClass = RootClass + "__empty";
         private const string EmptyHiddenClass = EmptyClass + "--hidden";
@@ -73,6 +73,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
 
         private IReadOnlyList<GateViolation> _requiredViolations = Array.Empty<GateViolation>();
+        private IReadOnlyList<TypeNameField> _typeNames = Array.Empty<TypeNameField>();
+
+        // An asset still dirty after Save Asset, such as a read-only package file: it is mapped as saved from then on.
+        private string _unsavablePath;
 
         public SerializeReferenceGraphView(Object target, Action<StatusStyle.Type> onCanvasStatus, Action<Object> onTargetChanged = null)
         {
@@ -205,6 +209,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.Clear();
             ResetNavTargets();
             _requiredViolations = Array.Empty<GateViolation>();
+            _typeNames = Array.Empty<TypeNameField>();
 
             var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
             if (string.IsNullOrEmpty(assetPath))
@@ -219,12 +224,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
+            // The map reads the saved file and the required scan the loaded objects, so unsaved edits would mix both.
+            if (SerializeReferenceYaml.IsCandidateAssetPath(assetPath) && assetPath != _unsavablePath &&
+                SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
+            {
+                ShowUnsavedChanges(assetPath);
+                return;
+            }
+
             var documents = prebuilt ?? SerializeReferenceGraphScanner.Build(assetPath);
 
             // Required string fields may exist without a RefIds block, so scan them before the empty-graph return.
-            _requiredViolations = SerializeReferenceGateScanner.ScanAssetRequiredFields(assetPath);
+            var typeNames = new List<TypeNameField>();
+            _requiredViolations = SerializeReferenceGateScanner.ScanAssetRequiredFields(assetPath, typeNames);
+            _typeNames = typeNames;
 
-            if (documents.Count == 0 && _requiredViolations.Count == 0)
+            if (documents.Count == 0 && _requiredViolations.Count == 0 && _typeNames.Count == 0)
             {
                 // A variant or a scene may hold its managed references only as prefab instance overrides, which have
                 // no RefIds graph to map.
@@ -272,10 +287,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var openSource = new Button(OpenSource) { text = "Open Source Prefab" }
                 .AddClass(AspidStyles.ActionButtonClass)
-                .AddClass(OpenSourceClass);
+                .AddClass(NoticeActionClass);
             RegisterNavTarget(openSource, OpenSource);
             info.AddChild(openSource);
             return true;
+        }
+
+        private void ShowUnsavedChanges(string assetPath)
+        {
+            ShowResults();
+            _onCanvasStatus?.Invoke(StatusStyle.Type.Info);
+
+            var info = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
+                .SetTitle("Unsaved changes")
+                .SetMessage("This view maps the saved file. Save the asset to map its current fields.")
+                .AddClass(NoticeClass);
+            _list.AddChild(info);
+
+            void Save()
+            {
+                SerializeReferenceOpenCopyGuard.Save(assetPath);
+                if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath)) _unsavablePath = assetPath;
+                Rescan();
+            }
+
+            var save = new Button(Save) { text = "Save Asset" }
+                .AddClass(AspidStyles.ActionButtonClass)
+                .AddClass(NoticeActionClass);
+            RegisterNavTarget(save, Save);
+            info.AddChild(save);
         }
 
         private void RenderDocuments(string assetPath, List<ReferenceGraphDocument> documents)
@@ -290,28 +330,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var hidden = 0;
             var hiddenEmpties = 0;
-            var drawn = 0;
-
-            // Every object with a name gets its heading, even the only one: the heading says whose fields the cards
-            // are. A scene object is read as text and has only its YAML class id, so it is headed only among several.
-            var several = documents.Count > 1;
-            foreach (var plan in plans)
-            {
-                var document = plan.Document;
-
-                // A document that got no card would be a header over nothing, so only the notice speaks for it.
-                if (plan.Cards.Count > 0 || plan.Hidden == 0)
-                    _list.AddChild(BuildDocument(assetPath, plan, showHeader: several || document.Source != null));
-
-                drawn += plan.Cards.Count;
-                hidden += plan.Hidden;
-                hiddenEmpties += plan.HiddenEmpty;
-
-                var (broken, documentMigrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
-                missing += broken + documentMigrations;
-                migrations += documentMigrations;
-                orphans += document.Orphans.Count;
-            }
+            var drawn = plans.Sum(plan => plan.Cards.Count);
 
             var ungraphedRequired = _requiredViolations
                 .Where(violation => !emptySlotPaths.Contains((violation.FileId, violation.FieldPath)))
@@ -322,6 +341,40 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var requiredCards = SerializeReferenceGraphAnalysis.SelectRequiredCards(
                 ungraphedRequired, SerializeReferenceGraphPlan.MaxCards - drawn, out var hiddenRequired);
 
+            var typeNames = SerializeReferenceGraphAnalysis.SelectTypeNameCards(
+                _typeNames, SerializeReferenceGraphPlan.MaxCards - drawn - requiredCards.Count, out var hiddenTypeNames);
+            hidden += hiddenTypeNames;
+
+            var unplacedRequired = new List<GateViolation>(requiredCards);
+            var unplacedTypeNames = new List<TypeNameField>(typeNames);
+
+            // Every object with a name gets its heading, even the only one: the heading says whose fields the cards
+            // are. A scene object is read as text and has only its YAML class id, so it is headed only among several.
+            var several = documents.Count > 1;
+            foreach (var plan in plans)
+            {
+                var document = plan.Document;
+                var documentRequired = requiredCards.Where(violation => violation.FileId == document.FileId).ToList();
+                var documentTypeNames = typeNames.Where(field => field.FileId == document.FileId).ToList();
+
+                // A document that got no card would be a header over nothing, so only the notice speaks for it.
+                if (plan.Cards.Count > 0 || plan.Hidden == 0 || documentRequired.Count > 0 || documentTypeNames.Count > 0)
+                {
+                    _list.AddChild(BuildDocument(assetPath, plan, documentRequired, documentTypeNames,
+                        showHeader: several || document.Source != null));
+                    unplacedRequired.RemoveAll(violation => violation.FileId == document.FileId);
+                    unplacedTypeNames.RemoveAll(field => field.FileId == document.FileId);
+                }
+
+                hidden += plan.Hidden;
+                hiddenEmpties += plan.HiddenEmpty;
+
+                var (broken, documentMigrations) = SerializeReferenceGraphAnalysis.CountUnresolved(assetPath, document, _constraints);
+                missing += broken + documentMigrations;
+                migrations += documentMigrations;
+                orphans += document.Orphans.Count;
+            }
+
             // A required field whose slot the plans left out is already in the hidden count, so it is taken out of it
             // once. The plans keep no paths past the budget, so this counts by number.
             var hiddenSlots = Math.Min(hiddenRequired, hiddenEmpties);
@@ -330,8 +383,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var status = SerializeReferenceAuditUI.ResolveStatus(missing - migrations, orphans, required, migrations);
             ShowOverview(status, missing, orphans, migrations, required);
 
-            foreach (var violation in requiredCards)
-                _list.AddChild(BuildRequiredOnlyCard(violation));
+            // An object without managed references has no document, so it gets a heading here. A scene object cannot be
+            // loaded, so its cards name the component instead.
+            var sources = SerializeReferenceGraphScanner.ResolveSources(assetPath);
+            var fileIds = unplacedTypeNames.Select(field => field.FileId)
+                .Concat(unplacedRequired.Select(violation => violation.FileId))
+                .Distinct();
+
+            foreach (var fileId in fileIds)
+            {
+                var fields = unplacedTypeNames.Where(field => field.FileId == fileId).ToList();
+                var violations = unplacedRequired.Where(violation => violation.FileId == fileId).ToList();
+
+                if (sources.TryGetValue(fileId, out var source))
+                    _list.AddChild(BuildFieldsDocument(assetPath, source, fileId, fields, violations));
+                else
+                    AddFieldCards(_list, assetPath, fields, violations, qualify: true);
+            }
 
             if (hidden > 0) _list.AddChild(BuildHiddenNotice(hidden));
 

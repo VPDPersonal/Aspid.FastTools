@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Types.Editors;
@@ -31,6 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeFooterClass = RootClass + "__node-footer";
         private const string NodeRootLabelClass = RootClass + "__node-root-label";
         private const string NodeTypeClass = RootClass + "__node-type";
+        private const string NodeTypeIconClass = RootClass + "__node-type-icon";
         private const string NodeRidClass = RootClass + "__node-rid";
         private const string NodeBadgesClass = RootClass + "__node-badges";
 
@@ -91,7 +93,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (node is not null && !node.Value.StoredType.IsEmpty)
                 typeLabel.tooltip = node.Value.FullName;
 
-            var bandRow = BuildBandRow(typeLabel, BuildBadges(document, rid));
+            var nodeType = node is { Resolves: true } ? SerializeReferenceHelpers.ResolveStoredType(node.Value.StoredType) : null;
+            var bandRow = BuildBandRow(typeLabel, BuildBadges(document, rid), nodeType);
 
             // Reference IDs are only unique within a serialized document.
             var fileId = document.FileId;
@@ -201,7 +204,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // An optional field that holds nothing, in its place among the fields: one muted band with the field path and
         // Assign, so it takes a line instead of a card. Only an empty field offers Assign, so no <None> is needed.
-        private VisualElement BuildUnassignedRow(string assetPath, long fileId, string pathLabel)
+        private VisualElement BuildUnassignedRow(string pathLabel, Action<AspidGradientButton> openPicker)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass)
@@ -213,21 +216,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .SetPickingMode(PickingMode.Ignore);
 
             AspidGradientButton band = null;
-            band = new AspidGradientButton(AssignCollapsedText, _ => OpenLivePicker(assetPath, fileId, pathLabel, band))
+            band = new AspidGradientButton(AssignCollapsedText, _ => openPicker(band))
                 .AddClass(NodeBandClass);
             band.AddLeadingContent(BuildBandRow(field, badges: null));
-            RegisterNavBand(band, card, () => OpenLivePicker(assetPath, fileId, pathLabel, band));
+            RegisterNavBand(band, card, () => openPicker(band));
 
             return card.AddChild(band);
         }
 
-        // Required string fields have no RefIds node; scene assets cannot be object-loaded for inline editing.
-        private VisualElement BuildRequiredOnlyCard(GateViolation violation)
+        // Required fields with no slot card; scene assets cannot be object-loaded for inline editing.
+        private VisualElement BuildRequiredOnlyCard(GateViolation violation, string pathLabel)
         {
+            var isReference = violation.Rid != 0;
+
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
 
-            var bandRow = BuildBandRow(BuildRequiredNoneLabel("Required type is not set"), badges: null);
+            var bandRow = BuildBandRow(
+                BuildRequiredNoneLabel(isReference ? "Required reference is not set" : "Required type is not set"),
+                badges: null);
 
             if (SerializeReferenceHelpers.IsScene(violation.AssetPath))
             {
@@ -236,17 +243,61 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
+                var graphPath = SerializeReferenceGraphEditor.ToGraphPath(violation.FieldPath);
                 AspidGradientButton band = null;
-                band = new AspidGradientButton(AssignRequiredCollapsedText, _ => OpenRequiredStringPicker(violation, band))
+
+                void OpenPicker()
+                {
+                    if (isReference) OpenLivePicker(violation.AssetPath, violation.FileId, graphPath, band);
+                    else OpenTypeNamePicker(violation.AssetPath, violation.FileId, violation.FieldPath, band);
+                }
+
+                band = new AspidGradientButton(AssignRequiredCollapsedText, _ => OpenPicker())
                     .AddClass(NodeBandClass)
                     .AddClass(NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
-                RegisterNavBand(band, card, () => OpenRequiredStringPicker(violation, band));
+                RegisterNavBand(band, card, OpenPicker);
                 AddBandDivider(card, band, NodeSweepMissingClass);
             }
 
-            card.AddChild(BuildFooter(violation.FieldLabel, "unassigned"));
+            card.AddChild(BuildFooter(pathLabel, "unassigned"));
+
+            return card;
+        }
+
+        // A type name field that holds a type, drawn like a reference card.
+        private VisualElement BuildTypeNameCard(string assetPath, TypeNameField field, string pathLabel)
+        {
+            var type = Type.GetType(field.TypeName, throwOnError: false);
+
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(NodeClass);
+
+            var typePreset = AspidLabelPreset.Default
+                .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                .SetLineSize(AspidDividingLineSizeStyle.Type.None);
+            typePreset = type is null
+                ? typePreset.SetLabelStatus(StatusStyle.Type.Warning)
+                : typePreset.SetLabelTheme(ThemeStyle.Type.Lightness);
+
+            var typeLabel = new AspidLabel(TypeSelectorHelpers.GetTypeSelectorTitle(type,
+                        assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(field.TypeName)), typePreset)
+                .AddClass(NodeTypeClass)
+                .SetPickingMode(PickingMode.Ignore);
+            typeLabel.tooltip = type?.FullName ?? field.TypeName;
+
+            AspidGradientButton band = null;
+            void OpenPicker() => OpenTypeNamePicker(assetPath, field.FileId, field.FieldPath, band);
+
+            band = new AspidGradientButton(ChangeCollapsedText, _ => OpenPicker())
+                .AddClass(NodeBandClass);
+            band.AddLeadingContent(BuildBandRow(typeLabel, badges: null, type));
+            card.AddChild(band);
+            RegisterNavBand(band, card, OpenPicker);
+            AddBandDivider(card, band, sweepModifier: null);
+
+            card.AddChild(BuildFooter(pathLabel, "type name"));
 
             return card;
         }
@@ -267,11 +318,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        private static VisualElement BuildBandRow(VisualElement typeLabel, VisualElement badges)
+        // type adds the icon the type picker shows for it.
+        private static VisualElement BuildBandRow(VisualElement typeLabel, VisualElement badges, Type type = null)
         {
-            var row = new VisualElement()
-                .AddClass(NodeBandRowClass)
-                .AddChild(typeLabel);
+            var row = new VisualElement().AddClass(NodeBandRowClass);
+
+            var icon = TypeSelectorIconResolver.ResolveForType(type);
+            if (icon) row.AddChild(new Image { image = icon, scaleMode = ScaleMode.ScaleToFit }.AddClass(NodeTypeIconClass));
+
+            row.AddChild(typeLabel);
             if (badges is not null) row.AddChild(badges);
             row.pickingMode = PickingMode.Ignore;
             return row;

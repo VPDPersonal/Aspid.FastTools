@@ -671,15 +671,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
         }
 
-        public static bool StoredTypeResolves(ManagedTypeName name)
+        public static bool StoredTypeResolves(ManagedTypeName name) => ResolveStoredType(name) is not null;
+
+        public static Type ResolveStoredType(ManagedTypeName name)
         {
-            if (string.IsNullOrEmpty(name.Class)) return false;
+            if (string.IsNullOrEmpty(name.Class)) return null;
 
             var className = name.Class.Replace('/', '+');
             var fullName = string.IsNullOrEmpty(name.Namespace) ? className : $"{name.Namespace}.{className}";
             var assemblyQualified = string.IsNullOrEmpty(name.Assembly) ? fullName : $"{fullName}, {name.Assembly}";
 
-            return Type.GetType(assemblyQualified, throwOnError: false) is not null;
+            return Type.GetType(assemblyQualified, throwOnError: false);
         }
 
         // Managed-reference candidates do not require IsSerializable here; by-value generic arguments are checked separately.

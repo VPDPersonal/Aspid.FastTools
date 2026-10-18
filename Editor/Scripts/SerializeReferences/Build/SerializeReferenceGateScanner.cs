@@ -107,7 +107,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (options.ScanRequiredFields)
                 {
-                    if (!isScene) CollectRequiredViolations(path, violations);
+                    if (!isScene) CollectRequiredViolations(path, violations, typeNames: null);
                     else if (isTextYaml) CollectSceneRequiredViolations(path, lines, violations);
                 }
 
@@ -261,15 +261,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Asset References calls this for the one asset the user picked, so an excluded folder does not hide its
         // required fields, as it does not hide its missing types. The project audit filters excluded folders itself.
-        public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath)
+        public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath) =>
+            ScanAssetRequiredFields(assetPath, typeNames: null);
+
+        // typeNames, when given, also gets every type name field the walk passes, in field order, so Asset References
+        // maps them without a second walk. A scene cannot be object-loaded, so it adds none.
+        internal static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath, List<TypeNameField> typeNames)
         {
             var violations = new List<GateViolation>();
-            if (!SerializeReferenceYaml.IsCandidateAssetPath(assetPath)) return violations;
+
+            // Only a scanned path reports violations; the type names of any other asset the window maps are still read.
+            var candidate = SerializeReferenceYaml.IsCandidateAssetPath(assetPath);
+            if (!candidate && typeNames is null) return violations;
 
             _scriptRequiredFieldsCache.Clear();
 
-            if (SerializeReferenceHelpers.IsScene(assetPath)) CollectSceneRequiredViolations(assetPath, violations);
-            else CollectRequiredViolations(assetPath, violations);
+            if (!SerializeReferenceHelpers.IsScene(assetPath))
+                CollectRequiredViolations(assetPath, candidate ? violations : null, typeNames);
+            else if (candidate)
+                CollectSceneRequiredViolations(assetPath, violations);
 
             return violations;
         }
@@ -396,7 +406,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A required reference whose type is missing counts as set here, including one inherited from a source prefab
         // or stored in a prefab override: the missing-type scan reports it once, from the file that holds it.
-        private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations)
+        private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations,
+            List<TypeNameField> typeNames)
         {
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
@@ -422,7 +433,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
 
                     if (iterator.propertyType is not (SerializedPropertyType.ManagedReference or SerializedPropertyType.String)) continue;
-                    if (!TypeSelectorRequiredGate.IsViolation(iterator)) continue;
+
+                    if (typeNames is not null && TypeSelectorRequiredGate.IsTypeNameField(iterator, out var selector))
+                    {
+                        typeNames.Add(new TypeNameField(fileId, TypeSelectorRequiredGate.GetFieldPath(iterator),
+                            asset.GetType().Name, iterator.stringValue, required: selector is { Required: true }));
+                    }
+
+                    if (violations is null || !TypeSelectorRequiredGate.IsViolation(iterator)) continue;
 
                     var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;
                     violations.Add(new GateViolation(assetPath, fileId, rid, default,

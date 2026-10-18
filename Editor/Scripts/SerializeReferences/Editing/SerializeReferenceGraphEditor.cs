@@ -142,12 +142,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Writes a type name into the backing string of a required [TypeSelector] field — the one required shape the
+        // Writes a type name into a [TypeSelector] string or the backing string of a SerializableType field, which the
         // routes above cannot reach, since such a field is never threaded into RefIds.
-        public static bool ApplyRequiredString(GateViolation violation, string assemblyQualifiedName)
+        public static bool ApplyRequiredString(GateViolation violation, string assemblyQualifiedName) =>
+            ApplyTypeName(violation.AssetPath, violation.FileId, violation.FieldPath, assemblyQualifiedName);
+
+        public static bool ApplyTypeName(string assetPath, long fileId, string fieldPath, string assemblyQualifiedName)
         {
-            if (SerializeReferenceOpenCopyGuard.IsOpenInPrefabMode(violation.AssetPath) &&
-                SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(violation.AssetPath)) return false;
+            if (SerializeReferenceOpenCopyGuard.IsOpenInPrefabMode(assetPath) &&
+                SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
 
             // A non-empty name that fails to load is an unresolved pick, not a clear. <None> writes an empty name,
             // which for a required field simply keeps the violation visible.
@@ -155,10 +158,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Type.GetType(assemblyQualifiedName, throwOnError: false) is null)
                 return false;
 
-            if (!TryResolveRequiredStringProperty(violation, out var serializedObject, out var property))
+            if (!TryResolveTypeNameProperty(assetPath, fileId, fieldPath, out var serializedObject, out var property))
             {
                 EditorUtility.DisplayDialog(
-                    "Assign Required Type",
+                    "Assign Type",
                     "This field cannot be edited here — it is not reachable through the serialization API. " +
                     "Edit it in the Inspector instead.",
                     "OK");
@@ -175,7 +178,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var target = serializedObject.targetObject;
                 EditorUtility.SetDirty(target);
-                PersistEdit(violation.AssetPath, target);
+                PersistEdit(assetPath, target);
             }
 
             SerializeReferenceYamlProbeCache.ClearCache();
@@ -201,22 +204,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // unlike the graph route no conversion applies; for a SerializableType field it names the wrapper, whose type
         // name lives in the backing string.
         public static bool TryResolveRequiredStringProperty(GateViolation violation,
+            out SerializedObject serializedObject, out SerializedProperty property) =>
+            TryResolveTypeNameProperty(violation.AssetPath, violation.FileId, violation.FieldPath,
+                out serializedObject, out property);
+
+        public static bool TryResolveTypeNameProperty(string assetPath, long fileId, string fieldPath,
             out SerializedObject serializedObject, out SerializedProperty property)
         {
             serializedObject = null;
             property = null;
 
-            if (SerializeReferenceHelpers.IsScene(violation.AssetPath)) return false;
+            if (SerializeReferenceHelpers.IsScene(assetPath)) return false;
 
-            return TryResolveProperty(violation.AssetPath, violation.FileId, violation.FieldPath,
+            return TryResolveProperty(assetPath, fileId, fieldPath,
                     SerializedPropertyType.String, out serializedObject, out property) ||
-                TryResolveProperty(violation.AssetPath, violation.FileId,
-                    $"{violation.FieldPath}.{SerializableTypeUtility.BackingFieldName}",
+                TryResolveProperty(assetPath, fileId, $"{fieldPath}.{SerializableTypeUtility.BackingFieldName}",
                     SerializedPropertyType.String, out serializedObject, out property);
         }
 
         public static string ToSerializedPropertyPath(string graphPath) =>
             Regex.Replace(graphPath, @"\[(\d+)\]", ".Array.data[$1]");
+
+        public static string ToGraphPath(string propertyPath) =>
+            Regex.Replace(propertyPath, @"\.Array\.data\[(\d+)\]", "[$1]");
 
         private static bool TryResolveProperty(string assetPath, long fileId, string propertyPath,
             SerializedPropertyType expected, out SerializedObject serializedObject, out SerializedProperty property)

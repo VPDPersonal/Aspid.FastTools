@@ -588,13 +588,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 var monoScript = serialized.FindProperty($"{nameof(Holder.required)}.{SerializableTypeUtility.BackingFieldName}");
                 var plain = serialized.FindProperty($"{nameof(Holder.requiredType)}.{SerializableTypeUtility.BackingFieldName}");
 
-                var filter = SerializeReferenceGraphView.BuildRequiredStringFilter(serialized, monoScript);
+                var filter = SerializeReferenceGraphView.BuildTypeNameFilter(serialized, monoScript);
 
                 Assert.IsNotNull(filter.Predicate, "A script-backed wrapper needs the script predicate.");
                 Assert.IsTrue(filter.Predicate(ScriptedType));
                 Assert.IsFalse(filter.Predicate(typeof(Holder)), "A nested type owns no script asset.");
 
-                Assert.IsNull(SerializeReferenceGraphView.BuildRequiredStringFilter(serialized, plain).Predicate,
+                Assert.IsNull(SerializeReferenceGraphView.BuildTypeNameFilter(serialized, plain).Predicate,
                     "A plain SerializableType accepts types without a script.");
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }

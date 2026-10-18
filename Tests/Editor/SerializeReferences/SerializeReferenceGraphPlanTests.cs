@@ -330,6 +330,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(1, hidden);
         }
 
+        private static TypeNameField TypeName(string path, string typeName, bool required = false) =>
+            new(fileId: 7, fieldPath: path, componentName: "C", typeName: typeName, required: required);
+
+        [Test]
+        public void SelectTypeNameCards_WithinTheBudget_KeepsEveryField()
+        {
+            var fields = new List<TypeNameField> { TypeName("a", "A"), TypeName("b", string.Empty) };
+
+            var cards = SerializeReferenceGraphAnalysis.SelectTypeNameCards(fields, budget: 2, out var hidden);
+
+            Assert.AreEqual(2, cards.Count);
+            Assert.AreEqual(0, hidden);
+        }
+
+        // An empty required field is drawn from its violation, which the budget never leaves out.
+        [Test]
+        public void SelectTypeNameCards_BudgetSpent_KeepsEmptyRequiredFields()
+        {
+            var fields = new List<TypeNameField>
+            {
+                TypeName("a", "A"), TypeName("b", string.Empty), TypeName("c", string.Empty, required: true),
+                TypeName("d", "D", required: true),
+            };
+
+            var cards = SerializeReferenceGraphAnalysis.SelectTypeNameCards(fields, budget: 1, out var hidden);
+
+            CollectionAssert.AreEqual(new[] { "a", "c" }, cards.Select(card => card.FieldPath));
+            Assert.AreEqual(2, hidden);
+        }
+
         [Test]
         public void FindNode_FindsFirstMatchAndNodesAddedLater()
         {

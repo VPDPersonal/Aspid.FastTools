@@ -26,6 +26,15 @@ namespace Aspid.FastTools.Types.Editors
             return GetOrLoad(_typeFallbackCache, assemblyQualifiedName, LoadTypeFallbackIcon);
         }
 
+        // The icon the picker shows for the type: its [TypeSelectorDisplay] icon, else its thumbnail or a script icon.
+        internal static Texture ResolveForType(Type type)
+        {
+            if (type is null) return null;
+
+            var icon = Resolve(TypeInfo.Get(type).Icon);
+            return icon ? icon : ResolveForType(type.AssemblyQualifiedName);
+        }
+
         // The package's own fallbacks are Unity icons: a project Resources texture of the same name must not replace them.
         private static Texture ResolveBuiltIn(string icon) =>
             GetOrLoad(_builtInCache, icon, static name => EditorGUIUtility.IconContent(name)?.image);

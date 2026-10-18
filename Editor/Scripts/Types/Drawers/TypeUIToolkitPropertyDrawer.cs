@@ -76,21 +76,15 @@ namespace Aspid.FastTools.Types.Editors
                     return;
                 }
 
-                stripe.RemoveFromHierarchy();
-                if (current.hasMultipleDifferentValues || !TypeSelectorRequiredGate.IsViolation(current))
+                if (!current.hasMultipleDifferentValues && TypeSelectorRequiredGate.IsViolation(current))
                 {
-                    notice?.RemoveFromHierarchy();
+                    notice ??= new InspectorNotice();
+                    ShowRequired(container: container, stripe: stripe, notice: notice);
                     return;
                 }
 
-                notice ??= new InspectorNotice();
-                notice.Set(
-                    message: "Required type is not set",
-                    actionText: string.Empty,
-                    detail: "This [TypeSelector] field is marked required but has no type. Pick a type from the dropdown.",
-                    onAction: null);
-
-                if (notice.parent is null) container.AddChild(notice);
+                stripe.RemoveFromHierarchy();
+                notice?.RemoveFromHierarchy();
             }
         }
 
@@ -112,6 +106,19 @@ namespace Aspid.FastTools.Types.Editors
             {
                 if (evt.target != root) evt.StopPropagation();
             });
+
+        internal static void ShowRequired(VisualElement container, VisualElement stripe, InspectorNotice notice)
+        {
+            if (stripe.parent is null) container.AddChild(stripe);
+
+            notice.Set(
+                message: "Required type is not set",
+                actionText: string.Empty,
+                detail: "This [TypeSelector] field is marked required but has no type. Pick a type from the dropdown.",
+                onAction: null);
+
+            if (notice.parent is null) container.AddChild(notice);
+        }
 
         // Fix and the suggestion both repair through the field: a bound field writes its property, and a wrapper
         // field leaves the write to its change handler.

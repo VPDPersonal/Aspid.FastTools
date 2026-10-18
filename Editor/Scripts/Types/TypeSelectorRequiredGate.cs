@@ -31,6 +31,18 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
+        // A string that stores a type name: a [TypeSelector] string, or the backing string of a SerializableType or
+        // SerializableMonoScript field. selector is null for a wrapper without the attribute.
+        internal static bool IsTypeNameField(SerializedProperty property, out TypeSelectorAttribute selector)
+        {
+            selector = null;
+            if (property is null || property.propertyType != SerializedPropertyType.String) return false;
+
+            selector = GetAttributeField(property)?.GetCustomAttribute<TypeSelectorAttribute>();
+            return selector is not null ||
+                (property.name == SerializableTypeUtility.BackingFieldName && TryGetWrapperField(property, out _));
+        }
+
         // The path the Inspector shows for the field: a SerializableType field by its own path, not by the backing
         // string the SerializedProperty iterator stops on, so it matches RequiredFieldDescriptor.Path of the scene scan.
         internal static string GetFieldPath(SerializedProperty property)
