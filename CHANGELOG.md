@@ -15,6 +15,7 @@ First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releas
 
 - Type dropdowns show the type's icon left of its name: the `[TypeSelectorDisplay]` icon, else Unity's icon for the type. **Type icons** under Appearance in the Settings tab turns them off.
 - **Field stripes** under Appearance in the Settings tab hides the status stripe left of `[SerializeReference]`, `[TypeSelector]`, `SerializableType` and `SerializableMonoScript` fields in the Inspector, and the gutter a shared reference leaves for it. The notices under the fields stay.
+- In the Settings tab the Right arrow turns a focused switch on and the Left arrow turns it off; Enter still flips it.
 - The FastTools window switches tabs with Alt+Left and Alt+Right (Option on macOS), next to Ctrl+Tab. Rebind them under Aspid FastTools/Window in the Shortcuts window.
 - `RemoveChildren` and `RemoveChildrenIf` remove several children in one call and take the same `params`, `IEnumerable`, `List` and `ReadOnlySpan` overloads as `AddChildren`.
 - `AddClasses`, `RemoveClasses`, `ToggleClasses` and `EnableClasses` change several USS classes in one call and take the same `params`, `IEnumerable`, `List` and `ReadOnlySpan` overloads as `AddChildren`. An `IEnumerable` may read `GetClasses()` of the same element. `EnableClasses` takes the flag first: `EnableClasses(isFree, "selected", "free")`.

@@ -49,8 +49,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             switch (element)
             {
+                // Enter flips a switch; Right turns it on and Left turns it off, the way its handle moves.
                 case AspidSwitch toggle:
-                    _ring.Register(toggle, () => toggle.value = !toggle.value);
+                    _ring.Register(toggle, () => toggle.value = !toggle.value, adjust: delta => toggle.value = delta > 0);
                     return;
 
                 case EnumField dropdown:

@@ -192,6 +192,44 @@ namespace Aspid.FastTools.Editors.Tests
         }
 
         [UnityTest]
+        public IEnumerator Switch_RightTurnsItOn_LeftTurnsItOff()
+        {
+            var panel = new TestPanel();
+            var saved = FieldStripeSettings.Enabled;
+
+            try
+            {
+                FieldStripeSettings.Enabled = true;
+
+                var view = new SettingsView();
+                panel.Root.Add(view);
+                yield return null;
+
+                var stripes = view.Q<AspidSwitch>(AspidAppearanceSettingsUI.FieldStripesName);
+                Assert.IsNotNull(stripes, "The Settings tab must contain the Field stripes switch.");
+                FocusInRing(view, stripes);
+
+                SendKey(view, KeyCode.LeftArrow);
+                Assert.IsFalse(FieldStripeSettings.Enabled, "The Left arrow must turn the switch off.");
+
+                SendKey(view, KeyCode.LeftArrow);
+                Assert.IsFalse(FieldStripeSettings.Enabled, "The Left arrow must keep an off switch off.");
+
+                SendKey(view, KeyCode.RightArrow);
+                Assert.IsTrue(FieldStripeSettings.Enabled, "The Right arrow must turn the switch on.");
+
+                SendKey(view, KeyCode.RightArrow);
+                Assert.IsTrue(FieldStripeSettings.Enabled, "The Right arrow must keep an on switch on.");
+            }
+            finally
+            {
+                panel.Root.Clear();
+                panel.Dispose();
+                FieldStripeSettings.Enabled = saved;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator ThemeField_Focused_GetsTheStrongBorder()
         {
             var panel = new TestPanel();

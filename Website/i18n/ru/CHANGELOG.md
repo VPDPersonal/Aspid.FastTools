@@ -15,6 +15,7 @@
 
 - Выпадающие списки типов показывают иконку типа слева от имени: иконку из `[TypeSelectorDisplay]`, а без неё — иконку Unity для этого типа. Выключить их можно переключателем **Type icons** в разделе Appearance вкладки Settings.
 - Переключатель **Field stripes** в разделе Appearance вкладки Settings скрывает статусную полосу слева от полей `[SerializeReference]`, `[TypeSelector]`, `SerializableType` и `SerializableMonoScript` в Inspector, а также отступ, который оставляет для неё общая ссылка. Уведомления под полями остаются.
+- На вкладке Settings стрелка вправо включает выбранный переключатель, а стрелка влево выключает; Enter по-прежнему переключает его.
 - Окно FastTools переключает вкладки по Alt+← и Alt+→ (Option на macOS), в дополнение к Ctrl+Tab. Переназначить их можно в окне Shortcuts, раздел Aspid FastTools/Window.
 - Добавлены `RemoveChildren` и `RemoveChildrenIf`: удаляют несколько дочерних элементов за один вызов и принимают те же перегрузки `params`, `IEnumerable`, `List` и `ReadOnlySpan`, что и `AddChildren`.
 - Добавлены `AddClasses`, `RemoveClasses`, `ToggleClasses` и `EnableClasses`: меняют несколько USS-классов за один вызов, принимают те же перегрузки `params`, `IEnumerable`, `List` и `ReadOnlySpan`, что и `AddChildren`. `IEnumerable` может читать `GetClasses()` того же элемента. `EnableClasses` принимает флаг первым: `EnableClasses(isFree, "selected", "free")`.
