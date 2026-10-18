@@ -269,12 +269,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath, List<TypeNameField> typeNames)
         {
             var violations = new List<GateViolation>();
-            if (!SerializeReferenceYaml.IsCandidateAssetPath(assetPath)) return violations;
+
+            // Only a scanned path reports violations; the type names of any other asset the window maps are still read.
+            var candidate = SerializeReferenceYaml.IsCandidateAssetPath(assetPath);
+            if (!candidate && typeNames is null) return violations;
 
             _scriptRequiredFieldsCache.Clear();
 
-            if (SerializeReferenceHelpers.IsScene(assetPath)) CollectSceneRequiredViolations(assetPath, violations);
-            else CollectRequiredViolations(assetPath, violations, typeNames);
+            if (!SerializeReferenceHelpers.IsScene(assetPath))
+                CollectRequiredViolations(assetPath, candidate ? violations : null, typeNames);
+            else if (candidate)
+                CollectSceneRequiredViolations(assetPath, violations);
 
             return violations;
         }
@@ -435,7 +440,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                             asset.GetType().Name, iterator.stringValue, required: selector is { Required: true }));
                     }
 
-                    if (!TypeSelectorRequiredGate.IsViolation(iterator)) continue;
+                    if (violations is null || !TypeSelectorRequiredGate.IsViolation(iterator)) continue;
 
                     var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;
                     violations.Add(new GateViolation(assetPath, fileId, rid, default,
