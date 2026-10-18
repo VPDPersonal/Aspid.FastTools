@@ -122,21 +122,15 @@ namespace Aspid.FastTools.Types.Editors
                     return;
                 }
 
-                stripe.RemoveFromHierarchy();
-                if (current.hasMultipleDifferentValues || !TypeSelectorRequiredGate.IsViolation(nameProperty))
+                if (!current.hasMultipleDifferentValues && TypeSelectorRequiredGate.IsViolation(nameProperty))
                 {
-                    notice?.RemoveFromHierarchy();
+                    notice ??= new InspectorNotice();
+                    TypeUIToolkitPropertyDrawer.ShowRequired(container: container, stripe: stripe, notice: notice);
                     return;
                 }
 
-                notice ??= new InspectorNotice();
-                notice.Set(
-                    message: "Required type is not set",
-                    actionText: string.Empty,
-                    detail: "This [TypeSelector] field is marked required but has no type. Pick a type from the dropdown.",
-                    onAction: null);
-
-                if (notice.parent is null) container.AddChild(notice);
+                stripe.RemoveFromHierarchy();
+                notice?.RemoveFromHierarchy();
             }
         }
 

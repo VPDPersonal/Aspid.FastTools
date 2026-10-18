@@ -105,6 +105,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Stripe inputs: written by the notice updates, consumed by UpdateStripe.
         private bool _isMissing;
         private bool _isShared;
+        private bool _isRequired;
         private Color _sharedColor;
         private float _arrowInset = float.NaN;
 
@@ -417,7 +418,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // above is the fix). Suppressed under a multi-object selection and when the type is missing (its own notice).
         private void UpdateRequiredBox()
         {
-            if (!SerializeReferenceHelpers.NoticesApply(_property) || !TypeSelectorRequiredGate.IsViolation(_property))
+            _isRequired = SerializeReferenceHelpers.NoticesApply(_property) && TypeSelectorRequiredGate.IsViolation(_property);
+            if (!_isRequired)
             {
                 _requiredNotice?.RemoveFromHierarchy();
                 return;
@@ -724,9 +726,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void UpdateStripe()
         {
-            EnableInClassList(StripedClass, _isMissing || _isShared);
+            EnableInClassList(StripedClass, _isMissing || _isShared || _isRequired);
 
-            if (_isMissing) ApplyWarningStripe();
+            if (_isMissing || _isRequired) ApplyWarningStripe();
             else if (_isShared) ApplySharedStripe(_sharedColor);
             else RemoveStripe();
         }

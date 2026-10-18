@@ -93,7 +93,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The prefab pipeline owns its serialization, so a prefab saves through its root rather than the generic
         // asset-dirty path.
-        private static void Save(string assetPath)
+        public static void Save(string assetPath)
         {
             var prefabRoot = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
             if (prefabRoot != null) PrefabUtility.SavePrefabAsset(prefabRoot);
