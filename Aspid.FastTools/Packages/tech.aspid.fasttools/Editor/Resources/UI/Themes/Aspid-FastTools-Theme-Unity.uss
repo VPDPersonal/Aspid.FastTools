@@ -1,33 +1,34 @@
 /* Unity: the colours of Unity's own editor skin, so an Aspid window reads as one more editor panel. The canvas takes the
-   tab strip of the editor, the cards its panels with their darker separators, and the drop-downs and value boxes its
-   darker input fields. The accent stays green; the status and accent text is lifted on the dark skin and deepened on
-   the light skin, so it keeps its contrast on the grey cards.
+   tab strip of the editor; on the dark skin the cards take its darker panels (#282828) with near-black separators and
+   the drop-downs and value boxes its darkest input fields, so the mid grey of the main panels does not veil the
+   window. The accent stays green; the status and accent text is lifted on the dark skin and deepened on the light
+   skin, so it keeps its contrast on the grey cards.
    The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
    light block follows :root in this sheet. */
 :root {
-    --aspid-colors-bg-darkness:                     rgb(48, 48, 48);
-    --aspid-colors-bg-dark:                         rgb(64, 64, 64);
-    --aspid-colors-bg-light:                        rgb(74, 74, 74);
-    --aspid-colors-bg-lightness:                    rgb(86, 86, 86);
+    --aspid-colors-bg-darkness:                     rgb(44, 44, 44);
+    --aspid-colors-bg-dark:                         rgb(52, 52, 52);
+    --aspid-colors-bg-light:                        rgb(62, 62, 62);
+    --aspid-colors-bg-lightness:                    rgb(74, 74, 74);
 
-    --aspid-colors-text-lightness:                  rgb(232, 232, 232);
-    --aspid-colors-text-light:                      rgb(212, 212, 212);
-    --aspid-colors-text-dark:                       rgb(178, 178, 178);
-    --aspid-colors-text-darkness:                   rgb(140, 140, 140);
+    --aspid-colors-text-lightness:                  rgb(237, 237, 237);
+    --aspid-colors-text-light:                      rgb(210, 210, 210);
+    --aspid-colors-text-dark:                       rgb(160, 160, 160);
+    --aspid-colors-text-darkness:                   rgb(122, 122, 122);
 
-    --aspid-colors-shade-darkness:                  rgb(35, 35, 35);
-    --aspid-colors-shade-dark:                      rgb(82, 82, 82);
-    --aspid-colors-shade-light:                     rgb(100, 100, 100);
-    --aspid-colors-shade-lightness:                 rgb(118, 118, 118);
+    --aspid-colors-shade-darkness:                  rgb(18, 18, 18);
+    --aspid-colors-shade-dark:                      rgb(62, 62, 62);
+    --aspid-colors-shade-light:                     rgb(80, 80, 80);
+    --aspid-colors-shade-lightness:                 rgb(100, 100, 100);
 
     --aspid-colors-surface-canvas:                  rgb(25, 25, 25);
-    --aspid-colors-surface-card:                    rgb(56, 56, 56);
-    --aspid-colors-surface-card-dim:                rgb(42, 42, 42);
-    --aspid-colors-surface-field:                   rgb(42, 42, 42);
+    --aspid-colors-surface-card:                    rgb(40, 40, 40);
+    --aspid-colors-surface-card-dim:                rgb(30, 30, 30);
+    --aspid-colors-surface-field:                   rgb(30, 30, 30);
 
     --aspid-colors-slider-handle:                   rgba(200, 200, 200, 0.85);
-    --aspid-colors-control-border:                  rgb(132, 132, 132);
-    --aspid-colors-scope-user:                      rgb(138, 138, 138);
+    --aspid-colors-control-border:                  rgb(118, 118, 118);
+    --aspid-colors-scope-user:                      rgb(120, 120, 120);
     --aspid-colors-dark-skin-text-darkness:         rgb(178, 178, 178);
 
     --aspid-colors-status-info-text-dark:           rgb(112, 170, 228);
