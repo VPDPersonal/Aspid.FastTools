@@ -62,6 +62,7 @@ First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releas
 
 ### Changed
 
+- The IMGUI drawer of `EnumValues` looks like the UI Toolkit one: the field name sits above the type field, which spans the full width, a line separates the header, **Default Value** is no longer indented, and the **Values** header is plain text instead of bold on a band.
 - **Excluded scan folders** in the Settings tab reads as one of Unity's lists: its caption and the folders share one framed block, each folder has a **−** at the end of its row, and the last row (or the **List is empty** row) has the **+**. A click selects a folder and a double click picks another one for it. With the keyboard, Enter or Delete on a focused folder removes it, and its **−** lights up while it has the focus.
 - The minimum Unity version is now 6000.0.53f1 instead of 6000.0.0f1. The package uses UI Toolkit APIs that later 6000.0 patches added (`IStyle.unityEditorTextRenderingMode`, `IStyle.unitySliceType`, `UxmlElement.libraryPath`), so it did not compile on earlier patches.
 - The package no longer ships the `Documentation` folder with its pages and images, so they are not imported into your project; the documentation lives on the site: https://vpdpersonal.github.io/Aspid.FastTools/. Each sample keeps a short text README on how to open it, with a link to its full tutorial on the site.

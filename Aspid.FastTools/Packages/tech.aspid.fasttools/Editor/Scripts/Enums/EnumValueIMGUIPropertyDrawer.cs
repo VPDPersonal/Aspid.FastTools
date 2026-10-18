@@ -64,8 +64,18 @@ namespace Aspid.FastTools.Enums.Editors
                     position.height);
             }
 
-            DrawKey(keyRect, keyProperty, enumTypeProperty);
-            EditorGUI.PropertyField(valueRect, valueProperty, label, includeChildren: hasFoldout);
+            // The Values list draws its header plain; a list inside the value keeps the stock header.
+            var wasPlain = EnumValuesIMGUIPropertyDrawer.SuspendPlainFoldoutHeader();
+
+            try
+            {
+                DrawKey(keyRect, keyProperty, enumTypeProperty);
+                EditorGUI.PropertyField(valueRect, valueProperty, label, includeChildren: hasFoldout);
+            }
+            finally
+            {
+                EnumValuesIMGUIPropertyDrawer.ResumePlainFoldoutHeader(wasPlain);
+            }
         }
 
         private static void DrawKey(Rect rect, SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
