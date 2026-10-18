@@ -393,14 +393,20 @@ jobs:
           echo "exit-code=$code" >> "$GITHUB_OUTPUT"
 
       # Also after a failed or cancelled pass, and after a failed activation that may still hold a seat: a seat that
-      # is never returned stays taken and breaks the next runs on the account.
+      # is never returned stays taken and breaks the next runs on the account. The log line decides, not the exit
+      # code: game-ci v0.1.72 returns the seat and then exits 1, since its build check finds no build output.
       - name: Return the Unity seat
         if: always() && steps.activate.outcome != 'skipped'
         continue-on-error: true
         env: *unity-account
         run: |
+          log="$RUNNER_TEMP/return-license.log"
           "$GAMECI" return-license --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
-            --targetPlatform=StandaloneLinux64
+            --targetPlatform=StandaloneLinux64 2>&1 | tee "$log"
+          if ! grep -q "Successfully returned the entitlement license" "$log"; then
+            echo "::warning::The Unity seat may still be taken; see the return log above."
+            exit 1
+          fi
 
       - name: Summarize the test results
         if: always()
