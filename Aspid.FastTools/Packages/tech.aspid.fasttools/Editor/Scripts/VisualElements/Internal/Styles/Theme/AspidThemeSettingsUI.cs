@@ -17,8 +17,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             " * Aspid FastTools — editor theme override.\n" +
             " * Redefine any design token below to recolor the Aspid editor UI.\n" +
             " * This sheet is layered on top of the built-in palette, Default-Dark or, in the\n" +
-            " * Aspid FastTools window and settings pages on the light skin, Default-Light, so\n" +
-            " * you only need to declare the tokens you want to change.\n" +
+            " * Aspid FastTools window and settings pages on the light skin, Default-Light, and\n" +
+            " * on top of the theme picked under Appearance, so you only need to declare the\n" +
+            " * tokens you want to change.\n" +
+            " * Built-in themes: Packages/tech.aspid.fasttools/Editor/Resources/UI/Themes\n" +
             " * Full token list: Packages/tech.aspid.fasttools/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss\n" +
             " * Fields drawn inside a regular Inspector start from Default-Dark on both skins and take part of their\n" +
             " * colors from Unity's editor theme, so these tokens change only part of their look.\n" +
@@ -49,15 +51,28 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public static void BuildControls(VisualElement container)
         {
+            var theme = new EnumField("Theme", AspidThemeSettings.Theme)
+            {
+                tooltip = "The colors of the Aspid FastTools windows, settings pages and type picker.\n"
+                    + "Default: near-black cards. Venom: the blue-black palette of the documentation site. "
+                    + "Graphite: the greys of Unity's editor skin.\n"
+                    + "Each theme has a light variant for the light editor skin. A theme override is layered on top.\n"
+                    + "Per-user setting — stored locally, for every project on this machine.",
+            };
+            theme.WithScopeStripe(AspidSettingsUI.UserScopeClass);
+            theme.RegisterValueChangedCallback(evt => AspidThemeSettings.Theme = (AspidTheme)evt.newValue);
+            SyncFromSettings<EnumField, Enum>(theme, () => AspidThemeSettings.Theme);
+            container.Add(theme);
+
             var overrideField = new ObjectField("Theme override")
             {
                 objectType = typeof(StyleSheet),
                 allowSceneObjects = false,
                 value = AspidThemeSettings.OverrideStyleSheet,
                 tooltip = "A USS sheet layered on top of the built-in palette (Default-Dark, or Default-Light in "
-                    + "the Aspid FastTools window and settings pages on the light skin); redefine any "
-                    + "--aspid-colors-* / --aspid-icons-* token inside a :root block. Applies live; clear to return "
-                    + "to the default look.\n"
+                    + "the Aspid FastTools window and settings pages on the light skin) and the chosen theme; "
+                    + "redefine any --aspid-colors-* / --aspid-icons-* token inside a :root block. Applies live; "
+                    + "clear to return to the theme.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
             overrideField.WithScopeStripe(AspidSettingsUI.UserScopeClass);

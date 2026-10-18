@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -14,7 +15,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     /// <summary>
     /// The theme override wins over the built-in palette and is applied live: an element that loads the Aspid palette
     /// follows a change of the override at once, whether it was already in a panel when it loaded the palette or
-    /// joined one later. The settings surface offers the picker for it.
+    /// joined one later. A built-in theme sits between the palettes and the override, and its light block wins over
+    /// the light palette. The settings surface offers the theme dropdown and the picker for the override.
     /// </summary>
     [TestFixture]
     internal sealed class AspidThemeOverrideTests
@@ -25,12 +27,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         private TestPanel _panel;
         private StyleSheet _override;
         private StyleSheet _savedOverride;
+        private AspidTheme _savedTheme;
 
         [SetUp]
         public void SetUp()
         {
             _savedOverride = AspidThemeSettings.OverrideStyleSheet;
+            _savedTheme = AspidThemeSettings.Theme;
             AspidThemeSettings.OverrideStyleSheet = null;
+            AspidThemeSettings.Theme = AspidTheme.Default;
 
             _override = AssetDatabase.LoadAssetAtPath<StyleSheet>(OverrideStyleSheetPath);
             Assert.IsNotNull(_override, "The override style sheet must load.");
@@ -43,6 +48,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             _panel.Dispose();
             AspidThemeSettings.OverrideStyleSheet = _savedOverride;
+            AspidThemeSettings.Theme = _savedTheme;
         }
 
         [UnityTest]
@@ -221,5 +227,118 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             field.value = null;
             Assert.IsNull(AspidThemeSettings.OverrideStyleSheet, "Clearing the field must clear the override.");
         }
+
+        [Test]
+        public void EveryBuiltInTheme_LoadsItsSheet()
+        {
+            foreach (AspidTheme theme in Enum.GetValues(typeof(AspidTheme)))
+            {
+                AspidThemeSettings.Theme = theme;
+
+                if (theme is AspidTheme.Default) Assert.IsNull(AspidThemeSettings.ThemeStyleSheet, "Default adds no sheet.");
+                else Assert.IsNotNull(AspidThemeSettings.ThemeStyleSheet, $"The {theme} theme must load its sheet.");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator ThemeSheet_IsAddedBetweenPalettesAndOverride()
+        {
+            yield return null;
+
+            AspidThemeSettings.Theme = AspidTheme.Venom;
+            AspidThemeSettings.OverrideStyleSheet = _override;
+            var host = _panel.Root.AddAspidThemeStyleSheets();
+
+            var dark = Resources.Load<StyleSheet>(AspidStyles.DefaultStyleSheet);
+            var light = Resources.Load<StyleSheet>(AspidStyles.LightStyleSheet);
+            var venom = Resources.Load<StyleSheet>(AspidStyles.VenomThemeStyleSheet);
+            CollectionAssert.AreEqual(
+                new[] { dark, light, venom, _override },
+                StyleSheets(host),
+                "The theme must win the ties of both palettes and lose those of the override.");
+
+            // A change of the theme must keep the override last.
+            AspidThemeSettings.Theme = AspidTheme.Graphite;
+            var graphite = Resources.Load<StyleSheet>(AspidStyles.GraphiteThemeStyleSheet);
+            CollectionAssert.AreEqual(
+                new[] { dark, light, graphite, _override },
+                StyleSheets(host),
+                "A new theme must replace the old one and stay under the override.");
+        }
+
+        [UnityTest]
+        public IEnumerator Theme_WinsOverBuiltInPalette_AndLeavesWithIt()
+        {
+            yield return null;
+
+            var host = _panel.Root.AddAspidThemeStyleSheets();
+            var box = new VisualElement()
+                .AddClass("aspid-fasttools-background")
+                .AddClass("aspid-fasttools-theme--dark");
+            host.Add(box);
+            yield return null;
+            var builtIn = box.resolvedStyle.backgroundColor;
+
+            AspidThemeSettings.Theme = AspidTheme.Venom;
+            yield return null;
+            Assert.AreEqual(Rgb(30, 34, 44), box.resolvedStyle.backgroundColor, "The theme must win over the built-in palette.");
+
+            AspidThemeSettings.Theme = AspidTheme.Default;
+            yield return null;
+            Assert.AreEqual(builtIn, box.resolvedStyle.backgroundColor, "Default must bring the built-in palette back.");
+        }
+
+        [UnityTest]
+        public IEnumerator ThemeLightBlock_WinsOverLightPalette()
+        {
+            yield return null;
+
+            // The light class is set by hand: AddAspidThemeStyleSheets would remove it again on a dark editor skin.
+            var host = _panel.Root
+                .AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet)
+                .AddStyleSheetFromResources(AspidStyles.LightStyleSheet)
+                .AddStyleSheetFromResources(AspidStyles.VenomThemeStyleSheet)
+                .AddClass(AspidStyles.PaletteLightClass);
+
+            var box = new VisualElement()
+                .AddClass("aspid-fasttools-background")
+                .AddClass("aspid-fasttools-theme--dark");
+            host.Add(box);
+            yield return null;
+
+            Assert.AreEqual(Rgb(237, 238, 241), box.resolvedStyle.backgroundColor,
+                "The light block of the theme must win over both the light palette and the theme's own :root.");
+        }
+
+        [UnityTest]
+        public IEnumerator BuildControls_LiveSyncsThemeFieldFromSettings()
+        {
+            yield return null;
+
+            var container = new VisualElement();
+            _panel.Root.Add(container);
+            AspidThemeSettingsUI.BuildControls(container);
+
+            var field = container.Q<EnumField>();
+            Assert.IsNotNull(field, "BuildControls must emit the theme dropdown.");
+            Assert.AreEqual(AspidTheme.Default, field.value);
+
+            AspidThemeSettings.Theme = AspidTheme.Graphite;
+            Assert.AreEqual(AspidTheme.Graphite, field.value, "The dropdown must mirror the settings live.");
+
+            field.value = AspidTheme.Venom;
+            Assert.AreEqual(AspidTheme.Venom, AspidThemeSettings.Theme, "Picking a theme must store it.");
+        }
+
+        private static List<StyleSheet> StyleSheets(VisualElement element)
+        {
+            var sheets = new List<StyleSheet>();
+            for (var index = 0; index < element.styleSheets.count; index++)
+                sheets.Add(element.styleSheets[index]);
+
+            return sheets;
+        }
+
+        private static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
     }
 }

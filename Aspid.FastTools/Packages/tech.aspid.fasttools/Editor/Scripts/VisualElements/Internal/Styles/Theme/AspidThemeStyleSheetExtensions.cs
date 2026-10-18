@@ -16,8 +16,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             // A switch of the editor skin restyles the panel, so the class follows it without a rebuild.
             element.RegisterCallback<CustomStyleResolvedEvent>(OnCustomStyleResolved);
 
-            var applied = AspidThemeSettings.OverrideStyleSheet;
-            if (applied != null) element.AddStyleSheet(applied);
+            // The theme comes after both palettes and the override after the theme, so each wins the ties of the ones before.
+            StyleSheet theme = null;
+            StyleSheet applied = null;
+            AddThemeSheets();
 
             element.RegisterCallback<AttachToPanelEvent>(_ =>
             {
@@ -40,9 +42,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             void OnThemeChanged()
             {
+                if (theme != null) element.RemoveStyleSheet(theme);
                 if (applied != null) element.RemoveStyleSheet(applied);
 
+                AddThemeSheets();
+            }
+
+            void AddThemeSheets()
+            {
+                theme = AspidThemeSettings.ThemeStyleSheet;
                 applied = AspidThemeSettings.OverrideStyleSheet;
+
+                if (theme != null) element.AddStyleSheet(theme);
                 if (applied != null) element.AddStyleSheet(applied);
             }
         }

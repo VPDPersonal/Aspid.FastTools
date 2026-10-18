@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -7,12 +8,39 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     internal static class AspidThemeSettings
     {
+        // One theme for every project of this machine, like the animated background; the override is an asset of a project.
+        private const string ThemeKey = "Aspid.FastTools.Appearance.Theme";
         private const string LegacyOverrideStyleSheetGuidKey = "Aspid.FastTools.Theme.OverrideStyleSheetGuid";
 
         public static event Action Changed;
 
         private static string OverrideStyleSheetGuidKey =>
             "Aspid.FastTools.Theme.OverrideStyleSheetGuid." + PlayerSettings.productGUID;
+
+        public static AspidTheme Theme
+        {
+            // The name is stored, not the number, so a reordered enum keeps the choice.
+            get => Enum.TryParse<AspidTheme>(EditorPrefs.GetString(ThemeKey, defaultValue: string.Empty), out var theme)
+                && Enum.IsDefined(typeof(AspidTheme), theme)
+                    ? theme
+                    : AspidTheme.Default;
+            set
+            {
+                if (Theme == value) return;
+
+                if (value is AspidTheme.Default) EditorPrefs.DeleteKey(ThemeKey);
+                else EditorPrefs.SetString(ThemeKey, value.ToString());
+
+                Changed?.Invoke();
+            }
+        }
+
+        public static StyleSheet ThemeStyleSheet => Theme switch
+        {
+            AspidTheme.Venom => Resources.Load<StyleSheet>(AspidStyles.VenomThemeStyleSheet),
+            AspidTheme.Graphite => Resources.Load<StyleSheet>(AspidStyles.GraphiteThemeStyleSheet),
+            _ => null,
+        };
 
         public static StyleSheet OverrideStyleSheet
         {

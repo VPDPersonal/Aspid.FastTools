@@ -362,10 +362,23 @@
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
     border-radius:                                        6px;
+    align-items:                                          center;
+}
+
+/* Unity aligns the display label to the upper left with a 1px top padding, which in this taller input left the text
+   1.5px above the middle; the label is centered in the input instead. */
+.aspid-fasttools-settings .unity-object-field__object {
+    align-self:                                           stretch;
+    align-items:                                          center;
+    margin:                                               0;
+    padding:                                              0;
 }
 
 .aspid-fasttools-settings .unity-object-field-display__label {
+    margin:                                               0 0 0 2px;
+    padding:                                              0;
     color:                                                var(--aspid-colors-text-lightness);
+    -unity-text-align:                                    middle-left;
 }
 
 .aspid-fasttools-settings .unity-object-field:hover .unity-object-field__input {

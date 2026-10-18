@@ -1,0 +1,51 @@
+/* Venom: the palette of the documentation site. Blue-black surfaces with cool text on the dark skin, cool grey paper with
+   white cards in an Aspid window on the light skin. The status colours stay those of the built-in palette.
+   The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
+   light block follows :root in this sheet. */
+:root {
+    --aspid-colors-bg-darkness:                     rgb(22, 25, 33);
+    --aspid-colors-bg-dark:                         rgb(30, 34, 44);
+    --aspid-colors-bg-light:                        rgb(40, 45, 57);
+    --aspid-colors-bg-lightness:                    rgb(50, 56, 70);
+
+    --aspid-colors-text-lightness:                  rgb(240, 240, 242);
+    --aspid-colors-text-light:                      rgb(200, 200, 204);
+    --aspid-colors-text-dark:                       rgb(146, 149, 159);
+    --aspid-colors-text-darkness:                   rgb(106, 110, 122);
+
+    --aspid-colors-shade-darkness:                  rgb(39, 43, 53);
+    --aspid-colors-shade-dark:                      rgb(52, 58, 70);
+    --aspid-colors-shade-light:                     rgb(72, 79, 94);
+    --aspid-colors-shade-lightness:                 rgb(94, 101, 118);
+
+    --aspid-colors-surface-canvas:                  rgb(10, 11, 15);
+    --aspid-colors-surface-card:                    rgb(16, 18, 26);
+    --aspid-colors-surface-card-dim:                rgb(13, 15, 21);
+
+    --aspid-colors-slider-handle:                   rgba(196, 200, 214, 0.85);
+    --aspid-colors-control-border:                  rgb(106, 112, 128);
+}
+
+.aspid-fasttools-palette--light {
+    --aspid-colors-bg-darkness:                     rgb(247, 247, 248);
+    --aspid-colors-bg-dark:                         rgb(237, 238, 241);
+    --aspid-colors-bg-light:                        rgb(227, 228, 232);
+    --aspid-colors-bg-lightness:                    rgb(211, 213, 219);
+
+    --aspid-colors-text-lightness:                  rgb(18, 19, 22);
+    --aspid-colors-text-light:                      rgb(42, 44, 49);
+    --aspid-colors-text-dark:                       rgb(95, 99, 107);
+    --aspid-colors-text-darkness:                   rgb(134, 138, 147);
+
+    --aspid-colors-shade-darkness:                  rgb(227, 228, 232);
+    --aspid-colors-shade-dark:                      rgb(211, 213, 219);
+    --aspid-colors-shade-light:                     rgb(180, 183, 192);
+    --aspid-colors-shade-lightness:                 rgb(156, 160, 170);
+
+    --aspid-colors-surface-canvas:                  rgb(238, 239, 242);
+    --aspid-colors-surface-card:                    rgb(255, 255, 255);
+    --aspid-colors-surface-card-dim:                rgb(250, 250, 251);
+
+    --aspid-colors-slider-handle:                   rgba(90, 94, 104, 0.85);
+    --aspid-colors-control-border:                  rgb(134, 138, 147);
+}
