@@ -312,9 +312,10 @@ jobs:
         unity: ${{ fromJSON(needs.unity-plan.outputs.versions) }}
     env:
       UNITY_VERSION: ${{ matrix.unity }}
-      # The game-ci CLI that game-ci/unity-test-runner v4.4.0 runs, pinned by version and archive checksum.
-      GAME_CI_VERSION: v0.1.72
-      GAME_CI_SHA256: 1de550a620ee92e05e920b6db7d431621440b60b2577f04b4a997dc92a58cb0a
+      # The game-ci CLI that game-ci/unity-test-runner v4.4.0 runs, pinned by version and archive checksum. No name
+      # here starts with GAME_CI: the CLI reads such variables as its own options and stops on unknown ones.
+      GAMECI_VERSION: v0.1.72
+      GAMECI_SHA256: 1de550a620ee92e05e920b6db7d431621440b60b2577f04b4a997dc92a58cb0a
     steps:
       # What the test project reads: the package and the script that builds the project.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -331,10 +332,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           dir="$RUNNER_TEMP/game-ci"
-          gh release download "$GAME_CI_VERSION" --repo game-ci/cli --pattern game-ci-linux-x64.tar.gz --dir "$dir"
-          echo "$GAME_CI_SHA256  $dir/game-ci-linux-x64.tar.gz" | sha256sum --check --quiet
+          gh release download "$GAMECI_VERSION" --repo game-ci/cli --pattern game-ci-linux-x64.tar.gz --dir "$dir"
+          echo "$GAMECI_SHA256  $dir/game-ci-linux-x64.tar.gz" | sha256sum --check --quiet
           tar -xzf "$dir/game-ci-linux-x64.tar.gz" -C "$dir"
-          echo "GAME_CI=$dir/game-ci" >> "$GITHUB_ENV"
+          echo "GAMECI=$dir/game-ci" >> "$GITHUB_ENV"
 
       # Two passes on one Personal seat. The runner has no GPU: Unity draws through llvmpipe (software OpenGL under
       # xvfb), where UI tests run up to 250 times slower than on a GPU. So every test that opens no window runs under
@@ -353,12 +354,12 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
           for attempt in 1 2; do
-            if "$GAME_CI" activate --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
+            if "$GAMECI" activate --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
               --targetPlatform=StandaloneLinux64; then
               exit 0
             fi
             if [ "$attempt" = 1 ]; then
-              echo "::warning::Unity assigned no seat; trying once more after a pause."
+              echo "::warning::The activation failed; trying once more after a pause."
               sleep $((60 + RANDOM % 60))
             fi
           done
@@ -373,7 +374,7 @@ jobs:
         env: *unity-account
         run: |
           code=0
-          "$GAME_CI" test --docker --engine=unity ci-unity-project --testPlatforms=editmode \
+          "$GAMECI" test --docker --engine=unity ci-unity-project --testPlatforms=editmode \
             --engineVersion="$UNITY_VERSION" --artifactsPath=unity-test-results/nographics \
             --customParameters="-aspidFastToolsStrictSetup -nographics -testCategory !Graphics" \
             --dockerEnv=SKIP_ACTIVATION=true --dockerEnv=COVERAGE_ENABLED=false || code=$?
@@ -384,7 +385,7 @@ jobs:
         env: *unity-account
         run: |
           code=0
-          "$GAME_CI" test --docker --engine=unity ci-unity-project --testPlatforms=editmode \
+          "$GAMECI" test --docker --engine=unity ci-unity-project --testPlatforms=editmode \
             --engineVersion="$UNITY_VERSION" --artifactsPath=unity-test-results/graphics \
             --customParameters="-aspidFastToolsStrictSetup -testCategory Graphics" \
             --dockerEnv=SKIP_ACTIVATION=true --dockerEnv=COVERAGE_ENABLED=false || code=$?
@@ -397,7 +398,7 @@ jobs:
         continue-on-error: true
         env: *unity-account
         run: |
-          "$GAME_CI" return-license --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
+          "$GAMECI" return-license --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
             --targetPlatform=StandaloneLinux64
 
       - name: Summarize the test results
