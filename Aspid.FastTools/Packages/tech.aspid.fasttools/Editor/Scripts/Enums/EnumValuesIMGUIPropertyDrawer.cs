@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
@@ -12,6 +13,14 @@ namespace Aspid.FastTools.Enums.Editors
         private const float CornerRadius = 5f;
         private const float CardPadding = 5f;
         private const float SeamPadding = 2f;
+        private const int StyleStateCount = 8;
+
+        private static int _plainFoldoutHeaderDepth;
+        private static FontStyle _savedFontStyle;
+        private static Texture2D _transparentTexture;
+        private static readonly GUIStyleState[] _states = new GUIStyleState[StyleStateCount];
+        private static readonly Texture2D[] _savedBackgrounds = new Texture2D[StyleStateCount];
+        private static readonly Texture2D[][] _savedScaledBackgrounds = new Texture2D[StyleStateCount][];
 
         // Keep these colors aligned with the UI Toolkit drawer: --unity-colors-inspector_titlebar-border,
         // --unity-colors-inspector_titlebar-background and --unity-colors-helpbox-background.
@@ -37,7 +46,8 @@ namespace Aspid.FastTools.Enums.Editors
                 BorderWidth
                 + CardPadding
                 + GetHeaderContentHeight(enumTypeProperty)
-                + SeamPadding;
+                + SeamPadding
+                + BorderWidth;
 
             var contentHeight =
                 EditorGUI.GetPropertyHeight(valuesProperty, includeChildren: true)
@@ -62,7 +72,7 @@ namespace Aspid.FastTools.Enums.Editors
             var inset = BorderWidth + CardPadding;
 
             var headerContentHeight = GetHeaderContentHeight(enumTypeProperty);
-            var headerBackgroundHeight = BorderWidth + CardPadding + headerContentHeight + SeamPadding;
+            var headerBackgroundHeight = BorderWidth + CardPadding + headerContentHeight + SeamPadding + BorderWidth;
             var headerBackgroundRect = new Rect(position.x, position.y, position.width, headerBackgroundHeight);
 
             var containerBackgroundRect = new Rect(position.x, headerBackgroundRect.yMax, position.width, position.height - headerBackgroundHeight);
@@ -88,16 +98,123 @@ namespace Aspid.FastTools.Enums.Editors
                 position.x + contentInset, containerBackgroundRect.y + SeamPadding,
                 position.width - contentInset - inset, valuesHeight);
 
-            EditorGUI.PropertyField(valuesRect, valuesProperty, includeChildren: true);
+            DrawValues(valuesRect, valuesProperty);
 
+            // A plain default value starts at the card inset as in UI Toolkit; a foldout one keeps room for its arrow.
+            var defaultValueInset = defaultValueProperty.HasFoldout() ? contentInset : inset;
             var defaultValueHeight = EditorGUI.GetPropertyHeight(defaultValueProperty, includeChildren: true);
-            var defaultValueRect = new Rect(valuesRect.x, valuesRect.yMax + EditorGUIUtility.standardVerticalSpacing, valuesRect.width, defaultValueHeight);
+            var defaultValueRect = new Rect(
+                position.x + defaultValueInset, valuesRect.yMax + EditorGUIUtility.standardVerticalSpacing,
+                position.width - defaultValueInset - inset, defaultValueHeight);
             EditorGUI.PropertyField(defaultValueRect, defaultValueProperty, includeChildren: true);
         }
 
+        // Unity draws the list header with EditorStyles.foldoutHeader: bold text on a band. UI Toolkit shows a plain
+        // foldout, so the style is swapped while the list draws and restored right after. The depth counter keeps
+        // the saved original when an EnumValues is nested inside another one.
+        // The background must stay non-null: a style without one is painted from the editor USS, band included.
+        private static void DrawValues(Rect rect, SerializedProperty valuesProperty)
+        {
+            var style = EditorStyles.foldoutHeader;
+            if (_plainFoldoutHeaderDepth++ is 0) ApplyPlainFoldoutHeader(style);
+
+            try
+            {
+                EditorGUI.PropertyField(rect, valuesProperty, includeChildren: true);
+                DrawValuesFoldoutArrow(rect, valuesProperty);
+            }
+            finally
+            {
+                if (--_plainFoldoutHeaderDepth is 0) RestoreFoldoutHeader(style);
+            }
+        }
+
+        // The editor USS paints the foldout header arrow together with its band, so the arrow goes with it.
+        private static void DrawValuesFoldoutArrow(Rect rect, SerializedProperty valuesProperty)
+        {
+            if (Event.current.type != EventType.Repaint) return;
+
+            // One point further left than the arrow width lines it up with the stock header arrow.
+            var arrowRect = new Rect(
+                rect.x - EnumValueIMGUIPropertyDrawer.FoldoutArrowWidth - 1f, rect.y,
+                EnumValueIMGUIPropertyDrawer.FoldoutArrowWidth, EditorGUIUtility.singleLineHeight);
+
+            var headerRect = new Rect(arrowRect.x, rect.y, rect.xMax - arrowRect.x, EditorGUIUtility.singleLineHeight);
+            var isHover = headerRect.Contains(Event.current.mousePosition);
+
+            EditorStyles.foldout.Draw(arrowRect, GUIContent.none, isHover, isActive: false, on: valuesProperty.isExpanded, hasKeyboardFocus: false);
+        }
+
+        private static void ApplyPlainFoldoutHeader(GUIStyle style)
+        {
+            _savedFontStyle = style.fontStyle;
+            style.fontStyle = FontStyle.Normal;
+
+            var states = GetStates(style);
+            for (var i = 0; i < states.Length; i++)
+            {
+                _savedBackgrounds[i] = states[i].background;
+                _savedScaledBackgrounds[i] = states[i].scaledBackgrounds;
+
+                states[i].background = TransparentTexture;
+                states[i].scaledBackgrounds = Array.Empty<Texture2D>();
+            }
+        }
+
+        private static void RestoreFoldoutHeader(GUIStyle style)
+        {
+            style.fontStyle = _savedFontStyle;
+
+            var states = GetStates(style);
+            for (var i = 0; i < states.Length; i++)
+            {
+                states[i].background = _savedBackgrounds[i];
+                states[i].scaledBackgrounds = _savedScaledBackgrounds[i];
+
+                _savedBackgrounds[i] = null;
+                _savedScaledBackgrounds[i] = null;
+            }
+        }
+
+        private static Texture2D TransparentTexture
+        {
+            get
+            {
+                if (_transparentTexture) return _transparentTexture;
+
+                _transparentTexture = new Texture2D(width: 1, height: 1, TextureFormat.RGBA32, mipChain: false)
+                {
+                    hideFlags = HideFlags.HideAndDontSave,
+                };
+
+                _transparentTexture.SetPixel(x: 0, y: 0, Color.clear);
+                _transparentTexture.Apply();
+                return _transparentTexture;
+            }
+        }
+
+        private static GUIStyleState[] GetStates(GUIStyle style)
+        {
+            _states[0] = style.normal;
+            _states[1] = style.hover;
+            _states[2] = style.active;
+            _states[3] = style.focused;
+            _states[4] = style.onNormal;
+            _states[5] = style.onHover;
+            _states[6] = style.onActive;
+            _states[7] = style.onFocused;
+            return _states;
+        }
+
+        // The label takes its own line above the type field, as in UI Toolkit.
+        private static float GetHeaderContentHeight(SerializedProperty enumTypeProperty) =>
+            EditorGUIUtility.singleLineHeight
+            + EditorGUIUtility.standardVerticalSpacing
+            + GetTypeFieldHeight(enumTypeProperty);
+
         // The type field adds a notice row when the type is missing or required; a fixed line would let it
         // overlap the list below.
-        private static float GetHeaderContentHeight(SerializedProperty enumTypeProperty) => Mathf.Max(
+        private static float GetTypeFieldHeight(SerializedProperty enumTypeProperty) => Mathf.Max(
             EditorGUIUtility.singleLineHeight,
             EditorGUI.GetPropertyHeight(enumTypeProperty, GUIContent.none, includeChildren: false));
 
@@ -115,6 +232,10 @@ namespace Aspid.FastTools.Enums.Editors
                 HeaderColor,
                 Vector4.zero,
                 new Vector4(CornerRadius, CornerRadius, 0f, 0f));
+
+            // The seam line under the header, like the header's bottom border in UI Toolkit.
+            var seamRect = new Rect(headerRect.x, headerRect.yMax - BorderWidth, headerRect.width, BorderWidth);
+            EditorGUI.DrawRect(seamRect, BorderColor);
 
             GUI.DrawTexture(
                 containerRect,
@@ -140,13 +261,11 @@ namespace Aspid.FastTools.Enums.Editors
         private static void DrawHeader(Rect rect, GUIContent label, SerializedProperty enumTypeProperty, bool isTyped)
         {
             var labelRect = rect;
-            labelRect.width = EditorGUIUtility.labelWidth;
             labelRect.height = EditorGUIUtility.singleLineHeight;
             EditorGUI.LabelField(labelRect, label);
 
             var fieldRect = rect;
-            fieldRect.x += EditorGUIUtility.labelWidth;
-            fieldRect.width -= EditorGUIUtility.labelWidth;
+            fieldRect.yMin = labelRect.yMax + EditorGUIUtility.standardVerticalSpacing;
 
             if (isTyped) DrawReadOnlyEnumType(fieldRect, enumTypeProperty);
             else EditorGUI.PropertyField(fieldRect, enumTypeProperty, GUIContent.none);
