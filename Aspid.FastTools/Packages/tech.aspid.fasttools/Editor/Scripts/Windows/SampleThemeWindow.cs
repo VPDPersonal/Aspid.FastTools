@@ -217,6 +217,7 @@ namespace Aspid.FastTools.Editors.Internal
 
         private static void ApplyScene(Scene scene, SampleThemePalette palette)
         {
+            var materials = MaterialsFolder(scene);
             foreach (var root in scene.GetRootGameObjects())
             {
                 if (Mode == SampleThemeMode.Light)
@@ -243,7 +244,7 @@ namespace Aspid.FastTools.Editors.Internal
                 {
                     if (Renderers.ContainsKey(renderer) || (renderer.HasPropertyBlock() && renderer is not LineRenderer)) continue;
                     var material = renderer.sharedMaterial;
-                    if (material == null || !AssetDatabase.GetAssetPath(material).Contains("/Materials/")) continue;
+                    if (material == null || !IsSampleMaterial(material, materials)) continue;
                     Color color;
                     switch (material.name)
                     {
@@ -275,13 +276,14 @@ namespace Aspid.FastTools.Editors.Internal
                 && component.GetType().Name == "SampleFrame"
                 && component.GetType().Namespace?.StartsWith("Aspid.FastTools.Samples.", StringComparison.Ordinal) == true)) return;
             var palette = SampleThemeSettings.instance.Get(Mode);
+            var materials = MaterialsFolder(camera.gameObject.scene);
+            if (materials == null || materials.Contains("/EnumValues/")) return;
             foreach (var root in camera.gameObject.scene.GetRootGameObjects())
             foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
             {
                 if (!renderer.HasPropertyBlock()) continue;
                 var material = renderer.sharedMaterial;
-                var path = material == null ? "" : AssetDatabase.GetAssetPath(material);
-                if (!path.Contains("/Materials/") || path.Contains("/EnumValues/")) continue;
+                if (material == null || !IsSampleMaterial(material, materials)) continue;
                 if (Renderers.ContainsKey(renderer)) continue;
                 var original = new MaterialPropertyBlock();
                 renderer.GetPropertyBlock(original);
@@ -296,6 +298,17 @@ namespace Aspid.FastTools.Editors.Internal
                 renderer.SetPropertyBlock(themed);
             }
         }
+
+        // A sample keeps its scene in <sample>/Scenes and its materials in <sample>/Materials.
+        private static string MaterialsFolder(Scene scene)
+        {
+            var scenes = scene.path.LastIndexOf('/');
+            var sample = scenes > 0 ? scene.path.LastIndexOf('/', scenes - 1) : -1;
+            return sample > 0 ? scene.path.Substring(0, sample) + "/Materials/" : null;
+        }
+
+        private static bool IsSampleMaterial(Material material, string materials) => materials != null
+            && AssetDatabase.GetAssetPath(material).StartsWith(materials, StringComparison.Ordinal);
 
         private static void RestoreAnimated()
         {
