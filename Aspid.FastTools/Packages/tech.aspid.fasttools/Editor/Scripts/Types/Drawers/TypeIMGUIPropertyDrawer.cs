@@ -12,6 +12,9 @@ namespace Aspid.FastTools.Types.Editors
         internal const string FolderClosedIconPath = "Folder Icon";
         internal const string FolderOpenedIconPath = "FolderOpened Icon";
 
+        // The size of the picker's row icons.
+        private static readonly Vector2 _captionIconSize = new(14f, 14f);
+
         private static readonly GUIContent _measureContent = new();
 
         // Re-tinted on every use so the cached style survives editor-theme changes.
@@ -30,6 +33,23 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             if (clicked) type.OpenInScriptEditor();
+        }
+
+        // The icon left of a dropdown caption: null while the Appearance switch is off, and for <None> or a missing type.
+        internal static Texture GetCaptionIcon(Type type) =>
+            TypeFieldIconSettings.Enabled ? TypeSelectorIconResolver.ResolveForType(type) : null;
+
+        // A dropdown button whose caption icon is drawn at the picker's icon size, not at the texture's own size.
+        internal static bool DrawDropdownButton(Rect rect, GUIContent content, GUIStyle style)
+        {
+            using (new EditorGUIUtility.IconSizeScope(_captionIconSize))
+                return EditorGUI.DropdownButton(position: rect, content: content, focusType: FocusType.Passive, style: style);
+        }
+
+        internal static void DrawCaptionLabel(Rect rect, GUIContent content, GUIStyle style)
+        {
+            using (new EditorGUIUtility.IconSizeScope(_captionIconSize))
+                EditorGUI.LabelField(position: rect, label: content, style: style);
         }
 
         internal static float GetHeight(SerializedProperty property)
@@ -95,11 +115,10 @@ namespace Aspid.FastTools.Types.Editors
                 caption = FitCaptionFromLeft(style: captionStyle, text: caption, width: dropdownRect.width);
             }
 
-            var captionContent = new GUIContent(text: caption,
+            var captionContent = new GUIContent(text: caption, image: hasValidType ? GetCaptionIcon(type: currentType) : null,
                 tooltip: isMissing ? GetMissingTooltip(storedName: property.stringValue) : null);
 
-            if (EditorGUI.DropdownButton(position: dropdownRect, content: captionContent,
-                    focusType: FocusType.Passive, style: captionStyle))
+            if (DrawDropdownButton(rect: dropdownRect, content: captionContent, style: captionStyle))
                 ShowSelector(property: property, rect: dropdownRect, allow: allow, types: types);
 
             if (hasValidType)

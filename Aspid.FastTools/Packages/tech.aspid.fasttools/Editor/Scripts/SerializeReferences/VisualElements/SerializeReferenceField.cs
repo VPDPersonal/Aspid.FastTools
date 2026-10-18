@@ -21,6 +21,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyClass = BlockClass + "--empty";
         private const string ChildlessClass = BlockClass + "--childless";
         private const string DropdownClass = BlockClass + "__dropdown";
+        private const string IconClass = BlockClass + "__icon";
         private const string OpenButtonClass = BlockClass + "__open-button";
 
         // Missing stored type: tints the caption the warning amber and flips its ellipsis to the start,
@@ -74,6 +75,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const int MaxRevealRetries = 4;
 
         private readonly Foldout _foldout;
+        private readonly Image _icon;
         private readonly TextElement _caption;
         private readonly VisualElement _dropdown;
         private readonly Button _openButton;
@@ -143,6 +145,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _notices = new VisualElement().AddClass(NoticesClass);
             _foldout.hierarchy.Insert(_foldout.hierarchy.IndexOf(_content) + 1, _notices);
 
+            _icon = new Image { scaleMode = ScaleMode.ScaleToFit }
+                .AddClass(IconClass)
+                .SetPickingMode(PickingMode.Ignore);
+
             _caption = new TextElement()
                 .AddClass(EnumField.textUssClassName)
                 .SetPickingMode(PickingMode.Ignore);
@@ -154,6 +160,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var dropdownInput = new VisualElement()
                 .AddClass(BaseField<object>.inputUssClassName)
                 .AddClass(EnumField.inputUssClassName)
+                .AddChild(_icon)
                 .AddChild(_caption)
                 .AddChild(new VisualElement()
                     .AddClass(EnumField.arrowUssClassName)
@@ -222,6 +229,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // The same step can take back a <None> pick on a missing reference after this field refreshed.
                 SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
                 SerializeReferenceMissingListGuard.UndoChangedNotes += OnUndoRedo;
+                // The Appearance switch applies live to every open field.
+                TypeFieldIconSettings.Changed -= OnIconSettingChanged;
+                TypeFieldIconSettings.Changed += OnIconSettingChanged;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -232,6 +242,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
                 SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
+                TypeFieldIconSettings.Changed -= OnIconSettingChanged;
                 _liveFields.Remove(this);
             });
         }
@@ -291,6 +302,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     : missingType.IsEmpty ? null : $"Missing type: {missingType.FullName}";
 
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
+            UpdateIcon(currentType, mixedTypes);
 
             // Unity puts its mixed-value class on the caption of a real EnumField, which tints the "—". The theme rule
             // matches only a caption that is a direct child of the input, which carries BaseField's input class.
@@ -394,6 +406,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return group.AddChild(field);
+        }
+
+        private void OnIconSettingChanged()
+        {
+            if (!IsPropertyAlive()) return;
+            UpdateIcon(SerializeReferenceHelpers.GetCurrentType(_property), SerializeReferenceHelpers.HasMixedTypes(_property));
+        }
+
+        // A missing type resolves to null, so it shows no icon, as <None> does.
+        private void UpdateIcon(Type currentType, bool mixedTypes)
+        {
+            _icon.image = mixedTypes || !TypeFieldIconSettings.Enabled ? null : TypeSelectorIconResolver.ResolveForType(currentType);
+            _icon.SetDisplay(_icon.image ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
         private void UpdateMixedBox(bool mixedTypes)

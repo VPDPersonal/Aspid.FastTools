@@ -137,6 +137,8 @@ If a well-formed type name refers to a type that is not loaded, the Inspector sh
 
 Subclasses do not inherit these settings.
 
+The closed field shows the same icon left of the type name. To hide it, turn off **Type icons** under **Appearance** in the FastTools window's **Settings** tab.
+
 ![The Longsword name, icon, and Weapons/Melee group in the picker](Images/type-selector-display.png)
 
 > [!NOTE]

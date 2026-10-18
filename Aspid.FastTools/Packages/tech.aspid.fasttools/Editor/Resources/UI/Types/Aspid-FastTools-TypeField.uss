@@ -34,3 +34,12 @@ Button.aspid-fasttools-type-field__open-button {
 .aspid-fasttools-skin--light .aspid-fasttools-type-field__open-button:enabled:hover > .aspid-fasttools-type-field__open-icon {
     background-image:       resource("FolderOpened Icon");
 }
+
+/* The type icon left of the caption, the size of the picker's row icons. */
+.aspid-fasttools-type-field__icon {
+    width:                  14px;
+    height:                 14px;
+    margin-right:           3px;
+    flex-shrink:            0;
+    align-self:             center;
+}

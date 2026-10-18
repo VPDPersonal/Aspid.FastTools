@@ -64,10 +64,10 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             var captionContent = new GUIContent(text: caption,
+                image: hasValidType ? TypeIMGUIPropertyDrawer.GetCaptionIcon(type: currentType) : null,
                 tooltip: isMissing ? TypeIMGUIPropertyDrawer.GetMissingTooltip(storedName: assemblyQualifiedName) : null);
 
-            if (EditorGUI.DropdownButton(position: dropdownRect, content: captionContent,
-                    focusType: FocusType.Passive, style: captionStyle))
+            if (TypeIMGUIPropertyDrawer.DrawDropdownButton(rect: dropdownRect, content: captionContent, style: captionStyle))
                 ShowSelector(wrapperProperty: wrapperProperty, rect: dropdownRect, allow: allow, types: types,
                     currentAqn: isMixed ? null : currentType?.AssemblyQualifiedName ?? assemblyQualifiedName);
 
