@@ -1,5 +1,5 @@
 /* Unity: the colours of Unity's own editor skin, so an Aspid window reads as one more editor panel. The canvas takes
-   the tab strip of the editor (#141414 on the dark skin), the cards its panels (#383838) with their darker separators,
+   a grey just under its panels (#2E2E2E on the dark skin), the cards its panels (#383838) with near-black separators,
    the buttons and drop-downs its lighter controls (#464646), and the object fields and value boxes its darker input
    fields. The accent is mono, light greys without a hue, with the grey logo; the status text is lifted on the dark skin
    and deepened on the light skin, so it keeps its contrast on the grey cards.
@@ -18,12 +18,12 @@
     --aspid-colors-text-dark:                       rgb(178, 178, 178);
     --aspid-colors-text-darkness:                   rgb(140, 140, 140);
 
-    --aspid-colors-shade-darkness:                  rgb(35, 35, 35);
+    --aspid-colors-shade-darkness:                  rgb(26, 26, 26);
     --aspid-colors-shade-dark:                      rgb(82, 82, 82);
     --aspid-colors-shade-light:                     rgb(100, 100, 100);
     --aspid-colors-shade-lightness:                 rgb(118, 118, 118);
 
-    --aspid-colors-surface-canvas:                  rgb(20, 20, 20);
+    --aspid-colors-surface-canvas:                  rgb(46, 46, 46);
     --aspid-colors-surface-card:                    rgb(56, 56, 56);
     --aspid-colors-surface-card-dim:                rgb(42, 42, 42);
     --aspid-colors-surface-field:                   rgb(42, 42, 42);
@@ -37,8 +37,8 @@
     --aspid-colors-status-info-text-dark:           rgb(112, 170, 228);
     --aspid-colors-status-info-text-light:          rgb(140, 190, 240);
     --aspid-colors-status-error-text-light:         rgb(244, 136, 156);
-    /* The dots behind the settings take a grey without a hue, so they do not tint the window blue. */
-    --aspid-colors-status-info-blob:                rgb(46, 46, 46);
+    /* The dots behind the settings take a grey barely off the canvas, so the window reads as a flat editor panel. */
+    --aspid-colors-status-info-blob:                rgb(52, 52, 52);
 
     /* Mono accent: light greys without a hue, as the mono accent of the documentation site. */
     --aspid-colors-accent-shade-dark:               rgb(72, 72, 72);
@@ -74,7 +74,7 @@
     --aspid-colors-shade-light:                     rgb(153, 153, 153);
     --aspid-colors-shade-lightness:                 rgb(128, 128, 128);
 
-    --aspid-colors-surface-canvas:                  rgb(165, 165, 165);
+    --aspid-colors-surface-canvas:                  rgb(190, 190, 190);
     --aspid-colors-surface-card:                    rgb(200, 200, 200);
     --aspid-colors-surface-card-dim:                rgb(240, 240, 240);
     --aspid-colors-surface-field:                   rgb(240, 240, 240);
@@ -83,7 +83,7 @@
     --aspid-colors-slider-handle:                   rgba(80, 80, 80, 0.85);
     --aspid-colors-control-border:                  rgb(102, 102, 102);
     --aspid-colors-scope-user:                      rgb(100, 100, 100);
-    --aspid-colors-status-info-blob:                rgb(145, 145, 145);
+    --aspid-colors-status-info-blob:                rgb(184, 184, 184);
 
     --aspid-colors-status-info-text-dark:           rgb(18, 80, 134);
     --aspid-colors-status-info-text-light:          rgb(16, 74, 124);
