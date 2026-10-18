@@ -29,10 +29,12 @@ namespace Aspid.FastTools.Types.Editors
     {
         private const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeField";
 
+        private const string IconClass = "aspid-fasttools-type-field__icon";
         private const string OpenIconClass = "aspid-fasttools-type-field__open-icon";
         private const string OpenButtonClass = "aspid-fasttools-type-field__open-button";
         private const string MissingTextClass = "aspid-fasttools-type-field__text--missing";
 
+        private readonly Image _icon;
         private readonly Button _openButton;
         private readonly TextElement _textElement;
         private readonly VisualElement _visualInput;
@@ -210,12 +212,17 @@ namespace Aspid.FastTools.Types.Editors
 
             _visualInput = visualInput;
 
+            _icon = new Image { scaleMode = ScaleMode.ScaleToFit }
+                .AddClass(IconClass)
+                .SetPickingMode(PickingMode.Ignore);
+
             _textElement = new TextElement()
                 .AddClass(EnumField.textUssClassName)
                 .SetPickingMode(PickingMode.Ignore);
 
             visualInput
                 .AddClass(EnumField.inputUssClassName)
+                .AddChild(_icon)
                 .AddChild(_textElement)
                 .AddChild(new VisualElement()
                     .AddClass(EnumField.arrowUssClassName)
@@ -235,6 +242,15 @@ namespace Aspid.FastTools.Types.Editors
 
             this.AddChild(_openButton);
             RegisterCallback<AttachToPanelEvent>(WarnAboutBindingPath);
+
+            // The Appearance switch applies live to every open field.
+            RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                TypeFieldIconSettings.Changed -= UpdateDisplay;
+                TypeFieldIconSettings.Changed += UpdateDisplay;
+                UpdateDisplay();
+            });
+            RegisterCallback<DetachFromPanelEvent>(_ => TypeFieldIconSettings.Changed -= UpdateDisplay);
             SetValueWithoutNotify(defaultValue);
         }
 
@@ -343,6 +359,10 @@ namespace Aspid.FastTools.Types.Editors
                         assemblyQualifiedName: TypeSelectorHelpers.GetMissingDisplayName(_missingAssemblyQualifiedName)));
 
             _openButton.SetDisplay(value is not null && !showMixedValue ? DisplayStyle.Flex : DisplayStyle.None);
+
+            // A missing type resolves to null, so it shows no icon, as <None> does.
+            _icon.image = showMixedValue || !TypeFieldIconSettings.Enabled ? null : TypeSelectorIconResolver.ResolveForType(value);
+            _icon.SetDisplay(_icon.image ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
         private void OnDropdownClicked(PointerDownEvent evt)

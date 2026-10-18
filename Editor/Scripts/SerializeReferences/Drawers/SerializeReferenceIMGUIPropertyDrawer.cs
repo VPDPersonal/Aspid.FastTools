@@ -169,8 +169,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? "Mixed — the selected objects hold different types."
                 : missingTooltip ?? TypeSelectorHelpers.GetTypeSelectorTooltip(currentType);
 
-            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption, captionTooltip),
-                    FocusType.Passive, captionStyle))
+            var captionIcon = hasValue ? TypeIMGUIPropertyDrawer.GetCaptionIcon(currentType) : null;
+
+            if (TypeIMGUIPropertyDrawer.DrawDropdownButton(dropdownRect, new GUIContent(caption, captionIcon, captionTooltip),
+                    captionStyle))
             {
                 ShowSelector(property, fieldType, baseTypes, mixedTypes ? null : currentType, dropdownRect);
             }
