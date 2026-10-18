@@ -45,7 +45,7 @@
 .aspid-fasttools-reference-graph__rescan .aspid-fasttools-gradient-button__label {
     margin-right:                                         8px;
     -unity-text-align:                                    middle-left;
-    color:                                                var(--aspid-colors-status-success-text-dark);
+    color:                                                var(--aspid-colors-accent-text-dark);
 }
 
 .aspid-fasttools-reference-graph__rescan-icon {
@@ -53,7 +53,7 @@
     width:                                                14px;
     height:                                               14px;
     margin:                                               0 6px 0 4px;
-    -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-dark);
+    -unity-background-image-tint-color:                   var(--aspid-colors-accent-text-dark);
 }
 
 /* Stacked from the top: ReferenceEmptyStateLayout sets the top padding that puts the icon at the middle of the
@@ -322,9 +322,9 @@
 
 /* The keyboard focus on a plain action button looks like its hover, with the stronger border. */
 Button.aspid-fasttools-action-button.aspid-fasttools-reference-graph__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-success-text-light);
-    color:                                                var(--aspid-colors-status-success-text-light);
-    background-color:                                     var(--aspid-colors-status-success-tint);
+    border-color:                                         var(--aspid-colors-accent-text-light);
+    color:                                                var(--aspid-colors-accent-text-light);
+    background-color:                                     var(--aspid-colors-accent-tint);
 }
 
 Button.aspid-fasttools-action-button--danger.aspid-fasttools-reference-graph__nav-target--focused {

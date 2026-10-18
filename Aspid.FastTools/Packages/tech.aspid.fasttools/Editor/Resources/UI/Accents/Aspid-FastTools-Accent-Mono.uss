@@ -1,0 +1,33 @@
+/* Mono: graphite and paper without a hue, as the mono accent of the documentation site, with a grey copy of the
+   logo.
+   Layered after the theme, so it recolors the accent of any theme; the success status stays green. The light block
+   follows :root, and :root here outranks Default-Light. */
+:root {
+    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_mono_256x253");
+
+    --aspid-colors-accent-shade-dark:               rgb(70, 73, 80);
+    --aspid-colors-accent-text-darkness:            rgb(90, 95, 107);
+    --aspid-colors-accent-text-dark:                rgb(200, 201, 208);
+    --aspid-colors-accent-text-light:               rgb(226, 227, 232);
+    --aspid-colors-accent-text-lightness:           rgb(240, 240, 242);
+    --aspid-colors-accent-shade-light:              rgb(110, 114, 124);
+    --aspid-colors-accent-tint:                     rgba(255, 255, 255, 0.08);
+
+    /* Switches read their own token; on the dark skin an on switch tints its track with it. */
+    --aspid-colors-switch-accent:                   rgb(200, 201, 208);
+}
+
+/* On the light skin an on switch fills its track under a white handle, inside a window or not. */
+.aspid-fasttools-skin--light {
+    --aspid-colors-switch-accent:                   rgb(107, 112, 121);
+}
+
+.aspid-fasttools-palette--light {
+    --aspid-colors-accent-shade-dark:               rgb(204, 206, 211);
+    --aspid-colors-accent-text-darkness:            rgb(138, 143, 153);
+    --aspid-colors-accent-text-dark:                rgb(58, 61, 69);
+    --aspid-colors-accent-text-light:               rgb(42, 44, 49);
+    --aspid-colors-accent-text-lightness:           rgb(18, 19, 22);
+    --aspid-colors-accent-shade-light:              rgb(138, 143, 153);
+    --aspid-colors-accent-tint:                     rgba(138, 143, 153, 0.14);
+}

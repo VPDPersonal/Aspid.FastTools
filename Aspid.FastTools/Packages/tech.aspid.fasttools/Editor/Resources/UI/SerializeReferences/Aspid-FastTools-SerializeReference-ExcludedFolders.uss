@@ -61,7 +61,7 @@
 }
 
 .aspid-fasttools-excluded-folders__header--add .aspid-fasttools-excluded-folders__add {
-    color:                                                var(--aspid-colors-status-success-text-light);
+    color:                                                var(--aspid-colors-accent-text-light);
 }
 
 /* Code mirrors child hover onto the row because USS cannot select a parent from child hover. */

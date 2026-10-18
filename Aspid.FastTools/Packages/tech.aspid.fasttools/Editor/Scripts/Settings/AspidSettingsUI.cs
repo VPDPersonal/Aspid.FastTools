@@ -214,7 +214,7 @@ namespace Aspid.FastTools.Editors
                 {
                     text = "Per-user",
                     tooltip = "Reset your per-user settings to defaults: Breakage detection on, "
-                        + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, Default theme, no theme override, auto-show Welcome on, animated background on.\n"
+                        + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, Default theme, Green accent, no theme override, auto-show Welcome on, animated background on.\n"
                         + "Only this machine; the saved Favorites / Recent lists are kept.",
                 };
                 row.AddChild(user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass));
@@ -248,6 +248,7 @@ namespace Aspid.FastTools.Editors
                 + "• Favorites section: On\n"
                 + $"• Recent items: {TypeSelectorSettings.DefaultRecentsCapacity}\n"
                 + "• Theme: Default\n"
+                + "• Accent: Green\n"
                 + "• Theme override: none\n"
                 + "• Auto-show Welcome: On\n"
                 + "• Animated background: On\n\n"
@@ -260,6 +261,7 @@ namespace Aspid.FastTools.Editors
             SerializeReferenceSettings.ResetUserToDefaults();
             TypeSelectorSettings.ResetToDefaults();
             AspidThemeSettings.Theme = AspidTheme.Default;
+            AspidThemeSettings.Accent = AspidAccent.Green;
             AspidThemeSettings.OverrideStyleSheet = null;
             WelcomeSettings.ResetToDefaults();
             AspidAnimatedDotsBackgroundSettings.ResetToDefaults();

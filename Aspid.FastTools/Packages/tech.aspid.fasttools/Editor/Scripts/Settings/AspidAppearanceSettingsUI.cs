@@ -9,7 +9,8 @@ namespace Aspid.FastTools.Editors
     {
         internal const string AnimatedBackgroundName = "animated-background";
 
-        // The Appearance section and Preferences page: the theme, its override, then the animated background switch.
+        // The Appearance section and Preferences page: the theme, the accent, the override, then the animated
+        // background switch.
         public static void BuildControls(VisualElement container)
         {
             AspidThemeSettingsUI.BuildControls(container);

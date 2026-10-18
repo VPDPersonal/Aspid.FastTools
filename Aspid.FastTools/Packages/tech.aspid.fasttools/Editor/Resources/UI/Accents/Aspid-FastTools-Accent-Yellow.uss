@@ -1,0 +1,33 @@
+/* Yellow: the yellow of the documentation site accent and the yellow package logo. On the light palette it leans
+   amber, since a darkened yellow turns olive.
+   Layered after the theme, so it recolors the accent of any theme; the success status stays green. The light block
+   follows :root, and :root here outranks Default-Light. */
+:root {
+    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_yellow_256x253");
+
+    --aspid-colors-accent-shade-dark:               rgb(95, 80, 30);
+    --aspid-colors-accent-text-darkness:            rgb(112, 90, 18);
+    --aspid-colors-accent-text-dark:                rgb(220, 188, 69);
+    --aspid-colors-accent-text-light:               rgb(232, 206, 120);
+    --aspid-colors-accent-text-lightness:           rgb(240, 224, 162);
+    --aspid-colors-accent-shade-light:              rgb(140, 115, 40);
+    --aspid-colors-accent-tint:                     rgba(110, 90, 20, 0.25);
+
+    /* Switches read their own token; on the dark skin an on switch tints its track with it. */
+    --aspid-colors-switch-accent:                   rgb(220, 188, 69);
+}
+
+/* On the light skin an on switch fills its track under a white handle, inside a window or not. */
+.aspid-fasttools-skin--light {
+    --aspid-colors-switch-accent:                   rgb(198, 136, 0);
+}
+
+.aspid-fasttools-palette--light {
+    --aspid-colors-accent-shade-dark:               rgb(232, 215, 160);
+    --aspid-colors-accent-text-darkness:            rgb(212, 170, 110);
+    --aspid-colors-accent-text-dark:                rgb(150, 103, 0);
+    --aspid-colors-accent-text-light:               rgb(134, 93, 0);
+    --aspid-colors-accent-text-lightness:           rgb(110, 76, 0);
+    --aspid-colors-accent-shade-light:              rgb(215, 175, 100);
+    --aspid-colors-accent-tint:                     rgba(230, 170, 60, 0.14);
+}

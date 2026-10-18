@@ -1,0 +1,32 @@
+/* Blue: the blue of the documentation site accent and the blue package logo.
+   Layered after the theme, so it recolors the accent of any theme; the success status stays green. The light block
+   follows :root, and :root here outranks Default-Light. */
+:root {
+    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_blue_256x253");
+
+    --aspid-colors-accent-shade-dark:               rgb(35, 65, 95);
+    --aspid-colors-accent-text-darkness:            rgb(39, 98, 142);
+    --aspid-colors-accent-text-dark:                rgb(78, 165, 218);
+    --aspid-colors-accent-text-light:               rgb(118, 186, 228);
+    --aspid-colors-accent-text-lightness:           rgb(172, 214, 240);
+    --aspid-colors-accent-shade-light:              rgb(50, 105, 150);
+    --aspid-colors-accent-tint:                     rgba(25, 75, 130, 0.25);
+
+    /* Switches read their own token; on the dark skin an on switch tints its track with it. */
+    --aspid-colors-switch-accent:                   rgb(78, 165, 218);
+}
+
+/* On the light skin an on switch fills its track under a white handle, inside a window or not. */
+.aspid-fasttools-skin--light {
+    --aspid-colors-switch-accent:                   rgb(47, 143, 224);
+}
+
+.aspid-fasttools-palette--light {
+    --aspid-colors-accent-shade-dark:               rgb(180, 204, 234);
+    --aspid-colors-accent-text-darkness:            rgb(130, 170, 215);
+    --aspid-colors-accent-text-dark:                rgb(36, 116, 184);
+    --aspid-colors-accent-text-light:               rgb(34, 104, 163);
+    --aspid-colors-accent-text-lightness:           rgb(26, 86, 138);
+    --aspid-colors-accent-shade-light:              rgb(140, 178, 222);
+    --aspid-colors-accent-tint:                     rgba(50, 120, 210, 0.12);
+}

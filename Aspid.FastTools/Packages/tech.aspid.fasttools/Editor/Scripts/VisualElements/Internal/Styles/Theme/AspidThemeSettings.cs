@@ -8,8 +8,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     internal static class AspidThemeSettings
     {
-        // One theme for every project of this machine, like the animated background; the override is an asset of a project.
+        // One theme and accent for every project of this machine, like the animated background; the override is an
+        // asset of a project.
         private const string ThemeKey = "Aspid.FastTools.Appearance.Theme";
+        private const string AccentKey = "Aspid.FastTools.Appearance.Accent";
         private const string LegacyOverrideStyleSheetGuidKey = "Aspid.FastTools.Theme.OverrideStyleSheetGuid";
 
         public static event Action Changed;
@@ -38,9 +40,32 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static StyleSheet ThemeStyleSheet => Theme switch
         {
             AspidTheme.Venom => Resources.Load<StyleSheet>(AspidStyles.VenomThemeStyleSheet),
-            AspidTheme.Graphite => Resources.Load<StyleSheet>(AspidStyles.GraphiteThemeStyleSheet),
             _ => null,
         };
+
+        public static AspidAccent Accent
+        {
+            get => Enum.TryParse<AspidAccent>(
+                    EditorPrefs.GetString(AccentKey, defaultValue: string.Empty),
+                    out var accent)
+                && Enum.IsDefined(typeof(AspidAccent), accent)
+                    ? accent
+                    : AspidAccent.Green;
+            set
+            {
+                if (Accent == value) return;
+
+                if (value is AspidAccent.Green) EditorPrefs.DeleteKey(AccentKey);
+                else EditorPrefs.SetString(AccentKey, value.ToString());
+
+                Changed?.Invoke();
+            }
+        }
+
+        // Each accent sheet is named after its enum member.
+        public static StyleSheet AccentStyleSheet => Accent is AspidAccent.Green
+            ? null
+            : Resources.Load<StyleSheet>(AspidStyles.AccentStyleSheetPrefix + Accent);
 
         public static StyleSheet OverrideStyleSheet
         {
