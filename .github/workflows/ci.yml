@@ -242,9 +242,11 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           BEFORE: ${{ github.event.before }}
           QUICK: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'unity-quick') }}
-          # Every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
+          # The minimum that package.json promises, then the newest patch of each line from the 6000.3 LTS on. 6000.1 and
+          # 6000.2 are left out: Update releases that the 6000.3 LTS replaced, and every tested line costs two Unity
+          # account logins per run (see unity-tests).
           # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
-          UNITY_VERSIONS: 6000.0.53f1 6000.1.17f1 6000.2.15f1 6000.3.26f1 6000.4.12f1 6000.5.11f1 6000.6.5f1
+          UNITY_VERSIONS: 6000.0.53f1 6000.3.26f1 6000.4.12f1 6000.5.11f1 6000.6.5f1
         run: |
           read -ra versions <<<"$UNITY_VERSIONS"
           if [ "$QUICK" = true ]; then
@@ -288,7 +290,8 @@ jobs:
 
   # Compiles the package, its tests, its Math assembly and all samples in a throwaway project and runs the EditMode
   # tests on every version of UNITY_VERSIONS in the plan job (only the first and the last with `unity-quick`).
-  # A line without a version is not tested: Unity changes APIs and behaviour without a define (see #319 and #325).
+  # A line without a version is not tested: Unity changes APIs and behaviour without a define (see #319 and #325). The
+  # Update releases before the 6000.3 LTS (6000.1, 6000.2) are left out on purpose.
   # Each version needs a GameCI image (unityci/editor). Add a version to UNITY_VERSIONS when a new Unity line ships.
   # The tests include PlayerCompilationTests, which compiles every script for a standalone player: the Editor compile
   # alone accepts a UnityEditor call in Runtime/ that breaks the user's player build. The job is part of the required
@@ -375,12 +378,14 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ matrix.unity }}, graphics)
 
+      # Every pass logs in to the Unity account. The second wave of logins, a few minutes after the first, can hit the
+      # account limit ("User reaches maximum same user attempt retry count", 143.002), so this retry waits longer.
       - name: Wait before a second license request (graphics)
         id: no-results-graphics
         if: steps.tests-graphics.outcome == 'failure' && hashFiles('unity-test-results/graphics/**/*.xml') == ''
         run: |
-          echo "::warning::The Unity test run with graphics left no results: no license seat or a compile error, see the step above. Trying once more."
-          sleep $((60 + RANDOM % 60))
+          echo "::warning::The Unity test run with graphics left no results: no license seat, the account login limit or a compile error, see the step above. Trying once more."
+          sleep $((180 + RANDOM % 120))
 
       - id: retry-graphics
         if: ${{ !cancelled() && steps.no-results-graphics.outcome == 'success' }}
