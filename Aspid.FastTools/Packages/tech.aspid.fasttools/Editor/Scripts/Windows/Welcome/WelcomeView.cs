@@ -35,6 +35,9 @@ namespace Aspid.FastTools.Editors
         private const string GitHubLinkName = "welcome-link-github";
         private const string StoreLinkName = "welcome-link-store";
 
+        private const string TutorialMarker = "Tutorial: ";
+        private const string TutorialLinkText = "Tutorial";
+
         private const string LogoName = "welcome-logo";
         private const string ToastName = "welcome-toast";
         private const string ScrollName = "welcome-scroll";
@@ -43,6 +46,7 @@ namespace Aspid.FastTools.Editors
         private const string SampleCardClass = UssClassPrefix + "sample";
         private const string NavTargetClass = UssClassPrefix + "nav-target";
         private const string SampleInfoClass = UssClassPrefix + "sample-info";
+        private const string SampleLinkClass = UssClassPrefix + "sample-link";
         private const string SampleTitleClass = UssClassPrefix + "sample-title";
         private const string SampleSweepClass = UssClassPrefix + "sample-sweep";
         private const string SampleHeaderClass = UssClassPrefix + "sample-header";
@@ -207,18 +211,35 @@ namespace Aspid.FastTools.Editors
         private VisualElement CreateUpmSampleCard(Sample sample)
         {
             var displayName = sample.displayName;
-            var description = sample.description;
+            var description = SplitTutorialUrl(sample.description, out var tutorialUrl);
             var captured = sample;
 
             if (sample.isImported)
             {
                 return CreateSampleCard(displayName, description, "Remove",
                     pointer => RemoveSample(captured, displayName, pointer),
-                    imported: true);
+                    imported: true, tutorialUrl: tutorialUrl);
             }
 
-            return CreateSampleCard(displayName, description, "Import", imported: false,
+            return CreateSampleCard(displayName, description, "Import", imported: false, tutorialUrl: tutorialUrl,
                 onClick: pointer => ImportSample(captured, displayName, pointer));
+        }
+
+        // A sample description in package.json ends with "Tutorial: <url>": Package Manager shows it as text,
+        // the card shows the text before it and a link.
+        internal static string SplitTutorialUrl(string description, out string url)
+        {
+            url = null;
+            if (string.IsNullOrEmpty(description)) return description;
+
+            var index = description.LastIndexOf(TutorialMarker, StringComparison.Ordinal);
+            if (index < 0) return description;
+
+            var candidate = description[(index + TutorialMarker.Length)..].Trim();
+            if (!candidate.StartsWith("https://", StringComparison.Ordinal) || candidate.Contains(' ')) return description;
+
+            url = candidate;
+            return description[..index].TrimEnd();
         }
 
         private void ImportSample(Sample sample, string displayName, Vector2 pointer)
@@ -288,7 +309,8 @@ namespace Aspid.FastTools.Editors
             string description,
             string actionText,
             Action<Vector2> onClick,
-            bool? imported = null)
+            bool? imported = null,
+            string tutorialUrl = null)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(SampleCardClass);
@@ -328,7 +350,7 @@ namespace Aspid.FastTools.Editors
 
             card.AddChild(header);
 
-            if (!string.IsNullOrEmpty(description))
+            if (!string.IsNullOrEmpty(description) || tutorialUrl is not null)
             {
                 card.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
                         .SetTheme(ThemeStyle.Type.Light)
@@ -340,8 +362,19 @@ namespace Aspid.FastTools.Editors
                     sweep.AddClass(SampleSweepRemoveClass);
                 card.AddChild(sweep);
 
-                card.AddChild(new Label(description)
-                    .AddClass(SampleDescriptionClass));
+                if (!string.IsNullOrEmpty(description))
+                {
+                    card.AddChild(new Label(description)
+                        .AddClass(SampleDescriptionClass));
+                }
+
+                if (tutorialUrl is not null)
+                {
+                    card.AddChild(new Label(TutorialLinkText)
+                        .AddClass(SampleLinkClass)
+                        .SetTooltip(tutorialUrl)
+                        .AddManipulatorSelf(new Clickable(() => Application.OpenURL(tutorialUrl))));
+                }
             }
 
             return card;

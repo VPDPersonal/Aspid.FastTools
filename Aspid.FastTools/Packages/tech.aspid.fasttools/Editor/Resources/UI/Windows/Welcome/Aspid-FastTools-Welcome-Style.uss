@@ -198,6 +198,20 @@ AspidAnimatedTitle {
     color: var(--aspid-colors-text-dark);
 }
 
+.aspid-fasttools-welcome__sample-link {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 0 4px;
+    cursor: link;
+    font-size: 12px;
+    -unity-font-style: bold;
+    color: var(--aspid-colors-accent-text-dark);
+}
+
+.aspid-fasttools-welcome__sample-link:hover {
+    color: var(--aspid-colors-accent-text-light);
+}
+
 .aspid-fasttools-welcome__card-header {
     margin-bottom: 10px;
     --aspid-fasttools-metrics-label_size: h2;
