@@ -174,6 +174,8 @@ namespace Aspid.FastTools.Types.Editors
         // [SerializeReference] field draws its stripe.
         internal static void DrawWarningStripe(Rect position)
         {
+            if (!FieldStripeSettings.Enabled) return;
+
             var stripeRect = EditorGUI.IndentedRect(source: position);
             EditorGUI.DrawRect(rect: new Rect(stripeRect.x - 11f, position.y + 2f, 2f, position.height - 4f),
                 color: InspectorNoticeGUI.NoticeColor);

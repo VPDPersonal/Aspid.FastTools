@@ -85,8 +85,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var sharedIndex = showShared ? SerializeReferenceHelpers.GetSharedReferenceIndex(property) : 0;
 
             // A missing or required field is empty and has no arrow, so its stripe takes the arrow's spot and its label
-            // stays where a filled field puts it. Only a shared one needs the gutter.
-            var gutter = showShared ? StripeGutter : 0f;
+            // stays where a filled field puts it. Only a shared one needs the gutter, and only while stripes are on.
+            var showStripe = FieldStripeSettings.Enabled;
+            var gutter = showShared && showStripe ? StripeGutter : 0f;
             var body = new Rect(position.x + gutter, position.y, position.width - gutter, position.height);
 
             var line = new Rect(body.x, body.y, body.width, EditorGUIUtility.singleLineHeight);
@@ -207,7 +208,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 else if (showMissing || showRequired)
                     stripeColor = InspectorNoticeGUI.NoticeColor;
 
-                if (stripeColor.HasValue)
+                if (showStripe && stripeColor.HasValue)
                     EditorGUI.DrawRect(
                         new Rect(EditorGUI.IndentedRect(position).x - StripeOffset, position.y + StripeInsetY,
                             StripeWidth, position.height - 2f * StripeInsetY),

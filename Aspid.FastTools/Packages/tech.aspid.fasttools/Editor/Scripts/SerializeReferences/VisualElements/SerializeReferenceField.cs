@@ -232,6 +232,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // The Appearance switch applies live to every open field.
                 TypeFieldIconSettings.Changed -= OnIconSettingChanged;
                 TypeFieldIconSettings.Changed += OnIconSettingChanged;
+                FieldStripeSettings.Changed -= OnStripeSettingChanged;
+                FieldStripeSettings.Changed += OnStripeSettingChanged;
                 // Same Remove-then-Add guard for the group-navigation registry.
                 _liveFields.Remove(this);
                 _liveFields.Add(this);
@@ -243,6 +245,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 PrefabUtility.prefabInstanceUpdated -= OnPrefabInstanceUpdated;
                 SerializeReferenceMissingListGuard.UndoChangedNotes -= OnUndoRedo;
                 TypeFieldIconSettings.Changed -= OnIconSettingChanged;
+                FieldStripeSettings.Changed -= OnStripeSettingChanged;
                 _liveFields.Remove(this);
             });
         }
@@ -749,13 +752,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static float HoldThenFadeEasing(float t) =>
             t < FlashHoldFraction ? 0f : (t - FlashHoldFraction) / (1f - FlashHoldFraction);
 
+        private void OnStripeSettingChanged()
+        {
+            if (!IsPropertyAlive()) return;
+            UpdateStripe();
+        }
+
+        // With the Field stripes switch off the field drops the stripe and the gutter it makes; the notices stay.
         private void UpdateStripe()
         {
-            EnableInClassList(StripedClass, _isMissing || _isShared || _isRequired);
+            var striped = FieldStripeSettings.Enabled && (_isMissing || _isShared || _isRequired);
+            EnableInClassList(StripedClass, striped);
 
-            if (_isMissing || _isRequired) ApplyWarningStripe();
-            else if (_isShared) ApplySharedStripe(_sharedColor);
-            else RemoveStripe();
+            if (!striped) RemoveStripe();
+            else if (_isMissing || _isRequired) ApplyWarningStripe();
+            else ApplySharedStripe(_sharedColor);
         }
 
         private void ApplyWarningStripe()

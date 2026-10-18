@@ -9,9 +9,10 @@ namespace Aspid.FastTools.Editors
     {
         internal const string AnimatedBackgroundName = "animated-background";
         internal const string TypeIconsName = "type-icons";
+        internal const string FieldStripesName = "field-stripes";
 
-        // The Appearance section and Preferences page: the theme, its override, the animated background switch, then the
-        // type icons switch.
+        // The Appearance section and Preferences page: the theme, the animated background switch, then the switches of the
+        // Inspector fields, type icons and field stripes.
         public static void BuildControls(VisualElement container)
         {
             AspidThemeSettingsUI.BuildControls(container);
@@ -50,6 +51,25 @@ namespace Aspid.FastTools.Editors
                 handler => TypeFieldIconSettings.Changed += handler,
                 handler => TypeFieldIconSettings.Changed -= handler);
             container.Add(typeIcons);
+
+            var fieldStripes = new AspidSwitch("Field stripes")
+            {
+                name = FieldStripesName,
+                value = FieldStripeSettings.Enabled,
+                tooltip = "Draw the status stripe left of [SerializeReference], [TypeSelector], SerializableType and "
+                    + "SerializableMonoScript fields in the Inspector: the colour of a shared reference, or amber for "
+                    + "a missing type or an unset required one.\n"
+                    + "Turning it off hides only the stripe; the notices under the fields stay.\n"
+                    + "Per-user setting — stored locally, never committed.",
+            };
+            fieldStripes.WithScopeStripe(AspidSettingsUI.UserScopeClass);
+            fieldStripes.RegisterValueChangedCallback(evt => FieldStripeSettings.Enabled = evt.newValue);
+            AspidSettingsUI.SyncFromSettings(
+                fieldStripes,
+                () => FieldStripeSettings.Enabled,
+                handler => FieldStripeSettings.Changed += handler,
+                handler => FieldStripeSettings.Changed -= handler);
+            container.Add(fieldStripes);
         }
     }
 }

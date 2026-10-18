@@ -42,7 +42,7 @@ namespace Aspid.FastTools.Types.Editors
             var container = new VisualElement()
                 .AddStyleSheetFromResources(StyleSheetPath)
                 .AddChild(field);
-            var stripe = new VisualElement().AddClass(StripeClass).SetPickingMode(PickingMode.Ignore);
+            var stripe = CreateStripe();
             InspectorNotice notice = null;
 
             IsolateNameChanges(root: container);
@@ -106,6 +106,12 @@ namespace Aspid.FastTools.Types.Editors
             {
                 if (evt.target != root) evt.StopPropagation();
             });
+
+        // The warning stripe left of the label; the Field stripes switch hides it.
+        internal static VisualElement CreateStripe() =>
+            FieldStripeSettings.BindDisplay(new VisualElement()
+                .AddClass(StripeClass)
+                .SetPickingMode(PickingMode.Ignore));
 
         internal static void ShowRequired(VisualElement container, VisualElement stripe, InspectorNotice notice)
         {
