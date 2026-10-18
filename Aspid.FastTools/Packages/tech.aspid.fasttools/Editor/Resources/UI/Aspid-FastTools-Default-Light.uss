@@ -21,6 +21,7 @@
     --aspid-colors-surface-canvas:                  rgb(240, 240, 240);
     --aspid-colors-surface-card:                    rgb(251, 251, 251);
     --aspid-colors-surface-card-dim:                rgb(247, 247, 247);
+    --aspid-colors-surface-field:                   var(--aspid-colors-surface-card);
 
     --aspid-colors-overlay-hover:                   rgba(0, 0, 0, 0.04);
     --aspid-colors-overlay-control:                 rgba(0, 0, 0, 0.05);
