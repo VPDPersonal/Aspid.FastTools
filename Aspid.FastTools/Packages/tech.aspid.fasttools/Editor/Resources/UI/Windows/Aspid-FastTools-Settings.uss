@@ -436,9 +436,10 @@
     color:                                                var(--aspid-colors-status-error-text-light);
 }
 
+/* Enter on a focused folder removes it, so its border takes the danger colour, as a focused danger action does. */
 .aspid-fasttools-excluded-folders__entry.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
-    border-color:                                         var(--aspid-colors-accent-text-light);
+    border-color:                                         var(--aspid-colors-status-error-text-light);
 }
 
 /* Scope base-slider rules to the scroller so the recent-items slider keeps its geometry. */

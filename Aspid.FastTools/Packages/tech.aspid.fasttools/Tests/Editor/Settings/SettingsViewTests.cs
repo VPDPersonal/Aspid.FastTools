@@ -263,7 +263,7 @@ namespace Aspid.FastTools.Editors.Tests
                 {
                     (Name: "row", Focus: (VisualElement)gate, Bordered: gate?.Q(className: AspidSettingsUI.RowBackplateClass), Color: accent),
                     (Name: "Excluded folders add row", Focus: add, Bordered: add, Color: accent),
-                    (Name: "Excluded folders entry", Focus: entry, Bordered: entry, Color: accent),
+                    (Name: "Excluded folders entry", Focus: entry, Bordered: entry, Color: error),
                     (Name: "Reset Shared button", Focus: (VisualElement)shared, Bordered: shared, Color: accent),
                     (Name: "Reset Per-user button", Focus: (VisualElement)user, Bordered: user, Color: accent),
                     (Name: "danger button", Focus: (VisualElement)danger, Bordered: danger, Color: error),
