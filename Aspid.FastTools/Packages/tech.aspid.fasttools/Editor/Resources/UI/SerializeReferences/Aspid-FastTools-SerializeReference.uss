@@ -182,8 +182,8 @@ Button.aspid-fasttools-serialize-reference__open-button {
     padding-left:                                         4px;
     align-items:                                          center;
 
-    /* An action, not a status: the band takes the accent like its label. */
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-accent-text-dark);
+    /* An action, not a status: the band takes a lighter shade of its label's accent, so a hover brightens the label. */
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-accent-text-light);
 }
 
 .aspid-fasttools-repair-references__scan-project .aspid-fasttools-gradient-button__label {
@@ -435,7 +435,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
     margin-bottom:                                         6px;
     --aspid-fasttools-colors-gradient_button-bg:           rgba(0, 0, 0, 0);
     --aspid-fasttools-colors-gradient_button-accent: var(
-        --aspid-colors-status-warning-text-light
+        --aspid-colors-status-warning-text-lightness
     );
 }
 
@@ -456,7 +456,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
 .aspid-fasttools-repair-references__group
     .aspid-fasttools-repair-references__group-fix-all--migrate {
     --aspid-fasttools-colors-gradient_button-accent: var(
-        --aspid-colors-status-info-text-light
+        --aspid-colors-status-info-text-lightness
     );
 }
 

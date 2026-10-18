@@ -79,7 +79,8 @@
     width:                                                20px;
     height:                                               18px;
     margin:                                               0 0 0 2px;
-    padding:                                              0;
+    /* The font sets "+" and "−" 1px under the middle of the line and half a pixel left, so the padding centres them. */
+    padding:                                              0 0 2px 1px;
     border-width:                                         1px;
     border-color:                                         rgba(0, 0, 0, 0);
     border-radius:                                        3px;
@@ -89,9 +90,26 @@
     -unity-text-align:                                    middle-center;
 }
 
-/* Holds the place of the "+" on the rows before the last one. */
+/* Holds the place of the "+" on every row; on the last row the "+" layer draws over it. */
 .aspid-fasttools-excluded-folders__row-slot {
     border-width:                                         0;
+}
+
+/* The layer of the "+": it covers the last row's border box behind the row's text, so the keyboard focus outlines and
+   fills the whole row, and its border and padding put the "+" exactly over the row's slot. */
+.aspid-fasttools-excluded-folders__add-target {
+    position:                                             absolute;
+    left:                                                 -1px;
+    right:                                                -1px;
+    top:                                                  -1px;
+    bottom:                                               -1px;
+    flex-direction:                                       row;
+    justify-content:                                      flex-end;
+    align-items:                                          center;
+    padding:                                              0 1px 0 0;
+    border-width:                                         1px;
+    border-color:                                         rgba(0, 0, 0, 0);
+    border-radius:                                        var(--aspid-radius-control);
 }
 
 .aspid-fasttools-excluded-folders__add:hover {

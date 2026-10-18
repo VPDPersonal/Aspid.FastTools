@@ -27,10 +27,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RowButtonClass = "aspid-fasttools-excluded-folders__row-button";
         private const string RowSlotClass = "aspid-fasttools-excluded-folders__row-slot";
         internal const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
+        internal const string AddTargetClass = "aspid-fasttools-excluded-folders__add-target";
         internal const string RemoveButtonClass = "aspid-fasttools-excluded-folders__remove";
 
         private readonly VisualElement _list;
-        private readonly Button _addButton;
+        private readonly VisualElement _addTarget;
 
         private readonly List<(VisualElement Row, string Path)> _rows = new();
         private string _selected;
@@ -47,10 +48,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var caption = new Label("Excluded scan folders").AddClass(CaptionClass);
             _list = new VisualElement().AddClass(ListClass);
 
-            // One "+" moves to the end of the last row on every rebuild, so the ring keeps a single add target.
-            _addButton = new Button(AddFolder) { text = "+", tooltip = "Add a folder" }
+            // The "+" rides on a layer that spans the last row behind its text, so the keyboard focus outlines the
+            // whole row, as it does for a row and its "−". One layer moves to the last row on every rebuild, so the
+            // ring keeps a single add target; it passes clicks through to the row except on the "+".
+            var addButton = new Button(AddFolder) { text = "+", tooltip = "Add a folder" }
                 .AddClass(RowButtonClass)
                 .AddClass(AddButtonClass);
+
+            _addTarget = new VisualElement().AddClass(AddTargetClass)
+                .SetPickingMode(PickingMode.Ignore)
+                .AddChild(addButton);
 
             // The frame is an inner block, so the scope stripe of the row stays at the row's edge.
             Add(new VisualElement().AddClass(BoxClass)
@@ -95,8 +102,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (folders.Length == 0)
             {
                 _list.Add(new VisualElement().AddClass(EntryClass)
+                    .AddChild(_addTarget)
                     .AddChild(new Label("List is empty").AddClass(EmptyClass))
-                    .AddChild(_addButton));
+                    .AddChild(CreateSlot()));
             }
 
             foreach (var path in folders)
@@ -105,9 +113,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .AddClass(RowButtonClass)
                     .AddClass(RemoveButtonClass);
 
+                // Every row keeps a slot where the last one shows its "+", so the "−" buttons stay in one column.
                 var row = new VisualElement { tooltip = path }.AddClass(EntryClass)
                     .AddChild(new Label(path).AddClass(PathClass))
-                    .AddChild(remove);
+                    .AddChild(remove)
+                    .AddChild(CreateSlot());
 
                 row.RegisterCallback<ClickEvent>(evt =>
                 {
@@ -122,17 +132,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _rows.Add((row, path));
             }
 
-            // Every other row keeps an empty slot where the last one has its "+", so the "−" buttons stay in one
-            // column.
-            for (var i = 0; i < _rows.Count; i++)
-            {
-                if (i == _rows.Count - 1) _rows[i].Row.Add(_addButton);
-                else _rows[i].Row.Add(new VisualElement().AddClass(RowButtonClass).AddClass(RowSlotClass));
-            }
+            if (_rows.Count > 0) _rows[^1].Row.Insert(0, _addTarget);
 
             UpdateSelection();
             RowsRebuilt?.Invoke();
         }
+
+        private static VisualElement CreateSlot() =>
+            new VisualElement().AddClass(RowButtonClass).AddClass(RowSlotClass).SetPickingMode(PickingMode.Ignore);
 
         private void Select(string path)
         {
@@ -153,7 +160,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var (row, path) in _rows)
                 yield return (row, () => Remove(path), () => Remove(path));
 
-            yield return (_addButton, AddFolder, null);
+            yield return (_addTarget, AddFolder, null);
         }
 
         private void AddFolder()

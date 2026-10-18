@@ -251,7 +251,7 @@ namespace Aspid.FastTools.Editors.Tests
                 var error = Token(theme, "--aspid-colors-status-error-text-light");
 
                 var gate = view.Q<EnumField>();
-                var add = view.Q<Button>(className: SerializeReferenceExcludedFoldersField.AddButtonClass);
+                var add = view.Q(className: SerializeReferenceExcludedFoldersField.AddTargetClass);
                 var entry = view.Q(className: "aspid-fasttools-excluded-folders__entry");
                 var footer = view.Q(className: AspidSettingsUI.FooterClass);
                 var shared = footer?.Q<Button>(className: AspidSettingsUI.SharedScopeClass);
@@ -262,7 +262,7 @@ namespace Aspid.FastTools.Editors.Tests
                 var cases = new[]
                 {
                     (Name: "row", Focus: (VisualElement)gate, Bordered: gate?.Q(className: AspidSettingsUI.RowBackplateClass), Color: accent),
-                    (Name: "Excluded folders add button", Focus: (VisualElement)add, Bordered: add, Color: accent),
+                    (Name: "Excluded folders add row", Focus: add, Bordered: add, Color: accent),
                     (Name: "Excluded folders entry", Focus: entry, Bordered: entry, Color: accent),
                     (Name: "Reset Shared button", Focus: (VisualElement)shared, Bordered: shared, Color: accent),
                     (Name: "Reset Per-user button", Focus: (VisualElement)user, Bordered: user, Color: accent),

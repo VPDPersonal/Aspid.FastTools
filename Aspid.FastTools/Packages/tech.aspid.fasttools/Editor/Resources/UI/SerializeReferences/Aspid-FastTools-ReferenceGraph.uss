@@ -41,8 +41,8 @@
     padding:                                              3px 8px 3px 4px;
     margin:                                               0;
 
-    /* An action, not a status: the band takes the accent like its label. */
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-accent-text-dark);
+    /* An action, not a status: the band takes a lighter shade of its label's accent, so a hover brightens the label. */
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-accent-text-light);
 }
 
 .aspid-fasttools-reference-graph__rescan .aspid-fasttools-gradient-button__label {
@@ -208,7 +208,9 @@
     -unity-font-style:                                    italic;
 }
 
-/* The node scope outranks the gradient button's :root layout rules. */
+/* The node scope outranks the gradient button's :root layout rules. A hovered or focused band recolors its label with
+   the accent, so the neutral band takes a text shade brighter than the label's own: the label lights up instead of
+   dimming like a disabled one. */
 .aspid-fasttools-reference-graph__node
     .aspid-fasttools-reference-graph__node-band {
     flex-direction:                                       row;
@@ -217,12 +219,12 @@
     margin:                                               0;
     padding:                                              4px 4px;
     --aspid-fasttools-colors-gradient_button-bg:          rgba(0, 0, 0, 0);
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-shade-lightness);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-light);
 }
 
 .aspid-fasttools-reference-graph__node
     .aspid-fasttools-reference-graph__node-band--missing {
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-lightness);
 }
 
 .aspid-fasttools-reference-graph__node-band .aspid-fasttools-gradient-button__label {
@@ -237,7 +239,7 @@
 
 .aspid-fasttools-reference-graph__node
     .aspid-fasttools-reference-graph__node-band--migrate {
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-info-text-light);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-info-text-lightness);
 }
 
 .aspid-fasttools-reference-graph__node-band--migrate .aspid-fasttools-gradient-button__label {
