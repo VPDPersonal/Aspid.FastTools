@@ -25,6 +25,15 @@
     margin-left:                                            0;
 }
 
+/* The type icon left of the caption, the size of the picker's row icons. */
+.aspid-fasttools-serialize-reference__icon {
+    width:                                                  14px;
+    height:                                                 14px;
+    margin-right:                                           3px;
+    flex-shrink:                                            0;
+    align-self:                                             center;
+}
+
 /* The bare TextElement does not inherit popup-field ellipsis rules, so all overflow properties are required here. */
 .aspid-fasttools-serialize-reference__dropdown--missing .unity-enum-field__text {
     overflow:                                               hidden;

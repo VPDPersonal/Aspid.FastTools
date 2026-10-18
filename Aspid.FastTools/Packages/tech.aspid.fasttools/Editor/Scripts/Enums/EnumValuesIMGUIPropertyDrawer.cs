@@ -165,7 +165,8 @@ namespace Aspid.FastTools.Enums.Editors
                 captionRect.width -= rect.height + 1f;
 
             using (new EditorGUI.DisabledScope(true))
-                EditorGUI.LabelField(captionRect, caption, EditorStyles.popup);
+                TypeIMGUIPropertyDrawer.DrawCaptionLabel(captionRect,
+                    new GUIContent(caption, TypeIMGUIPropertyDrawer.GetCaptionIcon(type)), EditorStyles.popup);
 
             if (type is not null)
             {

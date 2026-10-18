@@ -137,6 +137,8 @@ public sealed class Bow : RangedWeapon, ITwoHanded { }
 
 Подклассы настроек не наследуют.
 
+Закрытое поле показывает ту же иконку слева от имени типа. Чтобы скрыть её, выключите **Type icons** в разделе **Appearance** вкладки **Settings** окна FastTools.
+
 ![Имя Longsword, иконка и группа Weapons/Melee в окне выбора](../../../../docs/Images/type-selector-display.png)
 
 > [!NOTE]
