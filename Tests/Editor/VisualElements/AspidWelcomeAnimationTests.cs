@@ -52,6 +52,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             yield return null;
 
             Assert.IsFalse(title.IsAnimating, "With the setting off the timer must not start.");
+
+            foreach (var letter in title.Query<Label>().ToList())
+            {
+                Assert.AreEqual(title.Color2, letter.resolvedStyle.color, "A resting title must take one colour.");
+                Assert.AreEqual(Vector3.zero, letter.resolvedStyle.translate, "A resting title must sit on one line.");
+            }
         }
 
         [UnityTest]

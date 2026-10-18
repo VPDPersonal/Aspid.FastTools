@@ -44,9 +44,7 @@ namespace Aspid.FastTools.Types.Editors
             var container = new VisualElement()
                 .AddStyleSheetFromResources(TypeUIToolkitPropertyDrawer.StyleSheetPath)
                 .AddChild(typeField);
-            var stripe = new VisualElement()
-                .AddClass(TypeUIToolkitPropertyDrawer.StripeClass)
-                .SetPickingMode(PickingMode.Ignore);
+            var stripe = TypeUIToolkitPropertyDrawer.CreateStripe();
             InspectorNotice notice = null;
 
             TypeUIToolkitPropertyDrawer.IsolateNameChanges(root: container);

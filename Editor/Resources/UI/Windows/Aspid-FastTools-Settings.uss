@@ -19,7 +19,7 @@
     margin-bottom:                                        10px;
     padding:                                              8px 10px;
     border-width:                                         1px;
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
     border-color:                                         var(--aspid-colors-shade-darkness);
     background-color:                                     var(--aspid-colors-surface-card);
 }
@@ -58,7 +58,7 @@
     right:                                                0;
     top:                                                  0;
     bottom:                                               0;
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
 
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
@@ -73,7 +73,7 @@
 .aspid-fasttools-settings__footer .aspid-fasttools-settings__row {
     margin-left:                                          -4px;
     padding-left:                                         4px;
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;
@@ -180,10 +180,10 @@
     height:                                               22px;
     margin:                                               0 0 0 6px;
     padding:                                              0 10px;
-    background-color:                                     var(--aspid-colors-surface-card);
+    background-color:                                     var(--aspid-colors-surface-control);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-dark);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
     color:                                                var(--aspid-colors-text-light);
 
     transition-property:                                  background-color, border-color, color;
@@ -192,21 +192,15 @@
 }
 
 .aspid-fasttools-settings__action:hover {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
-    color:                                                var(--aspid-colors-status-success-text-light);
-    background-color:                                     var(--aspid-colors-status-success-tint);
+    border-color:                                         var(--aspid-colors-accent-shade-light);
+    color:                                                var(--aspid-colors-accent-text-light);
+    background-color:                                     var(--aspid-colors-accent-tint);
 }
 
 .aspid-fasttools-settings__action--danger:hover {
     border-color:                                         var(--aspid-colors-status-error-text-dark);
     color:                                                var(--aspid-colors-status-error-text-light);
     background-color:                                     var(--aspid-colors-status-error-tint);
-}
-
-.aspid-fasttools-settings__action--info:hover {
-    border-color:                                         var(--aspid-colors-status-info-text-dark);
-    color:                                                var(--aspid-colors-status-info-text-light);
-    background-color:                                     var(--aspid-colors-status-info-tint);
 }
 
 .aspid-fasttools-settings__footer {
@@ -241,7 +235,7 @@
     margin-top:                                           -2px;
     border-width:                                         0;
     border-radius:                                        2px;
-    background-color:                                     var(--aspid-colors-control-border);
+    background-color:                                     var(--aspid-colors-slider-track);
 }
 
 .aspid-fasttools-settings__section-content .unity-base-slider__dragger {
@@ -261,11 +255,11 @@
 }
 
 .aspid-fasttools-settings__section-content .unity-base-slider:hover .unity-base-slider__dragger {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    border-color:                                         var(--aspid-colors-accent-shade-light);
 }
 
 .aspid-fasttools-settings__section-content .unity-base-slider:focus .unity-base-slider__dragger {
-    border-color:                                         var(--aspid-colors-status-success-text-light);
+    border-color:                                         var(--aspid-colors-accent-text-light);
 }
 
 /* Match the TextField and input heights to prevent Unity clipping the value text. */
@@ -281,18 +275,24 @@
     height:                                               22px;
     padding:                                              0 4px;
     -unity-text-align:                                    middle-center;
-    background-color:                                     var(--aspid-colors-surface-card);
+    background-color:                                     var(--aspid-colors-surface-field);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
     color:                                                var(--aspid-colors-text-lightness);
 }
 
 .aspid-fasttools-settings__section-content .unity-base-slider__text-field .unity-base-text-field__input:focus {
-    border-color:                                         var(--aspid-colors-status-success-text-light);
+    border-color:                                         var(--aspid-colors-accent-text-light);
 }
 
+/* Unity's vertical spacing of a field label is not even, so the caption of a field row sat lower than the caption of a
+   plain row; without it the row centers both alike. */
 .aspid-fasttools-settings .unity-base-field__label {
+    margin-top:                                           0;
+    margin-bottom:                                        0;
+    padding-top:                                          0;
+    padding-bottom:                                       0;
     color:                                                var(--aspid-colors-text-light);
     -unity-text-align:                                    middle-left;
 }
@@ -302,10 +302,10 @@
 .aspid-fasttools-settings .unity-base-popup-field__input {
     min-height:                                           24px;
     padding:                                              1px 6px;
-    background-color:                                     var(--aspid-colors-surface-card);
+    background-color:                                     var(--aspid-colors-surface-control);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
 }
 
 .aspid-fasttools-settings .unity-enum-field__text {
@@ -333,59 +333,23 @@
 /* The hover border must stay as visible as the idle control border on the light palette. */
 .aspid-fasttools-settings .unity-enum-field:hover .unity-enum-field__input,
 .aspid-fasttools-settings .unity-base-popup-field:hover .unity-base-popup-field__input {
-    border-color:                                         var(--aspid-colors-status-success-text-dark);
+    border-color:                                         var(--aspid-colors-accent-text-dark);
 }
 
 .aspid-fasttools-settings .unity-enum-field:hover .unity-enum-field__arrow,
 .aspid-fasttools-settings .unity-base-popup-field:hover .unity-base-popup-field__arrow {
-    -unity-background-image-tint-color:                  var(--aspid-colors-status-success-text-light);
+    -unity-background-image-tint-color:                  var(--aspid-colors-accent-text-light);
 }
 
 .aspid-fasttools-settings .unity-enum-field:focus .unity-enum-field__input {
-    border-color:                                         var(--aspid-colors-status-success-text-light);
-}
-
-.aspid-fasttools-settings .unity-object-field .unity-base-field__label {
-    flex-grow:                                            1;
-    flex-basis:                                           0;
-    min-width:                                            auto;
-}
-
-.aspid-fasttools-settings .unity-object-field__input {
-    flex-grow:                                            0;
-    flex-shrink:                                          1;
-    flex-basis:                                           var(--aspid-fasttools-settings-control-width);
-    min-width:                                            120px;
-    min-height:                                           24px;
-    padding:                                              1px 2px 1px 6px;
-    background-color:                                     var(--aspid-colors-surface-card);
-    border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
-}
-
-.aspid-fasttools-settings .unity-object-field-display__label {
-    color:                                                var(--aspid-colors-text-lightness);
-}
-
-.aspid-fasttools-settings .unity-object-field:hover .unity-object-field__input {
-    border-color:                                         var(--aspid-colors-status-success-text-dark);
-}
-
-.aspid-fasttools-settings .unity-object-field__selector {
-    background-color:                                     var(--aspid-colors-overlay-control);
-    border-radius:                                        6px;
-}
-
-.aspid-fasttools-settings .unity-object-field__selector:hover {
-    background-color:                                     var(--aspid-colors-overlay-control-hover);
+    border-color:                                         var(--aspid-colors-accent-text-light);
 }
 
 /* The fill alone matches the hover; the border marks the keyboard focus. */
 .aspid-fasttools-settings__nav-target--focused > .aspid-fasttools-settings__row-backplate {
     background-color:                                     var(--aspid-colors-bg-dark);
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-status-success-text-light);
+    border-color:                                         var(--aspid-colors-accent-text-light);
 }
 
 .aspid-fasttools-settings__footer .aspid-fasttools-settings__row.aspid-fasttools-settings__nav-target--focused {
@@ -394,9 +358,9 @@
 
 /* The fill and the text match the hover; the strong border marks the keyboard focus. */
 .aspid-fasttools-settings__action.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-success-text-light);
-    color:                                                var(--aspid-colors-status-success-text-light);
-    background-color:                                     var(--aspid-colors-status-success-tint);
+    border-color:                                         var(--aspid-colors-accent-text-light);
+    color:                                                var(--aspid-colors-accent-text-light);
+    background-color:                                     var(--aspid-colors-accent-tint);
 }
 
 .aspid-fasttools-settings__action--danger.aspid-fasttools-settings__nav-target--focused {
@@ -405,26 +369,28 @@
     background-color:                                     var(--aspid-colors-status-error-tint);
 }
 
-.aspid-fasttools-settings__action--info.aspid-fasttools-settings__nav-target--focused {
-    border-color:                                         var(--aspid-colors-status-info-text-light);
-    color:                                                var(--aspid-colors-status-info-text-light);
-    background-color:                                     var(--aspid-colors-status-info-tint);
-}
-
 /* Two classes outrank the control stylesheet loaded deeper in the hierarchy. */
-.aspid-fasttools-excluded-folders__header.aspid-fasttools-settings__nav-target--focused {
+.aspid-fasttools-excluded-folders__add-target.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
-    border-color:                                         var(--aspid-colors-status-success-text-light);
+    border-color:                                         var(--aspid-colors-accent-text-light);
 }
 
-.aspid-fasttools-excluded-folders__header.aspid-fasttools-settings__nav-target--focused
+/* The "+" lights up as the "−" of a focused row does, in the accent instead of the danger colour. */
+.aspid-fasttools-excluded-folders__add-target.aspid-fasttools-settings__nav-target--focused
     .aspid-fasttools-excluded-folders__add {
-    color:                                                var(--aspid-colors-status-success-text-light);
+    color:                                                var(--aspid-colors-accent-text-light);
 }
 
+/* Enter on a focused row removes its folder and removing has no Undo, so the row's "−" takes the danger colour. */
+.aspid-fasttools-excluded-folders__entry.aspid-fasttools-settings__nav-target--focused
+    .aspid-fasttools-excluded-folders__remove {
+    color:                                                var(--aspid-colors-status-error-text-light);
+}
+
+/* Enter on a focused folder removes it, so its border takes the danger colour, as a focused danger action does. */
 .aspid-fasttools-excluded-folders__entry.aspid-fasttools-settings__nav-target--focused {
     background-color:                                     var(--aspid-colors-bg-dark);
-    border-color:                                         var(--aspid-colors-status-success-text-light);
+    border-color:                                         var(--aspid-colors-status-error-text-light);
 }
 
 /* Scope base-slider rules to the scroller so the recent-items slider keeps its geometry. */

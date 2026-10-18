@@ -43,11 +43,11 @@
 .aspid-fasttools-window-footer__link {
     flex-shrink:                                          0;
     cursor:                                               link;
-    color:                                                var(--aspid-colors-status-success-text-dark);
+    color:                                                var(--aspid-colors-accent-text-dark);
     font-size:                                            14px;
     -unity-font-style:                                    bold;
 }
 
 .aspid-fasttools-window-footer__link:hover {
-    color:                                                var(--aspid-colors-status-success-text-light);
+    color:                                                var(--aspid-colors-accent-text-light);
 }

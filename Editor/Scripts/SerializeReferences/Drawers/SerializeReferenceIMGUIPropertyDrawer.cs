@@ -22,9 +22,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Space the foldout arrow reserves left of the label; notices pull back by it to line up under the arrow.
         private const float FoldoutArrowIndent = 11f;
 
-        // Left status stripe: the gutter shifts the body of a field with an arrow right to clear room for the bar, the
-        // offset places the bar in the arrow's spot measured from the indented field (so the gap is depth-independent),
-        // and the inset keeps adjacent full-height stripes from merging.
+        // Left status stripe: the gutter shifts the label of a field with an arrow right to clear room for the bar (the
+        // dropdown and the values of the children keep their column), the offset places the bar in the arrow's spot
+        // measured from the indented field (so the gap is depth-independent), and the inset keeps adjacent full-height
+        // stripes from merging.
         private const float StripeGutter = 5f;
         private const float StripeWidth = 2f;
         private const float StripeOffset = 11f;
@@ -85,8 +86,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var sharedIndex = showShared ? SerializeReferenceHelpers.GetSharedReferenceIndex(property) : 0;
 
             // A missing or required field is empty and has no arrow, so its stripe takes the arrow's spot and its label
-            // stays where a filled field puts it. Only a shared one needs the gutter.
-            var gutter = showShared ? StripeGutter : 0f;
+            // stays where a filled field puts it. Only a shared one needs the gutter, and only while stripes are on.
+            var showStripe = FieldStripeSettings.Enabled;
+            var gutter = showShared && showStripe ? StripeGutter : 0f;
             var body = new Rect(position.x + gutter, position.y, position.width - gutter, position.height);
 
             var line = new Rect(body.x, body.y, body.width, EditorGUIUtility.singleLineHeight);
@@ -125,7 +127,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Unity draws a prefab instance override in bold; its own fields do it, this header has to do it by hand.
             var overridden = SerializeReferencePrefabOverride.IsOverridden(property);
 
-            var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth, line.height);
+            var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth - gutter, line.height);
             if (expandable)
             {
                 property.isExpanded = EditorGUI.Foldout(labelRect, property.isExpanded, label, toggleOnLabelClick: true,
@@ -136,11 +138,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 EditorGUI.LabelField(labelRect, label, overridden ? EditorStyles.boldLabel : EditorStyles.label);
             }
 
-            var dropdownRect = new Rect(
-                line.x + EditorGUIUtility.labelWidth + 2f,
-                line.y,
-                line.width - EditorGUIUtility.labelWidth - 2f,
-                line.height);
+            // The gutter moves only the label: the dropdown starts where the dropdowns of the fields around start, as in
+            // the UI Toolkit field.
+            var dropdownX = position.x + EditorGUIUtility.labelWidth + 2f;
+            var dropdownRect = new Rect(dropdownX, line.y, line.xMax - dropdownX, line.height);
 
             var openRect = Rect.zero;
             if (hasValue)
@@ -207,7 +208,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 else if (showMissing || showRequired)
                     stripeColor = InspectorNoticeGUI.NoticeColor;
 
-                if (stripeColor.HasValue)
+                if (showStripe && stripeColor.HasValue)
                     EditorGUI.DrawRect(
                         new Rect(EditorGUI.IndentedRect(position).x - StripeOffset, position.y + StripeInsetY,
                             StripeWidth, position.height - 2f * StripeInsetY),
@@ -264,9 +265,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (expandable && property.isExpanded)
             {
+                // The children keep the gutter in their labels only: a label column narrower by it puts their values
+                // back in the column of the fields around. Without a gutter the width stays automatic.
+                var labelWidth = EditorGUIUtility.labelWidth;
+                if (gutter > 0f) EditorGUIUtility.labelWidth = labelWidth - gutter;
+
                 EditorGUI.indentLevel++;
-                DrawChildren(property, body.x, body.width, spacing, ref y, depth);
-                EditorGUI.indentLevel--;
+                try
+                {
+                    DrawChildren(property, body.x, body.width, spacing, ref y, depth);
+                }
+                finally
+                {
+                    // A child that leaves the GUI early (a picker opening) must not leave the narrower column behind.
+                    EditorGUI.indentLevel--;
+                    if (gutter > 0f) EditorGUIUtility.labelWidth = labelWidth;
+                }
             }
 
             if (showShared)

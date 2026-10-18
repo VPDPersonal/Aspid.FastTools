@@ -1,0 +1,228 @@
+/* Unity: the colours of Unity's own Inspector, so an Aspid window reads as one more editor panel. The canvas takes the
+   Inspector background (#383838) and the cards the grey of its lists (#464646), with thin dark separators; rows hover
+   with a darker inset, the buttons and drop-downs take the drop-down grey (#515151), and the object fields and value
+   boxes the input field grey (#2A2A2A). The controls keep Unity's dark borders (#242424) rather than light outlines,
+   so their frames stay under 3:1; check-contrast.mjs holds them at a baseline. The corners stay those of Default.
+   The text takes Unity's label greys. The accent is Unity's blue, with the blue logo; the status text is lifted on the
+   dark skin and deepened on the light skin, so it keeps its contrast on the grey cards. The dots behind the windows
+   take one grey.
+   The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
+   light block follows :root in this sheet. */
+:root {
+    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_blue_256x253");
+
+    --aspid-colors-bg-darkness:                     rgb(64, 64, 64);
+    --aspid-colors-bg-dark:                         rgb(60, 60, 60);
+    --aspid-colors-bg-light:                        rgb(78, 78, 78);
+    --aspid-colors-bg-lightness:                    rgb(88, 88, 88);
+
+    --aspid-colors-text-lightness:                  rgb(210, 210, 210);
+    --aspid-colors-text-light:                      rgb(196, 196, 196);
+    --aspid-colors-text-dark:                       rgb(184, 184, 184);
+    --aspid-colors-text-darkness:                   rgb(140, 140, 140);
+
+    --aspid-colors-shade-darkness:                  rgb(36, 36, 36);
+    --aspid-colors-shade-dark:                      rgb(48, 48, 48);
+    --aspid-colors-shade-light:                     rgb(100, 100, 100);
+    --aspid-colors-shade-lightness:                 rgb(118, 118, 118);
+
+    --aspid-colors-surface-canvas:                  rgb(56, 56, 56);
+    --aspid-colors-surface-card:                    rgb(70, 70, 70);
+    --aspid-colors-surface-card-dim:                rgb(42, 42, 42);
+    --aspid-colors-surface-field:                   rgb(42, 42, 42);
+    --aspid-colors-surface-control:                 rgb(81, 81, 81);
+
+    --aspid-colors-slider-handle:                   rgba(200, 200, 200, 0.85);
+    --aspid-colors-control-border:                  rgb(36, 36, 36);
+    --aspid-colors-slider-track:                    rgb(94, 94, 94);
+    --aspid-colors-scope-user:                      rgb(150, 150, 150);
+    --aspid-colors-dark-skin-text-darkness:         rgb(186, 186, 186);
+
+    /* Status colours for grey surfaces: Unity's own warning yellow (#F4BC02), and a green, blue and red as vivid, so
+       the text keeps its contrast on the cards and the lines under the headings stay visible. */
+    --aspid-colors-status-warning-darkness:         rgb(56, 48, 26);
+    --aspid-colors-status-warning-dark:             rgb(78, 64, 26);
+    --aspid-colors-status-warning-light:            rgb(102, 82, 28);
+    --aspid-colors-status-warning-lightness:        rgb(130, 104, 30);
+    --aspid-colors-status-warning-text-darkness:    rgb(120, 88, 0);
+    --aspid-colors-status-warning-text-dark:        rgb(244, 188, 2);
+    --aspid-colors-status-warning-text-light:       rgb(255, 206, 64);
+    --aspid-colors-status-warning-text-lightness:   rgb(255, 226, 140);
+    --aspid-colors-status-warning-shade-darkness:   rgb(92, 74, 24);
+    --aspid-colors-status-warning-shade-dark:       rgb(150, 116, 22);
+    --aspid-colors-status-warning-shade-light:      rgb(196, 152, 24);
+    --aspid-colors-status-warning-shade-lightness:  rgb(232, 182, 24);
+    --aspid-colors-status-warning-tint:             rgba(244, 188, 2, 0.14);
+
+    --aspid-colors-status-success-darkness:         rgb(40, 60, 40);
+    --aspid-colors-status-success-dark:             rgb(44, 76, 46);
+    --aspid-colors-status-success-light:            rgb(52, 92, 54);
+    --aspid-colors-status-success-lightness:        rgb(64, 112, 66);
+    --aspid-colors-status-success-text-darkness:    rgb(40, 110, 48);
+    --aspid-colors-status-success-text-dark:        rgb(112, 202, 112);
+    --aspid-colors-status-success-text-light:       rgb(146, 218, 146);
+    --aspid-colors-status-success-text-lightness:   rgb(188, 234, 188);
+    --aspid-colors-status-success-shade-darkness:   rgb(42, 82, 44);
+    --aspid-colors-status-success-shade-dark:       rgb(62, 132, 64);
+    --aspid-colors-status-success-shade-light:      rgb(84, 170, 86);
+    --aspid-colors-status-success-shade-lightness:  rgb(112, 202, 112);
+    --aspid-colors-status-success-tint:             rgba(112, 202, 112, 0.14);
+
+    --aspid-colors-status-info-darkness:            rgb(36, 52, 72);
+    --aspid-colors-status-info-dark:                rgb(40, 62, 92);
+    --aspid-colors-status-info-light:               rgb(48, 76, 112);
+    --aspid-colors-status-info-lightness:           rgb(58, 92, 136);
+    --aspid-colors-status-info-text-darkness:       rgb(40, 84, 140);
+    --aspid-colors-status-info-text-dark:           rgb(140, 190, 240);
+    --aspid-colors-status-info-text-light:          rgb(172, 208, 248);
+    --aspid-colors-status-info-text-lightness:      rgb(204, 226, 252);
+    --aspid-colors-status-info-shade-darkness:      rgb(32, 52, 78);
+    --aspid-colors-status-info-shade-dark:          rgb(44, 78, 116);
+    --aspid-colors-status-info-shade-light:         rgb(84, 134, 194);
+    --aspid-colors-status-info-shade-lightness:     rgb(114, 164, 224);
+    --aspid-colors-status-info-tint:                rgba(88, 150, 220, 0.16);
+
+    --aspid-colors-status-error-darkness:           rgb(72, 40, 40);
+    --aspid-colors-status-error-dark:               rgb(92, 44, 44);
+    --aspid-colors-status-error-light:              rgb(114, 52, 52);
+    --aspid-colors-status-error-lightness:          rgb(138, 62, 62);
+    --aspid-colors-status-error-text-darkness:      rgb(150, 40, 40);
+    --aspid-colors-status-error-text-dark:          rgb(255, 120, 120);
+    --aspid-colors-status-error-text-light:         rgb(255, 180, 180);
+    --aspid-colors-status-error-text-lightness:     rgb(255, 214, 214);
+    --aspid-colors-status-error-shade-darkness:     rgb(92, 42, 42);
+    --aspid-colors-status-error-shade-dark:         rgb(152, 62, 62);
+    --aspid-colors-status-error-shade-light:        rgb(202, 84, 84);
+    --aspid-colors-status-error-shade-lightness:    rgb(232, 116, 116);
+    --aspid-colors-status-error-tint:               rgba(255, 110, 110, 0.14);
+
+    /* The dots behind the windows in one grey, without the status hues. */
+    --aspid-colors-dots-1:                          rgb(124, 124, 124);
+    --aspid-colors-dots-2:                          rgb(124, 124, 124);
+    --aspid-colors-dots-3:                          rgb(124, 124, 124);
+    --aspid-colors-status-success-blob:             rgb(124, 124, 124);
+    --aspid-colors-status-warning-blob:             rgb(124, 124, 124);
+    --aspid-colors-status-error-blob:               rgb(124, 124, 124);
+    --aspid-colors-status-info-blob:                rgb(124, 124, 124);
+
+    /* Unity's blue: its selection (#2C5D87) and focus (#3A79BB) on fills, lighter shades of it on text. */
+    --aspid-colors-accent-shade-dark:               rgb(44, 93, 135);
+    --aspid-colors-accent-text-darkness:            rgb(40, 90, 150);
+    --aspid-colors-accent-text-dark:                rgb(140, 186, 245);
+    --aspid-colors-accent-text-light:               rgb(172, 206, 250);
+    --aspid-colors-accent-text-lightness:           rgb(204, 226, 252);
+    --aspid-colors-accent-shade-light:              rgb(58, 121, 187);
+    --aspid-colors-accent-tint:                     rgba(44, 93, 135, 0.35);
+
+    /* Switches read their own token; on the dark skin an on switch tints its track with it. */
+    --aspid-colors-switch-accent:                   rgb(58, 121, 187);
+}
+
+/* On the light skin an on switch fills its track under a white handle, inside a window or not. */
+.aspid-fasttools-skin--light {
+    --aspid-colors-switch-accent:                   rgb(58, 114, 176);
+}
+
+.aspid-fasttools-palette--light {
+    --aspid-colors-bg-darkness:                     rgb(214, 214, 214);
+    --aspid-colors-bg-dark:                         rgb(204, 204, 204);
+    --aspid-colors-bg-light:                        rgb(194, 194, 194);
+    --aspid-colors-bg-lightness:                    rgb(182, 182, 182);
+
+    --aspid-colors-text-lightness:                  rgb(9, 9, 9);
+    --aspid-colors-text-light:                      rgb(28, 28, 28);
+    --aspid-colors-text-dark:                       rgb(62, 62, 62);
+    --aspid-colors-text-darkness:                   rgb(96, 96, 96);
+
+    --aspid-colors-shade-darkness:                  rgb(153, 153, 153);
+    --aspid-colors-shade-dark:                      rgb(178, 178, 178);
+    --aspid-colors-shade-light:                     rgb(153, 153, 153);
+    --aspid-colors-shade-lightness:                 rgb(128, 128, 128);
+
+    --aspid-colors-surface-canvas:                  rgb(200, 200, 200);
+    --aspid-colors-surface-card:                    rgb(200, 200, 200);
+    --aspid-colors-surface-card-dim:                rgb(240, 240, 240);
+    --aspid-colors-surface-field:                   rgb(240, 240, 240);
+    --aspid-colors-surface-control:                 rgb(228, 228, 228);
+
+    --aspid-colors-slider-handle:                   rgba(80, 80, 80, 0.85);
+    --aspid-colors-control-border:                  rgb(153, 153, 153);
+    --aspid-colors-slider-track:                    rgb(130, 130, 130);
+    --aspid-colors-scope-user:                      rgb(100, 100, 100);
+
+    --aspid-colors-status-info-text-dark:           rgb(18, 80, 134);
+    --aspid-colors-status-info-text-light:          rgb(16, 74, 124);
+
+    --aspid-colors-status-success-text-dark:        rgb(20, 100, 45);
+    --aspid-colors-status-success-text-light:       rgb(15, 84, 37);
+    --aspid-colors-status-success-text-lightness:   rgb(12, 70, 31);
+
+
+    --aspid-colors-status-warning-text-dark:        rgb(112, 76, 0);
+    --aspid-colors-status-warning-text-light:       rgb(94, 64, 0);
+    --aspid-colors-status-warning-text-lightness:   rgb(78, 53, 0);
+
+    --aspid-colors-status-error-text-dark:          rgb(160, 40, 62);
+    --aspid-colors-status-error-text-light:         rgb(138, 32, 52);
+    --aspid-colors-status-error-text-lightness:     rgb(118, 26, 44);
+
+    --aspid-colors-accent-shade-dark:               rgb(180, 204, 234);
+    --aspid-colors-accent-text-darkness:            rgb(130, 170, 215);
+    --aspid-colors-accent-text-dark:                rgb(22, 80, 150);
+    --aspid-colors-accent-text-light:               rgb(18, 70, 134);
+    --aspid-colors-accent-text-lightness:           rgb(14, 58, 112);
+    --aspid-colors-accent-shade-light:              rgb(100, 140, 200);
+    --aspid-colors-accent-tint:                     rgba(58, 114, 176, 0.15);
+
+    /* The light skin keeps the light palette's status backgrounds, shades and tints. */
+    --aspid-colors-status-warning-darkness:         rgb(252, 243, 226);
+    --aspid-colors-status-warning-dark:             rgb(248, 230, 196);
+    --aspid-colors-status-warning-light:            rgb(240, 212, 160);
+    --aspid-colors-status-warning-lightness:        rgb(230, 190, 120);
+    --aspid-colors-status-warning-text-darkness:    rgb(212, 170, 110);
+    --aspid-colors-status-warning-shade-darkness:   rgb(238, 220, 190);
+    --aspid-colors-status-warning-shade-dark:       rgb(225, 195, 145);
+    --aspid-colors-status-warning-shade-light:      rgb(205, 160, 90);
+    --aspid-colors-status-warning-shade-lightness:  rgb(180, 125, 40);
+    --aspid-colors-status-warning-tint:             rgba(230, 170, 60, 0.14);
+    --aspid-colors-status-success-darkness:         rgb(232, 245, 236);
+    --aspid-colors-status-success-dark:             rgb(214, 237, 221);
+    --aspid-colors-status-success-light:            rgb(190, 226, 201);
+    --aspid-colors-status-success-lightness:        rgb(160, 211, 176);
+    --aspid-colors-status-success-text-darkness:    rgb(120, 170, 132);
+    --aspid-colors-status-success-shade-darkness:   rgb(212, 234, 218);
+    --aspid-colors-status-success-shade-dark:       rgb(186, 220, 196);
+    --aspid-colors-status-success-shade-light:      rgb(140, 196, 156);
+    --aspid-colors-status-success-shade-lightness:  rgb(90, 165, 112);
+    --aspid-colors-status-success-tint:             rgba(60, 170, 90, 0.12);
+    --aspid-colors-status-info-darkness:            rgb(232, 241, 252);
+    --aspid-colors-status-info-dark:                rgb(212, 228, 248);
+    --aspid-colors-status-info-light:               rgb(186, 210, 240);
+    --aspid-colors-status-info-lightness:           rgb(150, 186, 230);
+    --aspid-colors-status-info-text-darkness:       rgb(130, 170, 215);
+    --aspid-colors-status-info-text-lightness:      rgb(20, 82, 140);
+    --aspid-colors-status-info-shade-darkness:      rgb(208, 222, 242);
+    --aspid-colors-status-info-shade-dark:          rgb(180, 204, 234);
+    --aspid-colors-status-info-shade-light:         rgb(140, 178, 222);
+    --aspid-colors-status-info-shade-lightness:     rgb(90, 140, 200);
+    --aspid-colors-status-info-tint:                rgba(50, 120, 210, 0.12);
+    --aspid-colors-status-error-darkness:           rgb(252, 234, 234);
+    --aspid-colors-status-error-dark:               rgb(246, 214, 214);
+    --aspid-colors-status-error-light:              rgb(238, 190, 190);
+    --aspid-colors-status-error-lightness:          rgb(225, 160, 160);
+    --aspid-colors-status-error-text-darkness:      rgb(225, 140, 140);
+    --aspid-colors-status-error-shade-darkness:     rgb(240, 208, 208);
+    --aspid-colors-status-error-shade-dark:         rgb(228, 180, 180);
+    --aspid-colors-status-error-shade-light:        rgb(210, 140, 140);
+    --aspid-colors-status-error-shade-lightness:    rgb(185, 90, 90);
+    --aspid-colors-status-error-tint:               rgba(220, 60, 60, 0.12);
+
+    /* The dots in one grey on the light skin too. */
+    --aspid-colors-dots-1:                          rgb(172, 172, 172);
+    --aspid-colors-dots-2:                          rgb(172, 172, 172);
+    --aspid-colors-dots-3:                          rgb(172, 172, 172);
+    --aspid-colors-status-success-blob:             rgb(172, 172, 172);
+    --aspid-colors-status-warning-blob:             rgb(172, 172, 172);
+    --aspid-colors-status-error-blob:               rgb(172, 172, 172);
+    --aspid-colors-status-info-blob:                rgb(172, 172, 172);
+}
