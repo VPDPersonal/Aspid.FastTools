@@ -7,7 +7,7 @@ using Aspid.FastTools.Editors;
 namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 {
     // The dots canvas runs its repaint timer only while it sits in a panel and the per-user "Animated background"
-    // setting is on; with the setting off nothing keeps the editor repainting.
+    // setting is on; with the setting off the dots are hidden and nothing keeps the editor repainting.
     [TestFixture]
     internal sealed class AspidAnimatedDotsBackgroundAnimationTests
     {
@@ -51,6 +51,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             yield return null;
 
             Assert.IsFalse(canvas.IsAnimating, "With the setting off the timer must not start.");
+            Assert.IsFalse(canvas.AreDotsVisible, "With the setting off the dots must be hidden.");
+            Assert.AreEqual(DisplayStyle.Flex, canvas.resolvedStyle.display,
+                "The canvas itself must stay, so a fill painted on it does not go with the dots.");
         }
 
         [UnityTest]
@@ -62,9 +65,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
             Assert.IsFalse(canvas.IsAnimating, "Turning the setting off must stop an open canvas at once.");
+            Assert.IsFalse(canvas.AreDotsVisible, "Turning the setting off must hide the dots.");
 
             AspidAnimatedDotsBackgroundSettings.Enabled = true;
             Assert.IsTrue(canvas.IsAnimating, "Turning the setting on must restart an open canvas at once.");
+            Assert.IsTrue(canvas.AreDotsVisible, "Turning the setting on must show the dots.");
         }
 
         [UnityTest]
