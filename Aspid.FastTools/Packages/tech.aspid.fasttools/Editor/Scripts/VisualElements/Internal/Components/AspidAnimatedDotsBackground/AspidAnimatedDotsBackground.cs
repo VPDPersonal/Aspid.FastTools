@@ -143,6 +143,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             // is not free.
             if (!InternalEditorUtility.isApplicationActive || !IsWatched()) return;
 
+            // A theme that hides the dots (a zero radius) leaves nothing to redraw.
+            if (!(_size.DotRadius > 0f)) return;
+
             _time += Mathf.Min(elapsed, MaxTickStep);
             MarkDirtyRepaint();
         }

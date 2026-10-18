@@ -38,6 +38,14 @@
     --aspid-colors-overlay-scrollbar-hover:         rgba(255, 255, 255, 0.28);
     --aspid-colors-slider-handle:                   rgba(189, 189, 196, 0.85);
     --aspid-colors-control-border:                  rgb(110, 110, 110);
+    --aspid-colors-slider-track:                    var(--aspid-colors-control-border);
+
+    /* The dot radius of the animated background behind the windows; 0 hides the dots. */
+    --aspid-dots-radius:                            1.55;
+
+    /* Corners of the settings cards and rows, and of their buttons, drop-downs and fields. */
+    --aspid-radius-card:                            6px;
+    --aspid-radius-control:                         6px;
 
     /* The accent: links, focus and hover borders, the active tab, buttons, the Welcome title and logo. Green here; a
        theme of UI/Themes may redefine it, while the success status keeps its own green. */

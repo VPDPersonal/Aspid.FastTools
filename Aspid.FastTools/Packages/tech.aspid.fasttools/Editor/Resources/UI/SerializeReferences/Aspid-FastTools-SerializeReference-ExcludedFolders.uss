@@ -12,7 +12,7 @@
     padding:                                              1px 3px 1px 7px;
     border-width:                                         1px;
     border-color:                                         rgba(0, 0, 0, 0);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;
@@ -35,7 +35,7 @@
     padding:                                              2px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
     background-color:                                     var(--aspid-colors-surface-card-dim);
 }
 
@@ -73,7 +73,7 @@
     padding:                                              1px 3px 1px 8px;
     border-width:                                         1px;
     border-color:                                         rgba(0, 0, 0, 0);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;

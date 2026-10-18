@@ -14,7 +14,7 @@
     --aspid-fasttools-colors-dot_blob-warning:                  var(--aspid-colors-status-warning-blob);
     --aspid-fasttools-colors-dot_blob-error:                    var(--aspid-colors-status-error-blob);
 
-    --aspid-fasttools-metrics-dot_radius:                       1.55;
+    --aspid-fasttools-metrics-dot_radius:                       var(--aspid-dots-radius);
     --aspid-fasttools-metrics-dot_spacing:                      18;
     --aspid-fasttools-metrics-dot_scale_reference:              420;
 }

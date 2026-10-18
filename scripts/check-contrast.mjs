@@ -6,7 +6,8 @@
 // Pairs come from two sources: the list below, for a background and a text set in different rules (a component box and
 // the labels in it), and every package rule that sets both `color` and `background-color`, checked in the contexts its
 // sheet is drawn in. A pair with a `baseline` is known to be below the minimum: it passes while it stays at that ratio and
-// fails if it drops lower.
+// fails if it drops lower. A baseline key is a context name, or a theme's prefix and a context name ('unity/dark') for a
+// theme that departs from the minimum on purpose.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -78,7 +79,11 @@ const PAIRS = [
   ]),
   { where: 'card error', fg: 'status-error-text-light', bg: CARD, min: TEXT, in: WINDOW },
   { where: 'settings project stripe', fg: 'scope-project', bg: CARD, min: LARGE, in: WINDOW },
-  { where: 'settings list frame', fg: 'control-border', bg: CARD, min: LARGE, in: WINDOW },
+  // The Unity theme copies the Inspector's dark control borders, which sit far under 3:1 on its grey cards.
+  {
+    where: 'settings list frame', fg: 'control-border', bg: CARD, min: LARGE, in: WINDOW,
+    baseline: { 'unity/dark': 1.64, 'unity/light-window': 1.7 },
+  },
   { where: 'settings list entry', fg: 'text-light', bg: ['surface-canvas', 'surface-card-dim'], min: TEXT, in: WINDOW },
   { where: 'settings list empty', fg: 'text-dark', bg: ['surface-canvas', 'surface-card-dim'], min: TEXT, in: WINDOW },
   { where: 'settings per-user stripe', fg: 'scope-user', bg: CARD, min: LARGE, in: WINDOW },
@@ -273,7 +278,7 @@ let known = 0;
 for (const check of checks) {
   const context = check.palette.contexts[check.name];
   const fg = typeof check.fg === 'object' ? check.fg[check.name] : check.fg;
-  const baseline = check.baseline?.[check.name];
+  const baseline = check.baseline?.[check.palette.prefix + check.name] ?? check.baseline?.[check.name];
   let value, error;
   const name = check.fromRule ? v => v : expand;
   try {

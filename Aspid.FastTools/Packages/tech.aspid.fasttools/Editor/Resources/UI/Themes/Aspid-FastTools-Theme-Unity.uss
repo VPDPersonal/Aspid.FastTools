@@ -1,22 +1,24 @@
-/* Unity: the colours of Unity's own Inspector, so an Aspid window reads as one more editor panel. The canvas and the
-   cards share the Inspector background (#383838) and the cards stand out only by thin dark separators; rows hover
-   with the list row grey (#464646), the buttons and drop-downs take the drop-down grey (#515151), and the object fields
-   and value boxes the input field grey (#2A2A2A). The text takes Unity's label greys. The accent is mono, light greys
-   without a hue, with the grey logo; the status text is lifted on the dark skin and deepened on the light skin, so it
-   keeps its contrast on the grey cards.
+/* Unity: the colours of Unity's own Inspector, so an Aspid window reads as one more editor panel. The canvas takes the
+   Inspector background (#383838) and the cards the grey of its lists (#464646), with thin dark separators; rows hover
+   with a darker inset, the buttons and drop-downs take the drop-down grey (#515151), and the object fields and value
+   boxes the input field grey (#2A2A2A). The controls keep Unity's dark borders (#242424) rather than light outlines,
+   so their frames stay under 3:1; check-contrast.mjs holds them at a baseline. The corners stay those of Default.
+   The text takes Unity's label greys. The accent is Unity's blue, with the blue logo; the status text is lifted on the
+   dark skin and deepened on the light skin, so it keeps its contrast on the grey cards. The dots behind the windows
+   are off.
    The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
    light block follows :root in this sheet. */
 :root {
-    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_mono_256x253");
+    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_blue_256x253");
 
-    --aspid-colors-bg-darkness:                     rgb(62, 62, 62);
-    --aspid-colors-bg-dark:                         rgb(70, 70, 70);
+    --aspid-colors-bg-darkness:                     rgb(64, 64, 64);
+    --aspid-colors-bg-dark:                         rgb(60, 60, 60);
     --aspid-colors-bg-light:                        rgb(78, 78, 78);
     --aspid-colors-bg-lightness:                    rgb(88, 88, 88);
 
     --aspid-colors-text-lightness:                  rgb(210, 210, 210);
     --aspid-colors-text-light:                      rgb(196, 196, 196);
-    --aspid-colors-text-dark:                       rgb(180, 180, 180);
+    --aspid-colors-text-dark:                       rgb(184, 184, 184);
     --aspid-colors-text-darkness:                   rgb(140, 140, 140);
 
     --aspid-colors-shade-darkness:                  rgb(36, 36, 36);
@@ -25,38 +27,40 @@
     --aspid-colors-shade-lightness:                 rgb(118, 118, 118);
 
     --aspid-colors-surface-canvas:                  rgb(56, 56, 56);
-    --aspid-colors-surface-card:                    rgb(56, 56, 56);
+    --aspid-colors-surface-card:                    rgb(70, 70, 70);
     --aspid-colors-surface-card-dim:                rgb(42, 42, 42);
     --aspid-colors-surface-field:                   rgb(42, 42, 42);
     --aspid-colors-surface-control:                 rgb(81, 81, 81);
 
     --aspid-colors-slider-handle:                   rgba(200, 200, 200, 0.85);
-    --aspid-colors-control-border:                  rgb(132, 132, 132);
-    --aspid-colors-scope-user:                      rgb(138, 138, 138);
+    --aspid-colors-control-border:                  rgb(36, 36, 36);
+    --aspid-colors-slider-track:                    rgb(94, 94, 94);
+    --aspid-colors-scope-user:                      rgb(150, 150, 150);
     --aspid-colors-dark-skin-text-darkness:         rgb(186, 186, 186);
 
-    --aspid-colors-status-info-text-dark:           rgb(112, 170, 228);
-    --aspid-colors-status-info-text-light:          rgb(140, 190, 240);
-    --aspid-colors-status-error-text-light:         rgb(244, 136, 156);
-    /* The dots behind the settings take a grey barely off the canvas, so the window reads as a flat Inspector. */
-    --aspid-colors-status-info-blob:                rgb(61, 61, 61);
+    --aspid-colors-status-info-text-dark:           rgb(140, 190, 240);
+    --aspid-colors-status-info-text-light:          rgb(172, 208, 248);
+    --aspid-colors-status-error-text-light:         rgb(250, 162, 178);
+    --aspid-colors-status-success-text-light:       rgb(140, 206, 152);
+    /* No dots behind the windows, so the window reads as a flat Inspector. */
+    --aspid-dots-radius:                            0;
 
-    /* Mono accent: light greys without a hue, as the mono accent of the documentation site. */
-    --aspid-colors-accent-shade-dark:               rgb(72, 72, 72);
-    --aspid-colors-accent-text-darkness:            rgb(90, 90, 90);
-    --aspid-colors-accent-text-dark:                rgb(200, 200, 200);
-    --aspid-colors-accent-text-light:               rgb(226, 226, 226);
-    --aspid-colors-accent-text-lightness:           rgb(240, 240, 240);
-    --aspid-colors-accent-shade-light:              rgb(112, 112, 112);
-    --aspid-colors-accent-tint:                     rgba(255, 255, 255, 0.08);
+    /* Unity's blue: its selection (#2C5D87) and focus (#3A79BB) on fills, lighter shades of it on text. */
+    --aspid-colors-accent-shade-dark:               rgb(44, 93, 135);
+    --aspid-colors-accent-text-darkness:            rgb(40, 90, 150);
+    --aspid-colors-accent-text-dark:                rgb(140, 186, 245);
+    --aspid-colors-accent-text-light:               rgb(172, 206, 250);
+    --aspid-colors-accent-text-lightness:           rgb(204, 226, 252);
+    --aspid-colors-accent-shade-light:              rgb(58, 121, 187);
+    --aspid-colors-accent-tint:                     rgba(44, 93, 135, 0.35);
 
     /* Switches read their own token; on the dark skin an on switch tints its track with it. */
-    --aspid-colors-switch-accent:                   rgb(200, 200, 200);
+    --aspid-colors-switch-accent:                   rgb(58, 121, 187);
 }
 
 /* On the light skin an on switch fills its track under a white handle, inside a window or not. */
 .aspid-fasttools-skin--light {
-    --aspid-colors-switch-accent:                   rgb(96, 96, 96);
+    --aspid-colors-switch-accent:                   rgb(58, 114, 176);
 }
 
 .aspid-fasttools-palette--light {
@@ -82,9 +86,9 @@
     --aspid-colors-surface-control:                 rgb(228, 228, 228);
 
     --aspid-colors-slider-handle:                   rgba(80, 80, 80, 0.85);
-    --aspid-colors-control-border:                  rgb(102, 102, 102);
+    --aspid-colors-control-border:                  rgb(153, 153, 153);
+    --aspid-colors-slider-track:                    rgb(130, 130, 130);
     --aspid-colors-scope-user:                      rgb(100, 100, 100);
-    --aspid-colors-status-info-blob:                rgb(194, 194, 194);
 
     --aspid-colors-status-info-text-dark:           rgb(18, 80, 134);
     --aspid-colors-status-info-text-light:          rgb(16, 74, 124);
@@ -102,11 +106,11 @@
     --aspid-colors-status-error-text-light:         rgb(138, 32, 52);
     --aspid-colors-status-error-text-lightness:     rgb(118, 26, 44);
 
-    --aspid-colors-accent-shade-dark:               rgb(190, 190, 190);
-    --aspid-colors-accent-text-darkness:            rgb(120, 120, 120);
-    --aspid-colors-accent-text-dark:                rgb(52, 52, 52);
-    --aspid-colors-accent-text-light:               rgb(36, 36, 36);
-    --aspid-colors-accent-text-lightness:           rgb(16, 16, 16);
-    --aspid-colors-accent-shade-light:              rgb(130, 130, 130);
-    --aspid-colors-accent-tint:                     rgba(0, 0, 0, 0.08);
+    --aspid-colors-accent-shade-dark:               rgb(180, 204, 234);
+    --aspid-colors-accent-text-darkness:            rgb(130, 170, 215);
+    --aspid-colors-accent-text-dark:                rgb(22, 80, 150);
+    --aspid-colors-accent-text-light:               rgb(18, 70, 134);
+    --aspid-colors-accent-text-lightness:           rgb(14, 58, 112);
+    --aspid-colors-accent-shade-light:              rgb(100, 140, 200);
+    --aspid-colors-accent-tint:                     rgba(58, 114, 176, 0.15);
 }

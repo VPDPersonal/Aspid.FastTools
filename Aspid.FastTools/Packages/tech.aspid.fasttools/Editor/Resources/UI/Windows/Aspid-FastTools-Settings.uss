@@ -19,7 +19,7 @@
     margin-bottom:                                        10px;
     padding:                                              8px 10px;
     border-width:                                         1px;
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
     border-color:                                         var(--aspid-colors-shade-darkness);
     background-color:                                     var(--aspid-colors-surface-card);
 }
@@ -58,7 +58,7 @@
     right:                                                0;
     top:                                                  0;
     bottom:                                               0;
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
 
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
@@ -73,7 +73,7 @@
 .aspid-fasttools-settings__footer .aspid-fasttools-settings__row {
     margin-left:                                          -4px;
     padding-left:                                         4px;
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-card);
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;
@@ -183,7 +183,7 @@
     background-color:                                     var(--aspid-colors-surface-control);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-dark);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
     color:                                                var(--aspid-colors-text-light);
 
     transition-property:                                  background-color, border-color, color;
@@ -235,7 +235,7 @@
     margin-top:                                           -2px;
     border-width:                                         0;
     border-radius:                                        2px;
-    background-color:                                     var(--aspid-colors-control-border);
+    background-color:                                     var(--aspid-colors-slider-track);
 }
 
 .aspid-fasttools-settings__section-content .unity-base-slider__dragger {
@@ -278,7 +278,7 @@
     background-color:                                     var(--aspid-colors-surface-field);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
     color:                                                var(--aspid-colors-text-lightness);
 }
 
@@ -305,7 +305,7 @@
     background-color:                                     var(--aspid-colors-surface-control);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
 }
 
 .aspid-fasttools-settings .unity-enum-field__text {
@@ -361,7 +361,7 @@
     background-color:                                     var(--aspid-colors-surface-field);
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-control-border);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
     align-items:                                          center;
 }
 
@@ -387,7 +387,7 @@
 
 .aspid-fasttools-settings .unity-object-field__selector {
     background-color:                                     var(--aspid-colors-overlay-control);
-    border-radius:                                        6px;
+    border-radius:                                        var(--aspid-radius-control);
 }
 
 .aspid-fasttools-settings .unity-object-field__selector:hover {
