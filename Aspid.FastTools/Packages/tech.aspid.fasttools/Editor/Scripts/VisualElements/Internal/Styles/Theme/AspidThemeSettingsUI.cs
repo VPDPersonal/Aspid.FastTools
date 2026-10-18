@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
@@ -77,10 +79,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private static void CreateTheme()
         {
             var path = EditorUtility.SaveFilePanelInProject(
-                "Create Aspid Theme",
-                NewThemeFileName,
-                "uss",
-                "Choose where to save the theme. It starts as a copy of the current theme.");
+                title: "Create Aspid Theme",
+                defaultName: NewThemeFileName,
+                extension: "uss",
+                message: "Choose where to save the theme. It starts as a copy of the current theme.");
 
             if (!string.IsNullOrEmpty(path)) CreateTheme(path);
         }
@@ -94,7 +96,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var sheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(path);
             if (sheet == null) return null;
 
-            AssetDatabase.SetLabels(sheet, new[] { AspidThemeSettings.CustomThemeLabel });
+            // The dialog may have overwritten a sheet with labels of its own; they stay.
+            var labels = AssetDatabase.GetLabels(sheet);
+            if (Array.IndexOf(labels, AspidThemeSettings.CustomThemeLabel) < 0)
+                AssetDatabase.SetLabels(sheet, labels.Append(AspidThemeSettings.CustomThemeLabel).ToArray());
             AspidThemeSettings.CustomTheme = sheet;
             EditorGUIUtility.PingObject(sheet);
 

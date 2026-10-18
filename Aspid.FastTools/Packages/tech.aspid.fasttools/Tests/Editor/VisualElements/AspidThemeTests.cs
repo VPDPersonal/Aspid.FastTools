@@ -418,6 +418,52 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             }
         }
 
+        [Test]
+        public void DeletingThePickedTheme_RaisesAChange_AndFallsBackToTheBuiltIn()
+        {
+            AspidThemeSettings.Theme = AspidTheme.Venom;
+            var sheet = AspidThemeSettingsUI.CreateTheme(CreatedThemePath);
+            Assert.AreEqual(sheet, AspidThemeSettings.CustomTheme);
+
+            var changes = 0;
+            void OnChanged() => changes++;
+            AspidThemeSettings.Changed += OnChanged;
+
+            try
+            {
+                AssetDatabase.DeleteAsset(CreatedThemePath);
+            }
+            finally
+            {
+                AspidThemeSettings.Changed -= OnChanged;
+                AspidThemeSettings.CustomTheme = null;
+            }
+
+            Assert.Greater(changes, 0, "Deleting the picked sheet must tell the windows and the dropdown.");
+            Assert.AreEqual(AspidTheme.Venom, AspidThemeSettings.Theme, "The built-in theme must stay for the fallback.");
+        }
+
+        [Test]
+        public void CreateTheme_OverAnExistingSheet_KeepsItsLabels()
+        {
+            try
+            {
+                File.WriteAllText(CreatedThemePath, ":root {}\n");
+                AssetDatabase.ImportAsset(CreatedThemePath);
+                AssetDatabase.SetLabels(AssetDatabase.LoadAssetAtPath<StyleSheet>(CreatedThemePath), new[] { "Keep" });
+
+                var sheet = AspidThemeSettingsUI.CreateTheme(CreatedThemePath);
+                CollectionAssert.IsSupersetOf(AssetDatabase.GetLabels(sheet),
+                    new[] { "Keep", AspidThemeSettings.CustomThemeLabel },
+                    "The theme label must join the labels the sheet had.");
+            }
+            finally
+            {
+                AspidThemeSettings.CustomTheme = null;
+                AssetDatabase.DeleteAsset(CreatedThemePath);
+            }
+        }
+
         private static List<StyleSheet> StyleSheets(VisualElement element)
         {
             var sheets = new List<StyleSheet>();

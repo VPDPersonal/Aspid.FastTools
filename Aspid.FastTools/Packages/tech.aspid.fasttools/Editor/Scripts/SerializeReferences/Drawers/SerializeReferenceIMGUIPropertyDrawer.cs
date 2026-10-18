@@ -271,10 +271,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (gutter > 0f) EditorGUIUtility.labelWidth = labelWidth - gutter;
 
                 EditorGUI.indentLevel++;
-                DrawChildren(property, body.x, body.width, spacing, ref y, depth);
-                EditorGUI.indentLevel--;
-
-                if (gutter > 0f) EditorGUIUtility.labelWidth = labelWidth;
+                try
+                {
+                    DrawChildren(property, body.x, body.width, spacing, ref y, depth);
+                }
+                finally
+                {
+                    // A child that leaves the GUI early (a picker opening) must not leave the narrower column behind.
+                    EditorGUI.indentLevel--;
+                    if (gutter > 0f) EditorGUIUtility.labelWidth = labelWidth;
+                }
             }
 
             if (showShared)

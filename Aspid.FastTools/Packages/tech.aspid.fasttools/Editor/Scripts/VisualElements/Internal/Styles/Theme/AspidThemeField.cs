@@ -77,26 +77,28 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         internal void Step(int delta)
         {
             var themes = GetThemes();
-            var index = Mathf.Clamp(themes.FindIndex(theme => theme.IsCurrent) + delta, 0, themes.Count - 1);
+            var index = Mathf.Clamp(themes.FindIndex(static theme => theme.IsCurrent) + delta, 0, themes.Count - 1);
 
             themes[index].Pick();
         }
 
+        // The store is read once, so a menu or a step does not reload the picked sheet for every theme.
         internal static List<Theme> GetThemes()
         {
             var themes = new List<Theme>();
+            var current = AspidThemeSettings.CustomTheme;
+            var currentBuiltIn = AspidThemeSettings.Theme;
 
             foreach (AspidTheme builtIn in Enum.GetValues(typeof(AspidTheme)))
-                themes.Add(new Theme(builtIn, custom: null));
+                themes.Add(new Theme(builtIn, custom: null, isCurrent: current == null && builtIn == currentBuiltIn));
 
-            var current = AspidThemeSettings.CustomTheme;
             var found = AspidThemeSettings.FindCustomThemes();
 
             // A picked sheet without the label, or outside Assets, stays in the list while it is the current theme.
             if (current != null && !found.Contains(current)) found.Add(current);
 
             foreach (var custom in found)
-                themes.Add(new Theme(AspidTheme.Default, custom));
+                themes.Add(new Theme(AspidTheme.Default, custom, isCurrent: custom == current));
 
             return themes;
         }
@@ -115,11 +117,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
                 // A line parts the custom themes from the built-in ones.
                 if (theme.Custom != null && themes[i - 1].Custom == null) menu.AddSeparator(string.Empty);
-                menu.AddItem(new GUIContent(theme.Name), theme.IsCurrent, theme.Pick);
+                menu.AddItem(new GUIContent(theme.Name), on: theme.IsCurrent, func: theme.Pick);
             }
 
             menu.AddSeparator(string.Empty);
-            menu.AddItem(new GUIContent(CreateThemeItem), on: false, () => _createTheme?.Invoke());
+            menu.AddItem(new GUIContent(CreateThemeItem), on: false, func: () => _createTheme?.Invoke());
 
             // GenericMenu takes GUI coordinates, which a UI Toolkit event does not set up: go through screen space.
             var bound = _input.worldBound;
@@ -140,23 +142,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         {
             public readonly AspidTheme BuiltIn;
             public readonly StyleSheet Custom;
+            public readonly bool IsCurrent;
 
-            public Theme(AspidTheme builtIn, StyleSheet custom)
+            public Theme(AspidTheme builtIn, StyleSheet custom, bool isCurrent)
             {
                 BuiltIn = builtIn;
                 Custom = custom;
+                IsCurrent = isCurrent;
             }
 
             public string Name => Custom != null ? Custom.name : BuiltIn.ToString();
-
-            public bool IsCurrent
-            {
-                get
-                {
-                    var current = AspidThemeSettings.CustomTheme;
-                    return Custom != null ? current == Custom : current == null && AspidThemeSettings.Theme == BuiltIn;
-                }
-            }
 
             public void Pick()
             {

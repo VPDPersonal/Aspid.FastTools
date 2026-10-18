@@ -18,6 +18,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public static event Action Changed;
 
+        public static bool HasCustomThemePick =>
+            EditorPrefs.GetString(CustomThemeGuidKey, defaultValue: string.Empty).Length > 0;
+
         private static string CustomThemeGuidKey =>
             "Aspid.FastTools.Appearance.CustomTheme." + PlayerSettings.productGUID;
 
@@ -100,6 +103,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             themes.Sort((a, b) => string.Compare(a.name, b.name, StringComparison.OrdinalIgnoreCase));
             return themes;
         }
+
+        // The picked sheet was deleted or moved: its holders re-read the theme.
+        internal static void NotifyChanged() => Changed?.Invoke();
 
         private static bool SetCustomThemeGuid(string guid)
         {
