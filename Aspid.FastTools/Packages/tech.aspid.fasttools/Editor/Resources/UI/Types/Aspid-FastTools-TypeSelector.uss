@@ -289,7 +289,7 @@ ToolbarSearchField TextElement {
     flex-shrink:            0;
     font-size:              12px;
     -unity-font-style:      bold;
-    color:                  var(--aspid-colors-accent-text-dark);
+    color:                  var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-type-selector__item--current
@@ -380,7 +380,6 @@ ToolbarSearchField TextElement {
     --aspid-colors-status-info-text-light:          var(--aspid-colors-status-info-text-dark);
     --aspid-colors-status-info-text-lightness:      var(--aspid-colors-status-info-text-darkness);
     --aspid-colors-status-success-text-dark:        var(--aspid-colors-status-success-text-darkness);
-    --aspid-colors-accent-text-dark:                var(--aspid-colors-accent-text-darkness);
     --aspid-colors-status-warning-text-light:       var(--aspid-colors-light-skin-status-warning-text);
     --aspid-colors-status-warning-text-lightness:   var(--aspid-colors-status-warning-text-darkness);
     --aspid-colors-status-error-text-light:         var(--aspid-colors-status-error-text-darkness);

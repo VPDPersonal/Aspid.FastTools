@@ -15,9 +15,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     /// <summary>
     /// The theme override wins over the built-in palette and is applied live: an element that loads the Aspid palette
     /// follows a change of the override at once, whether it was already in a panel when it loaded the palette or
-    /// joined one later. A built-in theme and then an accent sit between the palettes and the override, and their light
-    /// blocks win over the light palette; an accent leaves the success status alone. The settings surface offers the
-    /// theme and accent dropdowns and the picker for the override.
+    /// joined one later. A built-in theme sits between the palettes and the override, and its light block wins over
+    /// the light palette. The settings surface offers the theme dropdown and the picker for the override.
     /// </summary>
     [TestFixture]
     internal sealed class AspidThemeOverrideTests
@@ -29,17 +28,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         private StyleSheet _override;
         private StyleSheet _savedOverride;
         private AspidTheme _savedTheme;
-        private AspidAccent _savedAccent;
 
         [SetUp]
         public void SetUp()
         {
             _savedOverride = AspidThemeSettings.OverrideStyleSheet;
             _savedTheme = AspidThemeSettings.Theme;
-            _savedAccent = AspidThemeSettings.Accent;
             AspidThemeSettings.OverrideStyleSheet = null;
             AspidThemeSettings.Theme = AspidTheme.Default;
-            AspidThemeSettings.Accent = AspidAccent.Green;
 
             _override = AssetDatabase.LoadAssetAtPath<StyleSheet>(OverrideStyleSheetPath);
             Assert.IsNotNull(_override, "The override style sheet must load.");
@@ -53,7 +49,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             _panel.Dispose();
             AspidThemeSettings.OverrideStyleSheet = _savedOverride;
             AspidThemeSettings.Theme = _savedTheme;
-            AspidThemeSettings.Accent = _savedAccent;
         }
 
         [UnityTest]
@@ -243,80 +238,31 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 if (theme is AspidTheme.Default) Assert.IsNull(AspidThemeSettings.ThemeStyleSheet, "Default adds no sheet.");
                 else Assert.IsNotNull(AspidThemeSettings.ThemeStyleSheet, $"The {theme} theme must load its sheet.");
             }
-
-            foreach (AspidAccent accent in Enum.GetValues(typeof(AspidAccent)))
-            {
-                AspidThemeSettings.Accent = accent;
-
-                if (accent is AspidAccent.Green) Assert.IsNull(AspidThemeSettings.AccentStyleSheet, "Green adds no sheet.");
-                else Assert.IsNotNull(AspidThemeSettings.AccentStyleSheet, $"The {accent} accent must load its sheet.");
-            }
         }
 
         [UnityTest]
-        public IEnumerator ThemeAndAccentSheets_AreAddedBetweenPalettesAndOverride()
+        public IEnumerator ThemeSheet_IsAddedBetweenPalettesAndOverride()
         {
             yield return null;
 
             AspidThemeSettings.Theme = AspidTheme.Venom;
-            AspidThemeSettings.Accent = AspidAccent.Red;
             AspidThemeSettings.OverrideStyleSheet = _override;
             var host = _panel.Root.AddAspidThemeStyleSheets();
 
             var dark = Resources.Load<StyleSheet>(AspidStyles.DefaultStyleSheet);
             var light = Resources.Load<StyleSheet>(AspidStyles.LightStyleSheet);
             var venom = Resources.Load<StyleSheet>(AspidStyles.VenomThemeStyleSheet);
-            var red = Resources.Load<StyleSheet>(AspidStyles.AccentStyleSheetPrefix + nameof(AspidAccent.Red));
             CollectionAssert.AreEqual(
-                new[] { dark, light, venom, red, _override },
+                new[] { dark, light, venom, _override },
                 StyleSheets(host),
-                "The theme must win the ties of both palettes, the accent those of the theme, the override all of them.");
+                "The theme must win the ties of both palettes and lose those of the override.");
 
-            // A change of the theme must keep the accent and the override after it.
+            // Default must take the theme sheet away and keep the override last.
             AspidThemeSettings.Theme = AspidTheme.Default;
-            AspidThemeSettings.Accent = AspidAccent.Blue;
-            var blue = Resources.Load<StyleSheet>(AspidStyles.AccentStyleSheetPrefix + nameof(AspidAccent.Blue));
             CollectionAssert.AreEqual(
-                new[] { dark, light, blue, _override },
+                new[] { dark, light, _override },
                 StyleSheets(host),
-                "A new theme and accent must replace the old ones and stay under the override.");
-        }
-
-        [UnityTest]
-        public IEnumerator Accent_RecolorsTheAccent_AndLeavesSuccessGreen()
-        {
-            yield return null;
-
-            var host = _panel.Root.AddAspidThemeStyleSheets();
-            yield return null;
-            var success = Token(host, "--aspid-colors-status-success-text-dark");
-            Assert.AreEqual(Rgb(92, 180, 107), Token(host, "--aspid-colors-accent-text-dark"), "Green is the default accent.");
-
-            AspidThemeSettings.Accent = AspidAccent.Red;
-            yield return null;
-            Assert.AreEqual(Rgb(224, 100, 100), Token(host, "--aspid-colors-accent-text-dark"), "The accent must follow the setting.");
-            Assert.AreEqual(success, Token(host, "--aspid-colors-status-success-text-dark"), "The success status must stay green.");
-
-            AspidThemeSettings.Accent = AspidAccent.Green;
-            yield return null;
-            Assert.AreEqual(Rgb(92, 180, 107), Token(host, "--aspid-colors-accent-text-dark"), "Green must bring the accent back.");
-        }
-
-        [UnityTest]
-        public IEnumerator AccentLightBlock_WinsOverLightPalette()
-        {
-            yield return null;
-
-            // The light class is set by hand: AddAspidThemeStyleSheets would remove it again on a dark editor skin.
-            var host = _panel.Root
-                .AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet)
-                .AddStyleSheetFromResources(AspidStyles.LightStyleSheet)
-                .AddStyleSheetFromResources(AspidStyles.AccentStyleSheetPrefix + nameof(AspidAccent.Red))
-                .AddClass(AspidStyles.PaletteLightClass);
-            yield return null;
-
-            Assert.AreEqual(Rgb(204, 64, 64), Token(host, "--aspid-colors-accent-text-dark"),
-                "The light block of the accent must win over both the light palette and the accent's own :root.");
+                "Default must remove the theme sheet and keep the override.");
         }
 
         [UnityTest]
@@ -364,7 +310,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         [UnityTest]
-        public IEnumerator BuildControls_LiveSyncsThemeAndAccentFromSettings()
+        public IEnumerator BuildControls_LiveSyncsThemeFieldFromSettings()
         {
             yield return null;
 
@@ -372,21 +318,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             _panel.Root.Add(container);
             AspidThemeSettingsUI.BuildControls(container);
 
-            var fields = container.Query<EnumField>().ToList();
-            Assert.AreEqual(2, fields.Count, "BuildControls must emit the theme and accent dropdowns.");
-            var (theme, accent) = (fields[0], fields[1]);
-            Assert.AreEqual(AspidTheme.Default, theme.value);
-            Assert.AreEqual(AspidAccent.Green, accent.value);
+            var field = container.Q<EnumField>();
+            Assert.IsNotNull(field, "BuildControls must emit the theme dropdown.");
+            Assert.AreEqual(AspidTheme.Default, field.value);
 
             AspidThemeSettings.Theme = AspidTheme.Venom;
-            AspidThemeSettings.Accent = AspidAccent.Mono;
-            Assert.AreEqual(AspidTheme.Venom, theme.value, "The theme dropdown must mirror the settings live.");
-            Assert.AreEqual(AspidAccent.Mono, accent.value, "The accent dropdown must mirror the settings live.");
+            Assert.AreEqual(AspidTheme.Venom, field.value, "The dropdown must mirror the settings live.");
 
-            theme.value = AspidTheme.Default;
-            accent.value = AspidAccent.Yellow;
+            field.value = AspidTheme.Default;
             Assert.AreEqual(AspidTheme.Default, AspidThemeSettings.Theme, "Picking a theme must store it.");
-            Assert.AreEqual(AspidAccent.Yellow, AspidThemeSettings.Accent, "Picking an accent must store it.");
         }
 
         private static List<StyleSheet> StyleSheets(VisualElement element)
@@ -399,12 +339,5 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         private static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
-
-        private static Color Token(VisualElement element, string name)
-        {
-            Assert.IsTrue(element.customStyle.TryGetValue(new CustomStyleProperty<Color>(name), out var color),
-                $"The palette must declare {name}.");
-            return color;
-        }
     }
 }

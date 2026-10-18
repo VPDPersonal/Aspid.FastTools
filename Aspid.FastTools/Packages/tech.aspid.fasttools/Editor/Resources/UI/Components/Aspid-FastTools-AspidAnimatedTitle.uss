@@ -8,7 +8,7 @@
     --aspid-fasttools-prop-animated_title-wave_speed:           1.6;
     --aspid-fasttools-prop-animated_title-wave_amplitude:       3;
 
-    --aspid-fasttools-colors-animated_title-color_1:            var(--aspid-colors-accent-text-dark);
+    --aspid-fasttools-colors-animated_title-color_1:            var(--aspid-colors-status-success-text-dark);
     --aspid-fasttools-colors-animated_title-color_2:            var(--aspid-colors-status-warning-text-dark);
     --aspid-fasttools-colors-animated_title-color_3:            var(--aspid-colors-status-error-text-dark);
 }

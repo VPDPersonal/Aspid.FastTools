@@ -4,7 +4,6 @@
     --aspid-icons-status-warning:                   resource("Icons/aspid_icon_medium_yellow_256x253");
     --aspid-icons-status-error:                     resource("Icons/aspid_icon_medium_red_256x253");
     --aspid-icons-status-info:                      resource("Icons/aspid_icon_medium_blue_256x253");
-    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_green_256x253");
     --aspid-icons-home:                             resource("Icons/aspid_icon_home");
     --aspid-icons-settings:                         resource("Icons/aspid_icon_settings");
 
@@ -34,16 +33,6 @@
     --aspid-colors-overlay-scrollbar-hover:         rgba(255, 255, 255, 0.28);
     --aspid-colors-slider-handle:                   rgba(189, 189, 196, 0.85);
     --aspid-colors-control-border:                  rgb(110, 110, 110);
-
-    /* The accent: links, focus and hover borders, the active tab, buttons, the Welcome title and logo. An accent sheet
-       of UI/Accents redefines it; the success status keeps its own green whatever the accent. */
-    --aspid-colors-accent-shade-dark:               rgb(40, 85, 50);
-    --aspid-colors-accent-text-darkness:            rgb(55, 110, 65);
-    --aspid-colors-accent-text-dark:                rgb(92, 180, 107);
-    --aspid-colors-accent-text-light:               rgb(124, 194, 136);
-    --aspid-colors-accent-text-lightness:           rgb(169, 219, 178);
-    --aspid-colors-accent-shade-light:              rgb(65, 130, 80);
-    --aspid-colors-accent-tint:                     rgba(20, 90, 45, 0.25);
 
     /* Where a setting is stored. No status uses these hues, so a stripe never reads as a state of the row. */
     --aspid-colors-scope-project:                   rgb(180, 140, 230);
@@ -335,9 +324,9 @@ Button.aspid-fasttools-action-button {
 }
 
 Button.aspid-fasttools-action-button:hover {
-    border-color:                                   var(--aspid-colors-accent-shade-light);
-    color:                                          var(--aspid-colors-accent-text-light);
-    background-color:                               var(--aspid-colors-accent-tint);
+    border-color:                                   var(--aspid-colors-status-success-shade-light);
+    color:                                          var(--aspid-colors-status-success-text-light);
+    background-color:                               var(--aspid-colors-status-success-tint);
 }
 
 /* An action that deletes data without Undo turns red on hover. */

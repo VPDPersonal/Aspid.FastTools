@@ -12,7 +12,7 @@
     -unity-text-align:                                  middle-left;
 
     --aspid-fasttools-colors-gradient_button-bg:        var(--aspid-colors-bg-darkness);
-    --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-accent-text-dark);
+    --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-gradient-button__trailing-label {

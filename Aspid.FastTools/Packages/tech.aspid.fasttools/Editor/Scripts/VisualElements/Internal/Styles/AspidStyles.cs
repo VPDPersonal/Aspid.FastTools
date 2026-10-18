@@ -6,7 +6,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public const string DefaultStyleSheet = "UI/Aspid-FastTools-Default-Dark";
         public const string LightStyleSheet = "UI/Aspid-FastTools-Default-Light";
         public const string VenomThemeStyleSheet = "UI/Themes/Aspid-FastTools-Theme-Venom";
-        public const string AccentStyleSheetPrefix = "UI/Accents/Aspid-FastTools-Accent-";
         public const string BackgroundStyle = "aspid-fasttools-background";
         public const string BackgroundRoundedState = BackgroundStyle + "--rounded";
         public const string InspectorStyleClass = "aspid-fasttools-inspector-container";

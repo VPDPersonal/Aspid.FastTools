@@ -75,7 +75,7 @@ Button.aspid-fasttools-tab-window__toolbar-button--active .aspid-fasttools-tab-w
 }
 
 Button.aspid-fasttools-tab-window__toolbar-button--active .aspid-fasttools-tab-window__tab-underline {
-    background-color:                                     var(--aspid-colors-accent-text-light);
+    background-color:                                     var(--aspid-colors-status-success-text-light);
 }
 
 /* The hint follows the title, so the two read as one group at any tab width. TabWindow.TabHintGap is this margin. */
@@ -126,7 +126,7 @@ Button.aspid-fasttools-tab-window__toolbar-button--square:hover .aspid-fasttools
 }
 
 Button.aspid-fasttools-tab-window__toolbar-button--square.aspid-fasttools-tab-window__toolbar-button--active .aspid-fasttools-tab-window__tab-icon {
-    -unity-background-image-tint-color:                   var(--aspid-colors-accent-text-light);
+    -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-light);
 }
 
 /* Scope base-slider rules to the scroller so ordinary sliders keep their geometry. */

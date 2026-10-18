@@ -175,7 +175,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
 }
 
 .aspid-fasttools-repair-references__scan-project .aspid-fasttools-gradient-button__label {
-    color:                                                var(--aspid-colors-accent-text-dark);
+    color:                                                var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-repair-references__scan-project-icon {
@@ -183,7 +183,7 @@ Button.aspid-fasttools-serialize-reference__open-button {
     width:                                                14px;
     height:                                               14px;
     margin:                                               0 6px 0 2px;
-    -unity-background-image-tint-color:                   var(--aspid-colors-accent-text-dark);
+    -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-dark);
 }
 
 /* Stacked from the top: ReferenceEmptyStateLayout sets the top padding that puts the icon at the middle of the
