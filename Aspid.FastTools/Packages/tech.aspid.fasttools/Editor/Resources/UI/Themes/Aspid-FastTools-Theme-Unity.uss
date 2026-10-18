@@ -21,7 +21,7 @@
     --aspid-colors-shade-light:                     rgb(80, 80, 80);
     --aspid-colors-shade-lightness:                 rgb(100, 100, 100);
 
-    --aspid-colors-surface-canvas:                  rgb(25, 25, 25);
+    --aspid-colors-surface-canvas:                  rgb(20, 20, 20);
     --aspid-colors-surface-card:                    rgb(40, 40, 40);
     --aspid-colors-surface-card-dim:                rgb(30, 30, 30);
     --aspid-colors-surface-field:                   rgb(30, 30, 30);
