@@ -174,7 +174,7 @@ jobs:
               .map(f => f.filename);
             const shipped = files.filter(f =>
               f.startsWith(PKG + 'Runtime/') || f.startsWith(PKG + 'Editor/') ||
-              (f.startsWith(PKG + 'Samples~/') && !f.includes('/Documentation/')) ||
+              (f.startsWith(PKG + 'Samples~/') && !/^Samples~\/README(?:\.ru)?\.md$/.test(f.slice(PKG.length))) ||
               (f.startsWith(PKG) && /^(?:[^/]+\.dll|package\.json)$/.test(f.slice(PKG.length))));
             if (!shipped.length) return core.info('No shipped package code changed.');
             const english = files.includes('CHANGELOG.md'), russian = files.includes('Website/i18n/ru/CHANGELOG.md');
