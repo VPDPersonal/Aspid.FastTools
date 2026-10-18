@@ -262,8 +262,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
             _panel.Root.Add(root);
 
             // The panel binds the drawer's trackers on its first updates, so the inspector's object goes after them.
-            yield return null;
-            yield return null;
+            yield return TestPanel.NextFrame();
+            yield return TestPanel.NextFrame();
             serialized.Dispose();
 
             field.value = typeof(int);
@@ -285,8 +285,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 types: new[] { typeof(object) },
                 field: out var field);
             _panel.Root.Add(root);
-            yield return null;
-            yield return null;
+            yield return TestPanel.NextFrame();
+            yield return TestPanel.NextFrame();
             serialized.Dispose();
 
             field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
@@ -332,7 +332,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var deadline = EditorApplication.timeSinceStartup + 2d;
             while (!condition() && EditorApplication.timeSinceStartup < deadline)
-                yield return null;
+                yield return TestPanel.NextFrame();
         }
     }
 }

@@ -83,7 +83,7 @@ namespace Aspid.FastTools.UIElements.Tests
             });
 
             _panel.Root.Add(element);
-            yield return null;
+            yield return TestPanel.NextFrame();
         }
 
         private sealed class Result

@@ -63,6 +63,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var field = CreateSharedField();
             CreatePanelRoot().Add(field);
+            // The panel updates on the player loop: without the request the frame wait lasts seconds on 6000.3+.
+            EditorApplication.QueuePlayerLoopUpdate();
             yield return null;
 
             FieldStripeSettings.Enabled = false;

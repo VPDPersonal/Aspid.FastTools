@@ -37,7 +37,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsFalse(title.IsAnimating, "A title outside a panel must not run the timer.");
 
             _panel.Root.Add(title);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsTrue(title.IsAnimating);
         }
@@ -49,7 +49,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             var title = new AspidAnimatedTitle("Title");
             _panel.Root.Add(title);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsFalse(title.IsAnimating, "With the setting off the timer must not start.");
 
@@ -65,7 +65,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var title = new AspidAnimatedTitle("Title");
             _panel.Root.Add(title);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
             Assert.IsFalse(title.IsAnimating, "Turning the setting off must stop an open title at once.");
@@ -79,10 +79,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var title = new AspidAnimatedTitle("Title");
             _panel.Root.Add(title);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             title.RemoveFromHierarchy();
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsFalse(title.IsAnimating, "A detached title must stop its timer.");
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
@@ -90,7 +90,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsFalse(title.IsAnimating, "A detached title must not follow the setting.");
 
             _panel.Root.Add(title);
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsTrue(title.IsAnimating, "Attaching again must restart the timer.");
         }
 
@@ -101,7 +101,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsFalse(logo.IsPulsing, "A logo outside a panel must not run the timer.");
 
             _panel.Root.Add(logo);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsTrue(logo.IsPulsing);
         }
@@ -113,7 +113,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             var logo = new AspidAnimatedLogo();
             _panel.Root.Add(logo);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsFalse(logo.IsPulsing, "With the setting off the timer must not start.");
         }
@@ -123,7 +123,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var logo = new AspidAnimatedLogo();
             _panel.Root.Add(logo);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
             Assert.IsFalse(logo.IsPulsing, "Turning the setting off must stop an open logo at once.");
@@ -137,7 +137,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var logo = new AspidAnimatedLogo();
             _panel.Root.Add(logo);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             // The pulse writes this inline scale on every tick, so a stopped pulse would leave it behind.
             logo.style.scale = new Scale(new Vector3(1.04f, 1.04f, 1f));
@@ -153,10 +153,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var logo = new AspidAnimatedLogo();
             _panel.Root.Add(logo);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             logo.RemoveFromHierarchy();
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsFalse(logo.IsPulsing, "A detached logo must stop its timer.");
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
@@ -164,7 +164,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsFalse(logo.IsPulsing, "A detached logo must not follow the setting.");
 
             _panel.Root.Add(logo);
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsTrue(logo.IsPulsing, "Attaching again must restart the timer.");
         }
 
@@ -173,7 +173,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var logo = new AspidAnimatedLogo();
             _panel.Root.Add(logo);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Send<PointerEnterEvent>(logo);
             Assert.IsTrue(logo.IsCyclingColors, "Hovering the logo with the setting on must cycle its colors.");
@@ -202,7 +202,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             var view = new WelcomeView();
             _panel.Root.Add(view);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var title = view.Q<AspidAnimatedTitle>();
             var logo = view.Q<AspidAnimatedLogo>();

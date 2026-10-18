@@ -38,7 +38,7 @@ namespace Aspid.FastTools.Editors.Tests
             var container = new VisualElement();
             _panel.Root.Add(container);
             AspidAppearanceSettingsUI.BuildControls(container);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var stripes = container.Q<AspidSwitch>(AspidAppearanceSettingsUI.FieldStripesName);
             Assert.IsNotNull(stripes, "BuildControls must emit the field stripes switch.");
@@ -56,7 +56,7 @@ namespace Aspid.FastTools.Editors.Tests
         {
             var stripe = TypeUIToolkitPropertyDrawer.CreateStripe();
             _panel.Root.Add(stripe);
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreEqual(DisplayStyle.Flex, stripe.style.display.value, "A stripe shows while the switch is on.");
 
             FieldStripeSettings.Enabled = false;

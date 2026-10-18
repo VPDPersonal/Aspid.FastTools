@@ -32,7 +32,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 () => actions.Add("activate"),
                 delta => actions.Add(delta < 0 ? "decrease" : "increase"),
                 () => actions.Add("remove"));
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             host.Focus();
             SendKey(host, KeyCode.DownArrow);
@@ -44,7 +44,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             actions.Clear();
 
             container.style.display = DisplayStyle.None;
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreEqual(DisplayStyle.None, container.resolvedStyle.display);
 
             foreach (var key in keys) SendKey(host, key);
@@ -82,7 +82,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var header = new AspidInspectorHeader();
             _panel.Root.Add(header);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var icon = header.Q<Image>(className: "aspid-fasttools-inspector-header__icon");
             var container = header.Q<AspidBox>();

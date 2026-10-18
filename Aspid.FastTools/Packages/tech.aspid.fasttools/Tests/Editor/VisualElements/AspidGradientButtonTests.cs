@@ -30,7 +30,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var button = CreateButton(gradient: Color.clear);
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreEqual(StyleKeyword.Null, button.style.backgroundImage.keyword,
                 "A transparent gradient must leave the background image unset.");
@@ -43,7 +43,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var second = CreateButton(new Color(0.7f, 0.2f, 0.2f, 0.5f));
             _panel.Root.Add(first);
             _panel.Root.Add(second);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var texture = first.style.backgroundImage.value.texture;
             Assert.IsNotNull(texture, "An opaque gradient must draw the fade texture.");
@@ -57,7 +57,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator Attach_DoesNotAllocateTexturesPerButton()
         {
             _panel.Root.Add(CreateButton(Gradient));
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var before = CountFadeTextures();
             Assert.GreaterOrEqual(before, 1, "The shared fade texture must exist once a button has a gradient.");
@@ -65,7 +65,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             for (var i = 0; i < 10; i++)
                 _panel.Root.Add(CreateButton(Gradient));
 
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreEqual(before, CountFadeTextures(),
                 "Buttons must reuse the shared texture instead of creating their own.");
@@ -76,7 +76,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var button = CreateButton(Gradient);
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             button.Gradient = Color.clear;
             Assert.AreEqual(StyleKeyword.Null, button.style.backgroundImage.keyword);
@@ -90,7 +90,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var button = CreateButton(Gradient);
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             button.Highlighted = true;
             Assert.AreEqual(Accent, LabelOf(button).style.color.value);
@@ -108,7 +108,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             var button = CreateButton(Gradient);
             host.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             button.Highlighted = true;
             Assert.AreEqual(StyleKeyword.Null, LabelOf(button).style.color.keyword,

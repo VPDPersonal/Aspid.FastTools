@@ -36,7 +36,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsFalse(canvas.IsAnimating, "A canvas outside a panel must not run the timer.");
 
             _panel.Root.Add(canvas);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsTrue(canvas.IsAnimating);
         }
@@ -48,7 +48,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             var canvas = new AspidAnimatedDotsBackground();
             _panel.Root.Add(canvas);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsFalse(canvas.IsAnimating, "With the setting off the timer must not start.");
             Assert.IsFalse(canvas.AreDotsVisible, "With the setting off the dots must be hidden.");
@@ -61,7 +61,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var canvas = new AspidAnimatedDotsBackground();
             _panel.Root.Add(canvas);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
             Assert.IsFalse(canvas.IsAnimating, "Turning the setting off must stop an open canvas at once.");
@@ -77,10 +77,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var canvas = new AspidAnimatedDotsBackground();
             _panel.Root.Add(canvas);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             canvas.RemoveFromHierarchy();
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsFalse(canvas.IsAnimating, "A detached canvas must stop its timer.");
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
@@ -88,7 +88,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsFalse(canvas.IsAnimating, "A detached canvas must not follow the setting.");
 
             _panel.Root.Add(canvas);
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsTrue(canvas.IsAnimating, "Attaching again must restart the timer.");
         }
 
@@ -99,7 +99,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var container = new VisualElement();
             _panel.Root.Add(container);
             AspidAppearanceSettingsUI.BuildControls(container);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var animated = container.Q<AspidSwitch>(AspidAppearanceSettingsUI.AnimatedBackgroundName);
             Assert.IsNotNull(animated, "BuildControls must emit the animated background switch.");

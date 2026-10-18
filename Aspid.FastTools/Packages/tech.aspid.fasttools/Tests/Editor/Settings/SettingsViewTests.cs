@@ -93,7 +93,7 @@ namespace Aspid.FastTools.Editors.Tests
             {
                 var view = new SettingsView();
                 panel.Root.Add(view);
-                yield return null;
+                yield return TestPanel.NextFrame();
 
                 var gate = FocusBuildGate(view);
                 var before = gate.value;
@@ -124,7 +124,7 @@ namespace Aspid.FastTools.Editors.Tests
 
                 var view = new SettingsView();
                 panel.Root.Add(view);
-                yield return null;
+                yield return TestPanel.NextFrame();
 
                 var gate = FocusBuildGate(view);
 
@@ -156,7 +156,7 @@ namespace Aspid.FastTools.Editors.Tests
 
                 var view = new SettingsView();
                 panel.Root.Add(view);
-                yield return null;
+                yield return TestPanel.NextFrame();
 
                 var field = view.Q<AspidThemeField>();
                 Assert.IsNotNull(field, "The Settings tab must contain the Theme dropdown.");
@@ -203,7 +203,7 @@ namespace Aspid.FastTools.Editors.Tests
 
                 var view = new SettingsView();
                 panel.Root.Add(view);
-                yield return null;
+                yield return TestPanel.NextFrame();
 
                 var stripes = view.Q<AspidSwitch>(AspidAppearanceSettingsUI.FieldStripesName);
                 Assert.IsNotNull(stripes, "The Settings tab must contain the Field stripes switch.");
@@ -241,15 +241,15 @@ namespace Aspid.FastTools.Editors.Tests
                 var view = new SettingsView();
                 theme.Add(view);
                 panel.Root.Add(theme);
-                yield return null;
-                yield return null;
+                yield return TestPanel.NextFrame();
+                yield return TestPanel.NextFrame();
 
                 var field = view.Q<AspidThemeField>();
                 Assert.IsNotNull(field, "The Settings tab must contain the Theme dropdown.");
 
                 FocusInRing(view, field);
-                yield return null;
-                yield return null;
+                yield return TestPanel.NextFrame();
+                yield return TestPanel.NextFrame();
 
                 var backplate = field.Q(className: AspidSettingsUI.RowBackplateClass);
                 Assert.IsNotNull(backplate, "The field must carry the backplate that draws the focus border.");
@@ -288,8 +288,8 @@ namespace Aspid.FastTools.Editors.Tests
                 var view = new SettingsView();
                 theme.Add(view);
                 panel.Root.Add(theme);
-                yield return null;
-                yield return null;
+                yield return TestPanel.NextFrame();
+                yield return TestPanel.NextFrame();
 
                 var accent = Token(theme, "--aspid-colors-accent-text-light");
                 var error = Token(theme, "--aspid-colors-status-error-text-light");
@@ -330,8 +330,8 @@ namespace Aspid.FastTools.Editors.Tests
                     item.Focus.AddToClassList(AspidSettingsUI.NavTargetFocusedClass);
                 }
 
-                yield return null;
-                yield return null;
+                yield return TestPanel.NextFrame();
+                yield return TestPanel.NextFrame();
 
                 for (var i = 0; i < cases.Length; i++)
                 {
@@ -368,8 +368,8 @@ namespace Aspid.FastTools.Editors.Tests
             {
                 var theme = CreateTheme(lightPalette);
                 panel.Root.Add(theme);
-                yield return null;
-                yield return null;
+                yield return TestPanel.NextFrame();
+                yield return TestPanel.NextFrame();
 
                 var card = Blend(Token(theme, "--aspid-colors-surface-card"), Token(theme, "--aspid-colors-surface-canvas"));
                 var focusFill = Token(theme, "--aspid-colors-bg-dark");
@@ -404,8 +404,8 @@ namespace Aspid.FastTools.Editors.Tests
                 var view = new SettingsView();
                 theme.Add(view);
                 panel.Root.Add(theme);
-                yield return null;
-                yield return null;
+                yield return TestPanel.NextFrame();
+                yield return TestPanel.NextFrame();
 
                 var border = Token(theme, "--aspid-colors-control-border");
                 var card = Blend(Token(theme, "--aspid-colors-surface-card"), Token(theme, "--aspid-colors-surface-canvas"));

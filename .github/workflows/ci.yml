@@ -340,6 +340,8 @@ jobs:
           testMode: editmode
           # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
           customParameters: -aspidFastToolsStrictSetup
+          # The project has no Code Coverage package, so coverage only added -debugCodeOptimization: Debug scripts.
+          coverageEnabled: false
           artifactsPath: unity-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ matrix.unity }})

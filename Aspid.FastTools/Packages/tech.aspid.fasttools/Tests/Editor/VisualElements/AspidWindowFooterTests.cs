@@ -45,8 +45,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 foreach (var width in new[] { 380f, 340f, 260f, 200f })
                 {
                     _host.style.width = width;
-                    yield return null;
-                    yield return null;
+                    yield return TestPanel.NextFrame();
+                    yield return TestPanel.NextFrame();
 
                     var version = Element("version");
                     var keys = Element("keys");
@@ -114,8 +114,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             _footer = new AspidWindowFooter(showKeysHint: false);
             _host.Add(_footer);
             _host.style.width = 340f;
-            yield return null;
-            yield return null;
+            yield return TestPanel.NextFrame();
+            yield return TestPanel.NextFrame();
 
             Assert.IsNull(_footer.Q(className: ClassOf("keys")), "A footer without the hint must not build it.");
             Assert.LessOrEqual(Element("version").worldBound.xMax, Element("link").worldBound.xMin + Tolerance);
@@ -124,7 +124,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator Hint_AndVersion_UseTheReadableTextTone()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             // The palette tokens sit on the footer, the root of the theme sheets.
             var tone = new CustomStyleProperty<Color>("--aspid-colors-text-dark");

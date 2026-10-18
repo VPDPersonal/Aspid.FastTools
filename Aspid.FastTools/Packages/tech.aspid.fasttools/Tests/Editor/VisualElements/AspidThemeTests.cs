@@ -58,7 +58,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator ElementInPanel_FollowsCustomThemeChange()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var element = new VisualElement();
             _panel.Root.Add(element);
@@ -77,7 +77,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator ElementAttachedLater_FollowsCustomThemeChange()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var element = new VisualElement().AddAspidThemeStyleSheets();
             _panel.Root.Add(element);
@@ -89,7 +89,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator ElementLeavingPanel_StopsFollowingTheme()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var element = new VisualElement();
             _panel.Root.Add(element);
@@ -109,32 +109,32 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator CustomTheme_WinsOverBuiltInPalette_AndLeavesWithIt()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var host = _panel.Root.AddAspidThemeStyleSheets();
             var box = new VisualElement()
                 .AddClass("aspid-fasttools-background")
                 .AddClass("aspid-fasttools-theme--dark");
             host.Add(box);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var builtIn = box.resolvedStyle.backgroundColor;
             var custom = new Color(1f / 255f, 2f / 255f, 3f / 255f);
             Assert.AreNotEqual(custom, builtIn, "The built-in palette must not already use the probe color.");
 
             AspidThemeSettings.CustomTheme = _probe;
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreEqual(custom, box.resolvedStyle.backgroundColor, "The theme must win over the built-in palette.");
 
             AspidThemeSettings.CustomTheme = null;
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreEqual(builtIn, box.resolvedStyle.backgroundColor, "Clearing the theme must bring the palette back.");
         }
 
         [UnityTest]
         public IEnumerator CustomTheme_WinsOverLightPalette()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             // The light class is set by hand: AddAspidThemeStyleSheets would remove it again on a dark editor skin.
             // The palettes tie in specificity (:root and a class), so the sheet order must decide.
@@ -146,15 +146,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 .AddClass("aspid-fasttools-background")
                 .AddClass("aspid-fasttools-theme--dark");
             host.Add(box);
-            yield return null;
+            yield return TestPanel.NextFrame();
             var dark = box.resolvedStyle.backgroundColor;
 
             host.AddClass(AspidStyles.PaletteLightClass);
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreNotEqual(dark, box.resolvedStyle.backgroundColor, "The light class must switch the palette.");
 
             host.AddStyleSheet(_probe);
-            yield return null;
+            yield return TestPanel.NextFrame();
             var custom = new Color(1f / 255f, 2f / 255f, 3f / 255f);
             Assert.AreEqual(custom, box.resolvedStyle.backgroundColor, "The theme must win over the light palette.");
         }
@@ -162,7 +162,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator ThemeSheet_IsAddedAfterBothPalettes_AndCustomReplacesBuiltIn()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             AspidThemeSettings.Theme = AspidTheme.Venom;
             var host = _panel.Root.AddAspidThemeStyleSheets();
@@ -257,29 +257,29 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator Theme_WinsOverBuiltInPalette_AndLeavesWithIt()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var host = _panel.Root.AddAspidThemeStyleSheets();
             var box = new VisualElement()
                 .AddClass("aspid-fasttools-background")
                 .AddClass("aspid-fasttools-theme--dark");
             host.Add(box);
-            yield return null;
+            yield return TestPanel.NextFrame();
             var builtIn = box.resolvedStyle.backgroundColor;
 
             AspidThemeSettings.Theme = AspidTheme.Venom;
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreEqual(Rgb(30, 34, 44), box.resolvedStyle.backgroundColor, "The theme must win over the built-in palette.");
 
             AspidThemeSettings.Theme = AspidTheme.Default;
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreEqual(builtIn, box.resolvedStyle.backgroundColor, "Default must bring the built-in palette back.");
         }
 
         [UnityTest]
         public IEnumerator ThemeLightBlock_WinsOverLightPalette()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             // The light class is set by hand: AddAspidThemeStyleSheets would remove it again on a dark editor skin.
             var host = _panel.Root
@@ -292,7 +292,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 .AddClass("aspid-fasttools-background")
                 .AddClass("aspid-fasttools-theme--dark");
             host.Add(box);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreEqual(Rgb(237, 238, 241), box.resolvedStyle.backgroundColor,
                 "The light block of the theme must win over both the light palette and the theme's own :root.");
@@ -301,15 +301,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator Venom_TakesTheBlueAccent_AndLeavesSuccessGreen()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var host = _panel.Root.AddAspidThemeStyleSheets();
-            yield return null;
+            yield return TestPanel.NextFrame();
             var success = Token(host, "--aspid-colors-status-success-text-dark");
             Assert.AreEqual(Rgb(92, 180, 107), Token(host, "--aspid-colors-accent-text-dark"), "Default keeps the green accent.");
 
             AspidThemeSettings.Theme = AspidTheme.Venom;
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.AreEqual(Rgb(78, 165, 218), Token(host, "--aspid-colors-accent-text-dark"), "Venom must take the blue accent.");
             Assert.AreEqual(success, Token(host, "--aspid-colors-status-success-text-dark"), "The success status must stay green.");
         }
@@ -317,7 +317,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator BuildControls_LiveSyncsThemeFieldFromSettings()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var container = new VisualElement();
             _panel.Root.Add(container);
@@ -391,7 +391,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator CreateTheme_WritesALabelledCopy_AndPicksIt()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             AspidThemeSettings.Theme = AspidTheme.Venom;
 
@@ -407,7 +407,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 Assert.AreEqual(sheet, AspidThemeSettings.CustomTheme, "The new theme must be picked.");
 
                 var host = _panel.Root.AddAspidThemeStyleSheets();
-                yield return null;
+                yield return TestPanel.NextFrame();
                 Assert.AreEqual(Rgb(78, 165, 218), Token(host, "--aspid-colors-accent-text-dark"),
                     "A copy of Venom must look like Venom.");
             }

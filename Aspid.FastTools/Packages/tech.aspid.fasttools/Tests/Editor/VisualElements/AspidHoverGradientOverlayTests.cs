@@ -28,7 +28,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator Idle_DoesNotRunTheTimer()
         {
             _panel.Root.Add(_overlay);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsFalse(_overlay.IsAnimating, "An overlay with nothing to animate must not run a timer.");
 
@@ -40,7 +40,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator SetTarget_RunsTheTimerUntilProgressLands()
         {
             _panel.Root.Add(_overlay);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             _overlay.SetTarget(1f);
             Assert.IsTrue(_overlay.IsAnimating, "A new target must start the timer.");
@@ -62,7 +62,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsFalse(_overlay.IsAnimating, "An overlay outside a panel must not run the timer.");
 
             _panel.Root.Add(_overlay);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.IsTrue(_overlay.IsAnimating, "A pending target must start the timer when the overlay attaches.");
         }
@@ -71,15 +71,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator Detach_StopsTheTimer_AndAttachResumesIt()
         {
             _panel.Root.Add(_overlay);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             _overlay.SetTarget(1f);
             _overlay.RemoveFromHierarchy();
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsFalse(_overlay.IsAnimating, "A detached overlay must stop its timer.");
 
             _panel.Root.Add(_overlay);
-            yield return null;
+            yield return TestPanel.NextFrame();
             Assert.IsTrue(_overlay.IsAnimating, "An unfinished fade must resume on attach.");
         }
 

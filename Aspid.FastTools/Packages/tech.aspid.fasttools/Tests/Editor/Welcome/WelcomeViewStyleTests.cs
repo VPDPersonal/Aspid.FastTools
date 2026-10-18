@@ -74,7 +74,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             var view = new WelcomeView();
             _panel.Root.Add(view);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var logo = view.Q<AspidAnimatedLogo>();
             Assert.IsNotNull(logo, "The Welcome template must hold the logo.");
@@ -91,7 +91,7 @@ namespace Aspid.FastTools.Editors.Tests
             UseSkin(light: true);
             var title = AddTitle();
             var canvas = AddCanvas();
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var background = canvas.resolvedStyle.backgroundColor;
 
@@ -106,7 +106,7 @@ namespace Aspid.FastTools.Editors.Tests
         {
             UseSkin(light: false);
             var title = AddTitle();
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.Less(Luminance(title.Color1), Luminance(title.Color2), "The dark skin must keep its tones from dim to bright.");
             Assert.Less(Luminance(title.Color2), Luminance(title.Color3), "The dark skin must keep its tones from dim to bright.");
@@ -118,7 +118,7 @@ namespace Aspid.FastTools.Editors.Tests
             UseSkin(light: true);
             var link = AddHeroLink();
             var canvas = AddCanvas();
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             // The link is 13 px, so it needs the AA minimum for small text.
             Assert.GreaterOrEqual(Contrast(link.resolvedStyle.color, canvas.resolvedStyle.backgroundColor), 4.5f, "The hero link must pass AA contrast on the light canvas.");
@@ -130,7 +130,7 @@ namespace Aspid.FastTools.Editors.Tests
             UseSkin(light: true);
             var toast = AddToast();
             var canvas = AddCanvas();
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var opacity = toast.resolvedStyle.opacity;
             var background = canvas.resolvedStyle.backgroundColor;
@@ -145,7 +145,7 @@ namespace Aspid.FastTools.Editors.Tests
         {
             UseSkin(light: false);
             var toast = AddToast();
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreEqual(0.75f, toast.resolvedStyle.opacity, 0.001f, "The dark skin keeps the translucent toast.");
         }

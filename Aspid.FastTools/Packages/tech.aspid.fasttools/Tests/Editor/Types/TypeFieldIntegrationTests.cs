@@ -281,7 +281,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
                 var deadline = EditorApplication.timeSinceStartup + 2;
                 while (propertyField.Q<TypeField>() is null && EditorApplication.timeSinceStartup < deadline)
-                    yield return null;
+                    yield return TestPanel.NextFrame();
 
                 var field = propertyField.Q<TypeField>();
                 Assert.IsNotNull(field, "The SerializableType drawer builds its row from a TypeField.");

@@ -33,7 +33,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator DarkPalette_TakesDarkSkinIcon([ValueSource(nameof(Types))] HelpBoxMessageType type)
         {
             var box = AddBox(type, lightPalette: false);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             StringAssert.StartsWith("d_", IconName(box), "The dark palette must keep the dark-skin icon.");
         }
@@ -42,7 +42,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator LightPalette_TakesLightSkinIcon([ValueSource(nameof(Types))] HelpBoxMessageType type)
         {
             var box = AddBox(type, lightPalette: true);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var name = IconName(box);
             Assert.IsFalse(name.StartsWith("d_"), $"The light palette must take the light-skin icon, not '{name}'.");

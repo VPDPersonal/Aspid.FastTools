@@ -38,5 +38,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             if (_host) Object.DestroyImmediate(_host);
             if (_settings) Object.DestroyImmediate(_settings);
         }
+
+        // `yield return TestPanel.NextFrame()` in place of `yield return null`. A runtime panel updates on the player
+        // loop, which the Editor runs in Edit Mode only when something asks for it. Without the request, a frame wait
+        // in a batch-mode Editor on Unity 6000.3 and later lasts until the next idle update: 2-4 seconds.
+        public static object NextFrame()
+        {
+            EditorApplication.QueuePlayerLoopUpdate();
+            return null;
+        }
     }
 }

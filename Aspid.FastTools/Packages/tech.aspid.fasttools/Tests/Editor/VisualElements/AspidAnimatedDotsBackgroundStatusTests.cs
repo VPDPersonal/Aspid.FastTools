@@ -39,7 +39,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator None_ResolvesTheThreeToneSignalGradient()
         {
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreNotEqual(_canvas.Color1, _canvas.Color2, "The default canvas must keep its three distinct signal blobs.");
             Assert.AreNotEqual(_canvas.Color2, _canvas.Color3, "The default canvas must keep its three distinct signal blobs.");
@@ -49,7 +49,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator Status_PaintsEveryBlobTheSameWash()
         {
             _canvas.Status = StatusStyle.Type.Warning;
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreEqual(_canvas.Color1, _canvas.Color2, "A status wash must paint every blob the one tone.");
             Assert.AreEqual(_canvas.Color2, _canvas.Color3, "A status wash must paint every blob the one tone.");
@@ -63,12 +63,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator Status_SwapsBetweenWashes()
         {
             _canvas.Status = StatusStyle.Type.Warning;
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var warning = _canvas.Color1;
 
             _canvas.Status = StatusStyle.Type.Success;
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreNotEqual(warning, _canvas.Color1, "Switching status must repaint the wash.");
             Assert.Greater(_canvas.Color1.g, _canvas.Color1.r, "The success wash must read green.");
@@ -78,12 +78,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator None_RestoresTheGradientAfterAWash()
         {
             _canvas.Status = StatusStyle.Type.Warning;
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreEqual(_canvas.Color1, _canvas.Color2, "Precondition: the wash is on.");
 
             _canvas.Status = StatusStyle.Type.None;
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Assert.AreNotEqual(_canvas.Color1, _canvas.Color2, "Dropping the status must hand the blobs back to the USS gradient.");
             Assert.AreNotEqual(_canvas.Color2, _canvas.Color3, "Dropping the status must hand the blobs back to the USS gradient.");

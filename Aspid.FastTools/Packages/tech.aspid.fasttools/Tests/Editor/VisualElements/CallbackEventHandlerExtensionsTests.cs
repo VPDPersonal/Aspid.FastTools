@@ -23,7 +23,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var calls = 0;
             var button = new Button();
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var result = button
                 .RegisterCallbackSelf((MouseEnterEvent _) => calls++)
@@ -40,7 +40,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var calls = 0;
             var button = new Button();
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             void OnEnter(MouseEnterEvent evt) => calls++;
             button.RegisterCallbackSelf<Button, MouseEnterEvent>(OnEnter);
@@ -55,7 +55,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var calls = 0;
             var button = new Button();
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             EventCallback<MouseEnterEvent> callback = _ => calls++;
             var result = button
@@ -73,7 +73,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var received = 0;
             var button = new Button();
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             EventCallback<MouseEnterEvent, int> callback = (_, args) => received = args;
             var result = button.RegisterCallbackSelf(callback, 7);
@@ -89,7 +89,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var calls = 0;
             var button = new Button();
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             EventCallback<MouseEnterEvent, int> callback = (_, _) => calls++;
             var result = button
@@ -108,7 +108,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var child = new VisualElement();
             parent.Add(child);
             _panel.Root.Add(parent);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var trickle = PropagationPhase.None;
             var bubble = PropagationPhase.None;
@@ -129,7 +129,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var child = new VisualElement();
             parent.Add(child);
             _panel.Root.Add(parent);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             EventCallback<ClickEvent> callback = _ => calls++;
             parent
@@ -148,7 +148,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var child = new VisualElement();
             parent.Add(child);
             _panel.Root.Add(parent);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             EventCallback<ClickEvent, int> callback = (_, _) => calls++;
             parent
@@ -165,7 +165,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var calls = 0;
             var button = new Button();
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var result = button
                 .RegisterCallbackOnceSelf((MouseEnterEvent _) => calls++)
@@ -184,7 +184,7 @@ namespace Aspid.FastTools.UIElements.Tests
             var received = 0;
             var button = new Button();
             _panel.Root.Add(button);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             EventCallback<MouseEnterEvent, int> callback = (_, args) =>
             {

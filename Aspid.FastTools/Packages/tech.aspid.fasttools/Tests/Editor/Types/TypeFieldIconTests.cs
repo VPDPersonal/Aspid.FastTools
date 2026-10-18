@@ -39,7 +39,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         public IEnumerator Icon_ShowsOnlyForAResolvedType()
         {
             var field = AddField();
-            yield return null;
+            yield return TestPanel.NextFrame();
             var icon = field.Q<Image>(className: IconClass);
             AssertHidden(icon, because: "<None> has no type to show.");
 
@@ -60,7 +60,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var field = AddField();
             field.SetValueWithoutNotify(typeof(Camera));
-            yield return null;
+            yield return TestPanel.NextFrame();
             var icon = field.Q<Image>(className: IconClass);
 
             TypeFieldIconSettings.Enabled = false;
@@ -77,7 +77,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var container = new VisualElement();
             _panel.Root.Add(container);
             AspidAppearanceSettingsUI.BuildControls(container);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var typeIcons = container.Q<AspidSwitch>(AspidAppearanceSettingsUI.TypeIconsName);
             Assert.IsNotNull(typeIcons, "BuildControls must emit the type icons switch.");

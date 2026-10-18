@@ -128,7 +128,7 @@ namespace Aspid.FastTools.UIElements.Tests
 
             var tab = new Tab("First").AddSelected(OnSelected);
             panel.Root.Add(new TabView().AddChild(tab));
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             SendPointerDown(tab.tabHeader);
             CollectionAssert.AreEqual(new[] { tab }, selected);
@@ -153,7 +153,7 @@ namespace Aspid.FastTools.UIElements.Tests
                 .AddClosed(OnClosed);
             var view = new TabView().AddChild(tab);
             panel.Root.Add(view);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var closeButton = tab.tabHeader.Q(className: Tab.closeButtonUssClassName);
             SendPointerDown(closeButton);
@@ -182,7 +182,7 @@ namespace Aspid.FastTools.UIElements.Tests
                 .AddChild(second)
                 .AddTabClosed(OnTabClosed);
             panel.Root.Add(view);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             SendPointerDown(second.tabHeader.Q(className: Tab.closeButtonUssClassName));
             CollectionAssert.AreEqual(new[] { (second, 1) }, calls);

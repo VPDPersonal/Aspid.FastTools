@@ -29,7 +29,7 @@ namespace Aspid.FastTools.UIElements.Tests
         {
             var field = new IntegerField().AddValueChanged(CountCall);
             _panel.Root.Add(field);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             field.SetValue(5);
 
@@ -53,7 +53,7 @@ namespace Aspid.FastTools.UIElements.Tests
         {
             var field = new IntegerField().SetValue(5, notify: false);
             _panel.Root.Add(field);
-            yield return null;
+            yield return TestPanel.NextFrame();
             field.AddValueChanged(CountCall);
 
             field.SetValue(5);
@@ -66,7 +66,7 @@ namespace Aspid.FastTools.UIElements.Tests
         {
             var field = new IntegerField().AddValueChanged(CountCall);
             _panel.Root.Add(field);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             field.SetValue(5, notify: false);
 
@@ -79,7 +79,7 @@ namespace Aspid.FastTools.UIElements.Tests
         {
             var field = new IntegerField();
             _panel.Root.Add(field);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             field.AddValueChanged(CountCall).RemoveValueChanged(CountCall).SetValue(5);
 
@@ -91,7 +91,7 @@ namespace Aspid.FastTools.UIElements.Tests
         {
             var field = new IntegerField();
             _panel.Root.Add(field);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             field.AddValueChanged(_ => _calls++).RemoveValueChanged(_ => _calls++).SetValue(5);
 
@@ -105,7 +105,7 @@ namespace Aspid.FastTools.UIElements.Tests
         {
             var field = new IntegerField();
             _panel.Root.Add(field);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             Subscribe(field, step: 1);
             Subscribe(field, step: 1);

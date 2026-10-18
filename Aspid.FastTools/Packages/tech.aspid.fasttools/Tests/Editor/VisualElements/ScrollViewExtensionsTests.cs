@@ -65,8 +65,8 @@ namespace Aspid.FastTools.UIElements.Tests
                 .SetHeight(100)
                 .AddChild(content);
             panel.Root.Add(scroll);
-            yield return null;
-            yield return null;
+            yield return TestPanel.NextFrame();
+            yield return TestPanel.NextFrame();
 
             var result = scroll.SetScrollOffset(new Vector2(0f, 40f));
 

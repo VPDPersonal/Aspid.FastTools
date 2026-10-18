@@ -34,7 +34,7 @@ namespace Aspid.FastTools.UIElements.Tests
             using var panel = new TestPanel();
             var label = new Label();
             panel.Root.Add(label);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             var result = label
                 .SetTextSelf(42)
@@ -55,7 +55,7 @@ namespace Aspid.FastTools.UIElements.Tests
             using var panel = new TestPanel();
             var label = new Label();
             panel.Root.Add(label);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             label.SetTextSelf(123456789012L);
             Assert.AreEqual("123456789012", label.text);
@@ -115,7 +115,7 @@ namespace Aspid.FastTools.UIElements.Tests
             using var panel = new TestPanel();
             var label = new Label();
             panel.Root.Add(label);
-            yield return null;
+            yield return TestPanel.NextFrame();
 
             label.SetTextSelf("abc".AsSpan());
             Assert.AreEqual("abc", label.text);
