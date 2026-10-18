@@ -16,7 +16,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         // of a project, so its pick is kept per project and wins over the built-in theme there.
         private const string ThemeKey = "Aspid.FastTools.Appearance.Theme";
 
+        // Before themes of the project, a sheet was an override over the theme, picked per project and earlier per machine.
+        internal const string LegacyOverrideKey = "Aspid.FastTools.Theme.OverrideStyleSheetGuid";
+
         public static event Action Changed;
+
+        static AspidThemeSettings() => MoveOverridePick();
+
+        internal static string OverrideKey =>
+            LegacyOverrideKey + "." + PlayerSettings.productGUID;
 
         public static bool HasCustomThemePick =>
             EditorPrefs.GetString(CustomThemeGuidKey, defaultValue: string.Empty).Length > 0;
@@ -106,6 +114,30 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         // The picked sheet was deleted or moved: its holders re-read the theme.
         internal static void NotifyChanged() => Changed?.Invoke();
+
+        // The picked sheet is about to be deleted, alone or with a folder: the pick is dropped while the sheet still
+        // lives, so its holders can take it off. A destroyed sheet can no longer be removed from an element.
+        internal static void ForgetCustomThemeAt(string deletedPath)
+        {
+            var custom = CustomTheme;
+            if (custom == null) return;
+
+            var path = AssetDatabase.GetAssetPath(custom);
+            if (path == deletedPath || path.StartsWith(deletedPath.TrimEnd('/') + "/", StringComparison.Ordinal))
+                CustomTheme = null;
+        }
+
+        // An override sheet picked before themes of the project becomes the theme of the project, once.
+        internal static void MoveOverridePick()
+        {
+            var guid = EditorPrefs.GetString(OverrideKey, defaultValue: string.Empty);
+            if (guid.Length == 0) guid = EditorPrefs.GetString(LegacyOverrideKey, defaultValue: string.Empty);
+            if (guid.Length == 0) return;
+
+            EditorPrefs.DeleteKey(OverrideKey);
+            EditorPrefs.DeleteKey(LegacyOverrideKey);
+            if (!HasCustomThemePick) EditorPrefs.SetString(CustomThemeGuidKey, guid);
+        }
 
         private static bool SetCustomThemeGuid(string guid)
         {

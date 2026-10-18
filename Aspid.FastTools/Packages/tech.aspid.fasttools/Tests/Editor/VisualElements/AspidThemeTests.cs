@@ -419,15 +419,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         [Test]
-        public void DeletingThePickedTheme_RaisesAChange_AndFallsBackToTheBuiltIn()
+        public void DeletingThePickedTheme_TakesItOff_AndFallsBackToTheBuiltIn()
         {
             AspidThemeSettings.Theme = AspidTheme.Venom;
             var sheet = AspidThemeSettingsUI.CreateTheme(CreatedThemePath);
-            Assert.AreEqual(sheet, AspidThemeSettings.CustomTheme);
-
-            var changes = 0;
-            void OnChanged() => changes++;
-            AspidThemeSettings.Changed += OnChanged;
+            var host = _panel.Root.AddAspidThemeStyleSheets();
+            Assert.IsTrue(host.styleSheets.Contains(sheet), "The picked theme must be on the element.");
 
             try
             {
@@ -435,12 +432,33 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             }
             finally
             {
-                AspidThemeSettings.Changed -= OnChanged;
                 AspidThemeSettings.CustomTheme = null;
             }
 
-            Assert.Greater(changes, 0, "Deleting the picked sheet must tell the windows and the dropdown.");
-            Assert.AreEqual(AspidTheme.Venom, AspidThemeSettings.Theme, "The built-in theme must stay for the fallback.");
+            var dark = Resources.Load<StyleSheet>(AspidStyles.DefaultStyleSheet);
+            var light = Resources.Load<StyleSheet>(AspidStyles.LightStyleSheet);
+            var venom = Resources.Load<StyleSheet>(AspidStyles.VenomThemeStyleSheet);
+            CollectionAssert.AreEqual(new[] { dark, light, venom }, StyleSheets(host),
+                "Deleting the picked sheet must take it off and bring the built-in theme back.");
+        }
+
+        [Test]
+        public void OverridePickedBeforeProjectThemes_BecomesTheThemeOfTheProject()
+        {
+            var guid = AssetDatabase.AssetPathToGUID(ProbePath);
+            EditorPrefs.SetString(AspidThemeSettings.OverrideKey, guid);
+
+            try
+            {
+                AspidThemeSettings.MoveOverridePick();
+
+                Assert.AreEqual(_probe, AspidThemeSettings.CustomTheme, "The old override must stay as the theme.");
+                Assert.IsFalse(EditorPrefs.HasKey(AspidThemeSettings.OverrideKey), "The old key must be removed.");
+            }
+            finally
+            {
+                EditorPrefs.DeleteKey(AspidThemeSettings.OverrideKey);
+            }
         }
 
         [Test]
