@@ -243,7 +243,7 @@ namespace Aspid.FastTools.Editors.Internal
                 {
                     if (Renderers.ContainsKey(renderer) || (renderer.HasPropertyBlock() && renderer is not LineRenderer)) continue;
                     var material = renderer.sharedMaterial;
-                    if (material == null || !AssetDatabase.GetAssetPath(material).Contains("/Presentation/")) continue;
+                    if (material == null || !AssetDatabase.GetAssetPath(material).Contains("/Materials/")) continue;
                     Color color;
                     switch (material.name)
                     {
@@ -281,7 +281,7 @@ namespace Aspid.FastTools.Editors.Internal
                 if (!renderer.HasPropertyBlock()) continue;
                 var material = renderer.sharedMaterial;
                 var path = material == null ? "" : AssetDatabase.GetAssetPath(material);
-                if (!path.Contains("/Presentation/") || path.Contains("/EnumValues/")) continue;
+                if (!path.Contains("/Materials/") || path.Contains("/EnumValues/")) continue;
                 if (Renderers.ContainsKey(renderer)) continue;
                 var original = new MaterialPropertyBlock();
                 renderer.GetPropertyBlock(original);
