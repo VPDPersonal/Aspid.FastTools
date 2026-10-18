@@ -340,8 +340,8 @@ jobs:
           testMode: editmode
           # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
           customParameters: -aspidFastToolsStrictSetup
-          # The project has no Code Coverage package, so coverage only added -debugCodeOptimization: Debug scripts.
-          coverageEnabled: false
+          # Coverage stays on although the project has no Code Coverage package (it only adds -debugCodeOptimization):
+          # with coverageEnabled: false, v4.4.0 passes --no-coverageEnabled, which game-ci CLI v0.1.72 rejects.
           artifactsPath: unity-test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity EditMode results (${{ matrix.unity }})
