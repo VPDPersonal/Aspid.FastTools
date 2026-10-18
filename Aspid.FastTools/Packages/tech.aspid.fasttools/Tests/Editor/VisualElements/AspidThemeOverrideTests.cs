@@ -15,8 +15,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     /// <summary>
     /// The theme override wins over the built-in palette and is applied live: an element that loads the Aspid palette
     /// follows a change of the override at once, whether it was already in a panel when it loaded the palette or
-    /// joined one later. A built-in theme sits between the palettes and the override, and its light block wins over
-    /// the light palette. The settings surface offers the theme dropdown and the picker for the override.
+    /// joined one later. A built-in theme sits between the palettes and the override, its light block wins over the
+    /// light palette, and Venom recolors the accent but not the success status. The settings surface offers the theme dropdown and the picker for the override.
     /// </summary>
     [TestFixture]
     internal sealed class AspidThemeOverrideTests
@@ -310,6 +310,22 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         [UnityTest]
+        public IEnumerator Venom_TakesTheBlueAccent_AndLeavesSuccessGreen()
+        {
+            yield return null;
+
+            var host = _panel.Root.AddAspidThemeStyleSheets();
+            yield return null;
+            var success = Token(host, "--aspid-colors-status-success-text-dark");
+            Assert.AreEqual(Rgb(92, 180, 107), Token(host, "--aspid-colors-accent-text-dark"), "Default keeps the green accent.");
+
+            AspidThemeSettings.Theme = AspidTheme.Venom;
+            yield return null;
+            Assert.AreEqual(Rgb(78, 165, 218), Token(host, "--aspid-colors-accent-text-dark"), "Venom must take the blue accent.");
+            Assert.AreEqual(success, Token(host, "--aspid-colors-status-success-text-dark"), "The success status must stay green.");
+        }
+
+        [UnityTest]
         public IEnumerator BuildControls_LiveSyncsThemeFieldFromSettings()
         {
             yield return null;
@@ -339,5 +355,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         private static Color Rgb(int r, int g, int b) => new(r / 255f, g / 255f, b / 255f);
+
+        private static Color Token(VisualElement element, string name)
+        {
+            Assert.IsTrue(element.customStyle.TryGetValue(new CustomStyleProperty<Color>(name), out var color),
+                $"The palette must declare {name}.");
+            return color;
+        }
     }
 }

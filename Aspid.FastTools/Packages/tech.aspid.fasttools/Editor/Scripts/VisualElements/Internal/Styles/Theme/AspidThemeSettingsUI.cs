@@ -39,7 +39,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             "    /* --aspid-colors-text-lightness: rgb(220, 220, 220); */\n" +
             "    /* --aspid-colors-text-light:     rgb(190, 190, 190); */\n" +
             "\n" +
-            "    /* Accent example — tweak the success status base */\n" +
+            "    /* Accent: links, focus borders, the active tab, the Welcome title */\n" +
+            "    /* --aspid-colors-accent-text-dark:  rgb(92, 180, 107); */\n" +
+            "    /* --aspid-colors-accent-text-light: rgb(124, 194, 136); */\n" +
+            "\n" +
+            "    /* Status example — tweak the success status base */\n" +
             "    /* --aspid-colors-status-success-dark: rgb(12, 65, 30); */\n" +
             "\n" +
             "    /* Switches (unset by default, so they follow the editor skin) */\n" +
@@ -54,7 +58,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var theme = new EnumField("Theme", AspidThemeSettings.Theme)
             {
                 tooltip = "The colors of the Aspid FastTools windows, settings pages and type picker.\n"
-                    + "Default: near-black cards. Venom: the blue-black palette of the documentation site.\n"
+                    + "Default: near-black cards with the green accent. Venom: the blue-black palette of the "
+                    + "documentation site with its blue accent. The success status stays green in both.\n"
                     + "Each theme has a light variant for the light editor skin. A theme override is layered on top.\n"
                     + "Per-user setting — stored locally, for every project on this machine.",
             };
@@ -92,8 +97,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var caption = new Label("Override template").AddClass(AspidSettingsUI.RowCaptionClass);
 
             var create = new Button(CreateTemplate) { text = "Create template…" }
-                .AddClass(AspidSettingsUI.ActionClass)
-                .AddClass(AspidSettingsUI.ActionInfoClass);
+                .AddClass(AspidSettingsUI.ActionClass);
 
             return row
                 .AddChild(caption)

@@ -1,8 +1,11 @@
-/* Venom: the palette of the documentation site. Blue-black surfaces with cool text on the dark skin, cool grey paper with
-   white cards in an Aspid window on the light skin. The status colours stay those of the built-in palette.
+/* Venom: the palette of the documentation site with its blue accent. Blue-black surfaces with cool text on the dark
+   skin, cool grey paper with white cards in an Aspid window on the light skin. The status colours stay those of the
+   built-in palette, so success stays green.
    The light block repeats every token of :root that Default-Light sets: :root here outranks Default-Light, and the
    light block follows :root in this sheet. */
 :root {
+    --aspid-icons-accent:                           resource("Icons/aspid_icon_medium_blue_256x253");
+
     --aspid-colors-bg-darkness:                     rgb(22, 25, 33);
     --aspid-colors-bg-dark:                         rgb(30, 34, 44);
     --aspid-colors-bg-light:                        rgb(40, 45, 57);
@@ -24,6 +27,22 @@
 
     --aspid-colors-slider-handle:                   rgba(196, 200, 214, 0.85);
     --aspid-colors-control-border:                  rgb(106, 112, 128);
+
+    --aspid-colors-accent-shade-dark:               rgb(35, 65, 95);
+    --aspid-colors-accent-text-darkness:            rgb(39, 98, 142);
+    --aspid-colors-accent-text-dark:                rgb(78, 165, 218);
+    --aspid-colors-accent-text-light:               rgb(118, 186, 228);
+    --aspid-colors-accent-text-lightness:           rgb(172, 214, 240);
+    --aspid-colors-accent-shade-light:              rgb(50, 105, 150);
+    --aspid-colors-accent-tint:                     rgba(25, 75, 130, 0.25);
+
+    /* Switches read their own token; on the dark skin an on switch tints its track with it. */
+    --aspid-colors-switch-accent:                   rgb(78, 165, 218);
+}
+
+/* On the light skin an on switch fills its track under a white handle, inside a window or not. */
+.aspid-fasttools-skin--light {
+    --aspid-colors-switch-accent:                   rgb(47, 143, 224);
 }
 
 .aspid-fasttools-palette--light {
@@ -48,4 +67,12 @@
 
     --aspid-colors-slider-handle:                   rgba(90, 94, 104, 0.85);
     --aspid-colors-control-border:                  rgb(134, 138, 147);
+
+    --aspid-colors-accent-shade-dark:               rgb(180, 204, 234);
+    --aspid-colors-accent-text-darkness:            rgb(130, 170, 215);
+    --aspid-colors-accent-text-dark:                rgb(36, 116, 184);
+    --aspid-colors-accent-text-light:               rgb(34, 104, 163);
+    --aspid-colors-accent-text-lightness:           rgb(26, 86, 138);
+    --aspid-colors-accent-shade-light:              rgb(140, 178, 222);
+    --aspid-colors-accent-tint:                     rgba(50, 120, 210, 0.12);
 }

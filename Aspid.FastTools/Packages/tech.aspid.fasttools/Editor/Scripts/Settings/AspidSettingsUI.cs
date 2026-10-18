@@ -44,7 +44,6 @@ namespace Aspid.FastTools.Editors
         internal const string ControlsClass = "aspid-fasttools-settings__controls";
         internal const string ControlsGapClass = ControlsClass + "-gap";
         internal const string ActionDangerClass = "aspid-fasttools-settings__action--danger";
-        internal const string ActionInfoClass = "aspid-fasttools-settings__action--info";
 
         internal static T AsSurface<T>(this T element) where T : VisualElement =>
             element.AddStyleSheetFromResources(StyleSheetPath).AddClass(RootClass);
@@ -217,7 +216,7 @@ namespace Aspid.FastTools.Editors
                         + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, Default theme, no theme override, auto-show Welcome on, animated background on.\n"
                         + "Only this machine; the saved Favorites / Recent lists are kept.",
                 };
-                row.AddChild(user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass));
+                row.AddChild(user.AddClass(ActionClass).AddClass(UserScopeClass));
             }
 
             return new VisualElement().AddClass(FooterClass)

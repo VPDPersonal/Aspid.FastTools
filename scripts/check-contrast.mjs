@@ -66,8 +66,11 @@ const PAIRS = [
   { where: 'card title', fg: 'text-lightness', bg: CARD, min: TEXT, in: WINDOW },
   { where: 'card caption', fg: 'text-light', bg: CARD, min: TEXT, in: WINDOW },
   { where: 'card description', fg: 'text-dark', bg: CARD, min: TEXT, in: WINDOW },
-  { where: 'card link', fg: 'status-success-text-dark', bg: CARD, min: TEXT, in: WINDOW },
-  { where: 'card link hover', fg: 'status-success-text-light', bg: CARD, min: TEXT, in: WINDOW },
+  { where: 'card link', fg: 'accent-text-dark', bg: CARD, min: TEXT, in: WINDOW },
+  { where: 'card link hover', fg: 'accent-text-light', bg: CARD, min: TEXT, in: WINDOW },
+  { where: 'hovered action', fg: 'accent-text-light', bg: [...CARD, 'accent-tint'], min: TEXT, in: WINDOW },
+  { where: 'focus border', fg: 'accent-text-light', bg: CARD, min: LARGE, in: WINDOW },
+  { where: 'card success label', fg: 'status-success-text-light', bg: CARD, min: TEXT, in: WINDOW },
   ...['warning', 'info'].flatMap(s => [
     { where: `card ${s} action`, fg: `status-${s}-text-dark`, bg: CARD, min: TEXT, in: WINDOW },
     { where: `card ${s} label`, fg: `status-${s}-text-light`, bg: CARD, min: TEXT, in: WINDOW },
@@ -107,7 +110,7 @@ const PAIRS = [
   { where: 'picker favorite star', fg: 'status-warning-text-light', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
   { where: 'picker favorite star hover', fg: 'status-warning-text-lightness', bg: ROW_HOVER, min: LARGE, in: DROPDOWN },
   { where: 'picker favorite toggle', fg: 'text-darkness', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
-  { where: 'picker check mark', fg: 'status-success-text-dark', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
+  { where: 'picker check mark', fg: 'accent-text-dark', bg: ROW_SELECTED, min: LARGE, in: DROPDOWN },
 ];
 
 // --- USS parsing ---

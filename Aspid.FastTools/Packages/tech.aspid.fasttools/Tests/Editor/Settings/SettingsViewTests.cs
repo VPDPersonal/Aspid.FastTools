@@ -210,8 +210,8 @@ namespace Aspid.FastTools.Editors.Tests
                 var backplate = field.Q(className: AspidSettingsUI.RowBackplateClass);
                 Assert.IsNotNull(backplate, "The field must carry the backplate that draws the focus border.");
                 Assert.Greater(backplate.resolvedStyle.borderTopWidth, 0f, "The focused field must have a border.");
-                Assert.AreEqual(Token(theme, "--aspid-colors-status-success-text-light"), backplate.resolvedStyle.borderTopColor,
-                    "The focused field must use the strong status color.");
+                Assert.AreEqual(Token(theme, "--aspid-colors-accent-text-light"), backplate.resolvedStyle.borderTopColor,
+                    "The focused field must use the strong accent color.");
             }
             finally
             {
@@ -247,8 +247,7 @@ namespace Aspid.FastTools.Editors.Tests
                 yield return null;
                 yield return null;
 
-                var success = Token(theme, "--aspid-colors-status-success-text-light");
-                var info = Token(theme, "--aspid-colors-status-info-text-light");
+                var accent = Token(theme, "--aspid-colors-accent-text-light");
                 var error = Token(theme, "--aspid-colors-status-error-text-light");
 
                 var gate = view.Q<EnumField>();
@@ -262,11 +261,11 @@ namespace Aspid.FastTools.Editors.Tests
                 // The row backplate is the child of the focused field; the other targets carry their own border.
                 var cases = new[]
                 {
-                    (Name: "row", Focus: (VisualElement)gate, Bordered: gate?.Q(className: AspidSettingsUI.RowBackplateClass), Color: success),
-                    (Name: "Excluded folders header", Focus: header, Bordered: header, Color: success),
-                    (Name: "Excluded folders entry", Focus: entry, Bordered: entry, Color: success),
-                    (Name: "Reset Shared button", Focus: (VisualElement)shared, Bordered: shared, Color: success),
-                    (Name: "Reset Per-user button", Focus: (VisualElement)user, Bordered: user, Color: info),
+                    (Name: "row", Focus: (VisualElement)gate, Bordered: gate?.Q(className: AspidSettingsUI.RowBackplateClass), Color: accent),
+                    (Name: "Excluded folders header", Focus: header, Bordered: header, Color: accent),
+                    (Name: "Excluded folders entry", Focus: entry, Bordered: entry, Color: accent),
+                    (Name: "Reset Shared button", Focus: (VisualElement)shared, Bordered: shared, Color: accent),
+                    (Name: "Reset Per-user button", Focus: (VisualElement)user, Bordered: user, Color: accent),
                     (Name: "danger button", Focus: (VisualElement)danger, Bordered: danger, Color: error),
                 };
 
@@ -333,7 +332,7 @@ namespace Aspid.FastTools.Editors.Tests
 
                 foreach (var name in new[]
                 {
-                    "--aspid-colors-status-success-text-light",
+                    "--aspid-colors-accent-text-light",
                     "--aspid-colors-status-error-text-light",
                     "--aspid-colors-status-info-text-light",
                 })

@@ -30,6 +30,14 @@
     --aspid-colors-slider-handle:                   rgba(92, 92, 100, 0.85);
     --aspid-colors-control-border:                  rgb(136, 136, 136);
 
+    --aspid-colors-accent-shade-dark:               rgb(186, 220, 196);
+    --aspid-colors-accent-text-darkness:            rgb(120, 170, 132);
+    --aspid-colors-accent-text-dark:                rgb(29, 132, 62);
+    --aspid-colors-accent-text-light:               rgb(23, 112, 53);
+    --aspid-colors-accent-text-lightness:           rgb(20, 95, 45);
+    --aspid-colors-accent-shade-light:              rgb(140, 196, 156);
+    --aspid-colors-accent-tint:                     rgba(60, 170, 90, 0.12);
+
     --aspid-colors-scope-project:                   rgb(122, 79, 208);
     --aspid-colors-scope-user:                      rgb(140, 140, 140);
 
