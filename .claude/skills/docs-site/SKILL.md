@@ -1,6 +1,6 @@
 ---
 name: docs-site
-description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins and the Russian changelog in `i18n/ru/`) plus the root `CHANGELOG.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README and short sample READMEs that link the site. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
+description: How Aspid.FastTools documentation is authored and published — Markdown in `Website/` (`docs/`, `tutorials/`, Russian twins and the Russian changelog in `i18n/ru/`) plus the root `CHANGELOG.md`, read by GitHub and the Docusaurus site, deployed to GitHub Pages; the UPM package ships only a README and the samples overview, and each sample's description links its tutorial on the site. Use when adding or editing any documentation page, translation, sample description, image, or the site itself.
 user-invocable: false
 ---
 
@@ -13,9 +13,11 @@ Write GitHub Flavored Markdown; the site adapts to it, never the other way round
 The UPM package (`Aspid.FastTools/Packages/tech.aspid.fasttools/`) ships no documentation pages or images: everything in
 that folder reaches every consumer project through `git subtree split` in `release.yml`. It keeps only `README.md`
 (a description and the site link; it gives no git URL, because a store buyer who follows one adds a second copy, and
-no install steps, because whoever reads it has the package already) and a short text-only
-`Samples~/<Sample>/Documentation/README.md` (+ `README.ru.md`) per sample: what it shows, how to open it, and a link to
-its tutorial on the site. Never add an image or a full page there.
+no install steps, because whoever reads it has the package already) and the samples overview `Samples~/README.md`
+(+ `README.ru.md`). A sample ships no README: its `description` in `package.json` → `samples` ends with
+`Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>`. The Package Manager shows that line as
+text; the Welcome tab cuts it off the description (`WelcomeView.SplitTutorialUrl`) and shows a **Tutorial** link.
+Never add an image, a full page or a sample README there.
 
 ## Layout
 
@@ -31,7 +33,7 @@ its tutorial on the site. Never add an image or a full page there.
 | Interface strings | `Website/i18n/ru/**/*.json` (`code.json`, `navbar.json`, each plugin's `current.json`) | |
 | Images | `Website/docs/Images/`, `Website/tutorials/<Sample>/Images/` | referenced relatively |
 | Root README | generated from `Website/docs/README.md` in GitHub's layout (committed); translations live on the site only | — |
-| Package README, sample READMEs | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/<Sample>/Documentation/README*.md` | — |
+| Package README, samples overview | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/README*.md` | — |
 | Package changelog | generated from the root `CHANGELOG.md` with its `.meta` by `release.yml` (`scripts/package-changelog.mjs`); gitignored, only the `upm` branches carry it; Unity's Package Manager reads it | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
@@ -190,9 +192,10 @@ Apply these rules to every main doc page, always to the English file and its `ru
   features ("to store an instance, use SerializeReference Selector"): such links read as advertising, and the sidebar
   and the Introduction already list every feature.
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
-  link to the sample README and the sample's `demo.gif`, also when several pages share the sample (Types, EditorTools)
-  — no "how to open" steps or experiments, those live on the sample's own page. The sentence must match what the
-  sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees; never promise
+  link to the sample's page (`../tutorials/<Sample>/README.md`) and its `demo.gif`, also when several pages share the
+  sample (Types, EditorTools) — no "how to open" steps or experiments, those live on the sample's own page. The
+  sentence must match what the sample code really does — check the sample scripts, and fix the sample's page (en + ru)
+  and its `package.json` description when they disagree; never promise
   more than the scene has («Все маркеры с этой страницы…» was wrong). The gif never has a caption paragraph, only its alt
   text, even when it shows this page's feature (EnumValues, SerializedProperty Extensions).
 - **The Introduction (`Website/docs/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
@@ -214,7 +217,7 @@ Apply these rules to every main doc page, always to the English file and its `ru
 
 ## Writing a sample page (tutorials/)
 
-Rules the user confirmed while reworking the five sample READMEs; the feature-page rules above apply too.
+Rules the user confirmed while reworking the five sample pages; the feature-page rules above apply too.
 
 - **Order:** `# <Name> Sample`, the lead, `demo.gif` with its caption, `## Open it`, `## Try`, optional sections for a
   second scenario (SerializeReferences: Repair, IMGUI inspector), `## Where to look`, then one closing line
@@ -248,18 +251,17 @@ to refresh the root `README.md`.
 
 1. The tutorial: `Website/tutorials/<Name>/README.md` and its twin in
    `Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/<Name>/README.md`. Images go in
-   `Website/tutorials/<Name>/Images/`; every image gets a `-light` sibling.
-   In the package, a short text-only `Samples~/<Name>/Documentation/README.md` (+ `README.ru.md`, both with `.meta`):
-   the title, the lead, `## Open it` and one line linking `https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>`
-   (`/ru/tutorials/<slug>`).
+   `Website/tutorials/<Name>/Images/`; every image gets a `-light` sibling. The sample in the package gets no README.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png` (one 16:9 size
    for both, no scene titles; a scene may add a looping clip — `docs/media/samples-gallery/README.md`).
 4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its folder name
    to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
-5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
-   `package.json` → `samples`.
+5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) with a link to
+   `https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>` (`/ru/tutorials/<slug>`), and register it in the
+   package `package.json` → `samples` with a `description` that ends with
+   `Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>`.
 
 ## Local run / check
 
@@ -317,9 +319,9 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
 - `npm --prefix Website run check-translations` (CI) checks that every English page has a Russian twin and that the twin
   has the heading levels, code blocks, images and link targets of its source. Only prose, `//` comments, text blocks
   and same-page anchors may differ, so make every structural change in both languages. The twin is required for
-  `Website/docs/`, `Website/tutorials/` (`.md` and `.mdx`), the sample READMEs and `CHANGELOG.md`; the package README
-  and the root README have none. The two changelogs must also list the same releases (version and date) and the same
-  number of entries in every section.
+  `Website/docs/`, `Website/tutorials/` (`.md` and `.mdx`), the samples overview `Samples~/README.md` and
+  `CHANGELOG.md`; the package README and the root README have none. The two changelogs must also list the same
+  releases (version and date) and the same number of entries in every section.
 - `npm --prefix Website run check-selectors` (CI, after the build) looks in the built stylesheets for a hashed class
   for every name fragment that the site selects (`[class*='docMainContainer_']`). A Docusaurus update can rename such
   a class without failing the build. A new fragment in the site CSS or JS needs no list: the script reads the sources.
