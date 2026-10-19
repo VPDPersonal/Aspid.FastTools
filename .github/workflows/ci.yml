@@ -342,17 +342,20 @@ jobs:
       # only a few in a short time ("User reaches maximum same user attempt retry count", 143.002), and a second
       # activation seconds after a return often gets no seat. game-ci mounts $HOME as /root in each container, so the
       # passes find the license that `game-ci activate` left there.
-      # Unity sometimes assigns no seat at all when many jobs activate the same account at once; the activation then
-      # gets one more attempt after a pause.
+      # Unity sometimes assigns no seat at all when many jobs activate the same account at once, or assigns one and then
+      # fails to write the license file ("User token expired") while game-ci still reports success. So an activation
+      # counts only with the line about the updated license file; otherwise it gets one more attempt after a pause.
       - id: activate
         name: Activate a Unity Personal seat
         env: &unity-account
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
+          log="$RUNNER_TEMP/activate.log"
           for attempt in 1 2; do
-            if "$GAMECI" activate --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
-              --targetPlatform=StandaloneLinux64; then
+            "$GAMECI" activate --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
+              --targetPlatform=StandaloneLinux64 2>&1 | tee "$log"
+            if grep -q "Successfully updated UnityEntitlementLicense.xml" "$log"; then
               exit 0
             fi
             if [ "$attempt" = 1 ]; then
@@ -385,6 +388,12 @@ jobs:
           run_pass || code=$?
           if [ "$code" != 0 ] && [ "$code" != 2 ]; then
             echo "::warning::Unity EditMode $PASS broke (exit code $code); trying once more on a fresh Library."
+            # Whether the runner killed Unity for memory: 6000.6 loses its Editor or its script compiler this way.
+            echo "::group::Memory after the broken pass"
+            free -m
+            df -h /dev/shm
+            sudo dmesg | grep -iE "killed process|out of memory|oom" | tail -20 || true
+            echo "::endgroup::"
             sudo rm -rf ci-unity-project/Library "unity-test-results/$PASS"
             code=0
             run_pass || code=$?
