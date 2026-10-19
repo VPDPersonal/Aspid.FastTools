@@ -27,6 +27,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private VisualElement _details;
         private StyleSheet _effectPickerStyle;
         [NonSerialized] private AbilityConfig _shown;
+        [NonSerialized] private AbilityConfig _picked;
         [NonSerialized] private SerializedObject _shownObject;
         [SerializeField] private string _filter = string.Empty;
 
@@ -55,9 +56,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetTooltip("Search by name")
                 .AddValueChanged(evt =>
                 {
-                    // ListView keeps the selected index, not the item.
+                    // The picked ability comes back once the filter lists it again.
                     ApplyFilter(evt.newValue);
-                    Select(_shown);
+                    Select(_picked);
                 })
                 .AddClass("ability-search");
 
@@ -96,7 +97,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                     element.Q<Label>("abilityName").SetTextSelf(ability.AbilityName);
                     element.Q<Label>("abilityStats").SetTextSelf($"{ability.ManaCost} MP · {ability.Cooldown:0.##} s");
                 })
-                .AddSelectionChanged(selection => ShowDetails(selection.FirstOrDefault() as AbilityConfig))
+                .AddSelectionChanged(selection => ShowDetails(_picked = selection.FirstOrDefault() as AbilityConfig))
                 .SetFlexGrow(1);
 
             var sidebar = new VisualElement()
@@ -193,6 +194,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _filtered.Clear();
             _filtered.AddRange(_all.Where(config =>
                 config.AbilityName.Contains(_filter, StringComparison.OrdinalIgnoreCase)));
+
+            // A shorter list drops a selection past its end and reports it as a pick of nothing; callers select again.
+            _list?.SetSelectionWithoutNotify(Array.Empty<int>());
             _list?.RefreshItems();
         }
 
@@ -343,7 +347,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _search.SetValueWithoutNotify(string.Empty);
             _filter = string.Empty;
             Reload();
-            Select(config);
+            Select(_picked = config);
         }
 
         // Undo cannot restore a deleted asset, so the window asks first and moves it to the trash.
@@ -365,6 +369,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             // When the shown ability is deleted, the one below takes its place.
             Reload();
             Select(!wasShown ? _shown : _filtered.Count == 0 ? null : _filtered[Math.Clamp(index, 0, _filtered.Count - 1)]);
+            if (wasShown) _picked = _shown;
         }
 
         // A fresh instance holds the field initializers.
