@@ -32,6 +32,6 @@
 
 ## Пример в пакете
 
-В [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) <code lang="csharp">GetDisplayName()</code> задаёт заголовок кастомного инспектора ассета <code lang="class-name">AbilityConfig</code>.
+В [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) <code lang="csharp">GetDisplayName()</code> называет скрипт <code lang="class-name">AbilityConfig</code> в подсказке к заголовку способности.
 
 ![Окно Ability Catalog из примера EditorTools](../../../../tutorials/EditorTools/Images/demo.gif)

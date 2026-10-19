@@ -280,8 +280,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetBindingPath("_description")
                 .AddClass("ability-description");
 
+            // GetDisplayName names the script without "(Script)": "Ability Config".
             var title = new Label(config.AbilityName)
-                .SetTooltip("Double-click to open the script")
+                .SetTooltip($"Double-click to open the {config.GetDisplayName()} script")
                 .AddOpenScriptCommand(config)
                 .AddClass("ability-title");
 
