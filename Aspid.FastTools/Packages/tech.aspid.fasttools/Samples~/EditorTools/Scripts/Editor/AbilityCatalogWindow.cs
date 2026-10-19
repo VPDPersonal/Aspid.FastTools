@@ -260,20 +260,20 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(new Label("Effect").AddClass("ability-label"))
                 .AddChild(effectField);
 
-            // The defaults are the field initializers of AbilityConfig, so a fresh instance holds them. Chainable typed
-            // setters write both values and apply them once, so a single Undo reverts the reset.
+            // Shown only while the balance differs from the defaults. Chainable typed setters write both values and
+            // apply them once, so a single Undo reverts the reset.
+            var defaults = ReadDefaults();
             var resetToDefaults = new Button()
                 .SetTextSelf("Reset to defaults")
                 .SetTooltip("Resets Mana Cost and Cooldown to their default values")
                 .AddClicked(() =>
                 {
-                    var defaults = CreateInstance<AbilityConfig>();
                     serializedObject.Update();
                     serializedObject.FindProperty("_cooldown").SetFloat(defaults.Cooldown);
                     serializedObject.FindProperty("_manaCost").SetIntAndApply(defaults.ManaCost);
-                    DestroyImmediate(defaults);
                 })
                 .AddClass("ability-button");
+            resetToDefaults.TrackSerializedObjectValue(serializedObject, _ => RefreshReset());
 
             var actions = new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
@@ -311,6 +311,12 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(actions));
 
             RefreshEffect();
+            RefreshReset();
+
+            void RefreshReset() => resetToDefaults.SetDisplay(
+                config.ManaCost != defaults.ManaCost || !Mathf.Approximately(config.Cooldown, defaults.Cooldown)
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None);
 
             // The field shows the name, icon and tooltip that [TypeSelectorDisplay] gives the type in the picker.
             void RefreshEffect()
@@ -367,6 +373,20 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             // The shown ability stays selected; when it was the one deleted, the ability below takes its place.
             Reload();
             Select(!wasShown ? _shown : _filtered.Count == 0 ? null : _filtered[Math.Clamp(index, 0, _filtered.Count - 1)]);
+        }
+
+        // The defaults are the field initializers of AbilityConfig, so a fresh instance holds them.
+        private static (int ManaCost, float Cooldown) ReadDefaults()
+        {
+            var defaults = CreateInstance<AbilityConfig>();
+            try
+            {
+                return (defaults.ManaCost, defaults.Cooldown);
+            }
+            finally
+            {
+                DestroyImmediate(defaults);
+            }
         }
 
         private static void SelectAsset(AbilityConfig config)

@@ -15,14 +15,12 @@
 
 1. **ListView одной цепочкой.** Список слева собран одной цепочкой расширений <code lang="class-name">ListView</code>, включая <code lang="function">SetMakeItem</code>, <code lang="function">SetBindItem</code> и <code lang="function">AddSelectionChanged</code>. Наберите текст в поле поиска: <code lang="function">AddValueChanged</code> фильтрует источник, а <code lang="function">RefreshItems</code> перерисовывает список.
 2. **Привязка.** Поля имени, описания, стоимости и перезарядки лежат в одном контейнере, привязанном через <code lang="csharp">.BindTo(serializedObject)</code>. Измените имя — список и заголовок обновятся, а Undo вернёт прежнее.
-3. **Типизированные сеттеры.** Выберите **Fireball** и нажмите **Reset to defaults**: **Mana Cost** и **Cooldown** получат значения из инициализаторов полей <code lang="class-name">AbilityConfig</code>, прочитанные из нового экземпляра. Обработчик записывает два свойства и применяет их один раз, поэтому оба откатываются одним Undo:
+3. **Типизированные сеттеры.** Выберите **Fireball**: кнопка **Reset to defaults** видна, пока **Mana Cost** или **Cooldown** отличается от инициализатора поля в <code lang="class-name">AbilityConfig</code>; значения читаются из нового экземпляра. Нажмите её: обработчик записывает два свойства и применяет их один раз, поэтому кнопка скрывается, а одно Undo откатывает оба:
 
    ```csharp
-   var defaults = CreateInstance<AbilityConfig>();
    serializedObject.Update();
    serializedObject.FindProperty("_cooldown").SetFloat(defaults.Cooldown);
    serializedObject.FindProperty("_manaCost").SetIntAndApply(defaults.ManaCost);
-   DestroyImmediate(defaults);
    ```
 
 4. **Окно выбора из кода.** Кликните по полю **Effect**: <code lang="csharp">TypeSelectorWindow.Show()</code> открывает у поля окно выбора <code lang="csharp">[TypeSelector]</code> только с реализациями <code lang="class-name">IAbilityEffect</code> и записывает выбор в строковое свойство. На эффектах стоит <code lang="csharp">[TypeSelectorDisplay]</code>: окно выбора показывает их как Damage, Heal и Shield в группе Effects, с иконками и подсказками, а поле — то же имя и иконку. Стиль `EffectPicker.uss`, переданный в <code lang="csharp">TypeSelectorWindow.Show()</code>, оформляет окно выбора как каталог. Выберите **Heal** и поменяйте **Mana Cost**: описание эффекта под полем следует за значением, в том числе при Undo и Redo.
