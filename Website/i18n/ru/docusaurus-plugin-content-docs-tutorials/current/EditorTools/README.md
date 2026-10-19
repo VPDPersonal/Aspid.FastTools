@@ -25,7 +25,7 @@
    DestroyImmediate(defaults);
    ```
 
-4. **Окно выбора из кода.** Кликните по полю **Effect**: <code lang="csharp">TypeSelectorWindow.Show()</code> открывает у поля окно выбора <code lang="csharp">[TypeSelector]</code> только с реализациями <code lang="class-name">IAbilityEffect</code> и записывает выбор в строковое свойство. На эффектах стоит <code lang="csharp">[TypeSelectorDisplay]</code>: окно выбора показывает их как Damage, Heal и Shield в группе Effects, с иконками и подсказками, а поле — то же имя и иконку. Выберите **Heal** и поменяйте **Mana Cost**: описание эффекта под полем следует за значением, в том числе при Undo и Redo.
+4. **Окно выбора из кода.** Кликните по полю **Effect**: <code lang="csharp">TypeSelectorWindow.Show()</code> открывает у поля окно выбора <code lang="csharp">[TypeSelector]</code> только с реализациями <code lang="class-name">IAbilityEffect</code> и записывает выбор в строковое свойство. На эффектах стоит <code lang="csharp">[TypeSelectorDisplay]</code>: окно выбора показывает их как Damage, Heal и Shield в группе Effects, с иконками и подсказками, а поле — то же имя и иконку. Стиль `EffectPicker.uss`, переданный в <code lang="csharp">TypeSelectorWindow.Show()</code>, оформляет окно выбора как каталог. Выберите **Heal** и поменяйте **Mana Cost**: описание эффекта под полем следует за значением, в том числе при Undo и Redo.
 5. **Открыть скрипт.** Дважды кликните по заголовку способности справа: <code lang="function">AddOpenScriptCommand</code> откроет `AbilityConfig.cs` в IDE.
 6. **Инспектор.** Выберите `Data/Sprint.asset` в окне Project. <code lang="class-name">AbilityConfigEditor</code> рисует карточку с заголовком из <code lang="csharp">GetDisplayName()</code> — «Ability Config», бейдж стоимости и предупреждение, пока **Mana Cost** равен `0`; обоими управляет <code lang="csharp">PropertyField.AddValueChanged()</code>. Поставьте стоимость `10` и верните обратно.
 7. **Создание и удаление.** Нажмите **+**: новый ассет появится рядом с выбранным и сразу выделится в списке. Наведите курсор на строку: её кнопки выделяют ассет в окне Project, а после подтверждения переносят его в корзину.
@@ -36,6 +36,7 @@
 | Файл | Что показывает |
 |---|---|
 | `Scripts/Editor/AbilityCatalogWindow.cs` | Расширения <code lang="class-name">ListView</code>, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> с <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidTheme</code> |
+| `Scripts/Editor/EffectPicker.uss` | Окно выбора в стиле каталога, на тех же токенах |
 | `Scripts/Editor/AbilityCatalog.uss` | Цвета окна, взятые только из токенов `--aspid-colors-*` темы |
 | `Scripts/Editor/AbilityConfigEditor.cs` | Кастомный инспектор на сеттерах стиля и раскладки, <code lang="function">GetDisplayName</code> |
 | `Scripts/AbilityConfig.cs` | Данные; <code lang="csharp">[TypeSelector]</code> на строке эффекта даёт инспектору ассета то же окно выбора |

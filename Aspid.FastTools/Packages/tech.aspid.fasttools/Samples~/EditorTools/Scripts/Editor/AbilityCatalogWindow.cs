@@ -27,6 +27,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private ListView _list;
         private TextField _search;
         private VisualElement _details;
+        private StyleSheet _effectPickerStyle;
         [NonSerialized] private AbilityConfig _shown;
         [NonSerialized] private SerializedObject _shownObject;
         [SerializeField] private string _filter = string.Empty;
@@ -37,9 +38,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
         private void CreateGUI()
         {
-            var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
-            var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                System.IO.Path.GetDirectoryName(scriptPath) + "/AbilityCatalog.uss");
+            var folder = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)));
+            var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(folder + "/AbilityCatalog.uss");
+            _effectPickerStyle = AssetDatabase.LoadAssetAtPath<StyleSheet>(folder + "/EffectPicker.uss");
 
             // The theme goes first, so the catalog's own sheet can read its tokens.
             rootVisualElement
@@ -232,8 +233,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddClass("ability-effect__note");
 
             // A button drawn as a drop-down. It opens the same picker the [TypeSelector] attribute opens, driven
-            // from code: anchor it to the field, constrain it to IAbilityEffect implementations and write the result
-            // into the string property.
+            // from code: anchor it to the field, constrain it to IAbilityEffect implementations, style it like the
+            // catalog with EffectPicker.uss and write the result into the string property.
             var effectField = new Button()
                 .SetFlexGrow(1)
                 .AddChild(effectIcon)
@@ -250,7 +251,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 {
                     effectType.SetStringAndApply(aqn ?? string.Empty);
                     RefreshEffect();
-                }));
+                },
+                styleSheet: _effectPickerStyle));
 
             var effectRow = new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)

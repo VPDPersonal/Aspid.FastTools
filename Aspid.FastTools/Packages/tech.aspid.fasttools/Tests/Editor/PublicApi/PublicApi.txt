@@ -1771,6 +1771,7 @@ Aspid.FastTools.Types.Editors.TypeSelectorWindow
     public sealed class TypeSelectorWindow : UnityEditor.EditorWindow
     public TypeSelectorWindow()
     public static void Show(UnityEngine.Rect screenRect, Aspid.FastTools.Types.Editors.TypeSelectorFilter filter = default, string assemblyQualifiedName = "", System.Action<string> onSelected = null)
+    public static void Show(UnityEngine.Rect screenRect, Aspid.FastTools.Types.Editors.TypeSelectorFilter filter, string assemblyQualifiedName, System.Action<string> onSelected, UnityEngine.UIElements.StyleSheet styleSheet)
 
 Aspid.FastTools.UIElements.Editors.EnumFlagsFieldExtensions
     public static class EnumFlagsFieldExtensions

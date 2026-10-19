@@ -1,7 +1,9 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -26,11 +28,53 @@ namespace Aspid.FastTools.Types.Editors
             Rect screenRect,
             TypeSelectorFilter filter = default,
             string assemblyQualifiedName = "",
-            Action<string> onSelected = null)
+            Action<string> onSelected = null) =>
+            Open(screenRect, filter, assemblyQualifiedName, onSelected, styleSheet: null);
+
+        /// <summary>
+        /// Opens the selector as a dropdown anchored to <paramref name="screenRect"/>, styled by
+        /// <paramref name="styleSheet"/> to match the window that opens it.
+        /// </summary>
+        /// <remarks>
+        /// The selector takes the Aspid.FastTools palette and theme, as
+        /// <see cref="UIElements.Editors.VisualElementExtensions.AddAspidTheme{T}"/> gives them, in place of the colours
+        /// of Unity's popups. <paramref name="styleSheet"/> comes after the selector's own sheet: its rules can set the
+        /// palette tokens, such as <c>--aspid-colors-surface-card</c>, on the root element with the
+        /// <c>aspid-fasttools-type-selector</c> class, and restyle its parts.
+        /// </remarks>
+        /// <param name="screenRect">Screen-space rectangle the dropdown is anchored to.</param>
+        /// <param name="filter">Which types the selector offers.</param>
+        /// <param name="assemblyQualifiedName">The assembly-qualified name of the current type; empty selects the empty row, while <see langword="null"/> leaves the selection unset.</param>
+        /// <param name="onSelected">Receives the assembly-qualified name of the selected type — the constructed
+        /// closed type for a resolved open generic — or <see langword="null"/> for <c>&lt;None&gt;</c>; a <see langword="null"/> callback is ignored.</param>
+        /// <param name="styleSheet">The style sheet added to the selector; <see langword="null"/> keeps the look of
+        /// Unity's popups, as the overload without it does.</param>
+        public static void Show(
+            Rect screenRect,
+            TypeSelectorFilter filter,
+            string assemblyQualifiedName,
+            Action<string> onSelected,
+            StyleSheet styleSheet) =>
+            Open(screenRect, filter, assemblyQualifiedName, onSelected, styleSheet);
+
+        private static void Open(
+            Rect screenRect,
+            TypeSelectorFilter filter,
+            string assemblyQualifiedName,
+            Action<string> onSelected,
+            StyleSheet styleSheet)
         {
             var window = CreateInstance<TypeSelectorWindow>();
             var view = new TypeSelectorView(filter: filter, currentAqn: assemblyQualifiedName, onSelected: onSelected, onDismiss: window.Close);
-            view.UseDropdownStyle();
+
+            // A styled selector reads the palette as an Aspid window does, light on the light skin, so the host's
+            // sheet styles it with the same tokens as the host.
+            if (styleSheet == null) view.UseDropdownStyle();
+            else
+            {
+                window.rootVisualElement.AddClass(AspidStyles.WindowClass);
+                view.AddStyleSheet(styleSheet);
+            }
 
             window.rootVisualElement.AddChild(view);
 

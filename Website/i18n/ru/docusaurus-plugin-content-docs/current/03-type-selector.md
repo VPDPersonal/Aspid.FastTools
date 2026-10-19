@@ -228,6 +228,27 @@ button.clicked += () => TypeSelectorWindow.Show(
 > [!NOTE]
 > У <code lang="class-name">TypeSelectorFilter</code> <code lang="csharp">Allow</code> по умолчанию <code lang="csharp">TypeAllow.None</code>, а у <code lang="csharp">[TypeSelector]</code> — <code lang="csharp">TypeAllow.All</code>: окно выше предлагает только конкретное оружие.
 
+### Окно выбора в стиле вашего окна
+
+Передайте стиль, чтобы окно выбора выглядело как окно, которое его открывает:
+
+```csharp
+TypeSelectorWindow.Show(
+    screenRect: GUIUtility.GUIToScreenRect(button.worldBound),
+    filter: filter,
+    assemblyQualifiedName: selectedTypeName,
+    onSelected: aqn => selectedTypeName = aqn,
+    styleSheet: pickerSheet);
+```
+
+Тогда окно выбора берёт палитру FastTools и тему из раздела **Appearance** вместо цветов всплывающих окон Unity, а ваш стиль ложится поверх. У его корня класс `aspid-fasttools-type-selector`:
+
+```css
+.aspid-fasttools-type-selector {
+    background-color: var(--aspid-colors-surface-card);
+}
+```
+
 Свойства фильтра и параметры окна — в справочнике API: [TypeSelectorFilter](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeSelectorFilter), [TypeSelectorWindow](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Types.Editors.TypeSelectorWindow).
 
 ## Пример в пакете
