@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
+using Aspid.FastTools.Types;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
@@ -221,21 +223,25 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var serializedObject = _shownObject = new SerializedObject(config);
             var effectType = serializedObject.FindProperty("_effectType");
 
+            var effectIcon = new VisualElement()
+                .SetPickingMode(PickingMode.Ignore)
+                .AddClass("ability-effect__icon");
             var effectName = new Label()
                 .AddClass("ability-effect__name");
             var effectNote = new Label()
                 .AddClass("ability-effect__note");
-            effectName.TrackSerializedObjectValue(serializedObject, _ => RefreshEffect());
 
             // A button drawn as a drop-down. It opens the same picker the [TypeSelector] attribute opens, driven
             // from code: anchor it to the field, constrain it to IAbilityEffect implementations and write the result
             // into the string property.
             var effectField = new Button()
                 .SetFlexGrow(1)
+                .AddChild(effectIcon)
                 .AddChild(effectName)
                 .AddChild(new VisualElement().AddClasses(EnumField.arrowUssClassName, "ability-effect__arrow"))
                 .AddClass("ability-effect");
 
+            effectField.TrackSerializedObjectValue(serializedObject, _ => RefreshEffect());
             effectField.AddClicked(() => TypeSelectorWindow.Show(
                 GUIUtility.GUIToScreenRect(effectField.worldBound),
                 new TypeSelectorFilter { Types = new[] { typeof(IAbilityEffect) } },
@@ -304,11 +310,19 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
             RefreshEffect();
 
+            // The field shows the name, icon and tooltip that [TypeSelectorDisplay] gives the type in the picker.
             void RefreshEffect()
             {
                 var type = config.EffectType;
+                var display = type?.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false);
+                var icon = string.IsNullOrEmpty(display?.Icon) ? null : EditorGUIUtility.IconContent(display.Icon).image as Texture2D;
                 var note = type is null ? string.Empty : ((IAbilityEffect)Activator.CreateInstance(type)).Describe(config);
-                effectName.SetTextSelf(type is null ? "None" : type.Name);
+
+                effectField.SetTooltip(display?.Tooltip);
+                effectName.SetTextSelf(type is null ? "None" : display?.Name ?? type.Name);
+                effectIcon
+                    .SetBackgroundImage(new StyleBackground(icon))
+                    .SetDisplay(icon != null ? DisplayStyle.Flex : DisplayStyle.None);
                 effectNote
                     .SetTextSelf(note.Length > 0 ? char.ToUpperInvariant(note[0]) + note[1..] : note)
                     .SetDisplay(note.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None);

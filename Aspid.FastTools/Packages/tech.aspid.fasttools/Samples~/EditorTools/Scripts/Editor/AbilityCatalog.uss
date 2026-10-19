@@ -178,10 +178,13 @@
     color: var(--aspid-colors-accent-text-light);
 }
 
+/* The line is centred as an element, not only its text: Unity draws the caret of an empty field at the top of the
+   stretched text element. */
 .ability-catalog .unity-base-text-field__input {
     min-height: 32px;
     margin: 0;
     padding: 0 10px;
+    align-items: center;
     background-color: var(--aspid-colors-surface-field);
     border-width: 1px;
     border-color: var(--aspid-colors-control-border);
@@ -216,6 +219,7 @@
 }
 
 .ability-catalog .ability-description .unity-base-text-field__input {
+    align-items: stretch;
     min-height: 76px;
     padding: 8px 10px;
     white-space: normal;
@@ -244,6 +248,14 @@
 .ability-catalog Button.ability-effect:active {
     background-color: var(--aspid-colors-surface-field);
     border-color: var(--aspid-colors-accent-text-light);
+}
+
+.ability-effect__icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .ability-effect__name {

@@ -25,7 +25,7 @@ The Reset to defaults button returns the cost and the cooldown to their defaults
    DestroyImmediate(defaults);
    ```
 
-4. **The type picker from code.** Click the **Effect** field: <code lang="csharp">TypeSelectorWindow.Show()</code> opens the picker of <code lang="csharp">[TypeSelector]</code> at the field, limited to <code lang="class-name">IAbilityEffect</code> implementations, and writes the pick into a string property. Pick <code lang="class-name">HealEffect</code> and change **Mana Cost**: the effect description under the field follows the value, through Undo and Redo too.
+4. **The type picker from code.** Click the **Effect** field: <code lang="csharp">TypeSelectorWindow.Show()</code> opens the picker of <code lang="csharp">[TypeSelector]</code> at the field, limited to <code lang="class-name">IAbilityEffect</code> implementations, and writes the pick into a string property. The effects carry <code lang="csharp">[TypeSelectorDisplay]</code>, so the picker lists them as Damage, Heal and Shield in an Effects group, with icons and tooltips, and the field shows the same name and icon. Pick **Heal** and change **Mana Cost**: the effect description under the field follows the value, through Undo and Redo too.
 5. **Open the script.** Double-click the ability title in the right pane: <code lang="function">AddOpenScriptCommand</code> opens `AbilityConfig.cs` in your IDE.
 6. **The inspector.** Select `Data/Sprint.asset` in the Project window. <code lang="class-name">AbilityConfigEditor</code> draws a card titled with <code lang="csharp">GetDisplayName()</code>, “Ability Config”, a cost badge and a warning shown while **Mana Cost** is `0`; <code lang="csharp">PropertyField.AddValueChanged()</code> drives both. Set the cost to `10` and back.
 7. **Create and delete.** Press **+**: a new asset appears next to the selected one, already selected in the list. Hover a row: its buttons select the asset in the Project window and, after a confirmation, move it to the trash.
@@ -39,6 +39,6 @@ The Reset to defaults button returns the cost and the cooldown to their defaults
 | `Scripts/Editor/AbilityCatalog.uss` | The window's colours, taken only from the `--aspid-colors-*` tokens of the theme |
 | `Scripts/Editor/AbilityConfigEditor.cs` | A custom inspector on the style and layout setters, <code lang="function">GetDisplayName</code> |
 | `Scripts/AbilityConfig.cs` | The data; <code lang="csharp">[TypeSelector]</code> on the effect string gives the asset's Inspector the same picker |
-| `Scripts/Effects/` | The effect classes the picker offers |
+| `Scripts/Effects/` | The effect classes the picker offers, with <code lang="csharp">[TypeSelectorDisplay]</code> names, a group and icons |
 
 Reference: [VisualElement Extensions](../../docs/10-visual-element-extensions.md), [SerializedProperty Extensions](../../docs/11-serialized-property-extensions.md), [Editor Helpers](../../docs/12-editor-helpers.md) and [TypeSelectorWindow](../../docs/03-type-selector.md#typeselectorwindow).
