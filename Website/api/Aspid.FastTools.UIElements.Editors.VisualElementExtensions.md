@@ -25,6 +25,38 @@ public static class VisualElementExtensions
 
 ## Methods
 
+### AddAspidWindowTheme\<T\>\(T\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidWindowTheme__1___0_}
+
+Styles <code class="paramref">element</code> as an Aspid.FastTools window: the palette of the editor skin and the theme
+picked under <code>Appearance</code>.
+
+```csharp
+public static T AddAspidWindowTheme<T>(this T element) where T : VisualElement
+```
+
+#### Parameters
+
+`element` T
+
+The element to style, usually [`rootVisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorWindow-rootVisualElement.html).
+
+#### Returns
+
+ T
+
+<code class="paramref">element</code> for chaining.
+
+#### Type Parameters
+
+`T` 
+
+A [`VisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.VisualElement.html) element to configure.
+
+#### Remarks
+
+Style sheets added after it read the palette tokens, such as <code>--aspid-colors-surface-card</code>. The element
+follows a change of the theme or the skin. Call it once per element.
+
 ### AddOpenScriptCommand\<T\>\(T, Object\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_}
 
 Registers a double-click handler that opens <code class="paramref">obj</code>'s script in the IDE.

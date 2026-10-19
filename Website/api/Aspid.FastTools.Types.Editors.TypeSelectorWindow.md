@@ -60,3 +60,42 @@ The assembly-qualified name of the current type; empty selects the empty row, wh
 Receives the assembly-qualified name of the selected type — the constructed
     closed type for a resolved open generic — or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <code>&lt;None&gt;</code>; a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> callback is ignored.
 
+### Show\(Rect, TypeSelectorFilter, string, Action\<string\>, StyleSheet\) {#Aspid_FastTools_Types_Editors_TypeSelectorWindow_Show_UnityEngine_Rect_Aspid_FastTools_Types_Editors_TypeSelectorFilter_System_String_System_Action_System_String__UnityEngine_UIElements_StyleSheet_}
+
+Opens the selector as a dropdown anchored to <code class="paramref">screenRect</code> and styled by
+<code class="paramref">styleSheet</code>.
+
+```csharp
+public static void Show(Rect screenRect, TypeSelectorFilter filter, string assemblyQualifiedName, Action<string> onSelected, StyleSheet styleSheet)
+```
+
+#### Parameters
+
+`screenRect` Rect
+
+Screen-space rectangle the dropdown is anchored to.
+
+`filter` [TypeSelectorFilter](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md)
+
+Which types the selector offers.
+
+`assemblyQualifiedName` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+The assembly-qualified name of the current type; empty selects the empty row, while <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> leaves the selection unset.
+
+`onSelected` [Action](https://learn.microsoft.com/dotnet/api/system.action-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
+
+Receives the assembly-qualified name of the selected type — the constructed
+    closed type for a resolved open generic — or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <code>&lt;None&gt;</code>; a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> callback is ignored.
+
+`styleSheet` StyleSheet
+
+The style sheet added after the selector's own; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> keeps the
+    look of Unity's popups.
+
+#### Remarks
+
+The selector takes the Aspid.FastTools palette and theme, as
+[`VisualElementExtensions.AddAspidWindowTheme<T>`](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidWindowTheme__1___0_) gives them, in place of the
+colours of Unity's popups. Its root has the <code>aspid-fasttools-type-selector</code> class.
+

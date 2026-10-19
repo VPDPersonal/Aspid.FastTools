@@ -2,9 +2,9 @@
 
 Окно редактора и инспектор, собранные в коде на хелперах пакета.
 
-![Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.](../../../../../tutorials/EditorTools/Images/demo.gif)
+![Кнопка Reset to defaults возвращает стоимости и перезарядке значения по умолчанию, а Undo — прежние значения.](../../../../../tutorials/EditorTools/Images/demo.gif)
 
-Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.
+Кнопка Reset to defaults возвращает стоимости и перезарядке значения по умолчанию, а Undo — прежние значения.
 
 ## Как открыть
 
@@ -15,28 +15,29 @@
 
 1. **ListView одной цепочкой.** Список слева собран одной цепочкой расширений <code lang="class-name">ListView</code>, включая <code lang="function">SetMakeItem</code>, <code lang="function">SetBindItem</code> и <code lang="function">AddSelectionChanged</code>. Наберите текст в поле поиска: <code lang="function">AddValueChanged</code> фильтрует источник, а <code lang="function">RefreshItems</code> перерисовывает список.
 2. **Привязка.** Поля имени, описания, стоимости и перезарядки лежат в одном контейнере, привязанном через <code lang="csharp">.BindTo(serializedObject)</code>. Измените имя — список и заголовок обновятся, а Undo вернёт прежнее.
-3. **Типизированные сеттеры.** Нажмите **Halve cooldown, +5 MP**. Обработчик записывает два свойства и применяет их один раз, поэтому оба откатываются одним Undo:
+3. **Типизированные сеттеры.** Выберите **Fireball**: кнопка **Reset to defaults** видна, пока **Mana Cost** или **Cooldown** отличается от инициализатора поля в <code lang="class-name">AbilityConfig</code>; значения читаются из нового экземпляра. Нажмите её: обработчик записывает два свойства и применяет их один раз, поэтому кнопка скрывается, а одно Undo откатывает оба:
 
    ```csharp
    serializedObject.Update();
-   var cooldown = serializedObject.FindProperty("_cooldown");
-   var manaCost = serializedObject.FindProperty("_manaCost");
-   cooldown.SetFloat(cooldown.floatValue * 0.5f);
-   manaCost.SetIntAndApply(manaCost.intValue + 5);
+   serializedObject.FindProperty("_cooldown").SetFloat(defaults.Cooldown);
+   serializedObject.FindProperty("_manaCost").SetIntAndApply(defaults.ManaCost);
    ```
 
-4. **Окно выбора из кода.** Нажмите **Change…** рядом с **Effect**: <code lang="csharp">TypeSelectorWindow.Show()</code> открывает у кнопки окно выбора <code lang="csharp">[TypeSelector]</code> только с реализациями <code lang="class-name">IAbilityEffect</code> и записывает выбор в строковое свойство. Выберите <code lang="class-name">HealEffect</code> и поменяйте **Mana Cost**: описание эффекта следует за значением, в том числе при Undo и Redo.
+4. **Окно выбора из кода.** Кликните по полю **Effect**: <code lang="csharp">TypeSelectorWindow.Show()</code> открывает у поля окно выбора <code lang="csharp">[TypeSelector]</code> только с реализациями <code lang="class-name">IAbilityEffect</code> и записывает выбор в строковое свойство. На эффектах стоит <code lang="csharp">[TypeSelectorDisplay]</code>: окно выбора показывает их как Damage, Heal и Shield в группе Effects, с иконками и подсказками, а поле — то же имя и иконку. Стиль `EffectPicker.uss`, переданный в <code lang="csharp">TypeSelectorWindow.Show()</code>, оформляет окно выбора как каталог. Выберите **Heal** и поменяйте **Mana Cost**: описание эффекта под полем следует за значением, в том числе при Undo и Redo.
 5. **Открыть скрипт.** Дважды кликните по заголовку способности справа: <code lang="function">AddOpenScriptCommand</code> откроет `AbilityConfig.cs` в IDE.
 6. **Инспектор.** Выберите `Data/Sprint.asset` в окне Project. <code lang="class-name">AbilityConfigEditor</code> рисует карточку с заголовком из <code lang="csharp">GetDisplayName()</code> — «Ability Config», бейдж стоимости и предупреждение, пока **Mana Cost** равен `0`; обоими управляет <code lang="csharp">PropertyField.AddValueChanged()</code>. Поставьте стоимость `10` и верните обратно.
-7. **Create.** Нажмите **Create**: новый ассет появится рядом с выбранным и сразу выделится в списке.
+7. **Создание и удаление.** Нажмите **+**: новый ассет появится рядом с выбранным и сразу выделится в списке. Наведите курсор на строку: её кнопки выделяют ассет в окне Project, а после подтверждения переносят его в корзину.
+8. **Тема FastTools.** Откройте **Tools → Aspid 🐍 → FastTools → Settings** и выберите другую **Theme** в разделе **Appearance**: <code lang="function">AddAspidWindowTheme</code> сразу перекрасит открытый каталог.
 
 ## Куда смотреть
 
 | Файл | Что показывает |
 |---|---|
-| `Scripts/Editor/AbilityCatalogWindow.cs` | Расширения <code lang="class-name">ListView</code>, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> с <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">AddOpenScriptCommand</code> |
+| `Scripts/Editor/AbilityCatalogWindow.cs` | Расширения <code lang="class-name">ListView</code>, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> с <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidWindowTheme</code> |
+| `Scripts/Editor/EffectPicker.uss` | Окно выбора в стиле каталога, на тех же токенах |
+| `Scripts/Editor/AbilityCatalog.uss` | Цвета окна, взятые только из токенов `--aspid-colors-*` темы |
 | `Scripts/Editor/AbilityConfigEditor.cs` | Кастомный инспектор на сеттерах стиля и раскладки, <code lang="function">GetDisplayName</code> |
 | `Scripts/AbilityConfig.cs` | Данные; <code lang="csharp">[TypeSelector]</code> на строке эффекта даёт инспектору ассета то же окно выбора |
-| `Scripts/Effects/` | Классы эффектов, которые предлагает окно выбора |
+| `Scripts/Effects/` | Классы эффектов, которые предлагает окно выбора, с именами, группой и иконками из <code lang="csharp">[TypeSelectorDisplay]</code> |
 
 Справочник — [VisualElement Extensions](../../../docusaurus-plugin-content-docs/current/10-visual-element-extensions.md), [SerializedProperty Extensions](../../../docusaurus-plugin-content-docs/current/11-serialized-property-extensions.md), [Editor Helpers](../../../docusaurus-plugin-content-docs/current/12-editor-helpers.md) и [TypeSelectorWindow](../../../docusaurus-plugin-content-docs/current/03-type-selector.md#typeselectorwindow).

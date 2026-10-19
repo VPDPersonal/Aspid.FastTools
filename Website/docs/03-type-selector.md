@@ -228,6 +228,27 @@ The callback receives an assembly-qualified name, or <code lang="csharp">null</c
 > [!NOTE]
 > <code lang="class-name">TypeSelectorFilter</code> defaults <code lang="csharp">Allow</code> to <code lang="csharp">TypeAllow.None</code>, while <code lang="csharp">[TypeSelector]</code> defaults to <code lang="csharp">TypeAllow.All</code>: the window above offers only concrete weapons.
 
+### A picker in the style of your window
+
+Pass a style sheet to match the picker to the window that opens it:
+
+```csharp
+TypeSelectorWindow.Show(
+    screenRect: GUIUtility.GUIToScreenRect(button.worldBound),
+    filter: filter,
+    assemblyQualifiedName: selectedTypeName,
+    onSelected: aqn => selectedTypeName = aqn,
+    styleSheet: pickerSheet);
+```
+
+The picker then takes the FastTools palette and the theme picked under **Appearance** in place of the colours of Unity's popups, and the sheet comes on top. Its root has the `aspid-fasttools-type-selector` class:
+
+```css
+.aspid-fasttools-type-selector {
+    background-color: var(--aspid-colors-surface-card);
+}
+```
+
 For filter properties and window parameters, see the API reference: [TypeSelectorFilter](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Types.Editors.TypeSelectorFilter), [TypeSelectorWindow](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Types.Editors.TypeSelectorWindow).
 
 ## Package sample
