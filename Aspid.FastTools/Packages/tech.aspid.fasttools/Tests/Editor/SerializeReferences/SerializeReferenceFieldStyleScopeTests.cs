@@ -14,6 +14,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // test, without the field's binding and layout; RealField_OpenButton_SitsInTheHeaderWithItsClass checks that
     // the real field still builds that tree.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class SerializeReferenceFieldStyleScopeTests
     {
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";

@@ -18,6 +18,7 @@ namespace Aspid.FastTools.Editors.Tests
     // A window that fails in CreateGUI or OnGUI stays blank, and no test of its parts notices.
     // The windows need a graphics device: these tests run in CI, not under -nographics.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class EditorWindowSmokeTests
     {
         // The window keeps these class names private. A rename there needs a rename here.

@@ -87,6 +87,7 @@ namespace Aspid.FastTools.Enums.Tests
     /// a signed 32-bit mask are toggled without truncation.
     /// </summary>
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class EnumValuesPropertyDrawerHelperTests
     {
         private sealed class Host : ScriptableObject

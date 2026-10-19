@@ -6,6 +6,7 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
+    [Category("Graphics")]
     internal sealed class TypeSelectorWindowTests
     {
         private const string ProbePath = "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/AspidThemeProbe.uss";

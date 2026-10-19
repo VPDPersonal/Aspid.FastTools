@@ -16,6 +16,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // state left behind.
     // The windows need a graphics device: these tests run in CI, not under -nographics.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class SerializeReferenceIMGUIDrawTests
     {
         private const float FieldWidth = 320f;

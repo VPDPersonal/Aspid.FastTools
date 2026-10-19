@@ -16,6 +16,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
     /// that re-reads the stored type name from the referenced script.
     /// </summary>
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class SerializableMonoScriptTests
     {
         // A type of the package's runtime assembly declared in a file of its own name — exactly the shape

@@ -299,15 +299,20 @@ jobs:
     needs: unity-plan
     if: needs.unity-plan.outputs.run == 'true'
     runs-on: ubuntu-latest
-    # A run takes 4-5 minutes; the rest is room for a slow image pull.
+    # Both passes take 5-6 minutes; the rest is room for a slow image pull and an activation retry.
     timeout-minutes: 30
     permissions:
       contents: read
-      checks: write
     strategy:
       fail-fast: false
       matrix:
         unity: ${{ fromJSON(needs.unity-plan.outputs.versions) }}
+    env:
+      UNITY_VERSION: ${{ matrix.unity }}
+      # The game-ci CLI that game-ci/unity-test-runner v4.4.0 runs, pinned by version and archive checksum. No name
+      # here starts with GAME_CI: the CLI reads such variables as its own options and stops on unknown ones.
+      GAMECI_VERSION: v0.1.72
+      GAMECI_SHA256: 1de550a620ee92e05e920b6db7d431621440b60b2577f04b4a997dc92a58cb0a
     steps:
       # What the test project reads: the package and the script that builds the project.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -317,51 +322,159 @@ jobs:
             scripts
 
       - name: Create the test project
-        env:
-          UNITY: ${{ matrix.unity }}
-        run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY"
+        run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY_VERSION"
 
-      # Unity sometimes assigns no Personal seat ("assigned no seat") when many jobs activate the same account at once.
-      # Such a run fails before any test and leaves no results file, so it gets one second attempt after a pause; a
-      # run with test failures writes its results and fails at once. A compile error also leaves no results: it costs
-      # one more attempt, since the action reports no failure reason that a later step can read.
-      - id: tests
-        uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
-        continue-on-error: true
-        env: &unity-env
-          # The action asks the GitHub API for the latest game-ci CLI release; without a token, the shared runner IP
-          # hits the anonymous rate limit (403).
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download the game-ci CLI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          dir="$RUNNER_TEMP/game-ci"
+          gh release download "$GAMECI_VERSION" --repo game-ci/cli --pattern game-ci-linux-x64.tar.gz --dir "$dir"
+          echo "$GAMECI_SHA256  $dir/game-ci-linux-x64.tar.gz" | sha256sum --check --quiet
+          tar -xzf "$dir/game-ci-linux-x64.tar.gz" -C "$dir"
+          echo "GAMECI=$dir/game-ci" >> "$GITHUB_ENV"
+
+      # Two passes on one Personal seat. The runner has no GPU: Unity draws through llvmpipe (software OpenGL under
+      # xvfb), where UI tests run up to 250 times slower than on a GPU. So every test that opens no window runs under
+      # -nographics, and only the fixtures of the Graphics category, which need a shown window, run with a graphics
+      # device. The second pass reuses the Library of the first.
+      # The seat is activated once and returned once: every activation is a login to the Unity account, which allows
+      # only a few in a short time ("User reaches maximum same user attempt retry count", 143.002), and a second
+      # activation seconds after a return often gets no seat. game-ci mounts $HOME as /root in each container, so the
+      # passes find the license that `game-ci activate` left there.
+      # Unity sometimes assigns no seat at all when many jobs activate the same account at once, or assigns one and then
+      # fails to write the license file ("User token expired") while game-ci still reports success. So an activation
+      # counts only with the line about the updated license file; otherwise it gets one more attempt after a pause.
+      - id: activate
+        name: Activate a Unity Personal seat
+        env: &unity-account
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with: &unity-with
-          unityVersion: ${{ matrix.unity }}
-          projectPath: ci-unity-project
-          testMode: editmode
-          # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with this argument.
-          customParameters: -aspidFastToolsStrictSetup
-          artifactsPath: unity-test-results
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Unity EditMode results (${{ matrix.unity }})
-
-      - name: Wait before a second license request
-        id: no-results
-        if: steps.tests.outcome == 'failure' && hashFiles('unity-test-results/**/*.xml') == ''
         run: |
-          echo "::warning::The Unity test run left no results: no license seat or a compile error, see the step above. Trying once more."
-          sleep $((60 + RANDOM % 60))
+          log="$RUNNER_TEMP/activate.log"
+          for attempt in 1 2; do
+            "$GAMECI" activate --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
+              --targetPlatform=StandaloneLinux64 2>&1 | tee "$log"
+            if grep -q "Successfully updated UnityEntitlementLicense.xml" "$log"; then
+              exit 0
+            fi
+            if [ "$attempt" = 1 ]; then
+              echo "::warning::The activation failed; trying once more after a pause."
+              sleep $((60 + RANDOM % 60))
+            fi
+          done
+          exit 1
 
-      - id: retry
-        if: steps.no-results.outcome == 'success'
-        uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
-        env: *unity-env
-        with: *unity-with
+      # A pass without a results file broke before its tests ran: 6000.6 is sometimes SIGKILLed (137) as it opens the
+      # Library of the first pass, as it was with a restored Library cache. It gets one more try on a fresh Library
+      # and the same seat. The exit code does not tell a broken run from failed tests: game-ci exits 1 for both.
+      # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with
+      # -aspidFastToolsStrictSetup. The project has no Code Coverage package, so coverage is off: it only added
+      # -debugCodeOptimization. Both container variables go in one --dockerEnv, one per line: of repeated
+      # --dockerEnv flags the CLI keeps only the last.
+      - id: nographics
+        name: EditMode tests without graphics
+        env:
+          PASS: nographics
+          PASS_PARAMETERS: -nographics -testCategory !Graphics
+        run: &unity-pass |
+          run_pass() {
+            "$GAMECI" test --docker --engine=unity ci-unity-project --testPlatforms=editmode \
+              --engineVersion="$UNITY_VERSION" --artifactsPath="unity-test-results/$PASS" \
+              --customParameters="-aspidFastToolsStrictSetup $PASS_PARAMETERS" \
+              --dockerEnv="$(printf 'SKIP_ACTIVATION=true\nCOVERAGE_ENABLED=false')"
+          }
+          results="unity-test-results/$PASS/editmode-results.xml"
+          # Unity 6000.6 keeps a Data Store in Library/DataStore, an LMDB database whose lock files hold the process ids
+          # of the container that wrote them. Each container starts its process ids anew, so the second pass drops
+          # the lock files of the first; LMDB writes new ones. The retry below still covers a kill.
+          sudo rm -f ci-unity-project/Library/DataStore/uds.lock ci-unity-project/Library/DataStore/uds.db-lock
+          code=0
+          run_pass || code=$?
+          if [ ! -f "$results" ]; then
+            echo "::warning::Unity EditMode $PASS broke (exit code $code); trying once more on a fresh Library."
+            # Whether the runner killed Unity for memory: 6000.6 loses its Editor or its script compiler this way.
+            echo "::group::Memory after the broken pass"
+            free -m
+            df -h /dev/shm
+            sudo dmesg | grep -iE "killed process|out of memory|oom" | tail -20 || true
+            echo "::endgroup::"
+            sudo rm -rf ci-unity-project/Library "unity-test-results/$PASS"
+            code=0
+            run_pass || code=$?
+          fi
+          echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+          [ -f "$results" ] && echo "results=true" >> "$GITHUB_OUTPUT" || echo "results=false" >> "$GITHUB_OUTPUT"
+
+      - id: graphics
+        name: EditMode tests with graphics
+        env:
+          PASS: graphics
+          PASS_PARAMETERS: -testCategory Graphics
+        run: *unity-pass
+
+      # Also after a failed or cancelled pass, and after a failed activation that may still hold a seat: a seat that
+      # is never returned stays taken and breaks the next runs on the account. The log line decides, not the exit
+      # code: game-ci v0.1.72 returns the seat and then exits 1, since its build check finds no build output.
+      - name: Return the Unity seat
+        if: always() && steps.activate.outcome != 'skipped'
+        continue-on-error: true
+        env: *unity-account
+        run: |
+          log="$RUNNER_TEMP/return-license.log"
+          "$GAMECI" return-license --engine=unity ci-unity-project --engineVersion="$UNITY_VERSION" \
+            --targetPlatform=StandaloneLinux64 2>&1 | tee "$log"
+          if ! grep -q "Successfully returned the entitlement license" "$log"; then
+            echo "::warning::The Unity seat may still be taken; see the return log above."
+            exit 1
+          fi
+
+      - name: Summarize the test results
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+
+          lines = [f"### Unity EditMode {os.environ['UNITY_VERSION']}", "",
+                   "| Pass | Result | Total | Passed | Failed | Skipped | Time |", "|---|---|---|---|---|---|---|"]
+          failed = []
+          for name in ("nographics", "graphics"):
+              path = f"unity-test-results/{name}/editmode-results.xml"
+              if not os.path.exists(path):
+                  lines.append(f"| {name} | no results | | | | | |")
+                  continue
+              run = ET.parse(path).getroot()
+              lines.append(f"| {name} | {run.get('result')} | {run.get('total')} | {run.get('passed')} | "
+                           f"{run.get('failed')} | {run.get('skipped')} | {float(run.get('duration')):.0f} s |")
+              failed += [case.get("fullname") for case in run.iter("test-case") if case.get("result") == "Failed"]
+          if failed:
+              lines += ["", f"Failed tests ({len(failed)}):", ""] + [f"- `{name}`" for name in failed[:50]]
+          for name in failed[:10]:
+              print(f"::error title=Unity {os.environ['UNITY_VERSION']}::{name}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("\n".join(lines) + "\n")
+          PY
 
       - name: Fail on a failed test run
-        if: steps.tests.outcome == 'failure' && steps.retry.outcome != 'success'
+        if: always() && steps.activate.outcome == 'success'
+        env:
+          NOGRAPHICS: ${{ steps.nographics.outputs.exit-code }}:${{ steps.nographics.outputs.results }}
+          GRAPHICS: ${{ steps.graphics.outputs.exit-code }}:${{ steps.graphics.outputs.results }}
         run: |
-          echo "::error::Unity EditMode failed; see the test runner step above."
-          exit 1
+          status=0
+          for pass in "without graphics:$NOGRAPHICS" "with graphics:$GRAPHICS"; do
+            IFS=: read -r name code results <<<"$pass"
+            if [ "$code" = 0 ] && [ "$results" = true ]; then
+              continue
+            elif [ "$results" = true ]; then
+              echo "::error::Unity EditMode $name: some tests failed; see the summary."
+            else
+              echo "::error::Unity EditMode $name broke before it wrote results (exit code ${code:-none})."
+            fi
+            status=1
+          done
+          exit $status
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()

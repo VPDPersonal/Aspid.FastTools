@@ -12,6 +12,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // The type icon left of the caption: shown for a set reference only, and hidden live by the per-user
     // "Type icons" switch under Appearance, also after the field is detached and attached again.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class SerializeReferenceFieldIconTests
     {
         private const string IconClass = "aspid-fasttools-serialize-reference__icon";

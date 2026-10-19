@@ -9,6 +9,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 {
     // The field's stylesheet must size only its own open-in-script-editor button, not every button below it.
     [TestFixture]
+    [Category("Graphics")]
     internal sealed class TypeFieldStyleScopeTests
     {
         private const string OpenIconClass = "aspid-fasttools-type-field__open-icon";
