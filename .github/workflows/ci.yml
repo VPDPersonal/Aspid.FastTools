@@ -385,6 +385,10 @@ jobs:
               --dockerEnv="$(printf 'SKIP_ACTIVATION=true\nCOVERAGE_ENABLED=false')"
           }
           results="unity-test-results/$PASS/editmode-results.xml"
+          # Unity 6000.6 keeps a Data Store in Library/DataStore, an LMDB database whose lock files hold the process ids
+          # of the container that wrote them. Each container starts its process ids anew, so the second pass drops
+          # the lock files of the first; LMDB writes new ones. The retry below still covers a kill.
+          sudo rm -f ci-unity-project/Library/DataStore/uds.lock ci-unity-project/Library/DataStore/uds.db-lock
           code=0
           run_pass || code=$?
           if [ ! -f "$results" ]; then
