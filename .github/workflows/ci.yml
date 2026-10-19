@@ -465,7 +465,7 @@ jobs:
           status=0
           for pass in "without graphics:$NOGRAPHICS" "with graphics:$GRAPHICS"; do
             IFS=: read -r name code results <<<"$pass"
-            if [ "$code" = 0 ]; then
+            if [ "$code" = 0 ] && [ "$results" = true ]; then
               continue
             elif [ "$results" = true ]; then
               echo "::error::Unity EditMode $name: some tests failed; see the summary."
