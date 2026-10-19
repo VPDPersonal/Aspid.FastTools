@@ -252,22 +252,24 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(new Label("Effect").AddClass("ability-label"))
                 .AddChild(effectField);
 
-            // A one-click balance pass: chainable typed setters, Undo included, applied once at the end.
-            var halveCooldown = new Button()
-                .SetTextSelf("Halve cooldown, +5 MP")
+            // The defaults are the field initializers of AbilityConfig, so a fresh instance holds them. Chainable typed
+            // setters write both values and apply them once, so a single Undo reverts the reset.
+            var resetToDefaults = new Button()
+                .SetTextSelf("Reset to defaults")
+                .SetTooltip("Resets Mana Cost and Cooldown to their default values")
                 .AddClicked(() =>
                 {
+                    var defaults = CreateInstance<AbilityConfig>();
                     serializedObject.Update();
-                    var cooldown = serializedObject.FindProperty("_cooldown");
-                    var manaCost = serializedObject.FindProperty("_manaCost");
-                    cooldown.SetFloat(cooldown.floatValue * 0.5f);
-                    manaCost.SetIntAndApply(manaCost.intValue + 5);
+                    serializedObject.FindProperty("_cooldown").SetFloat(defaults.Cooldown);
+                    serializedObject.FindProperty("_manaCost").SetIntAndApply(defaults.ManaCost);
+                    DestroyImmediate(defaults);
                 })
                 .AddClass("ability-button");
 
             var actions = new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
-                .AddChild(halveCooldown)
+                .AddChild(resetToDefaults)
                 .AddClass("ability-actions");
 
             var description = new TextField("Description") { multiline = true }
