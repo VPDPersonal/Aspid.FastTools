@@ -189,12 +189,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         [UnityTest]
-        public IEnumerator AddAspidTheme_GivesAnElementThePalettesTheThemeAndTheSkin()
+        public IEnumerator AddAspidWindowTheme_GivesAnElementThePalettesTheThemeAndTheSkin()
         {
             yield return null;
 
             AspidThemeSettings.Theme = AspidTheme.Venom;
-            var element = new VisualElement().AddAspidTheme();
+            var element = new VisualElement().AddAspidWindowTheme();
             _panel.Root.Add(element);
 
             var dark = Resources.Load<StyleSheet>(AspidStyles.DefaultStyleSheet);
@@ -203,7 +203,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             CollectionAssert.AreEqual(new[] { dark, light, venom }, StyleSheets(element),
                 "The element must take both palettes and the picked theme.");
 
-            // An element outside the FastTools window takes the light palette on the light skin as well.
             Assert.AreEqual(!EditorGUIUtility.isProSkin, element.ClassListContains(AspidStyles.PaletteLightClass),
                 "The palette must follow the editor skin.");
 

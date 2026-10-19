@@ -1,16 +1,15 @@
-/* The effect picker in the catalog's look. TypeSelectorWindow.Show adds this sheet after its own and gives the picker
-   the FastTools palette, so the same tokens colour both windows. */
+/* The effect picker in the catalog's look, through the same tokens. */
 
 .aspid-fasttools-type-selector {
     background-color: var(--aspid-colors-surface-card);
-    /* The search bar and the footer sit on the canvas, as the catalog's list does. */
+    /* Search bar and footer on the canvas, as the catalog's list. */
     --aspid-colors-bg-dark: var(--aspid-colors-surface-canvas);
-    /* Hovered and selected rows as in the catalog's list. */
+    /* Row hover and selection as in the catalog's list. */
     --aspid-colors-status-info-shade-darkness: var(--aspid-colors-overlay-hover);
     --aspid-colors-status-info-shade-dark: var(--aspid-colors-accent-tint);
 }
 
-/* The sample font goes on the text only: the check, star, arrow and radio glyphs keep the editor font, which has them. */
+/* The sample font on text only: the check, star and arrow glyphs need the editor font. */
 .aspid-fasttools-type-selector__breadcrumb,
 .aspid-fasttools-type-selector ToolbarSearchField TextElement,
 .aspid-fasttools-type-selector__item-title,

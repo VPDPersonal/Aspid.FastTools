@@ -234,7 +234,7 @@ Returns the element’s window. If none is found, falls back to the focused wind
 
 ```csharp
 rootVisualElement
-    .AddAspidTheme()
+    .AddAspidWindowTheme()
     .AddStyleSheet(catalogSheet);
 ```
 

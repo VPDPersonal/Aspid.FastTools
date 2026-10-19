@@ -25,20 +25,20 @@ public static class VisualElementExtensions
 
 ## Methods
 
-### AddAspidTheme\<T\>\(T\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidTheme__1___0_}
+### AddAspidWindowTheme\<T\>\(T\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidWindowTheme__1___0_}
 
-Styles <code class="paramref">element</code> and its children with the Aspid.FastTools palette and the theme picked under
-<code>Appearance</code> in the FastTools settings.
+Styles <code class="paramref">element</code> as an Aspid.FastTools window: the palette of the editor skin and the theme
+picked under <code>Appearance</code>.
 
 ```csharp
-public static T AddAspidTheme<T>(this T element) where T : VisualElement
+public static T AddAspidWindowTheme<T>(this T element) where T : VisualElement
 ```
 
 #### Parameters
 
 `element` T
 
-The element that declares the tokens.
+The element to style, usually [`rootVisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorWindow-rootVisualElement.html).
 
 #### Returns
 
@@ -54,8 +54,8 @@ A [`VisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReferenc
 
 #### Remarks
 
-<p>The element declares the tokens of the palette, such as <code>--aspid-colors-surface-card</code>: the dark palette, or the light one on the light editor skin. A built-in theme or a theme of the project overrides them, and the element follows a change of the theme or the skin without a rebuild.</p>
-<p>Call it once per element, usually on [`rootVisualElement`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorWindow-rootVisualElement.html), and add your own style sheets after it, so that they read the tokens.</p>
+Style sheets added after it read the palette tokens, such as <code>--aspid-colors-surface-card</code>. The element
+follows a change of the theme or the skin. Call it once per element.
 
 ### AddOpenScriptCommand\<T\>\(T, Object\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_}
 

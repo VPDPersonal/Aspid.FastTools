@@ -81,7 +81,7 @@ rootVisualElement.AddChild(new VisualElement()
 Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])`, `UnbindFrom()`,
 `BindPropertyTo(property)`, `SetBindingPath(path)`, `PropertyField.SetLabel(...)` / `.AddValueChanged(...)`,
 `AddOpenScriptCommand(target)` (double-click opens the script), `GetOwnerWindow()`, `EnumFlagsField.Initialize(...)`,
-`AddAspidTheme()` (the FastTools palette and theme; style sheets added after it read the `--aspid-colors-*` tokens).
+`AddAspidWindowTheme()` (the FastTools palette and theme; style sheets added after it read the `--aspid-colors-*` tokens).
 
 ## Pitfalls
 

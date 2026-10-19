@@ -1,17 +1,13 @@
 @import url("SampleFonts.uss");
 
-/* Every colour and corner below is a --aspid-* token that AddAspidTheme declares on the window, so the catalog takes
-   the FastTools theme picked under Appearance: Default, Venom, Unity or a theme of the project, on the dark and the
-   light editor skin. The element-qualified selectors outrank Unity's own control rules. */
+/* Colours and corners are only --aspid-* tokens of AddAspidWindowTheme, so the catalog follows any FastTools theme.
+   Element-qualified selectors outrank Unity's own control rules. */
 
-/* The details sit on the card surface, the list on the canvas of the FastTools windows, a step darker. */
 .ability-catalog {
     background-color: var(--aspid-colors-surface-card);
     color: var(--aspid-colors-text-light);
     font-size: 14px;
 }
-
-/* The list of abilities. ListView puts the item classes on the row that makeItem returns. */
 
 .ability-sidebar {
     background-color: var(--aspid-colors-surface-canvas);
@@ -62,11 +58,11 @@
     border-left-color: rgba(0, 0, 0, 0);
 }
 
+/* ListView puts the item classes on the row that makeItem returns. */
 .ability-row.unity-collection-view__item--selected {
     border-left-color: var(--aspid-colors-accent-text-light);
 }
 
-/* The row's buttons show on hover and on the selected row. */
 .ability-row__actions {
     display: none;
 }
@@ -104,7 +100,6 @@
     -unity-background-image-tint-color: var(--aspid-colors-text-lightness);
 }
 
-/* Undo does not bring a deleted asset back, so the cross turns red on hover. */
 .ability-row__button--danger:hover .ability-row__icon {
     -unity-background-image-tint-color: var(--aspid-colors-status-error-text-light);
 }
@@ -131,8 +126,6 @@
     font-size: 13px;
     color: var(--aspid-colors-text-dark);
 }
-
-/* The selected ability. */
 
 .ability-form {
     max-width: 720px;
@@ -178,8 +171,7 @@
     color: var(--aspid-colors-accent-text-light);
 }
 
-/* The line is centred as an element, not only its text: Unity draws the caret of an empty field at the top of the
-   stretched text element. */
+/* Centring the line, not only its text, keeps the caret of an empty field centred. */
 .ability-catalog .unity-base-text-field__input {
     min-height: 32px;
     margin: 0;
@@ -193,7 +185,7 @@
     font-size: 14px;
     -unity-text-align: middle-left;
     --unity-cursor-color: var(--aspid-colors-text-lightness);
-    /* Unity draws the selection over the text, so it takes a translucent overlay. */
+    /* Unity draws the selection over the text. */
     --unity-selection-color: var(--aspid-colors-overlay-control-hover);
 }
 
@@ -225,8 +217,6 @@
     white-space: normal;
     -unity-text-align: upper-left;
 }
-
-/* The effect: a button drawn as a drop-down, and the effect's description under it. */
 
 .ability-catalog Button.ability-effect {
     flex-direction: row;
@@ -279,8 +269,6 @@
     white-space: normal;
 }
 
-/* Buttons. */
-
 .ability-actions {
     margin: 28px 0 0 128px;
 }
@@ -316,7 +304,7 @@
     color: var(--aspid-colors-accent-text-lightness);
 }
 
-/* The "+" glyph sits low in its line box, so the bottom padding centres it. */
+/* The "+" glyph sits low in its line box. */
 .ability-catalog Button.ability-button--icon {
     width: 32px;
     padding: 0 0 2.5px 0;

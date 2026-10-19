@@ -62,8 +62,8 @@ Receives the assembly-qualified name of the selected type — the constructed
 
 ### Show\(Rect, TypeSelectorFilter, string, Action\<string\>, StyleSheet\) {#Aspid_FastTools_Types_Editors_TypeSelectorWindow_Show_UnityEngine_Rect_Aspid_FastTools_Types_Editors_TypeSelectorFilter_System_String_System_Action_System_String__UnityEngine_UIElements_StyleSheet_}
 
-Opens the selector as a dropdown anchored to <code class="paramref">screenRect</code>, styled by
-<code class="paramref">styleSheet</code> to match the window that opens it.
+Opens the selector as a dropdown anchored to <code class="paramref">screenRect</code> and styled by
+<code class="paramref">styleSheet</code>.
 
 ```csharp
 public static void Show(Rect screenRect, TypeSelectorFilter filter, string assemblyQualifiedName, Action<string> onSelected, StyleSheet styleSheet)
@@ -90,14 +90,12 @@ Receives the assembly-qualified name of the selected type — the constructed
 
 `styleSheet` StyleSheet
 
-The style sheet added to the selector; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> keeps the look of
-    Unity's popups, as the overload without it does.
+The style sheet added after the selector's own; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> keeps the
+    look of Unity's popups.
 
 #### Remarks
 
 The selector takes the Aspid.FastTools palette and theme, as
-[`VisualElementExtensions.AddAspidTheme<T>`](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidTheme__1___0_) gives them, in place of the colours
-of Unity's popups. <code class="paramref">styleSheet</code> comes after the selector's own sheet: its rules can set the
-palette tokens, such as <code>--aspid-colors-surface-card</code>, on the root element with the
-<code>aspid-fasttools-type-selector</code> class, and restyle its parts.
+[`VisualElementExtensions.AddAspidWindowTheme<T>`](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidWindowTheme__1___0_) gives them, in place of the
+colours of Unity's popups. Its root has the <code>aspid-fasttools-type-selector</code> class.
 

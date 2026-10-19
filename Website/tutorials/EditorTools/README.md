@@ -27,13 +27,13 @@ The Reset to defaults button returns the cost and the cooldown to their defaults
 5. **Open the script.** Double-click the ability title in the right pane: <code lang="function">AddOpenScriptCommand</code> opens `AbilityConfig.cs` in your IDE.
 6. **The inspector.** Select `Data/Sprint.asset` in the Project window. <code lang="class-name">AbilityConfigEditor</code> draws a card titled with <code lang="csharp">GetDisplayName()</code>, “Ability Config”, a cost badge and a warning shown while **Mana Cost** is `0`; <code lang="csharp">PropertyField.AddValueChanged()</code> drives both. Set the cost to `10` and back.
 7. **Create and delete.** Press **+**: a new asset appears next to the selected one, already selected in the list. Hover a row: its buttons select the asset in the Project window and, after a confirmation, move it to the trash.
-8. **The FastTools theme.** Open **Tools → Aspid 🐍 → FastTools → Settings** and pick another **Theme** under **Appearance**: <code lang="function">AddAspidTheme</code> recolours the open catalog at once.
+8. **The FastTools theme.** Open **Tools → Aspid 🐍 → FastTools → Settings** and pick another **Theme** under **Appearance**: <code lang="function">AddAspidWindowTheme</code> recolours the open catalog at once.
 
 ## Where to look
 
 | File | Shows |
 |---|---|
-| `Scripts/Editor/AbilityCatalogWindow.cs` | <code lang="class-name">ListView</code> extensions, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> and <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> with a <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidTheme</code> |
+| `Scripts/Editor/AbilityCatalogWindow.cs` | <code lang="class-name">ListView</code> extensions, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> and <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> with a <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidWindowTheme</code> |
 | `Scripts/Editor/EffectPicker.uss` | The picker in the catalog's look, through the same tokens |
 | `Scripts/Editor/AbilityCatalog.uss` | The window's colours, taken only from the `--aspid-colors-*` tokens of the theme |
 | `Scripts/Editor/AbilityConfigEditor.cs` | A custom inspector on the style and layout setters, <code lang="function">GetDisplayName</code> |

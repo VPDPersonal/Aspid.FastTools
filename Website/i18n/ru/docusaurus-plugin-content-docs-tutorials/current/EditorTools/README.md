@@ -27,13 +27,13 @@
 5. **Открыть скрипт.** Дважды кликните по заголовку способности справа: <code lang="function">AddOpenScriptCommand</code> откроет `AbilityConfig.cs` в IDE.
 6. **Инспектор.** Выберите `Data/Sprint.asset` в окне Project. <code lang="class-name">AbilityConfigEditor</code> рисует карточку с заголовком из <code lang="csharp">GetDisplayName()</code> — «Ability Config», бейдж стоимости и предупреждение, пока **Mana Cost** равен `0`; обоими управляет <code lang="csharp">PropertyField.AddValueChanged()</code>. Поставьте стоимость `10` и верните обратно.
 7. **Создание и удаление.** Нажмите **+**: новый ассет появится рядом с выбранным и сразу выделится в списке. Наведите курсор на строку: её кнопки выделяют ассет в окне Project, а после подтверждения переносят его в корзину.
-8. **Тема FastTools.** Откройте **Tools → Aspid 🐍 → FastTools → Settings** и выберите другую **Theme** в разделе **Appearance**: <code lang="function">AddAspidTheme</code> сразу перекрасит открытый каталог.
+8. **Тема FastTools.** Откройте **Tools → Aspid 🐍 → FastTools → Settings** и выберите другую **Theme** в разделе **Appearance**: <code lang="function">AddAspidWindowTheme</code> сразу перекрасит открытый каталог.
 
 ## Куда смотреть
 
 | Файл | Что показывает |
 |---|---|
-| `Scripts/Editor/AbilityCatalogWindow.cs` | Расширения <code lang="class-name">ListView</code>, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> с <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidTheme</code> |
+| `Scripts/Editor/AbilityCatalogWindow.cs` | Расширения <code lang="class-name">ListView</code>, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> с <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidWindowTheme</code> |
 | `Scripts/Editor/EffectPicker.uss` | Окно выбора в стиле каталога, на тех же токенах |
 | `Scripts/Editor/AbilityCatalog.uss` | Цвета окна, взятые только из токенов `--aspid-colors-*` темы |
 | `Scripts/Editor/AbilityConfigEditor.cs` | Кастомный инспектор на сеттерах стиля и раскладки, <code lang="function">GetDisplayName</code> |

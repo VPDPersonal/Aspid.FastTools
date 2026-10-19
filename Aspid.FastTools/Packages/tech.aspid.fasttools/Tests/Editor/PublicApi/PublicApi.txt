@@ -1791,7 +1791,7 @@ Aspid.FastTools.UIElements.Editors.PropertyFieldExtensions
 
 Aspid.FastTools.UIElements.Editors.VisualElementExtensions
     public static class VisualElementExtensions
-    public static T AddAspidTheme<T>(this T element) where T : UnityEngine.UIElements.VisualElement
+    public static T AddAspidWindowTheme<T>(this T element) where T : UnityEngine.UIElements.VisualElement
     public static T AddOpenScriptCommand<T>(this T element, UnityEngine.Object obj) where T : UnityEngine.UIElements.VisualElement
     public static T BindTo<T>(this T element, UnityEditor.SerializedObject obj) where T : UnityEngine.UIElements.VisualElement
     public static UnityEditor.EditorWindow GetOwnerWindow(this UnityEngine.UIElements.VisualElement element)

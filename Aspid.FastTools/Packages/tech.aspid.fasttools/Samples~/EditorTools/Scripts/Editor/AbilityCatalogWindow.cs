@@ -15,10 +15,8 @@ using Aspid.FastTools.UIElements.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EditorTools.Editors
 {
-    // A two-pane editor window: every AbilityConfig in the project on the left, the selected one on the right.
-    // Built entirely in code with the fluent extensions; edits go through SerializedProperty setters and
-    // UI Toolkit binding, so Undo and dirty tracking work as in the Inspector. AddAspidTheme gives the window the
-    // FastTools palette and theme, and AbilityCatalog.uss colours it only with their --aspid-* tokens.
+    // Every AbilityConfig of the project on the left, the selected one on the right, built in code with the fluent
+    // extensions. Edits go through SerializedProperty setters and binding, so Undo works as in the Inspector.
     internal sealed class AbilityCatalogWindow : EditorWindow
     {
         private readonly List<AbilityConfig> _all = new();
@@ -42,11 +40,11 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(folder + "/AbilityCatalog.uss");
             _effectPickerStyle = AssetDatabase.LoadAssetAtPath<StyleSheet>(folder + "/EffectPicker.uss");
 
-            // The theme goes first, so the catalog's own sheet can read its tokens.
+            // The theme comes first: AbilityCatalog.uss reads its tokens.
             rootVisualElement
                 .ClearChildren()
                 .AddClass("ability-catalog")
-                .AddAspidTheme()
+                .AddAspidWindowTheme()
                 .AddStyleSheet(stylesheet)
                 .SetFlexDirection(FlexDirection.Row);
 
@@ -57,14 +55,13 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetTooltip("Search by name")
                 .AddValueChanged(evt =>
                 {
-                    // The list keeps the selected index, not the item: select the shown ability again by item.
+                    // ListView keeps the selected index, not the item.
                     ApplyFilter(evt.newValue);
                     Select(_shown);
                 })
                 .AddClass("ability-search");
 
-            // A magnifier in place of a placeholder: the light editor icon, tinted by the theme in AbilityCatalog.uss.
-            // It sits on the field, over the input's left padding: the input clips its children to its content box.
+            // On the field, not in the input: the input clips its children to its content box.
             _search.AddChild(new VisualElement()
                 .SetBackgroundImage(new StyleBackground((Texture2D)EditorGUIUtility.IconContent("d_Search Icon").image))
                 .SetPickingMode(PickingMode.Ignore)
@@ -120,8 +117,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             Select(null);
         }
 
-        // A row: the name and the stats, then two icon buttons for the row's ability, shown on hover and on the
-        // selected row. bindItem keeps the ability in userData, so the buttons follow the row when it is reused.
+        // bindItem stores the row's ability in userData, so the buttons act on what a reused row shows.
         private VisualElement MakeRow()
         {
             var row = new VisualElement()
@@ -148,7 +144,6 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                     .AddClass("ability-row__actions"));
         }
 
-        // Light editor icons with a @2x version, so they stay sharp on a Retina screen; AbilityCatalog.uss tints them.
         private static Button MakeRowButton(string icon, string tooltip) => new Button()
             .SetTooltip(tooltip)
             .AddChild(new VisualElement()
@@ -232,9 +227,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var effectNote = new Label()
                 .AddClass("ability-effect__note");
 
-            // A button drawn as a drop-down. It opens the same picker the [TypeSelector] attribute opens, driven
-            // from code: anchor it to the field, constrain it to IAbilityEffect implementations, style it like the
-            // catalog with EffectPicker.uss and write the result into the string property.
+            // A button drawn as a drop-down that opens the [TypeSelector] picker from code, styled by EffectPicker.uss.
             var effectField = new Button()
                 .SetFlexGrow(1)
                 .AddChild(effectIcon)
@@ -260,8 +253,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(new Label("Effect").AddClass("ability-label"))
                 .AddChild(effectField);
 
-            // Shown only while the balance differs from the defaults. Chainable typed setters write both values and
-            // apply them once, so a single Undo reverts the reset.
+            // Typed setters apply both values once, so one Undo reverts the reset.
             var defaults = ReadDefaults();
             var resetToDefaults = new Button()
                 .SetTextSelf("Reset to defaults")
@@ -318,7 +310,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                     ? DisplayStyle.Flex
                     : DisplayStyle.None);
 
-            // The field shows the name, icon and tooltip that [TypeSelectorDisplay] gives the type in the picker.
+            // The name, icon and tooltip that [TypeSelectorDisplay] gives the effect in the picker.
             void RefreshEffect()
             {
                 var type = config.EffectType;
@@ -354,7 +346,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             Select(config);
         }
 
-        // Undo does not bring a deleted asset back, so the window asks first and moves the file to the trash.
+        // Undo cannot restore a deleted asset, so the window asks first and moves it to the trash.
         private void DeleteAsset(AbilityConfig config)
         {
             var path = AssetDatabase.GetAssetPath(config);
@@ -370,12 +362,12 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             if (!AssetDatabase.MoveAssetToTrash(path))
                 return;
 
-            // The shown ability stays selected; when it was the one deleted, the ability below takes its place.
+            // When the shown ability is deleted, the one below takes its place.
             Reload();
             Select(!wasShown ? _shown : _filtered.Count == 0 ? null : _filtered[Math.Clamp(index, 0, _filtered.Count - 1)]);
         }
 
-        // The defaults are the field initializers of AbilityConfig, so a fresh instance holds them.
+        // A fresh instance holds the field initializers.
         private static (int ManaCost, float Cooldown) ReadDefaults()
         {
             var defaults = CreateInstance<AbilityConfig>();

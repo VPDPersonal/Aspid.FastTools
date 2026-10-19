@@ -6,10 +6,6 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
-    /// <summary>
-    /// A style sheet passed to TypeSelectorWindow.Show styles the selector in the Aspid palette of a window, light on
-    /// the light skin, with the sheet on top; without one the selector keeps the look of Unity's popups.
-    /// </summary>
     internal sealed class TypeSelectorWindowTests
     {
         private const string ProbePath = "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/AspidThemeProbe.uss";

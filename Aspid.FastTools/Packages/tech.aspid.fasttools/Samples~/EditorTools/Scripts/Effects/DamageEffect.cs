@@ -3,8 +3,7 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EditorTools
 {
-    // TypeSelectorDisplay sets the label, group, tooltip and icon of the type in the picker; the catalog's Effect
-    // field shows the same name and icon.
+    // TypeSelectorDisplay sets the picker label, group, tooltip and icon; the catalog's Effect field shows them too.
     /// <summary>
     /// <see cref="IAbilityEffect"/> that describes periodic damage.
     /// </summary>

@@ -234,7 +234,7 @@ var window = title.GetOwnerWindow();
 
 ```csharp
 rootVisualElement
-    .AddAspidTheme()
+    .AddAspidWindowTheme()
     .AddStyleSheet(catalogSheet);
 ```
 
