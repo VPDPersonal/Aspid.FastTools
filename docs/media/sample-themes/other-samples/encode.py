@@ -12,6 +12,6 @@ for sample,slug,crop in items:
  for theme,gif in themes:
   ff('-i',root/f'{slug}-{theme}.mkv','-filter_complex',f'crop={crop},split[v][p];[p]palettegen=max_colors=256[pal];[v][pal]paletteuse=dither=sierra2_4a','-loop','0',images/gif)
 # The EditorTools GIFs are composed from catalog/<theme>/ with the asp-unity-capture skill (compose.py + encode.sh);
-# the gallery previews are the idle grab with the header, 16:9 at the gallery size.
+# the gallery previews are the idle grab of the whole window, 16:9 at the gallery size.
 for theme,suffix in [('dark',''),('light','-light')]:
  ff('-i',root/'catalog'/theme/'idle.png','-vf','crop=2000:1125:0:0,scale=1440:810:flags=lanczos','-frames:v','1',repo/'Website/static/img/samples'/f'ability-catalog{suffix}.png')
