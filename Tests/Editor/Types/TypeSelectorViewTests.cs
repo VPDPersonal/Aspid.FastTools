@@ -13,6 +13,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 {
     // Keyboard and preselection behaviour of the picker view and the missing-type handling of TypeField, driven in
     // a live panel because list focus and change events need one.
+    [Category("Graphics")]
     internal sealed class TypeSelectorViewTests
     {
         private const string MissingName = "Missing.Namespace.GoneType, Missing.Assembly";

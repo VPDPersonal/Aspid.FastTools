@@ -14,6 +14,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         public string typeName;
     }
 
+    [Category("Graphics")]
     internal sealed class TypeMissingRepairTests
     {
         private interface IRepairProbe { }
