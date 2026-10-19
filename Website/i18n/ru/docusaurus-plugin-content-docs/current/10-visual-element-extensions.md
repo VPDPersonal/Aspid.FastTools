@@ -230,6 +230,22 @@ var window = title.GetOwnerWindow();
 
 Возвращает окно элемента. Если оно не найдено — активное окно, затем окно под курсором; если нет ни одного — <code lang="csharp">null</code>.
 
+### Тема FastTools
+
+```csharp
+rootVisualElement
+    .AddAspidWindowTheme()
+    .AddStyleSheet(catalogSheet);
+```
+
+Окно получает цвета окон FastTools: тему из раздела **Appearance** в настройках FastTools, включая темы проекта, а на светлом скине редактора — светлую палитру. Новый выбор темы перекрашивает окно сразу. Свой стиль раскрашивайте токенами `--aspid-colors-*`:
+
+```css
+.ability-sidebar {
+    background-color: var(--aspid-colors-surface-card);
+}
+```
+
 ## Пример в пакете
 
 Окно каталога и инспектор <code lang="class-name">AbilityConfig</code> в примере [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) собраны на этих расширениях.

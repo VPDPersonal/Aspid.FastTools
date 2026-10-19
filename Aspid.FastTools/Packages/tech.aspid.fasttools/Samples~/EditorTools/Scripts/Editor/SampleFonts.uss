@@ -3,7 +3,7 @@
     -unity-font: url("../../Fonts/iAWriterQuattroS-Regular.ttf");
 }
 
-.ability-catalog #catalogTitle, .ability-inspector .sample-title {
+.ability-catalog .ability-title, .ability-inspector .sample-title {
     -unity-font: url("../../Fonts/IBMPlexSerif-Regular.ttf");
 }
 

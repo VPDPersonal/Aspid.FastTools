@@ -119,6 +119,6 @@ EditorApplication.delayCall += () =>
 
 ## Пример в пакете
 
-В [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) кнопка **Halve cooldown, +5 MP** записывает два свойства через <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>.
+В [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) кнопка **Reset to defaults** записывает два свойства через <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>.
 
-![Кнопка Halve cooldown, +5 MP меняет стоимость и перезарядку, а Undo возвращает прежние значения.](../../../../tutorials/EditorTools/Images/demo.gif)
+![Кнопка Reset to defaults возвращает стоимости и перезарядке значения по умолчанию, а Undo — прежние значения.](../../../../tutorials/EditorTools/Images/demo.gif)

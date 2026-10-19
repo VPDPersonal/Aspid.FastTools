@@ -119,6 +119,6 @@ EditorApplication.delayCall += () =>
 
 ## Package sample
 
-In [EditorTools](../tutorials/EditorTools/README.md), the **Halve cooldown, +5 MP** button writes two properties with <code lang="function">SetFloat</code> and <code lang="function">SetIntAndApply</code>.
+In [EditorTools](../tutorials/EditorTools/README.md), the **Reset to defaults** button writes two properties with <code lang="function">SetFloat</code> and <code lang="function">SetIntAndApply</code>.
 
-![The Halve cooldown, +5 MP button changes the cost and the cooldown, and Undo restores them.](../tutorials/EditorTools/Images/demo.gif)
+![The Reset to defaults button returns the cost and the cooldown to their defaults, and Undo restores them.](../tutorials/EditorTools/Images/demo.gif)

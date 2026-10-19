@@ -1771,6 +1771,7 @@ Aspid.FastTools.Types.Editors.TypeSelectorWindow
     public sealed class TypeSelectorWindow : UnityEditor.EditorWindow
     public TypeSelectorWindow()
     public static void Show(UnityEngine.Rect screenRect, Aspid.FastTools.Types.Editors.TypeSelectorFilter filter = default, string assemblyQualifiedName = "", System.Action<string> onSelected = null)
+    public static void Show(UnityEngine.Rect screenRect, Aspid.FastTools.Types.Editors.TypeSelectorFilter filter, string assemblyQualifiedName, System.Action<string> onSelected, UnityEngine.UIElements.StyleSheet styleSheet)
 
 Aspid.FastTools.UIElements.Editors.EnumFlagsFieldExtensions
     public static class EnumFlagsFieldExtensions
@@ -1790,6 +1791,7 @@ Aspid.FastTools.UIElements.Editors.PropertyFieldExtensions
 
 Aspid.FastTools.UIElements.Editors.VisualElementExtensions
     public static class VisualElementExtensions
+    public static T AddAspidWindowTheme<T>(this T element) where T : UnityEngine.UIElements.VisualElement
     public static T AddOpenScriptCommand<T>(this T element, UnityEngine.Object obj) where T : UnityEngine.UIElements.VisualElement
     public static T BindTo<T>(this T element, UnityEditor.SerializedObject obj) where T : UnityEngine.UIElements.VisualElement
     public static UnityEditor.EditorWindow GetOwnerWindow(this UnityEngine.UIElements.VisualElement element)

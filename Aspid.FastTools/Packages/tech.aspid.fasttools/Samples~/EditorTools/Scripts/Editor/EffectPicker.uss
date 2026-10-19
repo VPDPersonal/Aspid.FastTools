@@ -1,0 +1,78 @@
+/* The effect picker in the catalog's look, through the same tokens. */
+
+.aspid-fasttools-type-selector {
+    background-color: var(--aspid-colors-surface-card);
+    /* Search bar and footer on the canvas, as the catalog's list. */
+    --aspid-colors-bg-dark: var(--aspid-colors-surface-canvas);
+    /* Row hover and selection as in the catalog's list. */
+    --aspid-colors-status-info-shade-darkness: var(--aspid-colors-overlay-hover);
+    --aspid-colors-status-info-shade-dark: var(--aspid-colors-accent-tint);
+}
+
+/* The sample font on text only: the check, star and arrow glyphs need the editor font. */
+.aspid-fasttools-type-selector__breadcrumb,
+.aspid-fasttools-type-selector ToolbarSearchField TextElement,
+.aspid-fasttools-type-selector__item-title,
+.aspid-fasttools-type-selector__item-context,
+.aspid-fasttools-type-selector__item-count,
+.aspid-fasttools-type-selector__empty-hint,
+.aspid-fasttools-type-selector__error,
+.aspid-fasttools-type-selector__footer-hint {
+    -unity-font-definition: initial;
+    -unity-font: url("../../Fonts/iAWriterQuattroS-Regular.ttf");
+}
+
+.aspid-fasttools-type-selector__header {
+    min-height: 32px;
+    padding: 2px 10px;
+}
+
+.aspid-fasttools-type-selector__breadcrumb,
+.aspid-fasttools-type-selector ToolbarSearchField TextElement,
+.aspid-fasttools-type-selector__search-field .unity-base-text-field__input {
+    font-size: 14px;
+}
+
+.aspid-fasttools-type-selector .unity-collection-view__item,
+.aspid-fasttools-type-selector__item-content {
+    height: 30px;
+}
+
+.aspid-fasttools-type-selector
+    .unity-collection-view__item.aspid-fasttools-type-selector__item--after-pinned {
+    height: 39px;
+}
+
+.aspid-fasttools-type-selector__item-content {
+    padding-left: 7px;
+    border-left-width: 3px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+
+.aspid-fasttools-type-selector .unity-collection-view__item--selected .aspid-fasttools-type-selector__item-content {
+    border-left-color: var(--aspid-colors-accent-text-light);
+}
+
+.aspid-fasttools-type-selector__item-title {
+    font-size: 14px;
+}
+
+.aspid-fasttools-type-selector__item-icon,
+.aspid-fasttools-type-selector__item-glyph {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+.aspid-fasttools-type-selector__item-count,
+.aspid-fasttools-type-selector__item-context {
+    font-size: 12px;
+}
+
+.aspid-fasttools-type-selector__footer {
+    padding: 6px 10px;
+}
+
+.aspid-fasttools-type-selector__footer-hint {
+    font-size: 13px;
+}

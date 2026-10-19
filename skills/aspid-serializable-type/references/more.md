@@ -50,6 +50,9 @@ TypeSelectorWindow.Show(
   `Predicate`, `AdditionalTypes`, `ArgumentFilter`, `InferredArgumentFilter`, `IncludeHidden`, `HideNoneOption`.
 - `assemblyQualifiedName: ""` (default) marks `<None>` as current; `null` marks nothing.
 - Picking an open generic type walks the user through its arguments and returns the closed type's name.
+- The overload with a fifth `StyleSheet styleSheet` argument styles the picker like the calling window: it takes the
+  FastTools palette and theme instead of Unity's popup colours, then the sheet; its root has the
+  `aspid-fasttools-type-selector` class and reads the `--aspid-colors-...` tokens.
 
 ## ComponentTypeSelector
 
