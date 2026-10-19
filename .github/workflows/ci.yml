@@ -365,9 +365,9 @@ jobs:
           done
           exit 1
 
-      # Exit code 0: every test passed; 2: some failed; anything else: the run broke before it wrote results. 6000.6
-      # is sometimes SIGKILLed (137) as it opens the Library of the first pass, as it was with a restored Library
-      # cache, so a broken pass gets one more try on a fresh Library and the same seat.
+      # A pass without a results file broke before its tests ran: 6000.6 is sometimes SIGKILLed (137) as it opens the
+      # Library of the first pass, as it was with a restored Library cache. It gets one more try on a fresh Library
+      # and the same seat. The exit code does not tell a broken run from failed tests: game-ci exits 1 for both.
       # PlayerCompilationTests fails on a missing player support or com.unity.mathematics only with
       # -aspidFastToolsStrictSetup. The project has no Code Coverage package, so coverage is off: it only added
       # -debugCodeOptimization. Both container variables go in one --dockerEnv, one per line: of repeated
@@ -384,9 +384,10 @@ jobs:
               --customParameters="-aspidFastToolsStrictSetup $PASS_PARAMETERS" \
               --dockerEnv="$(printf 'SKIP_ACTIVATION=true\nCOVERAGE_ENABLED=false')"
           }
+          results="unity-test-results/$PASS/editmode-results.xml"
           code=0
           run_pass || code=$?
-          if [ "$code" != 0 ] && [ "$code" != 2 ]; then
+          if [ ! -f "$results" ]; then
             echo "::warning::Unity EditMode $PASS broke (exit code $code); trying once more on a fresh Library."
             # Whether the runner killed Unity for memory: 6000.6 loses its Editor or its script compiler this way.
             echo "::group::Memory after the broken pass"
@@ -399,6 +400,7 @@ jobs:
             run_pass || code=$?
           fi
           echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+          [ -f "$results" ] && echo "results=true" >> "$GITHUB_OUTPUT" || echo "results=false" >> "$GITHUB_OUTPUT"
 
       - id: graphics
         name: EditMode tests with graphics
@@ -453,17 +455,20 @@ jobs:
       - name: Fail on a failed test run
         if: always() && steps.activate.outcome == 'success'
         env:
-          NOGRAPHICS: ${{ steps.nographics.outputs.exit-code }}
-          GRAPHICS: ${{ steps.graphics.outputs.exit-code }}
+          NOGRAPHICS: ${{ steps.nographics.outputs.exit-code }}:${{ steps.nographics.outputs.results }}
+          GRAPHICS: ${{ steps.graphics.outputs.exit-code }}:${{ steps.graphics.outputs.results }}
         run: |
           status=0
           for pass in "without graphics:$NOGRAPHICS" "with graphics:$GRAPHICS"; do
-            code="${pass##*:}"
-            case "$code" in
-              0) ;;
-              2) echo "::error::Unity EditMode ${pass%%:*}: some tests failed; see the summary."; status=1 ;;
-              *) echo "::error::Unity EditMode ${pass%%:*} broke before it wrote results (exit code ${code:-none})."; status=1 ;;
-            esac
+            IFS=: read -r name code results <<<"$pass"
+            if [ "$code" = 0 ]; then
+              continue
+            elif [ "$results" = true ]; then
+              echo "::error::Unity EditMode $name: some tests failed; see the summary."
+            else
+              echo "::error::Unity EditMode $name broke before it wrote results (exit code ${code:-none})."
+            fi
+            status=1
           done
           exit $status
 
