@@ -369,7 +369,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             // When the shown ability is deleted, the one below takes its place.
             Reload();
             Select(!wasShown ? _shown : _filtered.Count == 0 ? null : _filtered[Math.Clamp(index, 0, _filtered.Count - 1)]);
-            if (wasShown) _picked = _shown;
+            if (ReferenceEquals(config, _picked)) _picked = _shown;
         }
 
         // A fresh instance holds the field initializers.
