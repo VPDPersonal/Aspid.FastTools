@@ -30,6 +30,9 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 - After a change to public API or its XML docs, run `npm run api` in `Website/` and commit `Website/api/` in the same
   PR. Steps for a worktree: `.claude/skills/docs-site/references/api-reference.md`. A skill in `skills/` that
   describes that API is updated in the same PR too.
+- A test fixture that shows an EditorWindow or draws IMGUI in one gets `[Category("Graphics")]`. CI runs every other
+  test under `-nographics` and only this category with a graphics device; without the category such a test fails
+  in CI. A runtime panel (`TestPanel`) needs no graphics device.
 
 ## Checks
 
