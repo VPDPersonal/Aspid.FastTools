@@ -188,6 +188,29 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 "Default must leave only the palettes.");
         }
 
+        [UnityTest]
+        public IEnumerator AddAspidWindowTheme_GivesAnElementThePalettesTheThemeAndTheSkin()
+        {
+            yield return null;
+
+            AspidThemeSettings.Theme = AspidTheme.Venom;
+            var element = new VisualElement().AddAspidWindowTheme();
+            _panel.Root.Add(element);
+
+            var dark = Resources.Load<StyleSheet>(AspidStyles.DefaultStyleSheet);
+            var light = Resources.Load<StyleSheet>(AspidStyles.LightStyleSheet);
+            var venom = Resources.Load<StyleSheet>(AspidStyles.VenomThemeStyleSheet);
+            CollectionAssert.AreEqual(new[] { dark, light, venom }, StyleSheets(element),
+                "The element must take both palettes and the picked theme.");
+
+            Assert.AreEqual(!EditorGUIUtility.isProSkin, element.ClassListContains(AspidStyles.PaletteLightClass),
+                "The palette must follow the editor skin.");
+
+            AspidThemeSettings.CustomTheme = _probe;
+            CollectionAssert.AreEqual(new[] { dark, light, _probe }, StyleSheets(element),
+                "The element must follow a change of the theme.");
+        }
+
         [Test]
         public void PickingBuiltInTheme_LeavesCustomTheme()
         {
