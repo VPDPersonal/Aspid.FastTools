@@ -33,8 +33,8 @@
 | Файл | Что показывает |
 |---|---|
 | `Scripts/Editor/AbilityCatalogWindow.cs` | Расширения <code lang="class-name">ListView</code>, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> и <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> с <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">GetDisplayName</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidWindowTheme</code> |
-| `Scripts/Editor/EffectPicker.uss` | Окно выбора в стиле каталога, на тех же токенах |
-| `Scripts/Editor/AbilityCatalog.uss` | Цвета окна, взятые только из токенов `--aspid-colors-*` темы |
+| `Styles/EffectPicker.uss` | Окно выбора в стиле каталога, на тех же токенах |
+| `Styles/AbilityCatalog.uss` | Цвета окна, взятые только из токенов `--aspid-colors-*` темы |
 | `Scripts/AbilityConfig.cs` | Данные; <code lang="csharp">[TypeSelector]</code> на строке эффекта даёт инспектору ассета то же окно выбора |
 | `Scripts/Effects/` | Классы эффектов, которые предлагает окно выбора, с именами, группой и иконками из <code lang="csharp">[TypeSelectorDisplay]</code> |
 

@@ -33,8 +33,8 @@ The Reset to defaults button returns the cost and the cooldown to their defaults
 | File | Shows |
 |---|---|
 | `Scripts/Editor/AbilityCatalogWindow.cs` | <code lang="class-name">ListView</code> extensions, <code lang="function">BindTo</code>, <code lang="function">SetFloat</code> and <code lang="function">SetIntAndApply</code>, <code lang="csharp">TypeSelectorWindow.Show()</code> with a <code lang="class-name">TypeSelectorFilter</code>, <code lang="function">GetDisplayName</code>, <code lang="function">AddOpenScriptCommand</code>, <code lang="function">AddAspidWindowTheme</code> |
-| `Scripts/Editor/EffectPicker.uss` | The picker in the catalog's look, through the same tokens |
-| `Scripts/Editor/AbilityCatalog.uss` | The window's colours, taken only from the `--aspid-colors-*` tokens of the theme |
+| `Styles/EffectPicker.uss` | The picker in the catalog's look, through the same tokens |
+| `Styles/AbilityCatalog.uss` | The window's colours, taken only from the `--aspid-colors-*` tokens of the theme |
 | `Scripts/AbilityConfig.cs` | The data; <code lang="csharp">[TypeSelector]</code> on the effect string gives the asset's Inspector the same picker |
 | `Scripts/Effects/` | The effect classes the picker offers, with <code lang="csharp">[TypeSelectorDisplay]</code> names, a group and icons |
 
