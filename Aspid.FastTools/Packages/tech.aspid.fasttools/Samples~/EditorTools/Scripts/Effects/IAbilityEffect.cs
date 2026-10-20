@@ -12,6 +12,6 @@ namespace Aspid.FastTools.Samples.EditorTools
         /// </summary>
         /// <param name="ability">Ability settings used in the description.</param>
         /// <returns>Effect description.</returns>
-        public string Describe(AbilityConfig ability);
+        string Describe(AbilityConfig ability);
     }
 }

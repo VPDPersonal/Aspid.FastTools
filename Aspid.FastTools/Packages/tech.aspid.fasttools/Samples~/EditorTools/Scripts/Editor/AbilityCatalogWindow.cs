@@ -448,12 +448,16 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             }
         }
 
-        // The sheets lie in the Styles folder next to Scripts, wherever the sample is imported.
+        // The sheets lie in the Styles folder next to Scripts, wherever the sample is imported. A renamed Scripts
+        // folder leaves the window unstyled but working.
         private StyleSheet LoadStyleSheet(string fileName)
         {
             var script = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
-            var sample = script[..script.LastIndexOf("/Scripts/", StringComparison.Ordinal)];
-            return AssetDatabase.LoadAssetAtPath<StyleSheet>($"{sample}/Styles/{fileName}");
+            var scripts = script.LastIndexOf("/Scripts/", StringComparison.Ordinal);
+
+            return scripts < 0
+                ? null
+                : AssetDatabase.LoadAssetAtPath<StyleSheet>($"{script[..scripts]}/Styles/{fileName}");
         }
 
         // Asset paths use '/' on every platform; Path.GetDirectoryName would turn it into '\' on Windows.
