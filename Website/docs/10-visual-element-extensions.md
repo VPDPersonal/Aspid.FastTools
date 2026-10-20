@@ -248,6 +248,6 @@ The window takes the colours of the FastTools windows: the theme picked under **
 
 ## Package sample
 
-The catalog window and the <code lang="class-name">AbilityConfig</code> inspector in the [EditorTools](../tutorials/EditorTools/README.md) sample are built with these extensions.
+The catalog window of the [EditorTools](../tutorials/EditorTools/README.md) sample is built with these extensions.
 
 ![The Ability Catalog window from the EditorTools sample](../tutorials/EditorTools/Images/demo.gif)

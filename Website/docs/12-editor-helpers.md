@@ -32,6 +32,6 @@ Both methods return <code lang="csharp">string.Empty</code> for a <code lang="cs
 
 ## Package sample
 
-In [EditorTools](../tutorials/EditorTools/README.md), <code lang="csharp">GetDisplayName()</code> titles the custom inspector of the <code lang="class-name">AbilityConfig</code> asset.
+In [EditorTools](../tutorials/EditorTools/README.md), <code lang="csharp">GetDisplayName()</code> names the <code lang="class-name">AbilityConfig</code> script in the tooltip of the ability title.
 
 ![The Ability Catalog window from the EditorTools sample](../tutorials/EditorTools/Images/demo.gif)

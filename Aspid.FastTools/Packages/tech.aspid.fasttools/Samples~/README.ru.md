@@ -9,7 +9,7 @@
 | [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/enum-values) | Персонаж на плитках поверхностей: оба варианта `EnumValues`, значения по умолчанию, правила поиска для `[Flags]` |
 | [Types](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/types) | Спавнер врагов: `SerializableMonoScript<T>`, `SerializableType<T>`, `[TypeSelectorDisplay]`, `[TypeSelector]` со ссылкой на член, `ComponentTypeSelector` |
 | [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/serialize-references) | Турель с полиморфным оружием: пикер `[SerializeReference]` во всех формах поля, сломанные ассеты для инструментов ремонта, IMGUI-инспектор |
-| [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/editor-tools) | Окно редактора и инспектор: fluent-расширения `VisualElement`, сеттеры `SerializedProperty`, editor-хелперы, `TypeSelectorWindow` |
+| [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/editor-tools) | Окно редактора: fluent-расширения `VisualElement`, сеттеры `SerializedProperty`, editor-хелперы, `TypeSelectorWindow` |
 | [ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/profiler-markers) | Симуляция стаи: сгенерированное дерево маркеров в Profiler |
 
 ## Тема для записи

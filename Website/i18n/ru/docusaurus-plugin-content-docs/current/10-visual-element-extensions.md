@@ -248,6 +248,6 @@ rootVisualElement
 
 ## Пример в пакете
 
-Окно каталога и инспектор <code lang="class-name">AbilityConfig</code> в примере [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) собраны на этих расширениях.
+Окно каталога в примере [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md) собрано на этих расширениях.
 
 ![Окно Ability Catalog из примера EditorTools](../../../../tutorials/EditorTools/Images/demo.gif)
