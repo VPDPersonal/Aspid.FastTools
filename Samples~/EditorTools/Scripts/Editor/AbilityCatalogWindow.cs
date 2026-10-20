@@ -37,9 +37,11 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
         private void CreateGUI()
         {
-            var folder = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this)));
-            var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(folder + "/AbilityCatalog.uss");
-            _effectPickerStyle = AssetDatabase.LoadAssetAtPath<StyleSheet>(folder + "/EffectPicker.uss");
+            // The sheets lie in the Styles folder of the sample, two levels above Scripts/Editor.
+            var script = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
+            var sample = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(script)));
+            var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(sample + "/Styles/AbilityCatalog.uss");
+            _effectPickerStyle = AssetDatabase.LoadAssetAtPath<StyleSheet>(sample + "/Styles/EffectPicker.uss");
 
             // The theme comes first: AbilityCatalog.uss reads its tokens.
             rootVisualElement

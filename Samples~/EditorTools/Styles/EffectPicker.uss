@@ -19,7 +19,7 @@
 .aspid-fasttools-type-selector__error,
 .aspid-fasttools-type-selector__footer-hint {
     -unity-font-definition: initial;
-    -unity-font: url("../../Fonts/iAWriterQuattroS-Regular.ttf");
+    -unity-font: url("../Fonts/iAWriterQuattroS-Regular.ttf");
 }
 
 .aspid-fasttools-type-selector__header {
