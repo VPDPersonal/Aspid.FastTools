@@ -19,17 +19,56 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
     // extensions. Edits go through SerializedProperty setters and binding, so Undo works as in the Inspector.
     internal sealed class AbilityCatalogWindow : EditorWindow
     {
-        private readonly List<AbilityConfig> _all = new();
-        private readonly List<AbilityConfig> _filtered = new();
+        private const string SearchIcon = "d_Search Icon";
+        private const string SelectAssetIcon = "d_Project";
+        private const string DeleteIcon = "d_clear";
+
+        // The classes and names that AbilityCatalog.uss styles.
+        private const string CatalogClass = "ability-catalog";
+        private const string SidebarClass = "ability-sidebar";
+        private const string ToolbarClass = "ability-toolbar";
+        private const string SearchClass = "ability-search";
+        private const string SearchIconClass = SearchClass + "__icon";
+
+        private const string RowClass = "ability-row";
+        private const string RowIconClass = RowClass + "__icon";
+        private const string RowActionsClass = RowClass + "__actions";
+        private const string RowButtonClass = RowClass + "__button";
+        private const string RowButtonDangerClass = RowButtonClass + "--danger";
+        private const string RowNameLabel = "abilityName";
+        private const string RowStatsLabel = "abilityStats";
+
+        private const string DetailsClass = "ability-details";
+        private const string FormClass = "ability-form";
+        private const string EmptyClass = "ability-empty";
+        private const string TitleClass = "ability-title";
+        private const string LabelClass = "ability-label";
+        private const string DescriptionClass = "ability-description";
+        private const string ActionsClass = "ability-actions";
+
+        private const string EffectClass = "ability-effect";
+        private const string EffectIconClass = EffectClass + "__icon";
+        private const string EffectNameClass = EffectClass + "__name";
+        private const string EffectArrowClass = EffectClass + "__arrow";
+        private const string EffectNoteClass = EffectClass + "__note";
+
+        private const string ButtonClass = "ability-button";
+        private const string ButtonPrimaryClass = ButtonClass + "--primary";
+        private const string ButtonIconClass = ButtonClass + "--icon";
+
+        [SerializeField] private string _filter = string.Empty;
 
         private ListView _list;
         private TextField _search;
         private VisualElement _details;
         private StyleSheet _effectPickerStyle;
+
+        private readonly List<AbilityConfig> _all = new();
+        private readonly List<AbilityConfig> _filtered = new();
+
         [NonSerialized] private AbilityConfig _shown;
         [NonSerialized] private AbilityConfig _picked;
         [NonSerialized] private SerializedObject _shownObject;
-        [SerializeField] private string _filter = string.Empty;
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Samples/Ability Catalog")]
         private static void Open() =>
@@ -37,125 +76,46 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
         private void CreateGUI()
         {
-            // The sheets lie in the Styles folder of the sample, two levels above Scripts/Editor.
-            var script = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
-            var sample = System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(System.IO.Path.GetDirectoryName(script)));
-            var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(sample + "/Styles/AbilityCatalog.uss");
-            _effectPickerStyle = AssetDatabase.LoadAssetAtPath<StyleSheet>(sample + "/Styles/EffectPicker.uss");
+            _effectPickerStyle = LoadStyleSheet(fileName: "EffectPicker.uss");
 
-            // The theme comes first: AbilityCatalog.uss reads its tokens.
-            rootVisualElement
-                .ClearChildren()
-                .AddClass("ability-catalog")
-                .AddAspidWindowTheme()
-                .AddStyleSheet(stylesheet)
-                .SetFlexDirection(FlexDirection.Row);
-
-            Reload();
-
-            _search = new TextField()
+            _search = MakeSearch();
+            _list = MakeList();
+            _details = new ScrollView()
                 .SetFlexGrow(1)
-                .SetTooltip("Search by name")
-                .AddValueChanged(evt =>
-                {
-                    // The picked ability comes back once the filter lists it again.
-                    ApplyFilter(evt.newValue);
-                    Select(_picked);
-                })
-                .AddClass("ability-search");
-
-            // On the field, not in the input: the input clips its children to its content box.
-            _search.AddChild(new VisualElement()
-                .SetBackgroundImage(new StyleBackground((Texture2D)EditorGUIUtility.IconContent("d_Search Icon").image))
-                .SetPickingMode(PickingMode.Ignore)
-                .AddClass("ability-search__icon"));
-
-            // _filter is serialized and survives a domain reload, so show it in the new search box.
-            _search.SetValueWithoutNotify(_filter);
+                .AddClass(DetailsClass);
 
             var create = new Button()
                 .SetTextSelf("+")
                 .SetTooltip("Create an ability next to the selected one")
                 .AddClicked(CreateAsset)
-                .AddClasses("ability-button", "ability-button--primary", "ability-button--icon");
+                .AddClasses(ButtonClass, ButtonPrimaryClass, ButtonIconClass);
 
             var toolbar = new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
                 .SetAlignItems(Align.Center)
                 .AddChild(_search)
                 .AddChild(create)
-                .AddClass("ability-toolbar");
-
-            _list = new ListView()
-                .SetItemsSource(_filtered)
-                .SetFixedItemHeight(60)
-                .SetSelectionType(SelectionType.Single)
-                .SetShowAlternatingRowBackgrounds(AlternatingRowBackground.None)
-                .SetMakeItem(MakeRow)
-                .SetBindItem((element, index) =>
-                {
-                    var ability = _filtered[index];
-                    element.userData = ability;
-                    element.Q<Label>("abilityName").SetTextSelf(ability.AbilityName);
-                    element.Q<Label>("abilityStats").SetTextSelf($"{ability.ManaCost} MP · {ability.Cooldown:0.##} s");
-                })
-                .AddSelectionChanged(selection => ShowDetails(_picked = selection.FirstOrDefault() as AbilityConfig))
-                .SetFlexGrow(1);
+                .AddClass(ToolbarClass);
 
             var sidebar = new VisualElement()
                 .SetWidth(260)
                 .SetFlexShrink(0)
                 .AddChild(toolbar)
                 .AddChild(_list)
-                .AddClass("ability-sidebar");
-
-            _details = new ScrollView()
-                .SetFlexGrow(1)
-                .AddClass("ability-details");
+                .AddClass(SidebarClass);
 
             rootVisualElement
+                .AddAspidWindowTheme()
+                .AddStyleSheet(LoadStyleSheet(fileName: "AbilityCatalog.uss"))
+                .AddClass(CatalogClass)
+                .SetFlexDirection(FlexDirection.Row)
                 .AddChild(sidebar)
                 .AddChild(_details);
 
+            Reload();
             Select(null);
         }
 
-        // bindItem stores the row's ability in userData, so the buttons act on what a reused row shows.
-        private VisualElement MakeRow()
-        {
-            var row = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row)
-                .SetAlignItems(Align.Center)
-                .AddClass("ability-row");
-
-            var selectAsset = MakeRowButton("d_Project", "Select the asset in the Project window")
-                .AddClicked(() => SelectAsset((AbilityConfig)row.userData));
-
-            var delete = MakeRowButton("d_clear", "Move the asset to the trash")
-                .AddClicked(() => DeleteAsset((AbilityConfig)row.userData))
-                .AddClass("ability-row__button--danger");
-
-            return row
-                .AddChild(new VisualElement()
-                    .SetFlexGrow(1)
-                    .AddChild(new Label().SetName("abilityName"))
-                    .AddChild(new Label().SetName("abilityStats")))
-                .AddChild(new VisualElement()
-                    .SetFlexDirection(FlexDirection.Row)
-                    .AddChild(selectAsset)
-                    .AddChild(delete)
-                    .AddClass("ability-row__actions"));
-        }
-
-        private static Button MakeRowButton(string icon, string tooltip) => new Button()
-            .SetTooltip(tooltip)
-            .AddChild(new VisualElement()
-                .SetBackgroundImage(new StyleBackground((Texture2D)EditorGUIUtility.IconContent(icon).image))
-                .SetPickingMode(PickingMode.Ignore)
-                .AddClass("ability-row__icon"))
-            .AddClass("ability-row__button");
-
-        // Assets created, renamed or deleted in the Project window while the window is open.
         private void OnProjectChange()
         {
             if (_list is null)
@@ -165,6 +125,79 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             Reload();
             Select(selected);
         }
+
+        // A SerializedObject holds a native copy of the asset: dispose it when the details move to another asset and
+        // when the window closes.
+        private void OnDestroy() => _shownObject?.Dispose();
+
+        private TextField MakeSearch() => new TextField()
+            .SetFlexGrow(1)
+            .SetTooltip("Search by name")
+            // _filter is serialized and survives a domain reload, so show it in the new search box.
+            .SetValue(_filter, notify: false)
+            .AddValueChanged(evt =>
+            {
+                // The picked ability comes back once the filter lists it again.
+                ApplyFilter(evt.newValue);
+                Select(_picked);
+            })
+            // On the field, not in the input: the input clips its children to its content box.
+            .AddChild(MakeIcon(LoadIcon(SearchIcon)).AddClass(SearchIconClass))
+            .AddClass(SearchClass);
+
+        private ListView MakeList() => new ListView()
+            .SetItemsSource(_filtered)
+            .SetFixedItemHeight(60)
+            .SetSelectionType(SelectionType.Single)
+            .SetShowAlternatingRowBackgrounds(AlternatingRowBackground.None)
+            .SetMakeItem(MakeRow)
+            .SetBindItem(BindRow)
+            .AddSelectionChanged(selection =>
+            {
+                _picked = selection.FirstOrDefault() as AbilityConfig;
+                ShowDetails(_picked);
+            })
+            .SetFlexGrow(1);
+
+        // BindRow stores the row's ability in userData, so the buttons act on what a reused row shows.
+        private VisualElement MakeRow()
+        {
+            var row = new VisualElement()
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .AddClass(RowClass);
+
+            var selectAsset = MakeRowButton(SelectAssetIcon, "Select the asset in the Project window")
+                .AddClicked(() => SelectAsset((AbilityConfig)row.userData));
+
+            var delete = MakeRowButton(DeleteIcon, "Move the asset to the trash")
+                .AddClicked(() => DeleteAsset((AbilityConfig)row.userData))
+                .AddClass(RowButtonDangerClass);
+
+            return row
+                .AddChild(new VisualElement()
+                    .SetFlexGrow(1)
+                    .AddChild(new Label().SetName(RowNameLabel))
+                    .AddChild(new Label().SetName(RowStatsLabel)))
+                .AddChild(new VisualElement()
+                    .SetFlexDirection(FlexDirection.Row)
+                    .AddChild(selectAsset)
+                    .AddChild(delete)
+                    .AddClass(RowActionsClass));
+        }
+
+        private void BindRow(VisualElement row, int index)
+        {
+            var ability = _filtered[index];
+            row.userData = ability;
+            row.Q<Label>(RowNameLabel).SetTextSelf(ability.AbilityName);
+            row.Q<Label>(RowStatsLabel).SetTextSelf($"{ability.ManaCost} MP · {ability.Cooldown:0.##} s");
+        }
+
+        private static Button MakeRowButton(string icon, string tooltip) => new Button()
+            .SetTooltip(tooltip)
+            .AddChild(MakeIcon(LoadIcon(icon)).AddClass(RowIconClass))
+            .AddClass(RowButtonClass);
 
         private void Reload()
         {
@@ -176,20 +209,6 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             ApplyFilter(_filter);
         }
 
-        // Keeps the selection on the same asset after a reload, falling back to the first one. The details are
-        // rebuilt only when the shown asset changes, so a field being edited keeps its focus.
-        private void Select(AbilityConfig config)
-        {
-            var index = config == null ? -1 : _filtered.IndexOf(config);
-            if (index < 0)
-                index = _filtered.Count > 0 ? 0 : -1;
-
-            var item = index < 0 ? null : _filtered[index];
-            _list.SetSelectionWithoutNotify(index < 0 ? Array.Empty<int>() : new[] { index });
-            if (item == null || !ReferenceEquals(item, _shown))
-                ShowDetails(item);
-        }
-
         private void ApplyFilter(string filter)
         {
             _filter = filter ?? string.Empty;
@@ -198,13 +217,23 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 config.AbilityName.Contains(_filter, StringComparison.OrdinalIgnoreCase)));
 
             // A shorter list drops a selection past its end and reports it as a pick of nothing; callers select again.
-            _list?.SetSelectionWithoutNotify(Array.Empty<int>());
-            _list?.RefreshItems();
+            _list.SetSelectionWithoutNotify(Array.Empty<int>());
+            _list.RefreshItems();
         }
 
-        // A SerializedObject holds a native copy of the asset: dispose it when the details move to another asset and
-        // when the window closes.
-        private void OnDestroy() => _shownObject?.Dispose();
+        // Keeps the selection on the same asset after a reload, falling back to the first one. The details are
+        // rebuilt only when the shown asset changes, so a field being edited keeps its focus.
+        private void Select(AbilityConfig config)
+        {
+            var index = config == null ? -1 : _filtered.IndexOf(config);
+            if (index < 0 && _filtered.Count > 0)
+                index = 0;
+
+            var item = index < 0 ? null : _filtered[index];
+            _list.SetSelectionWithoutNotify(index < 0 ? Array.Empty<int>() : new[] { index });
+            if (item == null || !ReferenceEquals(item, _shown))
+                ShowDetails(item);
+        }
 
         private void ShowDetails(AbilityConfig config)
         {
@@ -213,80 +242,33 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _shownObject = null;
             _shown = config;
 
+            var form = new VisualElement().AddClass(FormClass);
+            _details.AddChild(form);
+
             // Unity's == also catches an asset deleted while it was listed.
             if (config == null)
             {
-                _details.AddChild(new VisualElement()
-                    .AddClass("ability-form")
-                    .AddChild(new Label("Select an ability or create one with +.").AddClass("ability-empty")));
+                form.AddChild(new Label("Select an ability or create one with +.").AddClass(EmptyClass));
                 return;
             }
 
-            var serializedObject = _shownObject = new SerializedObject(config);
-            var effectType = serializedObject.FindProperty("_effectType");
+            var serializedObject = new SerializedObject(config);
+            _shownObject = serializedObject;
 
-            var effectIcon = new VisualElement()
-                .SetPickingMode(PickingMode.Ignore)
-                .AddClass("ability-effect__icon");
-            var effectName = new Label()
-                .AddClass("ability-effect__name");
-            var effectNote = new Label()
-                .AddClass("ability-effect__note");
+            form
+                .AddChild(MakeTitle(config, serializedObject))
+                .AddChild(MakeFields(serializedObject))
+                .AddChild(MakeEffect(config, serializedObject))
+                .AddChild(MakeActions(config, serializedObject));
+        }
 
-            // A button drawn as a drop-down that opens the [TypeSelector] picker from code, styled by EffectPicker.uss.
-            var effectField = new Button()
-                .SetFlexGrow(1)
-                .AddChild(effectIcon)
-                .AddChild(effectName)
-                .AddChild(new VisualElement().AddClasses(EnumField.arrowUssClassName, "ability-effect__arrow"))
-                .AddClass("ability-effect");
-
-            effectField.TrackSerializedObjectValue(serializedObject, _ => RefreshEffect());
-            effectField.AddClicked(() => TypeSelectorWindow.Show(
-                GUIUtility.GUIToScreenRect(effectField.worldBound),
-                new TypeSelectorFilter { Types = new[] { typeof(IAbilityEffect) } },
-                effectType.stringValue,
-                aqn =>
-                {
-                    effectType.SetStringAndApply(aqn ?? string.Empty);
-                    RefreshEffect();
-                },
-                styleSheet: _effectPickerStyle));
-
-            var effectRow = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row)
-                .SetAlignItems(Align.Center)
-                .AddChild(new Label("Effect").AddClass("ability-label"))
-                .AddChild(effectField);
-
-            // Typed setters apply both values once, so one Undo reverts the reset.
-            var defaults = ReadDefaults();
-            var resetToDefaults = new Button()
-                .SetTextSelf("Reset to defaults")
-                .SetTooltip("Resets Mana Cost and Cooldown to their default values")
-                .AddClicked(() =>
-                {
-                    serializedObject.Update();
-                    serializedObject.FindProperty("_cooldown").SetFloat(defaults.Cooldown);
-                    serializedObject.FindProperty("_manaCost").SetIntAndApply(defaults.ManaCost);
-                })
-                .AddClass("ability-button");
-            resetToDefaults.TrackSerializedObjectValue(serializedObject, _ => RefreshReset());
-
-            var actions = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row)
-                .AddChild(resetToDefaults)
-                .AddClass("ability-actions");
-
-            var description = new TextField("Description") { multiline = true }
-                .SetBindingPath("_description")
-                .AddClass("ability-description");
-
-            // GetDisplayName names the script without "(Script)": "Ability Config".
+        // GetDisplayName names the script without "(Script)": "Ability Config".
+        private Label MakeTitle(AbilityConfig config, SerializedObject serializedObject)
+        {
             var title = new Label(config.AbilityName)
                 .SetTooltip($"Double-click to open the {config.GetDisplayName()} script")
                 .AddOpenScriptCommand(config)
-                .AddClass("ability-title");
+                .AddClass(TitleClass);
 
             title.TrackSerializedObjectValue(serializedObject, _ =>
             {
@@ -294,52 +276,115 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 _list.RefreshItems();
             });
 
-            _details.AddChild(new VisualElement()
-                .AddClass("ability-form")
-                .AddChild(title)
-                // BindTo(SerializedObject) binds every PropertyField below in one call.
+            return title;
+        }
+
+        private VisualElement MakeFields(SerializedObject serializedObject) => new VisualElement()
+            .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName"))
+                .AddValueChanged(_ => _list.RefreshItems()))
+            .AddChild(new TextField("Description") { multiline = true }
+                .SetBindingPath("_description")
+                .AddClass(DescriptionClass))
+            .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")))
+            .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
+            .BindTo(serializedObject);
+
+        // A button drawn as a drop-down that opens the [TypeSelector] picker from code, styled by EffectPicker.uss.
+        private VisualElement MakeEffect(AbilityConfig config, SerializedObject serializedObject)
+        {
+            var effectType = serializedObject.FindProperty("_effectType");
+
+            var effectIcon = MakeIcon(image: null).AddClass(EffectIconClass);
+            var effectName = new Label().AddClass(EffectNameClass);
+            var effectNote = new Label().AddClass(EffectNoteClass);
+
+            var effectField = new Button()
+                .SetFlexGrow(1)
+                .AddChild(effectIcon)
+                .AddChild(effectName)
+                .AddChild(new VisualElement().AddClasses(EnumField.arrowUssClassName, EffectArrowClass))
+                .AddClass(EffectClass);
+
+            effectField.AddClicked(() => TypeSelectorWindow.Show(
+                screenRect: GUIUtility.GUIToScreenRect(effectField.worldBound),
+                filter: new TypeSelectorFilter { Types = new[] { typeof(IAbilityEffect) } },
+                assemblyQualifiedName: effectType.stringValue,
+                onSelected: aqn =>
+                {
+                    effectType.SetStringAndApply(aqn ?? string.Empty);
+                    Refresh();
+                },
+                styleSheet: _effectPickerStyle));
+
+            effectField.TrackSerializedObjectValue(serializedObject, _ => Refresh());
+            Refresh();
+
+            return new VisualElement()
                 .AddChild(new VisualElement()
-                    .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName"))
-                        .AddValueChanged(_ => _list.RefreshItems()))
-                    .AddChild(description)
-                    .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")))
-                    .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
-                    .BindTo(serializedObject))
-                .AddChild(effectRow)
-                .AddChild(effectNote)
-                .AddChild(actions));
+                    .SetFlexDirection(FlexDirection.Row)
+                    .SetAlignItems(Align.Center)
+                    .AddChild(new Label("Effect").AddClass(LabelClass))
+                    .AddChild(effectField))
+                .AddChild(effectNote);
 
-            RefreshEffect();
-            RefreshReset();
-
-            void RefreshReset() => resetToDefaults.SetDisplay(
-                config.ManaCost != defaults.ManaCost || !Mathf.Approximately(config.Cooldown, defaults.Cooldown)
-                    ? DisplayStyle.Flex
-                    : DisplayStyle.None);
-
-            // The name, icon and tooltip that [TypeSelectorDisplay] gives the effect in the picker.
-            void RefreshEffect()
+            void Refresh()
             {
                 var type = config.EffectType;
                 var display = type?.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false);
-                var icon = string.IsNullOrEmpty(display?.Icon) ? null : EditorGUIUtility.IconContent(display.Icon).image as Texture2D;
-                var note = type is null ? string.Empty : ((IAbilityEffect)Activator.CreateInstance(type)).Describe(config);
+                var icon = string.IsNullOrEmpty(display?.Icon) ? null : LoadIcon(display.Icon);
+
+                // Describe returns the end of a sentence, "deals damage every 1s", so the note capitalizes it.
+                var note = type is null
+                    ? string.Empty
+                    : ((IAbilityEffect)Activator.CreateInstance(type)).Describe(config);
+                if (note.Length > 0)
+                    note = char.ToUpperInvariant(note[0]) + note[1..];
 
                 effectField.SetTooltip(display?.Tooltip);
                 effectName.SetTextSelf(type is null ? "None" : display?.Name ?? type.Name);
+
                 effectIcon
                     .SetBackgroundImage(new StyleBackground(icon))
-                    .SetDisplay(icon != null ? DisplayStyle.Flex : DisplayStyle.None);
+                    .SetDisplay(DisplayIf(icon != null));
+
                 effectNote
-                    .SetTextSelf(note.Length > 0 ? char.ToUpperInvariant(note[0]) + note[1..] : note)
-                    .SetDisplay(note.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None);
+                    .SetTextSelf(note)
+                    .SetDisplay(DisplayIf(note.Length > 0));
             }
+        }
+
+        private static VisualElement MakeActions(AbilityConfig config, SerializedObject serializedObject)
+        {
+            var defaults = ReadDefaults();
+
+            var resetToDefaults = new Button()
+                .SetTextSelf("Reset to defaults")
+                .SetTooltip("Resets Mana Cost and Cooldown to their default values")
+                .AddClicked(() =>
+                {
+                    // Typed setters apply both values once, so one Undo reverts the reset.
+                    serializedObject.Update();
+                    serializedObject.FindProperty("_cooldown").SetFloat(defaults.Cooldown);
+                    serializedObject.FindProperty("_manaCost").SetIntAndApply(defaults.ManaCost);
+                })
+                .AddClass(ButtonClass);
+
+            resetToDefaults.TrackSerializedObjectValue(serializedObject, _ => Refresh());
+            Refresh();
+
+            return new VisualElement()
+                .SetFlexDirection(FlexDirection.Row)
+                .AddChild(resetToDefaults)
+                .AddClass(ActionsClass);
+
+            void Refresh() => resetToDefaults.SetDisplay(DisplayIf(
+                config.ManaCost != defaults.ManaCost || !Mathf.Approximately(config.Cooldown, defaults.Cooldown)));
         }
 
         private void CreateAsset()
         {
             var selected = _list.selectedItem as AbilityConfig;
-            var folder = selected == null ? "Assets" : System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(selected));
+            var folder = selected == null ? "Assets" : GetFolder(AssetDatabase.GetAssetPath(selected));
             var path = AssetDatabase.GenerateUniqueAssetPath($"{folder}/Ability.asset");
 
             var config = CreateInstance<AbilityConfig>();
@@ -350,7 +395,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _search.SetValueWithoutNotify(string.Empty);
             _filter = string.Empty;
             Reload();
-            Select(_picked = config);
+
+            _picked = config;
+            Select(config);
         }
 
         // Undo cannot restore a deleted asset, so the window asks first and moves it to the trash.
@@ -369,16 +416,28 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             if (!AssetDatabase.MoveAssetToTrash(path))
                 return;
 
-            // When the shown ability is deleted, the one below takes its place.
             Reload();
-            Select(!wasShown ? _shown : _filtered.Count == 0 ? null : _filtered[Math.Clamp(index, 0, _filtered.Count - 1)]);
-            if (ReferenceEquals(config, _picked)) _picked = _shown;
+
+            // When the shown ability is deleted, the one below takes its place.
+            if (wasShown)
+                Select(_filtered.Count > 0 ? _filtered[Math.Clamp(index, 0, _filtered.Count - 1)] : null);
+            else
+                Select(_shown);
+
+            if (ReferenceEquals(config, _picked))
+                _picked = _shown;
         }
 
-        // A fresh instance holds the field initializers.
+        private static void SelectAsset(AbilityConfig config)
+        {
+            Selection.activeObject = config;
+            EditorGUIUtility.PingObject(config);
+        }
+
         private static (int ManaCost, float Cooldown) ReadDefaults()
         {
             var defaults = CreateInstance<AbilityConfig>();
+
             try
             {
                 return (defaults.ManaCost, defaults.Cooldown);
@@ -389,10 +448,30 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             }
         }
 
-        private static void SelectAsset(AbilityConfig config)
+        // The sheets lie in the Styles folder next to Scripts, wherever the sample is imported. A renamed Scripts
+        // folder leaves the window unstyled but working.
+        private StyleSheet LoadStyleSheet(string fileName)
         {
-            Selection.activeObject = config;
-            EditorGUIUtility.PingObject(config);
+            var script = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
+            var scripts = script.LastIndexOf("/Scripts/", StringComparison.Ordinal);
+
+            return scripts < 0
+                ? null
+                : AssetDatabase.LoadAssetAtPath<StyleSheet>($"{script[..scripts]}/Styles/{fileName}");
         }
+
+        // Asset paths use '/' on every platform; Path.GetDirectoryName would turn it into '\' on Windows.
+        private static string GetFolder(string assetPath) =>
+            assetPath[..assetPath.LastIndexOf('/')];
+
+        private static VisualElement MakeIcon(Texture2D image) => new VisualElement()
+            .SetBackgroundImage(new StyleBackground(image))
+            .SetPickingMode(PickingMode.Ignore);
+
+        private static Texture2D LoadIcon(string name) =>
+            EditorGUIUtility.IconContent(name).image as Texture2D;
+
+        private static DisplayStyle DisplayIf(bool visible) =>
+            visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
 }

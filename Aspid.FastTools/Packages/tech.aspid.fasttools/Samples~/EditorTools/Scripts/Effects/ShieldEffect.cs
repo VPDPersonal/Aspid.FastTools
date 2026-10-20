@@ -14,6 +14,7 @@ namespace Aspid.FastTools.Samples.EditorTools
     public sealed class ShieldEffect : IAbilityEffect
     {
         /// <inheritdoc/>
-        public string Describe(AbilityConfig ability) => "absorbs the next hit";
+        public string Describe(AbilityConfig ability) =>
+            "absorbs the next hit";
     }
 }
