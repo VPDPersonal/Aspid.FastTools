@@ -14,19 +14,22 @@ namespace Aspid.FastTools.Samples.EditorTools
         [Tooltip("Ability name shown in the catalog.")]
         [SerializeField] private string _abilityName = "New Ability";
 
+        [TextArea]
         [Tooltip("Description shown in the ability details.")]
-        [SerializeField, TextArea] private string _description;
+        [SerializeField] private string _description;
 
+        [Min(0)]
         [Tooltip("Mana consumed by the ability.")]
-        [SerializeField, Min(0)] private int _manaCost = 10;
+        [SerializeField] private int _manaCost = 10;
 
+        [Min(0)]
         [Tooltip("Seconds between ability uses.")]
-        [SerializeField, Min(0f)] private float _cooldown = 1f;
+        [SerializeField] private float _cooldown = 1f;
 
         // Written by the catalog window through TypeSelectorWindow; the attribute gives the plain inspector
         // the same picker.
-        [TypeSelector(typeof(IAbilityEffect), Allow = TypeAllow.None)]
         [Tooltip("Effect type used to describe the ability.")]
+        [TypeSelector(typeof(IAbilityEffect), Allow = TypeAllow.None)]
         [SerializeField] private string _effectType;
 
         /// <summary>
@@ -52,6 +55,8 @@ namespace Aspid.FastTools.Samples.EditorTools
         /// <summary>
         /// Gets the selected effect type, or <see langword="null"/> when its name is empty or cannot be resolved.
         /// </summary>
-        public Type EffectType => string.IsNullOrEmpty(_effectType) ? null : Type.GetType(_effectType);
+        public Type EffectType => string.IsNullOrEmpty(_effectType)
+            ? null
+            : Type.GetType(_effectType);
     }
 }
