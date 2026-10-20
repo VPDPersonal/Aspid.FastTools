@@ -14,6 +14,7 @@ namespace Aspid.FastTools.Samples.EditorTools
     public sealed class HealEffect : IAbilityEffect
     {
         /// <inheritdoc/>
-        public string Describe(AbilityConfig ability) => $"restores health for {ability.ManaCost} MP";
+        public string Describe(AbilityConfig ability) =>
+            $"restores health for {ability.ManaCost} MP";
     }
 }
