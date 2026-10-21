@@ -2,7 +2,7 @@ using UnityEngine;
 using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Samples.Types
+namespace Aspid.FastTools.Samples.Types.Spawning
 {
     [TypeSelectorDisplay(Hidden = true)]
     public sealed class OriginPattern : ISpawnPattern

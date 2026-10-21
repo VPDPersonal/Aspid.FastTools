@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Samples.Types
+namespace Aspid.FastTools.Samples.Types.Enemies
 {
     public sealed class Archer : Enemy
     {

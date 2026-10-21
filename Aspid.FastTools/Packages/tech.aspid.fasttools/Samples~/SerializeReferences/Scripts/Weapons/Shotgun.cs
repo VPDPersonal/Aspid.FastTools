@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Samples.SerializeReferences
+namespace Aspid.FastTools.Samples.SerializeReferences.Weapons
 {
     [Serializable]
     public sealed class Shotgun : IWeapon

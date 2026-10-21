@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using System.Collections;
 using Aspid.FastTools.Types;
+using Aspid.FastTools.Samples.Types.Enemies;
+using Aspid.FastTools.Samples.Types.Spawning;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types

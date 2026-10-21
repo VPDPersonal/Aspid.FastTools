@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
+using Aspid.FastTools.Samples.SerializeReferences.Effects;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Samples.SerializeReferences
+namespace Aspid.FastTools.Samples.SerializeReferences.Weapons
 {
     [Serializable]
     public sealed class Railgun : IWeapon

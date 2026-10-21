@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
+using Aspid.FastTools.Samples.SerializeReferences.Effects;
+using Aspid.FastTools.Samples.SerializeReferences.Weapons;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
