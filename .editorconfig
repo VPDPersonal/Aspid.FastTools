@@ -4,8 +4,8 @@
 # Unity-side defaults (Runtime + Editor) first; the Roslyn solutions
 # (Generators, Analyzers) override only the namespace style at the bottom.
 #
-# Conventions that can't be expressed here (named-argument house style, usings
-# sorted by length, sealed-by-default, XML docs) live in AGENTS.md.
+# Conventions that can't be expressed here (member order, named arguments, usings
+# sorted by length, sealed-by-default, comments, XML docs) live in CODESTYLE.md.
 
 root = true
 
@@ -103,13 +103,24 @@ csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 
+#### Rider / ReSharper layout (`dotnet format` ignores these keys).
+# One attribute per bracket pair: `[SerializeField] [Min(0)]`, never `[SerializeField, Min(0)]`.
+resharper_csharp_force_attribute_style = separate
+# Field attributes mix lines on purpose (`[TypeSelector(...)]` above, `[SerializeField]` inline);
+# no placement option expresses that, so the formatter keeps the arrangement as written.
+resharper_csharp_keep_existing_attribute_arrangement = true
+# Method body goes on the line after `=>`; a ternary puts each branch on its own line.
+resharper_csharp_place_expr_method_on_single_line = false
+resharper_csharp_wrap_ternary_expr_style = chop_always
+
 #### Naming — symbol groups.
 dotnet_naming_symbols.constant_fields.applicable_kinds = field
 dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
-dotnet_naming_symbols.private_instance_fields.applicable_kinds = field
-dotnet_naming_symbols.private_instance_fields.applicable_accessibilities = private, private_protected
+# No required modifiers: `static readonly` fields are `_camelCase` too.
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, private_protected
 
 dotnet_naming_symbols.non_private_fields.applicable_kinds = field
 dotnet_naming_symbols.non_private_fields.applicable_accessibilities = public, internal, protected, protected_internal
@@ -137,7 +148,7 @@ dotnet_naming_rule.constants_are_pascal_case.symbols = constant_fields
 dotnet_naming_rule.constants_are_pascal_case.style = pascal_case_style
 dotnet_naming_rule.constants_are_pascal_case.severity = warning
 
-dotnet_naming_rule.private_fields_are_underscore_camel.symbols = private_instance_fields
+dotnet_naming_rule.private_fields_are_underscore_camel.symbols = private_fields
 dotnet_naming_rule.private_fields_are_underscore_camel.style = underscore_camel_case_style
 dotnet_naming_rule.private_fields_are_underscore_camel.severity = warning
 
