@@ -276,8 +276,10 @@ jobs:
           # commits with a run of these tests decides. A failed run there is not looked past; a cancelled or missing
           # one is (an older push cancelled by a newer one, a version that only a run without `unity-quick` tests).
           # A rebase leaves no tested commit in the PR, and a merge of main brings its changes into the diff.
+          # Only a run with the Unity secrets looks: the check runs are matched by name, and a fork or Dependabot PR
+          # could add a workflow with jobs of these names that pass without testing, then delete it in a later commit.
           passed=""
-          if [ "$EVENT" = pull_request ] && [ "$files" != all ]; then
+          if [ "$EVENT" = pull_request ] && [ "$files" != all ] && [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; then
             for sha in $(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/commits?per_page=100" --jq '.[].sha' | tail -n 20 | tac); do
               verdict="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs?per_page=100" | jq -r '
                 [.[].check_runs[] | select(.app.slug == "github-actions")]
