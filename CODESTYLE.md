@@ -17,7 +17,7 @@ Rules beyond `.editorconfig`. They apply to the package, the samples, the genera
 4. Other instance fields.
 5. Auto-properties.
 6. Constructors.
-7. Properties with a body.
+7. Properties with a body, and abstract properties.
 8. Unity messages, in lifecycle order.
 9. Public methods.
 10. Private methods.
