@@ -244,7 +244,8 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           BEFORE: ${{ github.event.before }}
           HEAD: ${{ github.event.pull_request.head.sha }}
-          BASE: ${{ github.event.pull_request.base.sha }}
+          # The branch, not base.sha: the base.sha of a PR moves only when its head does, so a label event reads an old one.
+          BASE: ${{ github.event.pull_request.base.ref }}
           QUICK: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'unity-quick') }}
           # Every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
           # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
