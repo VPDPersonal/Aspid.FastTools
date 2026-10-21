@@ -33,8 +33,7 @@
     height: 30px;
 }
 
-.aspid-fasttools-type-selector
-    .unity-collection-view__item.aspid-fasttools-type-selector__item--after-pinned {
+.aspid-fasttools-type-selector .unity-collection-view__item.aspid-fasttools-type-selector__item--after-pinned {
     height: 39px;
 }
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     public class Grunt : Enemy

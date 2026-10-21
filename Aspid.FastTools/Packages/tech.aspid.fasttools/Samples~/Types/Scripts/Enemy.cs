@@ -1,6 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Types;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     public abstract class Enemy : MonoBehaviour
@@ -8,9 +9,9 @@ namespace Aspid.FastTools.Samples.Types
         private static readonly int _colorId = Shader.PropertyToID("_Color");
 
         [SerializeField] private ComponentTypeSelector _kind;
-        [SerializeField, Min(1f)] private float _health = 100f;
-        [SerializeField, Min(0.1f)] private float _speed = 3f;
-        [SerializeField, Min(1f)] private float _lifetime = 12f;
+        [SerializeField] [Min(1f)] private float _health = 100f;
+        [SerializeField] [Min(0.1f)] private float _speed = 3f;
+        [SerializeField] [Min(1f)] private float _lifetime = 12f;
 
         private float _age;
 

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using Aspid.FastTools.Types;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     public sealed class EnemySpawner : MonoBehaviour
@@ -13,17 +14,17 @@ namespace Aspid.FastTools.Samples.Types
         [TypeSelector(nameof(_enemyType))]
         [SerializeField] private string _eliteType;
 
-        [SerializeField, Min(0)] private int _eliteEvery = 4;
+        [SerializeField] [Min(0)] private int _eliteEvery = 4;
 
         [TypeSelector(Allow = TypeAllow.None)]
         [SerializeField] private SerializableType<ISpawnPattern> _pattern = new(typeof(CirclePattern));
 
-        [SerializeField, Range(1, 32)] private int _count = 8;
-        [SerializeField, Min(1f)] private float _radius = 8f;
-        [SerializeField, Min(0.5f)] private float _interval = 6f;
+        [SerializeField] [Range(1, 32)] private int _count = 8;
+        [SerializeField] [Min(1f)] private float _radius = 8f;
+        [SerializeField] [Min(0.5f)] private float _interval = 6f;
 
-        [SerializeField, HideInInspector] private Mesh _body;
-        [SerializeField, HideInInspector] private Material _presentationMaterial;
+        [SerializeField] private Mesh _body;
+        [SerializeField] private Material _presentationMaterial;
 
         private int _spawned;
         private ISpawnPattern _patternInstance;
@@ -45,12 +46,16 @@ namespace Aspid.FastTools.Samples.Types
             if (_patternInstance?.GetType() != patternType)
                 _patternInstance = (ISpawnPattern)Activator.CreateInstance(patternType);
 
-            var eliteType = string.IsNullOrEmpty(_eliteType) ? null : Type.GetType(_eliteType, throwOnError: false);
+            var eliteType = string.IsNullOrEmpty(_eliteType)
+                ? null
+                : Type.GetType(_eliteType, throwOnError: false);
 
             for (var i = 0; i < _count; i++)
             {
                 var isElite = eliteType is not null && _eliteEvery > 0 && ++_spawned % _eliteEvery == 0;
-                var type = isElite ? eliteType : enemyType;
+                var type = isElite
+                    ? eliteType
+                    : enemyType;
 
                 var enemy = new GameObject(name: type.Name, components: new[] { typeof(MeshFilter), typeof(MeshRenderer), type });
                 enemy.GetComponent<MeshFilter>().sharedMesh = _body;

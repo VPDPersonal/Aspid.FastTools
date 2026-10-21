@@ -1,12 +1,14 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    [ExecuteAlways, RequireComponent(typeof(Camera)), AddComponentMenu("")]
+    [ExecuteAlways]
+    [RequireComponent(typeof(Camera))]
     public sealed class SampleFrame : MonoBehaviour
     {
-        [SerializeField, HideInInspector] private float _referenceSize = 11f;
+        private const float ReferenceSize = 11f;
 
         private Camera _camera;
 
@@ -20,8 +22,11 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         {
             RenderPipelineManager.beginCameraRendering -= BeforeRender;
             if (_camera != null)
-                _camera.orthographicSize = _referenceSize;
+                _camera.orthographicSize = ReferenceSize;
         }
+
+        private void OnPreCull() =>
+            Frame();
 
         private void BeforeRender(ScriptableRenderContext context, Camera camera)
         {
@@ -29,16 +34,17 @@ namespace Aspid.FastTools.Samples.SerializeReferences
                 Frame();
         }
 
-        private void OnPreCull() => Frame();
-
         private void Frame()
         {
             if (_camera == null)
                 return;
 
             var target = _camera.targetTexture;
-            var aspect = target != null ? (float)target.width / target.height : _camera.aspect;
-            _camera.orthographicSize = _referenceSize * Mathf.Max(a: 1f, b: 16f / 9f / Mathf.Max(a: aspect, b: 0.01f));
+            var aspect = target != null
+                ? (float)target.width / target.height
+                : _camera.aspect;
+
+            _camera.orthographicSize = ReferenceSize * Mathf.Max(a: 1f, b: 16f / 9f / Mathf.Max(a: aspect, b: 0.01f));
         }
     }
 }

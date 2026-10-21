@@ -1102,7 +1102,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e5057ce9fd44da19dc99153d2492331, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Aspid.FastTools.Samples.EnumValues::Aspid.FastTools.Samples.EnumValues.SampleFrame
-  _referenceSize: 9
 --- !u!1 &646016604
 GameObject:
   m_ObjectHideFlags: 0

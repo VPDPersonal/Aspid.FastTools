@@ -1,3 +1,4 @@
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     public enum SurfaceType

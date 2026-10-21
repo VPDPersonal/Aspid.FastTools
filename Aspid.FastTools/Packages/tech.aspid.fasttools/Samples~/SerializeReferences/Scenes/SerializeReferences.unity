@@ -1408,7 +1408,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 182c21a03c11454892bf675cf1e7cc7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Aspid.FastTools.Samples.SerializeReferences::Aspid.FastTools.Samples.SerializeReferences.SampleFrame
-  _referenceSize: 11
 --- !u!1 &398319485
 GameObject:
   m_ObjectHideFlags: 0

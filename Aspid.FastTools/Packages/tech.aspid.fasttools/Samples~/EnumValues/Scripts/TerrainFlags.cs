@@ -1,5 +1,6 @@
 using System;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     [Flags]

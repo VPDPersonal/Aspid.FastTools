@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.ProfilerMarkers
 {
     public sealed class FlockSimulation
@@ -23,9 +24,11 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
             }
         }
 
-        public Vector3 GetPosition(int index) => _positions[index];
+        public Vector3 GetPosition(int index) =>
+            _positions[index];
 
-        public Vector3 GetVelocity(int index) => _velocities[index];
+        public Vector3 GetVelocity(int index) =>
+            _velocities[index];
 
         public void Step(float deltaTime, float neighborRadius, float maxSpeed)
         {

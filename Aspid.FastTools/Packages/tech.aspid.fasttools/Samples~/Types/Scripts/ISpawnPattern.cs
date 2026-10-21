@@ -1,9 +1,10 @@
 using UnityEngine;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     public interface ISpawnPattern
     {
-        Vector3 GetPosition(int index, int count, float radius);
+        public Vector3 GetPosition(int index, int count, float radius);
     }
 }

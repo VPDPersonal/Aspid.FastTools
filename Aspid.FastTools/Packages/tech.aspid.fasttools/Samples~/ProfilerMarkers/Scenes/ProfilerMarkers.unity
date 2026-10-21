@@ -1158,7 +1158,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d592b71d059a43f7b86d160a93549762, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Aspid.FastTools.Samples.ProfilerMarkers::Aspid.FastTools.Samples.ProfilerMarkers.SampleFrame
-  _referenceSize: 20.7
 --- !u!1 &805640094
 GameObject:
   m_ObjectHideFlags: 0

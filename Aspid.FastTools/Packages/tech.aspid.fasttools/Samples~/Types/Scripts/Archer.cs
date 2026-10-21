@@ -1,10 +1,11 @@
 using UnityEngine;
 
+// ReSharper disable CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     public sealed class Archer : Enemy
     {
-        [SerializeField, Min(1f)] private float _keepDistance = 6f;
+        [SerializeField] [Min(1f)] private float _keepDistance = 6f;
 
         protected override Color Tint => new(r: 0.3f, g: 0.7f, b: 0.4f);
 
