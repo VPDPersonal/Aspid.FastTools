@@ -7,11 +7,13 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 const script = fileURLToPath(new URL('check-samples.mjs', import.meta.url));
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const DEMO = `${PACKAGE}/Samples~/Demo`;
+const SPAWNER = `${DEMO}/Scripts/Spawner.cs`;
+const ASM = `${DEMO}/Scripts/Demo.asmdef`;
 const MARKERS = `${PACKAGE}/Samples~/ProfilerMarkers`;
 const TUTORIAL = 'Website/tutorials/ProfilerMarkers/README.md';
 const SITE = 'https://vpdpersonal.github.io/Aspid.FastTools/tutorials/';
@@ -59,27 +61,31 @@ const flock = [
 
 const valid = () => ({
   [`${PACKAGE}/package.json`]: JSON.stringify({ samples: [sample('Demo', 'demo'), sample('ProfilerMarkers', 'profiler-markers')] }),
-  [`${DEMO}/Demo.asmdef`]: asmdef('Demo'),
-  [`${DEMO}/Spawner.cs`]: code('Demo', type('Spawner', '        [SerializeField] private string _url = "https://example.com/a//b";\n')),
-  [`${DEMO}/Demo.unity`]: scene(),
-  [`${DEMO}/Art/Studio.shader`]: 'Shader "Aspid/Samples/Demo/Studio"\n{\n}\n',
-  [`${DEMO}/Art/Studio.shader.meta`]: meta(SHADER_GUID),
-  [`${DEMO}/Art/Floor.mat`]: material(),
-  [`${DEMO}/Art/Floor.mat.meta`]: meta(MATERIAL_GUID),
-  [`${DEMO}/Style.uss`]: '.demo {\n    padding: 4px;\n}\n',
-  [`${MARKERS}/Demo.Markers.asmdef`]: asmdef('Demo.Markers'),
-  [`${MARKERS}/Flock.cs`]: flock,
+  [`${DEMO}/Scripts/Demo.asmdef`]: asmdef('Demo'),
+  [`${DEMO}/Scripts/Spawner.cs`]: code('Demo', type('Spawner', '        [Tooltip("Seconds between waves.")] [SerializeField] private string _url = "https://example.com/a//b";\n')),
+  [`${DEMO}/Scenes/Demo.unity`]: scene(),
+  [`${DEMO}/Shaders/Studio.shader`]: 'Shader "Aspid/Samples/Demo/Studio"\n{\n}\n',
+  [`${DEMO}/Shaders/Studio.shader.meta`]: meta(SHADER_GUID),
+  [`${DEMO}/Materials/Floor.mat`]: material(),
+  [`${DEMO}/Materials/Floor.mat.meta`]: meta(MATERIAL_GUID),
+  [`${DEMO}/Styles/Style.uss`]: '.demo {\n    padding: 4px;\n}\n',
+  [`${DEMO}/Fonts/Plex.ttf`]: 'font',
+  [`${DEMO}/Fonts/LICENSE.txt`]: 'OFL',
+  [`${MARKERS}/Scripts/Demo.Markers.asmdef`]: asmdef('Demo.Markers'),
+  [`${MARKERS}/Scripts/Flock.cs`]: flock,
   'Website/tutorials/Demo/README.md': '# Demo\n',
   'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/Demo/README.md': '# Demo\n',
   [TUTORIAL]: '# ProfilerMarkers\n\nFind `Flock.Update (9)` and `Flock.Steering (11)`.\n',
   'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/ProfilerMarkers/README.md': '# ProfilerMarkers\n',
 });
 
-function check(t, changes = {}) {
+// The script's list of pending tutorials is emptied, so the marker rule is strict, unless a test keeps it.
+function check(t, changes = {}, { pending = false } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'aspid-check-samples-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   mkdirSync(join(dir, 'scripts'));
-  cpSync(script, join(dir, 'scripts/check-samples.mjs'));
+  const source = readFileSync(script, 'utf8');
+  writeFileSync(join(dir, 'scripts/check-samples.mjs'), pending ? source : source.replace(/const PENDING_TUTORIALS = new Set\(\[[^\]]*\]\);/, 'const PENDING_TUTORIALS = new Set();'));
   for (const [file, text] of Object.entries({ ...valid(), ...changes })) {
     if (text === null) continue;
     mkdirSync(dirname(join(dir, file)), { recursive: true });
@@ -100,74 +106,79 @@ test('samples that follow the rules pass, and "//" inside a string is no comment
   assert.match(result.stdout, /2 samples follow the Samples~ rules/);
 });
 
-test('a comment, a tooltip, a header, a ReSharper banner and Debug. are reported', (t) => {
+test('a comment, a header, a ReSharper banner and Debug. are reported', (t) => {
   for (const [line, message] of [
     ['        // Spawns enemies.\n', /has a comment/],
     ['        /// <summary>Spawns.</summary>\n', /has a comment/],
     ['        /* old */\n', /has a comment/],
-    ['        [Tooltip("Count")] [SerializeField] private int _count;\n', /\[Tooltip\]/],
     ['        [Header("Setup")] [SerializeField] private int _count;\n', /\[Header\]/],
     ['        private void Start() => Debug.Log(name);\n', /Debug\./],
   ]) {
-    assertFails(check(t, { [`${DEMO}/Spawner.cs`]: code('Demo', type('Spawner', line)) }), `${DEMO}/Spawner.cs`, message);
+    assertFails(check(t, { [SPAWNER]: code('Demo', type('Spawner', line)) }), SPAWNER, message);
   }
   const banner = `// ReSharper disable once CheckNamespace\n${code('Demo', type('Spawner'))}`;
-  assertFails(check(t, { [`${DEMO}/Spawner.cs`]: banner }), `${DEMO}/Spawner.cs`, /has a comment/);
+  assertFails(check(t, { [SPAWNER]: banner }), SPAWNER, /has a comment/);
 });
 
-test('lights, physics, text and CreatePrimitive in code are reported', (t) => {
+test('lights, physics and CreatePrimitive in code are reported', (t) => {
   for (const line of [
     '        private void Start() => GetComponent<Collider>().enabled = false;\n',
     '        private void Start() => Physics.Raycast(transform.position, Vector3.down);\n',
     '        private void Start() => GameObject.CreatePrimitive(PrimitiveType.Cube);\n',
     '        [SerializeField] private Light _sun;\n',
-    '        [SerializeField] private TextMesh _label;\n',
   ]) {
-    assertFails(check(t, { [`${DEMO}/Spawner.cs`]: code('Demo', type('Spawner', line)) }), `${DEMO}/Spawner.cs`, /samples do not/);
+    assertFails(check(t, { [SPAWNER]: code('Demo', type('Spawner', line)) }), SPAWNER, /samples do not/);
   }
 });
 
 test('two top-level types in a file and a file named after another type are reported', (t) => {
   const two = code('Demo', `${type('Spawner')}\n\n    public interface IPattern { }`);
-  assertFails(check(t, { [`${DEMO}/Spawner.cs`]: two }), `${DEMO}/Spawner.cs`, /declares 2 top-level types/);
-  assertFails(check(t, { [`${DEMO}/Spawner.cs`]: code('Demo', type('Enemy')) }), `${DEMO}/Spawner.cs`, /must be named after its type/);
+  assertFails(check(t, { [SPAWNER]: two }), SPAWNER, /declares 2 top-level types/);
+  assertFails(check(t, { [SPAWNER]: code('Demo', type('Enemy')) }), SPAWNER, /must be named after its type/);
 });
 
-test('code outside the asmdef folder, a missing rootNamespace and another namespace are reported', (t) => {
-  assertFails(check(t, { [`${DEMO}/Scripts/Enemy.cs`]: code('Demo', type('Enemy')) }), `${DEMO}/Scripts/Enemy.cs`, /not beside an \.asmdef/);
-  assertFails(check(t, { [`${DEMO}/Demo.asmdef`]: asmdef('Demo', { rootNamespace: '' }) }), `${DEMO}/Demo.asmdef`, /no rootNamespace/);
-  assertFails(check(t, { [`${DEMO}/Spawner.cs`]: code('Demo.Spawning', type('Spawner')) }), `${DEMO}/Spawner.cs`, /rootNamespace is Demo/);
+test('code in a subfolder, a missing rootNamespace and another namespace are reported', (t) => {
+  const nested = `${DEMO}/Scripts/Enemies/Enemy.cs`;
+  assertFails(check(t, { [nested]: code('Demo', type('Enemy')) }), nested, /not beside an \.asmdef/);
+  assertFails(check(t, { [ASM]: asmdef('Demo', { rootNamespace: '' }) }), ASM, /no rootNamespace/);
+  assertFails(check(t, { [SPAWNER]: code('Demo.Spawning', type('Spawner')) }), SPAWNER, /rootNamespace is Demo/);
 });
 
 test('defineConstraints and versionDefines are reported', (t) => {
   const gated = asmdef('Demo', { defineConstraints: ['ASPID_PHYSICS'] });
-  assertFails(check(t, { [`${DEMO}/Demo.asmdef`]: gated }), `${DEMO}/Demo.asmdef`, /defineConstraints/);
+  assertFails(check(t, { [ASM]: gated }), ASM, /defineConstraints/);
   const versioned = asmdef('Demo', { versionDefines: [{ name: 'com.unity.modules.physics', define: 'ASPID_PHYSICS' }] });
-  assertFails(check(t, { [`${DEMO}/Demo.asmdef`]: versioned }), `${DEMO}/Demo.asmdef`, /versionDefines/);
+  assertFails(check(t, { [ASM]: versioned }), ASM, /versionDefines/);
 });
 
-test('a font, art outside Art/, a foreign shader and a misnamed shader are reported', (t) => {
-  assertFails(check(t, { [`${DEMO}/Fonts/Plex.ttf`]: 'font' }), `${DEMO}/Fonts/Plex.ttf`, /is a \.ttf file/);
-  assertFails(check(t, { [`${DEMO}/Floor.mat`]: material() }), `${DEMO}/Floor.mat`, /belongs in Demo\/Art/);
-  assertFails(check(t, { [`${DEMO}/Art/Floor.mat`]: material('c'.repeat(32)) }), `${DEMO}/Art/Floor.mat`, /sample's own Aspid\/Samples\/Demo\/Studio/);
-  assertFails(check(t, { [`${DEMO}/Art/Studio.shader`]: 'Shader "Unlit/Color"\n{\n}\n' }), `${DEMO}/Art/Studio.shader`, /is named Unlit\/Color/);
+test('a file in the wrong folder, an unknown file, a foreign shader and a misnamed shader are reported', (t) => {
+  assertFails(check(t, { [`${DEMO}/Scripts/Floor.mat`]: material() }), `${DEMO}/Scripts/Floor.mat`, /belongs in Demo\/Materials\//);
+  assertFails(check(t, { [`${DEMO}/Plex.ttf`]: 'font' }), `${DEMO}/Plex.ttf`, /belongs in Demo\/Fonts\//);
+  assertFails(check(t, { [`${DEMO}/Images/demo.png`]: 'png' }), `${DEMO}/Images/demo.png`, /is a \.png file/);
+  assertFails(check(t, { [`${DEMO}/Materials/Floor.mat`]: material('c'.repeat(32)) }), `${DEMO}/Materials/Floor.mat`, /sample's own Aspid\/Samples\/Demo\/Studio/);
+  assertFails(check(t, { [`${DEMO}/Shaders/Studio.shader`]: 'Shader "Unlit/Color"\n{\n}\n' }), `${DEMO}/Shaders/Studio.shader`, /is named Unlit\/Color/);
 });
 
-test('a light, a collider, a built-in mesh, a foreign material and a second camera in a scene are reported', (t) => {
-  const file = `${DEMO}/Demo.unity`;
+test('a light, a collider, a non-primitive mesh, a foreign material and a second camera in a scene are reported', (t) => {
+  const file = `${DEMO}/Scenes/Demo.unity`;
   assertFails(check(t, { [file]: scene('--- !u!108 &30\nLight:') }), file, /class ID 108/);
   assertFails(check(t, { [file]: scene('--- !u!65 &30\nBoxCollider:') }), file, /class ID 65/);
   assertFails(check(t, { [file]: scene().replace('fileID: 10209', 'fileID: 10204') }), file, /built-in mesh 10204/);
-  assertFails(check(t, { [file]: scene().replace(MATERIAL_GUID, 'd'.repeat(32)) }), file, /not in Demo\/Art/);
+  assertFails(check(t, { [file]: scene().replace(MATERIAL_GUID, 'd'.repeat(32)) }), file, /not in the Demo sample/);
   const second = '--- !u!1 &40\nGameObject:\n  m_Name: Minimap\n--- !u!20 &41\nCamera:\n  m_GameObject: {fileID: 40}\n  m_ClearFlags: 2';
   assertFails(check(t, { [file]: scene(second) }), file, /Camera on Minimap/);
   assertFails(check(t, { [file]: scene().replace('m_ClearFlags: 2', 'm_ClearFlags: 1') }), file, /solid colour/);
 });
 
-test('a comment in a style sheet and more than 150 lines of C# are reported', (t) => {
-  assertFails(check(t, { [`${DEMO}/Style.uss`]: '/* card */\n.demo { }\n' }), `${DEMO}/Style.uss`, /style sheets carry none/);
-  const long = code('Demo', type('Spawner', '        private int _a;\n'.repeat(150)));
-  assertFails(check(t, { [`${DEMO}/Spawner.cs`]: long }), DEMO, /lines of C#; a sample has at most 150/);
+test('text and line renderers in a scene pass', (t) => {
+  const result = check(t, { [`${DEMO}/Scenes/Demo.unity`]: scene('--- !u!102 &50\nTextMesh:\n--- !u!120 &51\nLineRenderer:') });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('a comment in a style sheet and more than 400 lines of C# are reported', (t) => {
+  assertFails(check(t, { [`${DEMO}/Styles/Style.uss`]: '/* card */\n.demo { }\n' }), `${DEMO}/Styles/Style.uss`, /style sheets carry none/);
+  const long = code('Demo', type('Spawner', '        private int _a;\n'.repeat(400)));
+  assertFails(check(t, { [SPAWNER]: long }), DEMO, /lines of C#; a sample has at most 400/);
 });
 
 test('a description that is long, two sentences or lacks its tutorial link, and a missing tutorial are reported', (t) => {
@@ -180,7 +191,7 @@ test('a description that is long, two sentences or lacks its tutorial link, and 
 });
 
 test('a sample folder that package.json does not list, and a listed path that differs, are reported', (t) => {
-  assertFails(check(t, { [`${PACKAGE}/Samples~/Extra/Extra.asmdef`]: asmdef('Extra') }), `${PACKAGE}/Samples~/Extra`, /not listed in package\.json/);
+  assertFails(check(t, { [`${PACKAGE}/Samples~/Extra/Scripts/Extra.asmdef`]: asmdef('Extra') }), `${PACKAGE}/Samples~/Extra`, /not listed in package\.json/);
   const moved = JSON.stringify({ samples: [{ ...sample('Demo', 'demo'), path: 'Samples~/Old' }, sample('ProfilerMarkers', 'profiler-markers')] });
   assertFails(check(t, { [`${PACKAGE}/package.json`]: moved }), `${PACKAGE}/package.json`, /path Samples~\/Old/);
 });
@@ -192,8 +203,8 @@ test('a tutorial marker name whose line differs from the code is reported', (t) 
   assertFails(check(t, { [TUTORIAL]: gone }), TUTORIAL, /quotes Flock\.Spawn \(30\); the code makes no such marker/);
 });
 
-test('a tutorial that quotes no current marker name is skipped', (t) => {
-  const result = check(t, { [TUTORIAL]: '# ProfilerMarkers\n\nFind `Flock.Update (74)` in the Profiler.\n' });
+test('a pending tutorial reports a differing marker name as a warning', (t) => {
+  const result = check(t, { [TUTORIAL]: '# ProfilerMarkers\n\nFind `Flock.Update (74)` in the Profiler.\n' }, { pending: true });
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.ok(result.stdout.includes(`::notice file=${TUTORIAL}::quotes no current marker name`), result.stdout);
+  assert.ok(result.stdout.includes(`::warning file=${TUTORIAL}::quotes Flock.Update (74); the code makes Flock.Update (9)`), result.stdout);
 });

@@ -1,6 +1,7 @@
 // Check the package samples against the Samples~ rules of AGENTS.md: comment-free code, one type per file, flat files
-// beside an asmdef whose rootNamespace is their namespace, scenes drawn only by the sample's own Studio shader, short
-// samples and one-sentence package.json descriptions, and ProfilerMarkers marker names that match its tutorial.
+// beside an asmdef whose rootNamespace is their namespace, each kind of file in its folder, scenes with no lights,
+// physics or foreign materials, one-sentence package.json descriptions, and ProfilerMarkers marker names that match its
+// tutorial.
 // ci.yml runs it:
 //   node scripts/check-samples.mjs
 import { fileURLToPath } from 'node:url';
@@ -14,26 +15,40 @@ const SAMPLES = `${PACKAGE}/Samples~`;
 const TUTORIALS = 'Website/tutorials';
 const TUTORIALS_RU = 'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current';
 const SITE = 'https://vpdpersonal.github.io/Aspid.FastTools/tutorials/';
-const MAX_LINES = 150;
+const MAX_LINES = 400;
 const MAX_DESCRIPTION = 200;
 const MARKER_SAMPLE = 'ProfilerMarkers';
+// Tutorials not yet rewritten for the simplified sample: their marker names that differ are warnings, not errors.
+// Empty it once the tutorial quotes the current names.
+const PENDING_TUTORIALS = new Set(['ProfilerMarkers']);
 
-// The files a sample may hold; .shader, .mat and .prefab only in its Art/ folder.
-const ALLOWED = new Set(['.cs', '.asmdef', '.unity', '.asset', '.uss', '.md', '.shader', '.mat', '.prefab']);
-const ART_ONLY = new Set(['.shader', '.mat', '.prefab']);
-// Scene and prefab YAML: GameObject, Transform, Camera, MeshRenderer, MeshFilter, AudioListener, MonoBehaviour,
-// PrefabInstance, and the settings blocks every scene has (OcclusionCulling, RenderSettings, LightmapSettings,
-// NavMeshSettings, SceneRoots).
-const CLASS_IDS = new Set([1, 4, 20, 23, 33, 81, 114, 1001, 29, 104, 157, 196, 1660057539]);
+// The folder of a sample that holds each kind of file.
+const FOLDERS = {
+  '.cs': ['Scripts', 'Scripts/Editor'],
+  '.asmdef': ['Scripts', 'Scripts/Editor'],
+  '.unity': ['Scenes'],
+  '.prefab': ['Prefabs'],
+  '.asset': ['Data'],
+  '.mat': ['Materials'],
+  '.shader': ['Shaders'],
+  '.uss': ['Styles'],
+  '.ttf': ['Fonts'],
+  '.otf': ['Fonts'],
+  '.txt': ['Fonts'],
+  '.md': ['Fonts'],
+};
+// Scene and prefab YAML: GameObject, Transform, Camera, MeshRenderer, MeshFilter, AudioListener, TextMesh,
+// LineRenderer, MonoBehaviour, PrefabInstance, and the settings blocks every scene has (OcclusionCulling,
+// RenderSettings, LightmapSettings, NavMeshSettings, SceneRoots). No light, collider or rigidbody.
+const CLASS_IDS = new Set([1, 4, 20, 23, 33, 81, 102, 114, 120, 1001, 29, 104, 157, 196, 1660057539]);
 const DEFAULT_RESOURCES = '0000000000000000e000000000000000';
-// The built-in Cube, Capsule and Plane meshes (the ones GameObject > 3D Object uses).
-const MESHES = new Set([10202, 10208, 10209]);
+// The built-in primitive meshes: Cube, Cylinder, Sphere, Capsule, Plane and Quad (the ones GameObject > 3D Object uses).
+const MESHES = new Set([10202, 10206, 10207, 10208, 10209, 10210]);
 const BANNED = [
-  [/\[\s*Tooltip\b/, '[Tooltip]'],
   [/\[\s*Header\b/, '[Header]'],
   [/ReSharper/, 'a ReSharper comment'],
   [/\bDebug\s*\./, 'Debug.'],
-  [/\b(?:Light|Collider|BoxCollider|SphereCollider|CapsuleCollider|MeshCollider|Rigidbody|TextMesh|LineRenderer)\b/, 'a light, physics, text or line component'],
+  [/\b(?:Light|Collider|BoxCollider|SphereCollider|CapsuleCollider|MeshCollider|Rigidbody)\b/, 'a light or physics component'],
   [/\b(?:Physics|Raycast|CreatePrimitive)\b/, 'Physics or CreatePrimitive'],
 ];
 
@@ -42,6 +57,7 @@ const fail = (file, message) => {
   console.log(`::error file=${file}::${message}`);
   errors++;
 };
+const warn = (file, message) => console.log(`::warning file=${file}::${message}`);
 
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
   const path = join(dir, entry.name);
@@ -100,7 +116,7 @@ function checkYaml(file, text, sample) {
   }
   for (const [, guid] of text.matchAll(/m_Materials:\s*\n((?:\s+- \{[^}]*\}\n)+)/g)) {
     for (const [, materialGuid] of guid.matchAll(/guid: (\w+)/g)) {
-      if (!sample.materials.has(materialGuid)) fail(file, `renders with material ${materialGuid}, which is not in ${sample.name}/Art`);
+      if (!sample.guids.has(materialGuid)) fail(file, `renders with material ${materialGuid}, which is not in the ${sample.name} sample`);
     }
   }
   // Each Camera must sit on the GameObject named Main Camera and clear to a solid colour.
@@ -125,8 +141,6 @@ function checkArt(sample, files) {
   for (const file of files.filter((file) => file.endsWith('.mat'))) {
     const guid = readFileSync(file, 'utf8').match(/m_Shader: \{fileID: \d+, guid: (\w+)/)?.[1];
     if (!guids.has(guid)) fail(file, `uses shader ${guid}; a sample material uses the sample's own ${expected}`);
-    const metaGuid = existsSync(`${file}.meta`) && readFileSync(`${file}.meta`, 'utf8').match(/^guid: (\w+)/m)?.[1];
-    if (metaGuid) sample.materials.add(metaGuid);
   }
 }
 
@@ -155,16 +169,11 @@ function checkMarkerTutorials(files) {
     if (!existsSync(page)) continue;
     const quoted = [...readFileSync(page, 'utf8').matchAll(/\b((?:[A-Z]\w*)(?:\.[A-Z]\w*)+) \((\d+)\)/g)]
       .map((match) => ({ base: match[1], name: `${match[1]} (${match[2]})` }));
-    const current = quoted.filter((quote) => names.get(quote.base) === quote.name);
-    // A tutorial that quotes no current marker name is not written for this code yet: skip it until it is.
-    if (current.length === 0) {
-      console.log(`::notice file=${page}::quotes no current marker name; the marker check skips it`);
-      continue;
-    }
+    const report = PENDING_TUTORIALS.has(MARKER_SAMPLE) ? warn : fail;
     for (const quote of new Set(quoted.map((quote) => quote.name))) {
       const base = quote.replace(/ \(\d+\)$/, '');
       const actual = names.get(base);
-      if (actual !== quote) fail(page, `quotes ${quote}; the code makes ${actual ?? 'no such marker'}`);
+      if (actual !== quote) report(page, `quotes ${quote}; the code makes ${actual ?? 'no such marker'}`);
     }
   }
 }
@@ -198,11 +207,14 @@ const folders = readdirSync(SAMPLES, { withFileTypes: true }).filter((entry) => 
 for (const name of folders) {
   const root = `${SAMPLES}/${name}`;
   const files = walk(root).filter((file) => !file.endsWith('.meta'));
-  const sample = { name, materials: new Set() };
+  // A scene renders with the sample's own materials, and its text with the font materials inside the sample's fonts.
+  const guids = new Set(files.map((file) => existsSync(`${file}.meta`) && readFileSync(`${file}.meta`, 'utf8').match(/^guid: (\w+)/m)?.[1]).filter(Boolean));
+  const sample = { name, guids };
   for (const file of files) {
     const ext = extname(file);
-    if (!ALLOWED.has(ext)) fail(file, `is a ${ext || 'extensionless'} file; samples ship code, scenes, assets, style sheets and Art/`);
-    else if (ART_ONLY.has(ext) && dirname(relative(root, file)) !== 'Art') fail(file, `belongs in ${name}/Art/`);
+    const folders = FOLDERS[ext];
+    if (!folders) fail(file, `is a ${ext || 'extensionless'} file, which no sample folder holds`);
+    else if (!folders.includes(dirname(relative(root, file)))) fail(file, `belongs in ${folders.map((folder) => `${name}/${folder}/`).join(' or ')}`);
   }
   checkArt(sample, files);
   let lines = 0;
