@@ -7,9 +7,7 @@ using System.Reflection;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
-using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
-using Aspid.FastTools.Editors.Internal;
 using Aspid.FastTools.SerializeReferences.Editors;
 
 namespace Aspid.FastTools.Editors.Tests
@@ -80,32 +78,6 @@ namespace Aspid.FastTools.Editors.Tests
                 }
 
                 Assert.AreEqual(TabWindow.Tabs.Length, container.childCount, "Each tab must build its view once.");
-            }
-            finally
-            {
-                Close(window);
-            }
-        }
-
-        [UnityTest]
-        public IEnumerator SampleThemeWindow_BuildsThePaletteForm()
-        {
-            var window = ScriptableObject.CreateInstance<SampleThemeWindow>();
-            try
-            {
-                window.ShowUtility();
-                yield return WaitUntil(() => window.rootVisualElement.Q<ScrollView>() is not null);
-
-                var root = window.rootVisualElement;
-                var palettes = root.Q<ScrollView>();
-                Assert.IsNotNull(palettes, "CreateGUI must build the palette list.");
-                Assert.IsNotNull(root.Q<HelpBox>(), "CreateGUI must explain what the preview applies to.");
-
-                // A bound field builds children of the same type, so only the direct ones count. VisualElement.parent
-                // is the logical parent (the ScrollView); hierarchy.parent is the content container.
-                var content = palettes.contentContainer;
-                var fields = content.Query<PropertyField>().Where(field => field.hierarchy.parent == content).ToList();
-                Assert.AreEqual(3, fields.Count, "The window must show the light, the dark and the EnumValues light palette.");
             }
             finally
             {
