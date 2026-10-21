@@ -21,7 +21,7 @@ By sending a pull request you agree to license your contribution under the [MIT 
 - Keep the YAML engine (`Editor/Scripts/SerializeReferences/Yaml`) and `GenericTypeResolver`, `GenericArgumentFilter`,
   `TypeUtility` on C# 9 with no new Unity API: test projects compile them outside Unity.
 
-Style and the other rules are in [AGENTS.md](AGENTS.md) and `.editorconfig`.
+C# style is in `.editorconfig` and [CODESTYLE.md](CODESTYLE.md); the other rules are in [AGENTS.md](AGENTS.md).
 
 ## Generators and analyzers
 

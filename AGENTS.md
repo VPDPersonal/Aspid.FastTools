@@ -22,9 +22,7 @@ Run what applies before you open a PR.
   `node scripts/check-unity-minimum.mjs`, `node scripts/check-contrast.mjs`, and
   `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
 
-## C# style beyond `.editorconfig`
+## C# style
 
-- Named arguments, even for a single obvious argument: `Type.GetType(_aqn, throwOnError: false)`.
-- `using` directives sorted by ascending line length, not alphabetically; `System` is not forced first.
-- Leaf classes are `sealed` unless designed for inheritance. `internal` for implementation, `public` for API.
-- Public API of the package carries XML docs (`<summary>`, `<param>`, `<returns>`, `<see cref/>`).
+`.editorconfig` holds the rules a formatter checks; [CODESTYLE.md](CODESTYLE.md) holds the rest: member order, named
+arguments, attribute and blank-line layout, comments and XML docs. Read it before you write C#.
