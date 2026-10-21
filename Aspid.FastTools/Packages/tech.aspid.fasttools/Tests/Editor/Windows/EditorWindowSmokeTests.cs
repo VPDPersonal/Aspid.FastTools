@@ -8,7 +8,6 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
-using Aspid.FastTools.Editors.Internal;
 using Aspid.FastTools.SerializeReferences.Editors;
 
 namespace Aspid.FastTools.Editors.Tests
