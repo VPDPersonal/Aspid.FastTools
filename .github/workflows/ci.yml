@@ -218,6 +218,7 @@ jobs:
   # the bypass of the Main ruleset. Only a push without the secrets (a fork's own push) skips with a notice.
   # A PR with the `unity-quick` label tests only the first and the last version of UNITY_VERSIONS: the minimum still
   # catches a newer API, the newest line a removed one. The push to main after the merge runs every version.
+  # A PR push after a commit whose Unity tests passed skips them when it changes nothing they read; see the plan step.
   # Secrets: UNITY_EMAIL and UNITY_PASSWORD of a Unity account with a Personal license; GameCI activates a seat with
   # them in each job. Do not add the .ulf from Unity Hub (UNITY_LICENSE): it is bound to the Hub machine, and on
   # 6000.0.53f1 GameCI keeps retrying it instead of falling back to the account.
@@ -241,6 +242,7 @@ jobs:
           EVENT: ${{ github.event_name }}
           PR: ${{ github.event.pull_request.number }}
           BEFORE: ${{ github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
           QUICK: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'unity-quick') }}
           # Every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
           # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
@@ -267,9 +269,38 @@ jobs:
             fi
           fi
 
-          code="$(grep -vE '\.md(\.meta)?$' <<<"$files" || true)"
-          if [ "$files" != all ] && ! grep -qE "$relevant" <<<"$code"; then
+          reaches_unity() { grep -vE '\.md(\.meta)?$' | grep -qE "$relevant"; }
+
+          # A PR commit whose Unity tests already passed on every version of this plan holds for the head too when no
+          # later change reaches them: a push of docs or a CHANGELOG line, a label event. The newest of the last 20 PR
+          # commits with a run of these tests decides. A failed run there is not looked past; a cancelled or missing
+          # one is (an older push cancelled by a newer one, a version that only a run without `unity-quick` tests).
+          # A rebase leaves no tested commit in the PR, and a merge of main brings its changes into the diff.
+          passed=""
+          if [ "$EVENT" = pull_request ] && [ "$files" != all ]; then
+            for sha in $(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/commits?per_page=100" --jq '.[].sha' | tail -n 20 | tac); do
+              verdict="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs?per_page=100" | jq -r '
+                [.[].check_runs[] | select(.app.slug == "github-actions")]
+                | (group_by(.name) | map({key: .[0].name, value: (max_by(.id).conclusion // "pending")}) | from_entries) as $latest
+                | [$ARGS.positional[] | $latest["Unity EditMode (\(.))"] // "none"]
+                | if any(.[]; . == "failure" or . == "timed_out") then "failed"
+                  elif all(.[]; . == "success") then "passed"
+                  else "unknown" end' --args "${versions[@]}")"
+              [ "$verdict" = unknown ] && continue
+              # The compare API lists at most 300 files.
+              if [ "$verdict" = passed ] && later="$(gh api "repos/$GITHUB_REPOSITORY/compare/$sha...$HEAD" --jq '.files[].filename')" \
+                && [ "$(wc -l <<<"$later")" -lt 300 ] && ! reaches_unity <<<"$later"; then
+                passed="$sha"
+              fi
+              break
+            done
+          fi
+
+          if [ "$files" != all ] && ! reaches_unity <<<"$files"; then
             echo "No change reaches the Unity tests; they are skipped."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          elif [ -n "$passed" ]; then
+            echo "::notice::The Unity tests passed on ${passed:0:8} and no later change reaches them; they are skipped."
             echo "run=false" >> "$GITHUB_OUTPUT"
           elif [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
             if [ "$REQUIRE_UNITY" = true ] || [ "$EVENT" = workflow_dispatch ]; then
