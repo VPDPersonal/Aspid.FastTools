@@ -1,13 +1,11 @@
 # Примеры
 
-К каждой возможности прилагается пример: небольшая сцена или editor-инструмент, который делает с этой возможностью что-то видимое. Полное руководство к нему — на [сайте](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials); на него ссылаются описание примера в Package Manager и карточка примера на вкладке **Welcome**. Импортируйте их из Package Manager (**Aspid.FastTools → Samples**) или откройте вкладку **Welcome** (`Tools → Aspid 🐍 → FastTools → Welcome`).
+Импортируйте примеры из Package Manager (**Aspid.FastTools → Samples**) или с вкладки **Welcome** (`Tools → Aspid 🐍 → FastTools → Welcome` → **Samples**). Они перечислены в рекомендуемом порядке, и каждый импортируется сам по себе. У каждого примера есть руководство на [сайте](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials).
 
-Это рекомендуемый порядок знакомства; каждый пример можно изучать отдельно.
-
-| Пример | Что показывает |
+| Пример | Что сделать |
 |---|---|
-| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/enum-values) | Персонаж на плитках поверхностей: оба варианта `EnumValues`, значения по умолчанию, правила поиска для `[Flags]` |
-| [Types](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/types) | Спавнер врагов: `SerializableMonoScript<T>`, `SerializableType<T>`, `[TypeSelectorDisplay]`, `[TypeSelector]` со ссылкой на член, `ComponentTypeSelector` |
-| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/serialize-references) | Турель с полиморфным оружием: пикер `[SerializeReference]` во всех формах поля, сломанные ассеты для инструментов ремонта, IMGUI-инспектор |
-| [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/editor-tools) | Окно редактора: fluent-расширения `VisualElement`, сеттеры `SerializedProperty`, editor-хелперы, `TypeSelectorWindow` |
-| [ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/profiler-markers) | Симуляция стаи: сгенерированное дерево маркеров в Profiler |
+| [Types](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/types) | Нажмите Play в `Types.unity`, чтобы создать врагов того класса и шаблона спавна, что выбраны на Spawner, смените шаблон, пока они движутся, и смените класс расставленного врага на месте. |
+| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/serialize-references) | Выберите класс каждого оружия `[SerializeReference]` в `Loadout.asset` и смените его без потери Damage, затем переименуйте класс и почините сломанные ссылки. |
+| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/enum-values) | Нажмите Play в `EnumValues.unity`: каждая дорожка берёт цвет и скорость бегуна из таблиц на Surface Rules, а правки таблиц видны сразу. |
+| [ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/profiler-markers) | Откройте Profiler и нажмите Play в `ProfilerMarkers.unity`, чтобы увидеть вложенные маркеры, которые `this.Marker()` добавляет в симуляцию стаи. |
+| [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/editor-tools) | Откройте `Tools → Aspid 🐍 → FastTools → Samples → Ability Catalog`: окно редактора, собранное в коде fluent-расширениями UI Toolkit и `SerializedProperty`. |

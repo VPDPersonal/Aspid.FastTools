@@ -1,0 +1,16 @@
+{
+    "name": "Aspid.FastTools.Samples.EnumValues",
+    "rootNamespace": "Aspid.FastTools.Samples.EnumValues",
+    "references": [
+        "Aspid.FastTools"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -36,29 +36,29 @@
   },
   "samples": [
     {
-      "displayName": "EnumValues",
-      "description": "A character walking over surface tiles: EnumValues<TEnum, TValue> on a palette asset, EnumValues<TValue> with a [Flags] enum picked in the Inspector, default values and the flags lookup rules in action. Needs the built-in Physics module. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/enum-values",
-      "path": "Samples~/EnumValues"
-    },
-    {
       "displayName": "Types",
-      "description": "An enemy spawner storing three System.Types: SerializableMonoScript<T> (rename-safe), SerializableType<T> with [TypeSelectorDisplay] candidates, a member-referenced [TypeSelector] and ComponentTypeSelector to swap a component in place. The scene's colliders need the built-in Physics module. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/types",
+      "description": "Press Play in Types.unity to spawn enemies of the class and pattern picked on the Spawner, switch the pattern while they move, and switch a placed enemy's class in place. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/types",
       "path": "Samples~/Types"
     },
     {
       "displayName": "SerializeReferences",
-      "description": "A turret firing polymorphic [SerializeReference] weapons at a dummy: the [TypeSelector] picker on single fields, lists, narrowed, nested and generic fields, plus deliberately broken assets for Fix, Smart Fix, Migrate all and the References tabs, and an IMGUI inspector. The scene's colliders need the built-in Physics module. With Build / CI gate on Fail, the broken assets stop a build: repair them, delete the sample or add its folder to Excluded scan folders. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references",
+      "description": "Pick the class of each [SerializeReference] weapon on Loadout.asset and switch it without losing Damage, then rename a class and repair the broken references. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references",
       "path": "Samples~/SerializeReferences"
     },
     {
-      "displayName": "EditorTools",
-      "description": "An editor window built in code: fluent VisualElement extensions, ListView and binding, SerializedProperty setters, GetDisplayName, AddOpenScriptCommand and TypeSelectorWindow as a public API. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/editor-tools",
-      "path": "Samples~/EditorTools"
+      "displayName": "EnumValues",
+      "description": "Press Play in EnumValues.unity: each lane takes its color and its runner's speed from the tables on Surface Rules, and edits to the tables show at once. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/enum-values",
+      "path": "Samples~/EnumValues"
     },
     {
       "displayName": "ProfilerMarkers",
-      "description": "A flock simulation with this.Marker() around each phase: the generated marker tree in the Profiler, per-iteration markers, markers in plain classes and local functions. Needs the built-in Physics module. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/profiler-markers",
+      "description": "Open the Profiler and press Play in ProfilerMarkers.unity to see the nested markers that this.Marker() adds to a flock simulation. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/profiler-markers",
       "path": "Samples~/ProfilerMarkers"
+    },
+    {
+      "displayName": "EditorTools",
+      "description": "Open Tools → Aspid 🐍 → FastTools → Samples → Ability Catalog: an editor window built in code with the fluent UI Toolkit and SerializedProperty extensions. Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/editor-tools",
+      "path": "Samples~/EditorTools"
     }
   ],
   "unityRelease": "53f1"

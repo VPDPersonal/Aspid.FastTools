@@ -1,13 +1,11 @@
 # Samples
 
-Each feature ships with a sample: a small scene or editor tool that does something visible with the feature. Its full tutorial is on the [site](https://vpdpersonal.github.io/Aspid.FastTools/tutorials); the sample description in the Package Manager and the sample card on the **Welcome** tab link to it. Import them from the Package Manager (**Aspid.FastTools → Samples**) or open the **Welcome** tab (`Tools → Aspid 🐍 → FastTools → Welcome`).
+Import the samples from the Package Manager (**Aspid.FastTools → Samples**) or from the **Welcome** tab (`Tools → Aspid 🐍 → FastTools → Welcome` → **Samples**). They are listed in the recommended order, and each one imports on its own. Every sample has a tutorial on the [site](https://vpdpersonal.github.io/Aspid.FastTools/tutorials).
 
-The samples are listed in the recommended learning order; each can also be explored independently.
-
-| Sample | What it shows |
+| Sample | What to do |
 |---|---|
-| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/enum-values) | A walker over surface tiles: both `EnumValues` variants, default values, `[Flags]` lookup rules |
-| [Types](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/types) | An enemy spawner: `SerializableMonoScript<T>`, `SerializableType<T>`, `[TypeSelectorDisplay]`, a member-referenced `[TypeSelector]`, `ComponentTypeSelector` |
-| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references) | A turret with polymorphic weapons: the `[SerializeReference]` picker in every field shape, broken assets for the repair tools, an IMGUI inspector |
-| [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/editor-tools) | An editor window: fluent `VisualElement` extensions, `SerializedProperty` setters, editor helpers, `TypeSelectorWindow` |
-| [ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/profiler-markers) | A flock simulation: the generated marker tree in the Profiler |
+| [Types](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/types) | Press Play in `Types.unity` to spawn enemies of the class and pattern picked on the Spawner, switch the pattern while they move, and switch a placed enemy's class in place. |
+| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references) | Pick the class of each `[SerializeReference]` weapon on `Loadout.asset` and switch it without losing Damage, then rename a class and repair the broken references. |
+| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/enum-values) | Press Play in `EnumValues.unity`: each lane takes its color and its runner's speed from the tables on Surface Rules, and edits to the tables show at once. |
+| [ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/profiler-markers) | Open the Profiler and press Play in `ProfilerMarkers.unity` to see the nested markers that `this.Marker()` adds to a flock simulation. |
+| [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/editor-tools) | Open `Tools → Aspid 🐍 → FastTools → Samples → Ability Catalog`: an editor window built in code with the fluent UI Toolkit and `SerializedProperty` extensions. |

@@ -140,7 +140,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // pool down to these two types, so the assertions never race additions elsewhere in the project.
     internal interface IRepairRankTarget { }
 
-    // The "moved without [MovedFrom]" shape the SerializeReferences sample's MovedWeaponPreset.asset demonstrates:
+    // The "moved without [MovedFrom]" shape: a type that changed its namespace and left no [MovedFrom] behind,
     // ranked by simple-name match plus the orphaned data's field-shape overlap.
     [Serializable]
     internal sealed class RelocatedRanged : IRepairRankTarget

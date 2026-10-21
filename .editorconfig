@@ -30,7 +30,8 @@ csharp_using_directive_placement = outside_namespace:warning
 dotnet_sort_system_directives_first = false
 dotnet_separate_import_directive_groups = false
 # Namespaces deliberately do NOT mirror folders — every file carries the
-# `// ReSharper disable once CheckNamespace` banner instead (Rider ignores IDE0130 here).
+# `// ReSharper disable once CheckNamespace` banner instead (Rider ignores IDE0130 here),
+# except Samples~, whose asmdefs set rootNamespace and keep the files beside them.
 
 #### Braces — Allman. Single-statement bodies go without braces on the next
 #### line (used ~250 times), so no brace preference is enforced.

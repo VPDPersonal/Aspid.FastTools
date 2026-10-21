@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26c57d1c9a3484a42949559dbe809074, type: 3}
+  m_Name: Loadout
+  m_EditorClassIdentifier: 
+  _primary:
+    rid: 4202911171004596224
+  _sidearms:
+  - rid: 4202911171004596225
+  references:
+    version: 2
+    RefIds:
+    - rid: 4202911171004596224
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 37
+        _magazineSize: 12
+    - rid: 4202911171004596225
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 10
+        _magazineSize: 12

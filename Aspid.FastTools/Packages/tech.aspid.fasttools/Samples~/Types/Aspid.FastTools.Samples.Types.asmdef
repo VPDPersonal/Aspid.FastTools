@@ -1,0 +1,16 @@
+{
+    "name": "Aspid.FastTools.Samples.Types",
+    "rootNamespace": "Aspid.FastTools.Samples.Types",
+    "references": [
+        "Aspid.FastTools"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
