@@ -55,12 +55,12 @@ function inline(nodes) {
 /** `alt` is HTML already. */
 const image = (src, alt, size = '') => `<img src="${src}" alt="${alt}"${size}>`;
 
-/** `Website/docs/09-profiler-markers.md#x` → `<site>docs/profiler-markers#x`; the samples overview → `<site>tutorials`. */
+/** `Website/docs/09-profiler-markers.md#x` → `<site>docs/profiler-markers#x`; the tutorials gallery → `<site>tutorials`. */
 function siteLinks(node, site) {
   if (node.type === 'link' || node.type === 'definition') {
     const doc = /^Website\/docs\/(?:\d+-)?([^/#]+)\.md(#.*)?$/.exec(node.url);
     if (doc && doc[1] !== 'README') node.url = `${site}docs/${doc[1]}${doc[2] ?? ''}`;
-    else if (/\/Samples~\/README\.md$/.test(node.url)) node.url = `${site}tutorials`;
+    else if (/^Website\/tutorials\/index\.mdx$/.test(node.url)) node.url = `${site}tutorials`;
   }
   node.children?.forEach((child) => siteLinks(child, site));
 }
