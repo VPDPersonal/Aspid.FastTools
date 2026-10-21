@@ -227,6 +227,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      actions: read
       contents: read
       pull-requests: read
     outputs:
@@ -276,14 +277,18 @@ jobs:
           # commits with a run of these tests decides. A failed run there is not looked past; a cancelled or missing
           # one is (an older push cancelled by a newer one, a version that only a run without `unity-quick` tests).
           # A rebase leaves no tested commit in the PR, and a merge of main brings its changes into the diff.
-          # Only a run with the Unity secrets looks: the check runs are matched by name, and a fork or Dependabot PR
-          # could add a workflow with jobs of these names that pass without testing, then delete it in a later commit.
+          # Only jobs of a ci.yml run of this repository count: a fork PR can add a workflow with jobs of these names
+          # that pass without testing, then delete it in a later commit, and its runs stay on the SHA. Only a run with
+          # the Unity secrets looks, so a fork or Dependabot PR still fails the plan for a change that reaches the tests.
           passed=""
           if [ "$EVENT" = pull_request ] && [ "$files" != all ] && [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; then
             for sha in $(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/commits?per_page=100" --jq '.[].sha' | tail -n 20 | tac); do
-              verdict="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/commits/$sha/check-runs?per_page=100" | jq -r '
-                [.[].check_runs[] | select(.app.slug == "github-actions")]
-                | (group_by(.name) | map({key: .[0].name, value: (max_by(.id).conclusion // "pending")}) | from_entries) as $latest
+              runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$sha&per_page=100" --jq '.workflow_runs[]
+                | select(.path == ".github/workflows/ci.yml" and .head_repository.full_name == "'"$GITHUB_REPOSITORY"'") | .id')" || runs=""
+              verdict="$(for run in $runs; do
+                gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$run/jobs?filter=all&per_page=100" --jq '.jobs[]'
+              done | jq -rs '
+                (group_by(.name) | map({key: .[0].name, value: (max_by(.id).conclusion // "pending")}) | from_entries) as $latest
                 | [$ARGS.positional[] | $latest["Unity EditMode (\(.))"] // "none"]
                 | if any(.[]; . == "failure" or . == "timed_out") then "failed"
                   elif all(.[]; . == "success") then "passed"
