@@ -10,7 +10,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageFilter
 
 repo = Path(__file__).resolve().parents[3]
-media = repo / 'docs/media/sample-themes'
+media = repo / 'docs/media/samples-gallery'
 recordings = media / 'other-samples'
 previews = repo / 'Website/static/img/samples'
 CAMERA = (1440, 810)

@@ -1,13 +1,12 @@
 #!/bin/sh
 # Records one sample scene into <slug>-<dark|light>.mkv next to this script, in a batch-mode Editor started with the
 # asp-unity-capture skill (`editor.sh open <project>`), so no window reaches the screen.
-# Usage: record.sh <project> <EnumValues|Types|SerializeReferences|ProfilerMarkers> <Dark|Light>
+# Usage: record.sh <project> <Types|SerializeReferences|ProfilerMarkers> <Dark|Light>
 # The project needs the samples imported for the package version; prepare.cs.txt opens the scene in that theme preview,
 # record.cs.txt writes the frames in Play Mode. Types starts right after Play Mode so its placed Archer (12 s lifetime)
-# is on screen: record both themes of a sample with this script back to back. EnumValues uses ../record.cs.txt
-# (titles kept, 60-frame warmup) and writes enum-values-<theme>.mkv one folder up.
-# The .mkv is ignored by Git: upload a new one to Aspid.Media.Storage under the same path, FastTools/Docs/sample-themes/
-# (EnumValues) or FastTools/Docs/sample-themes/other-samples/ (the rest).
+# is on screen: record both themes of a sample with this script back to back.
+# The .mkv is ignored by Git: upload a new one to Aspid.Media.Storage under FastTools/Docs/sample-themes/other-samples/.
+# Out of date: prepare.cs.txt needs the removed Sample Themes window, so this script fails until the media rewrite.
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
 proj=$(cd "$1" && pwd); sample=$2; theme=$3
@@ -16,9 +15,6 @@ slug=$(echo "$sample" | sed 's/\([a-z]\)\([A-Z]\)/\1-\2/g' | tr '[:upper:]' '[:l
 out=$here/$slug-$(echo "$theme" | tr '[:upper:]' '[:lower:]').mkv
 frames=$proj/Temp/SampleThemes/other-samples/clean-frames/$sample
 recorder=$here/record.cs.txt
-if [ "$sample" = EnumValues ]; then
-  recorder=$here/../record.cs.txt; out=$here/../$(basename "$out"); frames=$proj/Temp/SampleThemes/frames
-fi
 
 cmd() { unity command --project-path "$proj" --no-banner --timeout 60 --json "$@"; }
 cloak() { cmd run_script --file "$cloak_cs" --entry CaptureCloak.Run >/dev/null 2>&1 || true; }
