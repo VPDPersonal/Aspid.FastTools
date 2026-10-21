@@ -1,4 +1,4 @@
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
     public interface IWeapon

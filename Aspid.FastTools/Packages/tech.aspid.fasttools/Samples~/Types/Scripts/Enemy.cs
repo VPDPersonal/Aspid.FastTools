@@ -1,7 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     public abstract class Enemy : MonoBehaviour

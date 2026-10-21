@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     [ExecuteAlways]

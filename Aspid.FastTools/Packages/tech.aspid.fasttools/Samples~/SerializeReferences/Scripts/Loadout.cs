@@ -3,7 +3,7 @@ using System.Collections;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
     public sealed class Loadout : MonoBehaviour

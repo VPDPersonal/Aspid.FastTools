@@ -1,7 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     [TypeSelectorDisplay(Name = "Circle", Group = "Spawn Patterns", Icon = "d_SphereCollider Icon")]

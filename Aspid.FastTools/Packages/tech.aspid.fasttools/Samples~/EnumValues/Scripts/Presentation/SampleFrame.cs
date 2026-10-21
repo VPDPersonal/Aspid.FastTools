@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-// ReSharper disable CheckNamespace
-namespace Aspid.FastTools.Samples.Types
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Samples.EnumValues.Presentation
 {
     [ExecuteAlways]
     [RequireComponent(typeof(Camera))]
     public sealed class SampleFrame : MonoBehaviour
     {
-        private const float ReferenceSize = 11f;
+        private const float ReferenceSize = 9f;
 
         private Camera _camera;
 

@@ -3,7 +3,7 @@ using UnityEngine;
 using Aspid.FastTools.Types;
 using Aspid.FastTools.Samples.EditorTools.Effects;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EditorTools
 {
     public sealed class AbilityConfig : ScriptableObject

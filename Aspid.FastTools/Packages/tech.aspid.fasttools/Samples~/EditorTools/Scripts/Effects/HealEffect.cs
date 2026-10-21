@@ -1,6 +1,6 @@
 using Aspid.FastTools.Types;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EditorTools.Effects
 {
     [TypeSelectorDisplay(Name = "Heal", Group = "Effects", Icon = "d_Light Icon")]

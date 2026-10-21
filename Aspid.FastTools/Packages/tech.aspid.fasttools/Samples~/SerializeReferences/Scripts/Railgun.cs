@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
     [Serializable]

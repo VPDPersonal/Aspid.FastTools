@@ -1,7 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Enums;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     public sealed class SurfacePalette : ScriptableObject

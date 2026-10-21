@@ -13,7 +13,7 @@ using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors;
 using Aspid.FastTools.Samples.EditorTools.Effects;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EditorTools.Editors
 {
     internal sealed class AbilityCatalogWindow : EditorWindow

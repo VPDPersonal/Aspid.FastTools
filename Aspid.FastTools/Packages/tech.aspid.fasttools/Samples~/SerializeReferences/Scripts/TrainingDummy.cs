@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
     public sealed class TrainingDummy : MonoBehaviour

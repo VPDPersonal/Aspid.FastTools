@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-// ReSharper disable CheckNamespace
-namespace Aspid.FastTools.Samples.ProfilerMarkers
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Samples.ProfilerMarkers.Presentation
 {
     [ExecuteAlways]
     [RequireComponent(typeof(Camera))]

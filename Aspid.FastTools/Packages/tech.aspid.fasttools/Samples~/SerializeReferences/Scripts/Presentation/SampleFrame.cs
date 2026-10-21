@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-// ReSharper disable CheckNamespace
-namespace Aspid.FastTools.Samples.SerializeReferences
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Samples.SerializeReferences.Presentation
 {
     [ExecuteAlways]
     [RequireComponent(typeof(Camera))]

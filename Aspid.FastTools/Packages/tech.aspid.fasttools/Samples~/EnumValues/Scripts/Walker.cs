@@ -1,7 +1,8 @@
 using UnityEngine;
 using Aspid.FastTools.Enums;
+using Aspid.FastTools.Samples.EnumValues.Presentation;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     public sealed class Walker : MonoBehaviour

@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections;
 using Aspid.FastTools.Types;
 
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
     public sealed class EnemySpawner : MonoBehaviour

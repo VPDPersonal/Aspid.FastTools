@@ -1,8 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// ReSharper disable CheckNamespace
-namespace Aspid.FastTools.Samples.EnumValues
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Samples.EnumValues.Presentation
 {
     public sealed class SurfaceTrail : MonoBehaviour
     {
