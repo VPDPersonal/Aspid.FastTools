@@ -12,17 +12,12 @@ namespace Aspid.FastTools.Samples.EnumValues
         [SerializeField, Min(0.1f)] private float _footprintLifetime = 2f;
 
         private int _direction = 1;
-        private SurfaceTile[] _tiles;
         private SurfaceTile _tile;
         private SurfaceTrail _trail;
         private Material _trailMaterial;
         private Vector3 _lastPoint;
 
-        private void Awake()
-        {
-            _trailMaterial = GetComponent<Renderer>().sharedMaterial;
-            _tiles = FindObjectsByType<SurfaceTile>(FindObjectsSortMode.None);
-        }
+        private void Awake() => _trailMaterial = GetComponent<Renderer>().sharedMaterial;
 
         private void Update()
         {
@@ -61,7 +56,7 @@ namespace Aspid.FastTools.Samples.EnumValues
 
         private SurfaceTile FindTile(float x)
         {
-            foreach (var tile in _tiles)
+            foreach (var tile in SurfaceTile.Enabled)
             {
                 var bounds = tile.Bounds;
                 if (x >= bounds.min.x && x <= bounds.max.x)

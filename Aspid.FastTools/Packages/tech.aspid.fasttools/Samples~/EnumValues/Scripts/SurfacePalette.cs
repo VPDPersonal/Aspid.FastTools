@@ -14,7 +14,7 @@ namespace Aspid.FastTools.Samples.EnumValues
 
         private void OnValidate()
         {
-            foreach (var tile in FindObjectsByType<SurfaceTile>(FindObjectsSortMode.None))
+            foreach (var tile in SurfaceTile.Enabled)
                 tile.Refresh();
         }
     }

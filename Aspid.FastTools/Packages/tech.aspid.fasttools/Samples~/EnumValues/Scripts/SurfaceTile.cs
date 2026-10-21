@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.Samples.EnumValues
 {
@@ -6,6 +7,7 @@ namespace Aspid.FastTools.Samples.EnumValues
     public sealed class SurfaceTile : MonoBehaviour
     {
         private static readonly int ColorId = Shader.PropertyToID("_Color");
+        private static readonly List<SurfaceTile> EnabledTiles = new();
 
         [SerializeField] private SurfaceType _surface;
         [SerializeField] private TerrainFlags _flags;
@@ -17,7 +19,15 @@ namespace Aspid.FastTools.Samples.EnumValues
 
         public Bounds Bounds => GetComponent<Renderer>().bounds;
 
-        private void OnEnable() => Refresh();
+        public static IReadOnlyList<SurfaceTile> Enabled => EnabledTiles;
+
+        private void OnEnable()
+        {
+            EnabledTiles.Add(this);
+            Refresh();
+        }
+
+        private void OnDisable() => EnabledTiles.Remove(this);
 
         private void OnValidate() => Refresh();
 
