@@ -30,13 +30,14 @@ Run what applies before you open a PR.
 - Public API of the package carries XML docs (`<summary>`, `<param>`, `<returns>`, `<see cref/>`).
 - `Samples~` is code a newcomer reads, not package API, and follows its own rules (`node scripts/check-samples.mjs`
   checks them):
-  - No `//`, `///` or `/* */` comments, no ReSharper banner, `[Tooltip]`, `[Header]`, `Debug.Log` or XML docs.
-  - Each asmdef sets `rootNamespace` to its namespace, and the `.cs` files sit flat beside it. Shaders, materials
-    and prefabs go in `Art/`. One top-level type per file, named after it.
+  - No `//`, `///` or `/* */` comments, no ReSharper banner, `[Header]`, `Debug.Log` or XML docs; `[Tooltip]` only
+    where it tells more than the field name.
+  - Each asmdef sets `rootNamespace` to its namespace, and the `.cs` files sit flat beside it in `Scripts/` (an editor
+    asmdef in `Scripts/Editor/`). Scenes go in `Scenes/`, and the visuals in `Materials/`, `Shaders/` (the sample's
+    own `Studio` shader) and `Fonts/` with their licences. One top-level type per file, named after it.
   - Name every argument of a non-fluent call with two or more arguments, and a lone `bool`, number or `null`
     literal: `Instantiate(original: _enemyPrefab, parent: transform)`, `_list.SetSelection(index: 0)`. Keep
     single-argument fluent setters, profiler markers and attribute arguments positional: `SetWidth(220)`,
     `WithName("Steering")`, `[Range(10, 400)]`.
-  - Scenes hold only a stock Main Camera (Solid Color, an AudioListener, the last root) and meshes drawn with the
-    sample's own `Studio` shader: no lights, physics, text or fonts.
+  - Scenes need no optional module: no lights, colliders or physics. No sample ships a broken asset.
   - A kept file keeps its `.meta` GUID. Every serialized field with a constant initializer is read in code (CS0414).

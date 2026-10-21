@@ -1,0 +1,311 @@
+@import url("SampleFonts.uss");
+
+.ability-catalog {
+    background-color: var(--aspid-colors-surface-card);
+    color: var(--aspid-colors-text-light);
+    font-size: 14px;
+}
+
+.ability-sidebar {
+    background-color: var(--aspid-colors-surface-canvas);
+    border-right-width: 1px;
+    border-right-color: var(--aspid-colors-shade-darkness);
+}
+
+.ability-toolbar {
+    padding: 12px;
+}
+
+.ability-search {
+    margin: 0 8px 0 0;
+}
+
+.ability-catalog .ability-search .unity-base-text-field__input {
+    padding-left: 30px;
+}
+
+.ability-search__icon {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: var(--aspid-colors-text-dark);
+}
+
+.ability-catalog .unity-collection-view__item {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.ability-catalog .unity-collection-view__item:hover {
+    background-color: var(--aspid-colors-overlay-hover);
+}
+
+.ability-catalog .unity-collection-view__item--selected,
+.ability-catalog .unity-collection-view__item--selected:hover,
+.ability-catalog .unity-collection-view:focus .unity-collection-view__item--selected {
+    background-color: var(--aspid-colors-accent-tint);
+}
+
+.ability-row {
+    flex-grow: 1;
+    padding: 0 10px 0 13px;
+    border-left-width: 3px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+
+.ability-row.unity-collection-view__item--selected {
+    border-left-color: var(--aspid-colors-accent-text-light);
+}
+
+.ability-row__actions {
+    display: none;
+}
+
+.ability-row:hover .ability-row__actions,
+.ability-row.unity-collection-view__item--selected .ability-row__actions {
+    display: flex;
+}
+
+.ability-catalog Button.ability-row__button {
+    width: 28px;
+    height: 28px;
+    margin: 0 0 0 2px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-radius: var(--aspid-radius-control);
+}
+
+.ability-catalog Button.ability-row__button:hover,
+.ability-catalog Button.ability-row__button:active {
+    background-color: var(--aspid-colors-overlay-control-hover);
+}
+
+.ability-row__icon {
+    width: 16px;
+    height: 16px;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: var(--aspid-colors-text-dark);
+}
+
+.ability-row__button:hover .ability-row__icon {
+    -unity-background-image-tint-color: var(--aspid-colors-text-lightness);
+}
+
+.ability-row__button--danger:hover .ability-row__icon {
+    -unity-background-image-tint-color: var(--aspid-colors-status-error-text-light);
+}
+
+.ability-catalog .unity-list-view__empty-label {
+    margin: 0;
+    padding: 4px 16px 4px 14.5px;
+    font-size: 14px;
+    color: var(--aspid-colors-text-dark);
+    -unity-text-align: upper-left;
+}
+
+#abilityName {
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+    -unity-font-style: bold;
+    color: var(--aspid-colors-text-lightness);
+}
+
+#abilityStats {
+    margin: 4px 0 0 0;
+    padding: 0;
+    font-size: 13px;
+    color: var(--aspid-colors-text-dark);
+}
+
+.ability-form {
+    max-width: 720px;
+    padding: 32px 40px;
+}
+
+.ability-title {
+    margin: 0 0 24px 0;
+    padding: 0;
+    font-size: 28px;
+    color: var(--aspid-colors-text-lightness);
+    white-space: normal;
+}
+
+.ability-empty {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    color: var(--aspid-colors-text-dark);
+}
+
+.ability-form .unity-base-field {
+    margin: 0 0 12px 0;
+    align-items: center;
+}
+
+.ability-form .unity-base-field__label,
+.ability-label {
+    width: 128px;
+    min-width: 128px;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    color: var(--aspid-colors-text-dark);
+    -unity-text-align: middle-left;
+}
+
+.ability-form .unity-base-field:hover > .unity-base-field__label {
+    color: var(--aspid-colors-text-dark);
+}
+
+.ability-form .unity-base-field:focus > .unity-base-field__label {
+    color: var(--aspid-colors-accent-text-light);
+}
+
+.ability-catalog .unity-base-text-field__input {
+    min-height: 32px;
+    margin: 0;
+    padding: 0 10px;
+    align-items: center;
+    background-color: var(--aspid-colors-surface-field);
+    border-width: 1px;
+    border-color: var(--aspid-colors-control-border);
+    border-radius: var(--aspid-radius-control);
+    color: var(--aspid-colors-text-lightness);
+    font-size: 14px;
+    -unity-text-align: middle-left;
+    --unity-cursor-color: var(--aspid-colors-text-lightness);
+    --unity-selection-color: var(--aspid-colors-overlay-control-hover);
+}
+
+.ability-catalog .unity-base-text-field__input--placeholder {
+    color: var(--aspid-colors-text-darkness);
+}
+
+.ability-catalog .unity-base-text-field:hover > .unity-base-text-field__input {
+    border-color: var(--aspid-colors-accent-shade-light);
+}
+
+.ability-catalog .unity-base-text-field:focus > .unity-base-text-field__input,
+.ability-catalog .unity-base-text-field__input:focus {
+    border-color: var(--aspid-colors-accent-text-light);
+}
+
+.ability-form .ability-description {
+    align-items: flex-start;
+}
+
+.ability-description .unity-base-field__label {
+    padding-top: 8px;
+}
+
+.ability-catalog .ability-description .unity-base-text-field__input {
+    align-items: stretch;
+    min-height: 76px;
+    padding: 8px 10px;
+    white-space: normal;
+    -unity-text-align: upper-left;
+}
+
+.ability-catalog Button.ability-effect {
+    flex-direction: row;
+    align-items: center;
+    height: 32px;
+    margin: 0;
+    padding: 0 6px 0 11.5px;
+    background-color: var(--aspid-colors-surface-field);
+    border-width: 1px;
+    border-color: var(--aspid-colors-control-border);
+    border-radius: var(--aspid-radius-control);
+}
+
+.ability-catalog Button.ability-effect:hover {
+    background-color: var(--aspid-colors-surface-field);
+    border-color: var(--aspid-colors-accent-shade-light);
+}
+
+.ability-catalog Button.ability-effect:active {
+    background-color: var(--aspid-colors-surface-field);
+    border-color: var(--aspid-colors-accent-text-light);
+}
+
+.ability-effect__icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.ability-effect__name {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    color: var(--aspid-colors-text-lightness);
+    -unity-text-align: middle-left;
+}
+
+.ability-effect__arrow {
+    -unity-background-image-tint-color: var(--aspid-colors-text-dark);
+}
+
+.ability-effect__note {
+    margin: 8px 0 0 128px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--aspid-colors-text-dark);
+    white-space: normal;
+}
+
+.ability-actions {
+    margin: 28px 0 0 128px;
+}
+
+.ability-catalog Button.ability-button {
+    height: 32px;
+    margin: 0 8px 8px 0;
+    padding: 0 14px;
+    background-color: var(--aspid-colors-surface-control);
+    border-width: 1px;
+    border-color: var(--aspid-colors-control-border);
+    border-radius: var(--aspid-radius-control);
+    color: var(--aspid-colors-text-light);
+    font-size: 13px;
+    -unity-text-align: middle-center;
+}
+
+.ability-catalog Button.ability-button:hover {
+    background-color: var(--aspid-colors-surface-control);
+    border-color: var(--aspid-colors-accent-shade-light);
+    color: var(--aspid-colors-accent-text-light);
+}
+
+.ability-catalog Button.ability-button:active {
+    background-color: var(--aspid-colors-accent-tint);
+    border-color: var(--aspid-colors-accent-text-light);
+}
+
+.ability-catalog Button.ability-button--primary {
+    margin: 0;
+    background-color: var(--aspid-colors-accent-shade-dark);
+    border-color: var(--aspid-colors-accent-shade-light);
+    color: var(--aspid-colors-accent-text-lightness);
+}
+
+.ability-catalog Button.ability-button--icon {
+    width: 32px;
+    padding: 0 0 2.5px 0;
+    font-size: 20px;
+}
+
+.ability-catalog Button.ability-button--primary:hover {
+    background-color: var(--aspid-colors-accent-shade-dark);
+    border-color: var(--aspid-colors-accent-text-light);
+    color: var(--aspid-colors-accent-text-lightness);
+}

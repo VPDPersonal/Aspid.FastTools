@@ -4,8 +4,8 @@
 
 | Пример | Что сделать |
 |---|---|
-| [Types](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/types) | Нажмите Play в `Types.unity`, чтобы создать врагов того класса и шаблона спавна, что выбраны на Spawner, смените шаблон, пока они движутся, и смените класс расставленного врага на месте. |
-| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/serialize-references) | Выберите класс каждого оружия `[SerializeReference]` в `Loadout.asset` и смените его без потери Damage, затем переименуйте класс и почините сломанные ссылки. |
-| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/enum-values) | Нажмите Play в `EnumValues.unity`: каждая дорожка берёт цвет и скорость бегуна из таблиц на Surface Rules, а правки таблиц видны сразу. |
+| [Types](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/types) | Нажмите Play в `Types.unity`: Enemy Spawner выпускает волны врагов того класса и шаблона спавна, что выбраны в Inspector, а расставленный враг меняет класс на месте. |
+| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/serialize-references) | Нажмите Play в `SerializeReferences.unity`: турель стреляет по манекену оружием `[SerializeReference]`, выбранным в её Loadout, и манекен горит и замерзает. |
+| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/enum-values) | Нажмите Play в `EnumValues.unity`: бегун идёт по плиткам, чьи цвета и скорости берутся из таблиц `EnumValues`, и оставляет след цвета каждой поверхности. |
 | [ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/profiler-markers) | Откройте Profiler и нажмите Play в `ProfilerMarkers.unity`, чтобы увидеть вложенные маркеры, которые `this.Marker()` добавляет в симуляцию стаи. |
 | [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/ru/tutorials/editor-tools) | Откройте `Tools → Aspid 🐍 → FastTools → Samples → Ability Catalog`: окно редактора, собранное в коде fluent-расширениями UI Toolkit и `SerializedProperty`. |

@@ -1,0 +1,14 @@
+using System;
+using UnityEngine;
+
+namespace Aspid.FastTools.Samples.SerializeReferences
+{
+    [Serializable]
+    public sealed class FreezeEffect : StatusEffect
+    {
+        [SerializeField, Range(0f, 1f)] private float _slow = 0.5f;
+
+        public override void Apply(TrainingDummy target) =>
+            target.Freeze(slow: _slow, duration: Duration);
+    }
+}

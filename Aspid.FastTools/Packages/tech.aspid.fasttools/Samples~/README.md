@@ -4,8 +4,8 @@ Import the samples from the Package Manager (**Aspid.FastTools → Samples**) or
 
 | Sample | What to do |
 |---|---|
-| [Types](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/types) | Press Play in `Types.unity` to spawn enemies of the class and pattern picked on the Spawner, switch the pattern while they move, and switch a placed enemy's class in place. |
-| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references) | Pick the class of each `[SerializeReference]` weapon on `Loadout.asset` and switch it without losing Damage, then rename a class and repair the broken references. |
-| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/enum-values) | Press Play in `EnumValues.unity`: each lane takes its color and its runner's speed from the tables on Surface Rules, and edits to the tables show at once. |
+| [Types](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/types) | Press Play in `Types.unity`: the Enemy Spawner sends waves of the enemy class and spawn pattern picked in the Inspector, and the placed enemy switches its class in place. |
+| [SerializeReferences](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/serialize-references) | Press Play in `SerializeReferences.unity`: a turret fires the `[SerializeReference]` weapons picked on its Loadout at a training dummy that burns and freezes. |
+| [EnumValues](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/enum-values) | Press Play in `EnumValues.unity`: a walker crosses surface tiles whose colors and speeds come from `EnumValues` tables and leaves a trail in each surface's color. |
 | [ProfilerMarkers](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/profiler-markers) | Open the Profiler and press Play in `ProfilerMarkers.unity` to see the nested markers that `this.Marker()` adds to a flock simulation. |
 | [EditorTools](https://vpdpersonal.github.io/Aspid.FastTools/tutorials/editor-tools) | Open `Tools → Aspid 🐍 → FastTools → Samples → Ability Catalog`: an editor window built in code with the fluent UI Toolkit and `SerializedProperty` extensions. |
