@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   # A file without a .meta, a guid used twice, a sample or asmdef reference that leads nowhere: Unity repairs these in a
-  # local package and ignores or breaks them in the installed one.
+  # local package and ignores or breaks them in the installed one. check-samples.mjs holds Samples~ to its AGENTS.md rules.
   package-files:
     name: Package files
     runs-on: ubuntu-latest
@@ -52,10 +52,13 @@ jobs:
             Aspid.FastTools/Packages/tech.aspid.fasttools
             Aspid.FastTools/Assets/DevTests~
             Aspid.FastTools/Assets/DevTools
+            Website/tutorials
+            Website/i18n/ru/docusaurus-plugin-content-docs-tutorials
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - run: node scripts/check-package-files.mjs
+      - run: node scripts/check-samples.mjs
 
   # The version files that scripts/set-version.sh writes (release.yml runs this job too), and the minimum
   # Unity version that the files with a hand-written copy still agree on.

@@ -18,8 +18,8 @@ Agent Skills for projects that consume the package in `skills/`. The rules of ea
 Run what applies before you open a PR.
 
 - Scripts: `npm --prefix Website ci && node --test scripts/*.test.mjs`.
-- Repository: `node scripts/check-package-files.mjs`, `node scripts/check-version.mjs`,
-  `node scripts/check-unity-minimum.mjs`, `node scripts/check-contrast.mjs`, and
+- Repository: `node scripts/check-package-files.mjs`, `node scripts/check-samples.mjs`,
+  `node scripts/check-version.mjs`, `node scripts/check-unity-minimum.mjs`, `node scripts/check-contrast.mjs`, and
   `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
 
 ## C# style beyond `.editorconfig`
