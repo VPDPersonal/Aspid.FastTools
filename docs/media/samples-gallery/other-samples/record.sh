@@ -6,6 +6,7 @@
 # record.cs.txt writes the frames in Play Mode. Types starts right after Play Mode so its placed Archer (12 s lifetime)
 # is on screen: record both themes of a sample with this script back to back.
 # The .mkv is ignored by Git: upload a new one to Aspid.Media.Storage under FastTools/Docs/sample-themes/other-samples/.
+# Out of date: prepare.cs.txt needs the removed Sample Themes window, so this script fails until the media rewrite.
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
 proj=$(cd "$1" && pwd); sample=$2; theme=$3
