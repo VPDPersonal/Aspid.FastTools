@@ -110,8 +110,10 @@ Reload(ability);
 
 ## Comments
 
-- In English, and few. A comment says why the code does something it would not obviously do. It does not retell
-  the code.
+- As a rule, code carries no comments: names and structure explain it.
+- A comment is for a place that is hard to read without one: a non-obvious algorithm or workaround, `unsafe` code,
+  Burst code. It says why, in English, and does not retell the code.
+- Config files (`.editorconfig`, YAML, JSON) get short section headers at most.
 - The public API of the package carries XML docs: `<summary>`, `<param>`, `<returns>`, `<see cref/>`. Internal code
   and samples need none.
 
