@@ -15,12 +15,13 @@ Rules beyond `.editorconfig`. They apply to the package, the samples, the genera
 2. `static readonly` fields.
 3. Serialized fields.
 4. Other instance fields.
-5. Properties.
+5. Auto-properties.
 6. Constructors.
-7. Unity messages, in lifecycle order.
-8. Public methods.
-9. Private methods.
-10. Static methods.
+7. Properties with a body.
+8. Unity messages, in lifecycle order.
+9. Public methods.
+10. Private methods.
+11. Static methods.
 
 Within a group, order declarations by ascending line length.
 
