@@ -11,6 +11,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedLogo";
         private const int LayerCount = 3;
         private const long AnimationIntervalMs = 33;
+        private const float RestAmplitude = 0.0005f;
         private const float PulseAmplitudeSmoothing = 0.07f;
         private const string LayerClass = "aspid-fasttools-animated-logo__layer";
         private const string LayerVisibleClass = "aspid-fasttools-animated-logo__layer--visible";
@@ -197,10 +198,21 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _layers[_currentLayer].AddClass(LayerVisibleClass);
         }
 
-        private void UpdatePulse()
+        // Away from the pointer the pulse fades out and the logo rests at its natural size: a scale written on every
+        // tick would keep redrawing the window while nobody hovers the logo.
+        internal void UpdatePulse()
         {
+            if (!_hovered && _pulseAmplitude is 0f) return;
+
             var targetAmplitude = _hovered ? PulseHoverAmplitude : 0f;
             _pulseAmplitude = Mathf.Lerp(_pulseAmplitude, targetAmplitude, PulseAmplitudeSmoothing);
+
+            if (!_hovered && _pulseAmplitude < RestAmplitude)
+            {
+                _pulseAmplitude = 0f;
+                style.scale = StyleKeyword.Null;
+                return;
+            }
 
             var time = (float)EditorApplication.timeSinceStartup;
             var pulse = 1f + Mathf.Sin(time * PulseSpeed) * _pulseAmplitude;
