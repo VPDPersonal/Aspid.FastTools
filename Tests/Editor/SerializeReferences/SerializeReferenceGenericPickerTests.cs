@@ -71,10 +71,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceGenericPickerTests
     {
-        private static readonly MethodInfo ActivateNode = typeof(TypeSelectorView)
+        private static readonly MethodInfo _activateNode = typeof(TypeSelectorView)
             .GetMethod("ActivateNode", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        private static readonly Type FieldType = typeof(IGenericPickerEffect);
+        private static readonly Type _fieldType = typeof(IGenericPickerEffect);
 
         private string _recentsJson;
 
@@ -216,7 +216,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ArgumentPage_ListOfListTheFilterLets_IsNotStored()
         {
-            var filter = SerializeReferenceHelpers.BuildPickerFilter(FieldType, baseTypes: null,
+            var filter = SerializeReferenceHelpers.BuildPickerFilter(_fieldType, baseTypes: null,
                 excludeEditorOnly: false);
             filter.GenericDefinitionFilter = null;
 
@@ -251,7 +251,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ArgumentPage_ClosedGenericTheFilterRejects_IsNotStored()
         {
-            var filter = SerializeReferenceHelpers.BuildPickerFilter(FieldType, baseTypes: null,
+            var filter = SerializeReferenceHelpers.BuildPickerFilter(_fieldType, baseTypes: null,
                 excludeEditorOnly: false);
             filter.GenericDefinitionFilter = null;
 
@@ -303,7 +303,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         // The filter the [SerializeReference] drawers build for a field of IGenericPickerEffect.
         private static Picker Open(Type[] narrowingTypes) =>
-            Open(SerializeReferenceHelpers.BuildPickerFilter(FieldType, narrowingTypes, excludeEditorOnly: false));
+            Open(SerializeReferenceHelpers.BuildPickerFilter(_fieldType, narrowingTypes, excludeEditorOnly: false));
 
         private static Picker Open(TypeSelectorFilter filter)
         {
@@ -337,7 +337,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 var node = FindOnPage(type);
 
                 Assert.IsNotNull(node, $"The current page must offer {type.Name}.");
-                ActivateNode.Invoke(View, new object[] { node });
+                _activateNode.Invoke(View, new object[] { node });
             }
 
             public bool Offers(Type type) =>

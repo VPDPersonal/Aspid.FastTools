@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Editors
         // Pipelines is the drawer's [SupportedOnRenderPipeline] list; null means any pipeline.
         private static List<(Type Target, bool UseForChildren, Type[] Pipelines)> _registrations;
 
-        private static readonly Dictionary<(Type, bool, Type), bool> Cache = new();
+        private static readonly Dictionary<(Type, bool, Type), bool> _cache = new();
 
         private static List<(Type Target, bool UseForChildren, Type[] Pipelines)> Registrations => _registrations ??= Collect();
 
@@ -30,8 +30,8 @@ namespace Aspid.FastTools.Editors
             // Drawers only change with a domain reload, which also clears this cache. The render pipeline can change
             // without one, so it is part of the key.
             var key = (type, isManagedReference, pipelineType);
-            if (Cache.TryGetValue(key, out var hasDrawer)) return hasDrawer;
-            return Cache[key] = Lookup(type, isManagedReference, pipelineType: pipelineType);
+            if (_cache.TryGetValue(key, out var hasDrawer)) return hasDrawer;
+            return _cache[key] = Lookup(type, isManagedReference, pipelineType: pipelineType);
         }
 
         private static bool Lookup(Type type, bool isManagedReference, Type pipelineType)

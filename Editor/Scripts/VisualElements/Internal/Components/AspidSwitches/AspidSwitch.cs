@@ -22,10 +22,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const float TrackInnerHeight = TrackHeight - 2f * TrackBorderWidth;
         private const float HandleInset = (TrackInnerHeight - HandleSize) / 2f;
 
-        private static readonly CustomStyleProperty<Color> AccentProperty = new("--aspid-fasttools-colors-switch-accent");
-        private static readonly CustomStyleProperty<Color> TrackOffBorderProperty = new("--aspid-fasttools-colors-switch-track_border");
-        private static readonly CustomStyleProperty<Color> HandleProperty = new("--aspid-fasttools-colors-switch-handle");
-        private static readonly CustomStyleProperty<Color> HandleShadowProperty = new("--aspid-fasttools-colors-switch-handle_shadow");
+        private static readonly CustomStyleProperty<Color> _accentProperty = new("--aspid-fasttools-colors-switch-accent");
+        private static readonly CustomStyleProperty<Color> _trackOffBorderProperty = new("--aspid-fasttools-colors-switch-track_border");
+        private static readonly CustomStyleProperty<Color> _handleProperty = new("--aspid-fasttools-colors-switch-handle");
+        private static readonly CustomStyleProperty<Color> _handleShadowProperty = new("--aspid-fasttools-colors-switch-handle_shadow");
 
         // Fallbacks while the --aspid-colors-switch-* palette tokens are unset; the skin is read on every style
         // resolve, so a switch of the editor skin updates them. The accents are the documentation site's greens.
@@ -122,13 +122,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         {
             var customStyle = evt.customStyle;
 
-            _accentColor = customStyle.TryGetValue(AccentProperty, out var accent) ? accent : DefaultAccentColor;
-            _trackOffBorderColor = customStyle.TryGetValue(TrackOffBorderProperty, out var border)
+            _accentColor = customStyle.TryGetValue(_accentProperty, out var accent) ? accent : DefaultAccentColor;
+            _trackOffBorderColor = customStyle.TryGetValue(_trackOffBorderProperty, out var border)
                 ? border
                 : DefaultTrackOffBorderColor;
 
-            _handle.SetBackgroundColor(customStyle.TryGetValue(HandleProperty, out var handle) ? handle : DefaultHandleColor);
-            _handle.SetBorderColor(customStyle.TryGetValue(HandleShadowProperty, out var shadow)
+            _handle.SetBackgroundColor(customStyle.TryGetValue(_handleProperty, out var handle) ? handle : DefaultHandleColor);
+            _handle.SetBorderColor(customStyle.TryGetValue(_handleShadowProperty, out var shadow)
                 ? shadow
                 : DefaultHandleShadowColor);
 

@@ -25,7 +25,7 @@ namespace Aspid.FastTools.Editors
         private const float ActionHoverLighten = 0.35f;
 
         // Unity's light-skin inspector background (--unity-colors-window-background); text needs 4.5:1, plus a margin.
-        private static readonly Color LightSkinBackground = new Color32(200, 200, 200, 255);
+        private static readonly Color _lightSkinBackground = new Color32(200, 200, 200, 255);
         private const float MinTextContrast = 4.6f;
 
         private const float DotSize = 8f;
@@ -137,7 +137,7 @@ namespace Aspid.FastTools.Editors
         {
             if (!lightSkin) return ridColor;
 
-            var maxLuminance = (Luminance(LightSkinBackground) + 0.05f) / MinTextContrast - 0.05f;
+            var maxLuminance = (Luminance(_lightSkinBackground) + 0.05f) / MinTextContrast - 0.05f;
             var luminance = Luminance(ridColor);
             if (luminance <= maxLuminance) return ridColor;
 

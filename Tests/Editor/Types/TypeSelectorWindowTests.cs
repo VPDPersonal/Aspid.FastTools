@@ -12,7 +12,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         private const string ProbePath = "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/AspidThemeProbe.uss";
         private const string DropdownClass = "aspid-fasttools-type-selector--dropdown";
 
-        private static readonly Rect Anchor = new(x: 100, y: 100, width: 200, height: 20);
+        private static readonly Rect _anchor = new(x: 100, y: 100, width: 200, height: 20);
 
         [TearDown]
         public void TearDown()
@@ -28,7 +28,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.IsNotNull(sheet, "The probe sheet must load.");
 
             TypeSelectorWindow.Show(
-                screenRect: Anchor,
+                screenRect: _anchor,
                 filter: default,
                 assemblyQualifiedName: string.Empty,
                 onSelected: null,
@@ -45,7 +45,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void Show_WithoutStyleSheet_KeepsThePopupLook()
         {
-            TypeSelectorWindow.Show(screenRect: Anchor);
+            TypeSelectorWindow.Show(screenRect: _anchor);
 
             var view = OpenedView(out var root);
             Assert.IsFalse(root.ClassListContains(AspidStyles.WindowClass), "A plain selector must not read the window palette.");

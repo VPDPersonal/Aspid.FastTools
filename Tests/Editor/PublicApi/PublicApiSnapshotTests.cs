@@ -28,9 +28,9 @@ namespace Aspid.FastTools.Editors.Tests
         // Move this guard and WholeApiVersion together with the first public member under a newer one.
         private const string WholeApiVersion = "6000.6";
 #if UNITY_6000_6_OR_NEWER
-        private static readonly bool HasWholeApi = true;
+        private static readonly bool _hasWholeApi = true;
 #else
-        private static readonly bool HasWholeApi = false;
+        private static readonly bool _hasWholeApi = false;
 #endif
 
         [Test]
@@ -54,7 +54,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             if (Environment.GetEnvironmentVariable(WriteVariable) == "1")
             {
-                Assert.IsTrue(HasWholeApi, $"Write the baseline on Unity {WholeApiVersion} or newer: an older Editor lacks part of the API.");
+                Assert.IsTrue(_hasWholeApi, $"Write the baseline on Unity {WholeApiVersion} or newer: an older Editor lacks part of the API.");
 
                 if (baseline is not null)
                 {
@@ -70,7 +70,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             var expected = baseline.GetEntries(excludedAssemblies: notCompiled);
             var actual = current.GetEntries(excludedAssemblies: Array.Empty<string>());
-            var removed = HasWholeApi ? expected.Where(entry => !actual.Contains(entry)).ToList() : new List<string>();
+            var removed = _hasWholeApi ? expected.Where(entry => !actual.Contains(entry)).ToList() : new List<string>();
             var added = actual.Where(entry => !expected.Contains(entry)).ToList();
 
             if (removed.Count is 0 && added.Count is 0) return;

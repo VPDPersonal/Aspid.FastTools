@@ -14,7 +14,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The answer depends on the field, its attributes and the drawer registry, which change only with a domain
         // reload that also clears this cache. IMGUI asks for every nested reference on every event.
-        private static readonly Dictionary<(FieldInfo, bool, bool), bool> DrawnByUnityCache = new();
+        private static readonly Dictionary<(FieldInfo, bool, bool), bool> _drawnByUnityCache = new();
 
         internal static bool DrawsOwnHeader(SerializedProperty child, int depth)
         {
@@ -35,9 +35,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var isArray = child.isArray;
 
             var key = (field, isArrayElement, isArray);
-            if (DrawnByUnityCache.TryGetValue(key, out var drawn)) return drawn;
+            if (_drawnByUnityCache.TryGetValue(key, out var drawn)) return drawn;
 
-            return DrawnByUnityCache[key] = DrawnByUnity(field, isArrayElement: isArrayElement, isArray: isArray);
+            return _drawnByUnityCache[key] = DrawnByUnity(field, isArrayElement: isArrayElement, isArray: isArray);
         }
 
         private static bool DrawnByUnity(FieldInfo field, bool isArrayElement, bool isArray)

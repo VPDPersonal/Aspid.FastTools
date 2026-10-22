@@ -24,7 +24,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             "      data:\n" +
             "        _damage: 15\n";
 
-        private static readonly Func<ManagedTypeName, bool> Resolves = type =>
+        private static readonly Func<ManagedTypeName, bool> _resolves = type =>
             !type.Class.StartsWith("Ghost", StringComparison.Ordinal);
 
         private string _path;
@@ -37,7 +37,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             _path = YamlFixtures.WriteTemp("%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n--- !u!114 &11400000\nMonoBehaviour:\n  _sidearms:\n  - rid: 1002\n");
 
-            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null));
+            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null));
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             _path = YamlFixtures.WriteTemp(string.Empty);
             File.WriteAllBytes(_path, new byte[] { 0, 1, 2, 3, 0x52, 0x65, 0x66 });
 
-            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null));
+            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null));
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid }, backups: new[] { N, GhostRid }, ghostEntry: true));
 
-            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null);
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null);
 
             CollectionAssert.AreEquivalent(new[] { "_sidearms", "_backups" }, snapshots.Select(snapshot => snapshot.Field));
             foreach (var snapshot in snapshots)
@@ -70,7 +70,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid }, backups: new[] { N }, ghostEntry: true));
 
             var replaced = new HashSet<(long, long)> { (FileId, GhostRid) };
-            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced));
+            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced));
         }
 
         [Test]
@@ -79,7 +79,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // [Ghost, Shotgun, Ghost] share one entry, and slot 0 was set to <None>: only slot 2 comes back.
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid, GhostRid }, backups: new[] { N }, ghostEntry: true));
             var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 0) };
-            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots);
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null, replacedSlots);
             File.WriteAllText(_path, Asset(sidearms: new[] { N, ShotgunRid, N }, backups: new[] { N }, ghostEntry: false));
 
             var report = SerializeReferenceYamlEditor.RestoreMissingLists(_path, snapshots);
@@ -95,7 +95,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid }, backups: new[] { N }, ghostEntry: true));
             var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 1) };
 
-            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots));
+            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null, replacedSlots));
         }
 
         [Test]
@@ -105,7 +105,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // <None>: the note's slot 0 holds Shotgun in the file, so only the nearest Ghost slot counts as replaced.
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { ShotgunRid, GhostRid, GhostRid }, backups: new[] { N }, ghostEntry: true));
             var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 0) };
-            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots);
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null, replacedSlots);
             File.WriteAllText(_path, Asset(sidearms: new[] { N, N }, backups: new[] { N }, ghostEntry: false));
 
             var report = SerializeReferenceYamlEditor.RestoreMissingLists(_path, snapshots);
@@ -122,7 +122,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { ShotgunRid, GhostRid, GhostRid }, backups: new[] { N }, ghostEntry: true));
             var replacedSlots = new[] { (FileId, GhostRid, "_sidearms", 0), (FileId, GhostRid, "_sidearms", 1) };
 
-            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null, replacedSlots));
+            Assert.IsEmpty(SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null, replacedSlots));
         }
 
         [Test]
@@ -150,7 +150,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void Restore_MissingElementSharedByTwoLists_PointsBothAtOneEntry()
         {
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid }, backups: new[] { GhostRid }, ghostEntry: true));
-            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null);
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null);
             File.WriteAllText(_path, Asset(sidearms: new[] { N, ShotgunRid, N }, backups: new[] { N }, ghostEntry: false));
 
             var report = SerializeReferenceYamlEditor.RestoreMissingLists(_path, snapshots);
@@ -188,7 +188,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void Restore_AssignedSlot_IsNotOverwritten()
         {
             _path = YamlFixtures.WriteTemp(Asset(sidearms: new[] { GhostRid, ShotgunRid }, backups: new[] { N }, ghostEntry: true));
-            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null);
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null);
             File.WriteAllText(_path, Asset(sidearms: new[] { ShotgunRid, ShotgunRid }, backups: new[] { N }, ghostEntry: false));
 
             var report = SerializeReferenceYamlEditor.RestoreMissingLists(_path, snapshots);
@@ -200,7 +200,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private MissingListReport SaveAndRestore(long[] before, long[] after)
         {
             _path = YamlFixtures.WriteTemp(Asset(before, backups: new[] { N }, ghostEntry: true));
-            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, Resolves, replaced: null);
+            var snapshots = SerializeReferenceYamlEditor.SnapshotMissingLists(_path, _resolves, replaced: null);
 
             File.WriteAllText(_path, Asset(after, backups: new[] { N }, ghostEntry: false));
             return SerializeReferenceYamlEditor.RestoreMissingLists(_path, snapshots);

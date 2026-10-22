@@ -904,11 +904,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Per-type memo, so the walk skips by-value data without managed references, such as long arrays of plain
         // structs. The reflected field set is stable until a domain reload clears statics.
-        private static readonly Dictionary<Type, bool> ByValueReferenceHolders = new();
+        private static readonly Dictionary<Type, bool> _byValueReferenceHolders = new();
 
         // The types on the current walk with their depth, and the smallest depth at which the walk below the current
         // type cut a cycle.
-        private static readonly Dictionary<Type, int> ByValueTypesInProgress = new();
+        private static readonly Dictionary<Type, int> _byValueTypesInProgress = new();
         private static int _shallowestCycleCut = int.MaxValue;
 
         // A serializable struct or class, or an array or a list of one, whose fields reach a [SerializeReference].
@@ -918,19 +918,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 type = type.IsArray ? type.GetElementType() : type.GetGenericArguments()[0];
 
             if (!IsByValueComposite(type)) return false;
-            if (ByValueReferenceHolders.TryGetValue(type, out var holds)) return holds;
+            if (_byValueReferenceHolders.TryGetValue(type, out var holds)) return holds;
 
             // A type already on the walk adds no new path, and by-value types may be cyclic.
-            if (ByValueTypesInProgress.TryGetValue(type, out var cutDepth))
+            if (_byValueTypesInProgress.TryGetValue(type, out var cutDepth))
             {
                 _shallowestCycleCut = Math.Min(_shallowestCycleCut, cutDepth);
                 return false;
             }
 
-            var depth = ByValueTypesInProgress.Count;
+            var depth = _byValueTypesInProgress.Count;
             var outerCycleCut = _shallowestCycleCut;
             _shallowestCycleCut = int.MaxValue;
-            ByValueTypesInProgress.Add(type, depth);
+            _byValueTypesInProgress.Add(type, depth);
 
             try
             {
@@ -945,13 +945,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             finally
             {
-                ByValueTypesInProgress.Remove(type);
+                _byValueTypesInProgress.Remove(type);
             }
 
             // A negative answer is exact unless the walk below cut a cycle at a type further up, whose answer is not
             // known yet; a cycle back to this type adds no field it has not seen.
             var cycleCut = _shallowestCycleCut;
-            if (holds || cycleCut >= depth) ByValueReferenceHolders[type] = holds;
+            if (holds || cycleCut >= depth) _byValueReferenceHolders[type] = holds;
 
             _shallowestCycleCut = depth == 0 ? int.MaxValue : Math.Min(outerCycleCut, cycleCut);
             return holds;
@@ -1024,7 +1024,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Unity serializes these built-in field types despite Type.IsSerializable returning false.
-        private static readonly HashSet<Type> UnityNativeSerializableTypes = new()
+        private static readonly HashSet<Type> _unityNativeSerializableTypes = new()
         {
             typeof(Vector2), typeof(Vector3), typeof(Vector4),
             typeof(Vector2Int), typeof(Vector3Int),
@@ -1051,7 +1051,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return type.IsEnum ||
                    type == typeof(string) ||
                    typeof(Object).IsAssignableFrom(type) ||
-                   UnityNativeSerializableTypes.Contains(type) ||
+                   _unityNativeSerializableTypes.Contains(type) ||
                    (type.IsValueType && type.IsSerializable && !IsFrameworkType(type)) ||
                    (type.IsClass && type.IsSerializable && !IsFrameworkType(type));
         }
@@ -1872,26 +1872,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static long _aliasFrame = -1;
         private static SerializedObject _aliasSerializedObject;
-        private static readonly Dictionary<long, int> AliasCounts = new();
+        private static readonly Dictionary<long, int> _aliasCounts = new();
 
-        private static readonly List<long> AliasOrder = new();
+        private static readonly List<long> _aliasOrder = new();
 
         private static Dictionary<long, int> GetReferenceIdCounts(SerializedObject serializedObject)
         {
             var frame = MemoTick;
             if (_aliasFrame == frame && ReferenceEquals(_aliasSerializedObject, serializedObject))
-                return AliasCounts;
+                return _aliasCounts;
 
-            AliasCounts.Clear();
-            AliasOrder.Clear();
+            _aliasCounts.Clear();
+            _aliasOrder.Clear();
             TraverseManagedReferences(serializedObject, other =>
             {
                 // Every empty field reports the same sentinel, so counting those would form a phantom group.
                 var id = other.managedReferenceId;
                 if (id < 0) return false;
 
-                if (!AliasCounts.TryGetValue(id, out var count)) AliasOrder.Add(id);
-                AliasCounts[id] = count + 1;
+                if (!_aliasCounts.TryGetValue(id, out var count)) _aliasOrder.Add(id);
+                _aliasCounts[id] = count + 1;
                 return false;
             });
 
@@ -1899,12 +1899,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _sharedPathsFrame = -1;
             _aliasFrame = frame;
             _aliasSerializedObject = serializedObject;
-            return AliasCounts;
+            return _aliasCounts;
         }
 
         private static long _sharedIndicesFrame = -1;
         private static SerializedObject _sharedIndicesObject;
-        private static readonly Dictionary<long, int> SharedIndices = new();
+        private static readonly Dictionary<long, int> _sharedIndices = new();
 
         private static Dictionary<long, int> GetSharedReferenceIndices(SerializedObject serializedObject)
         {
@@ -1913,19 +1913,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var frame = MemoTick;
             if (_sharedIndicesFrame == frame && ReferenceEquals(_sharedIndicesObject, serializedObject))
-                return SharedIndices;
+                return _sharedIndices;
 
-            SharedIndices.Clear();
+            _sharedIndices.Clear();
             var next = 1;
-            foreach (var id in AliasOrder)
+            foreach (var id in _aliasOrder)
             {
                 if (counts.TryGetValue(id, out var count) && count > 1)
-                    SharedIndices[id] = next++;
+                    _sharedIndices[id] = next++;
             }
 
             _sharedIndicesFrame = frame;
             _sharedIndicesObject = serializedObject;
-            return SharedIndices;
+            return _sharedIndices;
         }
 
         // The other fields aliasing this property's instance, in document order — what the notice lists and
@@ -1986,14 +1986,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        private static readonly Dictionary<string, string> DisplayPathCache = new();
+        private static readonly Dictionary<string, string> _displayPathCache = new();
 
         // The inspector's own labels for a property path: "sidearms.Array.data[1].onHitEffect" reads as
         // "Sidearms > Element 1 > On Hit Effect".
         public static string GetPropertyDisplayPath(string propertyPath)
         {
             if (string.IsNullOrEmpty(propertyPath)) return string.Empty;
-            if (DisplayPathCache.TryGetValue(propertyPath, out var cached)) return cached;
+            if (_displayPathCache.TryGetValue(propertyPath, out var cached)) return cached;
 
             var builder = new StringBuilder();
 
@@ -2014,12 +2014,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
-            return DisplayPathCache[propertyPath] = builder.ToString();
+            return _displayPathCache[propertyPath] = builder.ToString();
         }
 
         private static long _sharedPathsFrame = -1;
         private static SerializedObject _sharedPathsObject;
-        private static readonly Dictionary<long, List<string>> SharedPathsById = new();
+        private static readonly Dictionary<long, List<string>> _sharedPathsById = new();
 
         private static Dictionary<long, List<string>> GetSharedReferencePathsById(SerializedObject serializedObject)
         {
@@ -2028,22 +2028,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var frame = MemoTick;
             if (_sharedPathsFrame == frame && ReferenceEquals(_sharedPathsObject, serializedObject))
-                return SharedPathsById;
+                return _sharedPathsById;
 
-            SharedPathsById.Clear();
+            _sharedPathsById.Clear();
             TraverseManagedReferences(serializedObject, other =>
             {
                 var id = other.managedReferenceId;
                 if (!counts.TryGetValue(id, out var count) || count <= 1) return false;
 
-                if (!SharedPathsById.TryGetValue(id, out var paths)) SharedPathsById[id] = paths = new List<string>();
+                if (!_sharedPathsById.TryGetValue(id, out var paths)) _sharedPathsById[id] = paths = new List<string>();
                 paths.Add(other.propertyPath);
                 return false;
             });
 
             _sharedPathsFrame = frame;
             _sharedPathsObject = serializedObject;
-            return SharedPathsById;
+            return _sharedPathsById;
         }
 
         // Call after a same-tick reassignment: the memo is keyed by tick, so a synchronous re-query would

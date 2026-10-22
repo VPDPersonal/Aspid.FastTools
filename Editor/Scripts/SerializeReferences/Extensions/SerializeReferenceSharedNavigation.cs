@@ -27,7 +27,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Advancing from a per-group cursor rather than the clicked field lets repeated clicks on the same notice
         // walk the whole group.
-        private static readonly Dictionary<(Object target, long rid), string> NavigationCursor = new();
+        private static readonly Dictionary<(Object target, long rid), string> _navigationCursor = new();
 
         private static Object _flashTarget;
         private static long _flashRid;
@@ -55,7 +55,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ExpandAncestors(property.serializedObject, path);
 
             var key = (target, rid);
-            var start = NavigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
+            var start = _navigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
             if (start < 0) start = IndexOf(group, selfPath);
 
             string nextPath = null;
@@ -66,7 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             if (nextPath is null) return;
-            NavigationCursor[key] = nextPath;
+            _navigationCursor[key] = nextPath;
 
             StartFlash(target, rid, selfPath);
 

@@ -323,7 +323,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         private static Dictionary<Type, bool> ByValueReferenceHolders() => (Dictionary<Type, bool>)typeof(SerializeReferenceHelpers)
-            .GetField(nameof(ByValueReferenceHolders), BindingFlags.NonPublic | BindingFlags.Static)!
+            .GetField("_byValueReferenceHolders", BindingFlags.NonPublic | BindingFlags.Static)!
             .GetValue(obj: null);
 
         private static Rig CreateRig() => new()

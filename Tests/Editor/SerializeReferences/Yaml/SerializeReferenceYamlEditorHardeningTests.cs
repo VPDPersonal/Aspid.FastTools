@@ -85,7 +85,7 @@ MonoBehaviour:
             "\t\n" +
             "        _magazineSize: 7\n";
 
-        private static readonly ManagedTypeName SomeType = new ManagedTypeName(
+        private static readonly ManagedTypeName _someType = new ManagedTypeName(
             "Aspid.FastTools.Samples.SerializeReferences",
             "Aspid.FastTools.Samples.SerializeReferences",
             "Shotgun");
@@ -98,7 +98,7 @@ MonoBehaviour:
             var path = YamlFixtures.WriteTemp(MissingDirectivePreamble);
             try
             {
-                Assert.IsFalse(SerializeReferenceYamlEditor.TryComputeRewrite(path, FileId, Rid, SomeType, out var edit),
+                Assert.IsFalse(SerializeReferenceYamlEditor.TryComputeRewrite(path, FileId, Rid, _someType, out var edit),
                     "A file without Unity's %TAG directive must not even be offered as a rewrite candidate.");
                 Assert.IsFalse(edit.IsValid, "No edit should be produced for a non-Unity file.");
             }
@@ -113,7 +113,7 @@ MonoBehaviour:
             try
             {
                 var before = File.ReadAllText(path);
-                Assert.IsFalse(SerializeReferenceYamlEditor.TryRewriteType(path, FileId, Rid, SomeType));
+                Assert.IsFalse(SerializeReferenceYamlEditor.TryRewriteType(path, FileId, Rid, _someType));
                 Assert.AreEqual(before, File.ReadAllText(path), "A refused rewrite must leave the file byte-identical.");
             }
             finally

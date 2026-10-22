@@ -95,13 +95,13 @@ namespace Aspid.FastTools.Types.Editors
         internal static IReadOnlyList<RequiredFieldDescriptor> GetRequiredFields(Type type)
         {
             if (type is null) return Array.Empty<RequiredFieldDescriptor>();
-            if (RequiredFieldCache.TryGetValue(type, out var cached)) return cached;
+            if (_requiredFieldCache.TryGetValue(type, out var cached)) return cached;
 
             var result = new List<RequiredFieldDescriptor>();
             CollectRequiredFields(type, Array.Empty<string>(), new HashSet<Type>(), new HashSet<string>(StringComparer.Ordinal), result);
 
             IReadOnlyList<RequiredFieldDescriptor> readOnly = result;
-            RequiredFieldCache[type] = readOnly;
+            _requiredFieldCache[type] = readOnly;
             return readOnly;
         }
 
@@ -173,7 +173,7 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // Per-type memo for GetRequiredFields — the reflected field set is stable until a domain reload clears statics.
-        private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> RequiredFieldCache = new();
+        private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> _requiredFieldCache = new();
 
         private static bool IsCollection(Type type) =>
             type.IsArray || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>));
