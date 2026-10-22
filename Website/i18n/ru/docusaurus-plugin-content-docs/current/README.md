@@ -1,6 +1,6 @@
 <picture>
-  <source srcset="../../../../../docs/images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="../../../../../docs/images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="../../../../docs/Images/aspid_fasttools_readme_banner_dark.webp" />
+  <img src="../../../../docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 
 [![Unity 6.0+](../../../../docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)

@@ -98,5 +98,5 @@ node scripts/check-version.mjs
 echo "$OLD -> $NEW ($BRANCH)"
 # The GitHub README's install walk-through types the channel's URL; a recording is not a text file to rewrite.
 case "$OLD" in *-*) OLD_BRANCH=upm-preview ;; *) OLD_BRANCH=upm ;; esac
-[ "$OLD_BRANCH" = "$BRANCH" ] || echo "The channel changed: re-record the README install walk-through (docs/media/readme-previews/README.md)."
+[ "$OLD_BRANCH" = "$BRANCH" ] || echo "The channel changed: re-record the README install walk-through (Website/media/readme-previews/README.md)."
 git status --short

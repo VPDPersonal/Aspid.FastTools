@@ -19,6 +19,6 @@ whole, tab strip and footer included: 1744×1268 PNGs, dark skin, no compositing
 At this window size the open picker does not fit: frames 02 and 03 may show a thin scrollbar, and the window footer
 covers the card's bottom border. That is how the real window looks at 872×634.
 
-Run `sh docs/media/tooling/encode.sh`; it never writes the published GIF. States last 1.5 / 1 / 0.6 / 1 seconds; `-t 4.1`
+Run `sh Website/media/tooling/encode.sh`; it never writes the published GIF. States last 1.5 / 1 / 0.6 / 1 seconds; `-t 4.1`
 prevents the repeated terminal frame from adding an extra pause. Encoding uses 10 fps, a shared 256-color palette and
 sierra2_4a dithering at the original pixel dimensions.

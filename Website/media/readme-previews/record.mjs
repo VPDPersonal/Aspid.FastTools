@@ -1,9 +1,9 @@
 // Records the introduction's animated feature previews (Website/src/components/FeaturePreview) and the install panel's
 // Package Manager walk-through (Website/src/components/InstallPanel) from a built site into looping WebPs for the GitHub
-// README: docs/images/readme-previews/<name>.webp, in the dark theme only. Headless Chrome runs on
+// README: Website/docs/Images/readme-previews/<name>.webp, in the dark theme only. Headless Chrome runs on
 // virtual time, so every frame lands on its exact timestamp however slow the capture is.
 //   Website/scripts/serve-all.sh
-//   node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [name …]
+//   node Website/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [name …]
 // Needs Node 22+ (global WebSocket), Google Chrome (CHROME overrides the macOS path) and img2webp (brew install webp).
 import fs from 'node:fs';
 import os from 'node:os';
@@ -12,7 +12,7 @@ import {spawn, execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
 const CHROME = process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const OUT = fileURLToPath(new URL('../../images/readme-previews/', import.meta.url));
+const OUT = fileURLToPath(new URL('../../docs/Images/readme-previews/', import.meta.url));
 // One loop of each preview, from FeaturePreview: `useLoop(count, interval)` steps, or the Profiler's 22 s ticker.
 // `fps` divides the loop into whole frames; the Profiler's timeline changes every frame, so it takes fewer.
 // A feature preview is found by its card's doc page; `box` finds any other preview. The loop starts when the preview
@@ -38,7 +38,7 @@ const VIEWPORT = {width: 1180, height: 1000, deviceScaleFactor: 2};
 
 const [given, ...only] = process.argv.slice(2);
 if (!given) {
-  console.error('usage: node docs/media/readme-previews/record.mjs <site base URL> [doc …]');
+  console.error('usage: node Website/media/readme-previews/record.mjs <site base URL> [doc …]');
   process.exit(1);
 }
 // Pages resolve against the base's last `/`: without it, `docs` would load from the host root.
