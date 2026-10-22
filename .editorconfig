@@ -1,19 +1,28 @@
-# C# code style. The rest is in the asp-ft-code-style skill.
+# Editor settings and C# code style. The rest of the C# style is in the asp-ft-code-style skill.
 
 root = true
 
 [*]
 charset = utf-8
+end_of_line = lf
 indent_style = space
 indent_size = 4
+
+[LICENSE-IBM-Plex.txt]
+end_of_line = crlf
+
+[*.{yml,yaml,json,js,mjs,css,sh}]
+indent_size = 2
 
 # Unity assets
 [*.{meta,asset,unity,prefab,mat,anim,controller,asmdef,asmref}]
 trim_trailing_whitespace = false
 insert_final_newline = false
 
+[*.{meta,asset,unity,prefab,mat,anim,controller}]
+indent_size = 2
+
 [*.cs]
-end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
@@ -104,6 +113,10 @@ dotnet_naming_symbols.constant_fields.applicable_kinds = field
 dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
+dotnet_naming_symbols.private_constant_fields.applicable_kinds = field
+dotnet_naming_symbols.private_constant_fields.applicable_accessibilities = private, private_protected
+dotnet_naming_symbols.private_constant_fields.required_modifiers = const
+
 dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private, private_protected
 
@@ -132,6 +145,10 @@ dotnet_naming_style.t_prefix_style.capitalization = pascal_case
 dotnet_naming_rule.constants_are_pascal_case.symbols = constant_fields
 dotnet_naming_rule.constants_are_pascal_case.style = pascal_case_style
 dotnet_naming_rule.constants_are_pascal_case.severity = warning
+
+dotnet_naming_rule.private_constants_are_pascal_case.symbols = private_constant_fields
+dotnet_naming_rule.private_constants_are_pascal_case.style = pascal_case_style
+dotnet_naming_rule.private_constants_are_pascal_case.severity = warning
 
 dotnet_naming_rule.private_fields_are_underscore_camel.symbols = private_fields
 dotnet_naming_rule.private_fields_are_underscore_camel.style = underscore_camel_case_style

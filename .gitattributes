@@ -1,7 +1,6 @@
-# Line endings stay as committed (the font licences are CRLF), whatever core.autocrlf says;
-# only files that stop working with CRLF are pinned to LF.
-*               -text
-*.sh            text eol=lf
+# Text is stored and checked out with LF; the font licences keep their upstream CRLF.
+*               text=auto eol=lf
+LICENSE-IBM-Plex.txt -text
 
 # Binary: no diff, no merge, no line-ending conversion.
 *.dll           binary
