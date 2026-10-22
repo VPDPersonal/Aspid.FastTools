@@ -157,7 +157,7 @@ namespace Aspid.FastTools.Editors.Tests
             var fireball = new SerializedObject(AssetDatabase.LoadMainAssetAtPath(PathOf(FireballAsset)));
             Assert.AreEqual(30, fireball.FindProperty("_manaCost").intValue);
             Assert.AreEqual(4f, fireball.FindProperty("_cooldown").floatValue);
-            StringAssert.StartsWith("Aspid.FastTools.Samples.EditorTools.DamageEffect,", fireball.FindProperty("_effectType").stringValue);
+            StringAssert.StartsWith("Aspid.FastTools.Samples.EditorTools.Effects.DamageEffect,", fireball.FindProperty("_effectType").stringValue);
         }
 
         [UnityTest]

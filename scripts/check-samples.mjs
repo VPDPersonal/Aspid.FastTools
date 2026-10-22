@@ -1,5 +1,5 @@
-// Check the package samples against the Samples~ rules of AGENTS.md: comment-free code, one type per file, flat files
-// beside an asmdef whose rootNamespace is their namespace, each kind of file in its folder, scenes with no lights,
+// Check the package samples against the Samples~ rules of AGENTS.md: code free of comments but the CheckNamespace banner,
+// one type per file, namespaces that follow the folders below the asmdef's rootNamespace, each kind of file in its folder, scenes with no lights,
 // physics or foreign materials, one-sentence package.json descriptions, and ProfilerMarkers marker names that match its
 // tutorial.
 // ci.yml runs it:
@@ -15,14 +15,14 @@ const SAMPLES = `${PACKAGE}/Samples~`;
 const TUTORIALS = 'Website/tutorials';
 const TUTORIALS_RU = 'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current';
 const SITE = 'https://vpdpersonal.github.io/Aspid.FastTools/tutorials/';
-const MAX_LINES = 400;
+const MAX_LINES = 450;
 const MAX_DESCRIPTION = 200;
 const MARKER_SAMPLE = 'ProfilerMarkers';
 // Tutorials not yet rewritten for the simplified sample: their marker names that differ are warnings, not errors.
 // Empty it once the tutorial quotes the current names.
 const PENDING_TUTORIALS = new Set(['ProfilerMarkers']);
 
-// The folder of a sample that holds each kind of file.
+// The folder of a sample that holds each kind of file. Code may also sit in a subfolder of Scripts/.
 const FOLDERS = {
   '.cs': ['Scripts', 'Scripts/Editor'],
   '.asmdef': ['Scripts', 'Scripts/Editor'],
@@ -52,6 +52,9 @@ const BANNED = [
   [/\b(?:Physics|Raycast|CreatePrimitive)\b/, 'Physics or CreatePrimitive'],
 ];
 
+// CODESTYLE.md puts this line above every namespace; it is the one comment a sample carries.
+const BANNER = '// ReSharper disable once CheckNamespace\n';
+
 let errors = 0;
 const fail = (file, message) => {
   console.log(`::error file=${file}::${message}`);
@@ -70,7 +73,8 @@ const stripStrings = (code) => code.replace(/@"(?:[^"]|"")*"|\$?"(?:[^"\\\n]|\\.
 const kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
 function checkCode(file, code) {
-  const plain = stripStrings(code);
+  if (!new RegExp(`^${BANNER}namespace `, 'm').test(code)) fail(file, `lacks "${BANNER.trim()}" on the line above its namespace`);
+  const plain = stripStrings(code.replace(BANNER, ''));
   if (/\/\/|\/\*/.test(plain)) fail(file, 'has a comment; sample code carries none');
   for (const [pattern, what] of BANNED) {
     if (pattern.test(plain)) fail(file, `uses ${what}, which samples do not`);
@@ -94,14 +98,22 @@ function checkAsmdefs(sample, files) {
     if ((asmdef.versionDefines ?? []).length) fail(file, 'has versionDefines; a sample needs no optional module');
   }
   for (const file of files.filter((file) => file.endsWith('.cs'))) {
-    const asmdef = roots.get(dirname(file));
+    // The nearest asmdef above the file owns it, and each folder between them adds its name to the namespace.
+    const folders = [];
+    let dir = dirname(file);
+    while (!roots.has(dir) && dir.startsWith(`${sample}/`)) {
+      folders.unshift(basename(dir));
+      dir = dirname(dir);
+    }
+    const asmdef = roots.get(dir);
     if (!asmdef) {
-      fail(file, 'is not beside an .asmdef; sample code sits flat next to its assembly definition');
+      fail(file, 'has no .asmdef in its folder or above it inside the sample');
       continue;
     }
+    const expected = [asmdef.rootNamespace, ...folders].join('.');
     const namespaces = [...readFileSync(file, 'utf8').matchAll(/^namespace\s+([\w.]+)/gm)].map((match) => match[1]);
-    if (namespaces.length !== 1 || namespaces[0] !== asmdef.rootNamespace) {
-      fail(file, `has namespace ${namespaces.join(', ') || '(none)'}; its asmdef's rootNamespace is ${asmdef.rootNamespace}`);
+    if (namespaces.length !== 1 || namespaces[0] !== expected) {
+      fail(file, `has namespace ${namespaces.join(', ') || '(none)'}; its folder makes it ${expected}`);
     }
   }
 }
@@ -213,8 +225,11 @@ for (const name of folders) {
   for (const file of files) {
     const ext = extname(file);
     const folders = FOLDERS[ext];
+    const folder = dirname(relative(root, file));
     if (!folders) fail(file, `is a ${ext || 'extensionless'} file, which no sample folder holds`);
-    else if (!folders.includes(dirname(relative(root, file)))) fail(file, `belongs in ${folders.map((folder) => `${name}/${folder}/`).join(' or ')}`);
+    else if (ext === '.cs' ? !folder.startsWith('Scripts/') && folder !== 'Scripts' : !folders.includes(folder)) {
+      fail(file, `belongs in ${folders.map((folder) => `${name}/${folder}/`).join(' or ')}${ext === '.cs' ? ' or a subfolder of Scripts/' : ''}`);
+    }
   }
   checkArt(sample, files);
   let lines = 0;

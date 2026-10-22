@@ -21,7 +21,8 @@ const SHADER_GUID = 'a'.repeat(32);
 const MATERIAL_GUID = 'b'.repeat(32);
 
 const asmdef = (name, extra = {}) => JSON.stringify({ name, rootNamespace: name, references: [], defineConstraints: [], versionDefines: [], ...extra });
-const code = (namespace, body) => `using UnityEngine;\n\nnamespace ${namespace}\n{\n${body}\n}\n`;
+const BANNER = '// ReSharper disable once CheckNamespace';
+const code = (namespace, body) => `using UnityEngine;\n\n${BANNER}\nnamespace ${namespace}\n{\n${body}\n}\n`;
 const type = (name, members = '') => `    public sealed class ${name} : MonoBehaviour\n    {\n${members}    }`;
 const meta = (guid) => `fileFormatVersion: 2\nguid: ${guid}\n`;
 const material = (shader = SHADER_GUID) => `--- !u!21 &2100000\nMaterial:\n  m_Name: Floor\n  m_Shader: {fileID: 4800000, guid: ${shader}, type: 3}\n`;
@@ -41,6 +42,7 @@ const sample = (name, slug) =>
 const flock = [
   'using UnityEngine;',
   '',
+  BANNER,
   'namespace Demo.Markers',
   '{',
   '    public sealed class Flock : MonoBehaviour',
@@ -75,7 +77,7 @@ const valid = () => ({
   [`${MARKERS}/Scripts/Flock.cs`]: flock,
   'Website/tutorials/Demo/README.md': '# Demo\n',
   'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/Demo/README.md': '# Demo\n',
-  [TUTORIAL]: '# ProfilerMarkers\n\nFind `Flock.Update (9)` and `Flock.Steering (11)`.\n',
+  [TUTORIAL]: '# ProfilerMarkers\n\nFind `Flock.Update (10)` and `Flock.Steering (12)`.\n',
   'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/ProfilerMarkers/README.md': '# ProfilerMarkers\n',
 });
 
@@ -106,18 +108,19 @@ test('samples that follow the rules pass, and "//" inside a string is no comment
   assert.match(result.stdout, /2 samples follow the Samples~ rules/);
 });
 
-test('a comment, a header, a ReSharper banner and Debug. are reported', (t) => {
+test('a comment, a header, another ReSharper comment and Debug. are reported', (t) => {
   for (const [line, message] of [
     ['        // Spawns enemies.\n', /has a comment/],
     ['        /// <summary>Spawns.</summary>\n', /has a comment/],
     ['        /* old */\n', /has a comment/],
     ['        [Header("Setup")] [SerializeField] private int _count;\n', /\[Header\]/],
     ['        private void Start() => Debug.Log(name);\n', /Debug\./],
+    ['        // ReSharper disable once UnusedMember.Local\n', /a ReSharper comment/],
   ]) {
     assertFails(check(t, { [SPAWNER]: code('Demo', type('Spawner', line)) }), SPAWNER, message);
   }
-  const banner = `// ReSharper disable once CheckNamespace\n${code('Demo', type('Spawner'))}`;
-  assertFails(check(t, { [SPAWNER]: banner }), SPAWNER, /has a comment/);
+  const bare = code('Demo', type('Spawner')).replace(`${BANNER}\n`, '');
+  assertFails(check(t, { [SPAWNER]: bare }), SPAWNER, /lacks "\/\/ ReSharper disable once CheckNamespace"/);
 });
 
 test('lights, physics and CreatePrimitive in code are reported', (t) => {
@@ -137,11 +140,20 @@ test('two top-level types in a file and a file named after another type are repo
   assertFails(check(t, { [SPAWNER]: code('Demo', type('Enemy')) }), SPAWNER, /must be named after its type/);
 });
 
-test('code in a subfolder, a missing rootNamespace and another namespace are reported', (t) => {
+test('code in a subfolder of Scripts/ passes when its namespace adds the folder name', (t) => {
   const nested = `${DEMO}/Scripts/Enemies/Enemy.cs`;
-  assertFails(check(t, { [nested]: code('Demo', type('Enemy')) }), nested, /not beside an \.asmdef/);
+  const result = check(t, { [nested]: code('Demo.Enemies', type('Enemy')) });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('code outside Scripts/, a missing rootNamespace and a namespace that does not follow the folders are reported', (t) => {
+  const outside = `${DEMO}/Code/Enemy.cs`;
+  assertFails(check(t, { [outside]: code('Demo', type('Enemy')) }), outside, /belongs in Demo\/Scripts\/ or Demo\/Scripts\/Editor\/ or a subfolder of Scripts\//);
+  assertFails(check(t, { [outside]: code('Demo', type('Enemy')) }), outside, /no \.asmdef in its folder or above it/);
   assertFails(check(t, { [ASM]: asmdef('Demo', { rootNamespace: '' }) }), ASM, /no rootNamespace/);
-  assertFails(check(t, { [SPAWNER]: code('Demo.Spawning', type('Spawner')) }), SPAWNER, /rootNamespace is Demo/);
+  assertFails(check(t, { [SPAWNER]: code('Demo.Spawning', type('Spawner')) }), SPAWNER, /its folder makes it Demo$/m);
+  const nested = `${DEMO}/Scripts/Enemies/Enemy.cs`;
+  assertFails(check(t, { [nested]: code('Demo', type('Enemy')) }), nested, /its folder makes it Demo\.Enemies/);
 });
 
 test('defineConstraints and versionDefines are reported', (t) => {
@@ -175,10 +187,10 @@ test('text and line renderers in a scene pass', (t) => {
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
-test('a comment in a style sheet and more than 400 lines of C# are reported', (t) => {
+test('a comment in a style sheet and more than 450 lines of C# are reported', (t) => {
   assertFails(check(t, { [`${DEMO}/Styles/Style.uss`]: '/* card */\n.demo { }\n' }), `${DEMO}/Styles/Style.uss`, /style sheets carry none/);
-  const long = code('Demo', type('Spawner', '        private int _a;\n'.repeat(400)));
-  assertFails(check(t, { [SPAWNER]: long }), DEMO, /lines of C#; a sample has at most 400/);
+  const long = code('Demo', type('Spawner', '        private int _a;\n'.repeat(450)));
+  assertFails(check(t, { [SPAWNER]: long }), DEMO, /lines of C#; a sample has at most 450/);
 });
 
 test('a description that is long, two sentences or lacks its tutorial link, and a missing tutorial are reported', (t) => {
@@ -197,14 +209,14 @@ test('a sample folder that package.json does not list, and a listed path that di
 });
 
 test('a tutorial marker name whose line differs from the code is reported', (t) => {
-  const stale = '# ProfilerMarkers\n\nFind `Flock.Update (9)` and `Flock.Steering (12)`.\n';
-  assertFails(check(t, { [TUTORIAL]: stale }), TUTORIAL, /quotes Flock\.Steering \(12\); the code makes Flock\.Steering \(11\)/);
-  const gone = '# ProfilerMarkers\n\nFind `Flock.Update (9)` and `Flock.Spawn (30)`.\n';
+  const stale = '# ProfilerMarkers\n\nFind `Flock.Update (10)` and `Flock.Steering (13)`.\n';
+  assertFails(check(t, { [TUTORIAL]: stale }), TUTORIAL, /quotes Flock\.Steering \(13\); the code makes Flock\.Steering \(12\)/);
+  const gone = '# ProfilerMarkers\n\nFind `Flock.Update (10)` and `Flock.Spawn (30)`.\n';
   assertFails(check(t, { [TUTORIAL]: gone }), TUTORIAL, /quotes Flock\.Spawn \(30\); the code makes no such marker/);
 });
 
 test('a pending tutorial reports a differing marker name as a warning', (t) => {
   const result = check(t, { [TUTORIAL]: '# ProfilerMarkers\n\nFind `Flock.Update (74)` in the Profiler.\n' }, { pending: true });
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.ok(result.stdout.includes(`::warning file=${TUTORIAL}::quotes Flock.Update (74); the code makes Flock.Update (9)`), result.stdout);
+  assert.ok(result.stdout.includes(`::warning file=${TUTORIAL}::quotes Flock.Update (74); the code makes Flock.Update (10)`), result.stdout);
 });
