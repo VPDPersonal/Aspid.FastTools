@@ -66,7 +66,7 @@ jobs:
               ['Website/docs/', 'area: docs'],
               ['Website/tutorials/', 'area: docs'],
               ['Website/i18n/', 'area: docs'],
-              ['docs/', 'area: docs'],
+              ['Website/media/', 'area: docs'],
               ['README', 'area: docs'],
               ['CHANGELOG', 'area: docs'],
               ['.claude/', 'area: claude'],

@@ -1,7 +1,7 @@
 # Introduction feature cards
 
 There is no landing page: `/` redirects to `/docs`. The README banner is a `<picture>`: an animated 1280×384 WebP
-(`docs/images/aspid_fasttools_readme_banner_dark.webp`), and the static 2560×768 PNG
+(`Website/docs/Images/aspid_fasttools_readme_banner_dark.webp`), and the static 2560×768 PNG
 (`aspid_fasttools_readme_banner.png`, the green dark variant) as its `<img>`, all linked by relative paths. The PNG is
 designed on the «README banner» page of the «FastTools Asset Store» Design canvas: one board per accent and theme. The
 WebPs are recorded from this site's banner in the green accent: 640 px wide (the narrow layout) at 2x, by a CDP
@@ -34,7 +34,7 @@ On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
 there, so update it when the page's quick start changes, and re-record the GitHub README's copy of the changed preview
-(`docs/media/readme-previews/README.md`). The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme. Both are the
+(`Website/media/readme-previews/README.md`). The EnumValues clip is `FeaturePreview/media/enum.mp4`, with `enum-light.mp4` for the light theme. Both are the
 `enum-values-multipliers-populate(-light).gif` padded to 1576×1080 (`-preset veryslow -crf 24
 -vf "fps=20,pad=1576:1080:20:206:color=0x333333"`, `0xC8C8C8` for light).
 The Inspector captures of the Serialization cards are cropped and framed in the file (`scripts/frame-doc-captures.sh`), so each card
@@ -55,7 +55,7 @@ each tab pins from its own branch out of `customFields.packageVersions` (the tag
 follows the `package.json` version the same way and only decides where the working-tree version is offered.
 Its text is written in the component per locale, so update it when the README's install steps change; the GitHub
 README repeats the English steps (`TEXT.steps` in `scripts/github-readme.mjs`) beside a recording of the walk-through
-(`docs/media/readme-previews/README.md`), so update both.
+(`Website/media/readme-previews/README.md`), so update both.
 
 `static/img/logo.png` is a copy of the package icon
 `Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`, and `logo-red.png`, `logo-blue.png`, `logo-yellow.png` of

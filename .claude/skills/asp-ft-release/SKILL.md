@@ -202,7 +202,7 @@ Put these items into the Phase 1 report. Do not do them without a request.
 - The API reference on the site. Each PR that changes public API regenerates it (`docs-site` skill). A PR made
   without Unity says that the reference still needs regenerating. Ask if such a PR is merged since the last release.
 - "The channel changed" from `set-version.sh` → re-record the README install walk-through in a separate PR
-  (`docs/media/readme-previews/README.md`).
+  (`Website/media/readme-previews/README.md`).
 - **Stable:** the manual QA of `.github/ISSUE_TEMPLATE/release_checklist.yml`: player builds, and the Asset Store
   upload as in "Asset Store upload". It comes before the merge of the release PR.
 

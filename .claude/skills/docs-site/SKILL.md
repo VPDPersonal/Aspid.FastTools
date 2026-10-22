@@ -37,9 +37,9 @@ Never add an image, a full page or a sample README there.
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
 
-The site folder is `Website/`, not `Docs/`: the repo already has `docs/` (internal working documents, plus
-`docs/images/` which hosts the README banner images, linked by relative paths), and
-macOS treats the two names as one directory.
+The site folder is `Website/`. The root README's banner and preview recordings live with the other doc images in
+`Website/docs/Images/`, linked by relative paths. The capture recipes and their sources live in `Website/media/`,
+outside every docs plugin, so their READMEs never become pages.
 
 **Four docs plugin instances**, all in `docusaurus.config.js`:
 
@@ -254,7 +254,7 @@ to refresh the root `README.md`.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png` (one 16:9 size
-   for both, no scene titles; a scene may add a looping clip — `docs/media/samples-gallery/README.md`).
+   for both, no scene titles; a scene may add a looping clip — `Website/media/samples-gallery/README.md`).
 4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its folder name
    to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
 5. Register it in the package `package.json` → `samples` with a `description` that ends with

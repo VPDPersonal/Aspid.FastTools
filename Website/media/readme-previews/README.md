@@ -3,7 +3,7 @@
 The root README cannot run the introduction's animated feature previews (`Website/src/components/FeaturePreview`) or
 the install panel's Package Manager walk-through (`Website/src/components/InstallPanel`), so
 `Website/scripts/github-readme.mjs` shows a recording of each one in its card:
-`docs/images/readme-previews/<name>.webp`, `install` for the walk-through. Only the dark theme: a `<picture>` per
+`Website/docs/Images/readme-previews/<name>.webp`, `install` for the walk-through. Only the dark theme: a `<picture>` per
 theme follows the system theme, not GitHub's, so the README shows no light variants.
 
 `record.mjs` opens the built introduction in headless Chrome on virtual time and records one loop of each preview
@@ -16,7 +16,7 @@ walk-through hides the package version, but its typed URL names the channel (`#u
 when a release switches channels; `scripts/set-version.sh` says so.
 
 1. Build and serve the site: `Website/scripts/serve-all.sh`.
-2. Record every preview, or only the named ones: `node docs/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [name …]`.
+2. Record every preview, or only the named ones: `node Website/media/readme-previews/record.mjs http://localhost:<port>/Aspid.FastTools/ [name …]`.
 3. Regenerate the README: `npm --prefix Website run sync-readme`.
 
 Needs Node 22+, Google Chrome and `img2webp` (`brew install webp`). Outside macOS, set `CHROME` to the Chrome binary.

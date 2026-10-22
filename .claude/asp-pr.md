@@ -37,8 +37,8 @@ Logic paths:
   `Aspid.FastTools/Assets/DevTools/`;
 - .NET: `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/`, `DotnetTests/Yaml/`,
   `DotnetTests/Types/`, `global.json`;
-- site: `Website/` except `docs/`, `i18n/`, `tutorials/`, `api/`, `static/`;
+- site: `Website/` except `docs/`, `i18n/`, `tutorials/`, `api/`, `static/`, `media/`;
 - CI: `scripts/`, `.github/workflows/`, `.github/claude-review.md`.
 
-Other paths are text: `Website/docs/`, `Website/i18n/`, `Website/tutorials/`, `skills/`, other `*.md`.
+Other paths are text: `Website/docs/`, `Website/i18n/`, `Website/tutorials/`, `Website/media/`, `skills/`, other `*.md`.
 A fix there needs no re-review.

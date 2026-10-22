@@ -7,7 +7,7 @@
  *   of its Package Manager walk-through beside its numbered steps, the URL to copy below;
  * - the note under the install URL links the site's install panel for versions and channels;
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
- *   a code preview gives way to the recording of the site's animated preview (`docs/images/readme-previews`);
+ *   a code preview gives way to the recording of the site's animated preview (`Website/docs/Images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
  * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line.
  * The README shows only the dark images: a <picture> per theme follows the system theme, not GitHub's, so it showed the
