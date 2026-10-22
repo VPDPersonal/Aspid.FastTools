@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Creates a throwaway Unity project that compiles the package, its tests, its optional Unity.Mathematics assembly and
-# every sample, for running the package's EditMode tests on any Unity version (the dev project itself is pinned to one).
+# Creates a throwaway Unity project that compiles the package, its tests, its optional Unity.Mathematics assembly,
+# every sample and the sample tests, for running the EditMode tests on any Unity version (the dev project itself is
+# pinned to one).
 # CI (ci.yml) and local runs use it.
 #
 # Usage: scripts/make-unity-test-project.sh <project-dir> [unity-version | project]
@@ -75,5 +76,8 @@ printf 'm_EditorVersion: %s\n' "$VERSION" > "$PROJECT/ProjectSettings/ProjectVer
 # Samples are imported the way Package Manager imports them: copied into Assets/ with their .meta files.
 mkdir -p "$PROJECT/Assets/Samples"
 cp -R "$PACKAGE/Samples~/." "$PROJECT/Assets/Samples/"
+
+# The sample tests check this repository's samples, so they live outside the package and ship to nobody.
+cp -R "$ROOT/Aspid.FastTools/Assets/SampleTests~" "$PROJECT/Assets/SampleTests"
 
 echo "$VERSION"

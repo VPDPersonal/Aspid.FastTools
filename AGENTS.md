@@ -18,8 +18,8 @@ Agent Skills for projects that consume the package in `skills/`. The rules of ea
 Run what applies before you open a PR.
 
 - Scripts: `npm --prefix Website ci && node --test scripts/*.test.mjs`.
-- Repository: `node scripts/check-package-files.mjs`, `node scripts/check-version.mjs`,
-  `node scripts/check-unity-minimum.mjs`, `node scripts/check-contrast.mjs`, and
+- Repository: `node scripts/check-package-files.mjs`, `node scripts/check-samples.mjs`,
+  `node scripts/check-version.mjs`, `node scripts/check-unity-minimum.mjs`, `node scripts/check-contrast.mjs`, and
   `npm install --no-save js-yaml@4 && node scripts/check-skills.mjs`.
 
 ## C# style
@@ -29,7 +29,8 @@ arguments, attribute and blank-line layout, comments and XML docs. Read it befor
 
 ## Samples~
 
-`Samples~` is code a newcomer reads, not package API. Beyond CODESTYLE.md:
+`Samples~` is code a newcomer reads, not package API. Beyond CODESTYLE.md (`node scripts/check-samples.mjs` checks
+these):
 
 - No comments except the `CheckNamespace` banner, and no `[Header]`, `Debug.Log` or XML docs; `[Tooltip]` only where
   it tells more than the field name.

@@ -13,6 +13,7 @@ const script = fileURLToPath(new URL('check-package-files.mjs', import.meta.url)
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests~';
 const DEV_TOOLS = 'Aspid.FastTools/Assets/DevTools';
+const SAMPLE_TESTS = 'Aspid.FastTools/Assets/SampleTests~';
 
 const guid = (number) => number.toString(16).padStart(32, '0');
 const meta = (number, importer = '') => `fileFormatVersion: 2\nguid: ${guid(number)}\n${importer}`;
@@ -22,8 +23,8 @@ const asmdef = (name, references = []) => JSON.stringify({ name, references });
 
 const LICENSE = 'MIT License\n\nCopyright (c) 2025 Vladislav Panin\n';
 
-// A package that passes: a runtime and an editor assembly, a sample, a hidden file, a dev test, a dev tool, and
-// the license copy.
+// A package that passes: a runtime and an editor assembly, a sample, a hidden file, a dev test, a dev tool, a sample
+// test, and the license copy.
 const valid = () => ({
   LICENSE,
   [`${PACKAGE}/LICENSE.md`]: LICENSE,
@@ -46,6 +47,8 @@ const valid = () => ({
   [`${DEV_TESTS}/DevItem.cs.meta`]: meta(9, MONO),
   [`${DEV_TOOLS}/DevTool.cs`]: 'class DevTool { }',
   [`${DEV_TOOLS}/DevTool.cs.meta`]: meta(12, MONO),
+  [`${SAMPLE_TESTS}/SampleTest.cs`]: 'class SampleTest { }',
+  [`${SAMPLE_TESTS}/SampleTest.cs.meta`]: meta(13, MONO),
 });
 
 // Run the script on the fixture files; a value of null removes a file of the valid package.
