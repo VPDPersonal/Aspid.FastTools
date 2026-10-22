@@ -1,4 +1,4 @@
-// Check the package samples against the Samples~ rules of AGENTS.md: code free of comments but the CheckNamespace banner,
+// Check the package samples against the rules of the asp-ft-samples skill: code free of comments but the CheckNamespace banner,
 // one type per file, namespaces that follow the folders below the asmdef's rootNamespace, each kind of file in its folder, scenes with no lights,
 // physics or foreign materials, one-sentence package.json descriptions, and ProfilerMarkers marker names that match its
 // tutorial.

@@ -44,7 +44,8 @@ concurrency:
 
 jobs:
   # A file without a .meta, a guid used twice, a sample or asmdef reference that leads nowhere: Unity repairs these in a
-  # local package and ignores or breaks them in the installed one. check-samples.mjs holds Samples~ to its AGENTS.md rules.
+  # local package and ignores or breaks them in the installed one. check-samples.mjs holds Samples~ to the rules of the
+  # asp-ft-samples skill.
   package-files:
     name: Package files
     runs-on: ubuntu-latest

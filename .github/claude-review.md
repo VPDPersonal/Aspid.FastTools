@@ -28,7 +28,8 @@ Check, in this order:
 4. Generators and analyzers: a source change needs the rebuilt DLL committed into the package.
 5. Version: a bump goes through `scripts/set-version.sh`, so `package.json`, the badge and both READMEs agree.
 
-Skip style and naming that `.editorconfig`, `.claude/skills/asp-ft-code-style/SKILL.md` and AGENTS.md do not cover.
+Skip style and naming that `.editorconfig`, `.claude/skills/asp-ft-code-style/SKILL.md`,
+`.claude/skills/asp-ft-samples/SKILL.md` and AGENTS.md do not cover.
 
 Format:
 
