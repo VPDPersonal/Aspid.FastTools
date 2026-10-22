@@ -2,11 +2,13 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
-using UnityEngine.UIElements;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The field's stylesheet sits on its root, and child PropertyFields are built inside it, so its rules must only
     // match the field's own header and open button — never a button or foldout of a nested drawer or list.

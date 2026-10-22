@@ -1,8 +1,9 @@
 using System;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     /// <summary>
     /// Read-side coverage for the YAML engine: missing-type discovery, propertyPath -> rid resolution (top-level,

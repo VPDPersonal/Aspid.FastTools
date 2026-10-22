@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.PublicApi
 {
     // A renamed or removed public member passes every other check and breaks users in a minor release. This test
     // compares the public API of the package assemblies with PublicApi.txt; Aspid.FastTools/AGENTS.md says how to update

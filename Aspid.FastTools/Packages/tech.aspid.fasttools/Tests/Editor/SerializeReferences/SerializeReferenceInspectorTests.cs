@@ -1,9 +1,11 @@
-using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using NUnit.Framework;
 using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// EditMode integration coverage that needs a live <see cref="SerializedObject"/>: the rid-sharing contract of

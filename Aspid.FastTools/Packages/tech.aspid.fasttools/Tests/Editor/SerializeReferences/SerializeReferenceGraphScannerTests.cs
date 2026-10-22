@@ -2,8 +2,11 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using System.Diagnostics;
+using Aspid.FastTools.SerializeReferences.Editors;
+using Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Structural coverage for <see cref="SerializeReferenceGraphScanner"/>: the field-pointer roots, the nested

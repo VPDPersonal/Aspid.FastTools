@@ -1,15 +1,16 @@
-using NUnit.Framework;
-using UnityEngine.UIElements;
-#if UNITY_6000_6_OR_NEWER
 using System;
 using UnityEngine;
 using System.Text;
+using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+#if UNITY_6000_6_OR_NEWER
 #endif
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     internal sealed class TextElementExtensionsTests
     {

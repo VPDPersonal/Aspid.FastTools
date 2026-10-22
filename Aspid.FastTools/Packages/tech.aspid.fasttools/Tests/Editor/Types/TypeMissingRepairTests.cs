@@ -4,10 +4,13 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
+using Aspid.FastTools.Types;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     internal sealed class TypeMissingRepairTestObject : ScriptableObject
     {

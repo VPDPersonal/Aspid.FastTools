@@ -6,9 +6,10 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // The tests of this fixture that need Unity or the package's Editor assembly. DotnetTests/Yaml runs
     // the rest without Unity and leaves the *.Unity.cs parts out.

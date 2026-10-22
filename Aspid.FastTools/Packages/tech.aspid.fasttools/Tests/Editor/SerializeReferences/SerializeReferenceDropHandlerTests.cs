@@ -3,8 +3,10 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The IMGUI drawer accepts a script asset dropped on the field line.
     // The handler picks the dragged class and gives each selected object its own instance.

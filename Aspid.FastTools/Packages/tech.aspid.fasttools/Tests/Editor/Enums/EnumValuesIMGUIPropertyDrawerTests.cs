@@ -2,9 +2,11 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Enums;
 using Aspid.FastTools.Enums.Editors;
 
-namespace Aspid.FastTools.Enums.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Enums
 {
     /// <summary>
     /// Coverage for the IMGUI layout of <see cref="EnumValues{TValue}"/>: a row is as tall as its value field,

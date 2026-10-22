@@ -7,9 +7,11 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 using PromptAnswer = Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceDeleteGuard.PromptAnswer;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for <see cref="SerializeReferenceDeleteGuard"/>: which types a deleted script takes with it, how their

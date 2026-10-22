@@ -3,8 +3,10 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     // The dots canvas runs its repaint timer only while it sits in a panel and the per-user "Animated background"
     // setting is on; with the setting off the dots are hidden and nothing keeps the editor repainting.

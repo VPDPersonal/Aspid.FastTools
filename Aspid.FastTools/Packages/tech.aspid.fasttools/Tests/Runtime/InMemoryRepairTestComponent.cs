@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Tests
 {
     // A scene component for the in-memory missing-type repair tests. It lives in a runtime assembly and in its own file

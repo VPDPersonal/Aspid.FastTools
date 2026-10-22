@@ -2,7 +2,8 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Kept out of SerializeReferenceTestFixtures.cs on purpose: a ScriptableObject asset reloads from disk only when
     // its class lives in a file of the same name, and the unsaved-asset repair tests reimport their probe.

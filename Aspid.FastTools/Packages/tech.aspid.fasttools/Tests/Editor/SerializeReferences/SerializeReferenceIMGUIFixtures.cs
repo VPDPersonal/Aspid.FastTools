@@ -3,7 +3,8 @@ using UnityEngine;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Shared fixture types of the IMGUI drawer tests (height, draw and drop).
 

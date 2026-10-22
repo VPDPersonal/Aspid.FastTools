@@ -1,7 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // Order and row text of the picker's search results.
     [TestFixture]

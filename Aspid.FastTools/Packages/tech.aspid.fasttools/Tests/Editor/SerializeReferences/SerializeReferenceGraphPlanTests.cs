@@ -1,9 +1,11 @@
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 using CardKind = Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceGraphPlan.CardKind;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Pins what SerializeReferenceGraphPlan draws for a graph that the YAML scanner would build: each reference
     // expands its children once, under a field that the Editor can open, references that point at each other stay

@@ -1,8 +1,10 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for the Project References texts that depend on what the sweep covered: only a sweep that checked

@@ -4,8 +4,10 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     // The title and the logo of the Welcome tab tick only while they sit in a panel and the per-user
     // "Animated background" setting is on, like the dots canvas; with the setting off nothing keeps them ticking.

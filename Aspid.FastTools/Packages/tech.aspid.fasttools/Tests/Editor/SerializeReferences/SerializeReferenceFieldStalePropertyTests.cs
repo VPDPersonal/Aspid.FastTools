@@ -1,10 +1,12 @@
 using System;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Reflection;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Guards the post-repair path of the UI Toolkit <see cref="SerializeReferenceField"/>: a Fix / Smart Fix on a

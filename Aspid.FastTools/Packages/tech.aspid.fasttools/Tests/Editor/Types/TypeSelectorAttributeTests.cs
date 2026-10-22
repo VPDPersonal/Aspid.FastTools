@@ -1,7 +1,9 @@
 using System;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Guards the defaults of <see cref="TypeSelectorAttribute"/>: <see cref="TypeSelectorAttribute.Allow"/> must be

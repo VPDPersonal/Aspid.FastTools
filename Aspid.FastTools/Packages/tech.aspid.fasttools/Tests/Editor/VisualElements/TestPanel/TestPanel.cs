@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     // A live panel for tests that need USS resolution, layout or event dispatch. A runtime panel rather than a shown
     // EditorWindow, because only the former updates without a graphics device (-nographics).

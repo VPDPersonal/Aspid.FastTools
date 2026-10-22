@@ -4,7 +4,8 @@ using Aspid.FastTools.Types;
 using System.Collections.Generic;
 using UnityEngine.Scripting.APIUpdating;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Shared fixture types for the SerializeReferences EditMode tests. They live in one file on purpose: several
     // fixtures (Inspector, NoticeLayout, SharedAlias, RepairSuggestion, MovedFromResolver, CiGate) assert against the

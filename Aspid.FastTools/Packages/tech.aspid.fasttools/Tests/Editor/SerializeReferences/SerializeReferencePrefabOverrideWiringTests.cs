@@ -7,10 +7,11 @@ using NUnit.Framework;
 using System.Reflection;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
-using static Aspid.FastTools.SerializeReferences.Editors.Tests.SerializeReferenceYamlPrefabOverrideTests;
+using Aspid.FastTools.SerializeReferences.Editors;
+using static Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml.SerializeReferenceYamlPrefabOverrideTests;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The call sites that feed prefab instance overrides into the gate, the delete guard and the breakage detector.
     // Each test imports the variant fixture under Assets/, where the project sweeps read it, on top of a real base

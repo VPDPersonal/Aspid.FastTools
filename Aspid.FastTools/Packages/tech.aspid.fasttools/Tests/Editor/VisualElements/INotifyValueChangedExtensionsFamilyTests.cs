@@ -5,9 +5,11 @@ using NUnit.Framework;
 using System.Reflection;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.UIElements;
+using INotifyValueChangedExtensions = Aspid.FastTools.UIElements.INotifyValueChangedExtensions;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// The value overloads are one template repeated for every value type. Real fields anchor the behavior,

@@ -2,8 +2,10 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     internal interface IInteractable { }
 
@@ -208,7 +210,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var stub = Generate(typeof(IReferenceMap<ItemBase>));
 
-            Assert.That(stub, Does.Contain($".IReferenceMap<Aspid.FastTools.SerializeReferences.Editors.Tests.ItemBase>.Put<T>(T item) => {Throw};"));
+            Assert.That(stub, Does.Contain($".IReferenceMap<Aspid.FastTools.Tests.Editors.SerializeReferences.ItemBase>.Put<T>(T item) => {Throw};"));
             Assert.That(stub, Does.Not.Contain("where T :"));
         }
 
@@ -220,12 +222,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void SubstitutedConstraintOfAnOpenClass_IsRestatedWithTheArgument() =>
             Assert.That(Generate(typeof(IMap<ItemBase>)),
-                Does.Contain($"public void Put<T>(T item) where T : Aspid.FastTools.SerializeReferences.Editors.Tests.ItemBase => {Throw};"));
+                Does.Contain($"public void Put<T>(T item) where T : Aspid.FastTools.Tests.Editors.SerializeReferences.ItemBase => {Throw};"));
 
         [Test]
         public void ConstraintBuiltFromTheInterfaceArgument_IsSubstituted() =>
             Assert.That(Generate(typeof(IListMap<ItemBase>)),
-                Does.Contain("where T : System.Collections.Generic.IList<Aspid.FastTools.SerializeReferences.Editors.Tests.ItemBase>"));
+                Does.Contain("where T : System.Collections.Generic.IList<Aspid.FastTools.Tests.Editors.SerializeReferences.ItemBase>"));
 
         [Test]
         public void GenericMethodDeclaredTwice_IsImplementedOnce()

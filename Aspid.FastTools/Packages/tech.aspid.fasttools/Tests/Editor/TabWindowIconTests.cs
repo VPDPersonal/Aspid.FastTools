@@ -1,8 +1,10 @@
 using UnityEngine;
 using NUnit.Framework;
 using System.Reflection;
+using Aspid.FastTools.Editors;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors
 {
     /// <summary>
     /// The tab icon is drawn at 16 pt: a large texture without mipmaps only adds package weight and makes the edges shimmer.

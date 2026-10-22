@@ -4,8 +4,10 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Under a multi-object selection with different types the caption shows "—", which Unity's theme tints through
     // the class its own EnumField puts on the caption; a class Unity does not declare leaves the dash untinted.

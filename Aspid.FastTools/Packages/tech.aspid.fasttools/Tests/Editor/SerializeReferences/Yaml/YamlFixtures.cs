@@ -1,8 +1,9 @@
 using System;
 using System.IO;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     /// <summary>
     /// Real-format Unity YAML fixtures and temp-file helpers for the <see cref="SerializeReferenceYamlEditor"/> tests.

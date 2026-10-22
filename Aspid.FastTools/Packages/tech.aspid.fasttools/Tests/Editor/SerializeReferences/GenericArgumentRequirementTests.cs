@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Where a type parameter lands decides what its argument has to be. The fixtures below are the same class
     // written over and over, differing only in that.

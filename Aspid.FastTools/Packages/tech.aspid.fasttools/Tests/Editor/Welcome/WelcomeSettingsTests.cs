@@ -1,8 +1,10 @@
 using NUnit.Framework;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Welcome
 {
     /// <summary>
     /// Behavioural coverage for the Welcome tab's per-user auto-show setting: the store defaults to on, raises

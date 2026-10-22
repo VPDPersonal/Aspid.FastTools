@@ -1,9 +1,10 @@
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // The type name scan finds the _assemblyQualifiedName scalar of SerializableType and SerializableMonoScript wrappers
     // in fields, lists, managed reference data and prefab instance overrides, and rewrites it in place. The documents

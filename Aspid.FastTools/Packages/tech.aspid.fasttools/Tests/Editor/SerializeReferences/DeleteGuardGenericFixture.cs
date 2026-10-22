@@ -1,8 +1,9 @@
 using System;
 
-namespace Aspid.FastTools.SerializeReferences.Editors
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors
 {
-    namespace Tests
+    namespace SerializeReferences
     {
         // A generic namesake of DeleteGuardPistol, declared in nested namespace blocks: deleting this script covers only
         // DeleteGuardPistol<T>, and deleting the fixtures script only DeleteGuardPistol (SerializeReferenceDeleteGuardTests).

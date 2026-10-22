@@ -5,11 +5,14 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Object = UnityEngine.Object;
 using Aspid.FastTools.Types.Editors;
 using System.Text.RegularExpressions;
-using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
+using Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for <see cref="SerializeReferenceGateScanner.IsPendingMigration"/> — the gate's pre-filter that keeps

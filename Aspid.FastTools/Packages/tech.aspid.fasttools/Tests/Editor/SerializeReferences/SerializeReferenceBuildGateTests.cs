@@ -6,8 +6,10 @@ using UnityEditor.Build;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Coverage for the player-build gate: that SerializeReferenceBuildGate.Check skips, warns or stops the build as the
     // severity says. The scan is injected, so no project asset is read.

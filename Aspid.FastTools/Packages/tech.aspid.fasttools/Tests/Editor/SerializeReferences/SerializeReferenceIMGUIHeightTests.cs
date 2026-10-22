@@ -4,8 +4,10 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The IMGUI drawer must reserve the rows Draw paints: the field line, a row per notice and a row per child.
     // A mismatch overlaps rows or leaves a gap, and only an IMGUI inspector shows it.

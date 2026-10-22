@@ -2,8 +2,11 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// The help box icon follows the palette, not the editor skin: the dark palette keeps the dark-skin icon, and the

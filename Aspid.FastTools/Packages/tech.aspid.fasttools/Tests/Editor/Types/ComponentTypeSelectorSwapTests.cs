@@ -6,11 +6,13 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using Aspid.FastTools.Editors;
-using Aspid.FastTools.Types.Tests;
-using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.Types.Editors;
+using System.Text.RegularExpressions;
+using Aspid.FastTools.Tests.ComponentTypeSelector;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Coverage for the script swap behind <see cref="ComponentTypeSelector"/>. It writes <c>m_Script</c> instead of

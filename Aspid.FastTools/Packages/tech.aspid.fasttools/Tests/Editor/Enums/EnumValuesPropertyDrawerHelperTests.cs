@@ -5,12 +5,14 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
+using Aspid.FastTools.Enums;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.Enums.Editors;
 
-namespace Aspid.FastTools.Enums.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Enums
 {
     // Default is an alias: it shares Medium's value, and ToString() names only one of them.
     internal enum Quality

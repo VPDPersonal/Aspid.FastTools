@@ -3,8 +3,10 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// The footer row must keep the keys hint between the version and the GitHub link at any window width, and

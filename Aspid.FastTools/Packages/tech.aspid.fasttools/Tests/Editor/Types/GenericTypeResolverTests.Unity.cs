@@ -1,7 +1,9 @@
 using System.Linq;
 using NUnit.Framework;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // The same shape twice, differing only in where T lands: one keeps it as serialized data, the other only ever
     // as a managed reference. What the field may close them over differs accordingly.

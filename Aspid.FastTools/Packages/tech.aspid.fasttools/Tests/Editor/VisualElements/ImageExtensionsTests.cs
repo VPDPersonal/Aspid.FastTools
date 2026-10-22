@@ -3,9 +3,11 @@ using NUnit.Framework;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
 using Object = UnityEngine.Object;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     [TestFixture]
     internal sealed class ImageExtensionsTests

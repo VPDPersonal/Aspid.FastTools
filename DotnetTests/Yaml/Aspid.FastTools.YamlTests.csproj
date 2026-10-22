@@ -11,7 +11,7 @@
         <IsPackable>false</IsPackable>
         <!-- The name of the Unity test assembly, which the engine's InternalsVisibleTo lets in. -->
         <AssemblyName>Aspid.FastTools.Editor.SerializeReferences.Tests</AssemblyName>
-        <RootNamespace>Aspid.FastTools.SerializeReferences.Editors.Tests</RootNamespace>
+        <RootNamespace>Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml</RootNamespace>
         <!-- Engine/ is a project of its own. -->
         <DefaultItemExcludes>$(DefaultItemExcludes);Engine/**</DefaultItemExcludes>
     </PropertyGroup>

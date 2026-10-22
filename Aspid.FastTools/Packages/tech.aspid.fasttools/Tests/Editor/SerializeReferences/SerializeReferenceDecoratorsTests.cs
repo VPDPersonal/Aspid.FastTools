@@ -5,8 +5,10 @@ using NUnit.Framework;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
 #pragma warning disable CS0649
     [Serializable]

@@ -2,8 +2,10 @@ using System;
 using System.Linq;
 using UnityEditor;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     [Serializable]
     internal sealed class ResolvedTemplateValue { }

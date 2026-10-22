@@ -2,9 +2,12 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Guards <see cref="TypeSelectorConstraintResolver"/>: the member-first resolution of a

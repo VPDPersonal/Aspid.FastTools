@@ -8,7 +8,8 @@ using UnityEngine.TestTools;
 using UnityEditor.Build.Player;
 using System.Collections.Generic;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors
 {
     // The EditMode run compiles every assembly for the Editor, where UnityEditor always exists. A Runtime/ file that
     // uses it without #if UNITY_EDITOR passes here and fails in the user's player build with CS0234. Compiling the

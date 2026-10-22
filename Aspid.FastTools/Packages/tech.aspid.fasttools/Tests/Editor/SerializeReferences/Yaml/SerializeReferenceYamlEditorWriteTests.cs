@@ -3,9 +3,10 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     /// <summary>
     /// Coverage for how <see cref="SerializeReferenceYamlEditor"/> writes an asset back: a read-only file is refused with
