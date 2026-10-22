@@ -6,12 +6,13 @@ using Aspid.FastTools.SerializeReferences.Editors;
 namespace Aspid.FastTools.DevTools.Editors
 {
     /// <summary>
-    /// Dev-only Unity CLI wrapper over the SerializeReference gate scanner: <c>unity command sr_gate</c> returns the
-    /// violations as structured JSON without a batchmode Editor relaunch, unlike <see cref="SerializeReferenceCiGate"/>.
+    /// Dev-only Unity CLI wrapper over the SerializeReference gate scanner: <c>unity command fasttools sr_gate</c>
+    /// returns the violations as structured JSON without a batchmode Editor relaunch, unlike
+    /// <see cref="SerializeReferenceCiGate"/>.
     /// </summary>
     internal static class SerializeReferenceGateCommands
     {
-        [CliCommand("sr_gate", "Scan the project for SerializeReference gate violations (missing types / unset Required fields)")]
+        [CliCommand("fasttools", "sr_gate", "Scan the project for SerializeReference gate violations (missing types / unset Required fields)")]
         internal static object Run(
             [CliArg("scope", "What to scan: missing | required | full")] string scope = "missing",
             [CliArg("warn_only", "Force Warn severity: report but exit code 0")] bool warnOnly = false,
