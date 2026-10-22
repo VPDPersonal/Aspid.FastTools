@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
     /// (rows, captions, tooltips, error messages) builds on.
     /// </summary>
     [TestFixture]
-    internal sealed class TypeUtilityTests
+    internal sealed partial class TypeUtilityTests
     {
         private sealed class Outer<T>
         {
@@ -117,18 +117,6 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             Assert.IsTrue(TypeUtility.IsCompilerGenerated(typeof(MarkedOuter)));
             Assert.IsFalse(TypeUtility.IsCompilerGenerated(typeof(MarkedOuter.Written)));
-        }
-
-        [Test]
-        public void GetAllTypeInfos_LeavesOutTypesNestedInAGeneratedOne()
-        {
-            var nested = GetGeneratedDataTypes().FirstOrDefault();
-            Assert.IsNotNull(nested);
-
-            var offered = TypeInfo.GetAllTypeInfos(new[] { typeof(object) }, TypeAllow.All);
-
-            Assert.IsFalse(offered.Any(info => info.AssemblyQualifiedName == nested.AssemblyQualifiedName),
-                "A compiler's data struct must not appear in the <Global> group.");
         }
 
         [Test]
