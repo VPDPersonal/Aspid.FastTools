@@ -26,7 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         // The two errors Unity logs for an override whose type is gone. How many of them and in which order differs
         // between Unity versions, so the tests let these through and fail on any other error.
-        private static readonly Regex UnappliedOverrideError = new(
+        private static readonly Regex _unappliedOverrideError = new(
             @"^(Could not update a managed instance value at property path 'managedReferences\[\d+\]', with value '.*PrefabTestBowRemoved'"
             + @"|The serialized array of \[SerializeReference\] objects is missing entry for Refid \d+)$");
 
@@ -265,7 +265,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private void CollectUnexpectedError(string condition, string stackTrace, LogType type)
         {
             if (type is LogType.Log or LogType.Warning) return;
-            if (UnappliedOverrideError.IsMatch(condition)) return;
+            if (_unappliedOverrideError.IsMatch(condition)) return;
 
             _unexpectedErrors.Add($"[{type}] {condition}");
         }

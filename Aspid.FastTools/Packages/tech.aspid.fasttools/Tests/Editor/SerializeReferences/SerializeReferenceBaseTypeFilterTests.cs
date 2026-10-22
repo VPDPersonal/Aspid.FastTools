@@ -31,12 +31,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceBaseTypeFilterTests
     {
-        private static readonly Type[] MeleeAndRanged = { typeof(IFilterMelee), typeof(IFilterRanged) };
+        private static readonly Type[] _meleeAndRanged = { typeof(IFilterMelee), typeof(IFilterRanged) };
 
         [Test]
         public void SeveralBaseTypes_AcceptOnlyTypesAssignableToAll()
         {
-            var filter = SerializeReferenceHelpers.BuildAssignableFilter(MeleeAndRanged);
+            var filter = SerializeReferenceHelpers.BuildAssignableFilter(_meleeAndRanged);
 
             Assert.IsTrue(filter(typeof(FilterGlaive)));
             Assert.IsFalse(filter(typeof(FilterSword)), "Matching one of the attribute types is not enough.");
@@ -66,7 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void SeveralBaseTypes_NarrowGenericDefinitionsTheSameWay()
         {
             var offered = GenericTypeResolver
-                .GetAssignableGenericDefinitions(typeof(IFilterWeapon), MeleeAndRanged)
+                .GetAssignableGenericDefinitions(typeof(IFilterWeapon), _meleeAndRanged)
                 .ToArray();
 
             CollectionAssert.Contains(offered, typeof(FilterGenericGlaive<>));

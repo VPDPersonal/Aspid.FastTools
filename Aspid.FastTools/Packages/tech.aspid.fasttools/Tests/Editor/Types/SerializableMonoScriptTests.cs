@@ -21,10 +21,10 @@ namespace Aspid.FastTools.Types.Editors.Tests
     {
         // A type of the package's runtime assembly declared in a file of its own name — exactly the shape
         // MonoScript.GetClass() reports, so it is guaranteed to have a script asset.
-        private static readonly Type ScriptedType = typeof(SerializableMonoScript);
+        private static readonly Type _scriptedType = typeof(SerializableMonoScript);
 
         // A scripted type the constrained wrapper accepts.
-        private static readonly Type ConstrainedType = typeof(SerializableType);
+        private static readonly Type _constrainedType = typeof(SerializableType);
 
         private sealed class Holder : ScriptableObject
         {
@@ -64,9 +64,9 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             const string staleName = "Old.Name, Old";
 
-            SerializableMonoScriptUtility.Assign(new SerializedObject(holder).FindProperty(nameof(Holder.wrapper)), ScriptedType);
+            SerializableMonoScriptUtility.Assign(new SerializedObject(holder).FindProperty(nameof(Holder.wrapper)), _scriptedType);
 
-            var json = EditorJsonUtility.ToJson(holder).Replace(ScriptedType.AssemblyQualifiedName, staleName);
+            var json = EditorJsonUtility.ToJson(holder).Replace(_scriptedType.AssemblyQualifiedName, staleName);
             EditorJsonUtility.FromJsonOverwrite(json, holder);
 
             Assert.AreEqual(staleName, holder.wrapper.AssemblyQualifiedName, "Precondition: the stored name is stale.");
@@ -107,12 +107,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
             try
             {
                 var serialized = new SerializedObject(holder);
-                SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.required)), ConstrainedType);
+                SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.required)), _constrainedType);
 
                 SerializableMonoScript wrapper = holder.required;
 
                 Assert.AreEqual(typeof(SerializableType), wrapper.BaseType, "BaseType must stay virtual through the base reference.");
-                Assert.AreEqual(ConstrainedType, (Type)wrapper);
+                Assert.AreEqual(_constrainedType, (Type)wrapper);
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
@@ -144,8 +144,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void ScriptsByType_ContainsAScriptedRuntimeType_ButNotANestedOne()
         {
-            Assert.IsTrue(SerializableMonoScriptUtility.TryGetScript(ScriptedType, out var script));
-            Assert.AreEqual(ScriptedType, script.GetClass());
+            Assert.IsTrue(SerializableMonoScriptUtility.TryGetScript(_scriptedType, out var script));
+            Assert.AreEqual(_scriptedType, script.GetClass());
             Assert.IsFalse(SerializableMonoScriptUtility.HasScript(typeof(Holder)), "A nested type owns no script asset.");
         }
 
@@ -158,13 +158,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 var serialized = new SerializedObject(holder);
                 var wrapper = serialized.FindProperty(nameof(Holder.wrapper));
 
-                SerializableMonoScriptUtility.Assign(wrapper, ScriptedType);
-                Assert.AreEqual(ScriptedType, holder.wrapper.Type);
-                Assert.AreEqual(ScriptedType, ScriptOf(wrapper)?.GetClass());
+                SerializableMonoScriptUtility.Assign(wrapper, _scriptedType);
+                Assert.AreEqual(_scriptedType, holder.wrapper.Type);
+                Assert.AreEqual(_scriptedType, ScriptOf(wrapper)?.GetClass());
 
                 serialized.Update();
-                Assert.AreEqual(ScriptedType, SerializableMonoScriptUtility.GetCurrentType(wrapper, out var name));
-                Assert.AreEqual(ScriptedType.AssemblyQualifiedName, name);
+                Assert.AreEqual(_scriptedType, SerializableMonoScriptUtility.GetCurrentType(wrapper, out var name));
+                Assert.AreEqual(_scriptedType.AssemblyQualifiedName, name);
 
                 SerializableMonoScriptUtility.Assign(wrapper, null);
                 Assert.IsNull(holder.wrapper.Type);
@@ -181,7 +181,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             try
             {
                 var serialized = new SerializedObject(holder);
-                SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.wrapper)), ScriptedType);
+                SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.wrapper)), _scriptedType);
 
                 // Simulate a stale name (what a class rename leaves behind) while the script reference is intact.
                 serialized.Update();
@@ -192,8 +192,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 using var fresh = new SerializedObject(holder);
                 var name = fresh.FindProperty($"{nameof(Holder.wrapper)}.{SerializableTypeUtility.BackingFieldName}").stringValue;
 
-                Assert.AreEqual(ScriptedType.AssemblyQualifiedName, name, "The script asset is the source of truth for the stored name.");
-                Assert.AreEqual(ScriptedType, holder.wrapper.Type);
+                Assert.AreEqual(_scriptedType.AssemblyQualifiedName, name, "The script asset is the source of truth for the stored name.");
+                Assert.AreEqual(_scriptedType, holder.wrapper.Type);
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
@@ -206,7 +206,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             {
                 LoadWithStaleName(holder);
 
-                Assert.AreEqual(ScriptedType, holder.wrapper.Type, "The editor falls back to the script's class.");
+                Assert.AreEqual(_scriptedType, holder.wrapper.Type, "The editor falls back to the script's class.");
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
@@ -222,7 +222,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 // MonoScript.GetClass throws off the main thread, so a worker gets no fallback and nothing is cached.
                 Assert.IsNull(Task.Run(() => holder.wrapper.Type).Result);
                 Assert.IsNull(Task.Run(() => holder.wrapper.Type).Result);
-                Assert.AreEqual(ScriptedType, holder.wrapper.Type, "A main-thread read still falls back to the script's class.");
+                Assert.AreEqual(_scriptedType, holder.wrapper.Type, "A main-thread read still falls back to the script's class.");
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
@@ -235,13 +235,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
             {
                 var serialized = new SerializedObject(holder);
                 var name = serialized.FindProperty($"{nameof(Holder.wrapper)}.{SerializableTypeUtility.BackingFieldName}");
-                name.stringValue = ScriptedType.AssemblyQualifiedName;
+                name.stringValue = _scriptedType.AssemblyQualifiedName;
                 serialized.ApplyModifiedProperties();
 
                 SerializableMonoScriptUtility.SyncScriptFromName(name);
 
-                Assert.AreEqual(ScriptedType, ScriptOf(serialized.FindProperty(nameof(Holder.wrapper)))?.GetClass());
-                Assert.AreEqual(ScriptedType, holder.wrapper.Type);
+                Assert.AreEqual(_scriptedType, ScriptOf(serialized.FindProperty(nameof(Holder.wrapper)))?.GetClass());
+                Assert.AreEqual(_scriptedType, holder.wrapper.Type);
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
@@ -257,7 +257,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
                 Assert.IsTrue(TypeSelectorRequiredGate.IsViolation(backing), "An empty required wrapper is a violation.");
 
-                SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.required)), ScriptedType);
+                SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.required)), _scriptedType);
                 serialized.Update();
 
                 Assert.IsFalse(TypeSelectorRequiredGate.IsViolation(
@@ -324,7 +324,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 Assert.IsTrue(IsMissing(holder), "Precondition: the stored name is unresolved.");
 
                 using (var serialized = new SerializedObject(holder))
-                    SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.wrapper)), ScriptedType);
+                    SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.wrapper)), _scriptedType);
 
                 Assert.IsFalse(IsMissing(holder));
             }
@@ -438,11 +438,11 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 Assert.AreEqual("<Missing Old.Name>", field.Q<TextElement>(className: EnumField.textUssClassName).text);
 
                 // The picker's repair path: the field reports the pick and the drawer writes name and script.
-                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+                field.ApplyPicked(assemblyQualifiedName: _scriptedType.AssemblyQualifiedName);
 
                 using var repaired = new SerializedObject(holder);
                 var wrapper = repaired.FindProperty(nameof(Holder.wrapper));
-                Assert.AreEqual(ScriptedType, ScriptOf(wrapper)?.GetClass());
+                Assert.AreEqual(_scriptedType, ScriptOf(wrapper)?.GetClass());
                 Assert.IsFalse(IsMissing(holder));
             }
             finally
@@ -464,10 +464,10 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 var changes = new List<(string previous, string current)>();
                 var field = Draw(panel, serialized, changes);
 
-                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+                field.ApplyPicked(assemblyQualifiedName: _scriptedType.AssemblyQualifiedName);
 
-                CollectionAssert.AreEqual(new[] { (string.Empty, ScriptedType.AssemblyQualifiedName) }, changes);
-                Assert.AreEqual(ScriptedType, ScriptClassOf(holder));
+                CollectionAssert.AreEqual(new[] { (string.Empty, _scriptedType.AssemblyQualifiedName) }, changes);
+                Assert.AreEqual(_scriptedType, ScriptClassOf(holder));
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
@@ -480,13 +480,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
             try
             {
                 using (var assign = new SerializedObject(holder))
-                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), ScriptedType);
+                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), _scriptedType);
 
                 using var serialized = new SerializedObject(holder);
                 var changes = new List<(string previous, string current)>();
                 var field = Draw(panel, serialized, changes);
 
-                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+                field.ApplyPicked(assemblyQualifiedName: _scriptedType.AssemblyQualifiedName);
 
                 Assert.IsEmpty(changes);
             }
@@ -500,7 +500,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             using var panel = new TestPanel();
             try
             {
-                Assert.IsTrue(SerializableMonoScriptUtility.TryGetScript(ScriptedType, out var script));
+                Assert.IsTrue(SerializableMonoScriptUtility.TryGetScript(_scriptedType, out var script));
 
                 using var serialized = new SerializedObject(holder);
                 var changes = new List<(string previous, string current)>();
@@ -514,8 +514,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
                     field.SendEvent(drop);
                 }
 
-                CollectionAssert.AreEqual(new[] { (string.Empty, ScriptedType.AssemblyQualifiedName) }, changes);
-                Assert.AreEqual(ScriptedType, ScriptClassOf(holder));
+                CollectionAssert.AreEqual(new[] { (string.Empty, _scriptedType.AssemblyQualifiedName) }, changes);
+                Assert.AreEqual(_scriptedType, ScriptClassOf(holder));
             }
             finally
             {
@@ -533,9 +533,9 @@ namespace Aspid.FastTools.Types.Editors.Tests
             try
             {
                 using (var assign = new SerializedObject(first))
-                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), ScriptedType);
+                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), _scriptedType);
                 using (var assign = new SerializedObject(second))
-                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), ConstrainedType);
+                    SerializableMonoScriptUtility.Assign(assign.FindProperty(nameof(Holder.wrapper)), _constrainedType);
 
                 using var serialized = new SerializedObject(new UnityEngine.Object[] { first, second });
                 var changes = new List<(string previous, string current)>();
@@ -547,12 +547,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
                     field.Q<Button>(className: "aspid-fasttools-type-field__open-button").style.display.value);
 
                 // The shown type is the first target's: picking it changes only the other targets.
-                field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+                field.ApplyPicked(assemblyQualifiedName: _scriptedType.AssemblyQualifiedName);
 
                 Assert.AreEqual(1, changes.Count);
                 Assert.IsFalse(field.showMixedValue);
-                Assert.AreEqual(ScriptedType, ScriptClassOf(first));
-                Assert.AreEqual(ScriptedType, ScriptClassOf(second));
+                Assert.AreEqual(_scriptedType, ScriptClassOf(first));
+                Assert.AreEqual(_scriptedType, ScriptClassOf(second));
             }
             finally
             {
@@ -592,7 +592,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 var filter = SerializeReferenceGraphView.BuildTypeNameFilter(serialized, monoScript);
 
                 Assert.IsNotNull(filter.Predicate, "A script-backed wrapper needs the script predicate.");
-                Assert.IsTrue(filter.Predicate(ScriptedType));
+                Assert.IsTrue(filter.Predicate(_scriptedType));
                 Assert.IsFalse(filter.Predicate(typeof(Holder)), "A nested type owns no script asset.");
 
                 Assert.IsNull(SerializeReferenceGraphView.BuildTypeNameFilter(serialized, plain).Predicate,

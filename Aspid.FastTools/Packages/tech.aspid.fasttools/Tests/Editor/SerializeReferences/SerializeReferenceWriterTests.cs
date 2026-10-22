@@ -22,7 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const string MissingElementAssetPath = "Assets/__AspidWriterMissingElementProbe__.asset";
         private const string GraphAssetPath = "Assets/__AspidWriterGraphProbe__.asset";
 
-        private static readonly Func<ManagedTypeName, bool> Resolves = type =>
+        private static readonly Func<ManagedTypeName, bool> _resolves = type =>
             !type.Class.StartsWith("Ghost", StringComparison.Ordinal);
 
         [TearDown]
@@ -551,10 +551,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 using var serializedObject = new SerializedObject(probe);
                 var element = serializedObject.FindProperty($"{nameof(ReferenceListTestObject.weapons)}.Array.data[0]");
 
-                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(MissingElementAssetPath, Resolves).Count);
+                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(MissingElementAssetPath, _resolves).Count);
 
                 Assert.IsTrue(write(element));
-                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(MissingElementAssetPath, Resolves).Count,
+                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(MissingElementAssetPath, _resolves).Count,
                     "A replaced missing element must be noted, or the next save restores it next to the new value.");
             }
             finally

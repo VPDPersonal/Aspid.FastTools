@@ -28,7 +28,7 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
   it in the same PR. From the repository root:
   `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" <version>)`, then
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity $v> -batchmode -nographics -projectPath "$p" -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "$p/public-api.xml"`.
-  When a public member gets a newer `UNITY_6000_x_OR_NEWER` guard, move the `#if` around `HasWholeApi` and
+  When a public member gets a newer `UNITY_6000_x_OR_NEWER` guard, move the `#if` around `_hasWholeApi` and
   `WholeApiVersion` to it.
 - After a change to public API or its XML docs, run `npm run api` in `Website/` and commit `Website/api/` in the same
   PR. Steps for a worktree: `.claude/skills/docs-site/references/api-reference.md`. A skill in `skills/` that

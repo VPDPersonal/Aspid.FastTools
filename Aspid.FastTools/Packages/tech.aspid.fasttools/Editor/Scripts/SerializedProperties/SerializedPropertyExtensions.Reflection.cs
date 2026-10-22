@@ -81,12 +81,12 @@ namespace Aspid.FastTools.Editors
             listProperty.GetFieldInfo()?.IsDefined(typeof(NonReorderableAttribute), inherit: true) ?? false;
 
         // Fields change only with a domain reload, which also clears this cache. A missing field is cached too.
-        private static readonly Dictionary<(Type, string), FieldInfo> FieldCache = new();
+        private static readonly Dictionary<(Type, string), FieldInfo> _fieldCache = new();
 
         private static FieldInfo GetFieldIncludingBaseClasses(Type type, string name)
         {
-            if (FieldCache.TryGetValue((type, name), out var cached)) return cached;
-            return FieldCache[(type, name)] = FindFieldIncludingBaseClasses(type, name);
+            if (_fieldCache.TryGetValue((type, name), out var cached)) return cached;
+            return _fieldCache[(type, name)] = FindFieldIncludingBaseClasses(type, name);
         }
 
         private static FieldInfo FindFieldIncludingBaseClasses(Type type, string name)

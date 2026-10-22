@@ -25,7 +25,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             LogAssert.Expect(LogType.Error, new Regex("is read-only"));
             var rewritten = SerializeReferenceYamlEditor.TryRewriteType(
-                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol);
+                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol);
 
             Assert.IsFalse(rewritten, "A read-only asset must not be reported as rewritten.");
             Assert.AreEqual(before, File.ReadAllText(_path), "A refused rewrite must leave the file byte-identical.");
@@ -42,7 +42,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 LogAssert.Expect(LogType.Error, new Regex("is read-only"));
                 var rewritten = SerializeReferenceYamlEditor.TryRewriteType(
-                    ProjectAssetPath, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol);
+                    ProjectAssetPath, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol);
 
                 Assert.IsFalse(rewritten, "A read-only asset must not be reported as rewritten.");
                 Assert.AreEqual(YamlFixtures.MissingTypePrefab, File.ReadAllText(ProjectAssetPath),
@@ -63,9 +63,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var entries = new[]
             {
                 new MissingReferenceLocation(_path,
-                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol)),
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol)),
                 new MissingReferenceLocation(_path,
-                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, Pistol)),
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, _pistol)),
             };
 
             // A second "is read-only" error would be unexpected and fail the test.
@@ -82,9 +82,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var entries = new[]
             {
                 new MissingReferenceLocation(_path,
-                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, 999999, Pistol)),
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, 999999, _pistol)),
                 new MissingReferenceLocation(_path,
-                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol)),
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol)),
             };
 
             // A stale entry fails before any write, so the file must be checked out before the entry loop, not by it.
@@ -107,7 +107,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             LogAssert.Expect(LogType.Error, new Regex("is not valid UTF-8"));
             var rewritten = SerializeReferenceYamlEditor.TryRewriteType(
-                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol);
+                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol);
 
             Assert.IsFalse(rewritten, "A file that is not valid UTF-8 must not be rewritten.");
             CollectionAssert.AreEqual(bytes, File.ReadAllBytes(_path), "A refused rewrite must leave the file byte-identical.");
