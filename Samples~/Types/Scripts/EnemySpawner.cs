@@ -2,52 +2,31 @@ using System;
 using UnityEngine;
 using System.Collections;
 using Aspid.FastTools.Types;
+using Aspid.FastTools.Samples.Types.Enemies;
+using Aspid.FastTools.Samples.Types.Spawning;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
-    // The sample stores types as a script reference, a serializable type and a constrained string.
-    /// <summary>
-    /// <see cref="MonoBehaviour"/> that spawns enemy waves using selectable types and placement patterns.
-    /// </summary>
     public sealed class EnemySpawner : MonoBehaviour
     {
-        // SerializableMonoScript<T> keeps a MonoScript reference in the editor, so renaming or moving the
-        // class does not break the scene. Allow = TypeAllow.None keeps the abstract Enemy out of the picker.
-        // Required = true flags an empty field in the Inspector, in Project References → Scan Project and in
-        // CI runs with -srGateRequired.
-        [Header("Enemy")]
-        [TypeSelector(Required = true, Allow = TypeAllow.None)]
-        [Tooltip("Enemy type spawned for regular wave members.")]
+        [TypeSelector(Allow = TypeAllow.None)]
         [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
 
-        // Member reference: the picker offers only types assignable to whatever _enemyType currently holds,
-        // so the elite variant is always a subtype of the regular one (ArmoredGrunt for Grunt, Sniper for Archer).
         [TypeSelector(nameof(_enemyType))]
-        [Tooltip("Enemy subtype spawned for elite wave members.")]
         [SerializeField] private string _eliteType;
 
-        [Tooltip("Number of spawns per elite enemy; zero disables elites.")]
-        [SerializeField, Min(0)] private int _eliteEvery = 4;
+        [SerializeField] [Min(0)] private int _eliteEvery = 4;
 
-        // SerializableType<T> for a plain class. Allow = TypeAllow.None hides the interface itself; the
-        // remaining candidates carry [TypeSelectorDisplay] names, one group and icons.
-        [Header("Wave")]
         [TypeSelector(Allow = TypeAllow.None)]
-        [Tooltip("Placement pattern for each wave.")]
         [SerializeField] private SerializableType<ISpawnPattern> _pattern = new(typeof(CirclePattern));
 
-        [Tooltip("Number of enemies in each wave.")]
-        [SerializeField, Range(1, 32)] private int _count = 8;
+        [SerializeField] [Range(1, 32)] private int _count = 8;
+        [SerializeField] [Min(1f)] private float _radius = 8f;
+        [SerializeField] [Min(0.5f)] private float _interval = 6f;
 
-        [Tooltip("World-space scale of the spawn pattern.")]
-        [SerializeField, Min(1f)] private float _radius = 8f;
-
-        [Tooltip("Seconds between waves.")]
-        [SerializeField, Min(0.5f)] private float _interval = 6f;
-
-        [Tooltip("Material applied to generated sample objects.")]
-        [SerializeField, HideInInspector] private Material _presentationMaterial;
+        [SerializeField] private Mesh _body;
+        [SerializeField] private Material _presentationMaterial;
 
         private int _spawned;
         private ISpawnPattern _patternInstance;
@@ -61,52 +40,31 @@ namespace Aspid.FastTools.Samples.Types
             }
         }
 
-        [ContextMenu("Spawn Wave")]
         private void SpawnWave()
         {
-            // .Type resolves lazily and returns null when nothing is picked or the stored name no longer resolves.
-            var enemyType = _enemyType.Type;
-            if (enemyType is null)
-            {
-                Debug.LogWarning("Pick an enemy type first.", this);
+            if (_enemyType?.Type is not { } enemyType || _pattern.Type is not { } patternType)
                 return;
-            }
 
-            var pattern = GetPattern();
-            var eliteType = string.IsNullOrEmpty(_eliteType) ? null : Type.GetType(_eliteType);
+            if (_patternInstance?.GetType() != patternType)
+                _patternInstance = (ISpawnPattern)Activator.CreateInstance(patternType);
+
+            var eliteType = string.IsNullOrEmpty(_eliteType)
+                ? null
+                : Type.GetType(_eliteType, throwOnError: false);
 
             for (var i = 0; i < _count; i++)
             {
                 var isElite = eliteType is not null && _eliteEvery > 0 && ++_spawned % _eliteEvery == 0;
-                var type = isElite ? eliteType : enemyType;
+                var type = isElite
+                    ? eliteType
+                    : enemyType;
 
-                var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                go.name = type.Name;
-                if (_presentationMaterial != null)
-                    go.GetComponent<Renderer>().sharedMaterial = _presentationMaterial;
-                go.transform.SetParent(transform);
-                go.transform.position = pattern.GetPosition(i, _count, _radius) + Vector3.up;
-
-                // AddComponent(Type) is why the field is constrained to concrete Enemy types: the picker never
-                // offers anything else. A script assigned by other means can still fail, so drop the empty capsule.
-                var enemy = (Enemy)go.AddComponent(type);
-                if (enemy == null)
-                {
-                    if (Application.isPlaying) Destroy(go); else DestroyImmediate(go);
-                    continue;
-                }
-
-                Debug.Log($"Spawned {enemy}", enemy);
+                var enemy = new GameObject(name: type.Name, components: new[] { typeof(MeshFilter), typeof(MeshRenderer), type });
+                enemy.GetComponent<MeshFilter>().sharedMesh = _body;
+                enemy.GetComponent<MeshRenderer>().sharedMaterial = _presentationMaterial;
+                enemy.transform.SetParent(transform);
+                enemy.transform.position = _patternInstance.GetPosition(index: i, count: _count, radius: _radius) + Vector3.up;
             }
-        }
-
-        private ISpawnPattern GetPattern()
-        {
-            var type = _pattern.Type ?? typeof(CirclePattern);
-            if (_patternInstance is null || _patternInstance.GetType() != type)
-                _patternInstance = (ISpawnPattern)Activator.CreateInstance(type);
-
-            return _patternInstance;
         }
     }
 }

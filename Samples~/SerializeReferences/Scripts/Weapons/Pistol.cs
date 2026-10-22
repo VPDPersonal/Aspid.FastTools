@@ -1,36 +1,18 @@
 using System;
 using UnityEngine;
-using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Samples.SerializeReferences
+namespace Aspid.FastTools.Samples.SerializeReferences.Weapons
 {
-    // Switching between Pistol and Shotgun preserves serialized fields with matching names.
-    /// <summary>
-    /// <see cref="IRanged"/> that automatically reloads an empty magazine.
-    /// </summary>
     [Serializable]
-    [TypeSelectorDisplay(Group = "Weapons/Ranged")]
-    public sealed class Pistol : IRanged
+    public sealed class Pistol : IWeapon
     {
-        [Tooltip("Damage dealt by one attack.")]
-        [SerializeField, Min(0)] private int _damage = 10;
+        [SerializeField] [Min(0)] private int _damage = 10;
+        [SerializeField] [Min(1)] private int _magazineSize = 12;
 
-        [Tooltip("Shots available before automatically reloading.")]
-        [SerializeField, Min(1)] private int _magazineSize = 12;
+        public int MagazineSize => _magazineSize;
 
-        private int _rounds;
-
-        /// <inheritdoc/>
-        public string Name => "Pistol";
-
-        /// <inheritdoc/>
-        public int Fire()
-        {
-            if (_rounds <= 0)
-                _rounds = _magazineSize;
-            _rounds--;
-            return _damage;
-        }
+        public int Fire() =>
+            _damage;
     }
 }

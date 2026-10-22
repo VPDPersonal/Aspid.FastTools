@@ -1,6 +1,6 @@
 {
     "name": "Aspid.FastTools.Samples.Types",
-    "rootNamespace": "",
+    "rootNamespace": "Aspid.FastTools.Samples.Types",
     "references": [
         "Aspid.FastTools"
     ],
