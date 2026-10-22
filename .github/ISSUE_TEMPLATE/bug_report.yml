@@ -3,10 +3,15 @@ description: Report a bug or unexpected behavior in Aspid.FastTools.
 labels: ["type: fix"]
 body:
   - type: textarea
-    id: description
+    id: actual
     attributes:
-      label: Description
-      description: What went wrong? What did you expect instead?
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
     validations:
       required: true
   - type: textarea
@@ -34,8 +39,34 @@ body:
       placeholder: "1.0.0"
     validations:
       required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installed from
+      options:
+        - Asset Store
+        - UPM git, upm (stable)
+        - UPM git, upm-preview (preview)
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where it happens
+      multiple: true
+      options:
+        - Editor
+        - Player build, Mono
+        - Player build, IL2CPP
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console log
+      description: Errors and stack traces from the Unity console.
+      render: text
   - type: textarea
     id: additional
     attributes:
       label: Additional context
-      description: Logs, screenshots, related issues — anything that helps.
+      description: Screenshots, related issues — anything that helps.
