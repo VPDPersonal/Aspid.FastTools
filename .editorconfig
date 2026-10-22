@@ -1,11 +1,4 @@
-# Aspid.FastTools — C# code style.
-#
-# Machine-enforceable formatting & naming for Rider / Visual Studio / `dotnet format`.
-# Unity-side defaults (Runtime + Editor) first; the Roslyn solutions
-# (Generators, Analyzers) override only the namespace style at the bottom.
-#
-# Conventions that can't be expressed here (named-argument house style, usings
-# sorted by length, sealed-by-default, XML docs) live in AGENTS.md.
+# C# code style. The rest is in CODESTYLE.md.
 
 root = true
 
@@ -14,7 +7,7 @@ charset = utf-8
 indent_style = space
 indent_size = 4
 
-# Unity manages these — never let a formatter touch whitespace/EOL inside them.
+# Unity assets
 [*.{meta,asset,unity,prefab,mat,anim,controller,asmdef,asmref}]
 trim_trailing_whitespace = false
 insert_final_newline = false
@@ -24,17 +17,13 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-#### Namespaces — block-scoped on the Unity side, usings outside the namespace.
+# Namespaces
 csharp_style_namespace_declarations = block_scoped:warning
 csharp_using_directive_placement = outside_namespace:warning
 dotnet_sort_system_directives_first = false
 dotnet_separate_import_directive_groups = false
-# Namespaces deliberately do NOT mirror folders — every file carries the
-# `// ReSharper disable once CheckNamespace` banner instead (Rider ignores IDE0130 here),
-# except Samples~, whose asmdefs set rootNamespace and keep the files beside them.
 
-#### Braces — Allman. Single-statement bodies go without braces on the next
-#### line (used ~250 times), so no brace preference is enforced.
+# Braces
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
@@ -43,7 +32,7 @@ csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
 
-#### Indentation.
+# Indentation
 csharp_indent_case_contents = true
 csharp_indent_case_contents_when_block = false
 csharp_indent_switch_labels = true
@@ -51,7 +40,7 @@ csharp_indent_labels = one_less_than_current
 csharp_indent_block_contents = true
 csharp_indent_braces = false
 
-#### Spacing & wrapping.
+# Spacing and wrapping
 csharp_space_after_keywords_in_control_flow_statements = true
 csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_method_call_parameter_list_parentheses = false
@@ -59,12 +48,12 @@ csharp_space_around_binary_operators = before_and_after
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false
 
-#### `var` — preferred for every local with an initializer.
+# var
 csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
 
-#### Expression-bodied members — for one-liners (but not constructors).
+# Expression-bodied members
 csharp_style_expression_bodied_methods = true:suggestion
 csharp_style_expression_bodied_constructors = false:suggestion
 csharp_style_expression_bodied_operators = true:suggestion
@@ -74,26 +63,26 @@ csharp_style_expression_bodied_accessors = true:suggestion
 csharp_style_expression_bodied_lambdas = true:suggestion
 csharp_style_expression_bodied_local_functions = true:suggestion
 
-#### `this.` — never qualify members (the `_` prefix disambiguates fields).
+# this.
 dotnet_style_qualification_for_field = false:warning
 dotnet_style_qualification_for_property = false:warning
 dotnet_style_qualification_for_method = false:warning
 dotnet_style_qualification_for_event = false:warning
 
-#### Modifiers — accessibility always explicit; mark fields readonly where possible.
+# Modifiers
 dotnet_style_require_accessibility_modifiers = always:warning
 dotnet_style_readonly_field = true:suggestion
 csharp_prefer_static_local_function = true:suggestion
 csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async:suggestion
 
-#### Pattern matching — preferred over casts / null checks (used heavily).
+# Pattern matching
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
 csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_prefer_pattern_matching = true:suggestion
 csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_prefer_switch_expression = true:suggestion
 
-#### Expression-level preferences.
+# Expression preferences
 dotnet_style_object_initializer = true:suggestion
 dotnet_style_collection_initializer = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
@@ -104,13 +93,19 @@ csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 
-#### Naming — symbol groups.
+# Rider
+resharper_csharp_force_attribute_style = separate
+resharper_csharp_keep_existing_attribute_arrangement = true
+resharper_csharp_place_expr_method_on_single_line = false
+resharper_csharp_wrap_ternary_expr_style = chop_always
+
+# Naming: symbols
 dotnet_naming_symbols.constant_fields.applicable_kinds = field
 dotnet_naming_symbols.constant_fields.applicable_accessibilities = *
 dotnet_naming_symbols.constant_fields.required_modifiers = const
 
-dotnet_naming_symbols.private_instance_fields.applicable_kinds = field
-dotnet_naming_symbols.private_instance_fields.applicable_accessibilities = private, private_protected
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, private_protected
 
 dotnet_naming_symbols.non_private_fields.applicable_kinds = field
 dotnet_naming_symbols.non_private_fields.applicable_accessibilities = public, internal, protected, protected_internal
@@ -121,7 +116,7 @@ dotnet_naming_symbols.interface_symbol.applicable_accessibilities = *
 dotnet_naming_symbols.type_parameter_symbol.applicable_kinds = type_parameter
 dotnet_naming_symbols.type_parameter_symbol.applicable_accessibilities = *
 
-#### Naming — styles.
+# Naming: styles
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
 dotnet_naming_style.underscore_camel_case_style.required_prefix = _
@@ -133,12 +128,12 @@ dotnet_naming_style.i_prefix_style.capitalization = pascal_case
 dotnet_naming_style.t_prefix_style.required_prefix = T
 dotnet_naming_style.t_prefix_style.capitalization = pascal_case
 
-#### Naming — rules (first match wins → constants must precede private fields).
+# Naming: rules
 dotnet_naming_rule.constants_are_pascal_case.symbols = constant_fields
 dotnet_naming_rule.constants_are_pascal_case.style = pascal_case_style
 dotnet_naming_rule.constants_are_pascal_case.severity = warning
 
-dotnet_naming_rule.private_fields_are_underscore_camel.symbols = private_instance_fields
+dotnet_naming_rule.private_fields_are_underscore_camel.symbols = private_fields
 dotnet_naming_rule.private_fields_are_underscore_camel.style = underscore_camel_case_style
 dotnet_naming_rule.private_fields_are_underscore_camel.severity = warning
 
@@ -154,6 +149,6 @@ dotnet_naming_rule.type_parameters_are_t_prefixed.symbols = type_parameter_symbo
 dotnet_naming_rule.type_parameters_are_t_prefixed.style = t_prefix_style
 dotnet_naming_rule.type_parameters_are_t_prefixed.severity = warning
 
-#### Roslyn solutions — file-scoped namespaces (Unity side stays block-scoped).
+# Generators and analyzers
 [Aspid.FastTools.{Generators,Analyzers}/**.cs]
 csharp_style_namespace_declarations = file_scoped:warning

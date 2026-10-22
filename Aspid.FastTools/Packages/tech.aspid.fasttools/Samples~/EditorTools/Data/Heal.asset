@@ -16,5 +16,5 @@ MonoBehaviour:
   _description: Restores a chunk of health to an ally.
   _manaCost: 20
   _cooldown: 8
-  _effectType: Aspid.FastTools.Samples.EditorTools.HealEffect, Aspid.FastTools.Samples.EditorTools,
+  _effectType: Aspid.FastTools.Samples.EditorTools.Effects.HealEffect, Aspid.FastTools.Samples.EditorTools,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

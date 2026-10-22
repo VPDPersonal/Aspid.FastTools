@@ -1,6 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Enums;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     public sealed class SurfacePalette : ScriptableObject
@@ -8,14 +9,16 @@ namespace Aspid.FastTools.Samples.EnumValues
         [SerializeField] private EnumValues<SurfaceType, Color> _tileColors;
         [SerializeField] private EnumValues<SurfaceType, Color> _footprintColors;
 
-        public Color GetTileColor(SurfaceType surface) => _tileColors.GetValue(surface);
-
-        public Color GetFootprintColor(SurfaceType surface) => _footprintColors.GetValue(surface);
-
         private void OnValidate()
         {
             foreach (var tile in SurfaceTile.Enabled)
                 tile.Refresh();
         }
+
+        public Color GetTileColor(SurfaceType surface) =>
+            _tileColors.GetValue(surface);
+
+        public Color GetFootprintColor(SurfaceType surface) =>
+            _footprintColors.GetValue(surface);
     }
 }

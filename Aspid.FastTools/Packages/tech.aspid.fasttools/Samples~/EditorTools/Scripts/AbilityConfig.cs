@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
+using Aspid.FastTools.Samples.EditorTools.Effects;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EditorTools
 {
     public sealed class AbilityConfig : ScriptableObject
@@ -10,9 +12,9 @@ namespace Aspid.FastTools.Samples.EditorTools
         public const float DefaultCooldown = 1f;
 
         [SerializeField] private string _abilityName = "New Ability";
-        [SerializeField, TextArea] private string _description;
-        [SerializeField, Min(0)] private int _manaCost = DefaultManaCost;
-        [SerializeField, Min(0)] private float _cooldown = DefaultCooldown;
+        [SerializeField] [TextArea] private string _description;
+        [SerializeField] [Min(0)] private int _manaCost = DefaultManaCost;
+        [SerializeField] [Min(0)] private float _cooldown = DefaultCooldown;
 
         [TypeSelector(typeof(IAbilityEffect), Allow = TypeAllow.None)]
         [SerializeField] private string _effectType;
@@ -23,6 +25,8 @@ namespace Aspid.FastTools.Samples.EditorTools
 
         public float Cooldown => _cooldown;
 
-        public Type EffectType => string.IsNullOrEmpty(_effectType) ? null : Type.GetType(_effectType);
+        public Type EffectType => string.IsNullOrEmpty(_effectType)
+            ? null
+            : Type.GetType(_effectType);
     }
 }

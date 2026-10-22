@@ -2,13 +2,16 @@ using UnityEngine;
 using System.Collections;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
+using Aspid.FastTools.Samples.SerializeReferences.Effects;
+using Aspid.FastTools.Samples.SerializeReferences.Weapons;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
     public sealed class Loadout : MonoBehaviour
     {
         [SerializeField] private TrainingDummy _target;
-        [SerializeField, Min(0.1f)] private float _fireInterval = 1f;
+        [SerializeField] [Min(0.1f)] private float _fireInterval = 1f;
 
         [TypeSelector]
         [SerializeReference] private IWeapon _primary;
@@ -19,7 +22,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         [TypeSelector]
         [SerializeReference] private StatusEffect _onHit;
 
-        [SerializeField, HideInInspector] private LineRenderer _shotBeam;
+        [SerializeField] private LineRenderer _shotBeam;
 
         private int _shot;
 
@@ -39,7 +42,10 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         private void Fire()
         {
             var index = _shot++ % (_sidearms.Count + 1);
-            var weapon = index == 0 ? _primary : _sidearms[index - 1];
+            var weapon = index == 0
+                ? _primary
+                : _sidearms[index - 1];
+
             if (weapon is null)
                 return;
 
@@ -54,7 +60,9 @@ namespace Aspid.FastTools.Samples.SerializeReferences
             _shotBeam.SetPosition(index: 0, position: transform.position + Vector3.up * 0.7f);
             _shotBeam.SetPosition(index: 1, position: _target.transform.position);
             _shotBeam.enabled = true;
+
             yield return new WaitForSeconds(seconds: 0.08f);
+
             _shotBeam.enabled = false;
         }
     }

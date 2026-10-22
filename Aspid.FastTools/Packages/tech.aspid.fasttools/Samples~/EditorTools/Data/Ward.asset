@@ -16,5 +16,5 @@ MonoBehaviour:
   _description: Absorbs the next incoming hit.
   _manaCost: 15
   _cooldown: 12
-  _effectType: Aspid.FastTools.Samples.EditorTools.ShieldEffect, Aspid.FastTools.Samples.EditorTools,
+  _effectType: Aspid.FastTools.Samples.EditorTools.Effects.ShieldEffect, Aspid.FastTools.Samples.EditorTools,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

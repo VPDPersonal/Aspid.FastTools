@@ -2629,14 +2629,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Aspid.FastTools.Samples.Types::Aspid.FastTools.Samples.Types.EnemySpawner
   _enemyType:
-    _assemblyQualifiedName: Aspid.FastTools.Samples.Types.Grunt, Aspid.FastTools.Samples.Types,
+    _assemblyQualifiedName: Aspid.FastTools.Samples.Types.Enemies.Grunt, Aspid.FastTools.Samples.Types,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _script: {fileID: 11500000, guid: a701e3db0dfb545a4ad8c03a7db1767c, type: 3}
-  _eliteType: Aspid.FastTools.Samples.Types.ArmoredGrunt, Aspid.FastTools.Samples.Types,
+  _eliteType: Aspid.FastTools.Samples.Types.Enemies.ArmoredGrunt, Aspid.FastTools.Samples.Types,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _eliteEvery: 4
   _pattern:
-    _assemblyQualifiedName: Aspid.FastTools.Samples.Types.CirclePattern, Aspid.FastTools.Samples.Types,
+    _assemblyQualifiedName: Aspid.FastTools.Samples.Types.Spawning.CirclePattern, Aspid.FastTools.Samples.Types,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _count: 8
   _radius: 8
@@ -5630,8 +5630,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 06b17d2cf37c41d6bdf057e5ba915072, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Aspid.FastTools.Samples.Types::Aspid.FastTools.Samples.Types.SampleFrame
-  _referenceSize: 11
+  m_EditorClassIdentifier: Aspid.FastTools.Samples.Types::Aspid.FastTools.Samples.Types.Presentation.SampleFrame
 --- !u!1 &1591517916
 GameObject:
   m_ObjectHideFlags: 0
@@ -7242,7 +7241,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 096447e93867148db91355873e217418, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Aspid.FastTools.Samples.Types::Aspid.FastTools.Samples.Types.Archer
+  m_EditorClassIdentifier: Aspid.FastTools.Samples.Types::Aspid.FastTools.Samples.Types.Enemies.Archer
   _health: 100
   _speed: 3
   _lifetime: 12

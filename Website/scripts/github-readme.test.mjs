@@ -37,8 +37,8 @@ using var _ = this.Marker();
 \`\`\`
 `;
 
-test('doc pages and the samples overview open on the site', () => {
-  const result = layout(`${features}\n## Resources\n\n- [Samples](Packages/x/Samples~/README.md) — scenes.\n- [Raw](Website/tutorials/Types/README.md) — kept.\n`);
+test('doc pages and the tutorials gallery open on the site', () => {
+  const result = layout(`${features}\n## Resources\n\n- [Samples](Website/tutorials/index.mdx) — scenes.\n- [Raw](Website/tutorials/Types/README.md) — kept.\n`);
   assert.match(result, /<h4><a href="https:\/\/site.test\/docs\/enum-values">EnumValues<\/a><\/h4>/);
   assert.match(result, /<a href="https:\/\/site.test\/docs\/type-selector#settings">TypeSelector<\/a>/);
   assert.match(result, /<a href="https:\/\/site.test\/tutorials">Samples<\/a>/);

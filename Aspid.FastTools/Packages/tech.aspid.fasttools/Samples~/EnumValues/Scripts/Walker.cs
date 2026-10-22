@@ -1,15 +1,17 @@
 using UnityEngine;
 using Aspid.FastTools.Enums;
+using Aspid.FastTools.Samples.EnumValues.Presentation;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     public sealed class Walker : MonoBehaviour
     {
         [SerializeField] private SurfacePalette _palette;
-        [SerializeField, Min(0.1f)] private float _speed = 3f;
-        [SerializeField, Min(1f)] private float _range = 10f;
+        [SerializeField] [Min(0.1f)] private float _speed = 3f;
+        [SerializeField] [Min(1f)] private float _range = 10f;
         [SerializeField] private EnumValues<float> _speedByTerrain;
-        [SerializeField, Min(0.1f)] private float _footprintLifetime = 2f;
+        [SerializeField] [Min(0.1f)] private float _footprintLifetime = 2f;
 
         private int _direction = 1;
         private SurfaceTile _tile;
@@ -17,14 +19,19 @@ namespace Aspid.FastTools.Samples.EnumValues
         private Material _trailMaterial;
         private Vector3 _lastPoint;
 
-        private void Awake() => _trailMaterial = GetComponent<Renderer>().sharedMaterial;
+        private void Awake() =>
+            _trailMaterial = GetComponent<Renderer>().sharedMaterial;
 
         private void Update()
         {
-            var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags));
+            var speed = _speed * (_tile == null
+                ? 1f
+                : _speedByTerrain.GetValue(_tile.Flags));
             var position = transform.position + Vector3.right * (_direction * speed * Time.deltaTime);
+
             if (Mathf.Abs(position.x) > _range)
                 _direction = -_direction;
+
             transform.position = position;
 
             var previous = _tile;
@@ -41,7 +48,10 @@ namespace Aspid.FastTools.Samples.EnumValues
                 var join = point;
                 if (_trail != null && previous != null)
                 {
-                    join.x = point.x > _lastPoint.x ? previous.Bounds.max.x : previous.Bounds.min.x;
+                    join.x = point.x > _lastPoint.x
+                        ? previous.Bounds.max.x
+                        : previous.Bounds.min.x;
+
                     _trail.AddPoint(join, force: true);
                 }
 
@@ -52,19 +62,8 @@ namespace Aspid.FastTools.Samples.EnumValues
             _lastPoint = point;
         }
 
-        private void OnDisable() => FinishTrail();
-
-        private SurfaceTile FindTile(float x)
-        {
-            foreach (var tile in SurfaceTile.Enabled)
-            {
-                var bounds = tile.Bounds;
-                if (x >= bounds.min.x && x <= bounds.max.x)
-                    return tile;
-            }
-
-            return null;
-        }
+        private void OnDisable() =>
+            FinishTrail();
 
         private void BeginTrail(Vector3 position, Color color)
         {
@@ -81,6 +80,18 @@ namespace Aspid.FastTools.Samples.EnumValues
 
             Destroy(obj: _trail.gameObject, t: _footprintLifetime);
             _trail = null;
+        }
+
+        private static SurfaceTile FindTile(float x)
+        {
+            foreach (var tile in SurfaceTile.Enabled)
+            {
+                var bounds = tile.Bounds;
+                if (x >= bounds.min.x && x <= bounds.max.x)
+                    return tile;
+            }
+
+            return null;
         }
     }
 }

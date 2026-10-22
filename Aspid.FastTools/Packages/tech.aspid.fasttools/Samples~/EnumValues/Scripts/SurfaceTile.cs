@@ -1,13 +1,14 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.EnumValues
 {
     [ExecuteAlways]
     public sealed class SurfaceTile : MonoBehaviour
     {
-        private static readonly int ColorId = Shader.PropertyToID("_Color");
-        private static readonly List<SurfaceTile> EnabledTiles = new();
+        private static readonly List<SurfaceTile> _enabledTiles = new();
+        private static readonly int _colorId = Shader.PropertyToID("_Color");
 
         [SerializeField] private SurfaceType _surface;
         [SerializeField] private TerrainFlags _flags;
@@ -19,17 +20,19 @@ namespace Aspid.FastTools.Samples.EnumValues
 
         public Bounds Bounds => GetComponent<Renderer>().bounds;
 
-        public static IReadOnlyList<SurfaceTile> Enabled => EnabledTiles;
+        public static IReadOnlyList<SurfaceTile> Enabled => _enabledTiles;
 
         private void OnEnable()
         {
-            EnabledTiles.Add(this);
+            _enabledTiles.Add(this);
             Refresh();
         }
 
-        private void OnDisable() => EnabledTiles.Remove(this);
+        private void OnDisable() =>
+            _enabledTiles.Remove(this);
 
-        private void OnValidate() => Refresh();
+        private void OnValidate() =>
+            Refresh();
 
         public void Refresh()
         {
@@ -37,8 +40,9 @@ namespace Aspid.FastTools.Samples.EnumValues
                 return;
 
             var block = new MaterialPropertyBlock();
-            block.SetColor(nameID: ColorId, value: _palette.GetTileColor(_surface));
+            block.SetColor(nameID: _colorId, value: _palette.GetTileColor(_surface));
             tileRenderer.SetPropertyBlock(block);
+
 #if UNITY_EDITOR
             UnityEditor.SceneView.RepaintAll();
 #endif
