@@ -36,6 +36,8 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 - A test fixture that shows an EditorWindow or draws IMGUI in one gets `[Category("Graphics")]`. CI runs every other
   test under `-nographics` and only this category with a graphics device; without the category such a test fails
   in CI. A runtime panel (`TestPanel`) needs no graphics device.
+- A kept, moved or renamed file keeps its `.meta` GUID: scenes, prefabs and assets reference it by GUID, in the
+  samples and in user projects alike.
 
 ## Checks
 

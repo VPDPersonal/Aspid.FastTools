@@ -1,11 +1,12 @@
 ---
 name: asp-ft-code-style
-description: "C# code style of the Aspid.FastTools repository beyond .editorconfig - using order, member order, sealed/internal/static, attribute and blank-line layout, named arguments, comments and XML docs, sample rules. Use before writing or reviewing any .cs file of the package, the samples, the generators or the analyzers, and when asked to format code like the rest of the repo. For work on this repository only."
+description: "C# code style of the Aspid.FastTools repository beyond .editorconfig - using order, member order, sealed/internal/static, attribute and blank-line layout, named arguments, comments and XML docs. Use before writing or reviewing any .cs file of the package, the samples, the generators or the analyzers, and when asked to format code like the rest of the repo. For work on this repository only."
 ---
 
 # C# code style
 
-Rules beyond `.editorconfig`. They apply to the package, the samples, the generators and the analyzers.
+Rules beyond `.editorconfig`. They apply to the package, the samples, the generators and the analyzers. The samples
+add their own rules in the asp-ft-samples skill.
 
 ## File
 
@@ -64,8 +65,3 @@ Within a group, order declarations by ascending line length.
   They explain why, in English.
 - Config files get short section headers only.
 - Public package API has XML docs: `<summary>`, `<param>`, `<returns>`, `<see cref/>`. Nothing else does.
-
-## Samples
-
-- A sample shows one feature and contains only what that feature needs.
-- No `[HideInInspector]` or `[AddComponentMenu("")]`. A value the user should not tune is a `const`.
