@@ -14,11 +14,14 @@
 //  6. Every "path" in the "samples" of package.json is a folder of the package.
 //  7. Every reference of an asmdef of the package is an asmdef of the package, or an assembly of EXTERNAL_ASSEMBLIES.
 //  8. LICENSE.md of the package is a byte-for-byte copy of the root LICENSE, which GitHub shows and "licensesUrl" links.
+//  9. No package file refers to a file that scripts/unity-inputs.mjs ignores, by its guid or by its name in quotes. ci.yml
+//     skips the Unity tests for a change to an ignored file, so a file that an asset or a test reads must not be one.
 // ci.yml runs it. It has no dependencies:
 //   node scripts/check-package-files.mjs
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isIgnored } from './unity-inputs.mjs';
 
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -141,6 +144,27 @@ for (const { path, json } of asmdefs) {
     if (!resolves(reference)) {
       fail(path, `the reference "${reference}" is no asmdef of the package; fix it, or add the assembly to EXTERNAL_ASSEMBLIES`);
     }
+  }
+}
+
+// The Unity tests read the package as the test project imports it, Samples~ included.
+const packageFiles = entries(PACKAGE).filter((path) => !isFolder(path));
+const ignored = packageFiles.filter((path) => isIgnored(path) && !path.endsWith('.meta'));
+const ignoredGuids = new Map(ignored.map((path) => [guidOf.get(`${path}.meta`), path]).filter(([guid]) => guid));
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const ignoredNames = [...new Set(ignored.map((path) => basename(path)))].map((name) => ({
+  name,
+  quoted: new RegExp(`["'/]${escapeRegExp(name)}["']`),
+}));
+const SKIPPED = 'but ci.yml skips the Unity tests for a change to it; drop it, or make the file an input in scripts/unity-inputs.mjs';
+for (const path of packageFiles) {
+  if (isIgnored(path)) continue;
+  const text = readFileSync(path, 'latin1');
+  for (const [guid, target] of ignoredGuids) {
+    if (text.includes(guid)) fail(path, `refers to ${target} by its guid, ${SKIPPED}`);
+  }
+  for (const { name, quoted } of ignoredNames) {
+    if (quoted.test(text)) fail(path, `names "${name}" in quotes, ${SKIPPED}`);
   }
 }
 

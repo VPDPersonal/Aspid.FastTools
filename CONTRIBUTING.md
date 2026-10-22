@@ -58,6 +58,9 @@ the pull request.
 The Unity tests in CI need repository secrets, so on a pull request from a fork the **Unity** check fails. This is
 expected: a maintainer runs the tests and merges. Say how you tested in Unity.
 
-The Unity tests run on every Unity 6000.x line. When a change cannot depend on the line, a maintainer can set the
-`unity-quick` label: the PR then tests only the minimum and the newest Unity version, and `main` tests all of them after
-the merge. Any label change on a pull request restarts its CI, the Unity tests included.
+The Unity tests run on every Unity 6000.x line, and only when a change reaches what they read: a change to Markdown,
+license texts or files outside the package and the Unity jobs skips them, and so does a commit whose content already
+passed them. When a change cannot depend on the line, a maintainer can set the `unity-quick` label: the PR then tests
+only the minimum and the newest Unity version, and `main` tests all of them after the merge. Adding or removing
+`unity-quick` restarts the CI of the pull request; another label waits for the running CI and then skips the Unity tests
+that passed there.
