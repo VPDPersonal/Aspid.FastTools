@@ -151,6 +151,8 @@ test('code outside Scripts/, a missing rootNamespace and a namespace that does n
   assertFails(check(t, { [outside]: code('Demo', type('Enemy')) }), outside, /belongs in Demo\/Scripts\/ or Demo\/Scripts\/Editor\/ or a subfolder of Scripts\//);
   assertFails(check(t, { [outside]: code('Demo', type('Enemy')) }), outside, /no \.asmdef in its folder or above it/);
   assertFails(check(t, { [ASM]: asmdef('Demo', { rootNamespace: '' }) }), ASM, /no rootNamespace/);
+  // The error names the asmdef file itself, also when the file is not named after its assembly.
+  assertFails(check(t, { [ASM]: asmdef('Demo.Runtime', { rootNamespace: '' }) }), ASM, /no rootNamespace/);
   assertFails(check(t, { [SPAWNER]: code('Demo.Spawning', type('Spawner')) }), SPAWNER, /its folder makes it Demo$/m);
   const nested = `${DEMO}/Scripts/Enemies/Enemy.cs`;
   assertFails(check(t, { [nested]: code('Demo', type('Enemy')) }), nested, /its folder makes it Demo\.Enemies/);

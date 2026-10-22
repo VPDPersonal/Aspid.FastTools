@@ -22,14 +22,13 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SAMPLE_TESTS, isIgnored } from './unity-inputs.mjs';
+import { PACKAGE, SAMPLE_TESTS, isIgnored } from './unity-inputs.mjs';
 
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
-const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 // The dev project's own files: the fixtures that the Import DevTests menu links into Assets/, its dev tools, and the
 // sample tests that make-unity-test-project.sh copies into the test project.
-const DEV = ['Aspid.FastTools/Assets/DevTests~', 'Aspid.FastTools/Assets/DevTools', 'Aspid.FastTools/Assets/SampleTests~'];
+const DEV = ['Aspid.FastTools/Assets/DevTests~', 'Aspid.FastTools/Assets/DevTools', SAMPLE_TESTS];
 const INSTALL_PREFIX = 'Aspid/FastTools/';
 const PATH_LIMIT = 140;
 const LICENSE = 'LICENSE';
@@ -55,14 +54,22 @@ const unityIgnores = (name) => name.endsWith('~') || name.endsWith('.tmp') || na
 const isFolder = (path) => statSync(path, { throwIfNoEntry: false })?.isDirectory() ?? false;
 
 // Files and folders. A hidden entry (a name that starts with a dot) is skipped with its content, and so is a folder that
-// Unity ignores, except Samples~.
+// Unity ignores, except Samples~. Every folder it lists goes into `folders`.
+const folders = new Set();
 const entries = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     if (entry.name.startsWith('.')) return [];
     const path = join(dir, entry.name);
     if (!entry.isDirectory()) return [path];
+    folders.add(path);
     return unityIgnores(entry.name) && entry.name !== 'Samples~' ? [path] : [path, ...entries(path)];
   });
+
+// Each tree is read once.
+const packageFiles = files(PACKAGE);
+const devFiles = DEV.flatMap(files);
+const visible = new Map([PACKAGE, ...DEV].map((root) => [root, entries(root)]));
+const visibleFiles = (root) => visible.get(root).filter((path) => !folders.has(path));
 
 const samples = `${PACKAGE}/Samples~/`;
 // Unity does not import Samples~ in the dev project, so it writes no .meta there.
@@ -70,13 +77,13 @@ const NO_META = 'no .meta; open the project in Unity once and commit the .meta i
 const NO_SAMPLE_META = 'no .meta; import the sample into a project and copy the .meta it writes back, or write it by hand';
 
 // Samples~ is installed under Assets/Samples/, so the install-folder limit does not apply to it.
-for (const file of files(PACKAGE)) {
+for (const file of packageFiles) {
   if (file.endsWith('.meta') || file.startsWith(samples)) continue;
   const length = (INSTALL_PREFIX + relative(PACKAGE, file)).length;
   if (length >= PATH_LIMIT) fail(file, `path is ${length} characters from "${INSTALL_PREFIX}"; the limit is ${PATH_LIMIT - 1}`);
 }
 
-for (const file of [...files(PACKAGE), ...DEV.flatMap(files)]) {
+for (const file of [...packageFiles, ...devFiles]) {
   if (file.endsWith('.cs.meta') && !file.startsWith(samples) && !readFileSync(file, 'utf8').includes('\nMonoImporter:')) {
     fail(file, 'no MonoImporter block; open the project in Unity once and commit the .meta it writes');
   }
@@ -92,8 +99,7 @@ for (const file of [...files(PACKAGE), ...DEV.flatMap(files)]) {
 
 const guidOf = new Map(); // .meta path -> guid
 const ownerOf = new Map(); // guid -> .meta path
-for (const root of [PACKAGE, ...DEV]) {
-  const all = entries(root);
+for (const all of visible.values()) {
   const present = new Set(all);
   for (const path of all) {
     if (!path.endsWith('.meta')) {
@@ -126,7 +132,7 @@ for (const sample of JSON.parse(readFileSync(manifestPath, 'utf8')).samples ?? [
 }
 
 const asmdefs = [];
-for (const path of entries(PACKAGE)) {
+for (const path of visible.get(PACKAGE)) {
   if (!path.endsWith('.asmdef')) continue;
   try {
     asmdefs.push({ path, json: JSON.parse(readFileSync(path, 'utf8')) });
@@ -150,9 +156,9 @@ for (const { path, json } of asmdefs) {
 }
 
 // The Unity tests read the package as the test project imports it, Samples~ included, and the sample tests.
-const packageFiles = entries(PACKAGE).filter((path) => !isFolder(path));
-const unityFiles = [...packageFiles, ...entries(SAMPLE_TESTS).filter((path) => !isFolder(path))];
-const ignored = packageFiles.filter((path) => isIgnored(path) && !path.endsWith('.meta'));
+const importedFiles = visibleFiles(PACKAGE);
+const unityFiles = [...importedFiles, ...visibleFiles(SAMPLE_TESTS)];
+const ignored = importedFiles.filter((path) => isIgnored(path) && !path.endsWith('.meta'));
 const ignoredGuids = new Map(ignored.map((path) => [guidOf.get(`${path}.meta`), path]).filter(([guid]) => guid));
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const ignoredNames = [...new Set(ignored.map((path) => basename(path)))].map((name) => ({
