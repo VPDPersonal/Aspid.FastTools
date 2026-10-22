@@ -17,7 +17,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         private const string LightSheet = "Editor/Resources/UI/Aspid-FastTools-Default-Light.uss";
 
         // Only elements outside an Aspid window use these: the type picker dropdown and the inspector notice.
-        private static readonly string[] DarkOnlyTokens =
+        private static readonly string[] _darkOnlyTokens =
         {
             "--aspid-colors-status-info-tint-light",
             "--aspid-colors-status-info-tint-lightness",
@@ -28,8 +28,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             "--aspid-colors-dark-skin-text-darkness",
         };
 
-        private static readonly Regex Comment = new(@"/\*.*?\*/", RegexOptions.Singleline);
-        private static readonly Regex ColorToken = new(@"(--aspid-colors-[\w-]+)\s*:");
+        private static readonly Regex _comment = new(@"/\*.*?\*/", RegexOptions.Singleline);
+        private static readonly Regex _colorToken = new(@"(--aspid-colors-[\w-]+)\s*:");
 
         [Test]
         public void LightPalette_CoversDarkColorTokens()
@@ -37,7 +37,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var dark = ColorTokens(DarkSheet, selector: ":root");
             var light = ColorTokens(LightSheet, selector: ".aspid-fasttools-palette--light");
 
-            var missing = dark.Except(light).Except(DarkOnlyTokens).ToArray();
+            var missing = dark.Except(light).Except(_darkOnlyTokens).ToArray();
             Assert.IsEmpty(missing, $"Default-Light has no value for {string.Join(", ", missing)}.");
         }
 
@@ -57,7 +57,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var dark = ColorTokens(DarkSheet, selector: ":root");
             var light = ColorTokens(LightSheet, selector: ".aspid-fasttools-palette--light");
 
-            foreach (var token in DarkOnlyTokens)
+            foreach (var token in _darkOnlyTokens)
             {
                 CollectionAssert.Contains(dark, token, $"{token} is no longer in Default-Dark; drop it from the list.");
                 CollectionAssert.DoesNotContain(light, token, $"{token} is in Default-Light; drop it from the list.");
@@ -69,11 +69,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var package = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(PackagePath);
             Assert.IsNotNull(package, $"{PackagePath} is not a package.");
 
-            var content = Comment.Replace(File.ReadAllText(Path.Combine(package.resolvedPath, sheet)), string.Empty);
+            var content = _comment.Replace(File.ReadAllText(Path.Combine(package.resolvedPath, sheet)), string.Empty);
             var block = Regex.Match(content, Regex.Escape(selector) + @"\s*\{([^}]*)\}");
             Assert.IsTrue(block.Success, $"{sheet} has no {selector} rule.");
 
-            return ColorToken.Matches(block.Groups[1].Value)
+            return _colorToken.Matches(block.Groups[1].Value)
                 .Cast<Match>()
                 .Select(match => match.Groups[1].Value)
                 .ToArray();

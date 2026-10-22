@@ -10,13 +10,13 @@ on:
     # The pull_request trigger reuses this list.
     paths: &paths
       - 'Website/**'
+      # Capture recipes: the site reads only the images they write.
+      - '!Website/media/**'
       - 'README.md'
       - 'CHANGELOG.md'
-      - 'docs/images/readme-previews/**'
       - 'scripts/frame-doc-captures.sh'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README*.md'
       - '.github/workflows/docs.yml'
   pull_request:
     paths: *paths

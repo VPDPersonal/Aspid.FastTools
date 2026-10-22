@@ -1,8 +1,8 @@
 <!-- Generated from Website/docs/README.md. Edit that file, then run npm --prefix Website run sync-readme. -->
 
 <picture>
-  <source srcset="docs/images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="docs/images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="Website/docs/Images/aspid_fasttools_readme_banner_dark.webp" />
+  <img src="Website/docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 
 [![Unity 6.0+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
@@ -17,7 +17,7 @@ Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](ht
 
 <table>
 <tr>
-<td width="56%"><img src="docs/images/readme-previews/install.webp" alt="Package Manager installs Aspid.FastTools from its git URL" width="100%"></td>
+<td width="56%"><img src="Website/docs/Images/readme-previews/install.webp" alt="Package Manager installs Aspid.FastTools from its git URL" width="100%"></td>
 <td width="44%">
 <ol>
 <li>Open <b>Window → Package Manager</b></li>
@@ -103,7 +103,7 @@ The URL installs the latest release; **Update** in the Package Manager installs 
 
 <table>
 <tr>
-<td width="56%"><img src="docs/images/readme-previews/profiler-markers.webp" alt="ProfilerMarkers" width="100%"></td>
+<td width="56%"><img src="Website/docs/Images/readme-previews/profiler-markers.webp" alt="ProfilerMarkers" width="100%"></td>
 <td width="44%">
 <h4><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/profiler-markers">ProfilerMarkers</a></h4>
 <p>Marks a section with one line; the generator builds the marker name from the type, the method and the line of the call.</p>
@@ -114,7 +114,7 @@ The URL installs the latest release; **Update** in the Package Manager installs 
 
 <table>
 <tr>
-<td width="56%"><img src="docs/images/readme-previews/visual-element-extensions.webp" alt="VisualElement Extensions" width="100%"></td>
+<td width="56%"><img src="Website/docs/Images/readme-previews/visual-element-extensions.webp" alt="VisualElement Extensions" width="100%"></td>
 <td width="44%">
 <h4><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/visual-element-extensions">VisualElement Extensions</a></h4>
 <p>Sets element properties, styles and events in a chain, so you build a UI Toolkit tree in one expression.</p>
@@ -125,7 +125,7 @@ The URL installs the latest release; **Update** in the Package Manager installs 
 
 <table>
 <tr>
-<td width="56%"><img src="docs/images/readme-previews/serialized-property-extensions.webp" alt="SerializedProperty Extensions" width="100%"></td>
+<td width="56%"><img src="Website/docs/Images/readme-previews/serialized-property-extensions.webp" alt="SerializedProperty Extensions" width="100%"></td>
 <td width="44%">
 <h4><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/serialized-property-extensions">SerializedProperty Extensions</a></h4>
 <p>Updates the object, writes a value and applies the change in one chain. It also finds the C# field behind the property and the object that owns it.</p>
@@ -136,7 +136,7 @@ The URL installs the latest release; **Update** in the Package Manager installs 
 
 <table>
 <tr>
-<td width="56%"><img src="docs/images/readme-previews/editor-helpers.webp" alt="Editor Helpers" width="100%"></td>
+<td width="56%"><img src="Website/docs/Images/readme-previews/editor-helpers.webp" alt="Editor Helpers" width="100%"></td>
 <td width="44%">
 <h4><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/editor-helpers">Editor Helpers</a></h4>
 <p>Labels objects and components with readable names, and numbers components of the same type.</p>
@@ -147,7 +147,7 @@ The URL installs the latest release; **Update** in the Package Manager installs 
 
 <table>
 <tr>
-<td width="56%"><img src="docs/images/readme-previews/agent-skills.webp" alt="Agent Skills" width="100%"></td>
+<td width="56%"><img src="Website/docs/Images/readme-previews/agent-skills.webp" alt="Agent Skills" width="100%"></td>
 <td width="44%">
 <h4><a href="https://vpdpersonal.github.io/Aspid.FastTools/docs/agent-skills">Agent Skills</a></h4>
 <p>Teaches a coding agent to write code with FastTools: profiler markers, type selection, EnumValues and VisualElement Extensions.</p>

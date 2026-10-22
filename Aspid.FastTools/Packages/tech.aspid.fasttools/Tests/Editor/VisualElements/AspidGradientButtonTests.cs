@@ -14,8 +14,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     {
         private const string LabelClass = "aspid-fasttools-gradient-button__label";
 
-        private static readonly Color Gradient = new(0.1f, 0.5f, 0.3f, 0.8f);
-        private static readonly Color Accent = new(0.9f, 0.4f, 0.1f, 1f);
+        private static readonly Color _gradient = new(0.1f, 0.5f, 0.3f, 0.8f);
+        private static readonly Color _accent = new(0.9f, 0.4f, 0.1f, 1f);
 
         private TestPanel _panel;
 
@@ -39,7 +39,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator Gradient_TintsOneSharedTexture()
         {
-            var first = CreateButton(Gradient);
+            var first = CreateButton(_gradient);
             var second = CreateButton(new Color(0.7f, 0.2f, 0.2f, 0.5f));
             _panel.Root.Add(first);
             _panel.Root.Add(second);
@@ -49,21 +49,21 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.IsNotNull(texture, "An opaque gradient must draw the fade texture.");
             Assert.AreSame(texture, second.style.backgroundImage.value.texture,
                 "Every button must share the one fade texture.");
-            Assert.AreEqual(Gradient, first.style.unityBackgroundImageTintColor.value,
+            Assert.AreEqual(_gradient, first.style.unityBackgroundImageTintColor.value,
                 "The gradient color must tint the shared texture.");
         }
 
         [UnityTest]
         public IEnumerator Attach_DoesNotAllocateTexturesPerButton()
         {
-            _panel.Root.Add(CreateButton(Gradient));
+            _panel.Root.Add(CreateButton(_gradient));
             yield return null;
 
             var before = CountFadeTextures();
             Assert.GreaterOrEqual(before, 1, "The shared fade texture must exist once a button has a gradient.");
 
             for (var i = 0; i < 10; i++)
-                _panel.Root.Add(CreateButton(Gradient));
+                _panel.Root.Add(CreateButton(_gradient));
 
             yield return null;
 
@@ -74,26 +74,26 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         [UnityTest]
         public IEnumerator GradientChange_TogglesTheImage()
         {
-            var button = CreateButton(Gradient);
+            var button = CreateButton(_gradient);
             _panel.Root.Add(button);
             yield return null;
 
             button.Gradient = Color.clear;
             Assert.AreEqual(StyleKeyword.Null, button.style.backgroundImage.keyword);
 
-            button.Gradient = Gradient;
+            button.Gradient = _gradient;
             Assert.IsNotNull(button.style.backgroundImage.value.texture);
         }
 
         [UnityTest]
         public IEnumerator Hover_OnDarkPalette_PaintsTheLabelWithTheAccent()
         {
-            var button = CreateButton(Gradient);
+            var button = CreateButton(_gradient);
             _panel.Root.Add(button);
             yield return null;
 
             button.Highlighted = true;
-            Assert.AreEqual(Accent, LabelOf(button).style.color.value);
+            Assert.AreEqual(_accent, LabelOf(button).style.color.value);
 
             button.Highlighted = false;
             Assert.AreEqual(StyleKeyword.Null, LabelOf(button).style.color.keyword,
@@ -106,7 +106,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var host = new VisualElement().AddClass(AspidStyles.PaletteLightClass);
             _panel.Root.Add(host);
 
-            var button = CreateButton(Gradient);
+            var button = CreateButton(_gradient);
             host.Add(button);
             yield return null;
 
@@ -120,7 +120,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 .Count(texture => texture.name == AspidGradientButton.FadeTextureName);
 
         private static AspidGradientButton CreateButton(Color gradient) =>
-            new("Text") { Gradient = gradient, Accent = Accent };
+            new("Text") { Gradient = gradient, Accent = _accent };
 
         private static Label LabelOf(AspidGradientButton button) =>
             button.Children().OfType<Label>().First(label => label.ClassListContains(LabelClass));

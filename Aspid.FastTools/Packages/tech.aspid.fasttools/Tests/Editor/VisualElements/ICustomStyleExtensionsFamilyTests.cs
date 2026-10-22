@@ -15,7 +15,7 @@ namespace Aspid.FastTools.UIElements.Tests
         private const string ProbeStyleSheetPath =
             "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/ICustomStyleProbe.uss";
 
-        private static readonly CustomStyleProperty<string> FontStyleProperty = new("--aspid-fasttools-test-font-style");
+        private static readonly CustomStyleProperty<string> _fontStyleProperty = new("--aspid-fasttools-test-font-style");
 
         private TestPanel _panel;
 
@@ -78,7 +78,7 @@ namespace Aspid.FastTools.UIElements.Tests
             element.RegisterCallback<CustomStyleResolvedEvent>(evt =>
             {
                 result.Resolved = true;
-                result.Found = evt.customStyle.TryGetByEnum<FontStyle>(FontStyleProperty, out var value);
+                result.Found = evt.customStyle.TryGetByEnum<FontStyle>(_fontStyleProperty, out var value);
                 result.Value = value;
             });
 

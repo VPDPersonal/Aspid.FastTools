@@ -28,16 +28,16 @@ namespace Aspid.FastTools.UIElements.Tests
 
         // Classes that Unity applies from an internal type outside the UI Toolkit elements, so the package cannot
         // reference the constant and the scan of element types does not see it. Name -> Unity type and constant.
-        private static readonly Dictionary<string, (string TypeName, string FieldName)> LiteralNames = new()
+        private static readonly Dictionary<string, (string TypeName, string FieldName)> _literalNames = new()
         {
             ["unity-header-drawer__label"] = ("UnityEditor.HeaderDrawer", "headerLabelClassName"),
         };
 
-        private static readonly Regex Comment = new(@"/\*.*?\*/", RegexOptions.Singleline);
-        private static readonly Regex QuotedString = new(@"""[^""]*""|'[^']*'");
+        private static readonly Regex _comment = new(@"/\*.*?\*/", RegexOptions.Singleline);
+        private static readonly Regex _quotedString = new(@"""[^""]*""|'[^']*'");
         private static readonly Regex StyleSheetClass = new(@"\.(unity-[\w-]+)");
         private static readonly Regex LayoutClassAttribute = new(@"\bclass\s*=\s*""([^""]*)""");
-        private static readonly Regex SourceLiteral = new(@"""(unity-[\w-]+)""");
+        private static readonly Regex _sourceLiteral = new(@"""(unity-[\w-]+)""");
 
         [Test]
         public void PackageStyleSheetsAndLayouts_UseClassNamesThatUnityDeclares()
@@ -63,16 +63,16 @@ namespace Aspid.FastTools.UIElements.Tests
             var used = CollectUsedNames(extensions: new[] { ".cs" }, read: ReadSourceNames);
 
             var literals = used
-                .Where(pair => !LiteralNames.ContainsKey(pair.Key))
+                .Where(pair => !_literalNames.ContainsKey(pair.Key))
                 .Select(pair => $"{pair.Key} ({string.Join(", ", pair.Value)})")
                 .ToArray();
 
             CollectionAssert.IsEmpty(literals, "Use the Unity constant (such as BaseField<T>.inputUssClassName) " +
                 "instead of a class-name literal, which a Unity release can rename without a compile error. " +
-                "List the name in LiteralNames only when Unity declares no public constant for it.");
+                "List the name in _literalNames only when Unity declares no public constant for it.");
 
-            Assert.IsTrue(LiteralNames.Keys.All(name => !declared.Contains(name)),
-                "A UI Toolkit element now declares a constant for a listed literal; use it and drop the name from LiteralNames.");
+            Assert.IsTrue(_literalNames.Keys.All(name => !declared.Contains(name)),
+                "A UI Toolkit element now declares a constant for a listed literal; use it and drop the name from _literalNames.");
         }
 
         [Test]
@@ -80,14 +80,14 @@ namespace Aspid.FastTools.UIElements.Tests
         {
             const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-            foreach (var pair in LiteralNames)
+            foreach (var pair in _literalNames)
             {
                 var (typeName, fieldName) = pair.Value;
                 var type = typeof(DecoratorDrawer).Assembly.GetType(typeName);
-                Assert.IsNotNull(type, $"Unity has no type {typeName}; find where it keeps '{pair.Key}' and update LiteralNames.");
+                Assert.IsNotNull(type, $"Unity has no type {typeName}; find where it keeps '{pair.Key}' and update _literalNames.");
 
                 var field = type.GetField(fieldName, flags);
-                Assert.IsNotNull(field, $"{typeName} has no field {fieldName}; find where Unity keeps '{pair.Key}' and update LiteralNames.");
+                Assert.IsNotNull(field, $"{typeName} has no field {fieldName}; find where Unity keeps '{pair.Key}' and update _literalNames.");
 
                 Assert.AreEqual(pair.Key, field.GetValue(null),
                     $"{typeName}.{fieldName} changed; the package literal no longer matches the class Unity applies.");
@@ -129,13 +129,13 @@ namespace Aspid.FastTools.UIElements.Tests
                     .Where(name => name.StartsWith(UnityPrefix));
             }
 
-            content = QuotedString.Replace(Comment.Replace(content, string.Empty), string.Empty);
+            content = _quotedString.Replace(_comment.Replace(content, string.Empty), string.Empty);
             return StyleSheetClass.Matches(content).Select(match => match.Groups[1].Value);
         }
 
         private static IEnumerable<string> ReadSourceNames(string path)
         {
-            return SourceLiteral.Matches(File.ReadAllText(path)).Select(match => match.Groups[1].Value);
+            return _sourceLiteral.Matches(File.ReadAllText(path)).Select(match => match.Groups[1].Value);
         }
 
         private static HashSet<string> CollectDeclaredClassNames()

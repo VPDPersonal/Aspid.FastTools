@@ -34,7 +34,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [Category("Graphics")]
     internal sealed class SerializeReferenceListAddTests
     {
-        private static readonly string SwordName = typeof(TestSword).AssemblyQualifiedName;
+        private static readonly string _swordName = typeof(TestSword).AssemblyQualifiedName;
 
         [Test]
         public void TryGetArrayPath_ResolvesTheInnermostArray()
@@ -179,7 +179,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 obj.loadouts.Add(new ListAddTestLoadout { weapons = { new TestSword { damage = 1 } } });
                 obj.loadouts.Add(new ListAddTestLoadout());
 
-                SerializeReferenceListAddBehavior.Append(new Object[] { obj }, "loadouts.Array.data[0].weapons", SwordName);
+                SerializeReferenceListAddBehavior.Append(new Object[] { obj }, "loadouts.Array.data[0].weapons", _swordName);
 
                 Assert.AreEqual(2, obj.loadouts.Count, "The outer array must not grow.");
                 Assert.AreEqual(2, obj.loadouts[0].weapons.Count);
@@ -203,7 +203,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 first.sidearms.Add(new TestSword());
                 second.sidearms.Add(new TestSword());
 
-                SerializeReferenceListAddBehavior.Append(new Object[] { first, second }, "sidearms", SwordName);
+                SerializeReferenceListAddBehavior.Append(new Object[] { first, second }, "sidearms", _swordName);
 
                 Assert.AreEqual(2, first.sidearms.Count);
                 Assert.AreEqual(2, second.sidearms.Count, "Every selected object must receive the new element.");
@@ -230,7 +230,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 first.sidearms.Add(new TestSword());
                 second.sidearms.Add(new TestSword());
 
-                SerializeReferenceListAddBehavior.Append(new Object[] { first, second }, "sidearms", SwordName);
+                SerializeReferenceListAddBehavior.Append(new Object[] { first, second }, "sidearms", _swordName);
                 Assert.AreEqual(2, first.sidearms.Count);
                 Assert.AreEqual(2, second.sidearms.Count);
 

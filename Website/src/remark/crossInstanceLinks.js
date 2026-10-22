@@ -6,9 +6,6 @@
  * current plugin. This plugin resolves each link against the page's own file and turns a target in the other instance
  * into a site route, so the file links stay the single source of truth.
  *
- * The package's samples overview (`Samples~/README.md`) lists the samples for GitHub readers; on the site the link goes
- * to the gallery at /tutorials.
- *
  * Translations live in `i18n/<locale>/docusaurus-plugin-content-docs[-tutorials]/current/` and link translated
  * targets, so GitHub stays in the same language. Routes carry no locale: Docusaurus prefixes absolute routes with the
  * current locale itself.
@@ -22,7 +19,6 @@ const INSTANCES = [
   {route: '/docs', root: new RegExp(`^(?:docs|i18n/${LOCALE}/docusaurus-plugin-content-docs/current)/(.+)$`), slug: docSlug},
   {route: '/tutorials', root: new RegExp(`^(?:tutorials|i18n/${LOCALE}/docusaurus-plugin-content-docs-tutorials/current)/(.+)$`), slug: tutorialSlug},
 ];
-const SAMPLES_OVERVIEW = new RegExp(`^\\.\\./Aspid\\.FastTools/Packages/tech\\.aspid\\.fasttools/Samples~/README(?:\\.${LOCALE})?\\.md$`);
 
 function kebab(name) {
   return name
@@ -65,7 +61,6 @@ function rewrite(url, page) {
   if (!/\.mdx?$/i.test(file)) return null;
   const source = locate(page);
   const targetFile = path.resolve(path.dirname(page), decodeURIComponent(file));
-  if (source && SAMPLES_OVERVIEW.test(path.relative(siteDir, targetFile).split(path.sep).join('/'))) return `/tutorials${hash}`;
   const target = locate(targetFile);
   if (!source || !target || source.instance === target.instance) return null;
   const slug = target.instance.slug(target.file);

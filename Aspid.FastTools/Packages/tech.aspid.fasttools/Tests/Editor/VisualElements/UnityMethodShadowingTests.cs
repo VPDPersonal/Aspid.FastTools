@@ -19,9 +19,9 @@ namespace Aspid.FastTools.UIElements.Tests
     {
         // Clashes that are accepted on purpose, as "ExtensionClass.Method" with the reason. Empty: the package avoids
         // Unity's names, for example FocusSelf and SetTextSelf, so a hit is a new clash to rename around.
-        private static readonly HashSet<string> Accepted = new();
+        private static readonly HashSet<string> _accepted = new();
 
-        private static readonly BindingFlags InstanceMethods = BindingFlags.Public | BindingFlags.Instance;
+        private static readonly BindingFlags _instanceMethods = BindingFlags.Public | BindingFlags.Instance;
 
         [Test]
         public void Extensions_AreNotShadowedByUnityInstanceMethods()
@@ -33,13 +33,13 @@ namespace Aspid.FastTools.UIElements.Tests
             foreach (var extension in GetExtensionMethods())
             {
                 var key = $"{extension.DeclaringType.Name}.{extension.Name}";
-                if (Accepted.Contains(key)) continue;
+                if (_accepted.Contains(key)) continue;
 
                 var parameters = extension.GetParameters().Skip(1).ToArray();
                 foreach (var receiver in GetReceivers(extension, unityTypes))
                 {
                     if (!instanceMethods.TryGetValue(receiver, out var methods))
-                        instanceMethods[receiver] = methods = receiver.GetMethods(InstanceMethods).ToLookup(method => method.Name);
+                        instanceMethods[receiver] = methods = receiver.GetMethods(_instanceMethods).ToLookup(method => method.Name);
 
                     foreach (var method in methods[extension.Name])
                     {

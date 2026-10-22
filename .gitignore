@@ -17,15 +17,14 @@ $RECYCLE.BIN/
 # `npm install --no-save js-yaml@4` for scripts/check-skills.mjs runs at the root.
 /node_modules/
 
-# UPM convention: `Samples~` is hidden from Unity importer but must be tracked.
-# Override global `*~` ignore.
-!Samples~/
-!Samples~/**
+# Unity skips `~` folders on import (Samples~, DevTests~, SampleTests~), but git tracks them.
+# Override a global `*~` ignore.
+!*~/
 
 # Generated at release by scripts/package-changelog.mjs; only the upm branches carry it.
 /Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md
 /Aspid.FastTools/Packages/tech.aspid.fasttools/CHANGELOG.md.meta
 
 # Capture masters live in the private Aspid.Media.Storage repository, under FastTools/Docs/.
-/docs/media/**/*.mkv
-/docs/media/**/*.mov
+/Website/media/**/*.mkv
+/Website/media/**/*.mov

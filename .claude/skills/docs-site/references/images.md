@@ -1,14 +1,14 @@
 # Images: cropping, scenes and live versions
 
 Details behind the Images rules of the `docs-site` skill. Paths starting with `src/` are relative to `Website/`;
-`scripts/` and `docs/media` are at the repository root.
+`scripts/` is at the repository root, and the capture recipes are in `Website/media/`.
 
 - **Inspector and picker captures are cropped in the file, not in CSS.** `scripts/frame-doc-captures.sh` crops each
   listed capture (both themes) to its component and adds an 8px margin that continues Unity's background, the
   Inspector header included; GIFs go through gifsicle, so pixels and timing stay exact. GitHub and the site
   then show the same image. After re-shooting a listed capture, run the script; it skips framed files and fails on a
   capture whose size no longer matches its row, which then needs new bounds. Only `enum-values-multipliers/padding/pad.py`
-  and `enum-values-multipliers/type-selector/crop.sh` in `docs/media` still write a listed capture, and they call it
+  and `enum-values-multipliers/type-selector/crop.sh` in `Website/media` still write a listed capture, and they call it
   themselves; the other listed captures come from the DocsMedia harnesses, so run the script after re-shooting them.
   On doc pages the site pads every listed capture on to 8px from its rounded frame, drawing it as a border image so
   the margin's bands meet the edge without a seam; `docusaurus.config.js` reads the list and `PAD` from the script

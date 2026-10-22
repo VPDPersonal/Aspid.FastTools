@@ -49,7 +49,7 @@ function generate() {
     site,
     locales,
     repository,
-    previews: path.posix.relative(destinationDir, 'docs/images/readme-previews'),
+    previews: path.posix.relative(destinationDir, 'Website/docs/Images/readme-previews'),
     exists: (url) => fs.existsSync(path.join(repoDir, destinationDir, url)),
   });
   // remark escapes the bracket that opens a GitHub alert (`> [!WARNING]`); GitHub needs it literal.

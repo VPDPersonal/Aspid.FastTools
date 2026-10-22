@@ -11,8 +11,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         private const float Radius = 2f;
         private const float Fringe = 1f;
 
-        private static readonly Vector2 Center = new(40f, 25f);
-        private static readonly Color Color = new(0.2f, 0.6f, 0.4f, 0.8f);
+        private static readonly Vector2 _center = new(40f, 25f);
+        private static readonly Color _color = new(0.2f, 0.6f, 0.4f, 0.8f);
 
         private Vertex[] _vertices;
         private ushort[] _indices;
@@ -23,7 +23,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             _vertices = new Vertex[(Slot + 1) * AspidAnimatedDotsBackground.VerticesPerDot];
             _indices = new ushort[(Slot + 1) * AspidAnimatedDotsBackground.IndicesPerDot];
 
-            AspidAnimatedDotsBackground.WriteDot(_vertices, _indices, Slot, Center, Radius, Fringe, Color);
+            AspidAnimatedDotsBackground.WriteDot(_vertices, _indices, Slot, _center, Radius, Fringe, _color);
         }
 
         [Test]
@@ -40,17 +40,17 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var firstVertex = Slot * AspidAnimatedDotsBackground.VerticesPerDot;
             var segments = (AspidAnimatedDotsBackground.VerticesPerDot - 1) / 2;
 
-            Assert.AreEqual(Center, (Vector2)_vertices[firstVertex].position);
-            Assert.AreEqual((Color32)Color, _vertices[firstVertex].tint);
+            Assert.AreEqual(_center, (Vector2)_vertices[firstVertex].position);
+            Assert.AreEqual((Color32)_color, _vertices[firstVertex].tint);
 
             for (var i = 0; i < segments; i++)
             {
                 var inner = _vertices[firstVertex + 1 + i];
                 var outer = _vertices[firstVertex + 1 + segments + i];
 
-                Assert.AreEqual(Radius - Fringe * 0.5f, Vector2.Distance(Center, inner.position), 1e-4f);
-                Assert.AreEqual(Radius + Fringe * 0.5f, Vector2.Distance(Center, outer.position), 1e-4f);
-                Assert.AreEqual((Color32)Color, inner.tint, "The core must keep the dot's color.");
+                Assert.AreEqual(Radius - Fringe * 0.5f, Vector2.Distance(_center, inner.position), 1e-4f);
+                Assert.AreEqual(Radius + Fringe * 0.5f, Vector2.Distance(_center, outer.position), 1e-4f);
+                Assert.AreEqual((Color32)_color, inner.tint, "The core must keep the dot's color.");
                 Assert.AreEqual(0, outer.tint.a, "The edge must fade out to transparent.");
             }
         }

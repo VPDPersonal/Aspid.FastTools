@@ -15,7 +15,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed partial class SerializeReferenceYamlEditorWriteTests
     {
-        private static readonly ManagedTypeName Pistol = new(
+        private static readonly ManagedTypeName _pistol = new(
             "Aspid.FastTools.Samples.SerializeReferences",
             "Aspid.FastTools.Samples.SerializeReferences",
             "Pistol");
@@ -39,7 +39,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             File.WriteAllText(_path, YamlFixtures.MissingTypePrefab, new UTF8Encoding(true));
 
             Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
-                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol));
+                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol));
 
             var bytes = File.ReadAllBytes(_path);
             Assert.That(bytes.Take(3), Is.EqualTo(new byte[] { 0xEF, 0xBB, 0xBF }), "The UTF-8 byte-order mark must survive.");
@@ -50,7 +50,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TryRewriteType_WithoutByteOrderMark_WritesNone()
         {
             Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
-                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol));
+                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol));
 
             Assert.AreNotEqual(0xEF, File.ReadAllBytes(_path)[0], "A file without a byte-order mark must not gain one.");
         }
@@ -59,7 +59,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TryRewriteType_LeavesNoTempFileNextToAsset()
         {
             Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
-                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol));
+                _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, _pistol));
 
             var leftovers = Directory.GetFiles(Path.GetDirectoryName(_path), $".{Path.GetFileName(_path)}.*");
             CollectionAssert.IsEmpty(leftovers, "The temp file used for the atomic replace must be gone.");

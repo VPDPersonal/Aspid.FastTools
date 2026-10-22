@@ -1,6 +1,6 @@
 <picture>
-  <source srcset="../../../../../docs/images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="../../../../../docs/images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="../../../../docs/Images/aspid_fasttools_readme_banner_dark.webp" />
+  <img src="../../../../docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 
 [![Unity 6.0+](../../../../docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
@@ -119,7 +119,7 @@ caster.GetDisplayNameWithIndex();
 
 ## Ресурсы
 
-- [Обзор примеров](../../../../../Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.ru.md) — сцены и редакторские инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
+- [Обзор примеров](../../docusaurus-plugin-content-docs-tutorials/current/index.mdx) — сцены и редакторские инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
 - [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — типы, методы и свойства пакета, на английском.
 - [Журнал изменений](https://vpdpersonal.github.io/Aspid.FastTools/ru/changelog) — изменения и исправления по версиям.
 

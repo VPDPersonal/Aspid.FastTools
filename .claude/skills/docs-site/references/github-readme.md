@@ -9,12 +9,12 @@
 - Each feature becomes a card: a one-row table with the preview, then title, summary and «Read more».
 - The Resources list becomes a row of tiles, and the help section the SupportPanel call to action without the licence
   line.
-- A code preview gives way to the recording of the site's animated preview, `docs/images/readme-previews/<name>.webp`.
+- A code preview gives way to the recording of the site's animated preview, `Website/docs/Images/readme-previews/<name>.webp`.
 
 The README shows only dark images: a `<picture>` per theme follows the system theme, not GitHub's, so the generator
 drops the `-light` siblings and the recorder records the dark theme only.
 
 After a change to `FeaturePreview`, the InstallPanel walk-through, the site's dark theme or the install channel (the
 walk-through types its URL), rebuild the site and re-record:
-`node docs/media/readme-previews/record.mjs <served URL> [name …]` (`docs/media/readme-previews/README.md`), then run
+`node Website/media/readme-previews/record.mjs <served URL> [name …]` (`Website/media/readme-previews/README.md`), then run
 `sync-readme`.

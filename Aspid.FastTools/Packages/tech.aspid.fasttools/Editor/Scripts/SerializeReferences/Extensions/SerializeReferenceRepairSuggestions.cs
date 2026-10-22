@@ -33,8 +33,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // FIFO cap. The file id is part of the key because a rid is only unique within one host object.
         private const int CacheCapacity = 64;
 
-        private static readonly Dictionary<(string assetPath, long fileId, long rid), IReadOnlyList<RepairCandidate>> Cache = new();
-        private static readonly Queue<(string assetPath, long fileId, long rid)> CacheOrder = new();
+        private static readonly Dictionary<(string assetPath, long fileId, long rid), IReadOnlyList<RepairCandidate>> _cache = new();
+        private static readonly Queue<(string assetPath, long fileId, long rid)> _cacheOrder = new();
 
         // Up to max candidates scoring at least MinScore, ordered by descending score. baseConstraint is the field's
         // declared element type, or typeof(object) when unconstrained.
@@ -213,16 +213,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Func<IReadOnlyList<RepairCandidate>> rank)
         {
             var key = (assetPath ?? string.Empty, fileId, rid);
-            if (Cache.TryGetValue(key, out var cached)) return cached;
+            if (_cache.TryGetValue(key, out var cached)) return cached;
 
             var result = rank() ?? Array.Empty<RepairCandidate>();
-            Cache[key] = result;
-            CacheOrder.Enqueue(key);
+            _cache[key] = result;
+            _cacheOrder.Enqueue(key);
 
-            while (CacheOrder.Count > CacheCapacity)
+            while (_cacheOrder.Count > CacheCapacity)
             {
-                var evicted = CacheOrder.Dequeue();
-                Cache.Remove(evicted);
+                var evicted = _cacheOrder.Dequeue();
+                _cache.Remove(evicted);
             }
 
             return result;
@@ -230,8 +230,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static void ClearCache()
         {
-            Cache.Clear();
-            CacheOrder.Clear();
+            _cache.Clear();
+            _cacheOrder.Clear();
         }
         #endregion
     }

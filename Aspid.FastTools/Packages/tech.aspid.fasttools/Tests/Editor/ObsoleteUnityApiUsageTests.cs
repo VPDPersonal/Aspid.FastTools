@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Editors.Tests
         private const string PackageName = "tech.aspid.fasttools";
 
         // A word boundary, not a dot, so the unqualified call inside an Object subclass is caught as well.
-        private static readonly Regex GetInstanceIdCall = new(@"\bGetInstanceID\s*\(");
+        private static readonly Regex _getInstanceIdCall = new(@"\bGetInstanceID\s*\(");
 
         [Test]
         public void PackageSource_DoesNotCallGetInstanceID()
@@ -23,7 +23,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             var offenders = Directory
                 .EnumerateFiles(package.resolvedPath, "*.cs", SearchOption.AllDirectories)
-                .Where(path => GetInstanceIdCall.IsMatch(File.ReadAllText(path)))
+                .Where(path => _getInstanceIdCall.IsMatch(File.ReadAllText(path)))
                 .Select(path => Path.GetRelativePath(package.resolvedPath, path))
                 .ToArray();
 

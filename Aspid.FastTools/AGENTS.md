@@ -16,6 +16,9 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
   them on the next click; in a batch Editor, `ln -s DevTests~ Assets/DevTests` does the same. Edit them through either
   path and commit `Assets/DevTests~`. Never delete `Assets/DevTests` from the Project window: Unity deletes the files
   behind the link. `Assets/DevTools` (the menu and the `sr_gate` command for `unity command`) is always imported.
+- Tests of the samples go in `Assets/SampleTests~`, not in the package's `Tests/`: they check this repository's
+  `Samples~` and would ship to every user. Unity does not import the folder here; `scripts/make-unity-test-project.sh`
+  copies it into the test project next to the imported samples, so CI and local runs pick it up.
 - The SerializeReference YAML engine (`DotnetTests/Yaml/`) and `GenericTypeResolver`, `GenericArgumentFilter`,
   `TypeUtility` (`DotnetTests/Types/`) compile outside Unity: C# 9, .NET Standard 2.1 for the engine, and no
   Unity API except the stubbed `Debug.LogError`, `AssetDatabase.MakeEditable`, `UnityEngine.Object` and
@@ -25,7 +28,7 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
   it in the same PR. From the repository root:
   `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" <version>)`, then
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity $v> -batchmode -nographics -projectPath "$p" -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "$p/public-api.xml"`.
-  When a public member gets a newer `UNITY_6000_x_OR_NEWER` guard, move the `#if` around `HasWholeApi` and
+  When a public member gets a newer `UNITY_6000_x_OR_NEWER` guard, move the `#if` around `_hasWholeApi` and
   `WholeApiVersion` to it.
 - After a change to public API or its XML docs, run `npm run api` in `Website/` and commit `Website/api/` in the same
   PR. Steps for a worktree: `.claude/skills/docs-site/references/api-reference.md`. A skill in `skills/` that
@@ -33,6 +36,8 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 - A test fixture that shows an EditorWindow or draws IMGUI in one gets `[Category("Graphics")]`. CI runs every other
   test under `-nographics` and only this category with a graphics device; without the category such a test fails
   in CI. A runtime panel (`TestPanel`) needs no graphics device.
+- A kept, moved or renamed file keeps its `.meta` GUID: scenes, prefabs and assets reference it by GUID, in the
+  samples and in user projects alike.
 
 ## Checks
 

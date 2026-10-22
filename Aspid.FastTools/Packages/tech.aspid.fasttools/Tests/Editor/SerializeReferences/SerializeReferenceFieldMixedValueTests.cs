@@ -12,7 +12,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceFieldMixedValueTests
     {
-        private static readonly string MixedValueClass = BaseField<object>.mixedValueLabelUssClassName;
+        private static readonly string _mixedValueClass = BaseField<object>.mixedValueLabelUssClassName;
 
         [Serializable]
         internal sealed class MixedValueShield : ITestWeapon { }
@@ -24,7 +24,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             var caption = enumField.Q<TextElement>(className: EnumField.textUssClassName);
 
-            Assert.IsTrue(caption.ClassListContains(MixedValueClass),
+            Assert.IsTrue(caption.ClassListContains(_mixedValueClass),
                 "The field mirrors Unity's EnumField; update it if Unity moved the mixed-value class.");
         }
 
@@ -43,7 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 var caption = field.Q<TextElement>(className: EnumField.textUssClassName);
 
                 Assert.AreEqual("—", caption.text);
-                Assert.IsTrue(caption.ClassListContains(MixedValueClass),
+                Assert.IsTrue(caption.ClassListContains(_mixedValueClass),
                     "The caption must carry Unity's mixed-value class so the theme tints the dash.");
                 Assert.IsTrue(caption.parent.ClassListContains(BaseField<object>.inputUssClassName),
                     "Unity's mixed-value rule matches only a direct child of the input, so the caption's parent must carry its class.");
@@ -68,7 +68,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 var caption = field.Q<TextElement>(className: EnumField.textUssClassName);
 
                 Assert.AreNotEqual("—", caption.text);
-                Assert.IsFalse(caption.ClassListContains(MixedValueClass));
+                Assert.IsFalse(caption.ClassListContains(_mixedValueClass));
             }
             finally
             {

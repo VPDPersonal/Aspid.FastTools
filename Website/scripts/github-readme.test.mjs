@@ -12,7 +12,7 @@ const repository = 'https://github.com/owner/repo';
 
 function layout(markdown, files = []) {
   const tree = processor.parse(markdown);
-  githubLayout(tree, {site, locales: ['en', 'ru'], repository, previews: 'docs/images/readme-previews', exists: (url) => files.includes(url)});
+  githubLayout(tree, {site, locales: ['en', 'ru'], repository, previews: 'Website/docs/Images/readme-previews', exists: (url) => files.includes(url)});
   return processor.stringify(tree);
 }
 
@@ -37,8 +37,8 @@ using var _ = this.Marker();
 \`\`\`
 `;
 
-test('doc pages and the samples overview open on the site', () => {
-  const result = layout(`${features}\n## Resources\n\n- [Samples](Packages/x/Samples~/README.md) — scenes.\n- [Raw](Website/tutorials/Types/README.md) — kept.\n`);
+test('doc pages and the tutorials gallery open on the site', () => {
+  const result = layout(`${features}\n## Resources\n\n- [Samples](Website/tutorials/index.mdx) — scenes.\n- [Raw](Website/tutorials/Types/README.md) — kept.\n`);
   assert.match(result, /<h4><a href="https:\/\/site.test\/docs\/enum-values">EnumValues<\/a><\/h4>/);
   assert.match(result, /<a href="https:\/\/site.test\/docs\/type-selector#settings">TypeSelector<\/a>/);
   assert.match(result, /<a href="https:\/\/site.test\/tutorials">Samples<\/a>/);
@@ -57,8 +57,8 @@ test('the note under the install URL links the install panel on the site', () =>
 
 test('the install instruction becomes a card with the walk-through and the steps', () => {
   const install = '## Installation\n\nIn **Window → Package Manager**, paste this URL:\n\n```text\nhttps://github.com/owner/repo.git#upm\n```\n\nThe URL installs the latest release.\n';
-  const result = layout(install, ['docs/images/readme-previews/install.webp']);
-  assert.match(result, /^## Installation\n\n<table>\n<tr>\n<td width="56%"><img src="docs\/images\/readme-previews\/install.webp"/);
+  const result = layout(install, ['Website/docs/Images/readme-previews/install.webp']);
+  assert.match(result, /^## Installation\n\n<table>\n<tr>\n<td width="56%"><img src="Website\/docs\/Images\/readme-previews\/install.webp"/);
   assert.match(result, /<ol>\n<li>Open <b>Window → Package Manager<\/b><\/li>\n.*\n<li>Paste the URL and press <b>Install<\/b><\/li>\n<\/ol>/);
   assert.match(result, /<\/table>\n\n```text\nhttps:\/\/github.com\/owner\/repo.git#upm\n```/);
   assert.match(layout(install), /^## Installation\n\nIn \*\*Window → Package Manager\*\*, paste this URL:/);
@@ -73,8 +73,8 @@ test('a feature becomes a card with its dark preview only, its summary as HTML',
 });
 
 test('a code preview gives way to its recording', () => {
-  const result = layout(features, ['docs/images/readme-previews/profiler-markers.webp']);
-  assert.match(result, /<img src="docs\/images\/readme-previews\/profiler-markers.webp" alt="ProfilerMarkers" width="100%">/);
+  const result = layout(features, ['Website/docs/Images/readme-previews/profiler-markers.webp']);
+  assert.match(result, /<img src="Website\/docs\/Images\/readme-previews\/profiler-markers.webp" alt="ProfilerMarkers" width="100%">/);
 });
 
 test('without a recording the code stays a fenced block inside the card', () => {

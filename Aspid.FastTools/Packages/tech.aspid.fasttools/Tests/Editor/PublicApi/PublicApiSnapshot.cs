@@ -17,7 +17,7 @@ namespace Aspid.FastTools.Editors.Tests
         private const BindingFlags DeclaredMembers = BindingFlags.Public | BindingFlags.NonPublic |
             BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
-        private static readonly Dictionary<Type, string> Keywords = new()
+        private static readonly Dictionary<Type, string> _keywords = new()
         {
             [typeof(void)] = "void",
             [typeof(bool)] = "bool",
@@ -420,7 +420,7 @@ namespace Aspid.FastTools.Editors.Tests
             if (type.IsByRef) return FormatType(type.GetElementType());
             if (type.IsPointer) return $"{FormatType(type.GetElementType())}*";
             if (type.IsArray) return $"{FormatType(type.GetElementType())}[{new string(',', type.GetArrayRank() - 1)}]";
-            if (Keywords.TryGetValue(type, out var keyword)) return keyword;
+            if (_keywords.TryGetValue(type, out var keyword)) return keyword;
 
             var underlyingType = Nullable.GetUnderlyingType(type);
             if (underlyingType is not null) return $"{FormatType(underlyingType)}?";

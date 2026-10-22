@@ -15,31 +15,31 @@ public sealed class DiagnosticRulesTests
 {
     private const string DocsUrl = "https://vpdpersonal.github.io/Aspid.FastTools/docs/";
 
-    private static readonly Regex HeadingPattern = new(@"^#{1,6}\s+(.+?)\s*$");
-    private static readonly Regex ExplicitIdPattern = new(@"\{#([^}]+)\}$");
-    private static readonly Regex HtmlTagPattern = new("<[^>]+>");
-    private static readonly Regex OrderPrefixPattern = new(@"^\d+-");
+    private static readonly Regex _headingPattern = new(@"^#{1,6}\s+(.+?)\s*$");
+    private static readonly Regex _explicitIdPattern = new(@"\{#([^}]+)\}$");
+    private static readonly Regex _htmlTagPattern = new("<[^>]+>");
+    private static readonly Regex _orderPrefixPattern = new(@"^\d+-");
 
-    private static readonly DiagnosticDescriptor[] Rules = typeof(DiagnosticRules)
+    private static readonly DiagnosticDescriptor[] _rules = typeof(DiagnosticRules)
         .GetFields(BindingFlags.Public | BindingFlags.Static)
         .Where(field => field.FieldType == typeof(DiagnosticDescriptor))
         .Select(field => (DiagnosticDescriptor)field.GetValue(obj: null)!)
         .ToArray();
 
     // The docs pages embedded by the csproj, keyed by their site route: 03-type-selector.md -> type-selector.
-    private static readonly Dictionary<string, string> DocsPages = typeof(DiagnosticRulesTests).Assembly
+    private static readonly Dictionary<string, string> _docsPages = typeof(DiagnosticRulesTests).Assembly
         .GetManifestResourceNames()
         .Where(name => name.StartsWith("Docs/", StringComparison.Ordinal))
         .ToDictionary(
-            name => OrderPrefixPattern.Replace(Path.GetFileNameWithoutExtension(name), replacement: string.Empty),
+            name => _orderPrefixPattern.Replace(Path.GetFileNameWithoutExtension(name), replacement: string.Empty),
             ReadResource);
 
     [Fact]
     public void EveryRule_HasDescriptionAndDocsHelpLink()
     {
-        Assert.NotEmpty(Rules);
+        Assert.NotEmpty(_rules);
 
-        foreach (var rule in Rules)
+        foreach (var rule in _rules)
         {
             Assert.False(string.IsNullOrWhiteSpace(rule.Description.ToString()), $"{rule.Id} has no description");
             Assert.True(rule.HelpLinkUri.StartsWith(DocsUrl, StringComparison.Ordinal), $"{rule.Id}: {rule.HelpLinkUri}");
@@ -52,12 +52,12 @@ public sealed class DiagnosticRulesTests
     {
         var broken = new List<string>();
 
-        foreach (var rule in Rules.Where(rule => rule.HelpLinkUri.StartsWith(DocsUrl, StringComparison.Ordinal)))
+        foreach (var rule in _rules.Where(rule => rule.HelpLinkUri.StartsWith(DocsUrl, StringComparison.Ordinal)))
         {
             var parts = rule.HelpLinkUri.Substring(DocsUrl.Length).Split('#');
             var page = parts[0];
 
-            if (!DocsPages.TryGetValue(page, out var markdown))
+            if (!_docsPages.TryGetValue(page, out var markdown))
                 broken.Add($"{rule.Id}: no page '{page}'");
             else if (parts.Length > 1 && !HeadingIds(markdown).Contains(parts[1]))
                 broken.Add($"{rule.Id}: no heading '#{parts[1]}' on '{page}'");
@@ -82,10 +82,10 @@ public sealed class DiagnosticRulesTests
 
             if (inCodeBlock) continue;
 
-            var heading = HeadingPattern.Match(text);
+            var heading = _headingPattern.Match(text);
             if (!heading.Success) continue;
 
-            var explicitId = ExplicitIdPattern.Match(heading.Groups[1].Value);
+            var explicitId = _explicitIdPattern.Match(heading.Groups[1].Value);
             yield return explicitId.Success ? explicitId.Groups[1].Value : Slug(heading.Groups[1].Value);
         }
     }
@@ -93,7 +93,7 @@ public sealed class DiagnosticRulesTests
     // The github-slugger rule Docusaurus uses for plain headings: lower case, punctuation dropped, spaces to hyphens.
     private static string Slug(string heading)
     {
-        var text = HtmlTagPattern.Replace(heading, replacement: string.Empty).ToLowerInvariant();
+        var text = _htmlTagPattern.Replace(heading, replacement: string.Empty).ToLowerInvariant();
         var slug = new StringBuilder(text.Length);
 
         foreach (var symbol in text)

@@ -1,6 +1,6 @@
 {
     "name": "Aspid.FastTools.Samples.EditorTools",
-    "rootNamespace": "",
+    "rootNamespace": "Aspid.FastTools.Samples.EditorTools",
     "references": [
         "Aspid.FastTools"
     ],

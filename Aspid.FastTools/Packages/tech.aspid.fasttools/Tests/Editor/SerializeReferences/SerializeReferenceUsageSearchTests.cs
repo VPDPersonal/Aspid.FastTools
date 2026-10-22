@@ -23,29 +23,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceUsageSearchTests
     {
-        private static readonly ManagedTypeName Pistol = ManagedTypeName.FromType(typeof(UsagePistol));
+        private static readonly ManagedTypeName _pistol = ManagedTypeName.FromType(typeof(UsagePistol));
 
         [Test]
         public void MenuQuery_MatchesTheExactType() =>
-            Assert.IsTrue(MenuQueryMatches(typeof(UsagePistol), Pistol));
+            Assert.IsTrue(MenuQueryMatches(typeof(UsagePistol), _pistol));
 
         [Test]
         public void MenuQuery_SkipsLongerClassNames() =>
-            Assert.IsFalse(MenuQueryMatches(typeof(UsagePistol), WithClass($"{Pistol.Class}Mk2")));
+            Assert.IsFalse(MenuQueryMatches(typeof(UsagePistol), WithClass($"{_pistol.Class}Mk2")));
 
         [Test]
         public void MenuQuery_SkipsNamesakesFromOtherNamespaces() =>
             Assert.IsFalse(MenuQueryMatches(typeof(UsagePistol), new ManagedTypeName(
-                assembly: Pistol.Assembly,
+                assembly: _pistol.Assembly,
                 @namespace: "Other.Weapons",
-                className: Pistol.Class)));
+                className: _pistol.Class)));
 
         [Test]
         public void MenuQuery_SkipsNamesakesFromOtherAssemblies() =>
             Assert.IsFalse(MenuQueryMatches(typeof(UsagePistol), new ManagedTypeName(
                 assembly: "Other.Assembly",
-                @namespace: Pistol.Namespace,
-                className: Pistol.Class)));
+                @namespace: _pistol.Namespace,
+                className: _pistol.Class)));
 
         [Test]
         public void MenuQuery_SeparatesGenericInstantiations()
@@ -62,14 +62,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var token = SerializeReferenceUsageSearchProvider.Token("sr:usagepist");
 
-            Assert.IsTrue(SerializeReferenceUsageSearchProvider.Matches(token, Pistol));
-            Assert.IsTrue(SerializeReferenceUsageSearchProvider.Matches(token, WithClass($"{Pistol.Class}Mk2")));
+            Assert.IsTrue(SerializeReferenceUsageSearchProvider.Matches(token, _pistol));
+            Assert.IsTrue(SerializeReferenceUsageSearchProvider.Matches(token, WithClass($"{_pistol.Class}Mk2")));
         }
 
         [Test]
         public void EmptyQuery_MatchesNothing() =>
             Assert.IsFalse(SerializeReferenceUsageSearchProvider.Matches(
-                SerializeReferenceUsageSearchProvider.Token("sr:  "), Pistol));
+                SerializeReferenceUsageSearchProvider.Token("sr:  "), _pistol));
 
         [Test]
         public void MenuLabel_FormatsGenericArguments() =>
@@ -88,6 +88,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         private static ManagedTypeName WithClass(string className) =>
-            new(assembly: Pistol.Assembly, @namespace: Pistol.Namespace, className: className);
+            new(assembly: _pistol.Assembly, @namespace: _pistol.Namespace, className: className);
     }
 }

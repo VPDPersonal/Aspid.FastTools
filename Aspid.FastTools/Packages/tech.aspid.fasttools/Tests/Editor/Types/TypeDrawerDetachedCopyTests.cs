@@ -21,11 +21,11 @@ namespace Aspid.FastTools.Types.Editors.Tests
     [TestFixture]
     internal sealed class TypeDrawerDetachedCopyTests
     {
-        private static readonly Type ScriptedType = typeof(SerializableMonoScript);
+        private static readonly Type _scriptedType = typeof(SerializableMonoScript);
 
-        private static readonly string IntName = typeof(int).AssemblyQualifiedName;
-        private static readonly string LongName = typeof(long).AssemblyQualifiedName;
-        private static readonly string StringName = typeof(string).AssemblyQualifiedName;
+        private static readonly string _intName = typeof(int).AssemblyQualifiedName;
+        private static readonly string _longName = typeof(long).AssemblyQualifiedName;
+        private static readonly string _stringName = typeof(string).AssemblyQualifiedName;
 
         [Serializable]
         private sealed class Slot
@@ -117,15 +117,15 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var detached = Detach(path: nameof(Holder.typeName));
 
-            TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: StringName);
+            TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: _stringName);
 
-            Assert.AreEqual(StringName, _holder.typeName);
+            Assert.AreEqual(_stringName, _holder.typeName);
         }
 
         [Test]
         public void SetName_NullName_WritesAnEmptyName()
         {
-            _holder.typeName = StringName;
+            _holder.typeName = _stringName;
             var detached = Detach(path: nameof(Holder.typeName));
 
             TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: null);
@@ -136,13 +136,13 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void SetName_WritesOnlyThePathOfTheDetachedProperty()
         {
-            _holder.typeNames[0] = IntName;
+            _holder.typeNames[0] = _intName;
             var detached = Detach(path: nameof(Holder.typeName));
 
-            TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: LongName);
+            TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: _longName);
 
-            Assert.AreEqual(LongName, _holder.typeName);
-            Assert.AreEqual(IntName, _holder.typeNames[0]);
+            Assert.AreEqual(_longName, _holder.typeName);
+            Assert.AreEqual(_intName, _holder.typeNames[0]);
         }
 
         [Test]
@@ -150,18 +150,18 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var detached = DetachFromDestroyedObject(path: nameof(Holder.typeName));
 
-            Assert.DoesNotThrow(() => TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: StringName));
+            Assert.DoesNotThrow(() => TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: _stringName));
         }
 
         [Test]
         public void SetName_APathThatNoLongerExists_DoesNothing()
         {
-            _holder.typeNames[0] = IntName;
+            _holder.typeNames[0] = _intName;
             var detached = Detach(path: $"{nameof(Holder.typeNames)}.Array.data[1]");
             _holder.typeNames.RemoveAt(1);
 
-            Assert.DoesNotThrow(() => TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: StringName));
-            CollectionAssert.AreEqual(new[] { IntName }, _holder.typeNames);
+            Assert.DoesNotThrow(() => TypeIMGUIPropertyDrawer.SetName(detached: detached, assemblyQualifiedName: _stringName));
+            CollectionAssert.AreEqual(new[] { _intName }, _holder.typeNames);
         }
 
         [Test]
@@ -169,17 +169,17 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var detached = Detach(path: nameof(Holder.script));
 
-            SerializableMonoScriptUtility.Assign(detached: detached, type: ScriptedType);
+            SerializableMonoScriptUtility.Assign(detached: detached, type: _scriptedType);
 
-            Assert.AreEqual(ScriptedType, ScriptClassOf(holder: _holder, path: nameof(Holder.script)));
-            Assert.AreEqual(ScriptedType.AssemblyQualifiedName, StoredNameOf(holder: _holder, path: nameof(Holder.script)));
+            Assert.AreEqual(_scriptedType, ScriptClassOf(holder: _holder, path: nameof(Holder.script)));
+            Assert.AreEqual(_scriptedType.AssemblyQualifiedName, StoredNameOf(holder: _holder, path: nameof(Holder.script)));
         }
 
         [Test]
         public void AssignWrapper_NullType_ClearsTheNameAndTheScript()
         {
             var detached = Detach(path: nameof(Holder.script));
-            SerializableMonoScriptUtility.Assign(detached: detached, type: ScriptedType);
+            SerializableMonoScriptUtility.Assign(detached: detached, type: _scriptedType);
 
             SerializableMonoScriptUtility.Assign(detached: detached, type: null);
 
@@ -192,7 +192,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var detached = DetachFromDestroyedObject(path: nameof(Holder.script));
 
-            Assert.DoesNotThrow(() => SerializableMonoScriptUtility.Assign(detached: detached, type: ScriptedType));
+            Assert.DoesNotThrow(() => SerializableMonoScriptUtility.Assign(detached: detached, type: _scriptedType));
         }
 
         [Test]
@@ -202,7 +202,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var detached = Detach(path: path);
             _holder.scripts.RemoveAt(1);
 
-            Assert.DoesNotThrow(() => SerializableMonoScriptUtility.Assign(detached: detached, type: ScriptedType));
+            Assert.DoesNotThrow(() => SerializableMonoScriptUtility.Assign(detached: detached, type: _scriptedType));
             Assert.AreEqual(1, _holder.scripts.Count);
             Assert.IsNull(ScriptClassOf(holder: _holder, path: $"{nameof(Holder.scripts)}.Array.data[0]"));
         }
@@ -212,8 +212,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void Resolve_ByDetachedProperty_ReadsTheMemberOfTheDeclaringElementOfAnObjectWithNoOpenCopy()
         {
-            _holder.slots.Add(new Slot { baseName = IntName });
-            _holder.slots.Add(new Slot { baseName = StringName });
+            _holder.slots.Add(new Slot { baseName = _intName });
+            _holder.slots.Add(new Slot { baseName = _stringName });
             _serialized.Update();
 
             DetachedProperty detached;
@@ -231,7 +231,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void Resolve_ByDetachedProperty_MatchesTheResolutionByProperty()
         {
-            _holder.slots.Add(new Slot { baseName = LongName });
+            _holder.slots.Add(new Slot { baseName = _longName });
             _serialized.Update();
             var property = _serialized.FindProperty($"{nameof(Holder.slots)}.Array.data[0].{nameof(Slot.typeName)}");
 
@@ -250,7 +250,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [UnityTest]
         public IEnumerator TypeDrawer_RefreshAfterTheCallersSerializedObjectIsDisposed_ShowsTheStoredType()
         {
-            _holder.typeName = StringName;
+            _holder.typeName = _stringName;
             var serialized = new SerializedObject(_holder);
 
             var root = TypeUIToolkitPropertyDrawer.Draw(
@@ -289,12 +289,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
             yield return null;
             serialized.Dispose();
 
-            field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+            field.ApplyPicked(assemblyQualifiedName: _scriptedType.AssemblyQualifiedName);
 
-            yield return WaitUntil(() => field.value == ScriptedType);
+            yield return WaitUntil(() => field.value == _scriptedType);
 
-            Assert.AreEqual(ScriptedType, ScriptClassOf(holder: _holder, path: nameof(Holder.script)));
-            Assert.AreEqual(ScriptedType, field.value);
+            Assert.AreEqual(_scriptedType, ScriptClassOf(holder: _holder, path: nameof(Holder.script)));
+            Assert.AreEqual(_scriptedType, field.value);
         }
 
         // The notice follows the object through the trackers of the drawer, with no copy of its own to read from.
@@ -320,12 +320,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             Assert.IsTrue(root.ClassListContains(TypeUIToolkitPropertyDrawer.MissingClass), "Precondition: the stored type is missing.");
 
-            field.ApplyPicked(assemblyQualifiedName: ScriptedType.AssemblyQualifiedName);
+            field.ApplyPicked(assemblyQualifiedName: _scriptedType.AssemblyQualifiedName);
 
             yield return WaitUntil(() => !root.ClassListContains(TypeUIToolkitPropertyDrawer.MissingClass));
 
             Assert.IsFalse(root.ClassListContains(TypeUIToolkitPropertyDrawer.MissingClass));
-            Assert.AreEqual(ScriptedType, ScriptClassOf(holder: _holder, path: nameof(Holder.script)));
+            Assert.AreEqual(_scriptedType, ScriptClassOf(holder: _holder, path: nameof(Holder.script)));
         }
 
         private static IEnumerator WaitUntil(Func<bool> condition)

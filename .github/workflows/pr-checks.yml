@@ -61,11 +61,12 @@ jobs:
               ['DotnetTests/Types/', 'area: editor'],
               ['Aspid.FastTools/Assets/DevTests~/', 'area: editor'],
               ['Aspid.FastTools/Assets/DevTools/', 'area: editor'],
+              ['Aspid.FastTools/Assets/SampleTests~/', 'area: samples'],
               ['Website/', 'area: website'],
               ['Website/docs/', 'area: docs'],
               ['Website/tutorials/', 'area: docs'],
               ['Website/i18n/', 'area: docs'],
-              ['docs/', 'area: docs'],
+              ['Website/media/', 'area: docs'],
               ['README', 'area: docs'],
               ['CHANGELOG', 'area: docs'],
               ['.claude/', 'area: claude'],
@@ -107,6 +108,11 @@ jobs:
 
             const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: pr.number });
             for (const { filename } of files) {
+              // GitHub finds these two in .github/, but they are contributor docs, not CI.
+              if (filename === '.github/CONTRIBUTING.md' || filename === '.github/SECURITY.md') {
+                add.add('area: docs');
+                continue;
+              }
               for (const [prefix, label] of AREAS)
                 if (filename.startsWith(prefix)) add.add(label);
               // A nested AGENTS.md is agent configuration wherever it lives.

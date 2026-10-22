@@ -5,10 +5,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
     /// Coverage for <see cref="SerializeReferenceRepairSuggestions.Rank"/> — the ranking engine behind the
-    /// missing-type <b>Smart Fix</b> suggestion. Pins the three outcomes the bundled sample assets rely on: a
-    /// same-named type in another namespace surfaces with the full field-shape bonus (MovedWeaponPreset.asset), a
-    /// declared <c>[MovedFrom]</c> match takes the authoritative top score, and a Ghost-style identity with no
-    /// plausible successor surfaces nothing (BrokenWeaponPreset.asset intentionally shows no suggestion).
+    /// missing-type <b>Smart Fix</b> suggestion. Pins three outcomes: a same-named type in another namespace surfaces
+    /// with the full field-shape bonus, a declared <c>[MovedFrom]</c> match takes the authoritative top score, and a
+    /// Ghost-style identity with no plausible successor surfaces nothing.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceRepairSuggestionTests

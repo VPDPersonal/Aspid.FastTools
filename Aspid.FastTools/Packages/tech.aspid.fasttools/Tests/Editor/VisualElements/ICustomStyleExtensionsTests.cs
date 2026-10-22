@@ -24,7 +24,7 @@ namespace Aspid.FastTools.UIElements.Tests
             Sky = 4,
         }
 
-        private static readonly CustomStyleProperty<string> Property = new("--test-value");
+        private static readonly CustomStyleProperty<string> _property = new("--test-value");
 
         [TestCase("On", Mode.On)]
         [TestCase("on", Mode.On)]
@@ -32,7 +32,7 @@ namespace Aspid.FastTools.UIElements.Tests
         [TestCase("1", Mode.On)]
         public void TryGetByEnum_DefinedValue_ReturnsIt(string text, Mode expected)
         {
-            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Mode value);
+            var result = new StubCustomStyle(text).TryGetByEnum(_property, out Mode value);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expected, value);
@@ -47,7 +47,7 @@ namespace Aspid.FastTools.UIElements.Tests
         [TestCase("")]
         public void TryGetByEnum_UndefinedValue_ReturnsFalseAndDefault(string text)
         {
-            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Mode value);
+            var result = new StubCustomStyle(text).TryGetByEnum(_property, out Mode value);
 
             Assert.IsFalse(result);
             Assert.AreEqual(default(Mode), value);
@@ -56,7 +56,7 @@ namespace Aspid.FastTools.UIElements.Tests
         [Test]
         public void TryGetByEnum_MissingProperty_ReturnsFalseAndDefault()
         {
-            var result = new StubCustomStyle(null).TryGetByEnum(Property, out Mode value);
+            var result = new StubCustomStyle(null).TryGetByEnum(_property, out Mode value);
 
             Assert.IsFalse(result);
             Assert.AreEqual(default(Mode), value);
@@ -68,7 +68,7 @@ namespace Aspid.FastTools.UIElements.Tests
         [TestCase("Ground,Water,Sky", Layers.Ground | Layers.Water | Layers.Sky)]
         public void TryGetByEnum_FlagsNames_ReturnsCombination(string text, Layers expected)
         {
-            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Layers value);
+            var result = new StubCustomStyle(text).TryGetByEnum(_property, out Layers value);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expected, value);
@@ -86,7 +86,7 @@ namespace Aspid.FastTools.UIElements.Tests
         [TestCase("Ground, -1")]
         public void TryGetByEnum_FlagsNumber_ReturnsFalseAndDefault(string text)
         {
-            var result = new StubCustomStyle(text).TryGetByEnum(Property, out Layers value);
+            var result = new StubCustomStyle(text).TryGetByEnum(_property, out Layers value);
 
             Assert.IsFalse(result);
             Assert.AreEqual(default(Layers), value);

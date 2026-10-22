@@ -1,6 +1,6 @@
 <picture>
-  <source srcset="../../docs/images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="../../docs/images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="Images/aspid_fasttools_readme_banner_dark.webp" />
+  <img src="Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 
 [![Unity 6.0+](Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
@@ -119,7 +119,7 @@ Profile Simulate and the neighbor search
 
 ## Resources
 
-- [Samples overview](../../Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
+- [Samples overview](../tutorials/index.mdx) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
 - [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors) — package types, methods and properties.
 - [Changelog](https://vpdpersonal.github.io/Aspid.FastTools/changelog) — changes and fixes by version.
 

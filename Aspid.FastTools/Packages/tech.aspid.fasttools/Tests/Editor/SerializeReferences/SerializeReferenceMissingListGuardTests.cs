@@ -27,7 +27,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // delayCall can wait many ticks in the batch-mode test runner.
         private const double DelayCallTimeoutSeconds = 10;
 
-        private static readonly Func<ManagedTypeName, bool> Resolves = type =>
+        private static readonly Func<ManagedTypeName, bool> _resolves = type =>
             !type.Class.StartsWith("Ghost", StringComparison.Ordinal);
 
         private string _path;
@@ -79,7 +79,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Write(1002, 1003);
             SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
-            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
+            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves);
             Save(-2, 1003);
 
             Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
@@ -102,7 +102,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Write(1002, 1003);
             SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
-            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
+            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves);
             Save(-2, 1003, -2);
 
             Assert.AreEqual(0, snapshots.Count);
@@ -127,11 +127,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 using var serializedObject = new SerializedObject(probe);
                 var element = serializedObject.FindProperty($"{nameof(ReferenceListTestObject.weapons)}.Array.data[0]");
 
-                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, Resolves).Count);
+                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, _resolves).Count);
 
                 SerializeReferenceMissingListGuard.NoteReplaced(element);
 
-                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, Resolves).Count);
+                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, _resolves).Count);
             }
             finally
             {
@@ -146,11 +146,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Write(1002, 1003);
             SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
-            var pending = SerializeReferenceMissingListGuard.BeginSave(_path, Resolves);
+            var pending = SerializeReferenceMissingListGuard.BeginSave(_path, _resolves);
             File.WriteAllText(_path, WithSidearms(new long[] { 1002, 1003 }, keepGhostEntry: true) + "\n");
 
             Assert.IsTrue(SerializeReferenceMissingListGuard.ConsumeIfWritten(_path, pending));
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
         }
 
         [Test]
@@ -159,10 +159,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Write(1002, 1003);
             SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
-            var pending = SerializeReferenceMissingListGuard.BeginSave(_path, Resolves);
+            var pending = SerializeReferenceMissingListGuard.BeginSave(_path, _resolves);
 
             Assert.IsFalse(SerializeReferenceMissingListGuard.ConsumeIfWritten(_path, pending));
-            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
         }
 
         [Test]
@@ -173,7 +173,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             SerializeReferenceMissingListGuard.ReloadNotes();
 
-            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
         }
 
         [Test]
@@ -185,7 +185,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             PerformUndo();
 
-            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+            Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
         }
 
         [Test]
@@ -204,10 +204,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Undo.FlushUndoRecordObjects();
 
                 Undo.PerformUndo();
-                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
 
                 Undo.PerformRedo();
-                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
             }
             finally
             {
@@ -237,10 +237,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 yield return FlushDelayCalls();
 
                 Undo.PerformUndo();
-                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
 
                 Undo.PerformRedo();
-                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
             }
             finally
             {
@@ -258,7 +258,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             File.WriteAllText(_path, WithSidearms(new long[] { 1002, 1003 }, keepGhostEntry: true) + "\n");
 
-            Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves).Count);
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves).Count);
         }
 
         [Test]
@@ -269,7 +269,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid,
                 "_sidearms", index: 0);
 
-            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
+            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves);
             Save(-2, 1003, -2);
 
             Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots).Restored.Count);
@@ -324,7 +324,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 File.WriteAllText(assetPath, File.ReadAllText(assetPath).Replace("class: TestSword,", "class: GhostSword,"));
                 probe.weapons[0] = null;
 
-                var pending = SerializeReferenceMissingListGuard.BeginSave(assetPath, Resolves);
+                var pending = SerializeReferenceMissingListGuard.BeginSave(assetPath, _resolves);
                 Assert.AreEqual(1, pending.Snapshots.Count);
 
                 // What the save wrote: the element as a null id, its entry gone.
@@ -473,7 +473,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private List<MissingListSnapshot> Snapshot(params long[] sidearms)
         {
             Write(sidearms);
-            return SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
+            return SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, _resolves);
         }
 
         private void Write(params long[] sidearms) =>

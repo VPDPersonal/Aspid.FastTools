@@ -13,7 +13,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const BindingFlags InstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         // Cache unresolved and ambiguous identities too; domain reloads invalidate rename metadata.
-        private static readonly Dictionary<string, Type> Cache = new(StringComparer.Ordinal);
+        private static readonly Dictionary<string, Type> _cache = new(StringComparer.Ordinal);
 
         private static readonly char[] _nestedSeparators = { '/', '+' };
 
@@ -32,10 +32,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (stored.Class.IndexOf('`') >= 0) return false;
 
             var key = SerializeReferenceHelpers.StoredTypeKey(stored);
-            if (Cache.TryGetValue(key, out target)) return target is not null;
+            if (_cache.TryGetValue(key, out target)) return target is not null;
 
             target = ResolveUncached(stored);
-            Cache[key] = target;
+            _cache[key] = target;
             return target is not null;
         }
 

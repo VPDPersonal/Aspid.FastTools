@@ -12,7 +12,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     [TestFixture]
     internal sealed class AspidHelpBoxIconTests
     {
-        private static readonly HelpBoxMessageType[] Types =
+        private static readonly HelpBoxMessageType[] _types =
         {
             HelpBoxMessageType.Info,
             HelpBoxMessageType.Warning,
@@ -30,7 +30,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             _panel.Dispose();
 
         [UnityTest]
-        public IEnumerator DarkPalette_TakesDarkSkinIcon([ValueSource(nameof(Types))] HelpBoxMessageType type)
+        public IEnumerator DarkPalette_TakesDarkSkinIcon([ValueSource(nameof(_types))] HelpBoxMessageType type)
         {
             var box = AddBox(type, lightPalette: false);
             yield return null;
@@ -39,7 +39,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         [UnityTest]
-        public IEnumerator LightPalette_TakesLightSkinIcon([ValueSource(nameof(Types))] HelpBoxMessageType type)
+        public IEnumerator LightPalette_TakesLightSkinIcon([ValueSource(nameof(_types))] HelpBoxMessageType type)
         {
             var box = AddBox(type, lightPalette: true);
             yield return null;
