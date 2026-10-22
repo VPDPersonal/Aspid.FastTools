@@ -3,9 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     /// <summary>
     /// Round-trip and confinement coverage for <see cref="SerializeReferenceYamlEditor.TryRewriteType"/> — the highest

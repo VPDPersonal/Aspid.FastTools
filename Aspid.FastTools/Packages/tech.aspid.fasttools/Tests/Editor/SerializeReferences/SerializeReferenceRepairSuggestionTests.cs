@@ -1,7 +1,9 @@
 using System;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for <see cref="SerializeReferenceRepairSuggestions.Rank"/> — the ranking engine behind the

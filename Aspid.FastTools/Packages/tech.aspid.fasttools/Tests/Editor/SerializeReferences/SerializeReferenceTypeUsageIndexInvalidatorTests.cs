@@ -4,8 +4,10 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Coverage for SerializeReferenceTypeUsageIndexInvalidator: a delete, a move or a small import
     // patches the warm SerializeReferenceTypeUsageIndex in place, and only a script change or a big

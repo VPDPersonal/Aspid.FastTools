@@ -2,9 +2,11 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Editors;
 using Object = UnityEngine.Object;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Windows
 {
     /// <summary>
     /// Coverage for the FastTools window's state: the selected tab survives serialization (a domain reload keeps only

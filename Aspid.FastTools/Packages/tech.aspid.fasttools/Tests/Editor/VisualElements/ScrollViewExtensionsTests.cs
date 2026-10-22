@@ -3,9 +3,10 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.UIElements;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     [TestFixture]
     internal sealed class ScrollViewExtensionsTests

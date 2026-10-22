@@ -8,8 +8,11 @@ using System.Reflection;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
+using Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The project-wide counterpart of the Inspector's Missing type notice: the gate and the CI report list stored type
     // names that no longer resolve, Project References rewrites them, and breakage detection reports new ones.

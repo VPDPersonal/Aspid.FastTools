@@ -1,14 +1,17 @@
 using System;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
+using System.Threading.Tasks;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.SerializeReferences.Editors;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.Tests.Editors.VisualElements;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Guards the script-backed wrappers: the code-side contract (base type, implicit conversion), the editor

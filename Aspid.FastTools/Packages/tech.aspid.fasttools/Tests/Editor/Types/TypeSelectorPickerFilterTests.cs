@@ -1,7 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // Contract plus one offered and one opted-out implementation — the smallest shape that shows a hidden type
     // being dropped while its sibling survives the same scan.

@@ -1,11 +1,13 @@
 using System.IO;
 using UnityEditor;
-using System.Collections.Generic;
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.Serialization;
+using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for repairs on a loaded asset with unsaved changes. A file rewrite reimports the asset, which reloads

@@ -2,9 +2,10 @@ using UnityEngine;
 using NUnit.Framework;
 using Unity.Properties;
 using UnityEngine.UIElements;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.UIElements;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// Anchors for the <see cref="VisualElement"/> property setters, the <see cref="Focusable"/> helpers

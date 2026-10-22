@@ -1,8 +1,10 @@
 using System.IO;
 using NUnit.Framework;
+using Aspid.FastTools.Editors;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Welcome
 {
     // The version keys the Welcome "already shown" flag and fills the window footer. A copy in Assets is not a
     // registered package, so its version comes from package.json.

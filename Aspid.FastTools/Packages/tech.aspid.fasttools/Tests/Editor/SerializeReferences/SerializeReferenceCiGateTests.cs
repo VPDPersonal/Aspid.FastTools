@@ -7,8 +7,10 @@ using NUnit.Framework;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Coverage for the headless CI gate: that the committed gate severity decides the exit code, that the CLI flags
     // override it as documented (ASP-21), and that Execute, which is RunCheck without the exit, logs, writes the report

@@ -4,8 +4,10 @@ using NUnit.Framework;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Guards the cross-drawer notice-position contract (ASP-24): the UIToolkit <see cref="SerializeReferenceField"/>

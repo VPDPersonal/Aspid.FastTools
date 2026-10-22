@@ -1,6 +1,8 @@
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Two candidates identical but for [Serializable] — which decides nothing for a managed reference and
     // everything for an ordinary field.

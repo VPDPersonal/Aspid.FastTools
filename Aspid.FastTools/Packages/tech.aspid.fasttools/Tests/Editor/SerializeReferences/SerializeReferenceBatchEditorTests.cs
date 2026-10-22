@@ -4,8 +4,10 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Fix all, Clear and Undo of Project References on real assets. They edit the files directly and cannot be undone
     // with Ctrl+Z, so each test checks what Unity loads back after the batch reimport.

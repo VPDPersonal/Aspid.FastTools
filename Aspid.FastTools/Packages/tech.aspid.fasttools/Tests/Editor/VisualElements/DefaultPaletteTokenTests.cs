@@ -3,7 +3,8 @@ using System.Linq;
 using NUnit.Framework;
 using System.Text.RegularExpressions;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// Default-Light gives every colour token of Default-Dark a value for an Aspid window on the light skin. A token

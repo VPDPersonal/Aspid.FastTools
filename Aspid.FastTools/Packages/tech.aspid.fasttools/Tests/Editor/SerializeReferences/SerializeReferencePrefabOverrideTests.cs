@@ -4,9 +4,10 @@ using NUnit.Framework;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Object = UnityEngine.Object;
-using Aspid.FastTools.SerializeReferences.Tests;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The header of a [SerializeReference] field marks an override on a prefab instance and offers Revert and
     // Apply to Prefab, which Unity gives only to the fields it draws itself.

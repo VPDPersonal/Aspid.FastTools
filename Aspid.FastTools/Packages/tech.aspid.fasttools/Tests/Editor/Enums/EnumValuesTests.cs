@@ -7,6 +7,7 @@ using Unity.Profiling;
 using System.Threading;
 using Aspid.FastTools.Types;
 using UnityEngine.TestTools;
+using Aspid.FastTools.Enums;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
@@ -14,7 +15,8 @@ using Unity.Profiling.LowLevel.Unsafe;
 using UnityEngine.TestTools.Constraints;
 using Is = UnityEngine.TestTools.Constraints.Is;
 
-namespace Aspid.FastTools.Enums.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Enums
 {
     internal enum Season
     {

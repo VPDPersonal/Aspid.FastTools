@@ -1,9 +1,10 @@
 using System;
 using System.IO;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // Coverage for the reads of the missing-type probe: a path read inside a reference by its rid, the element ids of a
     // list, the stored type of an entry, and the reads kept until the file changes.

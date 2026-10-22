@@ -1,8 +1,9 @@
 using System.IO;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     /// <summary>
     /// Edge-case read coverage the happy-path tests miss: the <c>-2</c> null-sentinel contract of

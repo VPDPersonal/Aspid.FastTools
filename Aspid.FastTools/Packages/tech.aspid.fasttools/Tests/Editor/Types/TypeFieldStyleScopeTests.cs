@@ -2,10 +2,12 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
-using UnityEngine.UIElements;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // The field's stylesheet must size only its own open-in-script-editor button, not every button below it.
     [TestFixture]

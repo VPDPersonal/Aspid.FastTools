@@ -1,7 +1,9 @@
 using System;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Coverage for SerializeReferenceBreakageHook: which imports schedule a breakage scan, and that a
     // scan waiting for the scripts to compile comes back after the domain reload that ends the compile.

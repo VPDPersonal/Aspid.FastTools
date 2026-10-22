@@ -2,8 +2,10 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     internal interface IFilterWeapon { }
 

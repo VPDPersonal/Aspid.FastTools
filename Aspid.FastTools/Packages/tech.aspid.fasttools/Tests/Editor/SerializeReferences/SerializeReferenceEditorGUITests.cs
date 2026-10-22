@@ -4,8 +4,10 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Argument checks of the public helpers for custom inspectors.
     // They throw before a control is drawn, so a wrong property fails at once, in UI Toolkit and in IMGUI.

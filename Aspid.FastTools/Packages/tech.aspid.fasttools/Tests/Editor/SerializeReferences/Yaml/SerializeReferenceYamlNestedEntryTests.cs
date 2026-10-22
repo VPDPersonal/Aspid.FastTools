@@ -1,9 +1,10 @@
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // A "- rid: N" list element inside an earlier entry's data block has the same shape as rid N's own RefIds entry
     // header. Every entry lookup must pick the header at the entry indent, never the nested pointer (which is followed

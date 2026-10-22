@@ -6,11 +6,12 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 using UnityEditor.SceneManagement;
-using Aspid.FastTools.Tests;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for the in-memory Fix of a missing type in an open saved scene. Unity's Undo snapshot does not hold

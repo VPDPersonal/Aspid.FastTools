@@ -3,7 +3,8 @@ using Unity.Burst;
 using NUnit.Framework;
 using Unity.Collections;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Burst
 {
     [BurstCompile(CompileSynchronously = true)]
     internal struct MarkerJob : IJob

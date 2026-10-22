@@ -1,14 +1,15 @@
 using UnityEngine;
 using UnityEditor;
 using NUnit.Framework;
-using Aspid.FastTools.Tests;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 using Store = Aspid.FastTools.SerializeReferences.Editors.SerializeReferencePendingAssignment;
 using Entry = Aspid.FastTools.SerializeReferences.Editors.SerializeReferencePendingAssignment.Entry;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for the persistence contract of <see cref="SerializeReferencePendingAssignment"/> — the deferred

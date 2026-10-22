@@ -5,8 +5,10 @@ using NUnit.Framework;
 using System.Reflection;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // CreateField must offer the types the same field offers through PropertyField: its [TypeSelector] constraints
     // join the caller's base types, as they already do for CreateList.

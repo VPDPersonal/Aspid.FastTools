@@ -6,8 +6,10 @@ using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The status stripe left of a shared reference, and the gutter it makes, follow the per-user "Field stripes" switch
     // under Appearance: a field built with the switch off has neither, and an open field drops and restores both live.

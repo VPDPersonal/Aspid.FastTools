@@ -1,8 +1,11 @@
 using System;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Locks the base-type intersection the SerializableType + <c>[TypeSelector]</c> picker relies on. The drawer

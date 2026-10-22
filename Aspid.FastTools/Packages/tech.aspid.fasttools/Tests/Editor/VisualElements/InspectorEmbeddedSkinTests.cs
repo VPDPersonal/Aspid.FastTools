@@ -5,10 +5,13 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Enums.Editors;
 using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// UI embedded in a regular Inspector must follow the editor skin: built-in icons resolve to the variant of the

@@ -1,6 +1,8 @@
 using NUnit.Framework;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     [TestFixture]
     internal sealed class AspidAnimatedDotsBackgroundSettingsTests

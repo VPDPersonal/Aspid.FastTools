@@ -2,8 +2,10 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Top-level (namespace-scoped) types so the nested-identity test sees exactly "NestingOuter/NestingInner" rather than
     // the test-fixture class prepended to the chain.

@@ -5,13 +5,16 @@ using System.Linq;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
+using Aspid.FastTools.Types;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     internal interface ICollectionTestItem { }
 

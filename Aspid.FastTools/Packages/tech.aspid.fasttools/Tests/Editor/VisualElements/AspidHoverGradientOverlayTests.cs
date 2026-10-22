@@ -1,8 +1,10 @@
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     // The overlay's 16 ms timer runs only while the progress moves toward its target, so an idle button costs nothing.
     // A panel without a graphics device does not advance timers, so the tests call Tick themselves.

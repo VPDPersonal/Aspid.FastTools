@@ -1,13 +1,15 @@
 using System.IO;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 using UnityEngine.Serialization;
 using UnityEditor.SceneManagement;
+using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Coverage for the Inspector Fix and the Asset References edits on a prefab asset while that prefab is open in
     // Prefab Mode: the stage saves over the asset file, so a write under it must be refused. A MonoBehaviour
