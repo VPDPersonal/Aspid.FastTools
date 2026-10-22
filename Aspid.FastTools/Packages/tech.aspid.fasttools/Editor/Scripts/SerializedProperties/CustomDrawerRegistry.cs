@@ -10,13 +10,6 @@ namespace Aspid.FastTools.Editors
 {
     internal static class CustomDrawerRegistry
     {
-        // Unity exposes no public drawer registry; missing internal attribute fields disable this lookup.
-        internal static readonly FieldInfo TargetField =
-            typeof(CustomPropertyDrawer).GetField("m_Type", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        internal static readonly FieldInfo UseForChildrenField =
-            typeof(CustomPropertyDrawer).GetField("m_UseForChildren", BindingFlags.Instance | BindingFlags.NonPublic);
-
         // Pipelines is the drawer's [SupportedOnRenderPipeline] list; null means any pipeline.
         private static List<(Type Target, bool UseForChildren, Type[] Pipelines)> _registrations;
 
@@ -103,19 +96,29 @@ namespace Aspid.FastTools.Editors
         private static List<(Type Target, bool UseForChildren, Type[] Pipelines)> Collect()
         {
             var result = new List<(Type, bool, Type[])>();
-            if (TargetField is null) return result;
 
             foreach (var drawer in TypeCache.GetTypesWithAttribute<CustomPropertyDrawer>())
             {
                 if (!typeof(PropertyDrawer).IsAssignableFrom(drawer)) continue;
 
                 var pipelines = drawer.GetCustomAttribute<SupportedOnRenderPipelineAttribute>(inherit: true)?.renderPipelineTypes;
-                foreach (var registration in drawer.GetCustomAttributes<CustomPropertyDrawer>(inherit: true))
-                {
-                    if (TargetField.GetValue(registration) is not Type target) continue;
-                    var useForChildren = UseForChildrenField?.GetValue(registration) is true;
 
-                    result.Add((target, useForChildren, pipelines));
+                // Unity exposes no public drawer registry, and the attribute keeps its arguments in internal fields, so
+                // they are read from the attribute's constructor call. That data skips inherited attributes, hence the
+                // walk up the drawer's base classes.
+                for (var current = drawer; current is not null; current = current.BaseType)
+                {
+                    foreach (var registration in current.GetCustomAttributesData())
+                    {
+                        if (registration.AttributeType != typeof(CustomPropertyDrawer)) continue;
+
+                        var arguments = registration.ConstructorArguments;
+
+                        if (arguments.Count is 0 || arguments[0].Value is not Type target) continue;
+                        var useForChildren = arguments.Count > 1 && arguments[1].Value is true;
+
+                        result.Add((target, useForChildren, pipelines));
+                    }
                 }
             }
 
