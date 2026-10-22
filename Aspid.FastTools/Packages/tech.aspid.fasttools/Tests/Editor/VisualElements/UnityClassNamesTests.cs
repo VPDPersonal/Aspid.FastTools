@@ -69,10 +69,10 @@ namespace Aspid.FastTools.UIElements.Tests
 
             CollectionAssert.IsEmpty(literals, "Use the Unity constant (such as BaseField<T>.inputUssClassName) " +
                 "instead of a class-name literal, which a Unity release can rename without a compile error. " +
-                "List the name in LiteralNames only when Unity declares no public constant for it.");
+                "List the name in _literalNames only when Unity declares no public constant for it.");
 
             Assert.IsTrue(_literalNames.Keys.All(name => !declared.Contains(name)),
-                "A UI Toolkit element now declares a constant for a listed literal; use it and drop the name from LiteralNames.");
+                "A UI Toolkit element now declares a constant for a listed literal; use it and drop the name from _literalNames.");
         }
 
         [Test]
@@ -84,10 +84,10 @@ namespace Aspid.FastTools.UIElements.Tests
             {
                 var (typeName, fieldName) = pair.Value;
                 var type = typeof(DecoratorDrawer).Assembly.GetType(typeName);
-                Assert.IsNotNull(type, $"Unity has no type {typeName}; find where it keeps '{pair.Key}' and update LiteralNames.");
+                Assert.IsNotNull(type, $"Unity has no type {typeName}; find where it keeps '{pair.Key}' and update _literalNames.");
 
                 var field = type.GetField(fieldName, flags);
-                Assert.IsNotNull(field, $"{typeName} has no field {fieldName}; find where Unity keeps '{pair.Key}' and update LiteralNames.");
+                Assert.IsNotNull(field, $"{typeName} has no field {fieldName}; find where Unity keeps '{pair.Key}' and update _literalNames.");
 
                 Assert.AreEqual(pair.Key, field.GetValue(null),
                     $"{typeName}.{fieldName} changed; the package literal no longer matches the class Unity applies.");
