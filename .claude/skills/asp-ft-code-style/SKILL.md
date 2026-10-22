@@ -1,3 +1,8 @@
+---
+name: asp-ft-code-style
+description: "C# code style of the Aspid.FastTools repository beyond .editorconfig - using order, member order, sealed/internal/static, attribute and blank-line layout, named arguments, comments and XML docs, sample rules. Use before writing or reviewing any .cs file of the package, the samples, the generators or the analyzers, and when asked to format code like the rest of the repo. For work on this repository only."
+---
+
 # C# code style
 
 Rules beyond `.editorconfig`. They apply to the package, the samples, the generators and the analyzers.

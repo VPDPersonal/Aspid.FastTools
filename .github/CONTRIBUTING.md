@@ -14,7 +14,8 @@ says.
 - No Unity API newer than **6000.0.53f1** without an `#if UNITY_6000_x_OR_NEWER` guard.
 - The YAML engine (`Editor/Scripts/SerializeReferences/Yaml`), `GenericTypeResolver`, `GenericArgumentFilter` and
   `TypeUtility` stay on C# 9 with no new Unity API: test projects compile them outside Unity.
-- Style: `.editorconfig` and [CODESTYLE.md](../CODESTYLE.md); other rules: [AGENTS.md](../AGENTS.md).
+- Style: `.editorconfig` and [code style](../.claude/skills/asp-ft-code-style/SKILL.md); other rules:
+  [AGENTS.md](../AGENTS.md).
 - Generator or analyzer change: run `dotnet test`, then `dotnet build -c Release` in its solution folder and commit
   the rebuilt DLL with the source. CI fails if they differ.
 
