@@ -14,6 +14,7 @@ const inputs = fileURLToPath(new URL('unity-inputs.mjs', import.meta.url));
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests~';
 const DEV_TOOLS = 'Aspid.FastTools/Assets/DevTools';
+const SAMPLE_TESTS = 'Aspid.FastTools/Assets/SampleTests~';
 
 const guid = (number) => number.toString(16).padStart(32, '0');
 const meta = (number, importer = '') => `fileFormatVersion: 2\nguid: ${guid(number)}\n${importer}`;
@@ -23,8 +24,8 @@ const asmdef = (name, references = []) => JSON.stringify({ name, references });
 
 const LICENSE = 'MIT License\n\nCopyright (c) 2025 Vladislav Panin\n';
 
-// A package that passes: a runtime and an editor assembly, a sample, a hidden file, a dev test, a dev tool, and
-// the license copy.
+// A package that passes: a runtime and an editor assembly, a sample, a hidden file, a dev test, a dev tool, a sample
+// test, and the license copy.
 const valid = () => ({
   LICENSE,
   [`${PACKAGE}/LICENSE.md`]: LICENSE,
@@ -47,6 +48,8 @@ const valid = () => ({
   [`${DEV_TESTS}/DevItem.cs.meta`]: meta(9, MONO),
   [`${DEV_TOOLS}/DevTool.cs`]: 'class DevTool { }',
   [`${DEV_TOOLS}/DevTool.cs.meta`]: meta(12, MONO),
+  [`${SAMPLE_TESTS}/SampleTest.cs`]: 'class SampleTest { }',
+  [`${SAMPLE_TESTS}/SampleTest.cs.meta`]: meta(13, MONO),
 });
 
 // Run the script on the fixture files; a value of null removes a file of the valid package.
@@ -162,10 +165,12 @@ test('a package LICENSE.md that is missing or differs from the root LICENSE is r
 
 test('a package file that refers to a file the Unity CI ignores is reported', (t) => {
   const scene = `${PACKAGE}/Samples~/Demo/Demo.unity`;
-  const sceneFiles = (text) => ({ [scene]: text, [`${scene}.meta`]: meta(13) });
+  const sceneFiles = (text) => ({ [scene]: text, [`${scene}.meta`]: meta(14) });
   assertFails(check(t, sceneFiles(`m_Text: {guid: ${guid(8)}, type: 3}`)), scene, /refers to .*Readme\.md by its guid/);
   assertFails(check(t, { [`${PACKAGE}/Runtime/Item.cs`]: 'class Item { string A = "Demo/Readme.md"; }' }),
     `${PACKAGE}/Runtime/Item.cs`, /names "Readme\.md" in quotes/);
+  assertFails(check(t, { [`${SAMPLE_TESTS}/SampleTest.cs`]: `class SampleTest { string A = "${guid(8)}"; }` }),
+    `${SAMPLE_TESTS}/SampleTest.cs`, /refers to .*Readme\.md by its guid/);
   // A mention in prose and a guid of an input are no references.
   const result = check(t, { ...sceneFiles(`m_Script: {guid: ${guid(4)}}`), [`${PACKAGE}/Runtime/Item.cs`]: '// See Readme.md\nclass Item { }' });
   assert.equal(result.status, 0, result.stdout + result.stderr);

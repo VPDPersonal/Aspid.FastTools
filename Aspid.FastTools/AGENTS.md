@@ -16,6 +16,9 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
   them on the next click; in a batch Editor, `ln -s DevTests~ Assets/DevTests` does the same. Edit them through either
   path and commit `Assets/DevTests~`. Never delete `Assets/DevTests` from the Project window: Unity deletes the files
   behind the link. `Assets/DevTools` (the menu and the `sr_gate` command for `unity command`) is always imported.
+- Tests of the samples go in `Assets/SampleTests~`, not in the package's `Tests/`: they check this repository's
+  `Samples~` and would ship to every user. Unity does not import the folder here; `scripts/make-unity-test-project.sh`
+  copies it into the test project next to the imported samples, so CI and local runs pick it up.
 - The SerializeReference YAML engine (`DotnetTests/Yaml/`) and `GenericTypeResolver`, `GenericArgumentFilter`,
   `TypeUtility` (`DotnetTests/Types/`) compile outside Unity: C# 9, .NET Standard 2.1 for the engine, and no
   Unity API except the stubbed `Debug.LogError`, `AssetDatabase.MakeEditable`, `UnityEngine.Object` and

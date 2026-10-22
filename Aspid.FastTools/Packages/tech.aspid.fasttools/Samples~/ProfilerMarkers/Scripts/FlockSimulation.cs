@@ -3,10 +3,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.ProfilerMarkers
 {
-    // Each this.Marker() call site generates a static marker, including in plain C# classes.
-    /// <summary>
-    /// Represents a flock with separation, alignment and cohesion steering.
-    /// </summary>
     public sealed class FlockSimulation
     {
         private readonly Vector3[] _positions;
@@ -14,8 +10,6 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         private readonly Vector3[] _steering;
         private readonly float _bounds;
 
-        /// <param name="count">Number of agents to create.</param>
-        /// <param name="bounds">Distance from the origin at which agents turn back.</param>
         public FlockSimulation(int count, float bounds)
         {
             _bounds = bounds;
@@ -30,40 +24,21 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
             }
         }
 
-        /// <summary>
-        /// Gets the number of agents in the simulation.
-        /// </summary>
-        public int Count => _positions.Length;
+        public Vector3 GetPosition(int index) =>
+            _positions[index];
 
-        /// <summary>
-        /// Returns the agent position.
-        /// </summary>
-        /// <param name="index">Zero-based agent index.</param>
-        /// <returns>Agent position in world space.</returns>
-        public Vector3 GetPosition(int index) => _positions[index];
+        public Vector3 GetVelocity(int index) =>
+            _velocities[index];
 
-        /// <summary>
-        /// Returns the agent velocity.
-        /// </summary>
-        /// <param name="index">Zero-based agent index.</param>
-        /// <returns>Agent velocity in world units per second.</returns>
-        public Vector3 GetVelocity(int index) => _velocities[index];
-
-        /// <summary>
-        /// Advances steering and movement by one simulation step.
-        /// </summary>
-        /// <param name="deltaTime">Elapsed time in seconds.</param>
-        /// <param name="neighborRadius">Distance within which agents influence steering.</param>
-        /// <param name="maxSpeed">Maximum speed in world units per second.</param>
         public void Step(float deltaTime, float neighborRadius, float maxSpeed)
         {
-            using var _ = this.Marker(); // Wraps the whole method: "FlockSimulation.Step (line)".
+            using var _ = this.Marker();
 
-            using (this.Marker().WithName("Steering")) // "FlockSimulation.Steering (line)", nested under Step.
+            using (this.Marker().WithName("Steering"))
                 ComputeSteering(neighborRadius);
 
             using (this.Marker().WithName("Integrate"))
-                Integrate(deltaTime, maxSpeed);
+                Integrate(deltaTime: deltaTime, maxSpeed: maxSpeed);
         }
 
         private void ComputeSteering(float neighborRadius)
@@ -72,7 +47,6 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
 
             for (var i = 0; i < _positions.Length; i++)
             {
-                // One marker with N samples per frame, not N markers: the name is fixed per call site.
                 using var _ = this.Marker().WithName("Steering.Agent");
 
                 var center = Vector3.zero;
@@ -82,29 +56,21 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
 
                 for (var j = 0; j < _positions.Length; j++)
                 {
-                    if (i == j)
-                        continue;
                     var offset = _positions[j] - _positions[i];
                     var distanceSq = offset.sqrMagnitude;
-                    if (distanceSq > radiusSq)
+                    if (i == j || distanceSq > radiusSq)
                         continue;
 
                     neighbors++;
                     center += _positions[j];
                     heading += _velocities[j];
-                    separation -= offset / Mathf.Max(distanceSq, 0.01f);
+                    separation -= offset / Mathf.Max(a: distanceSq, b: 0.01f);
                 }
 
                 var toHome = -_positions[i] * 0.05f;
-                if (neighbors is 0)
-                {
-                    _steering[i] = toHome;
-                    continue;
-                }
-
-                center = center / neighbors - _positions[i];
-                heading = heading / neighbors - _velocities[i];
-                _steering[i] = center * 0.4f + heading * 0.6f + separation * 1.5f + toHome;
+                _steering[i] = neighbors is 0
+                    ? toHome
+                    : (center / neighbors - _positions[i]) * 0.4f + (heading / neighbors - _velocities[i]) * 0.6f + separation * 1.5f + toHome;
             }
         }
 
@@ -112,11 +78,11 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         {
             for (var i = 0; i < _positions.Length; i++)
             {
-                _velocities[i] = Vector3.ClampMagnitude(_velocities[i] + _steering[i] * deltaTime, maxSpeed);
+                _velocities[i] = Vector3.ClampMagnitude(vector: _velocities[i] + _steering[i] * deltaTime, maxLength: maxSpeed);
                 _positions[i] += _velocities[i] * deltaTime;
 
                 if (_positions[i].magnitude > _bounds)
-                    _velocities[i] = Vector3.Reflect(_velocities[i], -_positions[i].normalized);
+                    _velocities[i] = Vector3.Reflect(inDirection: _velocities[i], inNormal: -_positions[i].normalized);
             }
         }
     }

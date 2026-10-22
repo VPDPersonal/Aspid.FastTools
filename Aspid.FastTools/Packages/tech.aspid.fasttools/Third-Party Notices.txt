@@ -18,13 +18,10 @@ Source:      https://github.com/IBM/plex
 Files:       Samples~/EnumValues/Fonts/IBMPlexSerif-Regular.ttf
              Samples~/EnumValues/Fonts/IBMPlexMono-Regular.ttf
              Samples~/Types/Fonts/IBMPlexSerif-Regular.ttf
-             Samples~/Types/Fonts/IBMPlexMono-Regular.ttf
              Samples~/SerializeReferences/Fonts/IBMPlexSerif-Regular.ttf
-             Samples~/SerializeReferences/Fonts/IBMPlexMono-Regular.ttf
              Samples~/EditorTools/Fonts/IBMPlexSerif-Regular.ttf
              Samples~/EditorTools/Fonts/IBMPlexMono-Regular.ttf
              Samples~/ProfilerMarkers/Fonts/IBMPlexSerif-Regular.ttf
-             Samples~/ProfilerMarkers/Fonts/IBMPlexMono-Regular.ttf
 License text: Samples~/<sample>/Fonts/LICENSE-IBM-Plex.txt
 
 --------------------------------------------------------------------------------

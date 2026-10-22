@@ -1,15 +1,10 @@
-/* The effect picker in the catalog's look, through the same tokens. */
-
 .aspid-fasttools-type-selector {
     background-color: var(--aspid-colors-surface-card);
-    /* Search bar and footer on the canvas, as the catalog's list. */
     --aspid-colors-bg-dark: var(--aspid-colors-surface-canvas);
-    /* Row hover and selection as in the catalog's list. */
     --aspid-colors-status-info-shade-darkness: var(--aspid-colors-overlay-hover);
     --aspid-colors-status-info-shade-dark: var(--aspid-colors-accent-tint);
 }
 
-/* The sample font on text only: the check, star and arrow glyphs need the editor font. */
 .aspid-fasttools-type-selector__breadcrumb,
 .aspid-fasttools-type-selector ToolbarSearchField TextElement,
 .aspid-fasttools-type-selector__item-title,
@@ -38,8 +33,7 @@
     height: 30px;
 }
 
-.aspid-fasttools-type-selector
-    .unity-collection-view__item.aspid-fasttools-type-selector__item--after-pinned {
+.aspid-fasttools-type-selector .unity-collection-view__item.aspid-fasttools-type-selector__item--after-pinned {
     height: 39px;
 }
 

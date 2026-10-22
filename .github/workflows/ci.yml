@@ -44,7 +44,7 @@ concurrency:
 
 jobs:
   # A file without a .meta, a guid used twice, a sample or asmdef reference that leads nowhere: Unity repairs these in a
-  # local package and ignores or breaks them in the installed one.
+  # local package and ignores or breaks them in the installed one. check-samples.mjs holds Samples~ to its AGENTS.md rules.
   package-files:
     name: Package files
     runs-on: ubuntu-latest
@@ -57,10 +57,14 @@ jobs:
             Aspid.FastTools/Packages/tech.aspid.fasttools
             Aspid.FastTools/Assets/DevTests~
             Aspid.FastTools/Assets/DevTools
+            Aspid.FastTools/Assets/SampleTests~
+            Website/tutorials
+            Website/i18n/ru/docusaurus-plugin-content-docs-tutorials
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - run: node scripts/check-package-files.mjs
+      - run: node scripts/check-samples.mjs
 
   # The version files that scripts/set-version.sh writes (release.yml runs this job too), and the minimum
   # Unity version that the files with a hand-written copy still agree on.
@@ -217,7 +221,7 @@ jobs:
 
   # Runs the Unity tests only for a change that can affect them and only with a license to run them.
   # What the Unity tests read is digested by scripts/unity-inputs.mjs: the package without its Markdown and license
-  # texts, make-unity-test-project.sh, the unity-tests job and UNITY_VERSIONS. They are skipped when
+  # texts, the sample tests, make-unity-test-project.sh, the unity-tests job and UNITY_VERSIONS. They are skipped when
   #  - the commit under test has the digest of its base (a PR: the main it merges into; a push: the previous commit),
   #    so nothing they read changed: docs, a CHANGELOG line, a license text, another job of this workflow;
   #  - or a run of this repository passed them on the same digest and versions. The unity job marks such a run with an
@@ -361,11 +365,12 @@ jobs:
       GAMECI_VERSION: v0.1.72
       GAMECI_SHA256: 1de550a620ee92e05e920b6db7d431621440b60b2577f04b4a997dc92a58cb0a
     steps:
-      # What the test project reads: the package and the script that builds the project.
+      # What the test project reads: the package, the sample tests and the script that builds the project.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
             Aspid.FastTools/Packages/tech.aspid.fasttools
+            Aspid.FastTools/Assets/SampleTests~
             scripts
 
       - name: Create the test project

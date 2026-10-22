@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { PACKAGE, digest, inputs, isIgnored, workflowInputs } from './unity-inputs.mjs';
+import { PACKAGE, SAMPLE_TESTS, digest, inputs, isIgnored, workflowInputs } from './unity-inputs.mjs';
 
 const WORKFLOW = `name: CI
 # A comment above the jobs.
@@ -94,6 +94,7 @@ test('code, assets and the text that the tests read are inputs', () => {
     `${PACKAGE}/Samples~/Types/Fonts/IBMPlexMono-Regular.ttf`,
     `${PACKAGE}/Samples~/Types/Notes.txt`,
     `${PACKAGE}/Editor/Markdown.cs`,
+    `${SAMPLE_TESTS}/SampleSmokeTests.cs`,
   ]) {
     assert.ok(!isIgnored(path), path);
   }
@@ -104,6 +105,7 @@ test('an ignored file does not change the digest, an input does', () => {
   assert.equal(digestOf([...FILES, ['100644', 'b1', `${PACKAGE}/Third-Party Notices.txt`]]), base);
   assert.equal(digestOf(FILES.map(([mode, id, path]) => [mode, path.endsWith('.md') ? 'b2' : id, path])), base);
   assert.notEqual(digestOf([...FILES, ['100644', 'b3', `${PACKAGE}/Runtime/Other.cs`]]), base);
+  assert.notEqual(digestOf([...FILES, ['100644', 'b5', `${SAMPLE_TESTS}/SampleSmokeTests.cs`]]), base);
   assert.notEqual(digestOf(FILES.map(([mode, id, path]) => [mode, path.endsWith('.cs') ? 'b4' : id, path])), base);
   assert.notEqual(digestOf(FILES.map(([mode, id, path]) => [path.endsWith('.cs') ? '100755' : mode, id, path])), base);
   assert.notEqual(digestOf(FILES.filter(([, , path]) => !path.endsWith('.cs'))), base);

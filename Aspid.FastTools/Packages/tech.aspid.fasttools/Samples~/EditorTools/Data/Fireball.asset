@@ -16,5 +16,5 @@ MonoBehaviour:
   _description: Hurls a ball of fire that explodes on impact.
   _manaCost: 30
   _cooldown: 4
-  _effectType: Aspid.FastTools.Samples.EditorTools.DamageEffect, Aspid.FastTools.Samples.EditorTools,
+  _effectType: Aspid.FastTools.Samples.EditorTools.Effects.DamageEffect, Aspid.FastTools.Samples.EditorTools,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

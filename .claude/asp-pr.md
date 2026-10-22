@@ -15,8 +15,9 @@ Checked by `.github/workflows/pr-checks.yml`; keep this file, the Pull request s
   version instead of every line; the push to `main` after the merge runs every version, unless the PR already passed
   every version on the same content. Decide on it at every `gh pr create` and name the decision in the report. The
   Unity jobs run only when the PR changes what they read (`scripts/unity-inputs.mjs`): the package except its
-  Markdown, license and third-party notices texts, `scripts/make-unity-test-project.sh`, the `unity-tests` job of
-  `ci.yml`, the part of `ci.yml` above `jobs:` and `UNITY_VERSIONS`. A PR of such text alone needs no label. Pass
+  Markdown, license and third-party notices texts, `Aspid.FastTools/Assets/SampleTests~/`,
+  `scripts/make-unity-test-project.sh`, the `unity-tests` job of `ci.yml`, the part of `ci.yml` above `jobs:` and
+  `UNITY_VERSIONS`. A PR that changes none of them needs no label. Pass
   `--label unity-quick` unless the diff can behave differently across Unity lines: a `#if UNITY_*` block, a Unity API
   that changed between 6000.x versions, the generator or analyzer DLLs, an `.asmdef`, the `unity-tests` job or
   `UNITY_VERSIONS`, or `make-unity-test-project.sh`. Other text in the package (`PublicApi.txt`, `package.json`

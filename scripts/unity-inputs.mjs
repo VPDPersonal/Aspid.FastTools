@@ -4,6 +4,7 @@
 // The digest covers:
 //  - every file of the package (Samples~ included: the test project copies it into Assets/) except IGNORED, by path,
 //    mode and blob id;
+//  - Aspid.FastTools/Assets/SampleTests~, which the test project copies into Assets/ too, by the same rule;
 //  - scripts/make-unity-test-project.sh, which builds the test project;
 //  - the unity-tests job of ci.yml, the part of the file above `jobs:` (env, permissions, defaults reach every job) and
 //    the UNITY_VERSIONS line, without blank and comment lines.
@@ -16,8 +17,9 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 export const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
+export const SAMPLE_TESTS = 'Aspid.FastTools/Assets/SampleTests~';
 const SCRIPT = 'scripts/make-unity-test-project.sh';
-const PATHS = [PACKAGE, SCRIPT];
+const PATHS = [PACKAGE, SAMPLE_TESTS, SCRIPT];
 const WORKFLOW = '.github/workflows/ci.yml';
 const JOB = 'unity-tests';
 // A new format of the digest text must not match a digest of the old one.

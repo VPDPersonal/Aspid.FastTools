@@ -12,11 +12,13 @@ namespace Aspid.FastTools.Editors.Tests
 {
     // The EditMode run compiles every assembly for the Editor, where UnityEditor always exists. A Runtime/ file that
     // uses it without #if UNITY_EDITOR passes here and fails in the user's player build with CS0234. Compiling the
-    // same sources for a player, without the Editor, catches that.
+    // same sources for a player, without the Editor, catches that. The imported samples must compile without warnings
+    // too: an unread serialized field (CS0414) in a sample is copied into every user's project.
     internal sealed class PlayerCompilationTests
     {
         private const string RuntimeAssembly = "Aspid.FastTools.dll";
         private const string MathAssembly = "Aspid.FastTools.VisualElements.Math.dll";
+        private const string SamplesFolder = "Assets/Samples/";
 
         // ci.yml passes this argument to Unity. Without it, for example when a consumer project runs the package
         // tests, a project that lacks player support or com.unity.mathematics ignores the test instead of failing it.
@@ -40,6 +42,7 @@ namespace Aspid.FastTools.Editors.Tests
             };
 
             var errors = new List<string>();
+            var sampleWarnings = new List<string>();
             var outputFolder = FileUtil.GetUniqueTempPathInProject();
 
             // The compiler logs each error; they are gathered here so that one failure message lists all of them.
@@ -47,6 +50,8 @@ namespace Aspid.FastTools.Editors.Tests
             {
                 if (type is LogType.Error or LogType.Exception or LogType.Assert)
                     errors.Add(message);
+                else if (type is LogType.Warning && message.Replace(oldChar: '\\', newChar: '/').Contains(SamplesFolder))
+                    sampleWarnings.Add(message);
             }
 
             var ignoreFailingMessages = LogAssert.ignoreFailingMessages;
@@ -67,6 +72,9 @@ namespace Aspid.FastTools.Editors.Tests
             Assert.IsEmpty(
                 errors,
                 $"The scripts do not compile for the {target} player ({options}):\n{string.Join("\n", errors)}");
+            Assert.IsEmpty(
+                sampleWarnings,
+                $"The samples compile with warnings for the {target} player ({options}):\n{string.Join("\n", sampleWarnings)}");
             CollectionAssert.Contains(result.assemblies, RuntimeAssembly);
 
             // Without com.unity.mathematics its asmdef is skipped and nothing compiles it: the test project needs it.

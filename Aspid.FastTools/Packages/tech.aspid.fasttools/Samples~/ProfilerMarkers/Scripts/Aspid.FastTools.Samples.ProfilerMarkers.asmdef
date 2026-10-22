@@ -1,6 +1,6 @@
 {
     "name": "Aspid.FastTools.Samples.ProfilerMarkers",
-    "rootNamespace": "",
+    "rootNamespace": "Aspid.FastTools.Samples.ProfilerMarkers",
     "references": [
         "Aspid.FastTools"
     ],
@@ -10,15 +10,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "ASPID_FASTTOOLS_UNITY_PHYSICS_MODULE"
-    ],
-    "versionDefines": [
-        {
-            "name": "com.unity.modules.physics",
-            "expression": "",
-            "define": "ASPID_FASTTOOLS_UNITY_PHYSICS_MODULE"
-        }
-    ],
+    "defineConstraints": [],
+    "versionDefines": [],
     "noEngineReferences": false
 }
