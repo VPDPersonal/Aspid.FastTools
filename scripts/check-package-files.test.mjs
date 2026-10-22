@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 
 const script = fileURLToPath(new URL('check-package-files.mjs', import.meta.url));
+const inputs = fileURLToPath(new URL('unity-inputs.mjs', import.meta.url));
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
 const DEV_TESTS = 'Aspid.FastTools/Assets/DevTests~';
 const DEV_TOOLS = 'Aspid.FastTools/Assets/DevTools';
@@ -57,6 +58,7 @@ function check(t, changes = {}) {
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   mkdirSync(join(dir, 'scripts'));
   cpSync(script, join(dir, 'scripts/check-package-files.mjs'));
+  cpSync(inputs, join(dir, 'scripts/unity-inputs.mjs'));
   for (const [file, text] of Object.entries({ ...valid(), ...changes })) {
     if (text === null) continue;
     mkdirSync(dirname(join(dir, file)), { recursive: true });
@@ -159,4 +161,17 @@ test('a package LICENSE.md that is missing or differs from the root LICENSE is r
   assertFails(check(t, { [copy]: LICENSE.replaceAll('\n', '\r\n') }), copy, /differs from LICENSE/);
   assertFails(check(t, { [copy]: null, [`${copy}.meta`]: null }), copy, /no LICENSE\.md in the package/);
   assertFails(check(t, { LICENSE: null }), 'LICENSE', /no LICENSE at the repository root/);
+});
+
+test('a package file that refers to a file the Unity CI ignores is reported', (t) => {
+  const scene = `${PACKAGE}/Samples~/Demo/Demo.unity`;
+  const sceneFiles = (text) => ({ [scene]: text, [`${scene}.meta`]: meta(14) });
+  assertFails(check(t, sceneFiles(`m_Text: {guid: ${guid(8)}, type: 3}`)), scene, /refers to .*Readme\.md by its guid/);
+  assertFails(check(t, { [`${PACKAGE}/Runtime/Item.cs`]: 'class Item { string A = "Demo/Readme.md"; }' }),
+    `${PACKAGE}/Runtime/Item.cs`, /names "Readme\.md" in quotes/);
+  assertFails(check(t, { [`${SAMPLE_TESTS}/SampleTest.cs`]: `class SampleTest { string A = "${guid(8)}"; }` }),
+    `${SAMPLE_TESTS}/SampleTest.cs`, /refers to .*Readme\.md by its guid/);
+  // A mention in prose and a guid of an input are no references.
+  const result = check(t, { ...sceneFiles(`m_Script: {guid: ${guid(4)}}`), [`${PACKAGE}/Runtime/Item.cs`]: '// See Readme.md\nclass Item { }' });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
 });

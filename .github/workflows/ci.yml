@@ -2,13 +2,14 @@ name: CI
 
 # Every required check of the Main ruleset except the PR title and CHANGELOG checks (pr-checks.yml): cheap repository
 # checks, the .NET tests and the Unity EditMode tests. No job has a path filter: a workflow skipped by a filter reports
-# nothing, and a required check that never reports blocks the pull request. The Unity plan job reads the changed files
-# itself and still reports.
+# nothing, and a required check that never reports blocks the pull request. The Unity plan job decides itself whether
+# the Unity tests run and still reports.
 
 on:
   pull_request:
     # The default types plus the label events, so that adding or removing `unity-quick` reruns the checks. A label that
-    # pr-checks.yml sets with GITHUB_TOKEN starts no workflow; any label a person changes reruns all of them.
+    # pr-checks.yml sets with GITHUB_TOKEN starts no workflow; any label a person changes reruns the checks, and the
+    # Unity tests only when `unity-quick` changes what they must cover (see the Unity plan job).
     types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
@@ -31,11 +32,15 @@ on:
 permissions:
   contents: read
 
-# PR runs share one group per branch and cancel each other. A push to main or a release (workflow_call) gets one group
-# per commit: a group keeps only one pending run, so a shared group would cancel the run of a commit in the middle.
+# PR runs share one group per branch and cancel each other. A run for a label other than `unity-quick` cancels nothing:
+# it changes no input, so it waits for the running one and then skips the Unity tests that passed there, instead of
+# restarting them halfway. A push to main or a release (workflow_call) gets one group per commit: a group keeps only one
+# pending run, so a shared group would cancel the run of a commit in the middle.
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: >-
+    ${{ github.event_name == 'pull_request' && (!contains(fromJSON('["labeled", "unlabeled"]'), github.event.action)
+    || github.event.label.name == 'unity-quick') }}
 
 jobs:
   # A file without a .meta, a guid used twice, a sample or asmdef reference that leads nowhere: Unity repairs these in a
@@ -84,7 +89,7 @@ jobs:
       - run: node scripts/check-unity-minimum.mjs
 
   # The tests of scripts/*.test.mjs. They run set-version.sh on a copy, and set-version.sh regenerates the root README
-  # with the dependencies of Website/, so they install them.
+  # with the dependencies of Website/, so they install them. unity-inputs.test.mjs reads this workflow.
   script-tests:
     name: Script tests
     runs-on: ubuntu-latest
@@ -93,6 +98,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
+            .github/workflows
             scripts
             Aspid.FastTools.Analyzers
             Aspid.FastTools/Packages/tech.aspid.fasttools
@@ -214,6 +220,15 @@ jobs:
         run: dotnet test "${{ matrix.path }}" --nologo
 
   # Runs the Unity tests only for a change that can affect them and only with a license to run them.
+  # What the Unity tests read is digested by scripts/unity-inputs.mjs: the package without its Markdown and license
+  # texts, the sample tests, make-unity-test-project.sh, the unity-tests job and UNITY_VERSIONS. They are skipped when
+  #  - the commit under test has the digest of its base (a PR: the main it merges into; a push: the previous commit),
+  #    so nothing they read changed: docs, a CHANGELOG line, a license text, another job of this workflow;
+  #  - or a run of this repository passed them on the same digest and versions. The unity job marks such a run with an
+  #    artifact named after both. This covers a push of docs after a tested commit, a label event, a merge of main
+  #    that brings nothing for them, and the push to main after the merge of a PR that tested every version on the
+  #    same content. A fork's run cannot mark one: its artifacts carry the fork as their head repository.
+  # A release (require-unity) and a manual run always test.
   # The required "Unity" check must not be green when a change that reaches the Unity tests was not run through them:
   # a PR without the secrets (a fork PR, or a Dependabot PR, which reads its own secret store), a release (require-unity)
   # and a manual run fail the plan instead of skipping. A maintainer then reads the change and runs this workflow with
@@ -221,8 +236,8 @@ jobs:
   # UNITY_PASSWORD as Dependabot secrets. The failed PR check stays red after a manual run: the maintainer merges with
   # the bypass of the Main ruleset. Only a push without the secrets (a fork's own push) skips with a notice.
   # A PR with the `unity-quick` label tests only the first and the last version of UNITY_VERSIONS: the minimum still
-  # catches a newer API, the newest line a removed one. The push to main after the merge runs every version.
-  # A PR push after a commit whose Unity tests passed skips them when it changes nothing they read; see the plan step.
+  # catches a newer API, the newest line a removed one. The push to main after the merge of such a PR runs every
+  # version.
   # Secrets: UNITY_EMAIL and UNITY_PASSWORD of a Unity account with a Personal license; GameCI activates a seat with
   # them in each job. Do not add the .ulf from Unity Hub (UNITY_LICENSE): it is bound to the Hub machine, and on
   # 6000.0.53f1 GameCI keeps retrying it instead of falling back to the account.
@@ -233,11 +248,21 @@ jobs:
     permissions:
       actions: read
       contents: read
-      pull-requests: read
     outputs:
       run: ${{ steps.plan.outputs.run }}
       versions: ${{ steps.plan.outputs.versions }}
+      passed-artifact: ${{ steps.plan.outputs.passed-artifact }}
     steps:
+      # The commit under test and its parents; for a PR the merge commit that the Unity tests check out, whose first
+      # parent is the main it merges into. Without blobs: unity-inputs.mjs reads the trees and fetches only ci.yml.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          filter: blob:none
+          sparse-checkout: scripts
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
       - id: plan
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -245,90 +270,57 @@ jobs:
           REQUIRE_UNITY: ${{ inputs.require-unity }}
           GH_TOKEN: ${{ github.token }}
           EVENT: ${{ github.event_name }}
-          PR: ${{ github.event.pull_request.number }}
           BEFORE: ${{ github.event.before }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
-          # The branch, not base.sha: the base.sha of a PR moves only when its head does, so a label event reads an old one.
-          BASE: ${{ github.event.pull_request.base.ref }}
           QUICK: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'unity-quick') }}
           # Every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
           # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
           UNITY_VERSIONS: 6000.0.53f1 6000.1.17f1 6000.2.15f1 6000.3.26f1 6000.4.12f1 6000.5.11f1 6000.6.5f1
         run: |
           read -ra versions <<<"$UNITY_VERSIONS"
+          tested=all
           if [ "$QUICK" = true ]; then
             versions=("${versions[0]}" "${versions[-1]}")
+            tested=quick
           fi
           echo "versions=$(jq -cn '$ARGS.positional' --args "${versions[@]}")" >> "$GITHUB_OUTPUT"
 
-          # What the Unity jobs read: the package except its Markdown, the sample tests, and their own setup.
-          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|Aspid\.FastTools/Assets/SampleTests~/|scripts/make-unity-test-project\.sh$|\.github/workflows/ci\.yml$)'
-
-          # "all" when the changed files are unknown: a release, a new branch, a failed API call, a truncated list.
-          files=all
+          # The commit to compare with. None for a release and a manual run, and none for a new branch or a push whose
+          # previous commit is gone.
+          base=""
           if [ "$REQUIRE_UNITY" != true ]; then
-            if [ "$EVENT" = pull_request ]; then
-              files="$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --jq '.[].filename')" || files=all
-            elif [ "$EVENT" = push ] && [ -n "${BEFORE//0/}" ]; then
-              # The compare API lists at most 300 files.
-              files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$GITHUB_SHA" --jq '.files[].filename')" || files=all
-              [ "$(wc -l <<<"$files")" -lt 300 ] || files=all
+            if [ "$EVENT" = pull_request ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
+              base="$(git rev-parse HEAD^1)"
+            elif [ "$EVENT" = push ] && [ -n "${BEFORE//0/}" ] \
+              && git fetch -q --depth=1 --filter=blob:none --no-tags origin "$BEFORE"; then
+              base="$BEFORE"
             fi
           fi
 
-          reaches_unity() { grep -vE '\.md(\.meta)?$' | grep -qE "$relevant"; }
-          changed() { gh api "repos/$GITHUB_REPOSITORY/compare/$1...$2" --jq '.files[].filename'; }
+          # No digest when the script fails (ci.yml without the unity-tests job, a moved package): nothing is skipped.
+          digests="$(node scripts/unity-inputs.mjs HEAD ${base:+"$base"})" || digests=""
+          digest="$(sed -n 1p <<<"$digests")"
+          base_digest="$(sed -n 2p <<<"$digests")"
+          [ -z "$digest" ] || echo "passed-artifact=unity-passed-$digest-$tested" >> "$GITHUB_OUTPUT"
 
-          # A PR commit whose Unity tests already passed on every version of this plan holds for the head too when no
-          # later change reaches them: a push of docs or a CHANGELOG line, a label event. The newest of the last 20 PR
-          # commits with a run of these tests decides. A failed run there is not looked past; a cancelled or missing
-          # one is (an older push cancelled by a newer one, a version that only a run without `unity-quick` tests).
-          # A rebase leaves no tested commit in the PR, and a merge of main brings its changes into the diff.
-          # Only jobs of a ci.yml run of this repository count: a fork PR can add a workflow with jobs of these names
-          # that pass without testing, then delete it in a later commit, and its runs stay on the SHA. Only PR runs
-          # count: they test the merge with main, while a manual run tests the branch commit alone. Only runs of this
-          # PR after its last change of base count: a run of another PR or of an older base merged another branch.
-          # Only a run with the Unity secrets looks, so a fork or Dependabot PR still fails the plan for a change that
-          # reaches the tests.
+          # A pass on every version also holds for a quick run. Another attempt of this run does not count: a rerun
+          # of all its jobs asks to test again. A failed call trusts no run.
           passed=""
-          if [ "$EVENT" = pull_request ] && [ "$files" != all ] && [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; then
-            # A failed call trusts no run.
-            retargets="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR/events?per_page=100" \
-              --jq '.[] | select(.event == "base_ref_changed" or .event == "automatic_base_change_succeeded") | .created_at')" || retargets=9999
-            retargeted="$(tail -n 1 <<<"$retargets")"
-            for sha in $(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/commits?per_page=100" --jq '.[].sha' | tail -n 20 | tac); do
-              runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$sha&per_page=100" --jq '.workflow_runs[]
-                | select(.path == ".github/workflows/ci.yml" and .event == "pull_request"
-                  and .head_repository.full_name == "'"$GITHUB_REPOSITORY"'" and any(.pull_requests[]; .number == '"$PR"')
-                  and .created_at > "'"$retargeted"'") | "\(.id) \(.created_at)"')" || runs=""
-              tested_at="$(sort -k2 <<<"$runs" | head -n 1 | cut -d' ' -f2)"
-              verdict="$(for run in $(cut -d' ' -f1 <<<"$runs"); do
-                gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$run/jobs?filter=all&per_page=100" --jq '.jobs[]'
-              done | jq -rs '
-                (group_by(.name) | map({key: .[0].name, value: (max_by(.id).conclusion // "pending")}) | from_entries) as $latest
-                | [$ARGS.positional[] | $latest["Unity EditMode (\(.))"] // "none"]
-                | if any(.[]; . == "failure" or . == "timed_out") then "failed"
-                  elif all(.[]; . == "success") then "passed"
-                  else "unknown" end' --args "${versions[@]}")"
-              [ "$verdict" = unknown ] && continue
-              # A run tests the merge with main as it was when the oldest of these runs was created, so the main commits
-              # merged since count too. The compare API lists at most 300 files.
-              if [ "$verdict" = passed ] \
-                && tested_base="$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$BASE&until=$tested_at&per_page=1" --jq '.[0].sha')" \
-                && later="$(changed "$sha" "$HEAD")" && main_later="$(changed "$tested_base" "$BASE")" \
-                && [ "$(wc -l <<<"$later")" -lt 300 ] && [ "$(wc -l <<<"$main_later")" -lt 300 ] \
-                && ! reaches_unity <<<"$later"$'\n'"$main_later"; then
-                passed="$sha"
-              fi
-              break
+          if [ -n "$digest" ] && [ "$REQUIRE_UNITY" != true ] && [ "$EVENT" != workflow_dispatch ]; then
+            names=("unity-passed-$digest-all")
+            [ "$tested" = all ] || names+=("unity-passed-$digest-$tested")
+            for name in "${names[@]}"; do
+              passed="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=$name&per_page=100" --jq '[.artifacts[]
+                | select((.expired | not) and .workflow_run.head_repository_id == .workflow_run.repository_id
+                  and .workflow_run.id != '"$GITHUB_RUN_ID"')][0].workflow_run.id // empty')" || passed=""
+              [ -z "$passed" ] || break
             done
           fi
 
-          if [ "$files" != all ] && ! reaches_unity <<<"$files"; then
+          if [ -n "$base_digest" ] && [ "$digest" = "$base_digest" ]; then
             echo "No change reaches the Unity tests; they are skipped."
             echo "run=false" >> "$GITHUB_OUTPUT"
           elif [ -n "$passed" ]; then
-            echo "::notice::The Unity tests passed on ${passed:0:8} and no later change reaches them; they are skipped."
+            echo "::notice::The Unity tests passed on the same inputs in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$passed; they are skipped."
             echo "run=false" >> "$GITHUB_OUTPUT"
           elif [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
             if [ "$REQUIRE_UNITY" = true ] || [ "$EVENT" = workflow_dispatch ]; then
@@ -565,3 +557,12 @@ jobs:
             exit 1
           fi
           echo "Unity EditMode: $TESTS."
+      # Marks the inputs of a run that tested and passed, for the plan of later runs. The name says what passed.
+      - if: needs.unity-plan.outputs.run == 'true' && needs.unity-plan.outputs.passed-artifact != ''
+        run: echo "$GITHUB_SHA" > "$RUNNER_TEMP/unity-passed.txt"
+      - if: needs.unity-plan.outputs.run == 'true' && needs.unity-plan.outputs.passed-artifact != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ needs.unity-plan.outputs.passed-artifact }}
+          path: ${{ runner.temp }}/unity-passed.txt
+          overwrite: true
