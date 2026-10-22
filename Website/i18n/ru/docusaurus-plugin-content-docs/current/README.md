@@ -4,7 +4,7 @@
 </picture>
 
 [![Unity 6.0+](../../../../docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
-[![Preview 1.0.0-rc.8](../../../../docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
+[![Release 1.0.0](../../../../docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
 [![MIT License](../../../../docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации, профилирования и редакторского кода.
@@ -16,10 +16,10 @@ Aspid.FastTools — пакет для Unity, который убирает ру�
 В **Window → Package Manager** выберите **+ → Install package from git URL…**, вставьте этот URL и нажмите **Install**:
 
 ```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm
 ```
 
-URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую.
+URL указывает на последнюю версию; кнопка **Update** в Package Manager установит следующую.
 
 **Установили из Asset Store?** Пропустите шаги выше: пакет уже в проекте. Asset Store и git URL ставят один и тот же пакет, `tech.aspid.fasttools`, поэтому в проекте может быть только один из них: чтобы сменить источник, сначала удалите пакет в **Window → Package Manager** (**In Project**).
 

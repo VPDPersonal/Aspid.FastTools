@@ -13,13 +13,13 @@
 
 ```text prompt
 Установи скиллы из репозитория VPDPersonal/Aspid.FastTools в текущий проект,
-не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#skills-preview.
+не глобально. Выполни npx skills add VPDPersonal/Aspid.FastTools#skills.
 ```
 
 Или выполните в корне проекта:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools#skills-preview
+npx skills add VPDPersonal/Aspid.FastTools#skills
 ```
 
 В установщике выберите область **Project**: глобальная установка действует во всех Unity-проектах, какая бы версия пакета в них ни стояла.
@@ -39,7 +39,7 @@ npx skills add VPDPersonal/Aspid.FastTools#skills-preview
 Обновляйте пакет одновременно со скиллами: скиллы новее пакета могут описывать API, которого в нём нет, и тогда агент пишет код, который не собирается. Чтобы скиллы оставались на версии вашего пакета, поставьте их с её тега — `npx skills update` его не двигает:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools#skills-preview/<version>
+npx skills add VPDPersonal/Aspid.FastTools#skills/<version>
 ```
 
 Релизы до `1.0.0-rc.8` включительно не содержат скиллов. С ними сначала обновите пакет до релиза со скиллами.

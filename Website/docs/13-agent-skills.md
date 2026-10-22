@@ -13,13 +13,13 @@ Ask your agent:
 
 ```text prompt
 Install the skills from VPDPersonal/Aspid.FastTools in the current project,
-not globally. Run npx skills add VPDPersonal/Aspid.FastTools#skills-preview.
+not globally. Run npx skills add VPDPersonal/Aspid.FastTools#skills.
 ```
 
 Or run in the project root:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools#skills-preview
+npx skills add VPDPersonal/Aspid.FastTools#skills
 ```
 
 In the installer, choose the **Project** scope: a global install applies to every Unity project, whatever its package version.
@@ -39,7 +39,7 @@ The skills come from release branches, never from `main`. Each channel of the pa
 Update the package at the same time: skills newer than your package can describe API that it does not have, so the agent writes code that does not compile. To keep the skills at your package version, install them from its tag, which `npx skills update` does not move:
 
 ```bash
-npx skills add VPDPersonal/Aspid.FastTools#skills-preview/<version>
+npx skills add VPDPersonal/Aspid.FastTools#skills/<version>
 ```
 
 Releases up to and including `1.0.0-rc.8` do not ship the skills. With one of them, upgrade the package to a release that does.

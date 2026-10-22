@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-10-22
+
 First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases); the notes below list what changed since `1.0.0-rc.8`.
 
 ### Added
@@ -443,4 +445,5 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 - `upm` / `upm/<version>` for stable releases, `upm-preview` for prereleases. Until the first stable release, the `upm` branch still holds the older `com.aspid.fasttools` package (`1.0.0-rc.2`).
 - EditMode tests for the YAML editor and the CI-gate scan.
 
+[1.0.0]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0
 [1.0.0-rc.8]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8
