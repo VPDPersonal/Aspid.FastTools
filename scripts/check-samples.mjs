@@ -52,7 +52,7 @@ const BANNED = [
   [/\b(?:Physics|Raycast|CreatePrimitive)\b/, 'Physics or CreatePrimitive'],
 ];
 
-// CODESTYLE.md puts this line above every namespace; it is the one comment a sample carries.
+// The asp-ft-code-style skill puts this line above every namespace; it is the one comment a sample carries.
 const BANNER = '// ReSharper disable once CheckNamespace\n';
 
 let errors = 0;

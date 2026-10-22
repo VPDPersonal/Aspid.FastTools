@@ -24,13 +24,14 @@ Run what applies before you open a PR.
 
 ## C# style
 
-`.editorconfig` holds the rules a formatter checks; [CODESTYLE.md](CODESTYLE.md) holds the rest: member order, named
-arguments, attribute and blank-line layout, comments and XML docs. Read it before you write C#.
+`.editorconfig` holds the rules a formatter checks; the [asp-ft-code-style](.claude/skills/asp-ft-code-style/SKILL.md)
+skill holds the rest: member order, named arguments, attribute and blank-line layout, comments and XML docs. Read it
+before you write C#.
 
 ## Samples~
 
-`Samples~` is code a newcomer reads, not package API. Beyond CODESTYLE.md (`node scripts/check-samples.mjs` checks
-these):
+`Samples~` is code a newcomer reads, not package API. Beyond the code style skill (`node scripts/check-samples.mjs`
+checks these):
 
 - No comments except the `CheckNamespace` banner, and no `[Header]`, `Debug.Log` or XML docs; `[Tooltip]` only where
   it tells more than the field name.
