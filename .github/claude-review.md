@@ -14,7 +14,7 @@ Check, in this order:
    - a renamed or moved file keeps its `.meta` GUID;
    - a renamed serialized field gets `[FormerlySerializedAs]`, a renamed or moved type stored through
      `[SerializeReference]` gets `[MovedFrom]`: without them user projects lose saved data;
-   - no Unity API newer than 6000.0.53f1 without a `#if UNITY_6000_x_OR_NEWER` guard;
+   - no Unity API that 6000.0.53f1 lacks, unless a `#if UNITY_6000_1_OR_NEWER` or later guard covers it;
    - no editor-only API reachable from runtime code: CI runs only Editor tests and misses it.
 3. Generators and analyzers: no `Console` output, no reference to `SourceGenerator.Foundations`.
 4. Public API: XML docs on each new or changed member, a CHANGELOG entry that describes the change as a user sees it,
