@@ -15,7 +15,7 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
   DevTests** (`Assets/DevTools`) links them in as `Assets/DevTests` for a manual test or a docs capture and unlinks
   them on the next click; in a batch Editor, `ln -s DevTests~ Assets/DevTests` does the same. Edit them through either
   path and commit `Assets/DevTests~`. Never delete `Assets/DevTests` from the Project window: Unity deletes the files
-  behind the link. `Assets/DevTools` (the menu and the `sr_gate` command for `unity command`) is always imported.
+  behind the link. `Assets/DevTools` (the menu and the `unity command fasttools sr_gate` command) is always imported.
 - Tests of the samples go in `Assets/SampleTests~`, not in the package's `Tests/`: they check this repository's
   `Samples~` and would ship to every user. Unity does not import the folder here; `scripts/make-unity-test-project.sh`
   copies it into the test project next to the imported samples, so CI and local runs pick it up.
@@ -43,7 +43,7 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 
 From the repository root:
 
-- Compile in the dev project with its Editor open: `unity command recompile`, then `unity command get_console_logs`.
+- Compile in the dev project with its Editor open: `unity command script recompile`, then `unity command console get`.
 - EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]`; its header shows
   the `-runTests` command.
 - YAML engine: `dotnet test DotnetTests/Yaml`.

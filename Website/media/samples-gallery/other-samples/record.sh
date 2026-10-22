@@ -17,34 +17,34 @@ frames=$proj/Temp/SampleThemes/other-samples/clean-frames/$sample
 recorder=$here/record.cs.txt
 
 cmd() { unity command --project-path "$proj" --no-banner --timeout 60 --json "$@"; }
-cloak() { cmd run_script --file "$cloak_cs" --entry CaptureCloak.Run >/dev/null 2>&1 || true; }
+cloak() { cmd script run --file "$cloak_cs" --entry CaptureCloak.Run >/dev/null 2>&1 || true; }
 mode() {
-  cmd editor_status 2>/dev/null | python3 -c 'import json, sys
+  cmd editor status 2>/dev/null | python3 -c 'import json, sys
 r = json.load(sys.stdin)["data"]["result"]
 print("busy" if r["compiling"] or r["domainReloadInProgress"] else r["playMode"])' 2>/dev/null || echo busy
 }
 wait_mode() { i=0; until [ "$(mode)" = "$1" ]; do i=$((i+1)); [ $i -gt 60 ] && { echo "Editor never reached $1"; exit 1; }; sleep 1; done; }
-# run_script takes only .cs files.
+# script run takes only .cs files.
 run() {
   tmp=$(mktemp -t sample-theme) && mv "$tmp" "$tmp.cs" && tmp="$tmp.cs" && cp "$1" "$tmp"
   status=0
-  cmd run_script --file "$tmp" --entry "$2" ${3:+--args "$3"} | python3 -c 'import json, sys
+  cmd script run --file "$tmp" --entry "$2" ${3:+--args "$3"} | python3 -c 'import json, sys
 r = (json.load(sys.stdin).get("data") or {}).get("result") or {}
 print(r.get("result") if r.get("success") else r.get("errorDetails", r))
 sys.exit(0 if r.get("success") else 1)' || status=$?
   rm -f "$tmp"; return $status
 }
 
-[ "$(mode)" = playing ] && { cmd editor_stop >/dev/null; wait_mode stopped; }
+[ "$(mode)" = playing ] && { cmd editor.playmode stop >/dev/null; wait_mode stopped; }
 wait_mode stopped
 run "$here/prepare.cs.txt" PrepareSamples.Main "[\"$sample\",\"$theme\"]"
-cmd editor_play >/dev/null
+cmd editor.playmode start >/dev/null
 wait_mode playing
 cloak
 rm -rf "${frames:?}"
 run "$recorder" SampleThemeRecorder.Main >/dev/null
 i=0; until [ -f "$frames/done.txt" ]; do i=$((i+1)); [ $i -gt 300 ] && { echo "recorder did not finish"; exit 1; }; sleep 1; done
-cmd editor_stop >/dev/null
+cmd editor.playmode stop >/dev/null
 wait_mode stopped
 cloak
 ffmpeg -y -hide_banner -loglevel error -framerate 20 -i "$frames/frame-%03d.png" -c:v ffv1 -pix_fmt bgr0 "$out"

@@ -2,7 +2,7 @@
 name: asp-pr
 description: "Create or update a pull request: title, body, labels, screenshots; push + gh in one chain. Use for any pull request work: open, update, ready, merge."
 when_to_use: "Any pull request work: «открой пр», «сделай пр», «пр в main», «обнови пр / описание пр», «переведи в ready», «смержи пр», «пр стэком» (with `gh-stack`), «смени base». Load it before every `gh pr create/edit/ready/merge`."
-allowed-tools: Bash(git branch -m:*) Bash(git switch -c:*) Bash(git push -u origin HEAD) Bash(git config branch.:*) Bash(git diff:*) Bash(git log:*) Bash(cat:*) Bash(gh pr create:*) Bash(gh pr edit:*) Bash(gh pr view:*) Bash(gh pr ready:*) Bash(gh pr-ready:*) Bash(gh pr checks:*) Bash(gh pr comment:*) Bash(gh api repos/*/pulls/*/comments --paginate) Bash(gh api repos/*/pulls/*/comments/*/replies -f body=*) Bash(sh ${CLAUDE_SKILL_DIR}/scripts/*) Bash(unity command screenshot:*) Bash(sips:*)
+allowed-tools: Bash(git branch -m:*) Bash(git switch -c:*) Bash(git push -u origin HEAD) Bash(git config branch.:*) Bash(git diff:*) Bash(git log:*) Bash(cat:*) Bash(gh pr create:*) Bash(gh pr edit:*) Bash(gh pr view:*) Bash(gh pr ready:*) Bash(gh pr-ready:*) Bash(gh pr checks:*) Bash(gh pr comment:*) Bash(gh api repos/*/pulls/*/comments --paginate) Bash(gh api repos/*/pulls/*/comments/*/replies -f body=*) Bash(sh ${CLAUDE_SKILL_DIR}/scripts/*) Bash(unity command capture screenshot:*) Bash(sips:*)
 ---
 
 ```!
