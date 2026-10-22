@@ -110,7 +110,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             SetValueWithoutNotify(false);
         }
 
-        public sealed override void SetValueWithoutNotify(bool newValue)
+        public override void SetValueWithoutNotify(bool newValue)
         {
             base.SetValueWithoutNotify(newValue);
             // BaseField may seed the value before the track is constructed.

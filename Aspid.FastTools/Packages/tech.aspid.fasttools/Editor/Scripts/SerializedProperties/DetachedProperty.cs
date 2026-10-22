@@ -7,7 +7,7 @@ namespace Aspid.FastTools.Editors
 {
     // Remembers where a property is and opens a copy of it, as Persistent() does, only while an action runs.
     // A menu or picker callback runs after the inspector's own property may be gone. A callback that never runs
-    // (the menu or picker is cancelled) leaves no native snapshot behind.
+    // (the menu or picker is canceled) leaves no native snapshot behind.
     internal readonly struct DetachedProperty
     {
         private readonly Object _context;

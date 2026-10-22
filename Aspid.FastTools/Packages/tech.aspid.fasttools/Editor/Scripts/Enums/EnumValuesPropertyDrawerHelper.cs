@@ -324,7 +324,7 @@ namespace Aspid.FastTools.Enums.Editors
         private static void CopyValue(SerializedProperty source, SerializedProperty destination)
         {
             // boxedValue throws for an array or a list, so they are copied element by element.
-            if (source.isArray && source.propertyType is not SerializedPropertyType.String)
+            if (source is { isArray: true, propertyType: not SerializedPropertyType.String })
             {
                 destination.arraySize = source.arraySize;
 

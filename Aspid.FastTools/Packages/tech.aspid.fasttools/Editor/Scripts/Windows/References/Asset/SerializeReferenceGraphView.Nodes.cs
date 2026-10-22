@@ -352,8 +352,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!document.Shared.Contains(rid)) return badges;
 
-            // Read like the counts beside a Project References title: a coloured dot and a muted word, not a pill. The
-            // dot has the colour of the rid, so the cards that share one instance show the same dot.
+            // Read like the counts beside a Project References title: a colored dot and a muted word, not a pill. The
+            // dot has the color of the rid, so the cards that share one instance show the same dot.
             var chip = new VisualElement().AddClass(ChipClass);
             chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
 

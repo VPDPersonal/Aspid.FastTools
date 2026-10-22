@@ -160,7 +160,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _mixedTargetTicks = null;
         }
 
-        private static bool MixedTargetsMatch(UnityEngine.Object[] targets)
+        private static bool MixedTargetsMatch(Object[] targets)
         {
             if (_mixedTargets is null || _mixedTargets.Length != targets.Length) return false;
 
@@ -170,7 +170,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        private static void ResetMixedSelection(UnityEngine.Object[] targets)
+        private static void ResetMixedSelection(Object[] targets)
         {
             ReleaseMixedSelection();
             _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
@@ -1959,7 +1959,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return GetSharedReferencePathsById(property.serializedObject)
                 .TryGetValue(property.managedReferenceId, out var paths)
                 ? paths
-                : (IReadOnlyList<string>)Array.Empty<string>();
+                : Array.Empty<string>();
         }
 
         private const int MaxDetailAliasPaths = 6;

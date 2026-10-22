@@ -26,7 +26,7 @@ namespace Aspid.FastTools.Types.Editors
 
             if (TypeIMGUIPropertyDrawer.DrawDropdownButton(dropdownRect, caption, EditorStyles.miniPullDown))
             {
-                // The picker answers after this draw, and a cancelled one never answers: no copy is open until then.
+                // The picker answers after this draw, and a canceled one never answers: no copy is open until then.
                 var detached = new DetachedProperty(property: property);
 
                 TypeSelectorWindow.Show(

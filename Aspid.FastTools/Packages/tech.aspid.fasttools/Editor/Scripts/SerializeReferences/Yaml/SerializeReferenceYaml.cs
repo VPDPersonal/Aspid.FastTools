@@ -55,7 +55,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static AssetFileFormat SniffFileFormat(string path)
         {
             var buffer = new byte[FormatSniffLength];
-            var read = 0;
+            int read;
 
             try
             {
@@ -100,8 +100,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var lines = new List<string>();
 
-            string line;
-            while ((line = reader.ReadLine()) is not null)
+            while (reader.ReadLine() is { } line)
                 lines.Add(line);
 
             return lines.ToArray();
