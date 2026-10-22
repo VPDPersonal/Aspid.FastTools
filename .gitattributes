@@ -1,13 +1,13 @@
 # Text is stored and checked out with LF; the font licences keep their upstream CRLF.
-*               text=auto eol=lf
+* text=auto eol=lf
 LICENSE-IBM-Plex.txt -text
 
 # Binary: no diff, no merge, no line-ending conversion.
-*.dll           binary
-*.png           binary
-*.jpg           binary
-*.gif           binary
-*.webp          binary
-*.mp4           binary
-*.ttf           binary
-*.woff2         binary
+*.dll binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.webp binary
+*.mp4 binary
+*.ttf binary
+*.woff2 binary
