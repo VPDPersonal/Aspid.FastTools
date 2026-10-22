@@ -38,6 +38,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     }
 
     [Serializable]
+    internal class ChildrenDrawnBaseEffect
+    {
+        public int power;
+    }
+
+    [Serializable]
+    internal sealed class ChildrenDrawnDerivedEffect : ChildrenDrawnBaseEffect { }
+
+    [Serializable]
     internal sealed class UndrawnEffect
     {
         public int power;
@@ -91,6 +100,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [CustomPropertyDrawer(typeof(DrawnCollectionInspectorAttribute))]
     internal sealed class DrawnCollectionInspectorAttributeDrawer : PropertyDrawer { }
 
+    [CustomPropertyDrawer(typeof(ChildrenDrawnBaseEffect), useForChildren: true)]
+    internal sealed class ChildrenDrawnBaseEffectDrawer : PropertyDrawer { }
+
     // Unity uses a drawer marked with [SupportedOnRenderPipeline] only under that pipeline, never in the Built-in one.
     [SupportedOnRenderPipeline(typeof(DrawnPipelineAsset))]
     [CustomPropertyDrawer(typeof(PipelineDrawnEffect))]
@@ -143,19 +155,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TearDown() => Object.DestroyImmediate(_host);
 
         [Test]
-        public void UnityDrawerInternals_StillExist()
-        {
-            // A miss is not an error at runtime: every custom drawer under [SerializeReference] would silently lose
-            // to the package header, so the rename has to fail here instead.
-            Assert.IsNotNull(CustomDrawerRegistry.TargetField,
-                "Unity renamed CustomPropertyDrawer.m_Type; update CustomDrawerRegistry.");
-            Assert.IsNotNull(CustomDrawerRegistry.UseForChildrenField,
-                "Unity renamed CustomPropertyDrawer.m_UseForChildren; update CustomDrawerRegistry.");
-            Assert.AreEqual(typeof(Type), CustomDrawerRegistry.TargetField.FieldType);
-            Assert.AreEqual(typeof(bool), CustomDrawerRegistry.UseForChildrenField.FieldType);
-        }
-
-        [Test]
         public void HasDrawerFor_ClosedGeneric_MatchesOpenGenericDrawer() =>
             Assert.IsTrue(CustomDrawerRegistry.HasDrawerFor(typeof(DrawnGenericEffect<int>)));
 
@@ -166,6 +165,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(CustomDrawerRegistry.HasDrawerFor(typeof(DrawnDerivedEffect)),
                 "Without useForChildren a base-class drawer does not apply to a plain derived field.");
         }
+
+        [Test]
+        public void HasDrawerFor_UseForChildrenDrawer_AppliesToPlainDerivedFields() =>
+            Assert.IsTrue(CustomDrawerRegistry.HasDrawerFor(typeof(ChildrenDrawnDerivedEffect)));
 
         [Test]
         public void HasDrawerFor_InterfaceDrawer_AppliesToManagedReferences() =>
