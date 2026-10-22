@@ -2,10 +2,13 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
-using UnityEngine.UIElements;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     // A label's text color follows its own LabelTheme, not the theme class of a container around it.
     [TestFixture]

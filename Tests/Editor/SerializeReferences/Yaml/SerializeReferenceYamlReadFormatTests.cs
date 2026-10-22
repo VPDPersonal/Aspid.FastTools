@@ -1,7 +1,8 @@
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // How the YAML engine reads what Unity writes beyond the common case: the files it scans, quoted and escaped type
     // names, the version of the managed reference registry, and a list that is empty on disk.

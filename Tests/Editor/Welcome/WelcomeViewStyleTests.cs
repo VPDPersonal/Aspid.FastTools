@@ -4,12 +4,14 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.Tests.Editors.VisualElements;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Welcome
 {
     // The Welcome sheet must work wherever the package sits and keep its text readable on the light skin.
     [TestFixture]

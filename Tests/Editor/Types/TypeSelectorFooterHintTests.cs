@@ -1,8 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Coverage for <see cref="TypeSelectorFooterHint"/>: the hint is one line that never wraps, so its longest

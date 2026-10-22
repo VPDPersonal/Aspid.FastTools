@@ -6,7 +6,8 @@ using System.Reflection;
 using Aspid.FastTools.Types;
 using System.CodeDom.Compiler;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.ProfilerMarkers
 {
     // Checks that the generator DLL committed into the package ran on the runtime assembly. A this.Marker() call
     // compiles without it: it binds to the empty fallback, so the markers vanish and no error appears.

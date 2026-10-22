@@ -1,13 +1,15 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using NUnit.Framework;
 using System.Reflection;
+using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors
 {
     internal sealed class SerializedPropertySettersTests
     {

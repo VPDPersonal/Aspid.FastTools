@@ -1,8 +1,11 @@
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// A help box must look the same whether its status and message type come from the preset, a UXML attribute or

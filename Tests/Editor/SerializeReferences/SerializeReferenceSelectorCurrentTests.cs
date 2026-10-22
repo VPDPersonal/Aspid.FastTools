@@ -3,8 +3,10 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The current mark of the [SerializeReference] dropdown: a missing type must not preselect <None>, which Enter
     // right after opening would apply, clearing the reference and the data a Fix could still recover.

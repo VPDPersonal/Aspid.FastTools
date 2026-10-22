@@ -1,9 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
 using System.Text.RegularExpressions;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // A variant, a nested prefab or a scene instance stores an overridden [SerializeReference] type in its
     // PrefabInstance document ("managedReferences[rid]" -> "<asm> <ns>.<class>"), not in a RefIds block. The scans

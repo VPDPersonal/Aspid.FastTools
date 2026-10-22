@@ -1,6 +1,7 @@
 using UnityEngine;
 
-namespace Aspid.FastTools.Types.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.ComponentTypeSelector
 {
     [RequireComponent(typeof(ComponentSwapAbstractRequirement))]
     public sealed class ComponentSwapNeedsAbstractRequirement : ComponentSwapBase { }

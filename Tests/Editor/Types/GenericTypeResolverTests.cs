@@ -1,7 +1,9 @@
 using System.Linq;
 using NUnit.Framework;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // Test-only generic hierarchy: a structure-constrained box and an unconstrained variant. 
     internal interface IResolverThing { }

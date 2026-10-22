@@ -8,8 +8,10 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // Keyboard and preselection behaviour of the picker view and the missing-type handling of TypeField, driven in
     // a live panel because list focus and change events need one.

@@ -4,7 +4,8 @@ using NUnit.Framework;
 using System.Text.RegularExpressions;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors
 {
     // package.json promises 6000.0+, but Unity 6000.5 turns Object.GetInstanceID into a compile error, and a package in
     // PackageCache is never touched by the API Updater. Earlier editors at most warn, so the source is checked directly.

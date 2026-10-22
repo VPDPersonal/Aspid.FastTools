@@ -2,10 +2,11 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
 using Object = UnityEngine.Object;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// Anchors for the single-control extension families: one test per family is enough to catch a setter

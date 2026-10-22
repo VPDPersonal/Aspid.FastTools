@@ -3,9 +3,11 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
 using Object = UnityEngine.Object;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// Anchors for the list and tree view families: the Set, Add and Remove templates keep their meaning,

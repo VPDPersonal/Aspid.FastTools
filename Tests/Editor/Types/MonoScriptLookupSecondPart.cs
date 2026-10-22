@@ -1,4 +1,5 @@
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// The second half of <see cref="MonoScriptLookupFixtures"/>, deliberately in a file Unity does not associate

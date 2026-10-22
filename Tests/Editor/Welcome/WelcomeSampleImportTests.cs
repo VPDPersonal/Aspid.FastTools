@@ -1,7 +1,9 @@
 using System.IO;
 using NUnit.Framework;
+using Aspid.FastTools.Editors;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Welcome
 {
     // Unity refuses to import a sample while a copy from another package version exists, so the window has to find
     // those copies with the same rule as Unity: Samples/<package>/<other version>/<sample>.

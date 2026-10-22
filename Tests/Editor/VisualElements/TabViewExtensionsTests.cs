@@ -4,9 +4,10 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.UIElements;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     [TestFixture]
     internal sealed class TabViewExtensionsTests

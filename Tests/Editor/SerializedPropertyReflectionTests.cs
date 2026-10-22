@@ -2,10 +2,12 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors
 {
     internal class ReflectionBookBase : ScriptableObject
     {

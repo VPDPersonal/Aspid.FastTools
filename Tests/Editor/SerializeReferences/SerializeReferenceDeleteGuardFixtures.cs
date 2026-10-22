@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Fixtures for SerializeReferenceDeleteGuardTests. No type here is named after the file, so MonoScript.GetClass()
     // resolves nothing — the "several small implementations in one file" layout the delete guard must still cover.

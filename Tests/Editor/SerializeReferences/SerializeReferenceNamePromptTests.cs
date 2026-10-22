@@ -1,7 +1,9 @@
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The prompt is modal and cannot be shown from a test, so its placement is checked on the rect it computes.
     [TestFixture]

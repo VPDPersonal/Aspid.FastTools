@@ -2,11 +2,13 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.Tests.Editors.VisualElements;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Settings
 {
     // The per-user "Field stripes" switch under Appearance: it mirrors the store, and a stripe bound to it follows it
     // live, also after the stripe is detached and attached again.

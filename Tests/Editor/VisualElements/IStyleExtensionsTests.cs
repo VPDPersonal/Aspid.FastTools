@@ -6,8 +6,11 @@ using System.Reflection;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
+using VisualElementExtensions = Aspid.FastTools.UIElements.VisualElementExtensions;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// Anchors for the <see cref="IStyle"/> wrappers: the bold and italic transitions, the shorthand families

@@ -7,8 +7,10 @@ using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Paints the IMGUI drawer and its list in a window, because IMGUI controls need a live OnGUI. Each test waits for a
     // layout pass and a repaint pass, so the notices, GUIStyle.Draw and the navigation pulse run too, not only the

@@ -2,9 +2,10 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // Coverage for MissingListAlignment: where a missing list element sits after a save that wrote it as a null id. In
     // these lists an id from 2000 is a missing element, a smaller id a healthy one and N a null.

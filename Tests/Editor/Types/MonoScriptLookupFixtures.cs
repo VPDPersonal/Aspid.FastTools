@@ -1,4 +1,5 @@
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Host for <see cref="MonoScriptLookupTests"/>. Lives in its own file because the lookup under test searches

@@ -1,6 +1,8 @@
 using NUnit.Framework;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Coverage for <see cref="TypeExtensions.FindMonoScript"/> on nested types — what the field's open-script

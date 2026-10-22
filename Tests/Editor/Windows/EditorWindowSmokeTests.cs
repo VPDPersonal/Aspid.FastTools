@@ -7,10 +7,12 @@ using System.Reflection;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Object = UnityEngine.Object;
 using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Windows
 {
     // Opens each editor window of the package and checks that its UI builds without a logged error.
     // A window that fails in CreateGUI or OnGUI stays blank, and no test of its parts notices.

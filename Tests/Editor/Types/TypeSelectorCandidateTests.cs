@@ -3,9 +3,12 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // Search matching, the candidate caches and the editor-only exclusion of the picker's candidate list.
     [TestFixture]
@@ -42,7 +45,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var leaf = FindLeaf(BuildProbeHierarchy(), typeof(GroupedSearchProbe));
 
-            Assert.IsTrue(leaf.MatchesFilter("Types.Editors.Tests.TypeSelectorCandidateTests.GroupedSearch"),
+            Assert.IsTrue(leaf.MatchesFilter("Tests.Editors.Types.TypeSelectorCandidateTests.GroupedSearch"),
                 "A type placed in a group must stay findable by its namespace.");
         }
 

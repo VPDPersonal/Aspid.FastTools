@@ -1,8 +1,9 @@
 using System.IO;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     /// <summary>
     /// Behavioural coverage for <see cref="SerializeReferenceYamlProbeCache"/>: it serves a cached copy while the file's

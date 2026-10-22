@@ -3,8 +3,10 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Reflection;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Coverage for the two data-preservation copiers behind type switches and Make-unique:
