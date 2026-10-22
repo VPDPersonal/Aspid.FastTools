@@ -33,13 +33,13 @@ namespace Aspid.FastTools.Editors.Tests
 
         private static readonly string[] MarkerNames =
         {
-            "Flock.Update (21)",
-            "Flock.ApplyTransforms (28)",
-            "Flock.InitializeAgents (53)",
-            "FlockSimulation.Step (32)",
-            "FlockSimulation.Steering (34)",
-            "FlockSimulation.Integrate (37)",
-            "FlockSimulation.Steering.Agent (47)",
+            "Flock.Update (22)",
+            "Flock.ApplyTransforms (29)",
+            "Flock.InitializeAgents (58)",
+            "FlockSimulation.Step (35)",
+            "FlockSimulation.Steering (37)",
+            "FlockSimulation.Integrate (40)",
+            "FlockSimulation.Steering.Agent (50)",
         };
 
         private readonly List<string> _messages = new();
