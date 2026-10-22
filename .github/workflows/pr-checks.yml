@@ -108,6 +108,11 @@ jobs:
 
             const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: pr.number });
             for (const { filename } of files) {
+              // GitHub finds these two in .github/, but they are contributor docs, not CI.
+              if (filename === '.github/CONTRIBUTING.md' || filename === '.github/SECURITY.md') {
+                add.add('area: docs');
+                continue;
+              }
               for (const [prefix, label] of AREAS)
                 if (filename.startsWith(prefix)) add.add(label);
               // A nested AGENTS.md is agent configuration wherever it lives.
