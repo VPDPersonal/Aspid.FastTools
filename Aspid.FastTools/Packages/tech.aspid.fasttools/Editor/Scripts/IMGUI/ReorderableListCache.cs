@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Editors
     // OnGUI calls, keyed by the property it draws.
     internal static class ReorderableListCache
     {
-        private static readonly Dictionary<string, ReorderableList> Lists = new();
+        private static readonly Dictionary<string, ReorderableList> _lists = new();
 
         // The returned list is re-pointed at listProperty: the property instance is rebuilt on every OnGUI, and a
         // cached list must never touch a disposed one.
@@ -26,7 +26,7 @@ namespace Aspid.FastTools.Editors
                       $"{RuntimeHelpers.GetHashCode(serializedObject.targetObject)}/{listProperty.propertyPath}";
 
             // A cached list bound to a stale SerializedObject (e.g. after a domain reload) must be rebuilt, not reused.
-            if (Lists.TryGetValue(key, out var cached) && cached is TList typed &&
+            if (_lists.TryGetValue(key, out var cached) && cached is TList typed &&
                 cached.serializedProperty.serializedObject == serializedObject)
             {
                 typed.serializedProperty = listProperty;
@@ -38,7 +38,7 @@ namespace Aspid.FastTools.Editors
             EvictDeadEntries();
 
             var list = create();
-            Lists[key] = list;
+            _lists[key] = list;
             return list;
         }
 
@@ -46,7 +46,7 @@ namespace Aspid.FastTools.Editors
         {
             List<string> dead = null;
 
-            foreach (var pair in Lists)
+            foreach (var pair in _lists)
             {
                 bool alive;
                 try
@@ -63,7 +63,7 @@ namespace Aspid.FastTools.Editors
             }
 
             if (dead is null) return;
-            foreach (var key in dead) Lists.Remove(key);
+            foreach (var key in dead) _lists.Remove(key);
         }
     }
 }

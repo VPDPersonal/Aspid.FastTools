@@ -14,17 +14,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceFieldStalePropertyTests
     {
-        private static readonly MethodInfo ApplyReferenceChange = typeof(SerializeReferenceField)
+        private static readonly MethodInfo _applyReferenceChange = typeof(SerializeReferenceField)
             .GetMethod("ApplyReferenceChange", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        private static readonly EventInfo ManagedReferencesChanged = typeof(SerializeReferenceField)
+        private static readonly EventInfo _managedReferencesChanged = typeof(SerializeReferenceField)
             .GetEvent("ManagedReferencesChanged", BindingFlags.Static | BindingFlags.NonPublic);
 
         [Test]
         public void ApplyReferenceChange_AfterSerializedObjectInvalidated_NotifiesSiblingsWithoutThrowing()
         {
-            Assert.IsNotNull(ApplyReferenceChange, "SerializeReferenceField.ApplyReferenceChange was renamed or removed.");
-            Assert.IsNotNull(ManagedReferencesChanged, "SerializeReferenceField.ManagedReferencesChanged was renamed or removed.");
+            Assert.IsNotNull(_applyReferenceChange, "SerializeReferenceField.ApplyReferenceChange was renamed or removed.");
+            Assert.IsNotNull(_managedReferencesChanged, "SerializeReferenceField.ManagedReferencesChanged was renamed or removed.");
 
             var notifications = 0;
             Action onChanged = () => notifications++;
@@ -41,13 +41,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 // Stands in for the ForceUpdate reimport of a saved-asset repair tearing the live object down.
                 serialized.Dispose();
 
-                ManagedReferencesChanged.GetAddMethod(nonPublic: true).Invoke(null, new object[] { onChanged });
-                Assert.DoesNotThrow(() => ApplyReferenceChange.Invoke(field, null));
+                _managedReferencesChanged.GetAddMethod(nonPublic: true).Invoke(null, new object[] { onChanged });
+                Assert.DoesNotThrow(() => _applyReferenceChange.Invoke(field, null));
                 Assert.AreEqual(1, notifications, "Sibling fields were not notified after the repair.");
             }
             finally
             {
-                ManagedReferencesChanged.GetRemoveMethod(nonPublic: true).Invoke(null, new object[] { onChanged });
+                _managedReferencesChanged.GetRemoveMethod(nonPublic: true).Invoke(null, new object[] { onChanged });
                 UnityEngine.Object.DestroyImmediate(obj);
             }
         }

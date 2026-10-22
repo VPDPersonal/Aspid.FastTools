@@ -25,7 +25,7 @@ namespace Aspid.FastTools.UIElements.Tests
         private const string MissingTexturePath = "Icons/aspid_icon_missing";
 
         // An obsolete property such as unityBackgroundScaleMode reports a value that nobody set.
-        private static readonly PropertyInfo[] StyleProperties = typeof(IStyle)
+        private static readonly PropertyInfo[] _styleProperties = typeof(IStyle)
             .GetProperties()
             .Where(property => !property.IsDefined(typeof(ObsoleteAttribute), inherit: false))
             .ToArray();
@@ -321,7 +321,7 @@ namespace Aspid.FastTools.UIElements.Tests
         public void SingleValueSetters_WriteOnlyTheirOwnProperty()
         {
             var texture = new Texture2D(width: 2, height: 2);
-            var properties = StyleProperties.ToDictionary(property => property.Name);
+            var properties = _styleProperties.ToDictionary(property => property.Name);
             var failures = new List<string>();
             var checkedSetters = 0;
 
@@ -470,20 +470,20 @@ namespace Aspid.FastTools.UIElements.Tests
 
         #region Style snapshot
         private static string[] GetSetPropertyNames(IStyle style) =>
-            StyleProperties
+            _styleProperties
                 .Where(property => IsSet(property.GetValue(style)))
                 .Select(property => property.Name)
                 .ToArray();
 
         private static string[] GetSetValues(IStyle style) =>
-            StyleProperties
+            _styleProperties
                 .Select(property => property.GetValue(style))
                 .Where(IsSet)
                 .Select(GetValue)
                 .ToArray();
 
         private static string[] Snapshot(IStyle style) =>
-            StyleProperties
+            _styleProperties
                 .Where(property => IsSet(property.GetValue(style)))
                 .Select(property => $"{property.Name}={GetValue(property.GetValue(style))}")
                 .ToArray();

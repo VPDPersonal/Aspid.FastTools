@@ -14,7 +14,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         // Unity's serializedData for a payload with these values, copied from a 6000.4 Editor: floats in exponent
         // form, non-ASCII and control characters as escapes in double quotes, wrapped long strings.
-        private static readonly string UnityPayload = string.Join("\n",
+        private static readonly string _unityPayload = string.Join("\n",
             @"i: -42",
             @"big: 9007199254740993",
             @"small: 0.0000999",
@@ -57,7 +57,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ReadPayloadScalarsAsJson_UnityPayload_DecodesEveryScalar()
         {
-            var scalars = ToDictionary(SerializeReferenceYamlEditor.ReadPayloadScalarsAsJson(UnityPayload));
+            var scalars = ToDictionary(SerializeReferenceYamlEditor.ReadPayloadScalarsAsJson(_unityPayload));
 
             Assert.AreEqual("-42", scalars["i"]);
             Assert.AreEqual("9007199254740993", scalars["big"]);

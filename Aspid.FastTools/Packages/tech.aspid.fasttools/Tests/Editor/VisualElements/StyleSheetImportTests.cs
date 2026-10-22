@@ -19,9 +19,9 @@ namespace Aspid.FastTools.UIElements.Tests
     {
         private const string PackagePath = "Packages/tech.aspid.fasttools";
 
-        private static readonly Regex Comment = new(@"/\*.*?\*/", RegexOptions.Singleline);
-        private static readonly Regex Declarations = new(@"\{([^{}]*)\}");
-        private static readonly Regex AlphaHexColor = new(@"#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{4})\b");
+        private static readonly Regex _comment = new(@"/\*.*?\*/", RegexOptions.Singleline);
+        private static readonly Regex _declarations = new(@"\{([^{}]*)\}");
+        private static readonly Regex _alphaHexColor = new(@"#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{4})\b");
 
         [Test]
         public void PackageStyleSheets_ImportWithoutErrorsOrWarnings()
@@ -64,11 +64,11 @@ namespace Aspid.FastTools.UIElements.Tests
 
             foreach (var file in files)
             {
-                var content = Comment.Replace(File.ReadAllText(file), string.Empty);
+                var content = _comment.Replace(File.ReadAllText(file), string.Empty);
 
-                foreach (Match block in Declarations.Matches(content))
+                foreach (Match block in _declarations.Matches(content))
                 {
-                    var color = AlphaHexColor.Match(block.Groups[1].Value);
+                    var color = _alphaHexColor.Match(block.Groups[1].Value);
                     Assert.IsFalse(color.Success, $"{file} uses {color.Value}; write it as rgba(), " +
                         "Unity before 6000.3 cannot parse #RGBA and #RRGGBBAA and drops the whole sheet.");
                 }

@@ -28,7 +28,7 @@ namespace Aspid.FastTools.SampleTests
 
         private const string AbilityCatalogMenu = "Tools/Aspid 🐍/FastTools/Samples/Ability Catalog";
 
-        private static readonly string[] MarkerNames =
+        private static readonly string[] _markerNames =
         {
             "Flock.Update (22)",
             "Flock.ApplyTransforms (29)",
@@ -209,7 +209,7 @@ namespace Aspid.FastTools.SampleTests
                 var handles = new List<ProfilerRecorderHandle>();
                 ProfilerRecorderHandle.GetAvailable(handles);
                 var names = handles.Select(handle => ProfilerRecorderHandle.GetDescription(handle).Name).ToList();
-                CollectionAssert.IsSubsetOf(MarkerNames, names, "The generated marker names changed: the tutorial quotes them.");
+                CollectionAssert.IsSubsetOf(_markerNames, names, "The generated marker names changed: the tutorial quotes them.");
             }
             finally
             {

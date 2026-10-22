@@ -14,8 +14,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
     {
         private const string MissingName = "Missing.Namespace.GoneType, Missing.Assembly";
 
-        private static readonly string StringName = typeof(string).AssemblyQualifiedName;
-        private static readonly string IntName = typeof(int).AssemblyQualifiedName;
+        private static readonly string _stringName = typeof(string).AssemblyQualifiedName;
+        private static readonly string _intName = typeof(int).AssemblyQualifiedName;
 
         private readonly List<Object> _objects = new();
 
@@ -38,26 +38,26 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void Pick_ReportsTheNameChangeToTheParent()
         {
-            var target = CreateTarget(StringName);
+            var target = CreateTarget(_stringName);
             using var serialized = new SerializedObject(target);
             var changes = new List<(string previous, string current)>();
             var field = Draw(serialized.FindProperty(nameof(TypeFieldTestObject.typeName)), changes);
 
-            field.ApplyPicked(assemblyQualifiedName: IntName);
+            field.ApplyPicked(assemblyQualifiedName: _intName);
 
-            CollectionAssert.AreEqual(new[] { (StringName, IntName) }, changes);
-            Assert.AreEqual(IntName, target.typeName);
+            CollectionAssert.AreEqual(new[] { (_stringName, _intName) }, changes);
+            Assert.AreEqual(_intName, target.typeName);
         }
 
         [Test]
         public void PickingTheStoredType_ReportsNothing()
         {
-            var target = CreateTarget(StringName);
+            var target = CreateTarget(_stringName);
             using var serialized = new SerializedObject(target);
             var changes = new List<(string previous, string current)>();
             var field = Draw(serialized.FindProperty(nameof(TypeFieldTestObject.typeName)), changes);
 
-            field.ApplyPicked(assemblyQualifiedName: StringName);
+            field.ApplyPicked(assemblyQualifiedName: _stringName);
 
             Assert.IsEmpty(changes);
         }
@@ -65,14 +65,14 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void ChoosingNone_ReportsTheClearedName()
         {
-            var target = CreateTarget(StringName);
+            var target = CreateTarget(_stringName);
             using var serialized = new SerializedObject(target);
             var changes = new List<(string previous, string current)>();
             var field = Draw(serialized.FindProperty(nameof(TypeFieldTestObject.typeName)), changes);
 
             field.ApplyPicked(assemblyQualifiedName: null);
 
-            CollectionAssert.AreEqual(new[] { (StringName, string.Empty) }, changes);
+            CollectionAssert.AreEqual(new[] { (_stringName, string.Empty) }, changes);
             Assert.AreEqual(string.Empty, target.typeName);
         }
 
@@ -84,32 +84,32 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var changes = new List<(string previous, string current)>();
             var field = Draw(serialized.FindProperty(nameof(TypeFieldTestObject.typeName)), changes);
 
-            field.ApplyPicked(assemblyQualifiedName: IntName);
+            field.ApplyPicked(assemblyQualifiedName: _intName);
 
-            CollectionAssert.AreEqual(new[] { (MissingName, IntName) }, changes);
+            CollectionAssert.AreEqual(new[] { (MissingName, _intName) }, changes);
         }
 
         [Test]
         public void PickInMixedState_ReportsOnceAndWritesEveryTarget()
         {
-            var first = CreateTarget(StringName);
-            var second = CreateTarget(IntName);
+            var first = CreateTarget(_stringName);
+            var second = CreateTarget(_intName);
             using var serialized = new SerializedObject(new Object[] { first, second });
             var changes = new List<(string previous, string current)>();
             var field = Draw(serialized.FindProperty(nameof(TypeFieldTestObject.typeName)), changes);
             Assert.IsTrue(field.showMixedValue, "Precondition: the targets differ.");
 
-            field.ApplyPicked(assemblyQualifiedName: StringName);
+            field.ApplyPicked(assemblyQualifiedName: _stringName);
 
             Assert.AreEqual(1, changes.Count);
-            Assert.AreEqual(StringName, first.typeName);
-            Assert.AreEqual(StringName, second.typeName);
+            Assert.AreEqual(_stringName, first.typeName);
+            Assert.AreEqual(_stringName, second.typeName);
         }
 
         [Test]
         public void DisplayTextChangeFromInsideTheDrawer_DoesNotReachTheParent()
         {
-            var target = CreateTarget(StringName);
+            var target = CreateTarget(_stringName);
             using var serialized = new SerializedObject(target);
             var changes = new List<(string previous, string current)>();
             var field = Draw(serialized.FindProperty(nameof(TypeFieldTestObject.typeName)), changes);

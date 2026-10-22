@@ -45,7 +45,7 @@ namespace UnityEngine
 
     // The package's own TypeSelectorAttribute, TypeAllow and Type wrappers, embedded by the csproj: a rename or a
     // namespace move there fails these tests instead of silently disabling the diagnostics in Unity.
-    private static readonly (string FileName, string Source)[] PackageSources = typeof(TypeSelectorAnalyzerTests).Assembly
+    private static readonly (string FileName, string Source)[] _packageSources = typeof(TypeSelectorAnalyzerTests).Assembly
         .GetManifestResourceNames()
         .Where(name => name.StartsWith("PackageSources/", StringComparison.Ordinal))
         .Select(name => (Path.GetFileName(name), ReadResource(name)))
@@ -1144,7 +1144,7 @@ class C { [SerializeField, TypeSelector(typeof(System.Object))] private string _
 
         test.TestState.Sources.Add(code);
         test.TestState.Sources.Add(("UnityStubs.cs", UnityStubs));
-        foreach (var (fileName, source) in PackageSources)
+        foreach (var (fileName, source) in _packageSources)
             test.TestState.Sources.Add((fileName, source));
 
         test.SolutionTransforms.Add((solution, projectId) =>

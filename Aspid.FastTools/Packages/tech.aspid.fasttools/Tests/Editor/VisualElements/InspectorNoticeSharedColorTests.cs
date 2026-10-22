@@ -15,7 +15,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     internal sealed class InspectorNoticeSharedColorTests
     {
         // Unity's light-skin inspector background, --unity-colors-window-background.
-        private static readonly Color LightSkinBackground = new Color32(200, 200, 200, 255);
+        private static readonly Color _lightSkinBackground = new Color32(200, 200, 200, 255);
 
         [Test]
         public void LightSkin_TextAndHoverRead()
@@ -26,9 +26,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 var text = InspectorNoticeGUI.SharedTextColor(rid, lightSkin: true);
                 var hover = InspectorNoticeGUI.SharedHoverColor(text, lightSkin: true);
 
-                Assert.GreaterOrEqual(Contrast(text, LightSkinBackground), 4.5f,
+                Assert.GreaterOrEqual(Contrast(text, _lightSkinBackground), 4.5f,
                     $"Shared reference #{index}: the text {text} must read at 4.5:1 on the light skin.");
-                Assert.GreaterOrEqual(Contrast(hover, LightSkinBackground), 4.5f,
+                Assert.GreaterOrEqual(Contrast(hover, _lightSkinBackground), 4.5f,
                     $"Shared reference #{index}: the hovered link {hover} must read at 4.5:1 on the light skin.");
             }
         }
