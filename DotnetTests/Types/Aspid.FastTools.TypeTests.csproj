@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <!-- Runs the GenericTypeResolver NUnit tests outside Unity. The tests are compiled from the package sources as-is
-         against the resolver in Resolver/, an assembly of its own on .NET Standard 2.1. -->
+    <!-- Runs the GenericTypeResolver and TypeUtility NUnit tests outside Unity. The tests are compiled from the package
+         sources as-is against the resolver in Resolver/, an assembly of its own on .NET Standard 2.1. -->
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <!-- The C# version of Unity 6000.0, so a newer language feature fails here as it would in Unity. -->
@@ -18,9 +18,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- GenericTypeResolverTests.Unity.cs holds the tests that need Unity types or the real argument filter of the
-             Editor assembly; the Unity job runs them. -->
-        <Compile Include="$(_TypeTests)GenericTypeResolverTests.cs"
+        <!-- A *.Unity.cs part holds the tests of its fixture that need Unity types or the Editor assembly (the real
+             argument filter, TypeInfo); the Unity job runs them. -->
+        <Compile Include="$(_TypeTests)GenericTypeResolverTests.cs;
+                          $(_TypeTests)TypeUtilityTests.cs"
                  Link="Tests/%(Filename)%(Extension)" />
     </ItemGroup>
 
