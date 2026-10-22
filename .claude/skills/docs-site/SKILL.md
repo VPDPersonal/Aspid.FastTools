@@ -13,8 +13,7 @@ Write GitHub Flavored Markdown; the site adapts to it, never the other way round
 The UPM package (`Aspid.FastTools/Packages/tech.aspid.fasttools/`) ships no documentation pages or images: everything in
 that folder reaches every consumer project through `git subtree split` in `release.yml`. It keeps only `README.md`
 (a description and the site link; it gives no git URL, because a store buyer who follows one adds a second copy, and
-no install steps, because whoever reads it has the package already) and the samples overview `Samples~/README.md`
-(+ `README.ru.md`). A sample ships no README: its `description` in `package.json` → `samples` ends with
+no install steps, because whoever reads it has the package already). `Samples~` ships no README: its `description` in `package.json` → `samples` ends with
 `Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>`. The Package Manager shows that line as
 text; the Welcome tab cuts it off the description (`WelcomeView.SplitTutorialUrl`) and shows a **Tutorial** link.
 Never add an image, a full page or a sample README there.
@@ -33,7 +32,7 @@ Never add an image, a full page or a sample README there.
 | Interface strings | `Website/i18n/ru/**/*.json` (`code.json`, `navbar.json`, each plugin's `current.json`) | |
 | Images | `Website/docs/Images/`, `Website/tutorials/<Sample>/Images/` | referenced relatively |
 | Root README | generated from `Website/docs/README.md` in GitHub's layout (committed); translations live on the site only | — |
-| Package README, samples overview | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md`, `Samples~/README*.md` | — |
+| Package README | `Aspid.FastTools/Packages/tech.aspid.fasttools/README.md` | — |
 | Package changelog | generated from the root `CHANGELOG.md` with its `.meta` by `release.yml` (`scripts/package-changelog.mjs`); gitignored, only the `upm` branches carry it; Unity's Package Manager reads it | — |
 | Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
@@ -70,8 +69,8 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
 - **Links** are relative paths to the `.md` file: `[EnumValues](08-enum-values.md)`, from a sample
   `[Selector](../../docs/04-serialize-reference-selector.md)`, from a doc `[Types sample](../tutorials/Types/README.md)`.
   GitHub follows them as files; `Website/src/remark/crossInstanceLinks.js` resolves each link against the page's file
-  and rewrites a target in the other plugin instance to its site route. The samples overview is linked as the
-  package `Samples~/README.md` (`README.ru.md`), which lists the samples on GitHub; the site sends it to `/tutorials`.
+  and rewrites a target in the other plugin instance to its site route. The samples overview is the tutorials
+  gallery `Website/tutorials/index.mdx`; the root README links it as `<site>tutorials`.
   Never link by site URL — except from the
   package README, which ships without the site sources and links `https://vpdpersonal.github.io/Aspid.FastTools/…`.
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
@@ -258,9 +257,7 @@ to refresh the root `README.md`.
    for both, no scene titles; a scene may add a looping clip — `docs/media/samples-gallery/README.md`).
 4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its folder name
    to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
-5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) with a link to
-   `https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>` (`/ru/tutorials/<slug>`), and register it in the
-   package `package.json` → `samples` with a `description` that ends with
+5. Register it in the package `package.json` → `samples` with a `description` that ends with
    `Tutorial: https://vpdpersonal.github.io/Aspid.FastTools/tutorials/<slug>`.
 
 ## Local run / check
@@ -319,8 +316,7 @@ which a fresh worktree's `docusaurus start` fails. The changelogs reach the site
 - `npm --prefix Website run check-translations` (CI) checks that every English page has a Russian twin and that the twin
   has the heading levels, code blocks, images and link targets of its source. Only prose, `//` comments, text blocks
   and same-page anchors may differ, so make every structural change in both languages. The twin is required for
-  `Website/docs/`, `Website/tutorials/` (`.md` and `.mdx`), the samples overview `Samples~/README.md` and
-  `CHANGELOG.md`; the package README and the root README have none. The two changelogs must also list the same
+  `Website/docs/`, `Website/tutorials/` (`.md` and `.mdx`) and `CHANGELOG.md`; the package README and the root README have none. The two changelogs must also list the same
   releases (version and date) and the same number of entries in every section.
 - `npm --prefix Website run check-selectors` (CI, after the build) looks in the built stylesheets for a hashed class
   for every name fragment that the site selects (`[class*='docMainContainer_']`). A Docusaurus update can rename such

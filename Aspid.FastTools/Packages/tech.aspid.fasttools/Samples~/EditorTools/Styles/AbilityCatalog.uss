@@ -1,8 +1,5 @@
 @import url("SampleFonts.uss");
 
-/* Colours and corners are only --aspid-* tokens of AddAspidWindowTheme, so the catalog follows any FastTools theme.
-   Element-qualified selectors outrank Unity's own control rules. */
-
 .ability-catalog {
     background-color: var(--aspid-colors-surface-card);
     color: var(--aspid-colors-text-light);
@@ -58,7 +55,6 @@
     border-left-color: rgba(0, 0, 0, 0);
 }
 
-/* ListView puts the item classes on the row that makeItem returns. */
 .ability-row.unity-collection-view__item--selected {
     border-left-color: var(--aspid-colors-accent-text-light);
 }
@@ -171,7 +167,6 @@
     color: var(--aspid-colors-accent-text-light);
 }
 
-/* Centring the line, not only its text, keeps the caret of an empty field centred. */
 .ability-catalog .unity-base-text-field__input {
     min-height: 32px;
     margin: 0;
@@ -185,7 +180,6 @@
     font-size: 14px;
     -unity-text-align: middle-left;
     --unity-cursor-color: var(--aspid-colors-text-lightness);
-    /* Unity draws the selection over the text. */
     --unity-selection-color: var(--aspid-colors-overlay-control-hover);
 }
 
@@ -304,7 +298,6 @@
     color: var(--aspid-colors-accent-text-lightness);
 }
 
-/* The "+" glyph sits low in its line box. */
 .ability-catalog Button.ability-button--icon {
     width: 32px;
     padding: 0 0 2.5px 0;

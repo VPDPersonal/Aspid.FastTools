@@ -1,28 +1,16 @@
 using System;
 using UnityEngine;
-using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Samples.SerializeReferences
+namespace Aspid.FastTools.Samples.SerializeReferences.Weapons
 {
-    /// <summary>
-    /// <see cref="IRanged"/> that randomizes the number of pellets hitting the target.
-    /// </summary>
     [Serializable]
-    [TypeSelectorDisplay(Group = "Weapons/Ranged")]
-    public sealed class Shotgun : IRanged
+    public sealed class Shotgun : IWeapon
     {
-        [Tooltip("Damage dealt by each pellet that hits.")]
-        [SerializeField, Min(0)] private int _damage = 6;
+        [SerializeField] [Min(0)] private int _damage = 6;
+        [SerializeField] [Min(1)] private int _pellets = 8;
 
-        [Tooltip("Maximum number of pellets that can hit the target.")]
-        [SerializeField, Min(1)] private int _pellets = 8;
-
-        /// <inheritdoc/>
-        public string Name => "Shotgun";
-
-        /// <inheritdoc/>
         public int Fire() =>
-            _damage * UnityEngine.Random.Range(_pellets / 2, _pellets + 1);
+            _damage * UnityEngine.Random.Range(minInclusive: _pellets / 2, maxExclusive: _pellets + 1);
     }
 }

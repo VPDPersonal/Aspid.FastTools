@@ -2,16 +2,14 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Samples.Types
+namespace Aspid.FastTools.Samples.Types.Presentation
 {
-    /// <summary>
-    /// <see cref="MonoBehaviour"/> that preserves the authored 16:9 camera framing.
-    /// </summary>
-    [ExecuteAlways, RequireComponent(typeof(Camera)), AddComponentMenu("")]
+    [ExecuteAlways]
+    [RequireComponent(typeof(Camera))]
     public sealed class SampleFrame : MonoBehaviour
     {
-        [Tooltip("Orthographic size at the authored aspect ratio.")]
-        [SerializeField, HideInInspector] private float _referenceSize = 11f;
+        private const float ReferenceSize = 11f;
+
         private Camera _camera;
 
         private void OnEnable()
@@ -24,8 +22,11 @@ namespace Aspid.FastTools.Samples.Types
         {
             RenderPipelineManager.beginCameraRendering -= BeforeRender;
             if (_camera != null)
-                _camera.orthographicSize = _referenceSize;
+                _camera.orthographicSize = ReferenceSize;
         }
+
+        private void OnPreCull() =>
+            Frame();
 
         private void BeforeRender(ScriptableRenderContext context, Camera camera)
         {
@@ -33,16 +34,17 @@ namespace Aspid.FastTools.Samples.Types
                 Frame();
         }
 
-        private void OnPreCull() => Frame();
-
         private void Frame()
         {
             if (_camera == null)
                 return;
 
             var target = _camera.targetTexture;
-            var aspect = target != null ? (float)target.width / target.height : _camera.aspect;
-            _camera.orthographicSize = _referenceSize * Mathf.Max(1f, (16f / 9f) / Mathf.Max(aspect, 0.01f));
+            var aspect = target != null
+                ? (float)target.width / target.height
+                : _camera.aspect;
+
+            _camera.orthographicSize = ReferenceSize * Mathf.Max(a: 1f, b: 16f / 9f / Mathf.Max(a: aspect, b: 0.01f));
         }
     }
 }

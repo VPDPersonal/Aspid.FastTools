@@ -27,9 +27,9 @@ test('translated pages link translated targets and get the same routes', () => {
   assert.deepEqual(links(page(...ruTutorials, 'Types', 'README.md'), '../../../docusaurus-plugin-content-docs/current/03-type-selector.md'), ['/docs/type-selector']);
 });
 
-test('the samples overview in the package goes to the gallery', () => {
-  const overview = '../../Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~';
-  assert.deepEqual(links(page('docs', '02-serializable-types.md'), `${overview}/README.md`, `${overview}/README.ru.md#types`), ['/tutorials', '/tutorials#types']);
+test('the tutorials index goes to the gallery', () => {
+  assert.deepEqual(links(page('docs', 'README.md'), '../tutorials/index.mdx', '../tutorials/index.mdx#types'), ['/tutorials', '/tutorials#types']);
+  assert.deepEqual(links(page(...ruDocs, 'README.md'), '../../docusaurus-plugin-content-docs-tutorials/current/index.mdx'), ['/tutorials']);
 });
 
 test('links inside one instance, external links, anchors and images stay as they are', () => {

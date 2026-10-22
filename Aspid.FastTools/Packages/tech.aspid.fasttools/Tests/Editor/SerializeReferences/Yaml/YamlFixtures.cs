@@ -6,7 +6,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
     /// Real-format Unity YAML fixtures and temp-file helpers for the <see cref="SerializeReferenceYamlEditor"/> tests.
-    /// The prefab text is copied verbatim from the <c>Samples~/SerializeReferences</c> demo so the parser is exercised
+    /// The prefab text is Unity-written YAML of a scene with the sample's script GUIDs, so the parser is exercised
     /// against Unity's exact indentation, <c>references:</c>/<c>RefIds:</c>/<c>data:</c> layout and field-pointer shapes
     /// (single managed ref, list of managed refs, nested managed ref). The strings are written at column 0 inside the
     /// verbatim literal — their leading whitespace IS the YAML indentation and must not be reflowed.
@@ -399,8 +399,8 @@ MonoBehaviour:
         // A ScriptableObject whose only [SerializeReference] fields are all unassigned: a single null field (_weapon)
         // and an empty list (_alternates), so the RefIds block holds nothing but Unity's shared null sentinel
         // ("- rid: -2"). It carries zero real nodes yet one field pointer, so the scanner must still surface it (one
-        // "<None>" root) rather than dropping the whole document as "no managed references". Mirrors the demo's
-        // BrokenWeaponPreset after its broken reference is cleared to <None>.
+        // "<None>" root) rather than dropping the whole document as "no managed references". Mirrors a preset asset
+        // whose broken reference was cleared to <None>.
         public const string AllUnassignedAsset =
 @"%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
