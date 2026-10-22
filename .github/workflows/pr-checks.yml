@@ -61,6 +61,7 @@ jobs:
               ['DotnetTests/Types/', 'area: editor'],
               ['Aspid.FastTools/Assets/DevTests~/', 'area: editor'],
               ['Aspid.FastTools/Assets/DevTools/', 'area: editor'],
+              ['Aspid.FastTools/Assets/SampleTests~/', 'area: samples'],
               ['Website/', 'area: website'],
               ['Website/docs/', 'area: docs'],
               ['Website/tutorials/', 'area: docs'],

@@ -23,8 +23,9 @@ import { fileURLToPath } from 'node:url';
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
 const PACKAGE = 'Aspid.FastTools/Packages/tech.aspid.fasttools';
-// The dev project's own files: the fixtures that the Import DevTests menu links into Assets/, and its dev tools.
-const DEV = ['Aspid.FastTools/Assets/DevTests~', 'Aspid.FastTools/Assets/DevTools'];
+// The dev project's own files: the fixtures that the Import DevTests menu links into Assets/, its dev tools, and the
+// sample tests that make-unity-test-project.sh copies into the test project.
+const DEV = ['Aspid.FastTools/Assets/DevTests~', 'Aspid.FastTools/Assets/DevTools', 'Aspid.FastTools/Assets/SampleTests~'];
 const INSTALL_PREFIX = 'Aspid/FastTools/';
 const PATH_LIMIT = 140;
 const LICENSE = 'LICENSE';

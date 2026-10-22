@@ -13,16 +13,13 @@ using UnityEngine.SceneManagement;
 using Unity.Profiling.LowLevel.Unsafe;
 using Object = UnityEngine.Object;
 
-namespace Aspid.FastTools.Editors.Tests
+namespace Aspid.FastTools.SampleTests
 {
     // Opens the imported samples and pins the values and the Play behaviour that their tutorials and GIFs show. The
-    // samples are found by the GUIDs of their kept files, so the test works wherever they were imported. A consumer who
-    // worked through the tutorials has changed those values on purpose, so the test runs only when ci.yml passes the
-    // strict-setup argument.
+    // samples are found by the GUIDs of their kept files, so the test works wherever they were imported. It checks this
+    // repository's samples, so it stays out of the package: make-unity-test-project.sh copies it into the test project.
     internal sealed class SampleSmokeTests
     {
-        private const string StrictSetupArgument = "-aspidFastToolsStrictSetup";
-
         private const string TypesScene = "437b8a1e72b0e44e3ad8760e9cf7661e";
         private const string SerializeReferencesScene = "b596d2bc3fe634a92b1a5929055fcecc";
         private const string EnumValuesScene = "b9ccf7ebdae7141378708ad956275a8e";
@@ -43,13 +40,6 @@ namespace Aspid.FastTools.Editors.Tests
         };
 
         private readonly List<string> _messages = new();
-
-        [SetUp]
-        public void RequireStrictSetup()
-        {
-            if (!Environment.GetCommandLineArgs().Contains(StrictSetupArgument))
-                Assert.Ignore($"The sample smoke tests run only with {StrictSetupArgument}: tutorials change the samples on purpose.");
-        }
 
         [TestCase(TypesScene)]
         [TestCase(SerializeReferencesScene)]

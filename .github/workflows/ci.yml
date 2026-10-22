@@ -52,6 +52,7 @@ jobs:
             Aspid.FastTools/Packages/tech.aspid.fasttools
             Aspid.FastTools/Assets/DevTests~
             Aspid.FastTools/Assets/DevTools
+            Aspid.FastTools/Assets/SampleTests~
             Website/tutorials
             Website/i18n/ru/docusaurus-plugin-content-docs-tutorials
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -260,8 +261,8 @@ jobs:
           fi
           echo "versions=$(jq -cn '$ARGS.positional' --args "${versions[@]}")" >> "$GITHUB_OUTPUT"
 
-          # What the Unity jobs read: the package except its Markdown, and their own setup.
-          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|scripts/make-unity-test-project\.sh$|\.github/workflows/ci\.yml$)'
+          # What the Unity jobs read: the package except its Markdown, the sample tests, and their own setup.
+          relevant='^(Aspid\.FastTools/Packages/tech\.aspid\.fasttools/|Aspid\.FastTools/Assets/SampleTests~/|scripts/make-unity-test-project\.sh$|\.github/workflows/ci\.yml$)'
 
           # "all" when the changed files are unknown: a release, a new branch, a failed API call, a truncated list.
           files=all
@@ -372,11 +373,12 @@ jobs:
       GAMECI_VERSION: v0.1.72
       GAMECI_SHA256: 1de550a620ee92e05e920b6db7d431621440b60b2577f04b4a997dc92a58cb0a
     steps:
-      # What the test project reads: the package and the script that builds the project.
+      # What the test project reads: the package, the sample tests and the script that builds the project.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
             Aspid.FastTools/Packages/tech.aspid.fasttools
+            Aspid.FastTools/Assets/SampleTests~
             scripts
 
       - name: Create the test project
