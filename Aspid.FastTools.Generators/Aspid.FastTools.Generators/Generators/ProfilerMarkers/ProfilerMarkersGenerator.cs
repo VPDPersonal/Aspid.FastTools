@@ -46,7 +46,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         var model = context.SemanticModel;
         var receiverType = model.GetTypeInfo(access.Expression, ct).Type;
 
-        if (MarkerCallRules.GetMarker(model.GetSymbolInfo(invocation, ct), receiverType) is null)
+        if (GetMarker(model.GetSymbolInfo(invocation, ct), receiverType) is null)
             return null;
 
         if (MarkerCallRules.FindEnclosingMember(model.GetEnclosingSymbol(invocation.SpanStart, ct)) is not { ContainingType: { } type } member)
@@ -63,7 +63,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             ? MarkerCallRules.GetConstantName(nameArgument, model, ct) ?? markerName
             : markerName;
 
-        var line = MarkerCallRules.GetCallerLine(invocation);
+        var line = GetCallerLine(invocation);
 
         return new MarkerCall(
             type: BuildTypeData(type),
@@ -71,8 +71,36 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             fieldName: $"{markerName}_Marker_Line_{line}",
             label: label,
             filePath: invocation.SyntaxTree.FilePath,
-            column: MarkerCallRules.GetCallerColumn(invocation));
+            column: GetCallerColumn(invocation));
     }
+
+    // The Marker() the call binds to: the package fallback, or an overload another assembly generated —
+    // extension lookup stops at the nearest namespace, so a base type's overload in the caller's namespace
+    // hides the global fallback. A ref struct cannot be a type argument of the generic fallback, so its call
+    // only has the fallback as a candidate; the generated overload is what makes it compile.
+    private static IMethodSymbol? GetMarker(SymbolInfo symbolInfo, ITypeSymbol? receiverType)
+    {
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return MarkerCallRules.IsMarker(method)
+                ? method
+                : null;
+        }
+
+        if (receiverType is not { IsRefLikeType: true })
+            return null;
+
+        return symbolInfo.CandidateSymbols
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(MarkerCallRules.IsMarker);
+    }
+
+    // The line [CallerLineNumber] passes for an invocation: the mapped line of its opening parenthesis.
+    private static int GetCallerLine(InvocationExpressionSyntax invocation) =>
+        invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Line + 1;
+
+    private static int GetCallerColumn(InvocationExpressionSyntax invocation) =>
+        invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Character;
 
     private static TypeData BuildTypeData(INamedTypeSymbol symbol)
     {
@@ -82,10 +110,12 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
 
         // Arity is part of every type name so Foo, Foo<T> and Outer<T>.Inner stay distinct.
         var containing = new Stack<INamedTypeSymbol>();
+
         for (var t = symbol.ContainingType; t is not null; t = t.ContainingType)
             containing.Push(t);
 
         var nameBuilder = new StringBuilder("__");
+
         foreach (var t in containing)
             AppendNameWithArity(nameBuilder, t).Append('_');
 
@@ -207,6 +237,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
     private static string ToIdentifier(string name)
     {
         var builder = new StringBuilder(name.Length);
+
         foreach (var c in name)
         {
             builder.Append(SyntaxFacts.IsIdentifierPartCharacter(c)
@@ -232,6 +263,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             return string.Empty;
 
         var clauses = new List<string>();
+
         foreach (var tp in typeParameters)
         {
             var constraints = new List<string>();

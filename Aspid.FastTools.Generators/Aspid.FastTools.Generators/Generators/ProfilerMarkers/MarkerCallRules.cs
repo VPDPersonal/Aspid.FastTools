@@ -33,27 +33,6 @@ internal static class MarkerCallRules
                 && attribute.ConstructorArguments.Length > 0
                 && attribute.ConstructorArguments[0].Value as string == GeneratorName);
 
-    // The Marker() the call binds to: the package fallback, or an overload another assembly generated —
-    // extension lookup stops at the nearest namespace, so a base type's overload in the caller's namespace
-    // hides the global fallback. A ref struct cannot be a type argument of the generic fallback, so its call
-    // only has the fallback as a candidate; the generated overload is what makes it compile.
-    public static IMethodSymbol? GetMarker(SymbolInfo symbolInfo, ITypeSymbol? receiverType)
-    {
-        if (symbolInfo.Symbol is IMethodSymbol method)
-        {
-            return IsMarker(method)
-                ? method
-                : null;
-        }
-
-        if (receiverType is not { IsRefLikeType: true })
-            return null;
-
-        return symbolInfo.CandidateSymbols
-            .OfType<IMethodSymbol>()
-            .FirstOrDefault(IsMarker);
-    }
-
     public static bool IsMarker(IMethodSymbol? method) =>
         method is { Name: "Marker" }
         && (IsPackageMethod(method) || IsGeneratedOverload(method));
@@ -78,13 +57,6 @@ internal static class MarkerCallRules
 
         return null;
     }
-
-    // The line [CallerLineNumber] passes for an invocation: the mapped line of its opening parenthesis.
-    public static int GetCallerLine(InvocationExpressionSyntax invocation) =>
-        invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Line + 1;
-
-    public static int GetCallerColumn(InvocationExpressionSyntax invocation) =>
-        invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Character;
 
     // Why a Marker() call written in a member of type gets no marker, or null when it gets one.
     public static string? GetUnsupportedReason(
@@ -141,6 +113,7 @@ internal static class MarkerCallRules
     public static ExpressionSyntax? FindWithNameArgument(InvocationExpressionSyntax invocation, SemanticModel model, CancellationToken ct)
     {
         SyntaxNode outer = invocation;
+
         while (outer.Parent is ParenthesizedExpressionSyntax paren)
             outer = paren;
 
@@ -165,6 +138,7 @@ internal static class MarkerCallRules
             return null;
 
         var builder = new StringBuilder();
+
         foreach (var content in interpolated.Contents)
         {
             switch (content)
@@ -194,6 +168,7 @@ internal static class MarkerCallRules
     public static IReadOnlyList<ITypeParameterSymbol> GetChainTypeParameters(INamedTypeSymbol type)
     {
         var chain = new Stack<INamedTypeSymbol>();
+
         for (var t = type; t is not null; t = t.ContainingType)
             chain.Push(t);
 
@@ -219,7 +194,6 @@ internal static class MarkerCallRules
     private static bool HasUniqueTypeParameterNames(INamedTypeSymbol type)
     {
         var names = new HashSet<string>();
-
         return GetChainTypeParameters(type).All(tp => names.Add(tp.Name));
     }
 
