@@ -173,12 +173,4 @@ The URL installs the latest preview; **Update** in the Package Manager installs 
 
 ## Support the project
 
-<table>
-<tr>
-<td>
-<h3>Enjoying Aspid.FastTools?</h3>
-<p>Aspid.FastTools is developed in spare time. If it helps you, support its development on the <a href="https://assetstore.unity.com/packages/package/2333465">Unity Asset Store</a>.</p>
-<p><a href="https://assetstore.unity.com/packages/package/2333465"><img src="Website/docs/Images/support-asset-store.svg" alt="Support on the Asset Store" height="48"></a></p>
-</td>
-</tr>
-</table>
+<a href="https://assetstore.unity.com/packages/package/2333465"><img src="Website/docs/Images/support-card.svg" alt="Aspid.FastTools is developed in spare time. If it helps you, support its development on the Unity Asset Store." width="100%"></a>

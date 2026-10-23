@@ -10,14 +10,14 @@
  *   a code preview gives way to the recording of the site's animated preview (`Website/docs/Images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
  * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line;
- * - the donation section becomes a framed card like the site's (src/components/DonatePanel): its title, the sentence
- *   and a button image linking the Asset Store (`Website/docs/Images/support-asset-store.svg`).
+ * - the donation sentence gives way to the image of the site's donation card (src/components/DonatePanel), linking
+ *   the Asset Store (`Website/docs/Images/support-card.svg`); the sentence becomes its alt text.
  * The README shows only the dark images: a <picture> per theme follows the system theme, not GitHub's, so it showed the
  * light ones on a dark GitHub page.
  * All file URLs are already relative to the README.
  */
 
-// The site's English strings: FeatureCardMore in src/theme/MDXComponents, InstallPanel, SupportPanel and DonatePanel.
+// The site's English strings: FeatureCardMore in src/theme/MDXComponents, InstallPanel and SupportPanel.
 const TEXT = {
   more: 'Read more',
   steps: [
@@ -31,8 +31,6 @@ const TEXT = {
   hint: 'Include your Unity version, package version and steps to reproduce.',
   issue: 'Open an issue',
   star: 'Star on GitHub',
-  donate: 'Enjoying Aspid.FastTools?',
-  donateAction: 'Support on the Asset Store',
 };
 
 const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -196,20 +194,20 @@ function supportPanel(tree, repository) {
 }
 
 /**
- * The donation section: one sentence linking the Asset Store. It becomes a one-cell table, which GitHub frames, with
- * the site card's title and a button image under the sentence.
+ * The donation section: one sentence linking the Asset Store. GitHub cannot style a card, so the sentence gives way to
+ * an image of the site's one, linking the store.
  */
 function donateCard(tree, {images, exists}) {
   const isStore = (url) => /^https:\/\/assetstore\.unity\.com\//.test(url);
-  const button = `${images}/support-asset-store.svg`;
+  const card = `${images}/support-card.svg`;
   const index = tree.children.findIndex((node, at) => isHeading(node, 2) && tree.children[at + 1]?.type === 'paragraph'
     && tree.children[at + 1].children.some((part) => part.type === 'link' && isStore(part.url))
     && (!tree.children[at + 2] || tree.children[at + 2].type === 'heading'));
-  if (index === -1 || !exists(button)) return;
+  if (index === -1 || !exists(card)) return;
   const sentence = tree.children[index + 1].children;
   const store = escape(sentence.find((part) => part.type === 'link' && isStore(part.url)).url);
-  tree.children[index + 1] = html(`<table>\n<tr>\n<td>\n<h3>${TEXT.donate}</h3>\n<p>${inline(sentence)}</p>\n`
-    + `<p><a href="${store}">${image(button, TEXT.donateAction, ' height="48"')}</a></p>\n</td>\n</tr>\n</table>`);
+  const alt = escape(sentence.map(function text(part) { return part.value ?? part.children?.map(text).join('') ?? ''; }).join(''));
+  tree.children[index + 1] = html(`<a href="${store}">${image(card, alt, ' width="100%"')}</a>`);
 }
 
 

@@ -95,14 +95,12 @@ test('the help section becomes the call to action, without the licence line', ()
     + '<p><a href="https://github.com/owner/repo/issues"><b>Open an issue</b></a> · <a href="https://github.com/owner/repo">Star on GitHub</a></p>\n');
 });
 
-test('the donation section becomes a framed card with the button image', () => {
+test('the donation sentence gives way to the card image, the sentence its alt text', () => {
   const store = 'https://assetstore.unity.com/packages/package/1';
   const section = `## Support\n\nSupport it on the [Asset Store](${store}).\n`;
-  assert.equal(layout(section, ['Website/docs/Images/support-asset-store.svg']), '## Support\n\n<table>\n<tr>\n<td>\n'
-    + `<h3>Enjoying Aspid.FastTools?</h3>\n<p>Support it on the <a href="${store}">Asset Store</a>.</p>\n`
-    + `<p><a href="${store}"><img src="Website/docs/Images/support-asset-store.svg" alt="Support on the Asset Store" height="48"></a></p>\n`
-    + '</td>\n</tr>\n</table>\n');
-  assert.equal(layout(section), section, 'without the button image the section stays as it is');
+  assert.equal(layout(section, ['Website/docs/Images/support-card.svg']), '## Support\n\n'
+    + `<a href="${store}"><img src="Website/docs/Images/support-card.svg" alt="Support it on the Asset Store." width="100%"></a>\n`);
+  assert.equal(layout(section), section, 'without the card image the section stays as it is');
 });
 
 test('images and the banner stay as they are, without a light variant', () => {
