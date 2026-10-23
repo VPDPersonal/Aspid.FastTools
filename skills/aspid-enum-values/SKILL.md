@@ -5,7 +5,7 @@ description: "Aspid.FastTools EnumValues<TEnum, TValue> and EnumValues<TValue>: 
 
 # EnumValues
 
-Namespace `Aspid.FastTools.Enums`. If the user's scripts have an `.asmdef`, it must reference `Aspid.FastTools`.
+Namespace `Aspid.FastTools.Enums`. If the user's scripts have an `.asmdef`, add `"Aspid.FastTools"` to its `references`.
 
 A read-only table of rows (enum member -> value) plus a **Default Value** returned when no row matches.
 Data comes only from Unity serialization: there is no `Add`, `Remove`, indexer or setter.
@@ -30,6 +30,10 @@ public sealed class DamageConfig : ScriptableObject
   hand or via right-click on the table header -> **Populate Missing Enum Members**. For enums without `[Flags]`,
   only members whose value differs from the default need a row. A flags row set to Default Value can override a partial match.
   Populate skips `[Obsolete]` members and is unavailable while several objects are selected.
+- Code cannot fill a table (no `Add`, no constructor that takes rows). A field that replaces hard-coded values (a
+  `switch`, constants) is empty on every existing object, and its Default Value is `default(TValue)` (`0`, `null`)
+  until someone edits it. Keep the old fallback in code so nothing breaks meanwhile -
+  `_table.TryGetValue(key, out var v) ? v : 1f` - and list the old values in the reply so the user can enter them.
 - `foreach (var (key, value) in table)` yields rows in list order (struct enumerator, no allocation; through
   `IEnumerable<T>` or LINQ the enumerator is boxed and allocates), never the default, and skips rows whose key
   no longer resolves. `Count` is the number of rows it yields.
