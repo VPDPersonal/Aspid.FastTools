@@ -137,3 +137,7 @@ Report bugs or ask questions in [GitHub Issues](https://github.com/VPDPersonal/A
 If the package helps you, star it on [GitHub](https://github.com/VPDPersonal/Aspid.FastTools).
 
 Distributed under the [MIT License](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).
+
+## Support the project
+
+Aspid.FastTools is developed in spare time. If it helps you, support its development on the [Unity Asset Store](https://assetstore.unity.com/packages/package/2333465).

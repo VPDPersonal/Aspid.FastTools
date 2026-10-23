@@ -50,6 +50,13 @@ for (const [language, file] of Object.entries(introduction)) {
     assert.match(attribute(support, 'repo'), /^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/);
   });
 
+  test(`${language} introduction: the donation section becomes a card with a button to the Asset Store`, () => {
+    const [donate, ...more] = find(tree, element('DonatePanel'));
+    assert.equal(more.length, 0);
+    assert.match(attribute(donate, 'href'), /^https:\/\/assetstore\.unity\.com\//);
+    assert.equal(find(donate, node => node.type === 'link').length, 0, 'the button carries the link');
+  });
+
   test(`${language} introduction: absolute links to the site become site links`, () => {
     const site = `${options.siteUrl}${options.baseUrl}`;
     assert.ok(find(tree, node => node.type === 'link' && node.url.startsWith(site)).length === 0);

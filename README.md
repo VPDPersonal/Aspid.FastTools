@@ -177,3 +177,7 @@ Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store
 
 <p>Found a bug or have a question? Include your Unity version, package version and steps to reproduce.</p>
 <p><a href="https://github.com/VPDPersonal/Aspid.FastTools/issues"><b>Open an issue</b></a> · <a href="https://github.com/VPDPersonal/Aspid.FastTools">Star on GitHub</a></p>
+
+## Support the project
+
+<a href="https://assetstore.unity.com/packages/package/2333465"><img src="Website/docs/Images/support-card.svg" alt="Aspid.FastTools is developed in spare time. If it helps you, support its development on the Unity Asset Store." width="100%"></a>

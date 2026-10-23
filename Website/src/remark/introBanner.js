@@ -234,6 +234,20 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           {type: 'mdxJsxAttribute', name: 'repo', value: repo},
         ]});
       }
+      // The donation section — one sentence linking the Asset Store — becomes a card with a button to it; the link in
+      // the sentence turns into plain text, since the button carries it.
+      const isStore = (url) => /^https:\/\/assetstore\.unity\.com\//.test(url);
+      const donate = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
+        && tree.children[index + 1]?.type === 'paragraph'
+        && tree.children[index + 1].children.some((part) => part.type === 'link' && isStore(part.url))
+        && (!tree.children[index + 2] || tree.children[index + 2].type === 'heading'));
+      if (donate !== -1) {
+        const sentence = tree.children[donate + 1].children;
+        const store = sentence.find((part) => part.type === 'link' && isStore(part.url));
+        tree.children[donate + 1] = {type: 'mdxJsxFlowElement', name: 'DonatePanel',
+          attributes: [{type: 'mdxJsxAttribute', name: 'href', value: store.url}],
+          children: sentence.flatMap((part) => (part === store ? part.children : [part]))};
+      }
       // Keep absolute site links on GitHub, and native local links on the site.
       function visit(node) {
         if (node.type === 'link') {
