@@ -34,7 +34,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private ushort[] _indices = Array.Empty<ushort>();
 
         // The field's own clock: it advances only while the field is watched, so a paused field resumes where it stopped.
-        private float _time = (float)EditorApplication.timeSinceStartup;
+        private float _time;
         private double _lastTick = EditorApplication.timeSinceStartup;
         private readonly IVisualElementScheduledItem _animation;
         private bool _dotsVisible = true;
