@@ -32,7 +32,9 @@ internal static class ExtensionClassBody
             var className = MakeUnique(type.ClassName, name => classNames.Add((type.Namespace ?? string.Empty) + "." + name));
 
             // Hint names compare case-insensitively and may not contain '@'.
-            var hintPrefix = type.Namespace is null ? string.Empty : type.Namespace.Replace("@", string.Empty) + ".";
+            var hintPrefix = type.Namespace is null
+                ? string.Empty
+                : type.Namespace.Replace("@", string.Empty) + ".";
             var hintName = MakeUnique(hintPrefix + className, name => hintNames.Add(name));
 
             // Calls sharing a line share the first one's marker: [CallerLineNumber] cannot tell them apart.
@@ -50,12 +52,15 @@ internal static class ExtensionClassBody
 
     private static string MakeUnique(string name, Func<string, bool> tryAdd)
     {
-        if (tryAdd(name)) return name;
+        if (tryAdd(name))
+            return name;
 
         for (var i = 2; ; i++)
         {
             var candidate = $"{name}_{i}";
-            if (tryAdd(candidate)) return candidate;
+
+            if (tryAdd(candidate))
+                return candidate;
         }
     }
 
@@ -98,36 +103,45 @@ internal static class ExtensionClassBody
 
         if (isPerClosedType)
         {
-            code.AppendLine($"private static class {names.Markers}{type.TypeParamList}{type.ConstraintsClause}")
+            code
+                .AppendLine($"private static class {names.Markers}{type.TypeParamList}{type.ConstraintsClause}")
                 .BeginBlock();
         }
 
-        var fieldVisibility = isPerClosedType ? "public" : "private";
+        var fieldVisibility = isPerClosedType
+            ? "public"
+            : "private";
 
         for (var i = 0; i < calls.Length; i++)
         {
-            if (i > 0) code.AppendLine();
+            if (i > 0)
+                code.AppendLine();
 
             var call = calls[i];
-            code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
+
+            code
+                .AppendLine($"[{ProfilerMarkerGeneratedCode}]")
                 .AppendLine($"{fieldVisibility} static readonly {ProfilerMarker} {call.FieldName} = new({BuildMarkerValueExpression(type, names, call, isPerClosedType)});");
         }
 
         if (isPerClosedType)
         {
-            code.EndBlock()
+            code
+                .EndBlock()
                 .AppendLine()
                 .AppendTypeNameHelper(names);
         }
 
-        return code.AppendLine("#endif")
+        return code
+            .AppendLine("#endif")
             .AppendLine();
     }
 
     // Formats typeof(T) the way C# writes it, so List<int> and List<string>, or Outer<int>.Inner and
     // Outer<string>.Inner, get different marker names. A nested type's arguments include its declaring types'.
     private static CodeWriter AppendTypeNameHelper(this CodeWriter code, GeneratedNames names) =>
-        code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
+        code
+            .AppendLine($"[{ProfilerMarkerGeneratedCode}]")
             .AppendLine($"private static string {names.TypeName}(global::System.Type type)")
             .BeginBlock()
             .AppendLine("if (type.IsArray)")
@@ -166,20 +180,27 @@ internal static class ExtensionClassBody
     {
         // A struct is taken by reference: by value, every call copies the whole instance, which is never read.
         // The fallback Marker<T>(this T) still loses: it is generic and less specific.
-        var modifier = type.IsValueType ? "in " : string.Empty;
+        var modifier = type.IsValueType
+            ? "in "
+            : string.Empty;
 
-        code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
+        code
+            .AppendLine($"[{ProfilerMarkerGeneratedCode}]")
             .AppendLine($"public static {ProfilerMarker}.AutoScope Marker{type.TypeParamList}(this {modifier}{type.FullyQualifiedDisplay} {names.Instance}, [{CallerLineNumberAttribute}] int {names.Line} = -1){type.ConstraintsClause}")
             .BeginBlock()
             .AppendLine("#if ENABLE_PROFILER")
             .AppendLine($"switch ({names.Line})")
             .BeginBlock();
 
-        var prefix = isPerClosedType ? $"{names.Markers}{type.TypeParamList}." : string.Empty;
+        var prefix = isPerClosedType
+            ? $"{names.Markers}{type.TypeParamList}."
+            : string.Empty;
+
         foreach (var call in calls)
             code.AppendLine($"case {call.Line}: return {prefix}{call.FieldName}.Auto();");
 
-        code.EndBlock()
+        code
+            .EndBlock()
             .AppendLine("#endif")
             .AppendLine("return default;")
             .EndBlock();
@@ -210,6 +231,7 @@ internal static class ExtensionClassBody
 
         var prefix = ToLiteral($"{type.TypeName}<");
         var suffix = ToLiteral($">.{call.Label} ({call.Line})");
+
         return $"{prefix} + {typeofExpressions} + {suffix}";
     }
 
@@ -239,14 +261,21 @@ internal static class ExtensionClassBody
                     // U+0085, U+2028 and U+2029 end a line inside a C# literal; a surrogate written
                     // on its own would not survive the UTF-8 source text.
                     if (c < ' ' || c is >= '\u007F' and <= '\u009F' || c is (char)0x2028 or (char)0x2029 || char.IsSurrogate(c))
-                        builder.Append("\\u").Append(((int)c).ToString("x4"));
+                    {
+                        builder
+                            .Append("\\u")
+                            .Append(((int)c).ToString("x4"));
+                    }
                     else
+                    {
                         builder.Append(c);
+                    }
                     break;
             }
         }
 
         builder.Append('"');
+
         return builder.ToString();
     }
 
