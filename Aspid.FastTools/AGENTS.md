@@ -22,7 +22,9 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 - The SerializeReference YAML engine (`DotnetTests/Yaml/`) and `GenericTypeResolver`, `GenericArgumentFilter`,
   `TypeUtility` (`DotnetTests/Types/`) compile outside Unity: C# 9, .NET Standard 2.1 for the engine, and no
   Unity API except the stubbed `Debug.LogError`, `AssetDatabase.MakeEditable`, `UnityEngine.Object` and
-  `CompilationPipeline.GetAssemblies`. A test that needs the Editor goes into its fixture's `*.Unity.cs` part.
+  `CompilationPipeline.GetAssemblies`. A test that needs the Editor goes into its fixture's `*.Unity.cs` part. A slow
+  test of plain C# that the Unity job need not repeat on every version goes into a `*.Dotnet.cs` part inside
+  `#if !UNITY_EDITOR`: only `dotnet test` runs it.
 - `Tests/Editor/PublicApi/PublicApi.txt` in the package is the public API snapshot. After an intended API change,
   rewrite it on the Unity version that `WholeApiVersion` in `PublicApiSnapshotTests` names, or a newer one, and commit
   it in the same PR. From the repository root:
