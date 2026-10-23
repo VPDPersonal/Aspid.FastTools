@@ -141,7 +141,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             _panel.Root.Add(logo);
             yield return null;
 
-            // The pulse writes this inline scale on every tick, so a stopped pulse would leave it behind.
+            // The pulse writes this inline scale on every tick while hovered, so a stopped pulse would leave it behind.
             logo.style.scale = new Scale(new Vector3(1.04f, 1.04f, 1f));
 
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
@@ -192,6 +192,46 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             AspidAnimatedDotsBackgroundSettings.Enabled = false;
             Send<PointerEnterEvent>(logo);
             Assert.IsFalse(logo.IsCyclingColors, "Hovering the logo with the setting off must not cycle its colors.");
+        }
+
+        [UnityTest]
+        public IEnumerator Title_Unwatched_StaysAtRest()
+        {
+            var title = new AspidAnimatedTitle("Title");
+            _panel.Root.Add(title);
+            yield return null;
+
+            // A test panel belongs to no Editor window, so nobody watches the title.
+            title.UpdateAnimation();
+            yield return null;
+
+            foreach (var letter in title.Query<Label>().ToList())
+            {
+                Assert.AreEqual(title.Color2, letter.resolvedStyle.color, "An unwatched title must not change color.");
+                Assert.AreEqual(Vector3.zero, letter.resolvedStyle.translate, "An unwatched title must not wave.");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Logo_Pulse_RunsOnlyWhileHovered()
+        {
+            var logo = new AspidAnimatedLogo();
+            _panel.Root.Add(logo);
+            yield return null;
+
+            logo.UpdatePulse();
+            Assert.AreEqual(StyleKeyword.Null, logo.style.scale.keyword, "A logo nobody hovers must not write a scale.");
+
+            Send<PointerEnterEvent>(logo);
+            logo.UpdatePulse();
+            Assert.AreNotEqual(StyleKeyword.Null, logo.style.scale.keyword, "A hovered logo must pulse.");
+
+            Send<PointerLeaveEvent>(logo);
+            for (var i = 0; i < 200; i++)
+                logo.UpdatePulse();
+
+            Assert.AreEqual(StyleKeyword.Null, logo.style.scale.keyword,
+                "A logo the pointer left must fade back to its natural size.");
         }
 
         [UnityTest]
