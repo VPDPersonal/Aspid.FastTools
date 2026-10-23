@@ -186,11 +186,11 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
                 "A one-line [Header] takes the 1.5 lines Unity's HeaderDrawer reserves.");
         }
 
+        // EditorStyles needs a graphics device: under -nographics the Editor does not build it.
         [Test]
+        [Category("Graphics")]
         public void GetHeight_NestedReferenceWithMultiLineHeader_AddsTheFurtherLines()
         {
-            if (!HasEditorStyles()) Assert.Ignore("Needs EditorStyles, which the Editor does not build without a graphics device.");
-
             var headed = _serializedObject.FindProperty("headed");
             var multiLine = _serializedObject.FindProperty("multiLineHeaded");
             headed.isExpanded = true;
@@ -201,12 +201,6 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
             var twoLines = EditorStyles.boldLabel.CalcHeight(new GUIContent("Title\nSecond line"), width: 1f);
             Assert.AreEqual(twoLines / 2f, furtherLines, 0.001f, "The second line of the [Header] text adds one line.");
-        }
-
-        private static bool HasEditorStyles()
-        {
-            try { return EditorStyles.boldLabel is not null; }
-            catch (NullReferenceException) { return false; }
         }
     }
 }
