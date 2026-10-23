@@ -21,7 +21,6 @@ internal readonly struct MarkerCall(
     public readonly string FilePath = filePath;
     public readonly int Column = column;
 
-    #region Equals & GetHashCode
     public bool Equals(MarkerCall other) =>
         Type.Equals(other.Type)
         && Line == other.Line
@@ -47,5 +46,4 @@ internal readonly struct MarkerCall(
             return hash;
         }
     }
-    #endregion
 }

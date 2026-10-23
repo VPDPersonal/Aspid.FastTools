@@ -36,7 +36,6 @@ internal readonly struct TypeData(
     // [Obsolete] when one of them is: only an obsolete context silences CS0612, CS0618 and CS0619.
     public readonly bool IsObsolete = isObsolete;
 
-    #region Equals & GetHashCode
     public bool Equals(TypeData other) =>
         TypeKey == other.TypeKey
         && TypeName == other.TypeName
@@ -72,5 +71,4 @@ internal readonly struct TypeData(
             return hash;
         }
     }
-    #endregion
 }

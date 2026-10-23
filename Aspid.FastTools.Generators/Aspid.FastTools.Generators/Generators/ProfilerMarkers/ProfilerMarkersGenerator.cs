@@ -26,16 +26,17 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(collected, GenerateCode);
     }
 
-    private static bool Predicate(SyntaxNode node, CancellationToken _) => node is InvocationExpressionSyntax
-    {
-        Expression: MemberAccessExpressionSyntax
+    private static bool Predicate(SyntaxNode node, CancellationToken _) =>
+        node is InvocationExpressionSyntax
         {
-            Name: IdentifierNameSyntax
+            Expression: MemberAccessExpressionSyntax
             {
-                Identifier.ValueText: "Marker"
+                Name: IdentifierNameSyntax
+                {
+                    Identifier.ValueText: "Marker"
+                }
             }
-        }
-    };
+        };
 
     private static MarkerCall? Transform(GeneratorSyntaxContext context, CancellationToken ct)
     {
@@ -135,11 +136,12 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         }
     }
 
-    private static bool HasObsoleteAttribute(ISymbol symbol) => symbol
-        .GetAttributes()
-        .Any(static attribute =>
-            attribute.AttributeClass is { Name: "ObsoleteAttribute" } attributeClass
-            && attributeClass.ContainingNamespace.ToDisplayString() == "System");
+    private static bool HasObsoleteAttribute(ISymbol symbol) =>
+        symbol
+            .GetAttributes()
+            .Any(static attribute =>
+                attribute.AttributeClass is { Name: "ObsoleteAttribute" } attributeClass
+                && attributeClass.ContainingNamespace.ToDisplayString() == "System");
 
     private static StringBuilder AppendNameWithArity(StringBuilder builder, INamedTypeSymbol type)
     {
@@ -170,19 +172,20 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         return ToIdentifier(name);
     }
 
-    private static string ResolveMethodName(IMethodSymbol method) => method.AssociatedSymbol switch
-    {
-        IPropertySymbol property => ResolvePropertyName(property),
-        IEventSymbol @event => ResolveEventName(@event),
-        _ => method.MethodKind switch
+    private static string ResolveMethodName(IMethodSymbol method) =>
+        method.AssociatedSymbol switch
         {
-            MethodKind.Constructor => "Ctor",
-            MethodKind.StaticConstructor => "StaticCtor",
-            _ => method.ExplicitInterfaceImplementations.Length > 0
-                ? method.ExplicitInterfaceImplementations[0].Name
-                : method.Name
-        }
-    };
+            IPropertySymbol property => ResolvePropertyName(property),
+            IEventSymbol @event => ResolveEventName(@event),
+            _ => method.MethodKind switch
+            {
+                MethodKind.Constructor => "Ctor",
+                MethodKind.StaticConstructor => "StaticCtor",
+                _ => method.ExplicitInterfaceImplementations.Length > 0
+                    ? method.ExplicitInterfaceImplementations[0].Name
+                    : method.Name
+            }
+        };
 
     private static string ResolvePropertyName(IPropertySymbol property)
     {
@@ -195,9 +198,10 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             : property.Name;
     }
 
-    private static string ResolveEventName(IEventSymbol @event) => @event.ExplicitInterfaceImplementations.Length > 0
-        ? @event.ExplicitInterfaceImplementations[0].Name
-        : @event.Name;
+    private static string ResolveEventName(IEventSymbol @event) =>
+        @event.ExplicitInterfaceImplementations.Length > 0
+            ? @event.ExplicitInterfaceImplementations[0].Name
+            : @event.Name;
 
     // The name starts the generated field name, so anything that is not an identifier character becomes '_'.
     private static string ToIdentifier(string name)
