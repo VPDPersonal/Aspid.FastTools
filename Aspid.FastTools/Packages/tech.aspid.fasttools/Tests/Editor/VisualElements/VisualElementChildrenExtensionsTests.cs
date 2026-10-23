@@ -174,5 +174,41 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(count, view.hierarchy.childCount);
             Assert.IsNull(child.hierarchy.parent);
         }
+
+        [TestCase(true, ExpectedResult = 1)]
+        [TestCase(false, ExpectedResult = 0)]
+        public int AddChildIf_AddsOnlyWhenTrue(bool condition) =>
+            new VisualElement().AddChildIf(condition, new VisualElement()).childCount;
+
+        [TestCase(true, ExpectedResult = "x")]
+        [TestCase(false, ExpectedResult = "a")]
+        public string InsertChildIf_InsertsOnlyWhenTrue(bool condition) =>
+            CreateParent(out _).InsertChildIf(condition, 0, new VisualElement { name = "x" })[0].name;
+
+        [TestCase(true, ExpectedResult = 2)]
+        [TestCase(false, ExpectedResult = 3)]
+        public int RemoveChildIf_RemovesOnlyWhenTrue(bool condition) =>
+            CreateParent(out var children).RemoveChildIf(condition, children[1]).childCount;
+
+        [TestCase(true, ExpectedResult = "b")]
+        [TestCase(false, ExpectedResult = "a")]
+        public string RemoveChildAtIf_RemovesOnlyWhenTrue(bool condition) =>
+            CreateParent(out _).RemoveChildAtIf(condition, 0)[0].name;
+
+        [TestCase(true, ExpectedResult = 0)]
+        [TestCase(false, ExpectedResult = 3)]
+        public int ClearChildrenIf_ClearsOnlyWhenTrue(bool condition) =>
+            CreateParent(out _).ClearChildrenIf(condition).childCount;
+
+        // VisualElement.Remove throws for an element that is not its child.
+        [Test]
+        public void RemoveChild_NullAndForeignElement_LeaveElementUnchanged()
+        {
+            var parent = CreateParent(out var children);
+
+            parent.RemoveChild(null).RemoveChild(new VisualElement());
+
+            CollectionAssert.AreEqual(children, parent.Children().ToArray());
+        }
     }
 }

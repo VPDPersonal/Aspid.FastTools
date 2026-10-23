@@ -172,5 +172,49 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             CollectionAssert.IsEmpty(element.GetClasses());
         }
+
+        [TestCase(true, ExpectedResult = true)]
+        [TestCase(false, ExpectedResult = false)]
+        public bool AddClassIf_AddsOnlyWhenTrue(bool condition) =>
+            new VisualElement().AddClassIf(condition, "a").ClassListContains("a");
+
+        [TestCase(true, ExpectedResult = false)]
+        [TestCase(false, ExpectedResult = true)]
+        public bool RemoveClassIf_RemovesOnlyWhenTrue(bool condition) =>
+            CreateElement().RemoveClassIf(condition, "a").ClassListContains("a");
+
+        [TestCase(true, ExpectedResult = false)]
+        [TestCase(false, ExpectedResult = true)]
+        public bool ToggleClassIf_TogglesOnlyWhenTrue(bool condition) =>
+            CreateElement().ToggleClassIf(condition, "a").ClassListContains("a");
+
+        [Test]
+        public void ToggleClass_AddsAnAbsentClassAndRemovesAPresentOne()
+        {
+            var element = new VisualElement();
+
+            Assert.IsTrue(element.ToggleClass("a").ClassListContains("a"));
+            Assert.IsFalse(element.ToggleClass("a").ClassListContains("a"));
+        }
+
+        [Test]
+        public void SingleClassMethods_Null_LeaveElementUnchanged()
+        {
+            var element = CreateElement();
+
+            element.AddClass(null).RemoveClass(null).ToggleClass(null);
+
+            CollectionAssert.AreEqual(_classNames, element.GetClasses().ToArray());
+        }
+
+        [Test]
+        public void ClearClasses_RemovesEveryClass()
+        {
+            var element = CreateElement();
+
+            element.ClearClasses();
+
+            CollectionAssert.IsEmpty(element.GetClasses());
+        }
     }
 }
