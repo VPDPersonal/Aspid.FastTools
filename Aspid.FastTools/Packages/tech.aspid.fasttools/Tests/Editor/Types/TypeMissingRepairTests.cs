@@ -146,7 +146,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
             finally
             {
                 window.rootVisualElement.Clear();
-                Object.DestroyImmediate(window);
+                window.Close();
                 Undo.ClearUndo(target);
                 Object.DestroyImmediate(target);
             }
