@@ -21,7 +21,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager установит следующую.
 
-Нужна Unity 6000.0.53f1 или новее. Установили из Asset Store? Пакет уже в проекте.
+Нужна Unity 6000.0.53f1 или новее. Если пакет у вас из Asset Store, git URL не нужен: установите его из **My Assets** в Package Manager.
 
 <details>
 <summary>Решение проблем</summary>

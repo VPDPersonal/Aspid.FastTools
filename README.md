@@ -34,7 +34,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
 
-Requires Unity 6000.0.53f1 or newer. Installed from the Asset Store? The package is already in your project.
+Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store, skip the git URL and install it from **My Assets** in the Package Manager.
 
 <details>
 <summary>Troubleshooting</summary>
