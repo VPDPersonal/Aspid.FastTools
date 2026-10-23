@@ -212,5 +212,64 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             Assert.AreEqual(2, element.styleSheets.count);
         }
+
+        [TestCase(true, ExpectedResult = 1)]
+        [TestCase(false, ExpectedResult = 0)]
+        public int AddStyleSheetIf_AddsOnlyWhenTrue(bool condition) =>
+            new VisualElement().AddStyleSheetIf(condition, _first).styleSheets.count;
+
+        [TestCase(true, ExpectedResult = 0)]
+        [TestCase(false, ExpectedResult = 1)]
+        public int RemoveStyleSheetIf_RemovesOnlyWhenTrue(bool condition) =>
+            new VisualElement().AddStyleSheet(_first).RemoveStyleSheetIf(condition, _first).styleSheets.count;
+
+        [TestCase(true, ExpectedResult = 0)]
+        [TestCase(false, ExpectedResult = 1)]
+        public int EnableStyleSheetIf_AppliesOnlyWhenTrue(bool condition) =>
+            new VisualElement().AddStyleSheet(_first).EnableStyleSheetIf(condition, _first, enable: false).styleSheets.count;
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void InsertStyleSheetIf_InsertsOnlyWhenTrue(bool condition)
+        {
+            var element = new VisualElement().AddStyleSheet(_first);
+
+            element.InsertStyleSheetIf(condition, 0, _second);
+
+            CollectionAssert.AreEqual(condition ? new[] { _second, _first } : new[] { _first }, GetStyleSheets(element));
+        }
+
+        [Test]
+        public void InsertStyleSheetFromResources_InsertsAtIndex()
+        {
+            var element = new VisualElement().AddStyleSheet(_first);
+
+            element.InsertStyleSheetFromResources(0, ExistingPath);
+
+            Assert.AreEqual(2, element.styleSheets.count);
+            Assert.AreSame(_first, element.styleSheets[1]);
+        }
+
+        [Test]
+        public void EnableStyleSheetFromResources_AddsAndRemoves()
+        {
+            var element = new VisualElement();
+
+            element.EnableStyleSheetFromResources(ExistingPath, enable: true);
+            Assert.AreEqual(1, element.styleSheets.count);
+
+            element.EnableStyleSheetFromResources(ExistingPath, enable: false);
+            Assert.AreEqual(0, element.styleSheets.count);
+        }
+
+        [Test]
+        public void RemoveStyleSheetFromResources_KeepsOtherStyleSheets()
+        {
+            var element = new VisualElement().AddStyleSheet(_first).AddStyleSheetFromResources(ExistingPath);
+
+            element.RemoveStyleSheetFromResources(ExistingPath);
+
+            CollectionAssert.AreEqual(new[] { _first }, GetStyleSheets(element));
+        }
     }
 }
