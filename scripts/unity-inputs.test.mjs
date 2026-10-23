@@ -89,7 +89,7 @@ test('code, assets and the text that the tests read are inputs', () => {
     `${PACKAGE}/Runtime/Item.cs.meta`,
     `${PACKAGE}/Runtime/Aspid.FastTools.asmdef`,
     `${PACKAGE}/Aspid.FastTools.Generators.dll.meta`,
-    `${PACKAGE}/Tests/Editor/PublicApi/PublicApi.txt`,
+    `${PACKAGE}/Tests/Editor/Scripts/PublicApi/PublicApi.txt`,
     `${PACKAGE}/Editor/Resources/UI/Components/Aspid-FastTools-InspectorNotice.uss`,
     `${PACKAGE}/Samples~/Types/Fonts/IBMPlexMono-Regular.ttf`,
     `${PACKAGE}/Samples~/Types/Notes.txt`,

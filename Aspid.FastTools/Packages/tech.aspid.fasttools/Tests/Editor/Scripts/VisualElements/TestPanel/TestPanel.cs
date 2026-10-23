@@ -14,7 +14,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         // A committed asset instead of CreateInstance: a new PanelSettings without a theme makes the Editor write
         // a default theme into the project's Assets folder.
         private const string SettingsPath =
-            "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/TestPanel/AspidFastToolsTestPanelSettings.asset";
+            "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/VisualElements/TestPanel/AspidFastToolsTestPanelSettings.asset";
 
         private readonly GameObject _host;
         private readonly PanelSettings _settings;

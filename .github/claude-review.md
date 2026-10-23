@@ -29,7 +29,7 @@ Do not report:
   sources, version files, missing `.meta` files, translations, SKILL.md frontmatter.
 - Style and naming that `.editorconfig`, the `asp-ft-code-style` and `asp-ft-samples` skills and AGENTS.md do not
   cover.
-- The content of generated files: `Website/api/`, the committed DLLs, `Tests/Editor/PublicApi/PublicApi.txt`.
+- The content of generated files: `Website/api/`, the committed DLLs, `Tests/Editor/Scripts/PublicApi/PublicApi.txt`.
 
 On a review of the commits after your last review, check only those commits and whether your earlier findings are
 fixed. Do not repeat a finding that is fixed or that the author answered with a reason.

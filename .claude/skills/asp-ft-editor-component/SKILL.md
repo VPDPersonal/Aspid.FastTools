@@ -72,5 +72,5 @@ owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` 
   renaming a class, namespace or attribute breaks those files.
 - A component shown without a host that applied the theme sheets has unresolved colours: fix the host.
 
-Tests that depend on resolved USS go in `PKG/Tests/Editor/VisualElements/` (see
+Tests that depend on resolved USS go in `PKG/Tests/Editor/Scripts/VisualElements/` (see
 `AspidAnimatedDotsBackgroundStatusTests.cs`: host in an `EditorWindow`, `AddAspidThemeStyleSheets()`, `yield return null`).
