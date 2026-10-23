@@ -92,6 +92,8 @@ Unity -batchmode -projectPath . \
 - `-srGateFail` fails on violations with exit code `1`. `-srGateWarnOnly` only logs them, exit code `0`. Without
   either flag the **Build / CI gate** mode of the project settings applies, and `Off` skips the check.
 - Exit code `2` means the check itself failed.
+- Binary-serialized assets and Git LFS pointers are not scanned, only listed in the report. Add `-srGateStrict` to fail
+  on them too (Asset Serialization Mode **Force Text** avoids them).
 - `-srGateReport <path>` (default `SerializeReferenceGateReport.txt`; the folder must exist) gets one tab-separated
   line per violation: `KIND assetPath fileId rid className fieldPath origin`. The report starts with `#` comment
   lines (counts and files not scanned); skip empty lines and lines that start with `#`.
