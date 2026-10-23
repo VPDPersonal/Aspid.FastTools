@@ -451,7 +451,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
             finally
             {
                 window.rootVisualElement.Clear();
-                UnityEngine.Object.DestroyImmediate(window);
+                window.Close();
                 UnityEngine.Object.DestroyImmediate(holder);
             }
         }

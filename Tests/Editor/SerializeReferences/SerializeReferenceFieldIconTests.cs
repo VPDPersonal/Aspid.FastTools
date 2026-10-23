@@ -40,7 +40,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
         [TearDown]
         public void TearDown()
         {
-            if (_window) Object.DestroyImmediate(_window);
+            if (_window) _window.Close();
             if (_first) Object.DestroyImmediate(_first);
             if (_second) Object.DestroyImmediate(_second);
             TypeFieldIconSettings.Enabled = _enabled;

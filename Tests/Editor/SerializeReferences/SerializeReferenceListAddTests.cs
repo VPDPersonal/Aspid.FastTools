@@ -141,7 +141,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
             }
             finally
             {
-                Object.DestroyImmediate(window);
+                window.Close();
                 Object.DestroyImmediate(obj);
             }
         }
@@ -165,7 +165,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
             }
             finally
             {
-                Object.DestroyImmediate(window);
+                window.Close();
                 Object.DestroyImmediate(editor);
                 Object.DestroyImmediate(first);
                 Object.DestroyImmediate(second);
