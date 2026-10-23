@@ -29,6 +29,31 @@ namespace Aspid.FastTools.Tests.Editors.Types
         [TypeSelectorDisplay(Hidden = true)]
         private sealed class HiddenScanProbe : IScanProbe { }
 
+        // What the checks of the scan read from one type, read once instead of once per combination.
+        private sealed class ScannedType
+        {
+            public readonly Type Type;
+            public readonly bool IsStatic;
+            public readonly bool IsHidden;
+            public readonly bool IsAbstract;
+            public readonly bool IsInterface;
+            public readonly bool IsEditorOnly;
+            public readonly bool IsCompilerGenerated;
+
+            public ScannedType(Type type)
+            {
+                Type = type;
+                IsStatic = type.IsAbstract && type.IsSealed;
+                IsAbstract = type.IsAbstract;
+                IsInterface = type.IsInterface;
+                IsEditorOnly = TypeUtility.IsEditorOnlyAssembly(type.Assembly);
+                IsCompilerGenerated = TypeUtility.IsCompilerGenerated(type);
+
+                // The scan reads the attributes of a type only after the checks above have kept it.
+                IsHidden = !IsStatic && !IsCompilerGenerated && TypeSelectorHelpers.IsHiddenFromPicker(type);
+            }
+        }
+
         private static readonly Func<Type, bool>[] _filters =
         {
             null,
@@ -176,13 +201,14 @@ namespace Aspid.FastTools.Tests.Editors.Types
         private static void AssertMatchesAScan(params Type[] baseTypes)
         {
             var turn = 0;
+            var assignable = AssignableTypes(baseTypes);
 
             foreach (var allow in new[] { TypeAllow.None, TypeAllow.Abstract, TypeAllow.Interface, TypeAllow.All })
             foreach (var includeHidden in new[] { false, true })
             foreach (var excludeEditorOnly in new[] { false, true })
             {
                 var filter = _filters[turn++ % _filters.Length];
-                var expected = ScanEveryType(baseTypes, allow, filter, includeHidden, excludeEditorOnly);
+                var expected = ScanEveryType(assignable, allow, filter, includeHidden, excludeEditorOnly);
                 var message = $"{string.Join(", ", baseTypes.Select(type => type.Name))}: allow {allow}, " +
                               $"includeHidden {includeHidden}, excludeEditorOnly {excludeEditorOnly}, filter #{turn - 1}";
 
@@ -199,21 +225,29 @@ namespace Aspid.FastTools.Tests.Editors.Types
 
         // The scan GetAllTypeInfos made before it kept the candidates: every check on every loaded type, at every call.
         private static string[] ScanEveryType(
-            Type[] baseTypes,
+            ScannedType[] assignable,
             TypeAllow allow,
             Func<Type, bool> filter,
             bool includeHidden,
             bool excludeEditorOnly) =>
+            assignable
+                .Where(scanned => !scanned.IsStatic &&
+                    (allow.HasFlag(TypeAllow.Abstract) || scanned.IsInterface || !scanned.IsAbstract) &&
+                    (allow.HasFlag(TypeAllow.Interface) || !scanned.IsInterface) &&
+                    (!excludeEditorOnly || !scanned.IsEditorOnly) &&
+                    !scanned.IsCompilerGenerated &&
+                    (includeHidden || !scanned.IsHidden) &&
+                    (filter is null || filter(scanned.Type)))
+                .Select(scanned => scanned.Type.AssemblyQualifiedName)
+                .ToArray();
+
+        // Every loaded type that derives from all the base types, in the order of TypeUtility.DomainTypes, with what the
+        // checks of the scan read from it. The Editor loads tens of thousands of types and the combinations differ only
+        // in how they weigh these facts, so each type is reflected on once per base types, not once per combination.
+        private static ScannedType[] AssignableTypes(Type[] baseTypes) =>
             TypeUtility.DomainTypes
-                .Where(type => baseTypes.All(baseType => baseType.IsAssignableFrom(type)) &&
-                    !(type.IsAbstract && type.IsSealed) &&
-                    (allow.HasFlag(TypeAllow.Abstract) || type.IsInterface || !type.IsAbstract) &&
-                    (allow.HasFlag(TypeAllow.Interface) || !type.IsInterface) &&
-                    (!excludeEditorOnly || !TypeUtility.IsEditorOnlyAssembly(type.Assembly)) &&
-                    !TypeUtility.IsCompilerGenerated(type) &&
-                    (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(type)) &&
-                    (filter is null || filter(type)))
-                .Select(type => type.AssemblyQualifiedName)
+                .Where(type => baseTypes.All(baseType => baseType.IsAssignableFrom(type)))
+                .Select(type => new ScannedType(type))
                 .ToArray();
 
         // Defining a dynamic assembly raises AppDomain.AssemblyLoad, as loading a file does. The assembly stays loaded

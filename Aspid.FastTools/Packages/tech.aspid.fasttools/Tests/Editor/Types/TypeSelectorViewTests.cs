@@ -7,7 +7,6 @@ using UnityEngine.TestTools;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
-using Object = UnityEngine.Object;
 using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
@@ -42,7 +41,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
         [TearDown]
         public void TearDown()
         {
-            if (_window) Object.DestroyImmediate(_window);
+            if (_window) _window.Close();
 
             TypeSelectorPreferences.ClearRecents();
             if (!string.IsNullOrEmpty(_recentsJson))

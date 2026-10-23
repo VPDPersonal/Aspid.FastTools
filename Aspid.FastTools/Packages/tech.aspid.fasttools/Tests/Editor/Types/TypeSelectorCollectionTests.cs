@@ -51,7 +51,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
         [TearDown]
         public void TearDown()
         {
-            if (_window) Object.DestroyImmediate(_window);
+            if (_window) _window.Close();
             if (_target) Object.DestroyImmediate(_target);
         }
 

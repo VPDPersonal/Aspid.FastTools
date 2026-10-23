@@ -2,6 +2,8 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
@@ -186,27 +188,47 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
                 "A one-line [Header] takes the 1.5 lines Unity's HeaderDrawer reserves.");
         }
 
-        [Test]
-        public void GetHeight_NestedReferenceWithMultiLineHeader_AddsTheFurtherLines()
+        // EditorStyles exists only inside an OnGUI pass, so the heights are read in one, in a shown window, which needs
+        // a graphics device.
+        [UnityTest]
+        [Category("Graphics")]
+        public IEnumerator GetHeight_NestedReferenceWithMultiLineHeader_AddsTheFurtherLines()
         {
-            if (!HasEditorStyles()) Assert.Ignore("Needs EditorStyles, which the Editor does not build without a graphics device.");
-
             var headed = _serializedObject.FindProperty("headed");
             var multiLine = _serializedObject.FindProperty("multiLineHeaded");
             headed.isExpanded = true;
             multiLine.isExpanded = true;
 
-            var furtherLines = SerializeReferenceIMGUIPropertyDrawer.GetHeight(multiLine) -
-                               SerializeReferenceIMGUIPropertyDrawer.GetHeight(headed);
+            var drawn = false;
+            var twoLines = 0f;
+            var furtherLines = 0f;
 
-            var twoLines = EditorStyles.boldLabel.CalcHeight(new GUIContent("Title\nSecond line"), width: 1f);
+            var window = ScriptableObject.CreateInstance<EditorWindow>();
+            try
+            {
+                window.ShowUtility();
+                window.rootVisualElement.Add(new IMGUIContainer(() =>
+                {
+                    furtherLines = SerializeReferenceIMGUIPropertyDrawer.GetHeight(multiLine) -
+                                   SerializeReferenceIMGUIPropertyDrawer.GetHeight(headed);
+
+                    twoLines = EditorStyles.boldLabel.CalcHeight(new GUIContent("Title\nSecond line"), width: 1f);
+                    drawn = true;
+                }));
+
+                for (var frame = 0; frame < 5 && !drawn; frame++)
+                {
+                    window.Repaint();
+                    yield return null;
+                }
+            }
+            finally
+            {
+                window.Close();
+            }
+
+            Assert.IsTrue(drawn, "Precondition: the IMGUI container must be painted.");
             Assert.AreEqual(twoLines / 2f, furtherLines, 0.001f, "The second line of the [Header] text adds one line.");
-        }
-
-        private static bool HasEditorStyles()
-        {
-            try { return EditorStyles.boldLabel is not null; }
-            catch (NullReferenceException) { return false; }
         }
     }
 }
