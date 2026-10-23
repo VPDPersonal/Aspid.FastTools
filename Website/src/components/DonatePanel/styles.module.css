@@ -1,0 +1,81 @@
+/*
+ * The donation card closes the introduction, after the support panel. Unlike the quiet panels above it, it carries
+ * colour: a ruby wash with a gradient frame, a heart that beats every few seconds and a filled ruby button.
+ */
+
+.donate {
+  --donate-ruby: var(--venom-ruby);
+  --donate-amber: #e3b341;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 1rem;
+  padding: 26px 28px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--donate-ruby) 16%, transparent), transparent 60%) padding-box,
+    radial-gradient(90% 140% at 100% 100%, color-mix(in srgb, var(--donate-amber) 12%, transparent), transparent 60%) padding-box,
+    linear-gradient(var(--venom-bg), var(--venom-bg)) padding-box,
+    linear-gradient(120deg, var(--donate-ruby), var(--donate-amber)) border-box;
+  box-shadow: 0 18px 44px -24px color-mix(in srgb, var(--donate-ruby) 70%, transparent);
+}
+
+.badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--donate-ruby) 16%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--donate-ruby) 35%, transparent);
+}
+.heart { width: 28px; height: 28px; fill: var(--donate-ruby); animation: beat 2.4s ease-in-out infinite; transform-origin: center; }
+@keyframes beat {
+  0%, 60%, 100% { transform: scale(1); }
+  68% { transform: scale(1.22); }
+  76% { transform: scale(1); }
+  84% { transform: scale(1.14); }
+}
+
+.copy { flex: 1; min-width: 0; }
+.title { max-width: none; margin: 0 0 6px; color: var(--venom-fg-strong); font: 600 1.35rem/1.25 var(--ifm-heading-font-family); letter-spacing: -0.02em; }
+.text { max-width: none; margin: 0; color: var(--venom-fg); font-size: 0.95rem; line-height: 1.55; }
+
+/* Outranks the accent colour and hover underline of the global `.markdown a:not(...)` rule. */
+:global(.markdown) a.action:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 22px;
+  color: #ffffff;
+  background: linear-gradient(120deg, #b53250, #c8425f);
+  border-radius: 10px;
+  box-shadow: 0 8px 22px -10px #b53250;
+  font: 600 0.82rem/1.4 var(--ifm-font-family-monospace);
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+:global(.markdown) a.action:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 12px 26px -10px #b53250;
+}
+.icon { flex: none; width: 17px; height: 17px; fill: currentColor; }
+:global(.markdown) a.action:hover .icon { animation: beat 1.2s ease-in-out infinite; }
+
+@media (max-width: 700px) {
+  .donate { flex-direction: column; align-items: stretch; text-align: center; padding: 22px; }
+  .badge { align-self: center; }
+  :global(.markdown) a.action:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) { justify-content: center; white-space: normal; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .donate *, .donate *::before, .donate *::after { animation: none !important; transition: none !important; }
+}

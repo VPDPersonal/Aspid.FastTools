@@ -9,13 +9,15 @@
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`Website/docs/Images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
- * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line.
+ * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line;
+ * - the donation section becomes a framed card like the site's (src/components/DonatePanel): its title, the sentence
+ *   and a button image linking the Asset Store (`Website/docs/Images/support-asset-store.svg`).
  * The README shows only the dark images: a <picture> per theme follows the system theme, not GitHub's, so it showed the
  * light ones on a dark GitHub page.
  * All file URLs are already relative to the README.
  */
 
-// The site's English strings: FeatureCardMore in src/theme/MDXComponents, InstallPanel and SupportPanel.
+// The site's English strings: FeatureCardMore in src/theme/MDXComponents, InstallPanel, SupportPanel and DonatePanel.
 const TEXT = {
   more: 'Read more',
   steps: [
@@ -29,6 +31,8 @@ const TEXT = {
   hint: 'Include your Unity version, package version and steps to reproduce.',
   issue: 'Open an issue',
   star: 'Star on GitHub',
+  donate: 'Enjoying Aspid.FastTools?',
+  donateAction: 'Support on the Asset Store',
 };
 
 const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -191,6 +195,23 @@ function supportPanel(tree, repository) {
     html(`<p>${TEXT.support} ${TEXT.hint}</p>\n<p><a href="${issues}"><b>${TEXT.issue}</b></a> · <a href="${repository}">${TEXT.star}</a></p>`));
 }
 
+/**
+ * The donation section: one sentence linking the Asset Store. It becomes a one-cell table, which GitHub frames, with
+ * the site card's title and a button image under the sentence.
+ */
+function donateCard(tree, {images, exists}) {
+  const isStore = (url) => /^https:\/\/assetstore\.unity\.com\//.test(url);
+  const button = `${images}/support-asset-store.svg`;
+  const index = tree.children.findIndex((node, at) => isHeading(node, 2) && tree.children[at + 1]?.type === 'paragraph'
+    && tree.children[at + 1].children.some((part) => part.type === 'link' && isStore(part.url))
+    && (!tree.children[at + 2] || tree.children[at + 2].type === 'heading'));
+  if (index === -1 || !exists(button)) return;
+  const sentence = tree.children[index + 1].children;
+  const store = escape(sentence.find((part) => part.type === 'link' && isStore(part.url)).url);
+  tree.children[index + 1] = html(`<table>\n<tr>\n<td>\n<h3>${TEXT.donate}</h3>\n<p>${inline(sentence)}</p>\n`
+    + `<p><a href="${store}">${image(button, TEXT.donateAction, ' height="48"')}</a></p>\n</td>\n</tr>\n</table>`);
+}
+
 
 /**
  * @param tree the README's Markdown tree, its file URLs relative to the README
@@ -198,6 +219,7 @@ function supportPanel(tree, repository) {
  * @param options.locales the site's languages, the default one first
  * @param options.repository the repository's GitHub URL, without a trailing `/`
  * @param options.previews the folder of the preview recordings, relative to the README
+ * @param options.images the folder of the README images, relative to the README
  * @param options.exists whether a URL relative to the README names a file
  */
 export function githubLayout(tree, options) {
@@ -208,4 +230,5 @@ export function githubLayout(tree, options) {
   featureCards(tree, options);
   linkTiles(tree);
   supportPanel(tree, options.repository);
+  donateCard(tree, options);
 }
