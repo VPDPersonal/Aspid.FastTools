@@ -127,7 +127,7 @@ namespace Aspid.FastTools.Types.Editors
                 .GroupBy(type => type.Namespace)
                 .ToDictionary(group => group.Key, group => group.ToList());
 
-            foreach (var child in trie.Children.Values.OrderBy(n => n.Segment))
+            foreach (var child in trie.Children.Values.OrderBy(n => n.Segment, StringComparer.Ordinal))
             {
                 var node = BuildNamespaceNode(child, string.Empty, string.Empty, nsToTypes);
                 root.Children.Add(node);
@@ -170,7 +170,7 @@ namespace Aspid.FastTools.Types.Editors
             if (trieNode.IsTerminal && nsToTypes.TryGetValue(nextNamespace, out var typeInfos))
                 AddTypesWithDisambiguation(node, typeInfos, nextNamespace);
 
-            foreach (var child in trieNode.Children.Values.OrderBy(n => n.Segment))
+            foreach (var child in trieNode.Children.Values.OrderBy(n => n.Segment, StringComparer.Ordinal))
                 node.Children.Add(BuildNamespaceNode(child, nextDisplay, nextNamespace, nsToTypes));
 
             return FlattenSingleChildChain(node);

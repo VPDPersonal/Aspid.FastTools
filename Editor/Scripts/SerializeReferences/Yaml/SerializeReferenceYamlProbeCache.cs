@@ -95,7 +95,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     if (i < Lines.Length && !SerializeReferenceYaml.IsDocumentStart(Lines[i])) continue;
 
-                    // Any "--- " line ends a document, so a range never spans a neighbour whose header failed to parse.
+                    // Any "--- " line ends a document, so a range never spans a neighbor whose header failed to parse.
                     if (current >= 0 && !documents.ContainsKey(currentId)) documents[currentId] = (current, i);
                     if (i == Lines.Length) break;
 

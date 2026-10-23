@@ -62,13 +62,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
-            where TControl : VisualElement, INotifyValueChanged<TValue>
-        {
-            AspidSettingsUI.SyncFromSettings(
-                control,
-                read,
-                handler => SerializeReferenceSettings.Changed += handler,
-                handler => SerializeReferenceSettings.Changed -= handler);
-        }
+            where TControl : VisualElement, INotifyValueChanged<TValue> =>
+                AspidSettingsUI.SyncFromSettings(
+                    control,
+                    read,
+                    handler => SerializeReferenceSettings.Changed += handler,
+                    handler => SerializeReferenceSettings.Changed -= handler);
     }
 }

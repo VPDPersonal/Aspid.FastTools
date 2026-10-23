@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using UnityEditor;
-using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors

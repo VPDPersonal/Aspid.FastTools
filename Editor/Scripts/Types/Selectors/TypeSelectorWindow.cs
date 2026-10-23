@@ -38,7 +38,7 @@ namespace Aspid.FastTools.Types.Editors
         /// <remarks>
         /// The selector takes the Aspid.FastTools palette and theme, as
         /// <see cref="UIElements.Editors.VisualElementExtensions.AddAspidWindowTheme{T}"/> gives them, in place of the
-        /// colours of Unity's popups. Its root has the <c>aspid-fasttools-type-selector</c> class.
+        /// colors of Unity's popups. Its root has the <c>aspid-fasttools-type-selector</c> class.
         /// </remarks>
         /// <param name="screenRect">Screen-space rectangle the dropdown is anchored to.</param>
         /// <param name="filter">Which types the selector offers.</param>

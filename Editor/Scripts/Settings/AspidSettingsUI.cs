@@ -64,8 +64,7 @@ namespace Aspid.FastTools.Editors
             return element;
         }
 
-        internal static void BuildProviderPage(VisualElement root, AspidSettingsScope scope)
-        {
+        internal static void BuildProviderPage(VisualElement root, AspidSettingsScope scope) =>
             BuildProviderHost(root, surface =>
             {
                 var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
@@ -74,10 +73,8 @@ namespace Aspid.FastTools.Editors
                 surface.Add(scroll);
                 surface.Add(BuildResetFooter(scope));
             });
-        }
 
-        internal static void BuildAreaProviderPage(VisualElement root, string title, Action<VisualElement> buildControls)
-        {
+        internal static void BuildAreaProviderPage(VisualElement root, string title, Action<VisualElement> buildControls) =>
             BuildProviderHost(root, surface =>
             {
                 var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
@@ -87,7 +84,6 @@ namespace Aspid.FastTools.Editors
                 AddSection(content, title: null, buildControls);
                 surface.Add(scroll);
             });
-        }
 
         private static void BuildProviderHost(VisualElement root, Action<VisualElement> fill)
         {
@@ -184,12 +180,10 @@ namespace Aspid.FastTools.Editors
             return legend;
         }
 
-        private static VisualElement BuildLegendItem(string scopeClass, string caption)
-        {
-            return new VisualElement().AddClass(LegendItemClass)
+        private static VisualElement BuildLegendItem(string scopeClass, string caption) =>
+            new VisualElement().AddClass(LegendItemClass)
                 .AddChild(new VisualElement().AddClass(LegendSwatchClass).AddClass(scopeClass))
                 .AddChild(new Label(caption).AddClass(LegendTextClass));
-        }
 
         internal static VisualElement BuildResetFooter(AspidSettingsScope scope = AspidSettingsScope.All)
         {

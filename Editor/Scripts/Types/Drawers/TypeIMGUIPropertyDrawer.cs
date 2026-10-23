@@ -150,7 +150,7 @@ namespace Aspid.FastTools.Types.Editors
         private static void ShowSelector(SerializedProperty property, Rect rect, TypeAllow allow, Type[] types,
             bool repair = false)
         {
-            // The picker answers after this draw, and a cancelled one never answers: no copy is open until then.
+            // The picker answers after this draw, and a canceled one never answers: no copy is open until then.
             var detached = new DetachedProperty(property: property);
             TypeSelectorWindow.Show(screenRect: GUIUtility.GUIToScreenRect(rect),
                 filter: new TypeSelectorFilter
@@ -183,14 +183,12 @@ namespace Aspid.FastTools.Types.Editors
 
         // Fix and the suggestion repair through the caller, which knows how its field stores a type.
         internal static void DrawMissingNotice(Rect rect, string storedName, Type suggestion, Action onFix,
-            Action<Type> onSuggestion)
-        {
+            Action<Type> onSuggestion) =>
             InspectorNoticeGUI.DrawNotice(rect: rect, message: "Missing type", actionText: "Fix",
                 detail: TypeMissingRepair.GetDetail(storedName: storedName), onClick: onFix,
                 suggestionText: suggestion is null ? null : $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion)}",
                 suggestionDetail: suggestion is null ? null : $"Replace the stored type name with {suggestion.AssemblyQualifiedName}.",
                 onSuggestion: suggestion is null ? null : () => onSuggestion(suggestion));
-        }
 
         internal static string GetMissingTooltip(string storedName) => $"Missing type: {storedName}";
 
