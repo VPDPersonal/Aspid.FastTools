@@ -20,15 +20,18 @@ internal static class MarkerCallRules
 
     // Marker() or WithName() declared on the package's global-namespace class.
     public static bool IsPackageMethod(IMethodSymbol? method) =>
-        method?.ContainingType is { Name: ExtensionsClassName } type && type.ContainingNamespace.IsGlobalNamespace;
+        method?.ContainingType is { Name: ExtensionsClassName } type
+        && type.ContainingNamespace.IsGlobalNamespace;
 
     // A Marker() overload the generator emitted: its class carries [GeneratedCode] with the generator's name.
     public static bool IsGeneratedOverload(IMethodSymbol? method) =>
         method is { Name: "Marker" }
-        && method.ContainingType.GetAttributes().Any(static attribute =>
-            attribute.AttributeClass?.Name is "GeneratedCodeAttribute"
-            && attribute.ConstructorArguments.Length > 0
-            && attribute.ConstructorArguments[0].Value as string == GeneratorName);
+        && method.ContainingType
+            .GetAttributes()
+            .Any(static attribute =>
+                attribute.AttributeClass?.Name is "GeneratedCodeAttribute"
+                && attribute.ConstructorArguments.Length > 0
+                && attribute.ConstructorArguments[0].Value as string == GeneratorName);
 
     // The Marker() the call binds to: the package fallback, or an overload another assembly generated —
     // extension lookup stops at the nearest namespace, so a base type's overload in the caller's namespace
@@ -37,15 +40,23 @@ internal static class MarkerCallRules
     public static IMethodSymbol? GetMarker(SymbolInfo symbolInfo, ITypeSymbol? receiverType)
     {
         if (symbolInfo.Symbol is IMethodSymbol method)
-            return IsMarker(method) ? method : null;
+        {
+            return IsMarker(method)
+                ? method
+                : null;
+        }
 
-        if (receiverType is not { IsRefLikeType: true }) return null;
+        if (receiverType is not { IsRefLikeType: true })
+            return null;
 
-        return symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(IsMarker);
+        return symbolInfo.CandidateSymbols
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(IsMarker);
     }
 
     public static bool IsMarker(IMethodSymbol? method) =>
-        method is { Name: "Marker" } && (IsPackageMethod(method) || IsGeneratedOverload(method));
+        method is { Name: "Marker" }
+        && (IsPackageMethod(method) || IsGeneratedOverload(method));
 
     // The member that owns the call: lambdas and local functions belong to the member they are written in.
     public static ISymbol? FindEnclosingMember(ISymbol? enclosing)
@@ -93,16 +104,16 @@ internal static class MarkerCallRules
             return "it passes an argument, but the line must come from [CallerLineNumber] — call Marker() without arguments";
 
         var receiverType = model.GetTypeInfo(access.Expression, ct).Type;
+
         if (receiverType is null || !SymbolEqualityComparer.Default.Equals(receiverType.OriginalDefinition, type.OriginalDefinition))
         {
             return $"it is called on '{receiverType?.ToDisplayString() ?? access.Expression.ToString()}', not on '{type.ToDisplayString()}' "
                 + "— only calls on an instance of the type they are written in get a marker";
         }
 
-        if (IsInExpressionTree(invocation, model, ct))
-            return "it is inside an expression tree";
-
-        return GetUnsupportedTypeReason(type);
+        return IsInExpressionTree(invocation, model, ct)
+            ? "it is inside an expression tree"
+            : GetUnsupportedTypeReason(type);
     }
 
     public static string? GetUnsupportedTypeReason(INamedTypeSymbol type)
@@ -137,17 +148,21 @@ internal static class MarkerCallRules
             || access.Parent is not InvocationExpressionSyntax { ArgumentList.Arguments: { Count: 1 } arguments } withName)
             return null;
 
-        return IsPackageMethod(model.GetSymbolInfo(withName, ct).Symbol as IMethodSymbol) ? arguments[0].Expression : null;
+        return IsPackageMethod(model.GetSymbolInfo(withName, ct).Symbol as IMethodSymbol)
+            ? arguments[0].Expression
+            : null;
     }
 
     // The name a WithName argument gives the marker, or null when it is known only at run time.
     public static string? GetConstantName(ExpressionSyntax expression, SemanticModel model, CancellationToken ct)
     {
         // A literal, a const, nameof(...) or a concatenation of them.
-        if (model.GetConstantValue(expression, ct) is { HasValue: true, Value: string value }) return value;
+        if (model.GetConstantValue(expression, ct) is { HasValue: true, Value: string value })
+            return value;
 
         // Unity compiles C# 9, where an interpolated string is never a constant, even with constant holes only.
-        if (expression is not InterpolatedStringExpressionSyntax interpolated) return null;
+        if (expression is not InterpolatedStringExpressionSyntax interpolated)
+            return null;
 
         var builder = new StringBuilder();
         foreach (var content in interpolated.Contents)
@@ -156,7 +171,9 @@ internal static class MarkerCallRules
             {
                 // The text token keeps the {{ and }} escapes of an interpolated string.
                 case InterpolatedStringTextSyntax text:
-                    builder.Append(text.TextToken.ValueText.Replace("{{", "{").Replace("}}", "}"));
+                    builder.Append(text.TextToken.ValueText
+                        .Replace("{{", "{")
+                        .Replace("}}", "}"));
                     break;
 
                 // A string constant reads the same in any culture; an alignment or a format may not.
@@ -202,6 +219,7 @@ internal static class MarkerCallRules
     private static bool HasUniqueTypeParameterNames(INamedTypeSymbol type)
     {
         var names = new HashSet<string>();
+
         return GetChainTypeParameters(type).All(tp => names.Add(tp.Name));
     }
 

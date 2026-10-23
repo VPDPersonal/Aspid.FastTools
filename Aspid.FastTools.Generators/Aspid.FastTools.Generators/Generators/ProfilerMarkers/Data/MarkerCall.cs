@@ -2,34 +2,26 @@ using System;
 
 namespace Aspid.FastTools.Generators.ProfilerMarkers.Data;
 
-internal readonly struct MarkerCall : IEquatable<MarkerCall>
+internal readonly struct MarkerCall(
+    TypeData type,
+    int line,
+    string fieldName,
+    string label,
+    string filePath,
+    int column)
+    : IEquatable<MarkerCall>
 {
-    public readonly TypeData Type;
-    public readonly int Line;
-    public readonly string FieldName;
-    public readonly string Label;
+    public readonly TypeData Type = type;
+    public readonly int Line = line;
+    public readonly string FieldName = fieldName;
+    public readonly string Label = label;
 
     // Where the call is, so calls sharing a line are ordered the same way on every run. The column,
     // not the offset: an edit above the call must not change the model while the output stays the same.
-    public readonly string FilePath;
-    public readonly int Column;
+    public readonly string FilePath = filePath;
+    public readonly int Column = column;
 
-    public MarkerCall(
-        TypeData type,
-        int line,
-        string fieldName,
-        string label,
-        string filePath,
-        int column)
-    {
-        Type = type;
-        Line = line;
-        FieldName = fieldName;
-        Label = label;
-        FilePath = filePath;
-        Column = column;
-    }
-
+    #region Equals & GetHashCode
     public bool Equals(MarkerCall other) =>
         Type.Equals(other.Type)
         && Line == other.Line
@@ -38,7 +30,9 @@ internal readonly struct MarkerCall : IEquatable<MarkerCall>
         && FilePath == other.FilePath
         && Column == other.Column;
 
-    public override bool Equals(object? obj) => obj is MarkerCall other && Equals(other);
+    public override bool Equals(object? obj) =>
+        obj is MarkerCall other
+        && Equals(other);
 
     public override int GetHashCode()
     {
@@ -53,4 +47,5 @@ internal readonly struct MarkerCall : IEquatable<MarkerCall>
             return hash;
         }
     }
+    #endregion
 }

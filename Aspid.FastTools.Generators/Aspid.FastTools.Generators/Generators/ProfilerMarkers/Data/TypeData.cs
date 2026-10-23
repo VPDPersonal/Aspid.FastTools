@@ -2,54 +2,41 @@ using System;
 
 namespace Aspid.FastTools.Generators.ProfilerMarkers.Data;
 
-internal readonly struct TypeData : IEquatable<TypeData>
+internal readonly struct TypeData(
+    string typeKey,
+    string typeName,
+    string? ns,
+    string className,
+    string fullyQualifiedDisplay,
+    string typeParamList,
+    string ownTypeParameters,
+    string constraintsClause,
+    int arity,
+    bool isValueType,
+    bool isObsolete)
+    : IEquatable<TypeData>
 {
     // Fully qualified name with type parameters: unique per type, including its arity.
-    public readonly string TypeKey;
-    public readonly string TypeName;
-    public readonly string? Namespace;
+    public readonly string TypeKey = typeKey;
+    public readonly string TypeName = typeName;
+    public readonly string? Namespace = ns;
 
     // Generated class name before de-duplication; containing types and arities are joined with '_'.
-    public readonly string ClassName;
-    public readonly string FullyQualifiedDisplay;
-    public readonly string TypeParamList;
+    public readonly string ClassName = className;
+    public readonly string FullyQualifiedDisplay = fullyQualifiedDisplay;
+    public readonly string TypeParamList = typeParamList;
 
     // The type's own type parameter names, comma-separated and unescaped.
-    public readonly string OwnTypeParameters;
-    public readonly string ConstraintsClause;
-    public readonly int Arity;
-    public readonly bool IsValueType;
+    public readonly string OwnTypeParameters = ownTypeParameters;
+    public readonly string ConstraintsClause = constraintsClause;
+    public readonly int Arity = arity;
+    public readonly bool IsValueType = isValueType;
 
     // The generated code names the type, its containing types and its constraints, so it is marked
     // [Obsolete] when one of them is: only an obsolete context silences CS0612, CS0618 and CS0619.
-    public readonly bool IsObsolete;
+    public readonly bool IsObsolete = isObsolete;
 
-    public TypeData(
-        string typeKey,
-        string typeName,
-        string? @namespace,
-        string className,
-        string fullyQualifiedDisplay,
-        string typeParamList,
-        string ownTypeParameters,
-        string constraintsClause,
-        int arity,
-        bool isValueType,
-        bool isObsolete)
-    {
-        TypeKey = typeKey;
-        TypeName = typeName;
-        Namespace = @namespace;
-        ClassName = className;
-        FullyQualifiedDisplay = fullyQualifiedDisplay;
-        TypeParamList = typeParamList;
-        OwnTypeParameters = ownTypeParameters;
-        ConstraintsClause = constraintsClause;
-        Arity = arity;
-        IsValueType = isValueType;
-        IsObsolete = isObsolete;
-    }
-
+    #region Equals & GetHashCode
     public bool Equals(TypeData other) =>
         TypeKey == other.TypeKey
         && TypeName == other.TypeName
@@ -63,7 +50,9 @@ internal readonly struct TypeData : IEquatable<TypeData>
         && IsValueType == other.IsValueType
         && IsObsolete == other.IsObsolete;
 
-    public override bool Equals(object? obj) => obj is TypeData other && Equals(other);
+    public override bool Equals(object? obj) =>
+        obj is TypeData other
+        && Equals(other);
 
     public override int GetHashCode()
     {
@@ -83,4 +72,5 @@ internal readonly struct TypeData : IEquatable<TypeData>
             return hash;
         }
     }
+    #endregion
 }
