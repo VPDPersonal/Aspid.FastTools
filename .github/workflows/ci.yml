@@ -543,13 +543,16 @@ jobs:
               run = ET.parse(path).getroot()
               lines.append(f"| {name} | {run.get('result')} | {run.get('total')} | {run.get('passed')} | "
                            f"{run.get('failed')} | {run.get('skipped')} | {float(run.get('duration')):.0f} s |")
-              failed += [case.get("fullname") for case in run.iter("test-case") if case.get("result") == "Failed"]
+              failed += [(case.get("fullname"), case.findtext("failure/message", "").strip().splitlines()[:1],
+                          case.findtext("failure/stack-trace", "").strip().splitlines()[:1])
+                         for case in run.iter("test-case") if case.get("result") == "Failed"]
               skipped += [(name, case.get("fullname"), case.findtext("reason/message", "").strip())
                           for case in run.iter("test-case") if case.get("result") == "Skipped"]
               fixtures += [(float(suite.get("duration")), name, suite.get("fullname"), suite.get("total"))
                            for suite in run.iter("test-suite") if suite.get("type") == "TestFixture"]
           if failed:
-              lines += ["", f"Failed tests ({len(failed)}):", ""] + [f"- `{name}`" for name in failed[:50]]
+              lines += ["", f"Failed tests ({len(failed)}):", ""]
+              lines += [f"- `{name}`: {' '.join(message)}" for name, message, _ in failed[:50]]
           # The slowest fixtures, set-up included, show where a test pass spends its time. They go to the log as well,
           # where they can be read without downloading the results artifact.
           slowest = sorted(fixtures, reverse=True)[:15]
@@ -567,8 +570,9 @@ jobs:
               lines += ["", "</details>"]
               for name, test, reason in skipped:
                   print(f"skipped  {name:10}  {test}: {reason}")
-          for name in failed[:10]:
-              print(f"::error title=Unity {os.environ['UNITY_VERSION']}::{name}")
+          # The message and the first frame of each failure, so a failure can be read without the results artifact.
+          for name, message, frame in failed[:10]:
+              print(f"::error title=Unity {os.environ['UNITY_VERSION']}::{name}: {' '.join(message + frame)}")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
               summary.write("\n".join(lines) + "\n")
           PY
