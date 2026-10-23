@@ -6,7 +6,8 @@ using System.Globalization;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.PublicApi
 {
     // The public API of assemblies as text: a section per assembly, a block per type, a line per member.
     // Public members count; protected ones count only in a type that a user can derive from.

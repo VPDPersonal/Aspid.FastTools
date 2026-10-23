@@ -9,8 +9,10 @@ using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Behavioural coverage for the SerializeReference settings propagation contract (ASP-22):

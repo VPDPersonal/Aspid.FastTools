@@ -61,9 +61,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var headers = CollectHeaders(lines);
 
-            for (var h = 0; h < headers.Count; h++)
+            foreach (var (fileId, classId, start) in headers)
             {
-                var (fileId, classId, start) = headers[h];
                 var end = SerializeReferenceYaml.FindDocumentEnd(lines, start + 1);
 
                 var document = BuildDocument(lines, fileId, start, end, nodesOnly);

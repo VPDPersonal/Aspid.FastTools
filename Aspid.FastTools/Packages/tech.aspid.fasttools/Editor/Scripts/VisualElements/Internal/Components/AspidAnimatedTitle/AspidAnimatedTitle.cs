@@ -28,7 +28,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         // The title's own clock: it advances only while the title is watched, so a paused wave resumes where it stopped.
         private float _time = (float)EditorApplication.timeSinceStartup;
         private double _lastTick = EditorApplication.timeSinceStartup;
-        private IVisualElementScheduledItem _animation;
+        private readonly IVisualElementScheduledItem _animation;
 
         [UxmlAttribute]
         public string Text
@@ -143,7 +143,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         }
 
         // With the "Animated background" setting off nothing ticks and the title rests: the letters sit on one line in
-        // the middle colour of the palette, the accent of the title.
+        // the middle color of the palette, the accent of the title.
         private void ApplyAnimationSetting()
         {
             if (AspidAnimatedDotsBackgroundSettings.Enabled)
@@ -156,9 +156,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             ApplyRest();
         }
 
-        // A theme change while the title rests recolors it; while it animates the next tick does. The colour store calls
+        // A theme change while the title rests recolors it; while it animates the next tick does. The color store calls
         // this from its constructor, before the timer exists, and before it saves a new value, so the recolor waits a
-        // frame and reads the saved colours.
+        // frame and reads the saved colors.
         private void OnColorsChanged()
         {
             if (_animation is null || _animation.isActive) return;

@@ -157,7 +157,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             list.onAddDropdownCallback = (buttonRect, _) =>
             {
                 // Anchoring the picker's right edge to the button grows it leftward, so a "+" near the inspector's
-                // right edge does not spill off screen.
+                // right edge does not spill off-screen.
                 var topLeft = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.xMax - TypeSelectorWindow.MinWidth, buttonRect.yMin));
                 var screenRect = new Rect(topLeft.x, topLeft.y, TypeSelectorWindow.MinWidth, buttonRect.height);
                 SerializeReferenceListAddBehavior.ShowAppendPicker(targets, arrayPath, elementType, list.BaseTypes, screenRect);

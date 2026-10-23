@@ -6,8 +6,11 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 using System.Runtime.CompilerServices;
+using Aspid.FastTools.UIElements.Editors;
+using VisualElementExtensions = Aspid.FastTools.UIElements.VisualElementExtensions;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// A C# instance method wins over an extension method of the same name and a compatible signature, so a method
@@ -76,7 +79,7 @@ namespace Aspid.FastTools.UIElements.Tests
 
         // The runtime and Editor fluent extensions, and the Math ones when com.unity.mathematics is loaded.
         private static IEnumerable<MethodInfo> GetExtensionMethods() =>
-            new[] { typeof(VisualElementExtensions).Assembly, typeof(Editors.PropertyFieldExtensions).Assembly }
+            new[] { typeof(VisualElementExtensions).Assembly, typeof(PropertyFieldExtensions).Assembly }
                 .Concat(TypeUtility.GetLoadedAssemblies().Where(assembly => assembly.GetName().Name == "Aspid.FastTools.VisualElements.Math"))
                 .Distinct()
                 .SelectMany(assembly => assembly.GetTypes())

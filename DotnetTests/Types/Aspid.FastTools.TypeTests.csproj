@@ -8,7 +8,7 @@
         <LangVersion>9.0</LangVersion>
         <Nullable>disable</Nullable>
         <IsPackable>false</IsPackable>
-        <RootNamespace>Aspid.FastTools.Types.Editors.Tests</RootNamespace>
+        <RootNamespace>Aspid.FastTools.Tests.Editors.Types</RootNamespace>
         <!-- Resolver/ is a project of its own. -->
         <DefaultItemExcludes>$(DefaultItemExcludes);Resolver/**</DefaultItemExcludes>
     </PropertyGroup>

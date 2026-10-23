@@ -1,11 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEngine;
+using NUnit.Framework;
+using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     internal sealed class VisualElementInteractionTests
     {

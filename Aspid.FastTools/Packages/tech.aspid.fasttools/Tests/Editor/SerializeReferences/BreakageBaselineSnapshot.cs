@@ -1,6 +1,8 @@
 using UnityEditor;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The session's own baselines of both breakage detectors. A change of the excluded folders resets them, so a test
     // that changes the folders takes a snapshot first and restores it after it puts the folders back.

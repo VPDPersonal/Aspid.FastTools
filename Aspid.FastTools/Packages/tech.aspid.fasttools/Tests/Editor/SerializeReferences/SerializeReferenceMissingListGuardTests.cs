@@ -6,11 +6,13 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
-using UnityEditor.SceneManagement;
 using System.Collections.Generic;
+using UnityEditor.SceneManagement;
+using Aspid.FastTools.SerializeReferences.Editors;
+using Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Coverage for SerializeReferenceMissingListGuard: the pre-save snapshot, the post-save restore and the notes of
     // replaced elements. Each test snapshots a YamlFixtures.MissingTypePrefab variant, overwrites the file with what Unity

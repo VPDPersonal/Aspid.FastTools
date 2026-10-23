@@ -97,5 +97,5 @@ The style sheet added after the selector's own; <a href="https://learn.microsoft
 
 The selector takes the Aspid.FastTools palette and theme, as
 [`VisualElementExtensions.AddAspidWindowTheme<T>`](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddAspidWindowTheme__1___0_) gives them, in place of the
-colours of Unity's popups. Its root has the <code>aspid-fasttools-type-selector</code> class.
+colors of Unity's popups. Its root has the <code>aspid-fasttools-type-selector</code> class.
 

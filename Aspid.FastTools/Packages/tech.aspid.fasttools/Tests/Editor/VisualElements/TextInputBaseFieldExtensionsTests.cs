@@ -1,8 +1,10 @@
-using NUnit.Framework;
 using UnityEngine;
+using NUnit.Framework;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     internal sealed class TextInputBaseFieldExtensionsTests
     {

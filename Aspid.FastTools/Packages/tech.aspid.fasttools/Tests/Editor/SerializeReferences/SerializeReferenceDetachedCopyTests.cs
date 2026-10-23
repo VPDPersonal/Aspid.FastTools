@@ -5,8 +5,10 @@ using NUnit.Framework;
 using System.Reflection;
 using Aspid.FastTools.Editors;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Covers the copies of <see cref="SerializedObject"/> the drawers open for menu, picker and drop callbacks:

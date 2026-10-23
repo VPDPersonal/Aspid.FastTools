@@ -1,9 +1,11 @@
 using System;
 using NUnit.Framework;
-using System.Collections.Generic;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
 
-namespace Aspid.FastTools.UIElements.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     [TestFixture]
     internal sealed class BaseFieldSetLabelTests

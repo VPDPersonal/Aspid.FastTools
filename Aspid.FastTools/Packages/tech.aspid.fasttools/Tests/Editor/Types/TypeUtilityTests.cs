@@ -4,9 +4,11 @@ using NUnit.Framework;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using System.Runtime.CompilerServices;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Coverage for <see cref="TypeUtility"/> — the name formatting every type-selector surface

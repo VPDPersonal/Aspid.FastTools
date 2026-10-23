@@ -36,7 +36,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         // The field's own clock: it advances only while the field is watched, so a paused field resumes where it stopped.
         private float _time = (float)EditorApplication.timeSinceStartup;
         private double _lastTick = EditorApplication.timeSinceStartup;
-        private IVisualElementScheduledItem _animation;
+        private readonly IVisualElementScheduledItem _animation;
         private bool _dotsVisible = true;
 
         [UxmlAttribute]

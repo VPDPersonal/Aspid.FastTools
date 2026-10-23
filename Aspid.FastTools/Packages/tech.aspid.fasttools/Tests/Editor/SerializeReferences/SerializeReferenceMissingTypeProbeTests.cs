@@ -6,8 +6,10 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // The Missing type mark of a reference whose object has unsaved edits. A list element is matched with the list in the
     // file by the rids of the other elements, a field inside a reference is read by that reference's rid, and a missing

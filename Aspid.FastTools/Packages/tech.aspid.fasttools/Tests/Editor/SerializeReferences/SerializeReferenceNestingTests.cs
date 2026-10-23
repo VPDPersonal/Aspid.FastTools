@@ -9,8 +9,10 @@ using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     [Serializable]
     internal class DrawnBaseEffect

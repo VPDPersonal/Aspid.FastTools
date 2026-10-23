@@ -1,9 +1,10 @@
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     /// <summary>
     /// Coverage for <see cref="SerializeReferenceYamlEditor.ReadPayloadScalarsAsJson"/>, which turns the payload of a

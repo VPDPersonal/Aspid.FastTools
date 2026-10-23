@@ -58,7 +58,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Under a multi-object selection too: the native add would copy the last element's rid into every object,
             // and the duplicate guard does not watch multi-object selections. Set before any attach, so the item
-            // fields' own install short-circuits on it.
+            // fields' own installation short-circuits on it.
             var serializedObject = property.serializedObject;
             var targets = serializedObject.targetObjects;
             var arrayPath = property.propertyPath;

@@ -4,8 +4,10 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // A plain field plus a list, so alias paths cover both the "field" and the "field.Array.data[i]" shapes.
     internal sealed class SharedAliasTestObject : ScriptableObject

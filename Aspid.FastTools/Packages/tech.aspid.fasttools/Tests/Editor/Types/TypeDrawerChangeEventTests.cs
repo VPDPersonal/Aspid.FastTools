@@ -1,12 +1,15 @@
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.Tests.Editors.VisualElements;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // Guards the UI Toolkit type drawer: a pick reports a ChangeEvent<string> to the elements above it, as a
     // PropertyField expects from a string field.

@@ -1,49 +1,47 @@
 # Rules for Claude in this repository
 
-Both jobs in `.github/workflows/claude.yml` append this file to the system prompt:
-the automatic review and the `@claude` replies. Edit the rules here, in one place.
-
 ## Always
 
-- Follow AGENTS.md and the `AGENTS.md` of the area a file is in: they hold the boundaries, the layout and the code rules.
-- Write replies, code, code comments and commit messages in English. Keep code identifiers as they are.
+- Follow the root `AGENTS.md` and the `AGENTS.md` of the area a file is in.
+- Write in English. Keep code identifiers as they are.
 
 ## When you review a pull request
 
 Check, in this order:
 
 1. Correctness: bugs and missed edge cases, with the input that breaks.
-2. Boundaries from the AGENTS.md files:
-   - no Unity APIs newer than 6000.0.53f1 without a version guard;
-   - no editor-only APIs reachable from runtime code;
-   - generator and analyzer code does not write to `Console` and does not reference `SourceGenerator.Foundations`;
-   - no language feature newer than C# 9, no API outside .NET Standard 2.1 and no Unity API without a stub
-     in the package sources that the .NET test projects compile: the SerializeReference YAML engine
-     (`DotnetTests/Yaml/`) and `GenericTypeResolver`, `GenericArgumentFilter`, `TypeUtility`
-     (`DotnetTests/Types/`).
-3. Public API: a change needs a CHANGELOG entry, XML docs and, when a skill in `skills/` describes it,
-   an updated skill in the same PR.
-   It also needs the regenerated API reference. A diff that changes public API or XML docs and leaves `Website/api/`
-   alone gets a `[minor]`, unless the PR says that the reference still needs regenerating.
-4. Generators and analyzers: a source change needs the rebuilt DLL committed into the package.
-5. Version: a bump goes through `scripts/set-version.sh`, so `package.json`, the badge and both READMEs agree.
+2. Data and code in user projects:
+   - a renamed or moved file keeps its `.meta` GUID;
+   - a renamed serialized field gets `[FormerlySerializedAs]`, a renamed or moved type stored through
+     `[SerializeReference]` gets `[MovedFrom]`: without them user projects lose saved data;
+   - no Unity API that 6000.0.53f1 lacks, unless a `#if UNITY_6000_1_OR_NEWER` or later guard covers it;
+   - no editor-only API reachable from runtime code: CI runs only Editor tests and misses it.
+3. Generators and analyzers: no `Console` output, no reference to `SourceGenerator.Foundations`.
+4. Public API: XML docs on each new or changed member, a CHANGELOG entry that describes the change as a user sees it,
+   and an updated skill in `skills/` when one describes the API. A change to public API or XML docs without a
+   regenerated `Website/api/` is a `[minor]`, unless the PR says the reference still needs regenerating.
+5. Workflows: actions pinned to a full commit SHA, only the permissions a job uses, and no `pull_request_target` job
+   that checks out or runs the code of the PR.
 
-Skip style and naming that `.editorconfig`, `.claude/skills/asp-ft-code-style/SKILL.md`,
-`.claude/skills/asp-ft-samples/SKILL.md` and AGENTS.md do not cover.
+Do not report:
 
-Format:
+- What CI checks: build and test failures, the PR title, a missing CHANGELOG entry, Roslyn DLLs that differ from their
+  sources, version files, missing `.meta` files, translations, SKILL.md frontmatter.
+- Style and naming that `.editorconfig`, the `asp-ft-code-style` and `asp-ft-samples` skills and AGENTS.md do not
+  cover.
+- The content of generated files: `Website/api/`, the committed DLLs, `Tests/Editor/PublicApi/PublicApi.txt`.
 
-- At most 8 findings, most severe first.
-- Put each specific issue in an inline comment on its line.
-- Start each inline comment with a severity tag:
+On a review of the commits after your last review, check only those commits and whether your earlier findings are
+fixed. Do not repeat a finding that is fixed or that the author answered with a reason.
+
+## Format
+
+- At most 8 findings, most severe first, each in an inline comment on its line that starts with a severity tag:
   - `[blocking]`: the PR must not merge until it is fixed;
   - `[minor]`: an improvement that can wait.
-- Post the main comment last, as a new comment with `gh pr comment`.
-  This applies to a requested review too. Do not put the verdict only into an edit of an earlier comment:
-  an edit does not notify the agent that waits for the verdict.
-- Start the main comment with exactly one verdict line: `Verdict: <N> blocking, <M> minor`.
-  An agent reads this line to decide the next step, so keep the format.
-  Put at most 2 short sentences after it.
+- Post the main comment last, as a new comment with `gh pr comment`, for a requested review too: an agent waits for
+  it, and an edit of an earlier comment does not notify it.
+- Start the main comment with exactly one line `Verdict: <N> blocking, <M> minor` (`Verdict: 0 blocking, 0 minor`
+  without findings): the agent reads it. Put at most 2 short sentences after it.
 - Do not praise.
-- Do not write the literal trigger phrase (at-sign + "claude") in your comments:
-  it starts the workflow again.
+- Do not write the literal trigger phrase (at-sign + "claude"): it starts the workflow again.

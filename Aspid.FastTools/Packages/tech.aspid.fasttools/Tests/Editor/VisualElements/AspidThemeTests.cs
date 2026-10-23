@@ -10,8 +10,12 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
 {
     /// <summary>
     /// A theme of the project replaces the built-in theme over the palettes and is applied live: an element that loads the

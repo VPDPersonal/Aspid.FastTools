@@ -5,8 +5,11 @@ using NUnit.Framework;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.SerializeReferences.Editors;
+using Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // A type mixing required, optional and plain fields, to prove GetRequiredFields returns only the required ones and
     // classifies each by kind (string vs SerializableType vs [SerializeReference] managed reference).

@@ -92,7 +92,7 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // A definition can implement more than one matching generic view, and the result must not depend on
-        // reflection order. Exact binding takes the first view that binds every parameter. Otherwise every view
+        // reflection order. Exact binding takes the first view that binds every parameter. Otherwise, every view
         // that fits must give the same arguments. A view that fits but leaves a parameter free, or gives other
         // arguments, shows that the field does not decide them.
         private static bool TryBindParameters(Type openDefinition, Type closedView, bool exact,

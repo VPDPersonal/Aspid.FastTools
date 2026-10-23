@@ -5,7 +5,8 @@ using System;
 [Serializable]
 internal sealed class DeleteGuardPistol { }
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     [Serializable]
     internal sealed class ОружиеDeleteGuard : ITestWeapon { }

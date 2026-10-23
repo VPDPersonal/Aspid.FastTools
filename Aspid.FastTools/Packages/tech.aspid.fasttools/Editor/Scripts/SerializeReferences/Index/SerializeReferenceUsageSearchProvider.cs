@@ -25,10 +25,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 isExplicitProvider = true,
                 priority = 9000,
                 showDetailsOptions = ShowDetailsOptions.Description | ShowDetailsOptions.Preview,
-                fetchItems = (context, items, provider) => FetchItems(context, items, provider),
-                fetchThumbnail = (item, context) => AssetThumbnail(item),
-                toObject = (item, type) => LoadAsset(item),
-                trackSelection = (item, context) => Ping(item),
+                fetchItems = FetchItems,
+                fetchThumbnail = (item, _) => AssetThumbnail(item),
+                toObject = (item, _) => LoadAsset(item),
+                trackSelection = (item, _) => Ping(item),
             };
 
         public static void OpenSearch(Type type)

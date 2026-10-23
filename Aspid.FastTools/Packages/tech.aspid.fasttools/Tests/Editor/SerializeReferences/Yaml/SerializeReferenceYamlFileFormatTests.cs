@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // The file-format sniff and the scanners that rely on it: a binary asset or an LFS pointer is skipped without being
     // parsed, even when its bytes happen to contain text that looks like managed-reference entries.

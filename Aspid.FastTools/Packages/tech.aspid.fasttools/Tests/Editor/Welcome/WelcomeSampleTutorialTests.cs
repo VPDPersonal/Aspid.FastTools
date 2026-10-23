@@ -1,6 +1,8 @@
 using NUnit.Framework;
+using Aspid.FastTools.Editors;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Welcome
 {
     // A sample description in package.json ends with "Tutorial: <url>"; the Welcome card shows the text and a link.
     [TestFixture]

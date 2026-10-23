@@ -1,12 +1,14 @@
 using System;
-using NUnit.Framework;
-using UnityEditor.SceneManagement;
 using UnityEngine;
+using NUnit.Framework;
+using Aspid.FastTools.Editors;
+using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
-using Aspid.FastTools.Types.Tests;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.Tests.ComponentTypeSelector;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors
 {
     internal sealed class EditorExtensionsTests
     {

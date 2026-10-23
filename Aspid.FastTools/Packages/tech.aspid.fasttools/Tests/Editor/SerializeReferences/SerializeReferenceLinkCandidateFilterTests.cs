@@ -7,8 +7,10 @@ using System.Reflection;
 using Aspid.FastTools.Types;
 using Object = UnityEngine.Object;
 using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     internal interface ILinkWeapon { }
 

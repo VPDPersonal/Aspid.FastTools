@@ -1,12 +1,12 @@
 name: Release checklist
-description: Pre-publish QA checklist for an Asset Store / UPM release of Aspid.FastTools.
+description: Maintainers only. Pre-publish QA checklist for an Asset Store / UPM release of Aspid.FastTools.
 title: "Release X.Y.Z — pre-publish checklist"
 labels: ["type: chore"]
 body:
   - type: markdown
     attributes:
       value: |
-        Tick every box before publishing. Anything left unchecked in **§1 Blockers** must be resolved first.
+        Tick every box before publishing. Anything left unchecked in **§0 Blockers** must be resolved first.
         Replace `X.Y.Z` in the title with the target version. The checks of the release PR cover what can be automated: the .NET tests, the committed Roslyn DLLs, the package files, the version files, the Unity EditMode tests on every 6000.x line (CI) and the site build with `check-readme` (Docs). The Release workflow runs CI again on the tag. This list holds what CI cannot check.
 
   - type: input
@@ -21,7 +21,7 @@ body:
   - type: checkboxes
     id: blockers
     attributes:
-      label: 1. Release blockers
+      label: 0. Release blockers
       description: Hard gates — release cannot ship until all are checked.
       options:
         - label: "`package.json` `version` bumped to the release version with `scripts/set-version.sh X.Y.Z` (no `-rc`/`-preview` suffix for a stable release)"
@@ -33,7 +33,7 @@ body:
   - type: checkboxes
     id: environment
     attributes:
-      label: 0. Test environment
+      label: 1. Test environment
       description: Cover the install paths and Unity versions a buyer will use.
       options:
         - label: Clean project on minimum Unity **6000.0.53f1** — imports with 0 errors / 0 warnings

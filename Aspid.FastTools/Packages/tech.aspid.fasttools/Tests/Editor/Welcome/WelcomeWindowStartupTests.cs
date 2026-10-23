@@ -1,6 +1,8 @@
 using NUnit.Framework;
+using Aspid.FastTools.Editors;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Welcome
 {
     /// <summary>
     /// Coverage for the decision behind the Welcome window's auto-show: it opens only for an interactive Editor

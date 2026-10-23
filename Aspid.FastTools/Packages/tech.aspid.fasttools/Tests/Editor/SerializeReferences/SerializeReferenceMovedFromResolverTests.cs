@@ -2,12 +2,14 @@ using System;
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.Scripting.APIUpdating;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // A namespace move recorded by [MovedFrom]: the stored identity keeps the class name, only the namespace differs.
     [Serializable]
-    [MovedFrom(true, sourceNamespace: "Aspid.FastTools.SerializeReferences.Editors.Tests.Legacy")]
+    [MovedFrom(true, sourceNamespace: "Aspid.FastTools.Tests.Editors.SerializeReferences.Legacy")]
     internal sealed class MovedNamespacePistol
     {
         [SerializeField] private int _damage;

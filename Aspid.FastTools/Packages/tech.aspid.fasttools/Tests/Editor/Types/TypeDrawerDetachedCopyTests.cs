@@ -4,13 +4,16 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
+using Aspid.FastTools.Types;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.Tests.Editors.VisualElements;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Covers the callbacks of the Types drawers that run after the property they were set up for may be gone: a

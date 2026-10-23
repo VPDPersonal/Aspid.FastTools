@@ -5,7 +5,6 @@ using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
 using UnityEditor.SceneManagement;
-using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
 

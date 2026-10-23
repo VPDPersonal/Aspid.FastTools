@@ -2,10 +2,14 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Reflection;
+using Aspid.FastTools.Types;
 using System.Reflection.Emit;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
+using TypeInfo = Aspid.FastTools.Types.Editors.TypeInfo;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     // The candidate list a picker reuses between openings must hold what a scan of every loaded type finds, must not
     // fix the predicate of the first opening, and must follow the loaded types when an assembly loads.

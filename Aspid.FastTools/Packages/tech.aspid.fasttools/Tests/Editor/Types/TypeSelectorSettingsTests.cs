@@ -2,9 +2,11 @@ using System.Linq;
 using UnityEditor;
 using NUnit.Framework;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
-namespace Aspid.FastTools.Types.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
 {
     /// <summary>
     /// Behavioural coverage for the type selector's per-user settings:

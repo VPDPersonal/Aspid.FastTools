@@ -5,13 +5,15 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
-using Aspid.FastTools.UIElements.Editors.Internal.Tests;
+using Aspid.FastTools.Tests.Editors.VisualElements;
 
-namespace Aspid.FastTools.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Settings
 {
     /// <summary>
     /// Behavioural coverage for the Settings tab: the keyboard handling of the Build / CI gate row (arrows step the

@@ -23,7 +23,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private float _progress;
         private float _targetProgress;
-        private IVisualElementScheduledItem _animation;
+        private readonly IVisualElementScheduledItem _animation;
 
         [UxmlAttribute]
         public Color Color

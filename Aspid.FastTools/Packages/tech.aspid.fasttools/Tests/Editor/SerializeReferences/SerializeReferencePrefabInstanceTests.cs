@@ -6,12 +6,13 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
+using Object = UnityEngine.Object;
 using Aspid.FastTools.Types.Editors;
 using System.Text.RegularExpressions;
-using Aspid.FastTools.SerializeReferences.Tests;
-using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     /// <summary>
     /// Missing-type detection on objects that are part of a prefab instance — the inherited component of a prefab

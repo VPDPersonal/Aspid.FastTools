@@ -5,12 +5,13 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
-using Aspid.FastTools.Tests;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     // Covers the shared write path of the inspector actions (picker, drop, Paste, Paste Template, Link to Existing)
     // and of the Asset References picker: a re-pick of the current type, one instance per selected object, the

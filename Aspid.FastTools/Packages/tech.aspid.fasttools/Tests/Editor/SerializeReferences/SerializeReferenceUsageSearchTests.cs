@@ -1,8 +1,10 @@
 using System;
 using NUnit.Framework;
 using Aspid.FastTools.Types;
+using Aspid.FastTools.SerializeReferences.Editors;
 
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 {
     [Serializable]
     internal sealed class UsagePistol { }

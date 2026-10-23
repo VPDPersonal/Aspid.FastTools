@@ -18,7 +18,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Returns the [start, end) line range of the document whose anchor equals fileId. Falls back to the single
         // document of a one-object asset (the common ScriptableObject case) when the anchor cannot be matched. Any
-        // "--- " line ends a document, so the range never spans a neighbour whose header failed to parse.
+        // "--- " line ends a document, so the range never spans a neighbor whose header failed to parse.
         private static (int start, int end) FindDocumentRange(string[] lines, long fileId)
         {
             var start = -1;
@@ -296,8 +296,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             using var reader = new StringReader(text);
 
             var count = 0;
-            string line;
-            while ((line = reader.ReadLine()) != null)
+            while (reader.ReadLine() is { } line)
             {
                 if (count >= lines.Length || !string.Equals(line, lines[count], StringComparison.Ordinal)) return false;
                 count++;
