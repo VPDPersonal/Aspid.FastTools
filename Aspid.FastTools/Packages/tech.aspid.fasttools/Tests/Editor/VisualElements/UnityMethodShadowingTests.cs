@@ -24,6 +24,10 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         // Unity's names, for example FocusSelf and SetTextSelf, so a hit is a new clash to rename around.
         private static readonly HashSet<string> _accepted = new();
 
+        // Most extensions share their receiver constraint, such as `T : VisualElement`, so the receivers of each
+        // constraint are found once rather than once per extension and test.
+        private static readonly Dictionary<string, Type[]> _receivers = new();
+
         private static readonly BindingFlags _instanceMethods = BindingFlags.Public | BindingFlags.Instance;
 
         [Test]
@@ -95,11 +99,17 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             var constraints = thisType.IsGenericParameter ? thisType.GetGenericParameterConstraints() : new[] { thisType };
             if (constraints.Length == 0) return Enumerable.Empty<Type>();
 
+            // Meets reads a generic constraint by its generic type definition only, so its text is a key that tells the
+            // receivers apart.
+            var key = string.Join("|", constraints.Select(constraint => constraint.ToString()));
+            if (_receivers.TryGetValue(key, out var receivers)) return receivers;
+
             // A constraint type from another assembly, such as Texture2D, is not among the Unity types.
-            return unityTypes
+            return _receivers[key] = unityTypes
                 .Concat(constraints.Where(constraint => !constraint.ContainsGenericParameters))
                 .Distinct()
-                .Where(type => constraints.All(constraint => Meets(type, constraint)));
+                .Where(type => constraints.All(constraint => Meets(type, constraint)))
+                .ToArray();
         }
 
         // A constraint such as BaseField<TValue> is met by every closed type built from the same generic type.
