@@ -170,3 +170,7 @@ The URL installs the latest preview; **Update** in the Package Manager installs 
 
 <p>Found a bug or have a question? Include your Unity version, package version and steps to reproduce.</p>
 <p><a href="https://github.com/VPDPersonal/Aspid.FastTools/issues"><b>Open an issue</b></a> · <a href="https://github.com/VPDPersonal/Aspid.FastTools">Star on GitHub</a></p>
+
+## Support the project
+
+Aspid.FastTools is developed in spare time. If it helps you, support its development on the [Unity Asset Store](https://assetstore.unity.com/packages/package/2333465).

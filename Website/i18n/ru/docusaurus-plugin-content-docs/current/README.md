@@ -130,3 +130,7 @@ caster.GetDisplayNameWithIndex();
 Если пакет пригодился, поставьте ему звезду на [GitHub](https://github.com/VPDPersonal/Aspid.FastTools).
 
 Распространяется по [лицензии MIT](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).
+
+## Поддержать проект
+
+Aspid.FastTools развивается в свободное время. Если пакет вам помогает, поддержите его развитие в [Unity Asset Store](https://assetstore.unity.com/packages/package/2333465).
