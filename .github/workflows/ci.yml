@@ -534,6 +534,7 @@ jobs:
                    "| Pass | Result | Total | Passed | Failed | Skipped | Time |", "|---|---|---|---|---|---|---|"]
           failed = []
           fixtures = []
+          skipped = []
           for name in ("nographics", "graphics"):
               path = f"unity-test-results/{name}/editmode-results.xml"
               if not os.path.exists(path):
@@ -543,6 +544,8 @@ jobs:
               lines.append(f"| {name} | {run.get('result')} | {run.get('total')} | {run.get('passed')} | "
                            f"{run.get('failed')} | {run.get('skipped')} | {float(run.get('duration')):.0f} s |")
               failed += [case.get("fullname") for case in run.iter("test-case") if case.get("result") == "Failed"]
+              skipped += [(name, case.get("fullname"), case.findtext("reason/message", "").strip())
+                          for case in run.iter("test-case") if case.get("result") == "Skipped"]
               fixtures += [(float(suite.get("duration")), name, suite.get("fullname"), suite.get("total"))
                            for suite in run.iter("test-suite") if suite.get("type") == "TestFixture"]
           if failed:
@@ -557,6 +560,13 @@ jobs:
               lines += ["", "</details>"]
               for duration, name, fixture, total in slowest:
                   print(f"{duration:7.2f} s  {name:10}  {fixture} ({total})")
+          # A test that skips itself in one pass and is left out of the other never runs in CI.
+          if skipped:
+              lines += ["", f"<details><summary>Skipped tests ({len(skipped)})</summary>", ""]
+              lines += [f"- {name}: `{test}` {reason}" for name, test, reason in skipped[:50]]
+              lines += ["", "</details>"]
+              for name, test, reason in skipped:
+                  print(f"skipped  {name:10}  {test}: {reason}")
           for name in failed[:10]:
               print(f"::error title=Unity {os.environ['UNITY_VERSION']}::{name}")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
