@@ -16,7 +16,7 @@ namespace Aspid.FastTools.Tests.Editors.PublicApi
     internal sealed class PublicApiSnapshotTests
     {
         private const string PackageName = "tech.aspid.fasttools";
-        private const string BaselinePath = "Tests/Editor/PublicApi/PublicApi.txt";
+        private const string BaselinePath = "Tests/Editor/Scripts/PublicApi/PublicApi.txt";
         private const string WriteVariable = "ASPID_FASTTOOLS_WRITE_PUBLIC_API";
         private const int MaxListedEntries = 50;
 

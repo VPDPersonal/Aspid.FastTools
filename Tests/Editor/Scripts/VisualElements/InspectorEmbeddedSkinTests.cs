@@ -28,7 +28,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         private const string EnumValuesStyleSheet = "UI/Enums/Aspid-FastTools-EnumValues";
         private const string SerializeReferenceStyleSheet = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
         private const string ProbeStyleSheetPath =
-            "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/InspectorEmbeddedSkinProbe.uss";
+            "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/VisualElements/InspectorEmbeddedSkinProbe.uss";
 
         private const string WarningTextProbeClass = "aspid-fasttools-test-probe--warning-text";
         private const string HelpBoxTextProbeClass = "aspid-fasttools-test-probe--helpbox-text";
