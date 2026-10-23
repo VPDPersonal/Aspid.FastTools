@@ -5,8 +5,8 @@ description: "Aspid.FastTools type picking in the Unity Inspector: SerializableT
 
 # Serializable types and [TypeSelector]
 
-Namespace `Aspid.FastTools.Types`. If the user's scripts have an `.asmdef`, it must reference `Aspid.FastTools`
-(editor code using `TypeField` or `TypeSelectorWindow` also `Aspid.FastTools.Editor`).
+Namespace `Aspid.FastTools.Types`. If the user's scripts have an `.asmdef`, add `"Aspid.FastTools"` to its `references`
+(editor code using `TypeField` or `TypeSelectorWindow` also `"Aspid.FastTools.Editor"`).
 
 | Need | Use |
 |---|---|
@@ -65,14 +65,16 @@ public sealed class Armory : MonoBehaviour
 - A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Medium or
   High (Minimal and Low keep the type), mark types picked only in the Inspector `[Preserve]` (`UnityEngine.Scripting`)
   or list them in `link.xml`, else `.Type` is `null` and `IsMissing` is `true` in the build; `[Preserve]` and `link.xml`
-  apply to `[TypeSelector]` strings too. `[RequireImplementors]` on an interface, or `[RequireDerived]` on a base class,
-  keeps all its implementations when the field is a `SerializableType<T>` of it.
+  apply to `[TypeSelector]` strings too. Unity's `[RequireImplementors]` on an interface, or `[RequireDerived]` on a base
+  class (both `UnityEngine.Scripting`), keeps all its implementations when the field is a `SerializableType<T>` of it.
 - Test an unset field with `field is null || field.IsEmpty`, not `field == null` alone: Unity fills a field with an
   empty wrapper when it loads an asset, a scene or a prefab, but on an object created in code (`AddComponent`,
   `ScriptableObject.CreateInstance`) the field is `null` until Unity serializes the object. `IsEmpty` means no type
   is stored, `IsMissing` means a name is stored but does not resolve; `.Type` is `null` in both.
 - Create in code: `new SerializableType<Weapon>(typeof(Sword))` (throws `ArgumentException` if not assignable;
   `null` = empty). `SerializableMonoScript` has no public constructor.
+- A field initializer `= new(typeof(Sword))` is the value of a new component and of every object saved before the
+  field existed. Use it when the field replaces a hard-coded type, so existing scenes and prefabs keep working.
 - `SerializableMonoScript` accepts only top-level non-generic classes: one in a file of the same name, or a
   `MonoBehaviour` / `ScriptableObject` class from a DLL. The user can drag the `.cs` file onto the field. Only it
   follows renames of a script class (in the editor it falls back to the script's class until the asset is re-saved);

@@ -9,8 +9,10 @@ description: "Aspid.FastTools generated profiler markers: `using var _ = this.Ma
 call site. No field, name string, attribute or `partial` is needed; works in classes, structs (including Burst jobs)
 and ref structs.
 
-- If the user's scripts have an `.asmdef`, it must reference `Aspid.FastTools`. No `using` is needed.
+- If the user's scripts have an `.asmdef`, add `"Aspid.FastTools"` to its `references`. No `using` is needed.
 - Without `ENABLE_PROFILER` (release players) every call returns `default`; do not add guards.
+- The markers show in the Profiler's CPU Usage module (Hierarchy and Timeline) without Deep Profile; job markers are
+  on the worker threads in Timeline.
 
 ```csharp
 public void Step()
