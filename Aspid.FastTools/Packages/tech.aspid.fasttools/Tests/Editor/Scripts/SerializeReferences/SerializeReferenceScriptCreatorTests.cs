@@ -439,7 +439,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
         [Test]
         public void ScriptInAnotherAssemblyFolder_IsNotTheSameAssembly()
         {
-            const string testsFolder = "Packages/tech.aspid.fasttools/Tests/Editor/SerializeReferences";
+            const string testsFolder = "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/SerializeReferences";
 
             Assert.That(SerializeReferenceScriptCreator.IsSameAssembly($"{testsFolder}/NewStub.cs", typeof(SerializeReferenceScriptCreatorStubTests)), Is.True);
             Assert.That(SerializeReferenceScriptCreator.IsSameAssembly("Assets/NewStub.cs", typeof(SerializeReferenceScriptCreatorStubTests)), Is.False);

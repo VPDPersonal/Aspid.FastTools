@@ -1,16 +1,17 @@
-// Finds the public API that a pull request takes out of the snapshot Tests/Editor/PublicApi/PublicApi.txt. A removed or
-// changed member line is a break for the users of the package, so pr-checks.yml asks for `!` in the title then: a wrong
-// `!` sets the breaking-change label, so a line that only gains text is not a loss (see isAdditiveChange).
+// Finds the public API that a pull request takes out of the snapshot Tests/Editor/Scripts/PublicApi/PublicApi.txt. A
+// removed or changed member line is a break for the users of the package, so pr-checks.yml asks for `!` in the title
+// then: a wrong `!` sets the breaking-change label, so a line that only gains text is not a loss (see
+// isAdditiveChange).
 // The functions are pure: the workflow reads the pull request through the API and passes the text in.
 //
 // The snapshot holds `#` comment lines, blank lines, `[Assembly]` lines, a type name per type (no indent) and the
 // members of that type (indented). Only a comment or a blank line is not a member line.
 
-export const PUBLIC_API_PATH = 'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/PublicApi/PublicApi.txt';
+export const PUBLIC_API_PATH = 'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/Scripts/PublicApi/PublicApi.txt';
 
 // The code that writes the snapshot. A PR that changes it can change the format of every line.
 export const PUBLIC_API_FORMAT_PATH =
-  'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/PublicApi/PublicApiSnapshot.cs';
+  'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/Scripts/PublicApi/PublicApiSnapshot.cs';
 
 const isMemberLine = (line) => line.trim() !== '' && !line.startsWith('#');
 

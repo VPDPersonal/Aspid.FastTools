@@ -14,7 +14,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
     {
         private const string ProbeClassPrefix = "aspid-fasttools-test-custom-style--";
         private const string ProbeStyleSheetPath =
-            "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/ICustomStyleProbe.uss";
+            "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/VisualElements/ICustomStyleProbe.uss";
 
         private static readonly CustomStyleProperty<string> _fontStyleProperty = new("--aspid-fasttools-test-font-style");
 

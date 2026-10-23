@@ -25,9 +25,9 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
   `CompilationPipeline.GetAssemblies`. A test that needs the Editor goes into its fixture's `*.Unity.cs` part. A slow
   test of plain C# that the Unity job need not repeat on every version goes into a `*.Dotnet.cs` part inside
   `#if !UNITY_EDITOR`: only `dotnet test` runs it.
-- `Tests/Editor/PublicApi/PublicApi.txt` in the package is the public API snapshot. After an intended API change,
-  rewrite it on the Unity version that `WholeApiVersion` in `PublicApiSnapshotTests` names, or a newer one, and commit
-  it in the same PR. From the repository root:
+- `Tests/Editor/Scripts/PublicApi/PublicApi.txt` in the package is the public API snapshot. After an intended API
+  change, rewrite it on the Unity version that `WholeApiVersion` in `PublicApiSnapshotTests` names, or a newer one,
+  and commit it in the same PR. From the repository root:
   `p="$(mktemp -d)/aspid-api"; v=$(scripts/make-unity-test-project.sh "$p" <version>)`, then
   `ASPID_FASTTOOLS_WRITE_PUBLIC_API=1 <Unity $v> -batchmode -nographics -projectPath "$p" -runTests -testPlatform EditMode -testFilter PublicApiSnapshotTests -testResults "$p/public-api.xml"`.
   When a public member gets a newer `UNITY_6000_x_OR_NEWER` guard, move the `#if` around `_hasWholeApi` and

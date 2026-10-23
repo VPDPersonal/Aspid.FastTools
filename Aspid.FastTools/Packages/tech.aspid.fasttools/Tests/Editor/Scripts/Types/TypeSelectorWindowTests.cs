@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
     [Category("Graphics")]
     internal sealed class TypeSelectorWindowTests
     {
-        private const string ProbePath = "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/AspidThemeProbe.uss";
+        private const string ProbePath = "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/VisualElements/AspidThemeProbe.uss";
         private const string DropdownClass = "aspid-fasttools-type-selector--dropdown";
 
         private static readonly Rect _anchor = new(x: 100, y: 100, width: 200, height: 20);
