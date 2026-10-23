@@ -27,7 +27,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private bool _animated = true;
         private float _pulseAmplitude;
         private IVisualElementScheduledItem _colorCycle;
-        private IVisualElementScheduledItem _pulse;
+        private readonly IVisualElementScheduledItem _pulse;
 
         [UxmlAttribute]
         public long ColorCycleIntervalMs { get; set; }

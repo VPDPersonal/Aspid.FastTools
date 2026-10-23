@@ -234,7 +234,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Prefers the snapshot's own rid: Unity has just dropped it, and instance overrides keyed to it
-        // ("managedReferences[rid].field") keep applying. Otherwise a random positive 63-bit id, as Unity allocates —
+        // ("managedReferences[rid].field") keep applying. Otherwise, a random positive 63-bit id, as Unity allocates —
         // never "max + 1": Unity hands out ids sequentially within a session, so the base's max + 1 is often the id
         // of an override a variant, nested prefab or scene already holds, and the two would merge into one entry.
         private static long PickRestoreRid(HashSet<long> used, IReadOnlyList<string> entryLines)

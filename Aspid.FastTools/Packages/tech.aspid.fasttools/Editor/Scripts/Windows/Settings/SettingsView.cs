@@ -127,7 +127,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void Submit(Button button)
         {
-            using var evt = new NavigationSubmitEvent { target = button };
+            using var evt = new NavigationSubmitEvent
+            {
+                target = button
+            };
+
             button.SendEvent(evt);
         }
     }

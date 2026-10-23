@@ -17,7 +17,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // How many violations a log lists before it says how many more there are; the CI report lists them all.
         public const int MaxListedViolations = 50;
 
-        // How many files a sweep loads before it releases the ones nothing references any more. The required-field
+        // How many files a sweep loads before it releases the ones nothing references anymore. The required-field
         // sweep and SerializeReferenceConstraintCache both use it. Not const so tests can lower it.
         internal static int UnloadEveryLoadedFiles = 64;
 

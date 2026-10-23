@@ -73,7 +73,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
             }
 
-            // Bulk restores may intentionally restore aliases; only single-element growth is auto-corrected.
+            // Bulk restores may intentionally restore aliases; only single-element growth is autocorrected.
             if (size == snapshot.Size + 1 &&
                 TryFindFreshDuplicate(snapshot.Map, current, out var duplicateIndex))
             {

@@ -215,7 +215,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 foreach (var key in keys)
                 {
-                    if (!broken.Contains(key) && KeyResolves(key, out _)) continue;
+                    if (!broken.Contains(key) && KeyResolves(key)) continue;
 
                     broken.Add(key);
                     brokenInFile = true;
@@ -253,9 +253,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return keys;
         }
 
-        private static bool KeyResolves(string key, out string typeName)
+        private static bool KeyResolves(string key)
         {
-            if (!TryParseKey(key, out typeName, out var guid, out var fileId)) return true;
+            if (!TryParseKey(key, out var typeName, out var guid, out var fileId)) return true;
 
             return MissingTypeNames.NameResolves(typeName) || MissingTypeNames.GetScriptClass(guid, fileId) is not null;
         }

@@ -68,7 +68,7 @@ namespace Aspid.FastTools.Types.Editors
                 detached.Use(persistent =>
                 {
                     persistent.serializedObject.SetIsDifferentCacheDirty();
-                    previousName = SerializableTypeUtility.GetBackingProperty(wrapperProperty: persistent).stringValue;
+                    previousName = SerializableTypeUtility.GetBackingProperty(wrapperProperty: persistent)?.stringValue;
                     wasMixed = SerializableMonoScriptUtility.HasMultipleDifferentValues(wrapperProperty: persistent);
 
                     SerializableMonoScriptUtility.Assign(wrapperProperty: persistent, type: type);
@@ -141,7 +141,7 @@ namespace Aspid.FastTools.Types.Editors
                     : DragAndDropVisualMode.Rejected;
             });
 
-            field.RegisterCallback<DragPerformEvent>(evt =>
+            field.RegisterCallback<DragPerformEvent>(_ =>
             {
                 if (!SerializableMonoScriptUtility.TryResolveDroppedType(field.Types, field.Allow, out var dropped)) return;
 

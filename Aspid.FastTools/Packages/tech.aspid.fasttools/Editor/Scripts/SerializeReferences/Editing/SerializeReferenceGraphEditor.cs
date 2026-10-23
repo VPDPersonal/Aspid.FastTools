@@ -52,7 +52,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "Clear", "Cancel"))
                 return false;
 
-            // Asked after the confirmation, so a cancelled clear never saves the asset.
+            // Asked after the confirmation, so a canceled clear never saves the asset.
             if (SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath)) return false;
 
             if (!SerializeReferenceYamlEditor.TryNullReference(assetPath, fileId, rid)) return false;
@@ -79,7 +79,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "Remove", "Cancel"))
                 return false;
 
-            // Asked after the confirmation, so a cancelled drop never saves the asset.
+            // Asked after the confirmation, so a canceled drop never saves the asset.
             if (SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath)) return false;
 
             // The on-screen graph may be stale, so re-confirm the orphan against a fresh scan before deleting.

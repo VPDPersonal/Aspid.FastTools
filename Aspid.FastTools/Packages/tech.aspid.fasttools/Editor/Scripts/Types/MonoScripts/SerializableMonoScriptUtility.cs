@@ -47,7 +47,7 @@ namespace Aspid.FastTools.Types.Editors
             assemblyQualifiedName = wrapperProperty.FindPropertyRelative(SerializableTypeUtility.BackingFieldName)?.stringValue ?? string.Empty;
 
             var script = wrapperProperty.FindPropertyRelative(ScriptFieldName)?.objectReferenceValue as MonoScript;
-            if (script && script!.GetClass() is { } declared) return declared;
+            if (script && script.GetClass() is { } declared) return declared;
 
             return TypeUtility.GetTypeOrNull(assemblyQualifiedName);
         }
@@ -101,7 +101,7 @@ namespace Aspid.FastTools.Types.Editors
                 var candidate = script.GetClass();
                 if (candidate is null || !HasScript(candidate)) continue;
                 if (candidate.IsInterface && !allow.HasFlag(TypeAllow.Interface)) continue;
-                if (candidate.IsAbstract && !candidate.IsInterface && !allow.HasFlag(TypeAllow.Abstract)) continue;
+                if (candidate is { IsAbstract: true, IsInterface: false } && !allow.HasFlag(TypeAllow.Abstract)) continue;
                 if (types is not null && !Array.TrueForAll(types, constraint => constraint is null || constraint.IsAssignableFrom(candidate))) continue;
 
                 type = candidate;
