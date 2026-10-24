@@ -11,8 +11,15 @@ namespace Aspid.FastTools.Enums.Editors
     [CustomPropertyDrawer(typeof(EnumValues<,>))]
     internal sealed class EnumValuesPropertyDrawer : PropertyDrawer
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) =>
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var text = EnumValuesPropertyDrawerHelper.GetLabel(property, label.text);
+
+            // The label can be shared, such as GUIContent.none, so a new title goes into a copy.
+            if (text != label.text) label = new GUIContent(label) { text = text };
+
             EnumValuesIMGUIPropertyDrawer.Draw(position, label, property, IsTypedVariant(fieldInfo));
+        }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
             EnumValuesIMGUIPropertyDrawer.GetHeight(property);
@@ -20,7 +27,8 @@ namespace Aspid.FastTools.Enums.Editors
         public override VisualElement CreatePropertyGUI(SerializedProperty property) =>
             EnumValuesUIToolkitPropertyDrawer.Draw(
                 property,
-                string.IsNullOrEmpty(preferredLabel) ? property.displayName : preferredLabel,
+                EnumValuesPropertyDrawerHelper.GetLabel(
+                    property, string.IsNullOrEmpty(preferredLabel) ? property.displayName : preferredLabel),
                 IsTypedVariant(fieldInfo));
 
         // For collection elements, fieldInfo describes the array or list itself; it is null when Unity finds no field.

@@ -347,6 +347,7 @@ First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releas
 - *Find Usages of …* and *Link to Existing* in the `[SerializeReference]` context menu name a generic type as the type picker does, `Modifier<Single>` or its `[TypeSelectorDisplay]` name; they used to show ``Modifier`1``. A `/` in a display name no longer opens a submenu.
 - In the default UI Toolkit Inspector, **+** of an empty `[TypeSelector]` `[SerializeReference]` list now opens the type picker; it used to append a `<None>` entry, and the picker appeared only once the list had an element.
 - The breakage notification and the breakage detection setting point at Project References; they still named its old tab, Repair.
+- An `EnumValues` table in an array or a list is titled `Element 0`, `Element 1` and so on, as other array elements are; it used to show the full name of its enum type, since Unity names an element after its first string field. A long title ends in an ellipsis inside the card instead of running past its border, in both the UI Toolkit and the IMGUI Inspector.
 
 ## [1.0.0-rc.8] — 2026-09-06
 

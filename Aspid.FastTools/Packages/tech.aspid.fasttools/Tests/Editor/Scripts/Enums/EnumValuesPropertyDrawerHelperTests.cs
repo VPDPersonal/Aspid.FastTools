@@ -83,7 +83,8 @@ namespace Aspid.FastTools.Tests.Editors.Enums
 
     /// <summary>
     /// Coverage for <see cref="EnumValuesPropertyDrawerHelper"/> and the UI Toolkit drawers: drawing never writes
-    /// to the asset, a row takes its enum from the table that owns it, the header shows the given label,
+    /// to the asset, a row takes its enum from the table that owns it, the header shows the given label
+    /// or "Element N" for a table in a collection,
     /// Populate Missing Enum Members compares numeric values, copies collection values, skips obsolete members
     /// and stays off for several selected objects, a key on an obsolete member is named, and flags beyond
     /// a signed 32-bit mask are toggled without truncation.
@@ -98,6 +99,7 @@ namespace Aspid.FastTools.Tests.Editors.Enums
             [SerializeField] private EnumValues<int[]> _arrays = new();
             [SerializeField] private EnumValues<List<string>> _lists = new();
             [SerializeField] private EnumValues<EnumValues<int>> _nested = new();
+            [SerializeField] private EnumValues<int>[] _tables = Array.Empty<EnumValues<int>>();
 
             public EnumValues<int> Ints => _ints;
         }
@@ -225,6 +227,49 @@ namespace Aspid.FastTools.Tests.Editors.Enums
 
             Assert.AreEqual("Damage colors", root.Q(className: "aspid-fasttools-enum-values__header").Q<Label>().text);
         }
+
+        // Unity names the element after its first string field, _enumType, so the drawer gets the enum type name.
+        [Test]
+        public void GetLabel_TableInACollection_IsTheElementIndex()
+        {
+            var tables = _serializedObject.FindProperty("_tables");
+            tables.arraySize = 12;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            SetEnumType("_tables.Array.data[11]", typeof(Season));
+
+            var table = _serializedObject.FindProperty("_tables.Array.data[11]");
+            var label = EnumValuesPropertyDrawerHelper.GetLabel(table, table.displayName);
+
+            Assert.AreEqual("Element 11", label);
+        }
+
+        [Test]
+        public void GetLabel_TableInACollectionWithItsOwnLabel_KeepsIt()
+        {
+            _serializedObject.FindProperty("_tables").arraySize = 1;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            SetEnumType("_tables.Array.data[0]", typeof(Season));
+
+            var table = _serializedObject.FindProperty("_tables.Array.data[0]");
+
+            Assert.AreEqual("Fire", EnumValuesPropertyDrawerHelper.GetLabel(table, "Fire"));
+        }
+
+        [Test]
+        public void GetLabel_TableInACollectionWithoutALabel_StaysWithoutOne()
+        {
+            _serializedObject.FindProperty("_tables").arraySize = 1;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+
+            var table = _serializedObject.FindProperty("_tables.Array.data[0]");
+
+            Assert.AreEqual(string.Empty, EnumValuesPropertyDrawerHelper.GetLabel(table, string.Empty));
+        }
+
+        [Test]
+        public void GetLabel_Field_KeepsTheGivenLabel() =>
+            Assert.AreEqual("Damage colors",
+                EnumValuesPropertyDrawerHelper.GetLabel(_serializedObject.FindProperty("_ints"), "Damage colors"));
 
         [UnityTest]
         public IEnumerator PropertyField_HeaderShowsItsLabelOrTheDisplayName()
