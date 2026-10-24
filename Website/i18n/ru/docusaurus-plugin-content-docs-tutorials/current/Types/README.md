@@ -30,6 +30,6 @@
 |---|---|
 | `Scripts/EnemySpawner.cs` | <code lang="class-name">SerializableMonoScript&lt;T&gt;</code>, <code lang="class-name">SerializableType&lt;T&gt;</code> и <code lang="csharp">[TypeSelector]</code>, зависящий от другого поля |
 | `Scripts/Enemies/Enemy.cs` | Поле <code lang="class-name">ComponentTypeSelector</code> |
-| `Scripts/Spawning/` | Имена, группы и иконки из <code lang="csharp">[TypeSelectorDisplay]</code> |
+| `Scripts/Spawning/` | Имена, группы и иконки из <code lang="csharp">[TypeSelectorDisplay]</code> и <code lang="csharp">[Preserve]</code>: паттерн хранится только по имени, и без атрибута managed code stripping вырезает класс из плеера |
 
 Справочник — [Serializable Types](../../../docusaurus-plugin-content-docs/current/02-serializable-types.md), [TypeSelector](../../../docusaurus-plugin-content-docs/current/03-type-selector.md) и [ComponentTypeSelector](../../../docusaurus-plugin-content-docs/current/05-component-type-selector.md).
