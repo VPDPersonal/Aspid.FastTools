@@ -22,7 +22,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
         // A runtime panel, not a shown EditorWindow: only the former updates without a graphics device (-nographics).
         private const string PanelSettingsPath =
-            "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/VisualElements/TestPanel/AspidFastToolsTestPanelSettings.asset";
+            "Packages/tech.aspid.fasttools/Tests/Editor/Resources/UI/TestPanel/AspidFastToolsTestPanelSettings.asset";
 
         private bool _enabled;
         private GameObject _host;
