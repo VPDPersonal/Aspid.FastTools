@@ -150,9 +150,3 @@ Project References также восстанавливает имена, кот�
 | Двоичные ассеты и нескачанные файлы Git LFS | Не сканируются: Scan Project считает их, Console перечисляет, Asset References показывает **Not scanned**; используйте **Force Text** и скачайте файлы LFS |
 | Файлы, последний раз сохранённые до Unity 2021.2 | Их managed-ссылки не читаются: пересохраните файлы в текущей версии Unity |
 | Больше 1000 карточек ссылок в одном окне | Asset References рисует первые 1000 и сообщает, сколько пропустил; Project References исправляет потерянные типы без этого предела |
-
-## Пример в пакете
-
-Потерянные типы, переименование через <code lang="csharp">[MovedFrom]</code> и общая ссылка для обеих вкладок есть в ассетах примера [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md).
-
-![Манекен получает урон в сцене SerializeReferences](../../../../tutorials/SerializeReferences/Images/demo.gif)

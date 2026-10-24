@@ -118,9 +118,3 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin    ns    
 В Asset References запись находится по `rid`, строка `RequiredUnset` с `rid` `0` — по `fieldPath`; строка с origin `override` — в разделе **Prefab instance overrides** в Project References. Строка `MissingTypeName` находится в своей группе **type name** в Project References.
 
 </details>
-
-## Пример в пакете
-
-Обязательное поле и потерянные типы для проверки есть в примере [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md); если они не должны останавливать сборку в режиме `Fail`, добавьте папку примера в **Excluded scan folders**.
-
-![Манекен получает урон в сцене SerializeReferences](../../../../tutorials/SerializeReferences/Images/demo.gif)

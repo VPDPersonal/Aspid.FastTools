@@ -88,6 +88,6 @@ In your own editor, a regular <code lang="class-name">PropertyField</code> draws
 
 ## Package sample
 
-For weapon selection, lists and shared references, see the [SerializeReferences](../tutorials/SerializeReferences/README.md) sample.
+For weapon selection, lists and nested references, see the [SerializeReferences](../tutorials/SerializeReferences/README.md) sample.
 
 ![The dummy takes damage in the SerializeReferences scene](../tutorials/SerializeReferences/Images/demo.gif)

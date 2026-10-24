@@ -88,6 +88,6 @@
 
 ## Пример в пакете
 
-Выбор оружия, списки и общие ссылки показаны в примере [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md).
+Выбор оружия, списки и вложенные ссылки показаны в примере [SerializeReferences](../../docusaurus-plugin-content-docs-tutorials/current/SerializeReferences/README.md).
 
 ![Манекен получает урон в сцене SerializeReferences](../../../../tutorials/SerializeReferences/Images/demo.gif)
