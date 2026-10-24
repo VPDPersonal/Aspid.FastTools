@@ -203,8 +203,9 @@ Put these items into the Phase 1 report. Do not do them without a request.
   without Unity says that the reference still needs regenerating. Ask if such a PR is merged since the last release.
 - "The channel changed" from `set-version.sh` → re-record the README install walk-through in a separate PR
   (`Website/media/readme-previews/README.md`).
-- **Stable:** the manual QA of `.github/ISSUE_TEMPLATE/release_checklist.yml`: player builds, and the Asset Store
-  upload as in "Asset Store upload". It comes before the merge of the release PR.
+- **Stable:** the manual QA of `.github/ISSUE_TEMPLATE/release_checklist.yml`: player builds with the
+  `asp-ft-player-builds` skill, and the Asset Store upload as in "Asset Store upload". It comes before the merge of
+  the release PR.
 
 ## Report format
 
