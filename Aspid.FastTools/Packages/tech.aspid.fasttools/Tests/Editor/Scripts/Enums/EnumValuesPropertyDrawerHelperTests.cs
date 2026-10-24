@@ -244,6 +244,17 @@ namespace Aspid.FastTools.Tests.Editors.Enums
         }
 
         [Test]
+        public void GetLabel_TableInACollectionWithoutALabel_StaysWithoutOne()
+        {
+            _serializedObject.FindProperty("_tables").arraySize = 1;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+
+            var table = _serializedObject.FindProperty("_tables.Array.data[0]");
+
+            Assert.AreEqual(string.Empty, EnumValuesPropertyDrawerHelper.GetLabel(table, string.Empty));
+        }
+
+        [Test]
         public void GetLabel_Field_KeepsTheGivenLabel() =>
             Assert.AreEqual("Damage colors",
                 EnumValuesPropertyDrawerHelper.GetLabel(_serializedObject.FindProperty("_ints"), "Damage colors"));

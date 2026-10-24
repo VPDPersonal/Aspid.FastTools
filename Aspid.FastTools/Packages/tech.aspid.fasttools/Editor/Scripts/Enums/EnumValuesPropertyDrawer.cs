@@ -13,7 +13,11 @@ namespace Aspid.FastTools.Enums.Editors
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            label.text = EnumValuesPropertyDrawerHelper.GetLabel(property, label.text);
+            var text = EnumValuesPropertyDrawerHelper.GetLabel(property, label.text);
+
+            // The label can be shared, such as GUIContent.none, so a new title goes into a copy.
+            if (text != label.text) label = new GUIContent(label) { text = text };
+
             EnumValuesIMGUIPropertyDrawer.Draw(position, label, property, IsTypedVariant(fieldInfo));
         }
 

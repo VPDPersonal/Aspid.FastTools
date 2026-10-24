@@ -41,11 +41,11 @@ namespace Aspid.FastTools.Enums.Editors
         }
 
         // Unity names an array element after its first string field, which here is _enumType: the assembly-qualified
-        // enum name. A table in a collection keeps Unity's default "Element N" instead.
+        // enum name. A table in a collection keeps Unity's default "Element N" instead; an empty label stays hidden.
         public static string GetLabel(SerializedProperty property, string label)
         {
             var path = property.propertyPath;
-            if (!path.EndsWith("]", StringComparison.Ordinal)) return label;
+            if (string.IsNullOrEmpty(label) || !path.EndsWith("]", StringComparison.Ordinal)) return label;
 
             var indexStart = path.LastIndexOf('[') + 1;
             return $"Element {path.Substring(indexStart, path.Length - indexStart - 1)}";
