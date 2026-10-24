@@ -4,7 +4,9 @@
 // seconds with the window recording, then `SetRecordingEnabled(false)` via reflection and Play Mode stopped. Run it once
 // per skin (the skill's Light skin section), without new frames in between, so both shots show the same frame.
 // Run it twice on the first skin: the first run resizes the window and the auto-resizing Overview column follows it.
-// Crop of the 2x grab, both skins: x 542..1644, y 384..626 (1102 x 242 px) = the column header and the six Flock rows.
+// Crop of the 2x grab, both skins: x 542..1644, y 450..692 (1102 x 242 px) = the column header and the six Flock rows.
+// The header y moves with the modules in the chart area: match the header row of the published PNG against the grab.
+// If the first run throws a NullReferenceException, select the CPU module in Hierarchy view and repaint in a step before it.
 object cpu = null;
 foreach (var mod in (System.Collections.IEnumerable)winType.GetField("m_AllModules", flags).GetValue(win))
     if (mod.GetType().Name == "CPUProfilerModule") cpu = mod;
@@ -23,8 +25,8 @@ var treeView = (UnityEditor.IMGUI.Controls.TreeView<int>)priv(hierarchy, "m_Tree
 var data = (UnityEditor.Profiling.HierarchyFrameDataView)priv(treeView, "m_FrameDataView");
 treeView.ExpandAll(); treeView.Reload();
 UnityEditor.IMGUI.Controls.TreeViewItem<int> flock = null;
-foreach (var row in treeView.GetRows()) if (data.GetItemName(row.id) == "Flock.Update (74)") flock = row;
-if (flock == null) return "ERR no Flock.Update (74) in frame " + data.frameIndex;
+foreach (var row in treeView.GetRows()) if (data.GetItemName(row.id) == "Flock.Update (22)") flock = row;
+if (flock == null) return "ERR no Flock.Update (22) in frame " + data.frameIndex;
 // Expand only the path to Flock.Update and its own subtree, then scroll its parents out above the first row.
 var expanded = new System.Collections.Generic.List<int>();
 for (var ancestor = flock.parent; ancestor != null && ancestor.depth >= 0; ancestor = ancestor.parent) expanded.Add(ancestor.id);
