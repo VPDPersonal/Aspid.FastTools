@@ -19,7 +19,7 @@
 
 Типы врагов и паттерн расстановки в инспекторе.
 
-1. **Тип переживает переименование.** **Enemy Type** — <code lang="class-name">SerializableMonoScript&lt;Enemy&gt;</code>. Переименуйте <code lang="class-name">Grunt</code> вместе с файлом в <code lang="class-name">Footman</code>: после компиляции поле показывает <code lang="class-name">Footman</code>.
+1. **Тип переживает переименование.** **Enemy Type** — <code lang="class-name">SerializableMonoScript&lt;Enemy&gt;</code>. Переименуйте <code lang="class-name">Grunt</code> в <code lang="class-name">Footman</code> в коде, в имени файла и его `.meta`, чтобы обновился наследник <code lang="class-name">ArmoredGrunt</code>: после компиляции поле показывает <code lang="class-name">Footman</code>.
 2. **Зависимое окно выбора.** **Elite Type** предлагает только класс из **Enemy Type** и его наследников. Переключите **Enemy Type** на <code lang="class-name">Archer</code> и откройте **Elite Type**: остался только <code lang="class-name">Archer</code>.
 3. **Имена, группы и иконки.** Откройте **Pattern**: **Circle** и **Line** собраны в группу **Spawn Patterns** с иконками из <code lang="csharp">[TypeSelectorDisplay]</code>, а скрытого через `Hidden` <code lang="class-name">OriginPattern</code> в списке нет. Выберите **Line** и войдите в Play Mode: враги появятся в линию.
 4. **Замена компонента на месте.** Выберите **Placed Enemy (swap its type)** и поставьте **Health** = `250`. В списке <code lang="class-name">ComponentTypeSelector</code> вверху инспектора переключите <code lang="class-name">Archer</code> на <code lang="class-name">Grunt</code>: **Health** осталось `250`, а **Keep Distance**, которое есть только у <code lang="class-name">Archer</code>, исчезло.
