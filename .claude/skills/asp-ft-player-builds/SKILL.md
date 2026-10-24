@@ -38,21 +38,22 @@ scripts/player-builds.sh <scratch>/player-builds [unity-version]
 
 ```
 TARGET               BUILD      ERR/WARN  AOTCHECK   PROFILER  REFERENCE MISSING
-mac-mono             Succeeded  0/0       3/3        off dev=off none
+mac-mono             Succeeded  0/0       5/5        off dev=off none
 ```
 
 - `BUILD`: the `BuildReport` result. `xcodebuild-failed`: Unity made the Xcode project, Xcode did not build it.
 - `ERR/WARN`: the errors and warnings of the `BuildReport`.
 - `AOTCHECK`: the required fields that resolved in the player, out of all. Required are a `[Preserve]` class,
-  `Transform` and `List<int>`: each must resolve on every target. `no-run`: the player did not print `AOTCHECK DONE`.
+  `Transform`, `List<int>`, and `LinePattern` of the Types sample (`samplePattern`, and `samplePatternInstance` for
+  its instance): each must resolve on every target. The sample patterns carry `[Preserve]`, so a `MISSING` there means
+  that the sample lost it. `no-run`: the player did not print `AOTCHECK DONE`.
 - `PROFILER`: `ENABLE_PROFILER` and `DEVELOPMENT_BUILD` in the player. Both must be `off`.
 - `REFERENCE MISSING`: reference fields that did not resolve. They are informational and do not fail the run:
-  - `plain`, a class referenced only by its stored name, and `samplePattern` with `samplePatternInstance`,
-    `LinePattern` of the Types sample: the linker removes them from Managed Stripping Level Medium up. The XML docs of
-    `SerializableTypeBase` say so.
+  - `plain`, a class referenced only by its stored name: the linker removes it from Managed Stripping Level Medium up.
+    The XML docs of `SerializableTypeBase` say so. `plain` that turns `MISSING` on `mac-mono` or
+    `mac-il2cpp-minimal` is a regression.
   - `strippedEngine`, `BoxCollider`: on every IL2CPP target Strip Engine Code removes the physics module, which the
     check scene does not use.
-  - `plain` or `samplePattern` that turns `MISSING` on `mac-mono` or `mac-il2cpp-minimal` is a regression.
 
 The exit code is 1 when a target is skipped or fails. The logs are in `Logs/`: `unity-*.log` for the builds,
 `run-*.log` for the players, `xcodebuild-ios-sim.log`. The iOS Simulator player is always a development engine build,

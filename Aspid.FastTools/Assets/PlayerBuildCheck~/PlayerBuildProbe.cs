@@ -13,10 +13,10 @@ namespace Aspid.FastTools.PlayerBuildCheck
         [SerializeField] private SerializableType _preserved;
         [SerializeField] private SerializableType<Component> _engine;
         [SerializeField] private SerializableType _generic;
+        [SerializeField] private SerializableType<ISpawnPattern> _samplePattern;
 
         [SerializeField] private SerializableType _plain;
         [SerializeField] private SerializableType<Component> _strippedEngine;
-        [SerializeField] private SerializableType<ISpawnPattern> _samplePattern;
 
         private static string Backend =>
 #if ENABLE_IL2CPP
@@ -48,9 +48,9 @@ namespace Aspid.FastTools.PlayerBuildCheck
                 Report(kind: "required", field: "preserved", value: _preserved);
                 Report(kind: "required", field: "engine", value: _engine);
                 Report(kind: "required", field: "generic", value: _generic);
+                Report(kind: "required", field: "samplePattern", value: _samplePattern);
                 Report(kind: "reference", field: "plain", value: _plain);
                 Report(kind: "reference", field: "strippedEngine", value: _strippedEngine);
-                Report(kind: "reference", field: "samplePattern", value: _samplePattern);
             }
 
             using (this.Marker().WithName("Instantiate"))
@@ -66,7 +66,7 @@ namespace Aspid.FastTools.PlayerBuildCheck
         {
             if (_samplePattern.Type is not { } type)
             {
-                Debug.Log("AOTCHECK reference samplePatternInstance MISSING type not resolved");
+                Debug.Log("AOTCHECK required samplePatternInstance MISSING type not resolved");
                 return;
             }
 
@@ -74,11 +74,11 @@ namespace Aspid.FastTools.PlayerBuildCheck
             {
                 var pattern = (ISpawnPattern)Activator.CreateInstance(type);
                 var position = pattern.GetPosition(index: 1, count: 4, radius: 2f);
-                Debug.Log($"AOTCHECK reference samplePatternInstance ok {type.FullName} {position}");
+                Debug.Log($"AOTCHECK required samplePatternInstance ok {type.FullName} {position}");
             }
             catch (Exception exception)
             {
-                Debug.Log($"AOTCHECK reference samplePatternInstance MISSING {exception.GetType().Name}: {exception.Message}");
+                Debug.Log($"AOTCHECK required samplePatternInstance MISSING {exception.GetType().Name}: {exception.Message}");
             }
         }
 

@@ -30,6 +30,6 @@ Enemy types and spawn pattern in the Inspector.
 |---|---|
 | `Scripts/EnemySpawner.cs` | <code lang="class-name">SerializableMonoScript&lt;T&gt;</code>, <code lang="class-name">SerializableType&lt;T&gt;</code> and <code lang="csharp">[TypeSelector]</code> that follows another field |
 | `Scripts/Enemies/Enemy.cs` | The <code lang="class-name">ComponentTypeSelector</code> field |
-| `Scripts/Spawning/` | <code lang="csharp">[TypeSelectorDisplay]</code> names, groups and icons |
+| `Scripts/Spawning/` | <code lang="csharp">[TypeSelectorDisplay]</code> names, groups and icons, and <code lang="csharp">[Preserve]</code>: a pattern is stored only by its name, so without it managed code stripping removes the class from a player |
 
 Reference: [Serializable Types](../../docs/02-serializable-types.md), [TypeSelector](../../docs/03-type-selector.md) and [ComponentTypeSelector](../../docs/05-component-type-selector.md).
