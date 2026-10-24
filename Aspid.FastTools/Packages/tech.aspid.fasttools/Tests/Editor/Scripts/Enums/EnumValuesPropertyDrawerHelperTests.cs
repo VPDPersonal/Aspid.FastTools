@@ -238,9 +238,21 @@ namespace Aspid.FastTools.Tests.Editors.Enums
             SetEnumType("_tables.Array.data[11]", typeof(Season));
 
             var table = _serializedObject.FindProperty("_tables.Array.data[11]");
-            var label = EnumValuesPropertyDrawerHelper.GetLabel(table, typeof(Season).AssemblyQualifiedName);
+            var label = EnumValuesPropertyDrawerHelper.GetLabel(table, table.displayName);
 
             Assert.AreEqual("Element 11", label);
+        }
+
+        [Test]
+        public void GetLabel_TableInACollectionWithItsOwnLabel_KeepsIt()
+        {
+            _serializedObject.FindProperty("_tables").arraySize = 1;
+            _serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            SetEnumType("_tables.Array.data[0]", typeof(Season));
+
+            var table = _serializedObject.FindProperty("_tables.Array.data[0]");
+
+            Assert.AreEqual("Fire", EnumValuesPropertyDrawerHelper.GetLabel(table, "Fire"));
         }
 
         [Test]
