@@ -2,11 +2,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 using Aspid.FastTools.ProfilerMarkers;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Aspid.FastTools.Generators.ProfilerMarkers.Data;
 using Aspid.FastTools.Generators.ProfilerMarkers.Bodies;
 
@@ -29,38 +29,78 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
     private static bool Predicate(SyntaxNode node, CancellationToken _) =>
         node is InvocationExpressionSyntax
         {
-            Expression: MemberAccessExpressionSyntax { Name: IdentifierNameSyntax { Identifier.ValueText: "Marker" } }
+            Expression: MemberAccessExpressionSyntax
+            {
+                Name: IdentifierNameSyntax
+                {
+                    Identifier.ValueText: "Marker"
+                }
+            }
         };
 
     private static MarkerCall? Transform(GeneratorSyntaxContext context, CancellationToken ct)
     {
-        if (context.Node is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax access } invocation) return null;
+        if (context.Node is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax access } invocation)
+            return null;
 
         var model = context.SemanticModel;
         var receiverType = model.GetTypeInfo(access.Expression, ct).Type;
-        if (MarkerCallRules.GetMarker(model.GetSymbolInfo(invocation, ct), receiverType) is null) return null;
+
+        if (GetMarker(model.GetSymbolInfo(invocation, ct), receiverType) is null)
+            return null;
 
         if (MarkerCallRules.FindEnclosingMember(model.GetEnclosingSymbol(invocation.SpanStart, ct)) is not { ContainingType: { } type } member)
             return null;
 
         // Unsupported calls get no overload: they bind to the fallback and compile, and AFT0010 reports them.
-        if (MarkerCallRules.GetUnsupportedReason(invocation, access, type, model, ct) is not null) return null;
+        if (MarkerCallRules.GetUnsupportedReason(invocation, access, type, model, ct) is not null)
+            return null;
 
         // A WithName() name known only at run time keeps the member name, and AFT0014 reports it.
         var markerName = ResolveMarkerName(member);
+
         var label = MarkerCallRules.FindWithNameArgument(invocation, model, ct) is { } nameArgument
             ? MarkerCallRules.GetConstantName(nameArgument, model, ct) ?? markerName
             : markerName;
-        var line = MarkerCallRules.GetCallerLine(invocation);
+
+        var line = GetCallerLine(invocation);
 
         return new MarkerCall(
-            BuildTypeData(type),
-            line,
+            type: BuildTypeData(type),
+            line: line,
             fieldName: $"{markerName}_Marker_Line_{line}",
-            label,
-            invocation.SyntaxTree.FilePath,
-            MarkerCallRules.GetCallerColumn(invocation));
+            label: label,
+            filePath: invocation.SyntaxTree.FilePath,
+            column: GetCallerColumn(invocation));
     }
+
+    // The Marker() the call binds to: the package fallback, or an overload another assembly generated —
+    // extension lookup stops at the nearest namespace, so a base type's overload in the caller's namespace
+    // hides the global fallback. A ref struct cannot be a type argument of the generic fallback, so its call
+    // only has the fallback as a candidate; the generated overload is what makes it compile.
+    private static IMethodSymbol? GetMarker(SymbolInfo symbolInfo, ITypeSymbol? receiverType)
+    {
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return MarkerCallRules.IsMarker(method)
+                ? method
+                : null;
+        }
+
+        if (receiverType is not { IsRefLikeType: true })
+            return null;
+
+        return symbolInfo.CandidateSymbols
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(MarkerCallRules.IsMarker);
+    }
+
+    // The line [CallerLineNumber] passes for an invocation: the mapped line of its opening parenthesis.
+    private static int GetCallerLine(InvocationExpressionSyntax invocation) =>
+        invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Line + 1;
+
+    private static int GetCallerColumn(InvocationExpressionSyntax invocation) =>
+        invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Character;
 
     private static TypeData BuildTypeData(INamedTypeSymbol symbol)
     {
@@ -70,13 +110,17 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
 
         // Arity is part of every type name so Foo, Foo<T> and Outer<T>.Inner stay distinct.
         var containing = new Stack<INamedTypeSymbol>();
+
         for (var t = symbol.ContainingType; t is not null; t = t.ContainingType)
             containing.Push(t);
 
         var nameBuilder = new StringBuilder("__");
+
         foreach (var t in containing)
             AppendNameWithArity(nameBuilder, t).Append('_');
-        AppendNameWithArity(nameBuilder, symbol).Append("ProfilerMarkerExtensions");
+
+        AppendNameWithArity(nameBuilder, symbol)
+            .Append("ProfilerMarkerExtensions");
 
         var typeParameters = MarkerCallRules.GetChainTypeParameters(symbol);
         var typeParamList = typeParameters.Count > 0
@@ -86,7 +130,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         return new TypeData(
             typeKey: symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             typeName: symbol.Name,
-            @namespace: ns,
+            ns: ns,
             className: nameBuilder.ToString(),
             fullyQualifiedDisplay: symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             typeParamList: typeParamList,
@@ -111,8 +155,10 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             case INamedTypeSymbol named:
                 for (var t = named; t is not null; t = t.ContainingType)
                 {
-                    if (HasObsoleteAttribute(t) || t.TypeArguments.Any(IsObsolete)) return true;
+                    if (HasObsoleteAttribute(t) || t.TypeArguments.Any(IsObsolete))
+                        return true;
                 }
+
                 return false;
 
             default:
@@ -121,14 +167,23 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
     }
 
     private static bool HasObsoleteAttribute(ISymbol symbol) =>
-        symbol.GetAttributes().Any(static attribute =>
-            attribute.AttributeClass is { Name: "ObsoleteAttribute" } attributeClass
-            && attributeClass.ContainingNamespace.ToDisplayString() == "System");
+        symbol
+            .GetAttributes()
+            .Any(static attribute =>
+                attribute.AttributeClass is { Name: "ObsoleteAttribute" } attributeClass
+                && attributeClass.ContainingNamespace.ToDisplayString() == "System");
 
     private static StringBuilder AppendNameWithArity(StringBuilder builder, INamedTypeSymbol type)
     {
         builder.Append(type.Name);
-        if (type.Arity > 0) builder.Append('_').Append(type.Arity);
+
+        if (type.Arity > 0)
+        {
+            builder
+                .Append('_')
+                .Append(type.Arity);
+        }
+
         return builder;
     }
 
@@ -147,24 +202,20 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         return ToIdentifier(name);
     }
 
-    private static string ResolveMethodName(IMethodSymbol method)
-    {
-        if (method.AssociatedSymbol is IPropertySymbol property)
-            return ResolvePropertyName(property);
-
-        if (method.AssociatedSymbol is IEventSymbol @event)
-            return ResolveEventName(@event);
-
-        if (method.MethodKind is MethodKind.Constructor)
-            return "Ctor";
-
-        if (method.MethodKind is MethodKind.StaticConstructor)
-            return "StaticCtor";
-
-        return method.ExplicitInterfaceImplementations.Length > 0
-            ? method.ExplicitInterfaceImplementations[0].Name
-            : method.Name;
-    }
+    private static string ResolveMethodName(IMethodSymbol method) =>
+        method.AssociatedSymbol switch
+        {
+            IPropertySymbol property => ResolvePropertyName(property),
+            IEventSymbol @event => ResolveEventName(@event),
+            _ => method.MethodKind switch
+            {
+                MethodKind.Constructor => "Ctor",
+                MethodKind.StaticConstructor => "StaticCtor",
+                _ => method.ExplicitInterfaceImplementations.Length > 0
+                    ? method.ExplicitInterfaceImplementations[0].Name
+                    : method.Name
+            }
+        };
 
     private static string ResolvePropertyName(IPropertySymbol property)
     {
@@ -186,8 +237,13 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
     private static string ToIdentifier(string name)
     {
         var builder = new StringBuilder(name.Length);
+
         foreach (var c in name)
-            builder.Append(SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_');
+        {
+            builder.Append(SyntaxFacts.IsIdentifierPartCharacter(c)
+                ? c
+                : '_');
+        }
 
         if (builder.Length is 0 || !SyntaxFacts.IsIdentifierStartCharacter(builder[0]))
             builder.Insert(0, '_');
@@ -197,38 +253,51 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
 
     // A type parameter may be named with a keyword (class Foo<@event>); the generated code must escape it again.
     internal static string EscapeIdentifier(string name) =>
-        SyntaxFacts.GetKeywordKind(name) is SyntaxKind.None ? name : "@" + name;
+        SyntaxFacts.GetKeywordKind(name) is SyntaxKind.None
+            ? name
+            : "@" + name;
 
     private static string BuildConstraintsClause(IReadOnlyList<ITypeParameterSymbol> typeParameters)
     {
-        if (typeParameters.Count is 0) return string.Empty;
+        if (typeParameters.Count is 0)
+            return string.Empty;
 
         var clauses = new List<string>();
+
         foreach (var tp in typeParameters)
         {
             var constraints = new List<string>();
 
-            if (tp.HasReferenceTypeConstraint) constraints.Add("class");
-            else if (tp.HasUnmanagedTypeConstraint) constraints.Add("unmanaged");
-            else if (tp.HasValueTypeConstraint) constraints.Add("struct");
+            if (tp.HasReferenceTypeConstraint)
+                constraints.Add("class");
+            else if (tp.HasUnmanagedTypeConstraint)
+                constraints.Add("unmanaged");
+            else if (tp.HasValueTypeConstraint)
+                constraints.Add("struct");
 
-            if (tp.HasNotNullConstraint) constraints.Add("notnull");
+            if (tp.HasNotNullConstraint)
+                constraints.Add("notnull");
 
             foreach (var ct in tp.ConstraintTypes)
                 constraints.Add(ct.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
-            if (tp.HasConstructorConstraint) constraints.Add("new()");
+            if (tp.HasConstructorConstraint)
+                constraints.Add("new()");
 
             if (constraints.Count > 0)
                 clauses.Add($"where {EscapeIdentifier(tp.Name)} : {string.Join(", ", constraints)}");
         }
 
-        return clauses.Count is 0 ? string.Empty : " " + string.Join(" ", clauses);
+        return clauses.Count is 0
+            ? string.Empty
+            : " " + string.Join(" ", clauses);
     }
 
     private static void GenerateCode(SourceProductionContext context, ImmutableArray<MarkerCall> markerCalls)
     {
-        if (markerCalls.Length is 0) return;
+        if (markerCalls.Length is 0)
+            return;
+
         ExtensionClassBody.GenerateCode(context, markerCalls);
     }
 }

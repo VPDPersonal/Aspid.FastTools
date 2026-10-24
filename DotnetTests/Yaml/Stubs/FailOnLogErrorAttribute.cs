@@ -3,10 +3,10 @@ using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using Debug = UnityEngine.Debug;
 
-[assembly: Aspid.FastTools.SerializeReferences.Editors.Tests.FailOnLogError]
+[assembly: Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml.FailOnLogError]
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors.Tests
+namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
 {
     // Unity's Test Runner fails a test that logs an error it did not expect; the tests rely on that, so it is
     // reproduced here for every test in the assembly.

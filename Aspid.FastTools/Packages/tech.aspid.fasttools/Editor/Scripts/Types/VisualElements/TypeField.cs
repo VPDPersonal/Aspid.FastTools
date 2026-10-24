@@ -456,7 +456,7 @@ namespace Aspid.FastTools.Types.Editors
             }
             catch (NullReferenceException)
             {
-                // The caller disposed it: a disposed SerializedObject throws on access, and nothing reads it any more.
+                // The caller disposed it: a disposed SerializedObject throws on access, and nothing reads it anymore.
             }
         }
 

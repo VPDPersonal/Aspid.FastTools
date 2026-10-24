@@ -6,6 +6,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import AgentPrompt from '@site/src/components/AgentPrompt';
 import AgentSession from '@site/src/components/AgentSession';
 import AnimatedPreview from '@site/src/components/FeaturePreview';
+import DonatePanel from '@site/src/components/DonatePanel';
 import InlineCode from '@site/src/components/InlineCode';
 import IntroBanner from '@site/src/components/IntroBanner';
 import InstallPanel from '@site/src/components/InstallPanel';
@@ -33,4 +34,4 @@ function FeatureCardMore() {
   return <Translate id="featureCard.more">Read more</Translate>;
 }
 
-export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy, ProjectReferencesPanel, StyleSides, StyleSidesRow, AgentSession, AgentPrompt};
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, DonatePanel, StatusBadge, ProfilerHierarchy, ProjectReferencesPanel, StyleSides, StyleSidesRow, AgentSession, AgentPrompt};

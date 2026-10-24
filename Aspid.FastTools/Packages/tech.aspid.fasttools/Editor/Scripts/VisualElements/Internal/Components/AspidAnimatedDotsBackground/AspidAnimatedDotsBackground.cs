@@ -1,7 +1,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEditorInternal;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -35,9 +34,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private ushort[] _indices = Array.Empty<ushort>();
 
         // The field's own clock: it advances only while the field is watched, so a paused field resumes where it stopped.
-        private float _time = (float)EditorApplication.timeSinceStartup;
+        private float _time;
         private double _lastTick = EditorApplication.timeSinceStartup;
-        private IVisualElementScheduledItem _animation;
+        private readonly IVisualElementScheduledItem _animation;
         private bool _dotsVisible = true;
 
         [UxmlAttribute]
@@ -149,28 +148,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var elapsed = (float)(now - _lastTick);
             _lastTick = now;
 
-            // The field only drifts with time, so it stays still while nobody watches it: Unity is in the background,
-            // or its window is neither focused nor under the pointer. A redraw of the whole window 20 times a second
-            // is not free.
-            if (!InternalEditorUtility.isApplicationActive || !IsWatched()) return;
+            // The field only drifts with time, so it stays still while nobody watches it.
+            if (!EditorWindowWatch.IsWatched(this)) return;
 
             // A theme that hides the dots (a zero radius) leaves nothing to redraw.
             if (!(_size.DotRadius > 0f)) return;
 
             _time += Mathf.Min(elapsed, MaxTickStep);
             MarkDirtyRepaint();
-        }
-
-        // Each dock area and floating window draws its own panel, so the focused and hovered windows are found by it.
-        private bool IsWatched()
-        {
-            if (panel is null) return false;
-
-            var focused = EditorWindow.focusedWindow;
-            if (focused != null && focused.rootVisualElement.panel == panel) return true;
-
-            var hovered = EditorWindow.mouseOverWindow;
-            return hovered != null && hovered.rootVisualElement.panel == panel;
         }
 
         private void OnGenerateVisualContent(MeshGenerationContext context)

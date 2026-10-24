@@ -43,7 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _changed = false;
         }
 
-        // The persisted form, also for a test that has to restore the session's own baseline afterwards.
+        // The persisted form, also for a test that has to restore the session's own baseline afterward.
         internal string Export()
         {
             var entries = new List<string>(Entries.Count);

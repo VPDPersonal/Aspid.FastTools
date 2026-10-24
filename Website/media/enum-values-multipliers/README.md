@@ -6,7 +6,7 @@ Recipes for the EnumValues page captures in `Website/docs/Images/`:
 - `enum-values-multipliers-populate.gif`: [populate](populate/README.md), then [`padding/pad.py`](padding/pad.py).
 - `enum-values-type-selector.png`: [type-selector](type-selector/README.md).
 
-`subject.cs.txt` is the temporary `DocumentationMedia.EnumMedia` subject that `populate` and `type-selector` are shot on: an in-memory `EnumValues<DamageType, float>` table (Default Value 1, one Fire row at 1.5) in a utility EditorWindow; nothing is saved. Run it with `unity command run_script` from a `.cs` copy (run_script takes only `.cs`): `DocumentationMedia.EnumMedia.Main` opens it, `Untyped` swaps in an `EnumValues<float>` table, `Cleanup` closes it.
+`subject.cs.txt` is the temporary `DocumentationMedia.EnumMedia` subject that `populate` and `type-selector` are shot on: an in-memory `EnumValues<DamageType, float>` table (Default Value 1, one Fire row at 1.5) in a utility EditorWindow; nothing is saved. Run it with `unity command script run` from a `.cs` copy (`script run` takes only `.cs`): `DocumentationMedia.EnumMedia.Main` opens it, `Untyped` swaps in an `EnumValues<float>` table, `Cleanup` closes it.
 
 # Quick-start capture — 2026-09-20
 

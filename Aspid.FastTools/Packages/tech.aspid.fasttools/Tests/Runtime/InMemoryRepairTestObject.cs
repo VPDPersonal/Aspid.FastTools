@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Tests
 {
     // An asset for the in-memory missing-type repair tests. In its own file because an asset reloads its

@@ -46,9 +46,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (property is null || !CanHold(property, type)) return false;
 
-            bool expanded;
             var written = property.serializedObject.isEditingMultipleObjects
-                ? WritePerTarget(property, type, create, out expanded)
+                ? WritePerTarget(property, type, create, out var expanded)
                 : WriteSingle(property, type, create, out expanded);
 
             if (!written) return false;

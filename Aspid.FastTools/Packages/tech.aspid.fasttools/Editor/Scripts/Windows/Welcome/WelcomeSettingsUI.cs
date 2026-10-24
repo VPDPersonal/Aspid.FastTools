@@ -23,13 +23,11 @@ namespace Aspid.FastTools.Editors
         }
 
         private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
-            where TControl : VisualElement, INotifyValueChanged<TValue>
-        {
-            AspidSettingsUI.SyncFromSettings(
-                control,
-                read,
-                handler => WelcomeSettings.Changed += handler,
-                handler => WelcomeSettings.Changed -= handler);
-        }
+            where TControl : VisualElement, INotifyValueChanged<TValue> =>
+                AspidSettingsUI.SyncFromSettings(
+                    control,
+                    read,
+                    handler => WelcomeSettings.Changed += handler,
+                    handler => WelcomeSettings.Changed -= handler);
     }
 }

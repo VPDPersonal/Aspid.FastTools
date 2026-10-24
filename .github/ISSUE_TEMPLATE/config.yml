@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Documentation
+    url: https://vpdpersonal.github.io/Aspid.FastTools/
+    about: Guides, tutorials and the API reference.
   - name: Questions and ideas
     url: https://github.com/VPDPersonal/Aspid.FastTools/discussions
     about: Open-ended questions, design ideas and Q&A go in Discussions, not Issues.

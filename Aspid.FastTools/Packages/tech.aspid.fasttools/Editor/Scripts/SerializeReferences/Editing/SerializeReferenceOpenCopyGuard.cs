@@ -26,7 +26,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // and the unsaved-changes check loads every object of the asset, so it is asked once per path.
         public static bool IsRewriteSafe(string assetPath, string prefabStagePath, Dictionary<string, bool> verdicts)
         {
-            if (assetPath is null) return IsRewriteSafe(assetPath, prefabStagePath);
+            if (assetPath is null)
+                return IsRewriteSafe(assetPath: null, prefabStagePath);
 
             if (!verdicts.TryGetValue(assetPath, out var safe))
             {

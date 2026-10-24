@@ -3,7 +3,8 @@ name: CI
 # Every required check of the Main ruleset except the PR title and CHANGELOG checks (pr-checks.yml): cheap repository
 # checks, the .NET tests and the Unity EditMode tests. No job has a path filter: a workflow skipped by a filter reports
 # nothing, and a required check that never reports blocks the pull request. The Unity plan job decides itself whether
-# the Unity tests run and still reports.
+# the Unity tests run, and the Roslyn DLLs and .NET test jobs skip their steps when nothing they read changed; all of
+# them still report.
 
 on:
   pull_request:
@@ -124,22 +125,56 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 2
+          filter: blob:none
           sparse-checkout: |
             Aspid.FastTools.Generators
             Aspid.FastTools.Analyzers
             Aspid.FastTools/Packages/tech.aspid.fasttools
+      # Skips the rest when nothing the job reads changed: the folders of its sparse checkout, global.json,
+      # .editorconfig and this workflow. The base is the one of the Unity plan job: for a PR the main it merges into,
+      # for a push to main the previous commit. A release and a manual run always build. A failed diff runs the job.
+      # The dotnet-tests job reuses this step through the anchor.
+      - &changes
+        id: changes
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          BEFORE: ${{ github.event.before }}
+          REQUIRE_UNITY: ${{ inputs.require-unity }}
+        run: |
+          base=""
+          if [ "$REQUIRE_UNITY" != true ]; then
+            if [ "$EVENT" = pull_request ] && git rev-parse -q --verify HEAD^2 >/dev/null; then
+              base="$(git rev-parse HEAD^1)"
+            elif [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ] \
+              && [ "$(git rev-parse -q --verify HEAD^1)" = "$BEFORE" ]; then
+              base="$BEFORE"
+            fi
+          fi
+          read -ra paths <<<"$(git sparse-checkout list | tr '\n' ' ')"
+          paths+=(global.json .editorconfig .github/workflows/ci.yml)
+          if [ -n "$base" ] && git diff --quiet --no-renames "$base" HEAD -- "${paths[@]}"; then
+            echo "::notice::Nothing this job reads changed since ${base:0:7}; it is skipped."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
       # The SDK pinned in global.json built the committed DLLs.
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      - if: steps.changes.outputs.run == 'true'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       # Delete them first: a build that stops copying a DLL into the package then shows as a deleted file in the diff,
       # instead of leaving the committed one in place.
       - name: Rebuild both DLLs in Release
+        if: steps.changes.outputs.run == 'true'
         run: |
           rm -f Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Generators.dll Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Analyzers.dll
           dotnet build Aspid.FastTools.Generators/Aspid.FastTools.Generators -c Release --nologo
           dotnet build Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers -c Release --nologo
       - name: Compare with the committed DLLs
+        if: steps.changes.outputs.run == 'true'
         run: |
           if ! git diff --exit-code -- 'Aspid.FastTools/Packages/tech.aspid.fasttools/*.dll'; then
             echo "::error::A committed Roslyn DLL differs from a Release build of its sources. Run 'dotnet build -c Release' in Aspid.FastTools.Generators and Aspid.FastTools.Analyzers with the SDK of global.json, then commit the DLLs."
@@ -209,15 +244,21 @@ jobs:
             DotnetTests/Types
             Aspid.FastTools/Packages/tech.aspid.fasttools
             Website/docs
+          fetch-depth: 2
+          filter: blob:none
+      # The changes step of the roslyn-dlls job.
+      - *changes
 
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      - if: steps.changes.outputs.run == 'true'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
           dotnet-version: 6.0.x
 
       - name: Run ${{ matrix.name }} tests
+        if: steps.changes.outputs.run == 'true'
         run: dotnet test "${{ matrix.path }}" --nologo
 
   # Runs the Unity tests only for a change that can affect them and only with a license to run them.
@@ -492,6 +533,8 @@ jobs:
           lines = [f"### Unity EditMode {os.environ['UNITY_VERSION']}", "",
                    "| Pass | Result | Total | Passed | Failed | Skipped | Time |", "|---|---|---|---|---|---|---|"]
           failed = []
+          fixtures = []
+          skipped = []
           for name in ("nographics", "graphics"):
               path = f"unity-test-results/{name}/editmode-results.xml"
               if not os.path.exists(path):
@@ -500,11 +543,36 @@ jobs:
               run = ET.parse(path).getroot()
               lines.append(f"| {name} | {run.get('result')} | {run.get('total')} | {run.get('passed')} | "
                            f"{run.get('failed')} | {run.get('skipped')} | {float(run.get('duration')):.0f} s |")
-              failed += [case.get("fullname") for case in run.iter("test-case") if case.get("result") == "Failed"]
+              failed += [(case.get("fullname"), case.findtext("failure/message", "").strip().splitlines()[:1],
+                          case.findtext("failure/stack-trace", "").strip().splitlines()[:1])
+                         for case in run.iter("test-case") if case.get("result") == "Failed"]
+              skipped += [(name, case.get("fullname"), case.findtext("reason/message", "").strip())
+                          for case in run.iter("test-case") if case.get("result") == "Skipped"]
+              fixtures += [(float(suite.get("duration")), name, suite.get("fullname"), suite.get("total"))
+                           for suite in run.iter("test-suite") if suite.get("type") == "TestFixture"]
           if failed:
-              lines += ["", f"Failed tests ({len(failed)}):", ""] + [f"- `{name}`" for name in failed[:50]]
-          for name in failed[:10]:
-              print(f"::error title=Unity {os.environ['UNITY_VERSION']}::{name}")
+              lines += ["", f"Failed tests ({len(failed)}):", ""]
+              lines += [f"- `{name}`: {' '.join(message)}" for name, message, _ in failed[:50]]
+          # The slowest fixtures, set-up included, show where a test pass spends its time. They go to the log as well,
+          # where they can be read without downloading the results artifact.
+          slowest = sorted(fixtures, reverse=True)[:15]
+          if slowest:
+              lines += ["", "<details><summary>Slowest fixtures</summary>", "",
+                        "| Time | Pass | Fixture | Tests |", "|---|---|---|---|"]
+              lines += [f"| {duration:.1f} s | {name} | `{fixture}` | {total} |" for duration, name, fixture, total in slowest]
+              lines += ["", "</details>"]
+              for duration, name, fixture, total in slowest:
+                  print(f"{duration:7.2f} s  {name:10}  {fixture} ({total})")
+          # A test that skips itself in one pass and is left out of the other never runs in CI.
+          if skipped:
+              lines += ["", f"<details><summary>Skipped tests ({len(skipped)})</summary>", ""]
+              lines += [f"- {name}: `{test}` {reason}" for name, test, reason in skipped[:50]]
+              lines += ["", "</details>"]
+              for name, test, reason in skipped:
+                  print(f"skipped  {name:10}  {test}: {reason}")
+          # The message and the first frame of each failure, so a failure can be read without the results artifact.
+          for name, message, frame in failed[:10]:
+              print(f"::error title=Unity {os.environ['UNITY_VERSION']}::{name}: {' '.join(message + frame)}")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
               summary.write("\n".join(lines) + "\n")
           PY

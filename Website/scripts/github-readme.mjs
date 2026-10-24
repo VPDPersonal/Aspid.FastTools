@@ -9,7 +9,9 @@
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`Website/docs/Images/readme-previews`);
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
- * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line.
+ * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line;
+ * - the donation sentence gives way to the image of the site's donation card (src/components/DonatePanel), linking
+ *   the Asset Store (`Website/docs/Images/support-card.svg`); the sentence becomes its alt text.
  * The README shows only the dark images: a <picture> per theme follows the system theme, not GitHub's, so it showed the
  * light ones on a dark GitHub page.
  * All file URLs are already relative to the README.
@@ -191,6 +193,23 @@ function supportPanel(tree, repository) {
     html(`<p>${TEXT.support} ${TEXT.hint}</p>\n<p><a href="${issues}"><b>${TEXT.issue}</b></a> · <a href="${repository}">${TEXT.star}</a></p>`));
 }
 
+/**
+ * The donation section: one sentence linking the Asset Store. GitHub cannot style a card, so the sentence gives way to
+ * an image of the site's one, linking the store.
+ */
+function donateCard(tree, {images, exists}) {
+  const isStore = (url) => /^https:\/\/assetstore\.unity\.com\//.test(url);
+  const card = `${images}/support-card.svg`;
+  const index = tree.children.findIndex((node, at) => isHeading(node, 2) && tree.children[at + 1]?.type === 'paragraph'
+    && tree.children[at + 1].children.some((part) => part.type === 'link' && isStore(part.url))
+    && (!tree.children[at + 2] || tree.children[at + 2].type === 'heading'));
+  if (index === -1 || !exists(card)) return;
+  const sentence = tree.children[index + 1].children;
+  const store = escape(sentence.find((part) => part.type === 'link' && isStore(part.url)).url);
+  const alt = escape(sentence.map(function text(part) { return part.value ?? part.children?.map(text).join('') ?? ''; }).join(''));
+  tree.children[index + 1] = html(`<a href="${store}">${image(card, alt, ' width="100%"')}</a>`);
+}
+
 
 /**
  * @param tree the README's Markdown tree, its file URLs relative to the README
@@ -198,6 +217,7 @@ function supportPanel(tree, repository) {
  * @param options.locales the site's languages, the default one first
  * @param options.repository the repository's GitHub URL, without a trailing `/`
  * @param options.previews the folder of the preview recordings, relative to the README
+ * @param options.images the folder of the README images, relative to the README
  * @param options.exists whether a URL relative to the README names a file
  */
 export function githubLayout(tree, options) {
@@ -208,4 +228,5 @@ export function githubLayout(tree, options) {
   featureCards(tree, options);
   linkTiles(tree);
   supportPanel(tree, options.repository);
+  donateCard(tree, options);
 }

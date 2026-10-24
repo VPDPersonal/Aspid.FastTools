@@ -123,10 +123,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ExcludedFolders = Array.Empty<string>();
         }
 
-        public static void ResetUserToDefaults()
-        {
+        public static void ResetUserToDefaults() =>
             BreakageDetectionEnabled = true;
-        }
 
         public static bool IsExcluded(string path)
         {

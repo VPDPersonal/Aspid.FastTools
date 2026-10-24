@@ -113,6 +113,7 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
     private static SyntaxNode WithNameChain(InvocationExpressionSyntax invocation)
     {
         SyntaxNode outer = invocation;
+
         while (outer.Parent is ParenthesizedExpressionSyntax paren)
             outer = paren;
 
@@ -125,6 +126,7 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
     private static bool IsDiscarded(SyntaxNode scope, SemanticModel model, SyntaxNodeAnalysisContext context)
     {
         var parent = model.GetOperation(scope, context.CancellationToken)?.Parent;
+
         while (parent is IConversionOperation or IParenthesizedOperation)
             parent = parent.Parent;
 
@@ -169,6 +171,7 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
     private static IEnumerable<StatementSyntax> GetUsingRegion(SyntaxNode scope)
     {
         var outer = scope;
+
         while (outer.Parent is ParenthesizedExpressionSyntax paren)
             outer = paren;
 

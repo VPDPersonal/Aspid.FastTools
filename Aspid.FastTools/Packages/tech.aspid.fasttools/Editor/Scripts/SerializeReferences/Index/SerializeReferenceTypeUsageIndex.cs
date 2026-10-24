@@ -89,8 +89,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (IReadOnlyCollection<Usage>)result ?? Array.Empty<Usage>();
         }
 
-        public static int CountUsages(Type type) => FindUsages(type).Count;
-
         public static IEnumerable<Usage> EnumerateUnresolved()
         {
             EnsureBuilt();
@@ -109,8 +107,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         public static void Reset() => _index = null;
-
-        public static void ClearCache() => Reset();
 
         // Removing usages walks every usage set, so a batch drops its old usages in one walk instead of one per asset.
         public static void RebuildAssets(IReadOnlyCollection<string> paths)

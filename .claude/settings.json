@@ -2,8 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(unity status *)",
-      "Bash(unity command editor_status *)",
-      "Bash(unity command get_console_logs *)"
+      "Bash(unity command editor status *)",
+      "Bash(unity command console get *)"
     ]
   }
 }

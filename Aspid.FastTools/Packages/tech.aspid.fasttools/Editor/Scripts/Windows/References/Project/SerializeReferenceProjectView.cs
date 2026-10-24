@@ -250,7 +250,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
         }
 
-        // Null when the progress bar is cancelled.
+        // Null when the progress bar is canceled.
         private static IReadOnlyList<GateViolation> CollectRequiredViolations(bool checkDisabled)
         {
             if (checkDisabled) return Array.Empty<GateViolation>();
@@ -321,7 +321,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 hasOverrides: overrides.Count > 0,
                 hasBrokenGroups: hasBrokenGroups));
 
-            // The cards fall into headed sections, so the colour of a title needs no legend. Required fields and
+            // The cards fall into headed sections, so the color of a title needs no legend. Required fields and
             // prefab instance overrides always get their heading, since their cards carry no title of their own; a list
             // of only broken or only renamed types needs none, as its heading would repeat the results header.
             var allOverridesPending = overrides.Count > 0 && overrides.Count == pendingOverrides;
@@ -419,10 +419,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _resultsHint.EnableInClassList(ResultsHintHiddenClass, string.IsNullOrEmpty(text));
         }
 
-        private void SetResultsGuide(string text)
-        {
+        private void SetResultsGuide(string text) =>
             _resultsHeader.tooltip = text;
-        }
 
         private void ShowEmptyState(bool success, string title, string message)
         {

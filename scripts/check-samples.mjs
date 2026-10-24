@@ -62,6 +62,11 @@ const fail = (file, message) => {
 };
 const warn = (file, message) => console.log(`::warning file=${file}::${message}`);
 
+// Each file is read once: the checks below read the same code, .meta and asmdef files.
+const texts = new Map();
+const read = (file) => texts.get(file) ?? texts.set(file, readFileSync(file, 'utf8')).get(file);
+const guidOf = (file) => (existsSync(`${file}.meta`) ? read(`${file}.meta`).match(/^guid: (\w+)/m)?.[1] : undefined);
+
 const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
   const path = join(dir, entry.name);
   return entry.isDirectory() ? walk(path) : [path];
@@ -90,9 +95,10 @@ function checkCode(file, code) {
 function checkAsmdefs(sample, files) {
   const asmdefs = files.filter((file) => file.endsWith('.asmdef'));
   if (asmdefs.length === 0) fail(sample, 'has no .asmdef');
-  const roots = new Map(asmdefs.map((file) => [dirname(file), JSON.parse(readFileSync(file, 'utf8'))]));
-  for (const [dir, asmdef] of roots) {
-    const file = join(dir, `${asmdef.name}.asmdef`);
+  const roots = new Map();
+  for (const file of asmdefs) {
+    const asmdef = JSON.parse(read(file));
+    roots.set(dirname(file), asmdef);
     if (!asmdef.rootNamespace) fail(file, 'sets no rootNamespace');
     if ((asmdef.defineConstraints ?? []).length) fail(file, 'has defineConstraints; a sample needs no optional module');
     if ((asmdef.versionDefines ?? []).length) fail(file, 'has versionDefines; a sample needs no optional module');
@@ -111,7 +117,7 @@ function checkAsmdefs(sample, files) {
       continue;
     }
     const expected = [asmdef.rootNamespace, ...folders].join('.');
-    const namespaces = [...readFileSync(file, 'utf8').matchAll(/^namespace\s+([\w.]+)/gm)].map((match) => match[1]);
+    const namespaces = [...read(file).matchAll(/^namespace\s+([\w.]+)/gm)].map((match) => match[1]);
     if (namespaces.length !== 1 || namespaces[0] !== expected) {
       fail(file, `has namespace ${namespaces.join(', ') || '(none)'}; its folder makes it ${expected}`);
     }
@@ -145,13 +151,13 @@ function checkArt(sample, files) {
   const expected = `Aspid/Samples/${sample.name}/Studio`;
   const guids = new Set();
   for (const file of shaders) {
-    const name = readFileSync(file, 'utf8').match(/^Shader\s+"([^"]+)"/m)?.[1];
+    const name = read(file).match(/^Shader\s+"([^"]+)"/m)?.[1];
     if (name !== expected) fail(file, `is named ${name}; a sample's shader is named ${expected}`);
-    const guid = existsSync(`${file}.meta`) && readFileSync(`${file}.meta`, 'utf8').match(/^guid: (\w+)/m)?.[1];
+    const guid = guidOf(file);
     if (guid) guids.add(guid);
   }
   for (const file of files.filter((file) => file.endsWith('.mat'))) {
-    const guid = readFileSync(file, 'utf8').match(/m_Shader: \{fileID: \d+, guid: (\w+)/)?.[1];
+    const guid = read(file).match(/m_Shader: \{fileID: \d+, guid: (\w+)/)?.[1];
     if (!guids.has(guid)) fail(file, `uses shader ${guid}; a sample material uses the sample's own ${expected}`);
   }
 }
@@ -160,7 +166,7 @@ function checkArt(sample, files) {
 function markerNames(files) {
   const names = new Map();
   for (const file of files.filter((file) => file.endsWith('.cs'))) {
-    const lines = readFileSync(file, 'utf8').split('\n');
+    const lines = read(file).split('\n');
     const type = basename(file, '.cs');
     let member = null;
     lines.forEach((line, index) => {
@@ -179,7 +185,7 @@ function checkMarkerTutorials(files) {
   const names = markerNames(files);
   for (const page of [`${TUTORIALS}/${MARKER_SAMPLE}/README.md`, `${TUTORIALS_RU}/${MARKER_SAMPLE}/README.md`]) {
     if (!existsSync(page)) continue;
-    const quoted = [...readFileSync(page, 'utf8').matchAll(/\b((?:[A-Z]\w*)(?:\.[A-Z]\w*)+) \((\d+)\)/g)]
+    const quoted = [...read(page).matchAll(/\b((?:[A-Z]\w*)(?:\.[A-Z]\w*)+) \((\d+)\)/g)]
       .map((match) => ({ base: match[1], name: `${match[1]} (${match[2]})` }));
     const report = PENDING_TUTORIALS.has(MARKER_SAMPLE) ? warn : fail;
     for (const quote of new Set(quoted.map((quote) => quote.name))) {
@@ -192,7 +198,7 @@ function checkMarkerTutorials(files) {
 
 function checkPackageJson(folders) {
   const file = `${PACKAGE}/package.json`;
-  const samples = JSON.parse(readFileSync(file, 'utf8')).samples ?? [];
+  const samples = JSON.parse(read(file)).samples ?? [];
   const listed = new Set();
   for (const { displayName, description = '', path } of samples) {
     listed.add(displayName);
@@ -220,7 +226,7 @@ for (const name of folders) {
   const root = `${SAMPLES}/${name}`;
   const files = walk(root).filter((file) => !file.endsWith('.meta'));
   // A scene renders with the sample's own materials, and its text with the font materials inside the sample's fonts.
-  const guids = new Set(files.map((file) => existsSync(`${file}.meta`) && readFileSync(`${file}.meta`, 'utf8').match(/^guid: (\w+)/m)?.[1]).filter(Boolean));
+  const guids = new Set(files.map(guidOf).filter(Boolean));
   const sample = { name, guids };
   for (const file of files) {
     const ext = extname(file);
@@ -234,15 +240,15 @@ for (const name of folders) {
   checkArt(sample, files);
   let lines = 0;
   for (const file of files.filter((file) => file.endsWith('.cs'))) {
-    const code = readFileSync(file, 'utf8');
+    const code = read(file);
     lines += code.replace(/\n$/, '').split('\n').length;
     checkCode(file, code);
   }
   if (lines > MAX_LINES) fail(root, `has ${lines} lines of C#; a sample has at most ${MAX_LINES}`);
   for (const file of files.filter((file) => file.endsWith('.uss'))) {
-    if (/\/\*/.test(readFileSync(file, 'utf8'))) fail(file, 'has a comment; sample style sheets carry none');
+    if (/\/\*/.test(read(file))) fail(file, 'has a comment; sample style sheets carry none');
   }
-  for (const file of files.filter((file) => /\.(unity|prefab)$/.test(file))) checkYaml(file, readFileSync(file, 'utf8'), sample);
+  for (const file of files.filter((file) => /\.(unity|prefab)$/.test(file))) checkYaml(file, read(file), sample);
   checkAsmdefs(root, files);
   if (name === MARKER_SAMPLE) checkMarkerTutorials(files);
 }

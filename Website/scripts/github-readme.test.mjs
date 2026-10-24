@@ -12,7 +12,8 @@ const repository = 'https://github.com/owner/repo';
 
 function layout(markdown, files = []) {
   const tree = processor.parse(markdown);
-  githubLayout(tree, {site, locales: ['en', 'ru'], repository, previews: 'Website/docs/Images/readme-previews', exists: (url) => files.includes(url)});
+  githubLayout(tree, {site, locales: ['en', 'ru'], repository, previews: 'Website/docs/Images/readme-previews',
+    images: 'Website/docs/Images', exists: (url) => files.includes(url)});
   return processor.stringify(tree);
 }
 
@@ -92,6 +93,14 @@ test('the help section becomes the call to action, without the licence line', ()
     + 'Under the [MIT License](https://github.com/owner/repo/blob/main/LICENSE).\n');
   assert.equal(result, '## Help\n\n<p>Found a bug or have a question? Include your Unity version, package version and steps to reproduce.</p>\n'
     + '<p><a href="https://github.com/owner/repo/issues"><b>Open an issue</b></a> · <a href="https://github.com/owner/repo">Star on GitHub</a></p>\n');
+});
+
+test('the donation sentence gives way to the card image, the sentence its alt text', () => {
+  const store = 'https://assetstore.unity.com/packages/package/1';
+  const section = `## Support\n\nSupport it on the [Asset Store](${store}).\n`;
+  assert.equal(layout(section, ['Website/docs/Images/support-card.svg']), '## Support\n\n'
+    + `<a href="${store}"><img src="Website/docs/Images/support-card.svg" alt="Support it on the Asset Store." width="100%"></a>\n`);
+  assert.equal(layout(section), section, 'without the card image the section stays as it is');
 });
 
 test('images and the banner stay as they are, without a light variant', () => {

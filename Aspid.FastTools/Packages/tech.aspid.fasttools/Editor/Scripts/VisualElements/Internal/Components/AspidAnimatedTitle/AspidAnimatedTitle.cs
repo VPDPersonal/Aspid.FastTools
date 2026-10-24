@@ -10,9 +10,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
     internal sealed partial class AspidAnimatedTitle : VisualElement
     {
-        private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedTitle";
+        private const long TickMs = 33;
+
+        // The longest step one tick may advance the title: a stalled Editor resumes the wave instead of jumping.
+        private const float MaxTickStep = TickMs * 2 / 1000f;
         private const int PaletteCount = 3;
         private const string WordClass = "aspid-fasttools-animated-title__word";
+        private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedTitle";
 
         private readonly AspidAnimatedTitleColorsStyle _colors;
         private readonly AspidAnimatedTitleColorAnimationStyle _colorAnimation;
@@ -20,7 +24,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private string _text = string.Empty;
         private Label[] _chars = Array.Empty<Label>();
-        private IVisualElementScheduledItem _animation;
+
+        // The title's own clock: it advances only while the title is watched, so a paused wave resumes where it stopped.
+        private float _time;
+        private double _lastTick = EditorApplication.timeSinceStartup;
+        private readonly IVisualElementScheduledItem _animation;
 
         [UxmlAttribute]
         public string Text
@@ -111,7 +119,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _waveAnimation = new AspidAnimatedTitleWaveAnimationStyle(
                 this, preset.WaveStride, preset.WaveSpeed, preset.WaveAmplitude, onChanged: null);
 
-            _animation = schedule.Execute(UpdateAnimation).Every(33);
+            _animation = schedule.Execute(UpdateAnimation).Every(TickMs);
             _animation.Pause();
 
             RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
@@ -135,7 +143,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         }
 
         // With the "Animated background" setting off nothing ticks and the title rests: the letters sit on one line in
-        // the middle colour of the palette, the accent of the title.
+        // the middle color of the palette, the accent of the title.
         private void ApplyAnimationSetting()
         {
             if (AspidAnimatedDotsBackgroundSettings.Enabled)
@@ -148,9 +156,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             ApplyRest();
         }
 
-        // A theme change while the title rests recolors it; while it animates the next tick does. The colour store calls
+        // A theme change while the title rests recolors it; while it animates the next tick does. The color store calls
         // this from its constructor, before the timer exists, and before it saves a new value, so the recolor waits a
-        // frame and reads the saved colours.
+        // frame and reads the saved colors.
         private void OnColorsChanged()
         {
             if (_animation is null || _animation.isActive) return;
@@ -204,10 +212,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             if (!_animation.isActive) ApplyRest();
         }
 
-        private void UpdateAnimation()
+        internal void UpdateAnimation()
         {
-            if (_chars.Length is 0) return;
-            var time = (float)EditorApplication.timeSinceStartup;
+            var now = EditorApplication.timeSinceStartup;
+            var elapsed = (float)(now - _lastTick);
+            _lastTick = now;
+
+            if (_chars.Length is 0 || !EditorWindowWatch.IsWatched(this)) return;
+
+            _time += Mathf.Min(elapsed, MaxTickStep);
+            var time = _time;
 
             for (var i = 0; i < _chars.Length; i++)
             {

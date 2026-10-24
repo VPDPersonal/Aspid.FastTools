@@ -102,71 +102,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        public static bool TryFindTopLevelArrayElementForRid(string assetPath, long fileId, long rid,
-            out string field, out int index)
-        {
-            field = null;
-            index = -1;
-
-            try
-            {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
-
-                var lines = SerializeReferenceYamlProbeCache.ReadAllLines(assetPath);
-                var (start, end) = FindDocumentRange(lines, fileId);
-                if (start < 0) return false;
-
-                var fieldsEnd = FindFieldsEnd(lines, start, end);
-
-                var headerPattern = new Regex(@"^(?<lead>\s*)(?<name>[^\s:#-][^:]*):\s*$");
-                var itemPattern = new Regex(@"^(?<lead>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$");
-
-                // Only the object's own fields, at the m_Script indent, own a top-level array; a same-named list nested
-                // in an earlier field's container is skipped. Without a script guid any indent is accepted.
-                var topIndent = TryReadScriptGuid(lines, start + 1, fieldsEnd, out _, out var scriptIndent)
-                    ? scriptIndent
-                    : -1;
-
-                string currentField = null;
-                var fieldIndent = -1;
-                var count = 0;
-
-                for (var i = start; i < fieldsEnd; i++)
-                {
-                    if (lines[i].Trim().Length == 0) continue;
-
-                    var item = itemPattern.Match(lines[i]);
-                    if (item.Success && currentField != null && item.Groups["lead"].Length == fieldIndent)
-                    {
-                        if (TryParseId(item.Groups["rid"].Value, out var elementRid) && elementRid == rid)
-                        {
-                            field = currentField;
-                            index = count;
-                            return true;
-                        }
-
-                        count++;
-                        continue;
-                    }
-
-                    var header = headerPattern.Match(lines[i]);
-                    if (header.Success && (topIndent < 0 || header.Groups["lead"].Length == topIndent))
-                    {
-                        currentField = header.Groups["name"].Value;
-                        fieldIndent = header.Groups["lead"].Length;
-                        count = 0;
-                    }
-                }
-
-                return false;
-            }
-            catch (Exception exception)
-            {
-                Debug.LogError($"[Aspid FastTools] Failed to locate array element for rid {rid} in '{assetPath}': {exception}");
-                return false;
-            }
-        }
-
         // Parses "_field.Array.data[N]" into (field, index). Returns false for a nested path (e.g. an array inside a
         // managed reference's data block) — the restore only re-points a direct top-level array element, which is the
         // shape Unity's default list "+" destroys; deeper paths are left to a future pass rather than risk a mis-target.
@@ -234,7 +169,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Prefers the snapshot's own rid: Unity has just dropped it, and instance overrides keyed to it
-        // ("managedReferences[rid].field") keep applying. Otherwise a random positive 63-bit id, as Unity allocates —
+        // ("managedReferences[rid].field") keep applying. Otherwise, a random positive 63-bit id, as Unity allocates —
         // never "max + 1": Unity hands out ids sequentially within a session, so the base's max + 1 is often the id
         // of an override a variant, nested prefab or scene already holds, and the two would merge into one entry.
         private static long PickRestoreRid(HashSet<long> used, IReadOnlyList<string> entryLines)

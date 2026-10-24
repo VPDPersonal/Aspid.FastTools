@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="128" viewBox="0 0 880 128" role="img" aria-label="Enjoying Aspid.FastTools? Support on the Asset Store" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
+  <title>Enjoying Aspid.FastTools? Support on the Asset Store</title>
+  <!-- The GitHub twin of the site's DonatePanel (Website/src/components/DonatePanel); the colours are the site's greens. -->
+  <defs>
+    <linearGradient id="frame-light" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22a04b"/><stop offset="1" stop-color="#177035"/></linearGradient>
+    <linearGradient id="frame-dark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5cb46b"/><stop offset="1" stop-color="#357a42"/></linearGradient>
+    <radialGradient id="wash-light" cx="0" cy="0" r="1" gradientTransform="matrix(620 0 0 200 0 0)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#22a04b" stop-opacity="0.14"/><stop offset="1" stop-color="#22a04b" stop-opacity="0"/></radialGradient>
+    <radialGradient id="wash-dark" cx="0" cy="0" r="1" gradientTransform="matrix(620 0 0 200 0 0)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5cb46b" stop-opacity="0.16"/><stop offset="1" stop-color="#5cb46b" stop-opacity="0"/></radialGradient>
+    <path id="heart" d="M12 21s-7.5-4.6-9.6-9.4C1 8.4 2.9 4.5 6.6 4.5c2.2 0 3.7 1.2 5.4 3.2 1.7-2 3.2-3.2 5.4-3.2 3.7 0 5.6 3.9 4.2 7.1C19.5 16.4 12 21 12 21Z"/>
+  </defs>
+  <style>
+    .frame { fill: url(#wash-light); stroke: url(#frame-light); }
+    .badge { fill: #22a04b; fill-opacity: 0.14; stroke: #22a04b; stroke-opacity: 0.35; }
+    .mark { fill: #1d8840; }
+    .title { fill: #1f2328; }
+    .text { fill: #59636e; }
+    .button { fill: #1d8840; }
+    .ink { fill: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .frame { fill: url(#wash-dark); stroke: url(#frame-dark); }
+      .badge { fill: #5cb46b; stroke: #5cb46b; }
+      .mark { fill: #5cb46b; }
+      .title { fill: #e6edf3; }
+      .text { fill: #9198a1; }
+      .button { fill: #5cb46b; }
+      .ink { fill: #06140a; }
+    }
+  </style>
+  <rect class="frame" x="1" y="1" width="878" height="126" rx="13" stroke-width="2"/>
+  <circle class="badge" cx="60" cy="64" r="28" stroke-width="1"/>
+  <use href="#heart" class="mark" transform="translate(46 50) scale(1.17)"/>
+  <text class="title" x="108" y="57" font-size="22" font-weight="600">Enjoying Aspid.FastTools?</text>
+  <text class="text" x="108" y="86" font-size="15">Developed in spare time. Your support keeps it growing.</text>
+  <rect class="button" x="584" y="40" width="268" height="48" rx="10"/>
+  <use href="#heart" class="ink" transform="translate(606 55) scale(0.75)"/>
+  <text class="ink" x="730" y="69.5" font-size="15" font-weight="600" text-anchor="middle">Support on the Asset Store</text>
+</svg>

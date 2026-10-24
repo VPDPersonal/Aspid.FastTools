@@ -5,7 +5,7 @@
   <img src="Website/docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 
-[![Unity 6.0+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
+[![Unity 6000.0.53f1+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
 [![Release 1.0.0](Website/docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
 [![MIT License](Website/docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
@@ -34,11 +34,18 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm
 
 The URL installs the latest release; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
 
-**Installed from the Asset Store?** Skip the steps above: the package is already in your project. The Asset Store and the git URL install the same package, `tech.aspid.fasttools`, so the project holds only one of them: to switch the source, remove the package in **Window → Package Manager** (**In Project**) first.
+Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store, skip the git URL and install it from **My Assets** in the Package Manager.
 
-**The Console shows `Assembly with name 'Aspid.FastTools' already exists`.** The project has a second copy of the package, for example a copy of its folder under `Assets`. Delete the copy and keep the package in the Package Manager.
+<details>
+<summary>Troubleshooting</summary>
 
-**Compile errors appear right after the install.** The package needs Unity 6000.0.53f1 or newer: earlier 6000.0 patches lack UI Toolkit APIs that it uses. Check the version in **Help → About Unity** (**Unity → About Unity** on macOS).
+**Compile errors right after the install.** The Unity version is older than 6000.0.53f1: earlier 6000.0 patches lack UI Toolkit APIs that the package uses. Check it in **Help → About Unity** (**Unity → About Unity** on macOS).
+
+**The Console shows `Assembly with name 'Aspid.FastTools' already exists`.** The project has a second copy of the package, for example its folder under `Assets`. Delete the copy.
+
+**Switching between the Asset Store and the git URL.** Both install the same package, `tech.aspid.fasttools`, so remove it in **Window → Package Manager** (**In Project**) first, then install it from the other source.
+
+</details>
 
 ## Features
 
@@ -170,3 +177,7 @@ The URL installs the latest release; **Update** in the Package Manager installs 
 
 <p>Found a bug or have a question? Include your Unity version, package version and steps to reproduce.</p>
 <p><a href="https://github.com/VPDPersonal/Aspid.FastTools/issues"><b>Open an issue</b></a> · <a href="https://github.com/VPDPersonal/Aspid.FastTools">Star on GitHub</a></p>
+
+## Support the project
+
+<a href="https://assetstore.unity.com/packages/package/2333465"><img src="Website/docs/Images/support-card.svg" alt="Aspid.FastTools is developed in spare time. If it helps you, support its development on the Unity Asset Store." width="100%"></a>

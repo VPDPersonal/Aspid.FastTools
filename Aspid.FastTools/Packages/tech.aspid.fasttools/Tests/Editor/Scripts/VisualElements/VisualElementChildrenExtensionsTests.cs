@@ -1,0 +1,214 @@
+using System;
+using System.Linq;
+using NUnit.Framework;
+using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.VisualElements
+{
+    [TestFixture]
+    internal sealed class VisualElementChildrenExtensionsTests
+    {
+        private sealed class NestedContentContainer : VisualElement
+        {
+            private readonly Foldout _foldout = new();
+
+            public override VisualElement contentContainer => _foldout;
+
+            public NestedContentContainer() =>
+                hierarchy.Add(_foldout);
+        }
+
+        private static VisualElement CreateParent(out VisualElement[] children)
+        {
+            children = new[]
+            {
+                new VisualElement { name = "a" },
+                new VisualElement { name = "b" },
+                new VisualElement { name = "c" },
+            };
+
+            var parent = new VisualElement();
+            foreach (var child in children)
+                parent.Add(child);
+
+            return parent;
+        }
+
+        [Test]
+        public void AddChildren_MovesEveryChildOfAnotherElement()
+        {
+            var source = CreateParent(out var children);
+            var target = new VisualElement();
+
+            target.AddChildren(source.Children());
+
+            Assert.AreEqual(0, source.childCount);
+            CollectionAssert.AreEqual(children, target.Children().ToArray());
+        }
+
+        [Test]
+        public void AddChildrenIf_MovesEveryChildOfAnotherElement()
+        {
+            var source = CreateParent(out var children);
+            var target = new VisualElement();
+
+            target.AddChildrenIf(true, source.Children());
+
+            Assert.AreEqual(0, source.childCount);
+            CollectionAssert.AreEqual(children, target.Children().ToArray());
+        }
+
+        [Test]
+        public void InsertChildren_MovesEveryChildOfAnotherElement()
+        {
+            var source = CreateParent(out var children);
+            var existing = new VisualElement();
+            var target = new VisualElement().AddChild(existing);
+
+            target.InsertChildren(0, source.Children());
+
+            Assert.AreEqual(0, source.childCount);
+            CollectionAssert.AreEqual(children.Append(existing), target.Children().ToArray());
+        }
+
+        [Test]
+        public void InsertChildrenIf_MovesEveryChildOfAnotherElement()
+        {
+            var source = CreateParent(out var children);
+            var target = new VisualElement();
+
+            target.InsertChildrenIf(true, 0, source.Children());
+
+            Assert.AreEqual(0, source.childCount);
+            CollectionAssert.AreEqual(children, target.Children().ToArray());
+        }
+
+        [Test]
+        public void InsertChildren_SkipsNullEntries()
+        {
+            var first = new VisualElement();
+            var second = new VisualElement();
+            var target = new VisualElement();
+
+            target.InsertChildren(0, first, null, second);
+
+            CollectionAssert.AreEqual(new[] { first, second }, target.Children().ToArray());
+        }
+
+        [Test]
+        public void RemoveChildren_RemovesEveryOwnChild()
+        {
+            var parent = CreateParent(out _);
+
+            parent.RemoveChildren(parent.Children());
+
+            Assert.AreEqual(0, parent.childCount);
+        }
+
+        [Test]
+        public void RemoveChildren_SkipsNullAndForeignEntries()
+        {
+            var parent = CreateParent(out var children);
+            var foreign = new VisualElement().AddChild(new VisualElement());
+
+            parent.RemoveChildren(children[0], null, foreign, foreign.Children().First());
+
+            CollectionAssert.AreEqual(children.Skip(1), parent.Children().ToArray());
+            Assert.AreEqual(1, foreign.childCount);
+        }
+
+        [Test]
+        public void RemoveChildren_RemovesChildOfNestedContentContainer()
+        {
+            var child = new VisualElement();
+            var parent = new NestedContentContainer().AddChild(child);
+
+            parent.RemoveChildren(child);
+
+            Assert.AreEqual(0, parent.childCount);
+            Assert.IsNull(child.hierarchy.parent);
+        }
+
+        [Test]
+        public void RemoveChildrenIf_RemovesEveryOwnChild()
+        {
+            var parent = CreateParent(out _);
+
+            parent.RemoveChildrenIf(true, parent.Children());
+
+            Assert.AreEqual(0, parent.childCount);
+        }
+
+        [TestCase(typeof(ListView))]
+        [TestCase(typeof(TreeView))]
+        public void AddChild_ThrowsOnElementWithoutContentContainer(Type viewType)
+        {
+            var view = (VisualElement)Activator.CreateInstance(viewType);
+
+            Assert.Throws<InvalidOperationException>(() => view.AddChild(new VisualElement()));
+        }
+
+        [TestCase(typeof(ListView))]
+        [TestCase(typeof(TreeView))]
+        public void AddChild_Null_LeavesElementWithoutContentContainerUnchanged(Type viewType)
+        {
+            var view = (VisualElement)Activator.CreateInstance(viewType);
+            var count = view.hierarchy.childCount;
+
+            Assert.DoesNotThrow(() => view.AddChild(null).AddChildren((VisualElement)null));
+            Assert.AreEqual(count, view.hierarchy.childCount);
+        }
+
+        [TestCase(typeof(ListView))]
+        [TestCase(typeof(TreeView))]
+        public void InsertRemoveAndClear_DoNothingOnElementWithoutContentContainer(Type viewType)
+        {
+            var view = (VisualElement)Activator.CreateInstance(viewType);
+            var child = new VisualElement();
+            var count = view.hierarchy.childCount;
+
+            view.InsertChild(0, child).RemoveChild(child).RemoveChildAt(0).ClearChildren();
+
+            Assert.AreEqual(count, view.hierarchy.childCount);
+            Assert.IsNull(child.hierarchy.parent);
+        }
+
+        [TestCase(true, ExpectedResult = 1)]
+        [TestCase(false, ExpectedResult = 0)]
+        public int AddChildIf_AddsOnlyWhenTrue(bool condition) =>
+            new VisualElement().AddChildIf(condition, new VisualElement()).childCount;
+
+        [TestCase(true, ExpectedResult = "x")]
+        [TestCase(false, ExpectedResult = "a")]
+        public string InsertChildIf_InsertsOnlyWhenTrue(bool condition) =>
+            CreateParent(out _).InsertChildIf(condition, 0, new VisualElement { name = "x" })[0].name;
+
+        [TestCase(true, ExpectedResult = 2)]
+        [TestCase(false, ExpectedResult = 3)]
+        public int RemoveChildIf_RemovesOnlyWhenTrue(bool condition) =>
+            CreateParent(out var children).RemoveChildIf(condition, children[1]).childCount;
+
+        [TestCase(true, ExpectedResult = "b")]
+        [TestCase(false, ExpectedResult = "a")]
+        public string RemoveChildAtIf_RemovesOnlyWhenTrue(bool condition) =>
+            CreateParent(out _).RemoveChildAtIf(condition, 0)[0].name;
+
+        [TestCase(true, ExpectedResult = 0)]
+        [TestCase(false, ExpectedResult = 3)]
+        public int ClearChildrenIf_ClearsOnlyWhenTrue(bool condition) =>
+            CreateParent(out _).ClearChildrenIf(condition).childCount;
+
+        // VisualElement.Remove throws for an element that is not its child.
+        [Test]
+        public void RemoveChild_NullAndForeignElement_LeaveElementUnchanged()
+        {
+            var parent = CreateParent(out var children);
+
+            parent.RemoveChild(null).RemoveChild(new VisualElement());
+
+            CollectionAssert.AreEqual(children, parent.Children().ToArray());
+        }
+    }
+}

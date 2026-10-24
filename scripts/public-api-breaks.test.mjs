@@ -28,7 +28,7 @@ const patch = (...lines) => ['@@ -10,7 +10,7 @@ Aspid.FastTools.Ids.Id', ...line
 test('the snapshot path is the one the package test writes', () => {
   assert.equal(
     PUBLIC_API_PATH,
-    'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/PublicApi/PublicApi.txt');
+    'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/Scripts/PublicApi/PublicApi.txt');
 });
 
 test('a patch that only adds lines removes nothing', () => {
@@ -200,7 +200,7 @@ test('the title verdict only warns when the snapshot format changed', () => {
 test('the format file is the code that writes the snapshot', () => {
   assert.equal(
     PUBLIC_API_FORMAT_PATH,
-    'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/PublicApi/PublicApiSnapshot.cs');
+    'Aspid.FastTools/Packages/tech.aspid.fasttools/Tests/Editor/Scripts/PublicApi/PublicApiSnapshot.cs');
 });
 
 // Lines are written as the snapshot writes them: access, modifiers, kind, name, base list, constraints.

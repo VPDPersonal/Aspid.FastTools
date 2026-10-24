@@ -2,7 +2,8 @@ using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-namespace Aspid.FastTools.SerializeReferences.Tests
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests
 {
     public interface IPrefabTestWeapon { }
 

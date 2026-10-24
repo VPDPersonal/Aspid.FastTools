@@ -18,7 +18,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Assets that change which assembly holds a type, besides the scripts.
         private static readonly string[] _scriptExtensions = { ".cs", ".asmdef", ".asmref", ".dll" };
 
-        private static bool _scheduled;
         private static readonly HashSet<string> _changedAssets = new(StringComparer.Ordinal);
 
         [InitializeOnLoadMethod]
@@ -41,7 +40,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void KeepPendingScan()
         {
-            if (!_scheduled) return;
+            if (!IsScanScheduled) return;
 
             SessionState.SetBool(PendingKey, true);
             SessionState.SetString(PendingAssetsKey, string.Join(PathSeparator.ToString(), _changedAssets));
@@ -73,9 +72,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void Schedule()
         {
-            if (_scheduled) return;
+            if (IsScanScheduled) return;
 
-            _scheduled = true;
+            IsScanScheduled = true;
             EditorApplication.delayCall += RunScan;
         }
 
@@ -88,7 +87,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            _scheduled = false;
+            IsScanScheduled = false;
 
             var changedAssets = _changedAssets.ToArray();
             _changedAssets.Clear();
@@ -101,7 +100,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static void ResetForTests()
         {
             EditorApplication.delayCall -= RunScan;
-            _scheduled = false;
+            IsScanScheduled = false;
             _changedAssets.Clear();
             ClearPendingScan();
         }
@@ -112,13 +111,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             KeepPendingScan();
 
             EditorApplication.delayCall -= RunScan;
-            _scheduled = false;
+            IsScanScheduled = false;
             _changedAssets.Clear();
 
             ResumePendingScan();
         }
 
-        internal static bool IsScanScheduled => _scheduled;
+        internal static bool IsScanScheduled { get; private set; }
 
         internal static IReadOnlyCollection<string> PendingAssets => _changedAssets;
 

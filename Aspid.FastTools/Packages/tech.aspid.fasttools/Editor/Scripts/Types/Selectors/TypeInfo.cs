@@ -10,7 +10,7 @@ namespace Aspid.FastTools.Types.Editors
     {
         // A type's picker data changes only with a recompile, which reloads the domain and resets these caches.
         private static readonly Dictionary<Type, TypeInfo> _cache = new();
-        private static readonly Dictionary<System.Reflection.Assembly, string> _assemblyNames = new();
+        private static readonly Dictionary<Assembly, string> _assemblyNames = new();
 
         // The types that pass every check of GetAllTypeInfos except the predicate, per key. They depend on the loaded
         // types alone, so they are reused until a new domain sweep replaces DomainTypes (it does so after any assembly
@@ -77,7 +77,7 @@ namespace Aspid.FastTools.Types.Editors
                 Tooltip = item.Tooltip;
         }
 
-        private static string GetAssemblyName(System.Reflection.Assembly assembly)
+        private static string GetAssemblyName(Assembly assembly)
         {
             if (_assemblyNames.TryGetValue(assembly, out var name)) return name;
 

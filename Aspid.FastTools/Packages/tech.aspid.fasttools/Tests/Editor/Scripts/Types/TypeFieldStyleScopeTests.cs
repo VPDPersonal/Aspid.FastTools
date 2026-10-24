@@ -1,0 +1,74 @@
+using UnityEditor;
+using UnityEngine;
+using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
+using UnityEngine.UIElements;
+using Aspid.FastTools.Types.Editors;
+
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.Tests.Editors.Types
+{
+    // The field's stylesheet must size only its own open-in-script-editor button, not every button below it.
+    [TestFixture]
+    [Category("Graphics")]
+    internal sealed class TypeFieldStyleScopeTests
+    {
+        private const string OpenIconClass = "aspid-fasttools-type-field__open-icon";
+        private const string OpenButtonClass = "aspid-fasttools-type-field__open-button";
+
+        private EditorWindow _window;
+        private TypeField _field;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _window = ScriptableObject.CreateInstance<EditorWindow>();
+            _window.ShowUtility();
+
+            _field = new TypeField("Type", typeof(TypeFieldStyleScopeTests));
+            _window.rootVisualElement.Add(_field);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (_window) _window.Close();
+        }
+
+        [UnityTest]
+        public IEnumerator OpenButton_KeepsItsCompactIconStyle()
+        {
+            var openButton = _field.Q<Button>(className: OpenButtonClass);
+            Assert.IsNotNull(openButton, "The field's open-in-script-editor button must carry its own class.");
+            var decoration = new VisualElement();
+            openButton.Add(decoration);
+
+            yield return null;
+
+            Assert.AreEqual(18f, openButton.resolvedStyle.maxWidth.value);
+            Assert.AreEqual(18f, openButton.resolvedStyle.maxHeight.value);
+            var icon = openButton.Q<VisualElement>(className: OpenIconClass);
+            Assert.IsNotNull(icon, "The folder icon must carry its own class.");
+            Assert.IsNotNull(icon.resolvedStyle.backgroundImage.texture, "The open button must keep its folder icon.");
+            Assert.IsNull(decoration.resolvedStyle.backgroundImage.texture,
+                "Other children of the open button must not get the folder icon.");
+        }
+
+        [UnityTest]
+        public IEnumerator OtherButton_IsNotStyledAsTheOpenButton()
+        {
+            var icon = new VisualElement();
+            var other = new Button { text = "Other action" };
+            other.Add(icon);
+            _field.Add(other);
+
+            yield return null;
+
+            Assert.AreNotEqual(18f, other.resolvedStyle.maxWidth.value,
+                "Only the open button may be clamped to 18 px.");
+            Assert.IsNull(icon.resolvedStyle.backgroundImage.texture,
+                "A child of another button must not get the folder icon.");
+        }
+    }
+}
