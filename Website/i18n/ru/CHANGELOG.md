@@ -128,6 +128,7 @@
 - Методы таблиц стилей, например `AddStyleSheet` и `RemoveStyleSheet`, пропускают `null` вместо `ArgumentNullException`.
 - `RemoveChild` и `RemoveChildren` пропускают `null` и элементы, которые не являются дочерними, вместо исключения, поэтому `RemoveChildren` больше не останавливается на полпути.
 - Расширения для дочерних элементов, классов и таблиц стилей размечены для nullable reference types: проект с включённой проверкой видит, какие аргументы могут быть `null`.
+- Кнопка-папка у полей `SerializableType`, `SerializableMonoScript`, `[TypeSelector]` и `[SerializeReference]`, а также `OpenInScriptEditor` открывают справку по типу, который поставляется с Unity и не имеет скрипта в проекте: тип `UnityEngine` или `UnityEditor`, например `CharacterController`, открывает свою страницу Scripting API для вашей версии редактора (офлайн-документацию, если она установлена), тип `System` — свою страницу на learn.microsoft.com. Раньше для такого типа кнопка только писала предупреждение в консоль.
 
 ### Удалено
 

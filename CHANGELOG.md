@@ -128,6 +128,7 @@ First stable release. The earlier `1.0.0-rc.*` prereleases are on [GitHub Releas
 - Style sheet methods such as `AddStyleSheet` and `RemoveStyleSheet` skip a `null` style sheet instead of throwing `ArgumentNullException`.
 - `RemoveChild` and `RemoveChildren` skip `null` and elements that are not children of the element instead of throwing, so `RemoveChildren` no longer stops halfway.
 - The child, class and style sheet extensions carry nullable annotations, so a project with nullable reference types enabled sees which arguments may be `null`.
+- The folder button next to a `SerializableType`, `SerializableMonoScript`, `[TypeSelector]` or `[SerializeReference]` field, and `OpenInScriptEditor`, open the API reference of a type that ships with Unity and has no script in the project: a `UnityEngine` or `UnityEditor` type such as `CharacterController` opens its Scripting API page for your Editor version (the offline docs, when installed), a `System` type its page on learn.microsoft.com. The button used to only log a warning for such a type.
 
 ### Removed
 
