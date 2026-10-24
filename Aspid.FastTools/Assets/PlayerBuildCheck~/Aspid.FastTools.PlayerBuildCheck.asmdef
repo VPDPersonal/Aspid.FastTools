@@ -1,0 +1,17 @@
+{
+    "name": "Aspid.FastTools.PlayerBuildCheck",
+    "rootNamespace": "Aspid.FastTools.PlayerBuildCheck",
+    "references": [
+        "Aspid.FastTools",
+        "Aspid.FastTools.Samples.Types"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
