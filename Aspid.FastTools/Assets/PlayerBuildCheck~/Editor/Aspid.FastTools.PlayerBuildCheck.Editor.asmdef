@@ -1,0 +1,20 @@
+{
+    "name": "Aspid.FastTools.PlayerBuildCheck.Editor",
+    "rootNamespace": "Aspid.FastTools.PlayerBuildCheck",
+    "references": [
+        "Aspid.FastTools",
+        "Aspid.FastTools.PlayerBuildCheck",
+        "Aspid.FastTools.Samples.Types"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
