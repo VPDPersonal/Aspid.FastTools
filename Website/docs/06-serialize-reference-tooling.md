@@ -56,7 +56,7 @@ A save that resizes a list, and every save of a prefab, writes the list's missin
 
 ## Project References: repair a group
 
-Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the next tab of the same window. **Scan Project** reads the `.prefab`, `.asset`, `.unity`, `.controller` and `.playable` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope). A progress bar shows each sweep; **Cancel** stops the scan and keeps the earlier results. A group lists its first 200 entries, and **Show more** adds the next 200.
+Open **Tools → Aspid 🐍 → FastTools → Project References**; Asset References is the neighbouring tab of the same window. **Scan Project** reads the `.prefab`, `.asset`, `.unity`, `.controller` and `.playable` files under `Assets/`, apart from [**Excluded scan folders**](07-serialize-reference-validation.md#scan-scope). A progress bar shows each sweep; **Cancel** stops the scan and keeps the earlier results. A group lists its first 200 entries, and **Show more** adds the next 200.
 
 ![Project References: Broken groups with Fix all and Smart Fix, a Renamed group with Migrate all](Images/aspid_fasttools_serialize_reference_project_references.png)
 

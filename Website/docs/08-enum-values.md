@@ -16,7 +16,7 @@ A table of values per enum member, filled in the Inspector instead of code.
 
 For an enum without <code lang="csharp">[Flags]</code>, set the shared value in **Default Value** and add rows for members that need a different value.
 
-**Populate Missing Enum Members** in the table header's context menu appends rows for missing enum members and copies **Default Value** into them. Members with the same numeric value (aliases) share one row, and members marked <code lang="csharp">[Obsolete]</code> are skipped. The menu item is greyed out when every member already has a row, and the command is unavailable while several objects are selected.
+**Populate Missing Enum Members** in the table header's context menu appends rows for missing enum members and copies **Default Value** into them. Members with the same numeric value (aliases) share one row, and a value whose every name is marked <code lang="csharp">[Obsolete]</code> is skipped. The menu item is greyed out when every member already has a row, and the command is unavailable while several objects are selected.
 
 For <code lang="csharp">[Flags]</code>, only declared enum members are added automatically. For example, if the enum declares <code lang="csharp">FireAndIce = Fire | Ice</code>, the command adds a separate row with the key <code lang="csharp">FireAndIce</code>. Combinations without a name can be added manually.
 
