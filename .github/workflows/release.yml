@@ -167,7 +167,10 @@ jobs:
     secrets:
       UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    # A called workflow gets no more than these: a job of ci.yml that asks for more (actions: read of unity-plan)
+    # makes the whole run a startup failure.
     permissions:
+      actions: read
       contents: read
       pull-requests: read
       checks: write
