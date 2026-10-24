@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
 using NUnit.Framework;
+using Unity.Profiling;
 using UnityEngine.Pool;
+using Unity.Collections;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 
@@ -19,6 +21,9 @@ namespace Aspid.FastTools.Tests.Editors.Types
         [TestCase(typeof(Application.LogCallback), "file:///unity/ScriptReference/Application.LogCallback.html")]
         [TestCase(typeof(ObjectPool<int>), "file:///unity/ScriptReference/Pool.ObjectPool_1.html")]
         [TestCase(typeof(UnityEditor.EditorWindow), "file:///unity/ScriptReference/EditorWindow.html")]
+        [TestCase(typeof(CharacterController[]), "file:///unity/ScriptReference/CharacterController.html")]
+        [TestCase(typeof(ProfilerMarker), "file:///unity/ScriptReference/Unity.Profiling.ProfilerMarker.html")]
+        [TestCase(typeof(NativeArray<int>), "file:///unity/ScriptReference/Unity.Collections.NativeArray_1.html")]
         [TestCase(typeof(string), "https://learn.microsoft.com/dotnet/api/system.string")]
         [TestCase(typeof(List<int>), "https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1")]
         public void EditorBuiltInType_GetsItsApiReferencePage(Type type, string expected) =>

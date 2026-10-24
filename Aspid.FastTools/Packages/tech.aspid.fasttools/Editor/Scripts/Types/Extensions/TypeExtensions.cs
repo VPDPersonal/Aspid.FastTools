@@ -70,41 +70,47 @@ namespace Aspid.FastTools.Types.Editors
         /// Opens the script defining <paramref name="type"/> at its declaration line.
         /// </summary>
         /// <remarks>
-        /// A type that ships with the Unity Editor and has no script in the project opens its API reference page
-        /// instead: a <c>UnityEngine</c> or <c>UnityEditor</c> type its Scripting API page for the running Editor
-        /// version, a <c>System</c> or <c>Microsoft</c> type its .NET API page. Logs a warning when neither exists;
-        /// a <see langword="null"/> type is ignored.
+        /// A type that ships with the Unity Editor has no script in the project and opens its API reference page
+        /// instead: a <c>UnityEngine</c>, <c>UnityEditor</c> or <c>Unity</c> type its Scripting API page for the
+        /// running Editor version, a <c>System</c> or <c>Microsoft</c> type its .NET API page. Logs a warning when
+        /// neither exists; a <see langword="null"/> type is ignored.
         /// </remarks>
         /// <param name="type">The type whose script to open.</param>
         public static void OpenInScriptEditor(this Type type)
         {
             if (type is null) return;
-            var monoScript = type.FindMonoScript();
 
-            if (monoScript is not null)
+            // A type of the Editor's own assemblies never has a script in the project, so skip the asset search.
+            var page = GetApiReferencePage(type);
+
+            if (page is not null)
             {
-                AssetDatabase.OpenAsset(monoScript, FindTypeLineNumber(monoScript, type));
+                // Help opens the installed offline docs, or the online docs of this Editor version.
+                if (page.StartsWith(UnityScriptReferencePage, StringComparison.Ordinal))
+                    Help.ShowHelpPage(page);
+                else
+                    Application.OpenURL(page);
+
                 return;
             }
 
-            var page = GetApiReferencePage(type);
+            var monoScript = type.FindMonoScript();
 
-            if (page is null)
+            if (monoScript is null)
             {
                 Debug.LogWarning($"MonoScript for type {type.AssemblyQualifiedName} not found.");
                 return;
             }
 
-            // Help resolves the Unity page to the installed offline docs, or to the online docs of this Editor version.
-            if (page.StartsWith(UnityScriptReferencePage, StringComparison.Ordinal))
-                Help.ShowHelpPage(page);
-            else
-                Application.OpenURL(page);
+            AssetDatabase.OpenAsset(monoScript, FindTypeLineNumber(monoScript, type));
         }
 
         // The API reference page of a type that ships with the Editor; null for a type of the project or a plugin.
         internal static string GetApiReferencePage(Type type)
         {
+            while (type.HasElementType)
+                type = type.GetElementType();
+
             var lookupType = GetLookupType(type);
             if (!IsEditorBuiltIn(lookupType.Assembly)) return null;
 
@@ -118,6 +124,10 @@ namespace Aspid.FastTools.Types.Editors
                 var page = fullName.Substring(fullName.IndexOf('.') + 1).Replace('`', '_');
                 return $"{UnityScriptReferencePage}{page}.html";
             }
+
+            // Types such as Unity.Collections.NativeArray<T> keep their whole name in the Scripting API.
+            if (IsInNamespace(typeNamespace, root: "Unity"))
+                return $"{UnityScriptReferencePage}{fullName.Replace('`', '_')}.html";
 
             if (IsInNamespace(typeNamespace, root: "System") || IsInNamespace(typeNamespace, root: "Microsoft"))
                 return DotNetReferenceUrl + fullName.Replace('`', '-').ToLowerInvariant();
