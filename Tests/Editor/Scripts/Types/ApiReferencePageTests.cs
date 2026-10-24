@@ -17,17 +17,31 @@ namespace Aspid.FastTools.Tests.Editors.Types
     [TestFixture]
     internal sealed class ApiReferencePageTests
     {
-        [TestCase(typeof(CharacterController), "file:///unity/ScriptReference/CharacterController.html")]
-        [TestCase(typeof(Application.LogCallback), "file:///unity/ScriptReference/Application.LogCallback.html")]
-        [TestCase(typeof(ObjectPool<string>), "file:///unity/ScriptReference/Pool.ObjectPool_1.html")]
-        [TestCase(typeof(UnityEditor.EditorWindow), "file:///unity/ScriptReference/EditorWindow.html")]
-        [TestCase(typeof(CharacterController[]), "file:///unity/ScriptReference/CharacterController.html")]
-        [TestCase(typeof(ProfilerMarker), "file:///unity/ScriptReference/Unity.Profiling.ProfilerMarker.html")]
-        [TestCase(typeof(NativeArray<int>), "file:///unity/ScriptReference/Unity.Collections.NativeArray_1.html")]
+        [TestCase(typeof(CharacterController), "CharacterController.html")]
+        [TestCase(typeof(Application.LogCallback), "Application.LogCallback.html")]
+        [TestCase(typeof(ObjectPool<string>), "Pool.ObjectPool_1.html")]
+        [TestCase(typeof(UnityEditor.EditorWindow), "EditorWindow.html")]
+        [TestCase(typeof(CharacterController[]), "CharacterController.html")]
+        [TestCase(typeof(ProfilerMarker), "Unity.Profiling.ProfilerMarker.html")]
+        [TestCase(typeof(NativeArray<int>), "Unity.Collections.NativeArray_1.html")]
         [TestCase(typeof(string), "https://learn.microsoft.com/dotnet/api/system.string")]
         [TestCase(typeof(List<int>), "https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1")]
-        public void EditorBuiltInType_GetsItsApiReferencePage(Type type, string expected) =>
+        public void EditorBuiltInType_GetsItsApiReferencePage(Type type, string expected)
+        {
+            if (!expected.StartsWith("https://"))
+                expected = TypeExtensions.UnityScriptReferenceUrl + expected;
+
             Assert.AreEqual(expected, TypeExtensions.GetApiReferencePage(type));
+        }
+
+        [Test]
+        public void UnityPage_PointsAtTheScriptingApiOfThisEditorVersion()
+        {
+            var version = string.Join(".", Application.unityVersion.Split('.'), 0, 2);
+
+            Assert.AreEqual($"https://docs.unity3d.com/{version}/Documentation/ScriptReference/BoxCollider.html",
+                TypeExtensions.GetApiReferencePage(typeof(BoxCollider)));
+        }
 
         [Test]
         public void ProjectType_GetsNoApiReferencePage() =>
