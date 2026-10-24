@@ -15,7 +15,8 @@ namespace Aspid.FastTools.PlayerBuildCheck
     // Batch-mode entry point of scripts/player-builds.sh:
     //   -executeMethod Aspid.FastTools.PlayerBuildCheck.PlayerBuilds.Build
     //   -playerBuildTargets mac-mono,mac-il2cpp-minimal,mac-il2cpp-high,ios-sim -playerBuildOutput <dir>
-    // Builds every target without BuildOptions.Development, writes <dir>/builds.tsv and exits with 1 when one fails.
+    // Builds every target without BuildOptions.Development, appends a line per target to <dir>/builds.tsv and exits
+    // with 1 when one fails.
     public static class PlayerBuilds
     {
         private const string ProductName = "PlayerBuildCheck";
@@ -40,7 +41,6 @@ namespace Aspid.FastTools.PlayerBuildCheck
 
                 CreateScene();
 
-                var lines = new List<string>();
                 var hasFailed = false;
 
                 foreach (var id in ids)
@@ -50,8 +50,11 @@ namespace Aspid.FastTools.PlayerBuildCheck
 
                     var summary = BuildOne(target, output);
                     hasFailed |= summary.result != BuildResult.Succeeded;
-                    lines.Add($"{id}\t{summary.result}\t{summary.totalErrors}\t{summary.totalWarnings}\t{summary.options}");
-                    File.WriteAllLines(Path.Combine(output, "builds.tsv"), lines);
+                    // Appended: the script runs the Editor once per build target group into one output folder.
+                    File.AppendAllLines(Path.Combine(output, "builds.tsv"), new[]
+                    {
+                        $"{id}\t{summary.result}\t{summary.totalErrors}\t{summary.totalWarnings}\t{summary.options}",
+                    });
                 }
 
                 EditorApplication.Exit(hasFailed ? 1 : 0);

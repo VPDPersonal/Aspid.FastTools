@@ -48,5 +48,7 @@ From the repository root:
 - Compile in the dev project with its Editor open: `unity command script recompile`, then `unity command console get`.
 - EditMode tests on any Unity version: `scripts/make-unity-test-project.sh <dir> [unity-version]`; its header shows
   the `-runTests` command.
+- Release players on macOS (Mono, IL2CPP, iOS Simulator) with the `SerializableType` and `ENABLE_PROFILER` check:
+  `scripts/player-builds.sh <dir> [unity-version]`, read by the `asp-ft-player-builds` skill.
 - YAML engine: `dotnet test DotnetTests/Yaml`.
 - Type resolver: `dotnet test DotnetTests/Types`.
