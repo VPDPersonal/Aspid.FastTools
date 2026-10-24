@@ -19,7 +19,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
     {
         [TestCase(typeof(CharacterController), "file:///unity/ScriptReference/CharacterController.html")]
         [TestCase(typeof(Application.LogCallback), "file:///unity/ScriptReference/Application.LogCallback.html")]
-        [TestCase(typeof(ObjectPool<int>), "file:///unity/ScriptReference/Pool.ObjectPool_1.html")]
+        [TestCase(typeof(ObjectPool<string>), "file:///unity/ScriptReference/Pool.ObjectPool_1.html")]
         [TestCase(typeof(UnityEditor.EditorWindow), "file:///unity/ScriptReference/EditorWindow.html")]
         [TestCase(typeof(CharacterController[]), "file:///unity/ScriptReference/CharacterController.html")]
         [TestCase(typeof(ProfilerMarker), "file:///unity/ScriptReference/Unity.Profiling.ProfilerMarker.html")]
