@@ -10,7 +10,6 @@ using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 using Aspid.FastTools.Types.Editors;
-using Aspid.FastTools.Tests.Editors.VisualElements;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Tests.Editors.Types

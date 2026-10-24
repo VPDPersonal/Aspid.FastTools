@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
-using Aspid.FastTools.Tests.Editors.VisualElements;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Tests.Editors.Settings

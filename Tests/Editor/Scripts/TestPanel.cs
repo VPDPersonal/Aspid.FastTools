@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Tests.Editors.VisualElements
+namespace Aspid.FastTools.Tests.Editors
 {
     // A live panel for tests that need USS resolution, layout or event dispatch. A runtime panel rather than a shown
     // EditorWindow, because only the former updates without a graphics device (-nographics).
@@ -14,7 +14,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         // A committed asset instead of CreateInstance: a new PanelSettings without a theme makes the Editor write
         // a default theme into the project's Assets folder.
         private const string SettingsPath =
-            "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/VisualElements/TestPanel/AspidFastToolsTestPanelSettings.asset";
+            "Packages/tech.aspid.fasttools/Tests/Editor/Resources/UI/TestPanel/AspidFastToolsTestPanelSettings.asset";
 
         private readonly GameObject _host;
         private readonly PanelSettings _settings;

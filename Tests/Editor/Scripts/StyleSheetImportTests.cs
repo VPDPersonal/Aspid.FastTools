@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Tests.Editors.VisualElements
+namespace Aspid.FastTools.Tests.Editors
 {
     /// <summary>
     /// Guards the package stylesheets against syntax the minimum supported Unity cannot parse. Before 6000.3 a single

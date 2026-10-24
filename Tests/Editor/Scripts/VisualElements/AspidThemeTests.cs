@@ -27,7 +27,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
     [TestFixture]
     internal sealed class AspidThemeTests
     {
-        private const string ProbeFolder = "Packages/tech.aspid.fasttools/Tests/Editor/Scripts/VisualElements";
+        private const string ProbeFolder = "Packages/tech.aspid.fasttools/Tests/Editor/Resources/UI";
         private const string ProbePath = ProbeFolder + "/AspidThemeProbe.uss";
         private const string CreatedThemePath = "Assets/AspidThemeTests-Created.uss";
 
