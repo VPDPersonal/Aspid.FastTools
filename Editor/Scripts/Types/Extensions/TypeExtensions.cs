@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -13,6 +15,9 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     public static class TypeExtensions
     {
+        private const string DotNetReferenceUrl = "https://learn.microsoft.com/dotnet/api/";
+        private const string UnityScriptReferencePage = "file:///unity/ScriptReference/";
+
         /// <summary>
         /// Searches script assets for a declaration of <paramref name="type"/>.
         /// </summary>
@@ -64,11 +69,31 @@ namespace Aspid.FastTools.Types.Editors
         /// <summary>
         /// Opens the script defining <paramref name="type"/> at its declaration line.
         /// </summary>
-        /// <remarks>Logs a warning when no script can be located; a <see langword="null"/> type is ignored.</remarks>
+        /// <remarks>
+        /// A type that ships with the Unity Editor has no script in the project and opens its API reference page
+        /// instead: a <c>UnityEngine</c>, <c>UnityEditor</c> or <c>Unity</c> type its Scripting API page for the
+        /// running Editor version, a <c>System</c> or <c>Microsoft</c> type its .NET API page. Logs a warning when
+        /// neither exists; a <see langword="null"/> type is ignored.
+        /// </remarks>
         /// <param name="type">The type whose script to open.</param>
         public static void OpenInScriptEditor(this Type type)
         {
             if (type is null) return;
+
+            // A type of the Editor's own assemblies never has a script in the project, so skip the asset search.
+            var page = GetApiReferencePage(type);
+
+            if (page is not null)
+            {
+                // Help opens the installed offline docs, or the online docs of this Editor version.
+                if (page.StartsWith(UnityScriptReferencePage, StringComparison.Ordinal))
+                    Help.ShowHelpPage(page);
+                else
+                    Application.OpenURL(page);
+
+                return;
+            }
+
             var monoScript = type.FindMonoScript();
 
             if (monoScript is null)
@@ -78,6 +103,36 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             AssetDatabase.OpenAsset(monoScript, FindTypeLineNumber(monoScript, type));
+        }
+
+        // The API reference page of a type that ships with the Editor; null for a type of the project or a plugin.
+        internal static string GetApiReferencePage(Type type)
+        {
+            while (type.HasElementType)
+                type = type.GetElementType();
+
+            var lookupType = GetLookupType(type);
+            if (!IsEditorBuiltIn(lookupType.Assembly)) return null;
+
+            var typeNamespace = lookupType.Namespace ?? string.Empty;
+            var fullName = lookupType.FullName?.Replace('+', '.');
+            if (fullName is null) return null;
+
+            if (IsInNamespace(typeNamespace, root: "UnityEngine") || IsInNamespace(typeNamespace, root: "UnityEditor"))
+            {
+                // The Scripting API drops the root namespace and names ObjectPool<T> ObjectPool_1.
+                var page = fullName.Substring(fullName.IndexOf('.') + 1).Replace('`', '_');
+                return $"{UnityScriptReferencePage}{page}.html";
+            }
+
+            // Types such as Unity.Collections.NativeArray<T> keep their whole name in the Scripting API.
+            if (IsInNamespace(typeNamespace, root: "Unity"))
+                return $"{UnityScriptReferencePage}{fullName.Replace('`', '_')}.html";
+
+            if (IsInNamespace(typeNamespace, root: "System") || IsInNamespace(typeNamespace, root: "Microsoft"))
+                return DotNetReferenceUrl + fullName.Replace('`', '-').ToLowerInvariant();
+
+            return null;
         }
 
         private static int FindTypeLineNumber(MonoScript script, Type type)
@@ -104,6 +159,20 @@ namespace Aspid.FastTools.Types.Editors
 
         private static Type GetLookupType(Type type) =>
             type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+
+        private static bool IsInNamespace(string typeNamespace, string root) =>
+            typeNamespace == root || typeNamespace.StartsWith(root + ".", StringComparison.Ordinal);
+
+        // A plugin DLL may declare UnityEngine or System namespaces too, so only the Editor's own assemblies count.
+        private static bool IsEditorBuiltIn(Assembly assembly)
+        {
+            if (assembly.IsDynamic || string.IsNullOrEmpty(assembly.Location)) return false;
+
+            var editorPath = Path.GetFullPath(EditorApplication.applicationContentsPath) + Path.DirectorySeparatorChar;
+            var assemblyPath = Path.GetFullPath(assembly.Location);
+
+            return assemblyPath.StartsWith(editorPath, StringComparison.OrdinalIgnoreCase);
+        }
 
         private static string GetDeclarationPattern(bool isEnum, string typeName) => isEnum
             ? $@"\benum\s+{Regex.Escape(typeName)}\b"

@@ -234,7 +234,7 @@ namespace Aspid.FastTools.Types.Editors
 
             _openButton = new Button()
                 .AddClass(OpenButtonClass)
-                .SetTooltip("Open the script")
+                .SetTooltip("Open the script or the API reference")
                 .AddChild(new VisualElement()
                     .AddClass(OpenIconClass)
                     .SetPickingMode(PickingMode.Ignore))
