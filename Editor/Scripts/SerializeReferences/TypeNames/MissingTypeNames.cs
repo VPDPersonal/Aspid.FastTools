@@ -46,8 +46,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ExcludeEditorOnly = excludeEditorOnly;
         }
 
-        public bool IsUnconstrained => Types.All(type => type == typeof(object)) && Allow == TypeAllow.All;
-
         public bool Equals(TypeNameConstraint other) =>
             Allow == other.Allow && RequiresScript == other.RequiresScript && ExcludeEditorOnly == other.ExcludeEditorOnly &&
             new HashSet<Type>(Types).SetEquals(other.Types);

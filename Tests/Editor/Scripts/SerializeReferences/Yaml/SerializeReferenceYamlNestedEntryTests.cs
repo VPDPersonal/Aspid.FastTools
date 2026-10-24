@@ -110,24 +110,6 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences.Yaml
         }
 
         [Test]
-        public void TryFindTopLevelArrayElementForRid_SameNamedNestedList_ReturnsTopLevelSlot()
-        {
-            var path = YamlFixtures.WriteTemp(YamlFixtures.ShadowedListPrefab);
-            try
-            {
-                Assert.IsTrue(SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(
-                    path, YamlFixtures.ShadowedListFileId, 300, out var field, out var index));
-
-                Assert.AreEqual("_weapons", field);
-                Assert.AreEqual(2, index, "The nested _presets[0]._weapons[1] must not be taken for the top-level list.");
-            }
-            finally
-            {
-                YamlFixtures.Delete(path);
-            }
-        }
-
-        [Test]
         public void TryRestoreArrayElementReference_SameNamedNestedList_RepointsTopLevelSlot()
         {
             var path = YamlFixtures.WriteTemp(YamlFixtures.ShadowedListPrefab);

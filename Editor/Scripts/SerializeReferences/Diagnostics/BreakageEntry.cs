@@ -37,7 +37,5 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             TopSuggestion = topSuggestion;
             MigrationTarget = migrationTarget;
         }
-
-        public string TypeName => StoredType.DisplayName;
     }
 }
