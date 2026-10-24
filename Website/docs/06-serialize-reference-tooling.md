@@ -150,9 +150,3 @@ Remove <code lang="csharp">[MovedFrom]</code> only when no file stores the old n
 | Binary assets and unfetched Git LFS files | Not scanned: Scan Project counts them and the Console lists them, Asset References shows **Not scanned**; use **Force Text** and fetch LFS files |
 | Files last saved before Unity 2021.2 | Their managed references are not read: save the files again in the current Unity version |
 | More than 1000 reference cards in one window | Asset References draws the first 1000 and says how many it left out; Project References repairs missing types without this limit |
-
-## Package sample
-
-Missing types, a <code lang="csharp">[MovedFrom]</code> rename and a shared reference for both tabs are in the assets of the [SerializeReferences](../tutorials/SerializeReferences/README.md) sample.
-
-![The dummy takes damage in the SerializeReferences scene](../tutorials/SerializeReferences/Images/demo.gif)

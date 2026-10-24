@@ -253,6 +253,6 @@ TypeSelectorWindow.Show(
 
 ## Пример в пакете
 
-Зависимый список, имена из <code lang="csharp">[TypeSelectorDisplay]</code> и обязательное поле показаны в примере [Types](../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md), а окно выбора из редакторского кода — в [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md).
+Зависимый список и имена из <code lang="csharp">[TypeSelectorDisplay]</code> показаны в примере [Types](../../docusaurus-plugin-content-docs-tutorials/current/Types/README.md), а окно выбора из редакторского кода — в [EditorTools](../../docusaurus-plugin-content-docs-tutorials/current/EditorTools/README.md).
 
 ![Волна обычных и элитных врагов в сцене Types](../../../../tutorials/Types/Images/demo.gif)
