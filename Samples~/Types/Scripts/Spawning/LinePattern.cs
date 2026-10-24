@@ -1,9 +1,11 @@
 using UnityEngine;
+using UnityEngine.Scripting;
 using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types.Spawning
 {
+    [Preserve]
     [TypeSelectorDisplay(Name = "Line", Group = "Spawn Patterns", Icon = "d_BoxCollider Icon")]
     public sealed class LinePattern : ISpawnPattern
     {
