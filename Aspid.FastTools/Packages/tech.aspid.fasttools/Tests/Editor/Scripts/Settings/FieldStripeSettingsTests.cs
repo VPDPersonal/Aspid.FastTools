@@ -5,7 +5,6 @@ using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
-using Aspid.FastTools.Tests.Editors.VisualElements;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Tests.Editors.Settings

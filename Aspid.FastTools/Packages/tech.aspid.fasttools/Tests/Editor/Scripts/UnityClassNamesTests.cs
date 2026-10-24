@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Tests.Editors.VisualElements
+namespace Aspid.FastTools.Tests.Editors
 {
     /// <summary>
     /// Guards the Unity class names that the package matches. A stylesheet selector cannot use a C# constant, so a

@@ -7,7 +7,6 @@ using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
-using Aspid.FastTools.Tests.Editors.VisualElements;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 // ReSharper disable once CheckNamespace
