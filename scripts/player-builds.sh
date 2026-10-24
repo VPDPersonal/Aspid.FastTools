@@ -11,6 +11,8 @@
 #   project-dir    must not exist or be empty; it gets the test project, Builds/ and Logs/.
 #   unity-version  default: the minimum, the first version of UNITY_VERSIONS in .github/workflows/ci.yml.
 #
+# Needs an Apple Silicon Mac: the Mac players and the simulator player are arm64.
+#
 # Every player is built without BuildOptions.Development and runs Aspid.FastTools/Assets/PlayerBuildCheck~: its
 # AOTCHECK lines tell whether SerializableType resolves the stored names, and whether ENABLE_PROFILER is off.
 # A target whose Unity module is missing is skipped with the install command. Exits with 1 when a target fails.
@@ -25,6 +27,21 @@ fi
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
   echo "usage: $0 [--targets <list>] <project-dir> [unity-version]" >&2
   exit 2
+fi
+
+IFS=',' read -r -a requested <<< "$TARGETS"
+for target in "${requested[@]}"; do
+  case ",$ALL_TARGETS," in
+    *",$target,"*) ;;
+    *)
+      echo "error: unknown target $target; known: $ALL_TARGETS" >&2
+      exit 2 ;;
+  esac
+done
+
+if [ "$(uname -m)" != "arm64" ]; then
+  echo "error: needs an Apple Silicon Mac: the players are built for arm64" >&2
+  exit 1
 fi
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -58,20 +75,16 @@ mkdir -p "$BUILDS" "$LOGS"
 missing_module() {
   case "$1" in
     mac-mono) ;;
-    mac-il2cpp-*)
+    mac-il2cpp-minimal | mac-il2cpp-high)
       ls -d "$EDITOR_DIR/Unity.app/Contents/PlaybackEngines/MacStandaloneSupport/Variations/"*il2cpp* >/dev/null 2>&1 ||
         echo "mac-il2cpp" ;;
     ios-sim)
       [ -d "$EDITOR_DIR/PlaybackEngines/iOSSupport" ] || [ -d "$EDITOR_DIR/Unity.app/Contents/PlaybackEngines/iOSSupport" ] ||
         echo "ios" ;;
-    *)
-      echo "error: unknown target $1" >&2
-      exit 2 ;;
   esac
 }
 
 declare -a MAC=() IOS=() SKIPPED=()
-IFS=',' read -r -a requested <<< "$TARGETS"
 for target in "${requested[@]}"; do
   module="$(missing_module "$target")"
   if [ -n "$module" ]; then
@@ -123,12 +136,19 @@ devices = [d for runtime in json.load(sys.stdin)["devices"].values() for d in ru
 devices.sort(key=lambda d: d["state"] != "Booted")
 print(devices[0]["udid"], devices[0]["state"]) if devices else print("", "")')
     if [ -n "$device" ]; then
-      [ "$state" = "Booted" ] || xcrun simctl boot "$device"
-      xcrun simctl bootstatus "$device" -b >/dev/null 2>&1 || true
-      xcrun simctl install "$device" "$app"
-      run_with_timeout xcrun simctl launch --console-pty --terminate-running-process "$device" "$BUNDLE_ID" \
-        > "$LOGS/run-ios-sim.log" 2>&1 || true
-      [ "$state" = "Booted" ] || xcrun simctl shutdown "$device" || true
+      # A failure here leaves ios-sim at no-run in the table instead of ending the script under set -e.
+      if [ "$state" = "Booted" ] || xcrun simctl boot "$device"; then
+        xcrun simctl bootstatus "$device" -b >/dev/null 2>&1 || true
+        if xcrun simctl install "$device" "$app"; then
+          run_with_timeout xcrun simctl launch --console-pty --terminate-running-process "$device" "$BUNDLE_ID" \
+            > "$LOGS/run-ios-sim.log" 2>&1 || true
+        else
+          echo "ios-sim: simctl install failed" >&2
+        fi
+        [ "$state" = "Booted" ] || xcrun simctl shutdown "$device" || true
+      else
+        echo "ios-sim: simctl boot failed" >&2
+      fi
     else
       echo "ios-sim: no available iPhone simulator" >&2
     fi

@@ -29,9 +29,9 @@ scripts/player-builds.sh <scratch>/player-builds [unity-version]
 - `<scratch>/player-builds` must not exist or be empty. It gets `Project/`, `Builds/` and `Logs/`.
 - Run it in the background: all four targets take about 3–4 minutes.
 - `--targets mac-mono,ios-sim` limits the run to the listed targets.
-- It needs macOS, the Unity Editor of the version, its modules `mac-il2cpp` and `ios`, and Xcode for `ios-sim`. A
-  missing module skips its target and prints the Unity Hub command that installs it. Ask the user before you run an
-  install: it downloads gigabytes.
+- It needs an Apple Silicon Mac (the players are arm64), the Unity Editor of the version, its modules `mac-il2cpp`
+  and `ios`, and Xcode for `ios-sim`. A missing module skips its target and prints the Unity Hub command that installs
+  it. Ask the user before you run an install: it downloads gigabytes.
 - The simulator runs without its window. The script shuts it down after the run when it booted it.
 
 ## Read the table
