@@ -9,7 +9,9 @@
 
 ## [Unreleased]
 
-Первый стабильный релиз. Предыдущие prerelease-версии `1.0.0-rc.*` лежат в [GitHub Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases); ниже перечислено, что изменилось с `1.0.0-rc.8`.
+## [1.0.0-rc.9] — 2026-10-24
+
+Последняя prerelease-версия перед 1.0.0. Ниже перечислено, что изменилось с `1.0.0-rc.8`.
 
 ### Добавлено
 
@@ -446,4 +448,5 @@
 - `upm` / `upm/<version>` для стабильных релизов, `upm-preview` для предрелизов. До первого стабильного релиза в ветке `upm` остаётся старый пакет `com.aspid.fasttools` (`1.0.0-rc.2`).
 - EditMode-тесты для YAML-редактора и сканирования CI gate.
 
+[1.0.0-rc.9]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.9
 [1.0.0-rc.8]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8

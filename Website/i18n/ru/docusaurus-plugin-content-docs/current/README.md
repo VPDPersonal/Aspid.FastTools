@@ -4,7 +4,7 @@
 </picture>
 
 [![Unity 6000.0.53f1+](../../../../docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
-[![Preview 1.0.0-rc.8](../../../../docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
+[![Preview 1.0.0-rc.9](../../../../docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.9)
 [![MIT License](../../../../docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации, профилирования и редакторского кода.
