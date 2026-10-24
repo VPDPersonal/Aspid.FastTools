@@ -197,11 +197,12 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         [UnityTest]
         public IEnumerator Title_Unwatched_StaysAtRest()
         {
+            // A runtime panel belongs to no Editor window, so nobody watches the title.
+            using var panel = new TestPanel(runtime: true);
             var title = new AspidAnimatedTitle("Title");
-            _panel.Root.Add(title);
+            panel.Root.Add(title);
             yield return null;
 
-            // A test panel belongs to no Editor window, so nobody watches the title.
             title.UpdateAnimation();
             yield return null;
 
