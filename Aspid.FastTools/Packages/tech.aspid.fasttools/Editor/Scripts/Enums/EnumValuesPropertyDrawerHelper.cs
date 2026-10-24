@@ -40,6 +40,18 @@ namespace Aspid.FastTools.Enums.Editors
                 : entry.serializedObject.FindProperty($"{path.Substring(0, index)}._enumType");
         }
 
+        // Unity names an array element after its first string field, which here is _enumType: the assembly-qualified
+        // enum name. A table in a collection keeps Unity's default "Element N" instead. Only that default name is
+        // replaced: a label of the caller's own, or an empty one, stays as it is.
+        public static string GetLabel(SerializedProperty property, string label)
+        {
+            var path = property.propertyPath;
+            if (label != property.displayName || !path.EndsWith("]", StringComparison.Ordinal)) return label;
+
+            var indexStart = path.LastIndexOf('[') + 1;
+            return $"Element {path.Substring(indexStart, path.Length - indexStart - 1)}";
+        }
+
         public static bool HasMembers(Type enumType) =>
             Enum.GetValues(enumType).Length > 0;
 
