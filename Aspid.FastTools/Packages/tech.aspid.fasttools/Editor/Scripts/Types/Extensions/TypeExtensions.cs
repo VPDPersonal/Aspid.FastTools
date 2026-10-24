@@ -16,7 +16,10 @@ namespace Aspid.FastTools.Types.Editors
     public static class TypeExtensions
     {
         private const string DotNetReferenceUrl = "https://learn.microsoft.com/dotnet/api/";
-        private const string UnityScriptReferencePage = "file:///unity/ScriptReference/";
+
+        // Help.ShowHelpPage is not used: some Editor versions turn the page into a Manual/…html.html URL.
+        internal static string UnityScriptReferenceUrl =>
+            $"https://docs.unity3d.com/{GetDocsVersion()}/Documentation/ScriptReference/";
 
         /// <summary>
         /// Searches script assets for a declaration of <paramref name="type"/>.
@@ -71,8 +74,8 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         /// <remarks>
         /// A type that ships with the Unity Editor has no script in the project and opens its API reference page
-        /// instead: a <c>UnityEngine</c>, <c>UnityEditor</c> or <c>Unity</c> type its Scripting API page for the
-        /// running Editor version, a <c>System</c> or <c>Microsoft</c> type its .NET API page. Logs a warning when
+        /// instead: a <c>UnityEngine</c>, <c>UnityEditor</c> or <c>Unity</c> type its online Scripting API page for
+        /// the running Editor version, a <c>System</c> or <c>Microsoft</c> type its .NET API page. Logs a warning when
         /// neither exists; a <see langword="null"/> type is ignored.
         /// </remarks>
         /// <param name="type">The type whose script to open.</param>
@@ -85,12 +88,7 @@ namespace Aspid.FastTools.Types.Editors
 
             if (page is not null)
             {
-                // Help opens the installed offline docs, or the online docs of this Editor version.
-                if (page.StartsWith(UnityScriptReferencePage, StringComparison.Ordinal))
-                    Help.ShowHelpPage(page);
-                else
-                    Application.OpenURL(page);
-
+                Application.OpenURL(page);
                 return;
             }
 
@@ -122,12 +120,12 @@ namespace Aspid.FastTools.Types.Editors
             {
                 // The Scripting API drops the root namespace and names ObjectPool<T> ObjectPool_1.
                 var page = fullName.Substring(fullName.IndexOf('.') + 1).Replace('`', '_');
-                return $"{UnityScriptReferencePage}{page}.html";
+                return $"{UnityScriptReferenceUrl}{page}.html";
             }
 
             // Types such as Unity.Collections.NativeArray<T> keep their whole name in the Scripting API.
             if (IsInNamespace(typeNamespace, root: "Unity"))
-                return $"{UnityScriptReferencePage}{fullName.Replace('`', '_')}.html";
+                return $"{UnityScriptReferenceUrl}{fullName.Replace('`', '_')}.html";
 
             if (IsInNamespace(typeNamespace, root: "System") || IsInNamespace(typeNamespace, root: "Microsoft"))
                 return DotNetReferenceUrl + fullName.Replace('`', '-').ToLowerInvariant();
@@ -155,6 +153,13 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             return 1;
+        }
+
+        // "6000.0.53f1" → "6000.0", the version segment of docs.unity3d.com URLs.
+        private static string GetDocsVersion()
+        {
+            var parts = Application.unityVersion.Split('.');
+            return parts.Length >= 2 ? $"{parts[0]}.{parts[1]}" : Application.unityVersion;
         }
 
         private static Type GetLookupType(Type type) =>
