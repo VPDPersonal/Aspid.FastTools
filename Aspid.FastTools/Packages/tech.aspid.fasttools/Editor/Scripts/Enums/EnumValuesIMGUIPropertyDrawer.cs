@@ -16,6 +16,8 @@ namespace Aspid.FastTools.Enums.Editors
         private const int StyleStateCount = 8;
 
         private static bool _isPlainFoldoutHeader;
+        private static bool _headerLabelStylePro;
+        private static GUIStyle _headerLabelStyle;
         private static FontStyle _savedFontStyle;
         private static Texture2D _transparentTexture;
         private static readonly GUIStyleState[] _states = new GUIStyleState[StyleStateCount];
@@ -281,13 +283,25 @@ namespace Aspid.FastTools.Enums.Editors
         {
             var labelRect = rect;
             labelRect.height = EditorGUIUtility.singleLineHeight;
-            EditorGUI.LabelField(labelRect, label);
+            EditorGUI.LabelField(labelRect, label, GetHeaderLabelStyle());
 
             var fieldRect = rect;
             fieldRect.yMin = labelRect.yMax + EditorGUIUtility.standardVerticalSpacing;
 
             if (isTyped) DrawReadOnlyEnumType(fieldRect, enumTypeProperty);
             else EditorGUI.PropertyField(fieldRect, enumTypeProperty, GUIContent.none);
+        }
+
+        // A long label ends in an ellipsis inside the card instead of running past its border, as in UI Toolkit.
+        private static GUIStyle GetHeaderLabelStyle()
+        {
+            if (_headerLabelStyle is null || _headerLabelStylePro != EditorGUIUtility.isProSkin)
+            {
+                _headerLabelStyle = new GUIStyle(EditorStyles.label) { clipping = TextClipping.Ellipsis };
+                _headerLabelStylePro = EditorGUIUtility.isProSkin;
+            }
+
+            return _headerLabelStyle;
         }
 
         private static void DrawReadOnlyEnumType(Rect rect, SerializedProperty enumTypeProperty)

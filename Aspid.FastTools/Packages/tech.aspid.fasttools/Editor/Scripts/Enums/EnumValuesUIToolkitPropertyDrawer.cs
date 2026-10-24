@@ -15,6 +15,7 @@ namespace Aspid.FastTools.Enums.Editors
 
         private const string UssClass = "aspid-fasttools-enum-values";
         private const string HeaderClass = UssClass + "__header";
+        private const string HeaderLabelClass = UssClass + "__header-label";
         private const string ContainerClass = UssClass + "__container";
 
         public static VisualElement Draw(SerializedProperty property, string label, bool isTyped)
@@ -26,7 +27,7 @@ namespace Aspid.FastTools.Enums.Editors
 
             var header = new VisualElement()
                 .AddClass(HeaderClass)
-                .AddChild(new Label(label));
+                .AddChild(new Label(label).AddClass(HeaderLabelClass));
 
             header.AddChild(isTyped
                 ? new InspectorTypeField(label: null, serializedObject.FindProperty(enumTypePath))

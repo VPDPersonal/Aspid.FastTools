@@ -23,6 +23,13 @@
     background-color: var(--unity-colors-inspector_titlebar-background);
 }
 
+/* A long label ends in an ellipsis instead of running past the header border. */
+.aspid-fasttools-enum-values__header-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .aspid-fasttools-enum-values__container {
     padding: 2px 5px 5px 5px;
     border-width: 0 1px 1px 1px;
