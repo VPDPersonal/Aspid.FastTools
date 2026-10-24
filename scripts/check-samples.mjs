@@ -18,9 +18,6 @@ const SITE = 'https://vpdpersonal.github.io/Aspid.FastTools/tutorials/';
 const MAX_LINES = 450;
 const MAX_DESCRIPTION = 200;
 const MARKER_SAMPLE = 'ProfilerMarkers';
-// Tutorials not yet rewritten for the simplified sample: their marker names that differ are warnings, not errors.
-// Empty it once the tutorial quotes the current names.
-const PENDING_TUTORIALS = new Set(['ProfilerMarkers']);
 
 // The folder of a sample that holds each kind of file. Code may also sit in a subfolder of Scripts/.
 const FOLDERS = {
@@ -60,7 +57,6 @@ const fail = (file, message) => {
   console.log(`::error file=${file}::${message}`);
   errors++;
 };
-const warn = (file, message) => console.log(`::warning file=${file}::${message}`);
 
 // Each file is read once: the checks below read the same code, .meta and asmdef files.
 const texts = new Map();
@@ -187,11 +183,10 @@ function checkMarkerTutorials(files) {
     if (!existsSync(page)) continue;
     const quoted = [...read(page).matchAll(/\b((?:[A-Z]\w*)(?:\.[A-Z]\w*)+) \((\d+)\)/g)]
       .map((match) => ({ base: match[1], name: `${match[1]} (${match[2]})` }));
-    const report = PENDING_TUTORIALS.has(MARKER_SAMPLE) ? warn : fail;
     for (const quote of new Set(quoted.map((quote) => quote.name))) {
       const base = quote.replace(/ \(\d+\)$/, '');
       const actual = names.get(base);
-      if (actual !== quote) report(page, `quotes ${quote}; the code makes ${actual ?? 'no such marker'}`);
+      if (actual !== quote) fail(page, `quotes ${quote}; the code makes ${actual ?? 'no such marker'}`);
     }
   }
 }

@@ -81,13 +81,11 @@ const valid = () => ({
   'Website/i18n/ru/docusaurus-plugin-content-docs-tutorials/current/ProfilerMarkers/README.md': '# ProfilerMarkers\n',
 });
 
-// The script's list of pending tutorials is emptied, so the marker rule is strict, unless a test keeps it.
-function check(t, changes = {}, { pending = false } = {}) {
+function check(t, changes = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'aspid-check-samples-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   mkdirSync(join(dir, 'scripts'));
-  const source = readFileSync(script, 'utf8');
-  writeFileSync(join(dir, 'scripts/check-samples.mjs'), pending ? source : source.replace(/const PENDING_TUTORIALS = new Set\(\[[^\]]*\]\);/, 'const PENDING_TUTORIALS = new Set();'));
+  writeFileSync(join(dir, 'scripts/check-samples.mjs'), readFileSync(script, 'utf8'));
   for (const [file, text] of Object.entries({ ...valid(), ...changes })) {
     if (text === null) continue;
     mkdirSync(dirname(join(dir, file)), { recursive: true });
@@ -215,10 +213,4 @@ test('a tutorial marker name whose line differs from the code is reported', (t) 
   assertFails(check(t, { [TUTORIAL]: stale }), TUTORIAL, /quotes Flock\.Steering \(13\); the code makes Flock\.Steering \(12\)/);
   const gone = '# ProfilerMarkers\n\nFind `Flock.Update (10)` and `Flock.Spawn (30)`.\n';
   assertFails(check(t, { [TUTORIAL]: gone }), TUTORIAL, /quotes Flock\.Spawn \(30\); the code makes no such marker/);
-});
-
-test('a pending tutorial reports a differing marker name as a warning', (t) => {
-  const result = check(t, { [TUTORIAL]: '# ProfilerMarkers\n\nFind `Flock.Update (74)` in the Profiler.\n' }, { pending: true });
-  assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.ok(result.stdout.includes(`::warning file=${TUTORIAL}::quotes Flock.Update (74); the code makes Flock.Update (10)`), result.stdout);
 });

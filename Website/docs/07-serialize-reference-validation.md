@@ -118,9 +118,3 @@ KIND    assetPath    fileId    rid    className    fieldPath    origin    ns    
 In Asset References, find an entry by its `rid`, and a `RequiredUnset` row with `rid` `0` by its `fieldPath`; an `override` row is in the **Prefab instance overrides** section of Project References instead. A `MissingTypeName` row is in its **type name** group of Project References.
 
 </details>
-
-## Package sample
-
-The [SerializeReferences](../tutorials/SerializeReferences/README.md) sample has a required field and missing types to check; add its folder to **Excluded scan folders** if they should not stop a `Fail` build.
-
-![The dummy takes damage in the SerializeReferences scene](../tutorials/SerializeReferences/Images/demo.gif)

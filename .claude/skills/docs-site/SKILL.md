@@ -219,7 +219,7 @@ Apply these rules to every main doc page, always to the English file and its `ru
 Rules the user confirmed while reworking the five sample pages; the feature-page rules above apply too.
 
 - **Order:** `# <Name> Sample`, the lead, `demo.gif` with its caption, `## Open it`, `## Try`, optional sections for a
-  second scenario (SerializeReferences: Repair, IMGUI inspector), `## Where to look`, then one closing line
+  second scenario, `## Where to look`, then one closing line
   `Reference: [Feature](…)` (ru `Справочник — […](…)`). No code block or capture above the demo: an Inspector capture
   goes into the step that uses it.
 - **Lead = the sample's card description** in `SamplesGallery/index.js`, word for word in both places; change them
