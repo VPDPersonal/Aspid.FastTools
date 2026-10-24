@@ -68,8 +68,8 @@ The type whose script to open.
 #### Remarks
 
 A type that ships with the Unity Editor has no script in the project and opens its API reference page
-instead: a <code>UnityEngine</code>, <code>UnityEditor</code> or <code>Unity</code> type its Scripting API page for the
-running Editor version, a <code>System</code> or <code>Microsoft</code> type its .NET API page. Logs a warning when
+instead: a <code>UnityEngine</code>, <code>UnityEditor</code> or <code>Unity</code> type its online Scripting API page for
+the running Editor version, a <code>System</code> or <code>Microsoft</code> type its .NET API page. Logs a warning when
 neither exists;
 a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> type is ignored.
 
