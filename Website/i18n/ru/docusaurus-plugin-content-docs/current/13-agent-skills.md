@@ -42,6 +42,8 @@ npx skills add VPDPersonal/Aspid.FastTools#skills-preview
 npx skills add VPDPersonal/Aspid.FastTools#skills-preview/<version>
 ```
 
+Тег лежит на канале вашего пакета: `skills/<version>` для стабильного релиза, `skills-preview/<version>` для preview.
+
 Релизы до `1.0.0-rc.8` включительно не содержат скиллов. С ними сначала обновите пакет до релиза со скиллами.
 
 Раньше скиллы поставлялись плагином `aspid-fasttools` для Claude Code. Если он у вас стоит, удалите его командой `/plugin uninstall aspid-fasttools@aspid-claude-plugins`: он учит агента API, которого больше нет.

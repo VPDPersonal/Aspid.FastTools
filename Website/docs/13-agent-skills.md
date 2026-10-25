@@ -42,6 +42,8 @@ Update the package at the same time: skills newer than your package can describe
 npx skills add VPDPersonal/Aspid.FastTools#skills-preview/<version>
 ```
 
+The tag is on the channel of your package: `skills/<version>` for a stable release, `skills-preview/<version>` for a preview one.
+
 Releases up to and including `1.0.0-rc.8` do not ship the skills. With one of them, upgrade the package to a release that does.
 
 The skills used to ship as the `aspid-fasttools` Claude Code plugin. If you have it, remove it with `/plugin uninstall aspid-fasttools@aspid-claude-plugins`: it teaches the agent API that no longer exists.
