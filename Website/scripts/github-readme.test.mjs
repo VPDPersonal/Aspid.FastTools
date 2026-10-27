@@ -95,12 +95,22 @@ test('the help section becomes the call to action, without the licence line', ()
     + '<p><a href="https://github.com/owner/repo/issues"><b>Open an issue</b></a> · <a href="https://github.com/owner/repo">Star on GitHub</a></p>\n');
 });
 
-test('the donation sentence gives way to the card image, the sentence its alt text', () => {
+test('the donation sentence gives way to the card image and a button per place, the sentence the card alt text', () => {
+  const kofi = 'https://ko-fi.com/owner';
   const store = 'https://assetstore.unity.com/packages/package/1';
-  const section = `## Support\n\nSupport it on the [Asset Store](${store}).\n`;
-  assert.equal(layout(section, ['Website/docs/Images/support-card.svg']), '## Support\n\n'
-    + `<a href="${store}"><img src="Website/docs/Images/support-card.svg" alt="Support it on the Asset Store." width="100%"></a>\n`);
+  const images = ['support-card.svg', 'support-kofi.svg', 'support-store.svg'].map((name) => `Website/docs/Images/${name}`);
+  const section = `## Support\n\nSupport it on [Ko-fi](${kofi}) or the [Asset Store](${store}).\n`;
+  assert.equal(layout(section, images), '## Support\n\n'
+    + `<a href="${kofi}"><img src="Website/docs/Images/support-card.svg" alt="Support it on Ko-fi or the Asset Store." width="100%"></a>\n`
+    + `<p><a href="${kofi}"><img src="Website/docs/Images/support-kofi.svg" alt="Support on Ko-fi" height="48"></a>&nbsp;&nbsp;`
+    + `<a href="${store}"><img src="Website/docs/Images/support-store.svg" alt="Unity Asset Store" height="48"></a></p>\n`);
   assert.equal(layout(section), section, 'without the card image the section stays as it is');
+});
+
+test('the donation card links the Asset Store without a Ko-fi link, and drops a button without its image', () => {
+  const store = 'https://assetstore.unity.com/packages/package/1';
+  assert.equal(layout(`## Support\n\nSupport it on the [Asset Store](${store}).\n`, ['Website/docs/Images/support-card.svg']), '## Support\n\n'
+    + `<a href="${store}"><img src="Website/docs/Images/support-card.svg" alt="Support it on the Asset Store." width="100%"></a>\n`);
 });
 
 test('images and the banner stay as they are, without a light variant', () => {
