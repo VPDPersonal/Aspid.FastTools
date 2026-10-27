@@ -11,7 +11,7 @@
  * - a section that is only a list of `[Link](…) — summary` items becomes a row of link tiles;
  * - the help section becomes the site's call to action (src/components/SupportPanel), without the licence line;
  * - the donation sentence gives way to the image of the site's donation card (src/components/DonatePanel), linking
- *   the Asset Store (`Website/docs/Images/support-card.svg`); the sentence becomes its alt text.
+ *   Ko-fi, or the Asset Store without it (`Website/docs/Images/support-card.svg`); the sentence becomes its alt text.
  * The README shows only the dark images: a <picture> per theme follows the system theme, not GitHub's, so it showed the
  * light ones on a dark GitHub page.
  * All file URLs are already relative to the README.
@@ -194,20 +194,23 @@ function supportPanel(tree, repository) {
 }
 
 /**
- * The donation section: one sentence linking the Asset Store. GitHub cannot style a card, so the sentence gives way to
- * an image of the site's one, linking the store.
+ * The donation section: one sentence linking Ko-fi and the Asset Store. GitHub cannot style a card, and an image links
+ * one place, so the sentence gives way to an image of the site's card linking Ko-fi, or the store without it. The
+ * repository's Sponsor button (.github/FUNDING.yml) lists both.
  */
 function donateCard(tree, {images, exists}) {
+  const isKofi = (url) => /^https:\/\/ko-fi\.com\//.test(url);
   const isStore = (url) => /^https:\/\/assetstore\.unity\.com\//.test(url);
   const card = `${images}/support-card.svg`;
   const index = tree.children.findIndex((node, at) => isHeading(node, 2) && tree.children[at + 1]?.type === 'paragraph'
-    && tree.children[at + 1].children.some((part) => part.type === 'link' && isStore(part.url))
+    && tree.children[at + 1].children.some((part) => part.type === 'link' && (isKofi(part.url) || isStore(part.url)))
     && (!tree.children[at + 2] || tree.children[at + 2].type === 'heading'));
   if (index === -1 || !exists(card)) return;
   const sentence = tree.children[index + 1].children;
-  const store = escape(sentence.find((part) => part.type === 'link' && isStore(part.url)).url);
+  const link = sentence.find((part) => part.type === 'link' && isKofi(part.url))
+    ?? sentence.find((part) => part.type === 'link' && isStore(part.url));
   const alt = escape(sentence.map(function text(part) { return part.value ?? part.children?.map(text).join('') ?? ''; }).join(''));
-  tree.children[index + 1] = html(`<a href="${store}">${image(card, alt, ' width="100%"')}</a>`);
+  tree.children[index + 1] = html(`<a href="${escape(link.url)}">${image(card, alt, ' width="100%"')}</a>`);
 }
 
 

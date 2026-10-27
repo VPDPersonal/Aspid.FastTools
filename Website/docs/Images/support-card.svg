@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="880" height="128" viewBox="0 0 880 128" role="img" aria-label="Enjoying Aspid.FastTools? Support on the Asset Store" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
-  <title>Enjoying Aspid.FastTools? Support on the Asset Store</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="128" viewBox="0 0 880 128" role="img" aria-label="Enjoying Aspid.FastTools? Support on Ko-fi" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
+  <title>Enjoying Aspid.FastTools? Support on Ko-fi</title>
   <!-- The GitHub twin of the site's DonatePanel (Website/src/components/DonatePanel); the colours are the site's greens. -->
   <defs>
     <linearGradient id="frame-light" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22a04b"/><stop offset="1" stop-color="#177035"/></linearGradient>
@@ -33,5 +33,5 @@
   <text class="text" x="108" y="86" font-size="15">Developed in spare time. Your support keeps it growing.</text>
   <rect class="button" x="584" y="40" width="268" height="48" rx="10"/>
   <use href="#heart" class="ink" transform="translate(606 55) scale(0.75)"/>
-  <text class="ink" x="730" y="69.5" font-size="15" font-weight="600" text-anchor="middle">Support on the Asset Store</text>
+  <text class="ink" x="730" y="69.5" font-size="15" font-weight="600" text-anchor="middle">Support on Ko-fi</text>
 </svg>

@@ -95,12 +95,19 @@ test('the help section becomes the call to action, without the licence line', ()
     + '<p><a href="https://github.com/owner/repo/issues"><b>Open an issue</b></a> · <a href="https://github.com/owner/repo">Star on GitHub</a></p>\n');
 });
 
-test('the donation sentence gives way to the card image, the sentence its alt text', () => {
+test('the donation sentence gives way to the card image linking Ko-fi, the sentence its alt text', () => {
+  const kofi = 'https://ko-fi.com/owner';
   const store = 'https://assetstore.unity.com/packages/package/1';
-  const section = `## Support\n\nSupport it on the [Asset Store](${store}).\n`;
+  const section = `## Support\n\nSupport it on [Ko-fi](${kofi}) or the [Asset Store](${store}).\n`;
   assert.equal(layout(section, ['Website/docs/Images/support-card.svg']), '## Support\n\n'
-    + `<a href="${store}"><img src="Website/docs/Images/support-card.svg" alt="Support it on the Asset Store." width="100%"></a>\n`);
+    + `<a href="${kofi}"><img src="Website/docs/Images/support-card.svg" alt="Support it on Ko-fi or the Asset Store." width="100%"></a>\n`);
   assert.equal(layout(section), section, 'without the card image the section stays as it is');
+});
+
+test('without a Ko-fi link the donation card links the Asset Store', () => {
+  const store = 'https://assetstore.unity.com/packages/package/1';
+  assert.match(layout(`## Support\n\nSupport it on the [Asset Store](${store}).\n`, ['Website/docs/Images/support-card.svg']),
+    new RegExp(`^## Support\\n\\n<a href="${store}">`));
 });
 
 test('images and the banner stay as they are, without a light variant', () => {
