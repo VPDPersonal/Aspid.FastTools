@@ -1,7 +1,7 @@
 /*
  * The donation card closes the introduction, after the support panel. Unlike the quiet panels above it, it carries
  * the brand green: a green wash with a glowing gradient frame, a heart that beats every few seconds and a filled
- * button like the support panel's primary action, only larger.
+ * button to Ko-fi like the support panel's primary action, only larger, with an outlined Asset Store button under it.
  */
 
 .donate {
@@ -50,6 +50,7 @@
   display: inline-flex;
   flex: none;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   padding: 13px 22px;
   color: var(--venom-accent-fill-ink);
@@ -67,6 +68,16 @@
   transform: translateY(-1px);
   filter: brightness(1.06);
   box-shadow: 0 12px 26px -10px var(--donate-green);
+}
+.actions { display: flex; flex: none; flex-direction: column; gap: 10px; }
+/* The Asset Store button: the same size, outlined instead of filled, so Ko-fi stays the main action. */
+:global(.markdown) a.action.secondary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
+  color: var(--venom-fg-strong);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--donate-green) 55%, transparent);
+}
+:global(.markdown) a.action.secondary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover {
+  box-shadow: inset 0 0 0 1px var(--donate-green);
 }
 .icon { flex: none; width: 17px; height: 17px; fill: currentColor; }
 :global(.markdown) a.action:hover .icon { animation: beat 1.2s ease-in-out infinite; }
