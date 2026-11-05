@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] — 2026-10-22
+## [1.0.0] — 2026-11-05
 
 First stable release. Unity **6000.0.53f1** or newer; every Inspector feature works in both IMGUI and UI Toolkit. The `1.0.0-rc.*` prereleases and their notes are on [GitHub Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases).
 
