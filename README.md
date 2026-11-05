@@ -6,7 +6,7 @@
 </picture>
 
 [![Unity 6000.0.53f1+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
-[![Preview 1.0.0-rc.9](Website/docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.9)
+[![Release 1.0.0](Website/docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
 [![MIT License](Website/docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools is a Unity package that takes the routine out of serialization, profiling and editor code.
@@ -29,10 +29,10 @@ Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](ht
 </table>
 
 ```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm
 ```
 
-The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
+The URL installs the latest release; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
 
 Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store, skip the git URL and install it from **My Assets** in the Package Manager.
 
