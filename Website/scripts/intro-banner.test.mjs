@@ -17,7 +17,7 @@ for (const [language, file] of Object.entries(introduction)) {
 
   test(`${language} introduction: the banner, the status badges and the install panel`, () => {
     assert.equal(tree.children[0].name, 'IntroBanner');
-    assert.match(attribute(tree.children[0], 'src'), /aspid_fasttools_readme_banner\.png$/);
+    assert.equal(attribute(tree.children[0], 'src'), 'https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png');
     const kinds = [...markdown.matchAll(/status-badge-(\w+)\.svg/g)].map(match => match[1]);
     assert.ok(kinds.length > 0);
     assert.deepEqual(find(tree, element('StatusBadge')).map(node => attribute(node, 'kind')), kinds);

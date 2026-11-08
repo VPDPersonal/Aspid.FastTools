@@ -1,8 +1,8 @@
 <!-- Generated from Website/docs/README.md. Edit that file, then run npm --prefix Website run sync-readme. -->
 
 <picture>
-  <source srcset="Website/docs/Images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="Website/docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.webp" type="image/webp" />
+  <img src="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png" alt="Aspid.FastTools" />
 </picture>
 
 [![Minimum Unity version](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)

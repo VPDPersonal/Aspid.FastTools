@@ -1,6 +1,6 @@
 <picture>
-  <source srcset="Images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.webp" type="image/webp" />
+  <img src="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png" alt="Aspid.FastTools" />
 </picture>
 
 [![Unity 6000.0.53f1+](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
