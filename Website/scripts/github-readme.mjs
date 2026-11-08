@@ -225,7 +225,7 @@ export function githubLayout(tree, options) {
   function sharedBadges(node) {
     if (node.type === 'link') {
       const badge = node.children?.find((child) => child.type === 'image'
-        && child.url.startsWith('https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/'));
+        && child.url.startsWith('https://vpdpersonal.github.io/VPDPersonal/badges/'));
       if (badge?.url.endsWith('/status-badge-unity.svg')) badge.alt = 'Minimum Unity version';
       if (badge?.url.endsWith('/status-badge-release.svg')) {
         badge.alt = 'Release';

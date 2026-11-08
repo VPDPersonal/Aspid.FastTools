@@ -5,9 +5,9 @@
   <img src="Website/docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
 </picture>
 
-[![Minimum Unity version](https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
-[![Release](https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/latest)
-[![MIT License](https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
+[![Minimum Unity version](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
+[![Release](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/latest)
+[![MIT License](https://vpdpersonal.github.io/VPDPersonal/badges/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools is a Unity package that takes the routine out of serialization, profiling and editor code.
 

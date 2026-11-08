@@ -18,7 +18,7 @@ function layout(markdown, files = []) {
 }
 
 test('shared badges keep their URLs while GitHub alt text and release links follow the live channel', () => {
-  const base = 'https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/aspid-fasttools';
+  const base = 'https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools';
   const stable = layout(`[![Unity 6000.0.53f1+](${base}/status-badge-unity.svg)](#installation)\n`
     + `[![Release 1.0.0](${base}/status-badge-release.svg)](${repository}/releases/tag/v1.0.0)`);
   assert.match(stable, /!\[Minimum Unity version\]/);

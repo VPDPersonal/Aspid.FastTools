@@ -52,8 +52,8 @@ WHOLE='s/(?<![0-9.])\Q$old\E(?![0-9A-Za-z-]|\.[0-9A-Za-z])/$ENV{NEW}/g if define
 for f in "$DOCS/README.md" "$RU_DOCS/README.md"; do
   perl -0pi -e 'my ($old) = /\[!\[(?:Preview|Release) ([^\]]+)\]/; '"$WHOLE"';
     s/\[!\[(?:Preview|Release) /[![$ENV{LABEL} /g;
-    s{(VPDPersonal/VPDPersonal/main/badges/aspid-fasttools/)status-badge-(?:release|preview)\.svg}{$1status-badge-$ENV{BADGE_KIND}.svg}g;
-    s{(VPDPersonal/VPDPersonal/main/badges/aspid-fasttools/)(?:preview/)?status-badge-unity\.svg}{$1$ENV{UNITY_CHANNEL}status-badge-unity.svg}g;
+    s{(vpdpersonal\.github\.io/VPDPersonal/badges/aspid-fasttools/)status-badge-(?:release|preview)\.svg}{$1status-badge-$ENV{BADGE_KIND}.svg}g;
+    s{(vpdpersonal\.github\.io/VPDPersonal/badges/aspid-fasttools/)(?:preview/)?status-badge-unity\.svg}{$1$ENV{UNITY_CHANNEL}status-badge-unity.svg}g;
     s/\.git#upm(?:-preview)?\b/.git#$ENV{BRANCH}/g;
     s/the latest (?:preview|release);/the $ENV{EN};/;
     s/на последнюю (?:preview-)?версию;/на $ENV{RU};/' "$f"
