@@ -16,7 +16,6 @@ const ANALYZER_RELEASES = 'Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/A
 const DOCS = 'Website/docs/README.md';
 const RU_DOCS = 'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md';
 const SKILLS_PAGES = ['Website/docs/13-agent-skills.md', 'Website/i18n/ru/docusaurus-plugin-content-docs/current/13-agent-skills.md'];
-const BADGE = 'Website/docs/Images/status-badge-preview.svg';
 const RELEASES = 'https://github.com/VPDPersonal/Aspid.FastTools/releases/tag';
 const FILES = [
   'scripts/set-version.sh',
@@ -31,7 +30,6 @@ const FILES = [
   'Website/scripts/github-readme.mjs',
   DOCS,
   RU_DOCS,
-  BADGE,
   ...SKILLS_PAGES,
 ];
 // The analyzer rules that a stable release ships; the real file may be empty right after a release.
@@ -117,8 +115,9 @@ test('a prerelease moves the files to the preview channel', (t) => {
     assert.deepEqual([...new Set(installBranches(read(dir, file)))], ['upm-preview'], file);
   }
   for (const file of SKILLS_PAGES) assert.deepEqual([...new Set(skillsChannels(read(dir, file)))], ['skills-preview'], file);
-  assert.match(read(dir, BADGE), />Preview<\/text>/);
-  assert.match(read(dir, 'README.md'), /Preview 1\.0\.0-rc\.99/);
+  assert.match(read(dir, DOCS), /aspid-fasttools\/status-badge-preview\.svg/);
+  assert.match(read(dir, DOCS), /aspid-fasttools\/preview\/status-badge-unity\.svg/);
+  assert.match(read(dir, 'README.md'), /\[!\[Preview\]/);
 
   for (const file of ['CHANGELOG.md', 'Website/i18n/ru/CHANGELOG.md']) {
     const changelog = read(dir, file);
@@ -144,7 +143,8 @@ test('a stable version moves the files to the release channel and ships the anal
     assert.deepEqual([...new Set(installBranches(read(dir, file)))], ['upm'], file);
   }
   for (const file of SKILLS_PAGES) assert.deepEqual([...new Set(skillsChannels(read(dir, file)))], ['skills'], file);
-  assert.match(read(dir, BADGE), />Release<\/text>/);
+  assert.match(read(dir, DOCS), /aspid-fasttools\/status-badge-release\.svg/);
+  assert.doesNotMatch(read(dir, DOCS), /aspid-fasttools\/preview\//);
   assert.match(read(dir, 'CHANGELOG.md'), /^## \[99\.0\.0\] — \d{4}-\d{2}-\d{2}$/m);
 
   assert.ok(read(dir, `${ANALYZER_RELEASES}.Shipped.md`).includes(`\n## Release ${STABLE}\n`));
@@ -248,10 +248,10 @@ const OUT_OF_STEP = [
     message: new RegExp(`has no "${label} ${literal(current)}" badge`),
   },
   {
-    name: 'a badge label of the other channel',
-    file: BADGE,
-    change: (text) => text.replace(`>${label}</text>`, `>${otherLabel}</text>`),
-    message: new RegExp(`the badge text is not "${label}"`),
+    name: 'a badge URL from the wrong shared channel',
+    file: DOCS,
+    change: (text) => text.replaceAll('status-badge-' + (branch === 'upm' ? 'release' : 'preview') + '.svg', 'status-badge-wrong.svg'),
+    message: /shared badge URLs do not match/,
   },
   {
     name: 'an install URL of the other channel',

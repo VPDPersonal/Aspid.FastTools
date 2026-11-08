@@ -221,6 +221,24 @@ function donateCard(tree, {images, exists}) {
  * @param options.exists whether a URL relative to the README names a file
  */
 export function githubLayout(tree, options) {
+  // The site's chips describe its documented version; GitHub images follow the published channel automatically.
+  function sharedBadges(node) {
+    if (node.type === 'link') {
+      const badge = node.children?.find((child) => child.type === 'image'
+        && child.url.startsWith('https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/'));
+      if (badge?.url.endsWith('/status-badge-unity.svg')) badge.alt = 'Minimum Unity version';
+      if (badge?.url.endsWith('/status-badge-release.svg')) {
+        badge.alt = 'Release';
+        node.url = `${options.repository}/releases/latest`;
+      }
+      if (badge?.url.endsWith('/status-badge-preview.svg')) {
+        badge.alt = 'Preview';
+        node.url = `${options.repository}/releases`;
+      }
+    }
+    node.children?.forEach(sharedBadges);
+  }
+  sharedBadges(tree);
   siteLinks(tree, options.site);
   linkRow(tree, options.site, options.locales);
   installCard(tree, options);

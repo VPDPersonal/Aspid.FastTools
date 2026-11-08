@@ -1,4 +1,4 @@
-// Check that the files scripts/set-version.sh writes carry the package.json version whole and its channel: a stable
+// Check that documentation carries the package.json version whole and its channel: a stable
 // version installs from `upm` under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one; the
 // Agent Skills page installs the skills from the matching `skills` or `skills-preview` branch.
 // Both CHANGELOGs must have the version's section, dated as set-version.sh writes it, and its release link.
@@ -15,7 +15,6 @@ const FILES = [
   'README.md',
   'Website/docs/README.md',
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
-  'Website/docs/Images/status-badge-preview.svg',
 ];
 const SKILLS_PAGES = [
   'Website/docs/13-agent-skills.md',
@@ -45,11 +44,17 @@ const checkInstallUrls = (file, text) => {
 
 for (const file of FILES) {
   const text = readFileSync(file, 'utf8');
-  if (!whole(`${label} ${version}`).test(text)) fail(file, `has no "${label} ${version}" badge; ${fix}`);
-  if (file.endsWith('.svg')) {
-    if (!text.includes(`>${label}</text>`)) fail(file, `the badge text is not "${label}"; ${fix}`);
+  const badge = `https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/aspid-fasttools/status-badge-${branch === 'upm' ? 'release' : 'preview'}.svg`;
+  const unity = `https://raw.githubusercontent.com/VPDPersonal/VPDPersonal/main/badges/aspid-fasttools/${branch === 'upm' ? '' : 'preview/'}status-badge-unity.svg`;
+  if (!text.includes(badge) || !text.includes(unity)) fail(file, `the shared badge URLs do not match #${branch}; ${fix}`);
+  if (file === 'README.md') {
+    if (!text.includes(`[![${label}](${badge})]`)) fail(file, `has no dynamic "${label}" badge; ${fix}`);
+    const target = `${REPOSITORY}/releases${branch === 'upm' ? '/latest' : ''})`;
+    if (!text.includes(target)) fail(file, `the dynamic badge does not link ${target}; ${fix}`);
+    checkInstallUrls(file, text);
     continue;
   }
+  if (!whole(`${label} ${version}`).test(text)) fail(file, `has no "${label} ${version}" badge; ${fix}`);
   if (!text.includes(`/releases/tag/v${version})`)) fail(file, `the badge does not link the v${version} release; ${fix}`);
   checkInstallUrls(file, text);
 }
