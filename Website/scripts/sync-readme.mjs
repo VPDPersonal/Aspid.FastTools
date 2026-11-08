@@ -49,6 +49,7 @@ function generate() {
     site,
     locales,
     repository,
+    installation: 'https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools',
     previews: path.posix.relative(destinationDir, 'Website/docs/Images/readme-previews'),
     images: path.posix.relative(destinationDir, 'Website/docs/Images'),
     exists: (url) => fs.existsSync(path.join(repoDir, destinationDir, url)),

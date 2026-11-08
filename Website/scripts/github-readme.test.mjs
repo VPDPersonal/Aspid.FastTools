@@ -13,6 +13,7 @@ const repository = 'https://github.com/owner/repo';
 function layout(markdown, files = []) {
   const tree = processor.parse(markdown);
   githubLayout(tree, {site, locales: ['en', 'ru'], repository, previews: 'Website/docs/Images/readme-previews',
+    installation: 'https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools',
     images: 'Website/docs/Images', exists: (url) => files.includes(url)});
   return processor.stringify(tree);
 }
@@ -74,11 +75,16 @@ test('the note under the install URL links the install panel on the site', () =>
 
 test('the install instruction becomes a card with the walk-through and the steps', () => {
   const install = '## Installation\n\nIn **Window → Package Manager**, paste this URL:\n\n```text\nhttps://github.com/owner/repo.git#upm\n```\n\nThe URL installs the latest release.\n';
-  const result = layout(install, ['Website/docs/Images/readme-previews/install.webp']);
-  assert.match(result, /^## Installation\n\n<table>\n<tr>\n<td width="56%"><img src="Website\/docs\/Images\/readme-previews\/install.webp"/);
+  const result = layout(install);
+  assert.match(result, /^## Installation\n\n<table>\n<tr>\n<td width="56%"><picture>/);
+  assert.ok(result.includes('srcset="https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools/install.webp"'));
+  assert.ok(result.includes('src="https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools/install.png"'));
   assert.match(result, /<ol>\n<li>Open <b>Window → Package Manager<\/b><\/li>\n.*\n<li>Paste the URL and press <b>Install<\/b><\/li>\n<\/ol>/);
   assert.match(result, /<\/table>\n\n```text\nhttps:\/\/github.com\/owner\/repo.git#upm\n```/);
-  assert.match(layout(install), /^## Installation\n\nIn \*\*Window → Package Manager\*\*, paste this URL:/);
+  const preview = layout(install.replaceAll('#upm', '#upm-preview'));
+  assert.ok(preview.includes('/installation/aspid-fasttools/preview/install.webp'));
+  assert.ok(preview.includes('/installation/aspid-fasttools/preview/install.png'));
+  assert.match(preview, /```text\nhttps:\/\/github.com\/owner\/repo.git#upm-preview\n```/);
 });
 
 test('a feature becomes a card with its dark preview only, its summary as HTML', () => {
