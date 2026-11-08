@@ -92,7 +92,8 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
     const isBannerImage = (node) => node?.type === 'mdxJsxFlowElement' && node.name === 'img'
       && node.attributes.some((attribute) => attribute.name === 'src'
         && typeof attribute.value === 'string'
-        && attribute.value.endsWith('/aspid_fasttools_readme_banner.png'));
+        && (attribute.value.endsWith('/aspid_fasttools_readme_banner.png')
+          || attribute.value === 'https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png'));
     const banner = tree.children.find((node) => node.type === 'mdxJsxFlowElement' && ['img', 'picture'].includes(node.name));
     const image = banner?.name === 'picture' ? banner.children.find(isBannerImage) : banner;
     if (isBannerImage(image)) {

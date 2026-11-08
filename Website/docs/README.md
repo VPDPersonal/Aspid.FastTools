@@ -1,11 +1,11 @@
 <picture>
-  <source srcset="Images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.webp" type="image/webp" />
+  <img src="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png" alt="Aspid.FastTools" />
 </picture>
 
-[![Unity 6000.0.53f1+](Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
-[![Release 1.0.0](Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
-[![MIT License](Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
+[![Unity 6000.0.53f1+](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
+[![Release 1.0.0](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
+[![MIT License](https://vpdpersonal.github.io/VPDPersonal/badges/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools is a Unity package that takes the routine out of serialization, profiling and editor code.
 

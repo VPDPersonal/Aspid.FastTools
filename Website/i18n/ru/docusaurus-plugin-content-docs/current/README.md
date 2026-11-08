@@ -1,11 +1,11 @@
 <picture>
-  <source srcset="../../../../docs/Images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="../../../../docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.webp" type="image/webp" />
+  <img src="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png" alt="Aspid.FastTools" />
 </picture>
 
-[![Unity 6000.0.53f1+](../../../../docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
-[![Release 1.0.0](../../../../docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
-[![MIT License](../../../../docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
+[![Unity 6000.0.53f1+](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
+[![Release 1.0.0](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
+[![MIT License](https://vpdpersonal.github.io/VPDPersonal/badges/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации, профилирования и редакторского кода.
 

@@ -6,8 +6,16 @@ import styles from './styles.module.css';
 const BUBBLES = [[15.6, 0.7, 0], [18.2, 0.9, 0.14], [20.6, 0.6, 0.07], [22.6, 0.75, 0.21]];
 const SPARKS = [[0, -11], [-8, -8], [8, -8], [-11, -2], [11, -2], [-4, -12], [4, -12]];
 
-// The marks from the README badge SVGs (`Website/docs/Images/status-badge-*.svg`), drawn inline so they can move.
+// The marks from VPDPersonal's shared README badge SVGs, drawn inline so they can follow the site theme and move.
 const ICONS = {
+  release: (
+    <svg className={styles.icon} viewBox="9 7 20 18" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="19" cy="10.5" r="1.7" />
+        <path d="M19 12.2V23 M15.5 15h7 M12 17v1a7 5 0 0 0 14 0v-1 M12 17l2 1.5 M26 17l-2 1.5" />
+      </g>
+    </svg>
+  ),
   // Unity mark: https://github.com/simple-icons/simple-icons/blob/develop/icons/unity.svg
   unity: (
     <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
