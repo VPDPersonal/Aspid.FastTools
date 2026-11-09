@@ -135,7 +135,8 @@ test('a stable version moves the files to the release channel and ships the anal
   assert.equal(result.status, 0, output(result));
   assert.equal(version(dir), STABLE);
   assertVersionChecked(dir);
-  assert.equal(/The channel changed/.test(result.stdout), current.includes('-'), result.stdout);
+  assert.doesNotMatch(result.stdout, /re-record/);
+  assert.match(read(dir, 'README.md'), /installation\/aspid-fasttools\/install\.webp/);
 
   for (const file of [DOCS, RU_DOCS]) {
     assert.match(read(dir, file), /\[!\[Release 99\.0\.0\]/, file);

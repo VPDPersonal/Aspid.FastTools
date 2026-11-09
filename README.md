@@ -17,7 +17,7 @@ Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](ht
 
 <table>
 <tr>
-<td width="56%"><img src="Website/docs/Images/readme-previews/install.webp" alt="Package Manager installs Aspid.FastTools from its git URL" width="100%"></td>
+<td width="56%"><picture><source srcset="https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools/install.webp" type="image/webp"><img src="https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools/install.png" alt="Package Manager installs Aspid.FastTools from its git URL" width="100%"></picture></td>
 <td width="44%">
 <ol>
 <li>Open <b>Window → Package Manager</b></li>
