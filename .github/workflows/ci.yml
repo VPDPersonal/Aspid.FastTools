@@ -162,7 +162,7 @@ jobs:
           fi
       # The SDK pinned in global.json built the committed DLLs.
       - if: steps.changes.outputs.run == 'true'
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
       # Delete them first: a build that stops copying a DLL into the package then shows as a deleted file in the diff,
@@ -252,7 +252,7 @@ jobs:
       # The test projects target net6.0; the SDK pinned in global.json builds them,
       # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
       - if: steps.changes.outputs.run == 'true'
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
           dotnet-version: 6.0.x
