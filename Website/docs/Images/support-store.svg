@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="48" viewBox="0 0 240 48" role="img" aria-label="Unity Asset Store" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif">
+  <title>Unity Asset Store</title>
+  <!-- The README's Asset Store button under support-card.svg: the outlined action of the site's DonatePanel. -->
+  <style>
+    .button { fill: none; stroke: #22a04b; stroke-opacity: 0.55; }
+    .ink { fill: #1f2328; }
+    @media (prefers-color-scheme: dark) {
+      .button { stroke: #5cb46b; }
+      .ink { fill: #e6edf3; }
+    }
+  </style>
+  <rect class="button" x="0.5" y="0.5" width="239" height="47" rx="9.5"/>
+  <text class="ink" x="120" y="29.5" font-size="15" font-weight="600" text-anchor="middle">Unity Asset Store</text>
+</svg>

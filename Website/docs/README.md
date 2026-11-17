@@ -140,4 +140,4 @@ Distributed under the [MIT License](https://github.com/VPDPersonal/Aspid.FastToo
 
 ## Support the project
 
-Aspid.FastTools is developed in spare time. If it helps you, support its development on the [Unity Asset Store](https://assetstore.unity.com/packages/package/2333465).
+Aspid.FastTools is developed in spare time. If it helps you, support its development on [Ko-fi](https://ko-fi.com/vpdaspid) or the [Unity Asset Store](https://assetstore.unity.com/packages/package/2333465).
