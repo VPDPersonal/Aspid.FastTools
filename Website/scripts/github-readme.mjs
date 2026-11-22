@@ -194,6 +194,23 @@ function supportPanel(tree, repository) {
     html(`<p>${TEXT.support} ${TEXT.hint}</p>\n<p><a href="${issues}"><b>${TEXT.issue}</b></a> · <a href="${repository}">${TEXT.star}</a></p>`));
 }
 
+/** Put the two donation actions on their own row under the support heading. */
+function donationButtons(tree) {
+  const index = tree.children.findIndex((node) => isHeading(node, 2) && inline(node.children) === 'Support the project');
+  const paragraph = tree.children[index + 1];
+  if (index === -1 || paragraph?.type !== 'paragraph') return;
+
+  const links = paragraph.children.filter((node) => node.type === 'link');
+  const kofi = links.find((link) => link.url.startsWith('https://ko-fi.com/'));
+  const store = links.find((link) => link.url.startsWith('https://assetstore.unity.com/'));
+  if (!kofi || !store || links.length !== 2) return;
+
+  function button(link, file) {
+    return {...link, children: [{type: 'image', url: `Website/docs/Images/${file}`, alt: inline(link.children)}]};
+  }
+  paragraph.children = [button(kofi, 'support-kofi.svg'), {type: 'text', value: ' '}, button(store, 'support-store.svg')];
+}
+
 /**
  * @param tree the README's Markdown tree, its file URLs relative to the README
  * @param options.site the documentation site, ending in `/`
@@ -229,4 +246,5 @@ export function githubLayout(tree, options) {
   featureCards(tree, options);
   linkTiles(tree);
   supportPanel(tree, options.repository);
+  donationButtons(tree);
 }

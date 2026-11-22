@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="242" height="46" viewBox="0 0 242 46">
+  <title>Buy on Unity Asset Store</title>
+  <rect x=".5" y=".5" width="241" height="45" rx="9" fill="#25332c" stroke="#71b887"/>
+  <g fill="none" stroke="#a7edbc" stroke-width="1.8" stroke-linejoin="round">
+    <path d="m24 12 9 5v11l-9 5-9-5V17z"/>
+    <path d="m15 17 9 5 9-5m-9 5v11"/>
+  </g>
+  <text x="44" y="28.5" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#f0fff4">Buy on Unity Asset Store</text>
+</svg>

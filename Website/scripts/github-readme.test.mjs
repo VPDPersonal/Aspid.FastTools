@@ -117,10 +117,14 @@ test('the help section becomes the call to action, without the licence line', ()
     + '<p><a href="https://github.com/owner/repo/issues"><b>Open an issue</b></a> · <a href="https://github.com/owner/repo">Star on GitHub</a></p>\n');
 });
 
-test('the donation links remain readable Markdown in the README', () => {
+test('the donation buttons retain both destinations and accessible link names', () => {
   const section = '## Support the project\n\n[Leave a tip on Ko-fi](https://ko-fi.com/owner) or '
     + '[buy the package on the Unity Asset Store](https://assetstore.unity.com/packages/package/1).\n';
-  assert.equal(layout(section), section);
+  assert.equal(layout(section), '## Support the project\n\n'
+    + '[![Leave a tip on Ko-fi](Website/docs/Images/support-kofi.svg)](https://ko-fi.com/owner) '
+    + '[![buy the package on the Unity Asset Store](Website/docs/Images/support-store.svg)](https://assetstore.unity.com/packages/package/1)\n');
+  const singleLink = '## Support the project\n\n[Ko-fi](https://ko-fi.com/owner)\n';
+  assert.equal(layout(singleLink), singleLink);
 });
 
 test('images and the banner stay as they are, without a light variant', () => {

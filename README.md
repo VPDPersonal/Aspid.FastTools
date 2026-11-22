@@ -180,4 +180,4 @@ Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store
 
 ## Support the project
 
-If Aspid.FastTools saves you time, you can [leave a tip on Ko-fi](https://ko-fi.com/vpdaspid) or [buy the package on the Unity Asset Store](https://assetstore.unity.com/packages/package/2333465).
+[![leave a tip on Ko-fi](Website/docs/Images/support-kofi.svg)](https://ko-fi.com/vpdaspid) [![buy the package on the Unity Asset Store](Website/docs/Images/support-store.svg)](https://assetstore.unity.com/packages/package/2333465)
