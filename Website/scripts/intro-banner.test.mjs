@@ -55,6 +55,9 @@ for (const [language, file] of Object.entries(introduction)) {
     assert.equal(more.length, 0);
     assert.match(attribute(donate, 'kofi'), /^https:\/\/ko-fi\.com\//);
     assert.match(attribute(donate, 'store'), /^https:\/\/assetstore\.unity\.com\//);
+    assert.match(attribute(donate, 'kofiLabel'), /Ko-fi/);
+    assert.match(attribute(donate, 'storeLabel'), /Unity Asset Store/);
+    assert.ok(donate.children.some(node => node.type === 'text' && node.value.includes('Aspid.FastTools')));
     assert.equal(find(donate, node => node.type === 'link').length, 0, 'the buttons carry the links');
   });
 

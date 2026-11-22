@@ -1,41 +1,25 @@
 import React from 'react';
-import clsx from 'clsx';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import cup from './kofi-cup.png';
 import styles from './styles.module.css';
 
-const TEXT = {
-  en: {title: 'Enjoying Aspid.FastTools?', kofi: 'Support on Ko-fi', store: 'Asset Store'},
-  ru: {title: 'Нравится Aspid.FastTools?', kofi: 'Поддержать на Ko-fi', store: 'Asset Store'},
-};
-
-const HEART = 'M12 21s-7.5-4.6-9.6-9.4C1 8.4 2.9 4.5 6.6 4.5c2.2 0 3.7 1.2 5.4 3.2 1.7-2 3.2-3.2 5.4-3.2 3.7 0 5.6 3.9 4.2 7.1C19.5 16.4 12 21 12 21Z';
-
-/**
- * The introduction's donation card: a beating heart, the README's sentence, a filled button to Ko-fi and a quieter
- * one to the Asset Store.
- */
-export default function DonatePanel({kofi, store, children}) {
-  const {i18n} = useDocusaurusContext();
-  const text = TEXT[i18n.currentLocale] ?? TEXT.en;
+/** Show the introduction's localized support copy and actions. */
+export default function DonatePanel({kofi, kofiLabel, store, storeLabel, children}) {
   return (
     <section className={styles.donate}>
-      <span className={styles.badge} aria-hidden="true">
-        <svg className={styles.heart} viewBox="0 0 24 24"><path d={HEART} /></svg>
-      </span>
-      <div className={styles.copy}>
-        <p className={styles.title}>{text.title}</p>
-        <p className={styles.text}>{children}</p>
-      </div>
+      <p className={styles.copy}>{children}</p>
       <div className={styles.actions}>
         {kofi && (
-          <a className={styles.action} href={kofi} target="_blank" rel="noopener noreferrer">
-            <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
-            {text.kofi}
+          <a href={kofi} target="_blank" rel="noopener noreferrer">
+            <img className={styles.icon} src={cup} alt="" />
+            {kofiLabel}
           </a>
         )}
         {store && (
-          <a className={clsx(styles.action, kofi && styles.secondary)} href={store} target="_blank" rel="noopener noreferrer">
-            {text.store}
+          <a className={styles.store} href={store} target="_blank" rel="noopener noreferrer">
+            <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
+              <path d="m12 2 9 5v10l-9 5-9-5V7z M3 7l9 5 9-5 M12 12v10" />
+            </svg>
+            {storeLabel}
           </a>
         )}
       </div>

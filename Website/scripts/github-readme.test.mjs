@@ -118,11 +118,18 @@ test('the help section becomes the call to action, without the licence line', ()
 });
 
 test('the donation buttons retain both destinations and accessible link names', () => {
-  const section = '## Support the project\n\n[Leave a tip on Ko-fi](https://ko-fi.com/owner) or '
+  const section = '## Support the project\n\nYour support helps maintain the package.\n\n[Leave a tip on Ko-fi](https://ko-fi.com/owner) or '
     + '[buy the package on the Unity Asset Store](https://assetstore.unity.com/packages/package/1).\n';
-  assert.equal(layout(section), '## Support the project\n\n'
-    + '[![Leave a tip on Ko-fi](Website/docs/Images/support-kofi.svg)](https://ko-fi.com/owner) '
-    + '[![buy the package on the Unity Asset Store](Website/docs/Images/support-store.svg)](https://assetstore.unity.com/packages/package/1)\n');
+  const result = layout(section);
+  assert.match(result, /Your support helps maintain the package\.\n\n<p>/);
+  for (const [url, file, label] of [
+    ['https://ko-fi.com/owner', 'support-kofi.svg', 'Leave a tip on Ko-fi'],
+    ['https://assetstore.unity.com/packages/package/1', 'support-store.svg', 'buy the package on the Unity Asset Store'],
+  ]) {
+    const src = `Website/docs/Images/${file}`;
+    assert.ok(result.includes(`<a href="${url}"><picture><source media="(max-width: 640px)" srcset="${src}" width="100%" height="48" />`
+      + `<img src="${src}" alt="${label}" width="50%" height="48"></picture></a>`));
+  }
   const singleLink = '## Support the project\n\n[Ko-fi](https://ko-fi.com/owner)\n';
   assert.equal(layout(singleLink), singleLink);
 });

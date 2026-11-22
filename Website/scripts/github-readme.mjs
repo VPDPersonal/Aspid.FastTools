@@ -197,7 +197,7 @@ function supportPanel(tree, repository) {
 /** Put the two donation actions on their own row under the support heading. */
 function donationButtons(tree) {
   const index = tree.children.findIndex((node) => isHeading(node, 2) && inline(node.children) === 'Support the project');
-  const paragraph = tree.children[index + 1];
+  const paragraph = tree.children[index + 2];
   if (index === -1 || paragraph?.type !== 'paragraph') return;
 
   const links = paragraph.children.filter((node) => node.type === 'link');
@@ -206,9 +206,11 @@ function donationButtons(tree) {
   if (!kofi || !store || links.length !== 2) return;
 
   function button(link, file) {
-    return {...link, children: [{type: 'image', url: `Website/docs/Images/${file}`, alt: inline(link.children)}]};
+    const src = `Website/docs/Images/${file}`;
+    return `<a href="${escape(link.url)}"><picture><source media="(max-width: 640px)" srcset="${src}" width="100%" height="48" />`
+      + `${image(src, inline(link.children), ' width="50%" height="48"')}</picture></a>`;
   }
-  paragraph.children = [button(kofi, 'support-kofi.svg'), {type: 'text', value: ' '}, button(store, 'support-store.svg')];
+  tree.children[index + 2] = html(`<p>${button(kofi, 'support-kofi.svg')}${button(store, 'support-store.svg')}</p>`);
 }
 
 /**

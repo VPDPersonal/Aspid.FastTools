@@ -1,93 +1,60 @@
-/*
- * The donation card closes the introduction, after the support panel. Unlike the quiet panels above it, it carries
- * the brand green: a green wash with a glowing gradient frame, a heart that beats every few seconds and a filled
- * button to Ko-fi like the support panel's primary action, only larger, with an outlined Asset Store button under it.
- */
-
 .donate {
-  --donate-green: var(--venom-accent-mark);
-  --donate-deep: var(--venom-accent-deep);
-  position: relative;
+  margin-bottom: 1rem;
+  padding: clamp(14px, 3vw, 24px);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 12px;
+  background: var(--venom-panel);
+}
+
+.donate .copy {
+  margin: 0 0 1rem;
+  color: var(--venom-fg);
+}
+
+.actions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+/* Match the specificity of the documentation link styles. */
+:global(.markdown) .actions a:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
   display: flex;
   align-items: center;
-  gap: 22px;
-  margin-bottom: 1rem;
-  padding: 26px 28px;
-  border: 2px solid transparent;
-  border-radius: 14px;
-  background:
-    radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--donate-green) 16%, transparent), transparent 60%) padding-box,
-    radial-gradient(90% 140% at 100% 100%, color-mix(in srgb, var(--donate-deep) 14%, transparent), transparent 60%) padding-box,
-    linear-gradient(var(--venom-bg), var(--venom-bg)) padding-box,
-    linear-gradient(120deg, var(--donate-green), var(--donate-deep)) border-box;
-  box-shadow: 0 18px 44px -24px color-mix(in srgb, var(--donate-green) 70%, transparent);
-}
-
-.badge {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--donate-green) 16%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--donate-green) 35%, transparent);
-}
-.heart { width: 28px; height: 28px; fill: var(--donate-green); animation: beat 2.4s ease-in-out infinite; transform-origin: center; }
-@keyframes beat {
-  0%, 60%, 100% { transform: scale(1); }
-  68% { transform: scale(1.22); }
-  76% { transform: scale(1); }
-  84% { transform: scale(1.14); }
-}
-
-.copy { flex: 1; min-width: 0; }
-.title { max-width: none; margin: 0 0 6px; color: var(--venom-fg-strong); font: 600 1.35rem/1.25 var(--ifm-heading-font-family); letter-spacing: -0.02em; }
-.text { max-width: none; margin: 0; color: var(--venom-fg); font-size: 0.95rem; line-height: 1.55; }
-
-/* Outranks the accent colour and hover underline of the global `.markdown a:not(...)` rule. */
-:global(.markdown) a.action:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 13px 22px;
+  gap: 8px;
+  padding: 8px;
+  min-height: 48px;
+  border: 1px solid var(--venom-accent-mark);
+  border-radius: 8px;
   color: var(--venom-accent-fill-ink);
   background: var(--venom-accent-fill);
-  border-radius: 10px;
-  box-shadow: 0 8px 22px -10px var(--donate-green);
-  font: 600 0.82rem/1.4 var(--ifm-font-family-monospace);
-  letter-spacing: 0.06em;
+  font: 600 0.95rem/1.25 var(--ifm-font-family-base);
+  text-align: center;
   text-decoration: none;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
-:global(.markdown) a.action:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
-  box-shadow: 0 12px 26px -10px var(--donate-green);
-}
-.actions { display: flex; flex: none; flex-direction: column; gap: 10px; }
-/* The Asset Store button: the same size, outlined instead of filled, so Ko-fi stays the main action. */
-:global(.markdown) a.action.secondary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
+:global(.markdown) .actions a.store:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
   color: var(--venom-fg-strong);
-  background: transparent;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--donate-green) 55%, transparent);
+  background: var(--venom-panel);
 }
-:global(.markdown) a.action.secondary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover {
-  box-shadow: inset 0 0 0 1px var(--donate-green);
+:global(.markdown) .actions a:hover {
+  box-shadow: 0 0 0 2px var(--venom-accent-mark);
 }
-.icon { flex: none; width: 17px; height: 17px; fill: currentColor; }
-:global(.markdown) a.action:hover .icon { animation: beat 1.2s ease-in-out infinite; }
+.actions .icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+.donate .actions img.icon {
+  border: 0;
+  border-radius: 0;
+}
 
-@media (max-width: 700px) {
-  .donate { flex-direction: column; align-items: stretch; text-align: center; padding: 22px; }
-  .badge { align-self: center; }
-  :global(.markdown) a.action:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) { justify-content: center; white-space: normal; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .donate *, .donate *::before, .donate *::after { animation: none !important; transition: none !important; }
+@media (max-width: 640px) {
+  .actions {
+    grid-auto-flow: row;
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

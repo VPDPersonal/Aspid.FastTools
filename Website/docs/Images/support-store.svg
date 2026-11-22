@@ -1,9 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="242" height="46" viewBox="0 0 242 46">
-  <title>Buy on Unity Asset Store</title>
-  <rect x=".5" y=".5" width="241" height="45" rx="9" fill="#25332c" stroke="#71b887"/>
-  <g fill="none" stroke="#a7edbc" stroke-width="1.8" stroke-linejoin="round">
-    <path d="m24 12 9 5v11l-9 5-9-5V17z"/>
-    <path d="m15 17 9 5 9-5m-9 5v11"/>
-  </g>
-  <text x="44" y="28.5" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#f0fff4">Buy on Unity Asset Store</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="48">
+  <title>Unity Asset Store</title>
+  <style>.bg{fill:#fff;stroke:#1d8840;stroke-width:2}.ink{fill:#121316}.box{stroke:#1d8840}@media(prefers-color-scheme:dark){.bg{fill:#10121a;stroke:#5cb46b}.ink{fill:#f0f0f2}.box{stroke:#5cb46b}}</style>
+  <svg x="0.5%" width="99%" height="48" overflow="hidden">
+    <rect class="bg" x="0.5%" y="1" width="99%" height="46" rx="8"/>
+    <svg x="50%" width="1" height="48" overflow="visible">
+      <g class="box" transform="translate(-68 13)" fill="none" stroke-width="1.6" stroke-linejoin="round"><path d="m10 1 8 4.5v9L10 19l-8-4.5v-9z M2 5.5l8 4.5 8-4.5 M10 10v9"/></g>
+      <text class="ink" x="-43" y="29" font-family="Arial, sans-serif" font-size="14" font-weight="700">Unity Asset Store</text>
+    </svg>
+  </svg>
 </svg>
