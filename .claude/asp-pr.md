@@ -26,9 +26,9 @@ Checked by `.github/workflows/pr-checks.yml`; keep this file, the Pull request s
   restarts the jobs that are already halfway. Another label reruns the cheap checks after the running CI ends and
   skips the Unity tests that passed there.
 
-## Review loop
+## Review
 
-The bot review rules with the verdict format are in `.github/claude-review.md`.
+Request a Claude review with an `@claude` comment. The review rules and verdict format are in `.github/claude-review.md`.
 
 Logic paths:
 

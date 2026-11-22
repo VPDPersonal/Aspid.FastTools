@@ -27,6 +27,7 @@ html[data-theme='light'] .badge {
 }
 .icon { flex: none; width: 16px; height: 16px; overflow: visible; }
 .unity .icon { color: var(--badge-unity); }
+.release .icon { color: var(--badge-unity); }
 .preview .icon, .accent { color: var(--badge-gold); }
 .license .icon { width: 18px; height: 18px; color: var(--badge-shield); }
 
@@ -37,6 +38,7 @@ html[data-theme='light'] .badge {
 }
 /* The hover outline takes the badge's own icon colour, not the site accent. */
 .unity { --badge-mark: var(--badge-unity); }
+.release { --badge-mark: var(--badge-unity); }
 .preview { --badge-mark: var(--badge-gold); }
 .license { --badge-mark: var(--badge-shield); }
 :global(.markdown) a.badge:hover { border-color: var(--badge-mark); }

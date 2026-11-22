@@ -3,8 +3,8 @@
  * site-only blocks get the closest GitHub equivalent in plain HTML (src/remark/introBanner.js builds the site's):
  * - links to doc pages and to the samples overview open the site, which renders them in full;
  * - the link row's link to the site lists the site's languages: `Documentation: EN, RU`;
- * - the install instruction becomes a card like the site's install panel (src/components/InstallPanel): the recording
- *   of its Package Manager walk-through beside its numbered steps, the URL to copy below;
+ * - the install instruction becomes a card like the site's install panel (src/components/InstallPanel): the shared
+ *   Package Manager walk-through beside its numbered steps, the URL to copy below;
  * - the note under the install URL links the site's install panel for versions and channels;
  * - every feature becomes a card: a one-row table with the preview on the left, the title and summary on the right;
  *   a code preview gives way to the recording of the site's animated preview (`Website/docs/Images/readme-previews`);
@@ -86,13 +86,16 @@ function linkRow(tree, site, locales) {
 }
 
 /** The install section: an instruction, the URL block and a note. The instruction gives way to the install card. */
-function installCard(tree, {previews, exists}) {
+function installCard(tree, {installation}) {
   const index = tree.children.findIndex((node, at) => isHeading(node, 2) && tree.children[at + 1]?.type === 'paragraph'
     && tree.children[at + 2]?.type === 'code' && /\.git#upm/.test(tree.children[at + 2].value));
-  const file = `${previews}/install.webp`;
-  if (index === -1 || !exists(file)) return;
+  if (index === -1 || !installation) return;
+  const branch = /#(upm(?:-preview)?)(?:\/[^\s]+)?$/.exec(tree.children[index + 2].value.trim())?.[1];
+  if (!branch) return;
+  const file = `${installation}/${branch === 'upm-preview' ? 'preview/' : ''}install`;
   const steps = TEXT.steps.map((step) => `<li>${step}</li>`).join('\n');
-  tree.children[index + 1] = html(`<table>\n<tr>\n<td width="56%">${image(file, TEXT.walkthrough, ' width="100%"')}</td>\n`
+  const picture = `<picture><source srcset="${escape(file)}.webp" type="image/webp">${image(`${escape(file)}.png`, TEXT.walkthrough, ' width="100%"')}</picture>`;
+  tree.children[index + 1] = html(`<table>\n<tr>\n<td width="56%">${picture}</td>\n`
     + `<td width="44%">\n<ol>\n${steps}\n</ol>\n</td>\n</tr>\n</table>`);
 }
 
@@ -197,9 +200,28 @@ function supportPanel(tree, repository) {
  * @param options.locales the site's languages, the default one first
  * @param options.repository the repository's GitHub URL, without a trailing `/`
  * @param options.previews the folder of the preview recordings, relative to the README
+ * @param options.installation the shared installation media base URL for this package
  * @param options.exists whether a URL relative to the README names a file
  */
 export function githubLayout(tree, options) {
+  // The site's chips describe its documented version; GitHub images follow the published channel automatically.
+  function sharedBadges(node) {
+    if (node.type === 'link') {
+      const badge = node.children?.find((child) => child.type === 'image'
+        && child.url.startsWith('https://vpdpersonal.github.io/VPDPersonal/badges/'));
+      if (badge?.url.endsWith('/status-badge-unity.svg')) badge.alt = 'Minimum Unity version';
+      if (badge?.url.endsWith('/status-badge-release.svg')) {
+        badge.alt = 'Release';
+        node.url = `${options.repository}/releases/latest`;
+      }
+      if (badge?.url.endsWith('/status-badge-preview.svg')) {
+        badge.alt = 'Preview';
+        node.url = `${options.repository}/releases`;
+      }
+    }
+    node.children?.forEach(sharedBadges);
+  }
+  sharedBadges(tree);
   siteLinks(tree, options.site);
   linkRow(tree, options.site, options.locales);
   installCard(tree, options);

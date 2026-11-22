@@ -1,5 +1,5 @@
-// Records the introduction's animated feature previews (Website/src/components/FeaturePreview) and the install panel's
-// Package Manager walk-through (Website/src/components/InstallPanel) from a built site into looping WebPs for the GitHub
+// Records the introduction's animated feature previews (Website/src/components/FeaturePreview)
+// from a built site into looping WebPs for the GitHub
 // README: Website/docs/Images/readme-previews/<name>.webp, in the dark theme only. Headless Chrome runs on
 // virtual time, so every frame lands on its exact timestamp however slow the capture is.
 //   Website/scripts/serve-all.sh
@@ -22,11 +22,6 @@ const OUT = fileURLToPath(new URL('../../docs/Images/readme-previews/', import.m
 const FPS = 20;
 const ENCODE = ['-lossless', '-m', '6'];
 const PREVIEWS = {
-  // InstallPanel: the sum of DURATIONS. It plays PLAYS (2) times, so a short warm-up records the first play, which runs
-  // into the second one's first frame. The installed package's version is hidden, so a release needs no new recording;
-  // the typed URL still names the channel.
-  'install': {loop: 1300 + 1400 + 1800 + 1100 + 2600, warmup: 100,
-    box: `document.querySelector('section[class*="install_"] [class*="preview_"]')`},
   'profiler-markers': {loop: 22000, fps: 12.5, encode: ['-mixed', '-q', '90', '-m', '6']},
   'visual-element-extensions': {loop: 6 * 1100},
   'serialized-property-extensions': {loop: 5 * 1200},
@@ -115,7 +110,7 @@ async function open() {
   const page = (method, params) => send(method, params, sessionId);
   await page('Page.enable');
   await page('Emulation.setDeviceMetricsOverride', {...VIEWPORT, mobile: false});
-  // The entrance has played, so the banner rests. The frame of a card or the install panel, its rounded corner and the
+  // The entrance has played, so the banner rests. The frame of a card, its rounded corner and the
   // line between preview and text go: on GitHub the table cell is the frame.
   await page('Page.addScriptToEvaluateOnNewDocument', {source: `
     localStorage.setItem('theme', 'dark');
@@ -124,9 +119,6 @@ async function open() {
       + '.feature-card { border: 0 !important; border-radius: 0 !important; }'
       + '.feature-card__preview { border-right: 0 !important; }'
       + '.feature-card__live [class*="inspector_"], .feature-card__live [class*="uiStage_"] { border-radius: 0 !important; }'
-      + 'section[class*="install_"] { border: 0 !important; border-radius: 0 !important; }'
-      + 'section[class*="install_"] [class*="preview_"] { border-right: 0 !important; }'
-      + 'section[class*="install_"] [class*="pmNew_"] span:last-child { visibility: hidden; }'
       + '</style>'));`});
   const loaded = once('Page.loadEventFired', sessionId);
   await page('Page.navigate', {url: new URL('docs', base).href});

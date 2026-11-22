@@ -1,13 +1,13 @@
 <!-- Generated from Website/docs/README.md. Edit that file, then run npm --prefix Website run sync-readme. -->
 
 <picture>
-  <source srcset="Website/docs/Images/aspid_fasttools_readme_banner_dark.webp" />
-  <img src="Website/docs/Images/aspid_fasttools_readme_banner.png" alt="Aspid.FastTools" />
+  <source srcset="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.webp" type="image/webp" />
+  <img src="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png" alt="Aspid.FastTools" />
 </picture>
 
-[![Unity 6000.0.53f1+](Website/docs/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
-[![Preview 1.0.0-rc.9](Website/docs/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.9)
-[![MIT License](Website/docs/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
+[![Minimum Unity version](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
+[![Release](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/latest)
+[![MIT License](https://vpdpersonal.github.io/VPDPersonal/badges/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools is a Unity package that takes the routine out of serialization, profiling and editor code.
 
@@ -17,7 +17,7 @@ Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](ht
 
 <table>
 <tr>
-<td width="56%"><img src="Website/docs/Images/readme-previews/install.webp" alt="Package Manager installs Aspid.FastTools from its git URL" width="100%"></td>
+<td width="56%"><picture><source srcset="https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools/install.webp" type="image/webp"><img src="https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools/install.png" alt="Package Manager installs Aspid.FastTools from its git URL" width="100%"></picture></td>
 <td width="44%">
 <ol>
 <li>Open <b>Window → Package Manager</b></li>
@@ -29,10 +29,10 @@ Documentation: [EN](https://vpdpersonal.github.io/Aspid.FastTools/docs), [RU](ht
 </table>
 
 ```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm
 ```
 
-The URL installs the latest preview; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
+The URL installs the latest release; **Update** in the Package Manager installs the next one. To pin a version or switch channels, see [Installation](https://vpdpersonal.github.io/Aspid.FastTools/docs#installation) in the documentation.
 
 Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store, skip the git URL and install it from **My Assets** in the Package Manager.
 
