@@ -6,10 +6,6 @@ namespace Aspid.FastTools.UIElements
     /// <summary>
     /// Provides extension methods for <see cref="BaseSlider{TValueType}"/> of <see cref="int"/>.
     /// </summary>
-    /// <remarks>
-    /// Kept apart from <see cref="SliderExtensions"/>: overloads that differ only by the constraint on the element type
-    /// cannot share one class.
-    /// </remarks>
     public static class SliderIntExtensions
     {
 #if UNITY_6000_0_OR_NEWER

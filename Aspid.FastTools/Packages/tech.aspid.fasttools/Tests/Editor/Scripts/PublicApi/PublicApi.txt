@@ -797,6 +797,14 @@ Aspid.FastTools.UIElements.SliderExtensions
     public static T SetPageSize<T>(this T element, float value) where T : UnityEngine.UIElements.BaseSlider<float>
     public static T SetShowInputField<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
 
+Aspid.FastTools.UIElements.SliderFloatExtensions
+    public static class SliderFloatExtensions
+    public static T SetDirection<T>(T element, UnityEngine.UIElements.SliderDirection value) where T : UnityEngine.UIElements.BaseSlider<float>
+    public static T SetFill<T>(T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
+    public static T SetInverted<T>(T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
+    public static T SetPageSize<T>(T element, float value) where T : UnityEngine.UIElements.BaseSlider<float>
+    public static T SetShowInputField<T>(T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
+
 Aspid.FastTools.UIElements.SliderIntExtensions
     public static class SliderIntExtensions
     public static T SetDirection<T>(this T element, UnityEngine.UIElements.SliderDirection value) where T : UnityEngine.UIElements.BaseSlider<int>

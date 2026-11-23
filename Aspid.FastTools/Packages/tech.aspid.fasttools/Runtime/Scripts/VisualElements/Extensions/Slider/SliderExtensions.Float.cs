@@ -40,75 +40,30 @@ namespace Aspid.FastTools.UIElements
         }
 
 #if UNITY_6000_0_OR_NEWER
-        /// <summary>
-        /// Sets <see cref="BaseSlider{TValueType}.fill"/> controlling whether the track is filled up to the current value.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, the track is filled up to the current value.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <inheritdoc cref="SliderFloatExtensions.SetFill{T}(T, bool)"/>
         public static T SetFill<T>(this T element, bool value)
-            where T : BaseSlider<float>
-        {
-            element.fill = value;
-            return element;
-        }
+            where T : BaseSlider<float> =>
+            SliderFloatExtensions.SetFill(element, value: value);
 #endif
 
-        /// <summary>
-        /// Sets <see cref="BaseSlider{TValueType}.inverted"/> reversing the direction of the element.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, the slider direction is reversed.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <inheritdoc cref="SliderFloatExtensions.SetInverted{T}(T, bool)"/>
         public static T SetInverted<T>(this T element, bool value)
-            where T : BaseSlider<float>
-        {
-            element.inverted = value;
-            return element;
-        }
+            where T : BaseSlider<float> =>
+            SliderFloatExtensions.SetInverted(element, value: value);
 
-        /// <summary>
-        /// Sets <see cref="BaseSlider{TValueType}.pageSize"/> controlling how much the value changes per page step.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The page size to set.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <inheritdoc cref="SliderFloatExtensions.SetPageSize{T}(T, float)"/>
         public static T SetPageSize<T>(this T element, float value)
-            where T : BaseSlider<float>
-        {
-            element.pageSize = value;
-            return element;
-        }
+            where T : BaseSlider<float> =>
+            SliderFloatExtensions.SetPageSize(element, value: value);
 
-        /// <summary>
-        /// Sets <see cref="BaseSlider{TValueType}.showInputField"/> controlling whether a numeric input field is shown alongside the element.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, a numeric input field is shown next to the slider.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <inheritdoc cref="SliderFloatExtensions.SetShowInputField{T}(T, bool)"/>
         public static T SetShowInputField<T>(this T element, bool value)
-            where T : BaseSlider<float>
-        {
-            element.showInputField = value;
-            return element;
-        }
+            where T : BaseSlider<float> =>
+            SliderFloatExtensions.SetShowInputField(element, value: value);
 
-        /// <summary>
-        /// Sets <see cref="BaseSlider{TValueType}.direction"/> controlling the orientation of the element.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The slider direction to set.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <inheritdoc cref="SliderFloatExtensions.SetDirection{T}(T, SliderDirection)"/>
         public static T SetDirection<T>(this T element, SliderDirection value)
-            where T : BaseSlider<float>
-        {
-            element.direction = value;
-            return element;
-        }
+            where T : BaseSlider<float> =>
+            SliderFloatExtensions.SetDirection(element, value: value);
     }
 }
