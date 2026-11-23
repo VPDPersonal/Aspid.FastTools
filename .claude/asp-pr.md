@@ -25,20 +25,3 @@ Checked by `.github/workflows/pr-checks.yml`; keep this file, the Pull request s
   `unity-quick` cancels the running CI and starts it again, so decide on it at `gh pr create`: added later, it
   restarts the jobs that are already halfway. Another label reruns the cheap checks after the running CI ends and
   skips the Unity tests that passed there.
-
-## Review
-
-Request a Claude review with an `@claude` comment. The review rules and verdict format are in `.github/claude-review.md`.
-
-Logic paths:
-
-- package: `Aspid.FastTools/Packages/tech.aspid.fasttools/` (except `README.md`), `Aspid.FastTools/Packages/manifest.json`,
-  `Aspid.FastTools/Packages/packages-lock.json`, `Aspid.FastTools/Assets/DevTests~/`,
-  `Aspid.FastTools/Assets/DevTools/`;
-- .NET: `Aspid.FastTools.Generators/`, `Aspid.FastTools.Analyzers/`, `DotnetTests/Yaml/`,
-  `DotnetTests/Types/`, `global.json`;
-- site: `Website/` except `docs/`, `i18n/`, `tutorials/`, `api/`, `static/`, `media/`;
-- CI: `scripts/`, `.github/workflows/`, `.github/claude-review.md`.
-
-Other paths are text: `Website/docs/`, `Website/i18n/`, `Website/tutorials/`, `Website/media/`, `skills/`, other `*.md`.
-A fix there needs no re-review.
