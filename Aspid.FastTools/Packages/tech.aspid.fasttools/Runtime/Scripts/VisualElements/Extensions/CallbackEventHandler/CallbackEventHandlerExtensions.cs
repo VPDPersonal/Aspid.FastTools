@@ -80,14 +80,13 @@ namespace Aspid.FastTools.UIElements
             element.RegisterCallbackOnce(callback, useTrickleDown);
 #else
             if (callback is null) return element;
+            element.RegisterCallback<TEventType>(InvokeOnce, useTrickleDown: useTrickleDown);
 
             void InvokeOnce(TEventType evt)
             {
                 element.UnregisterCallback<TEventType>(InvokeOnce, useTrickleDown: useTrickleDown);
                 callback(evt);
             }
-
-            element.RegisterCallback<TEventType>(InvokeOnce, useTrickleDown: useTrickleDown);
 #endif
             return element;
         }
@@ -119,7 +118,6 @@ namespace Aspid.FastTools.UIElements
             return element;
 #else
             if (callback is null) return element;
-
             return element.RegisterCallbackOnceSelf<T, TEventType>(evt => callback(evt, userArgs), useTrickleDown: useTrickleDown);
 #endif
         }
