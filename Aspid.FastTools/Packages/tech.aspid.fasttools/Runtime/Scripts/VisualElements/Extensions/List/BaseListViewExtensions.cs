@@ -11,6 +11,7 @@ namespace Aspid.FastTools.UIElements
     public static class BaseListViewExtensions
     {
         #region OnAdd
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseListView.onAdd"/>, replacing any existing callback.
         /// </summary>
@@ -52,9 +53,11 @@ namespace Aspid.FastTools.UIElements
             element.onAdd -= value;
             return element;
         }
+#endif
         #endregion
 
         #region OnRemove
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseListView.onRemove"/>, replacing any existing callback.
         /// </summary>
@@ -96,6 +99,7 @@ namespace Aspid.FastTools.UIElements
             element.onRemove -= value;
             return element;
         }
+#endif
         #endregion
 
         #region ItemsAdded
@@ -159,6 +163,7 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         #region OverridingAddButtonBehavior
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseListView.overridingAddButtonBehavior"/>, replacing any existing callback.
         /// </summary>
@@ -200,8 +205,10 @@ namespace Aspid.FastTools.UIElements
             element.overridingAddButtonBehavior -= value;
             return element;
         }
+#endif
         #endregion
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseListView.allowRemove"/>.
         /// </summary>
@@ -229,6 +236,7 @@ namespace Aspid.FastTools.UIElements
             element.allowAdd = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="BaseListView.headerTitle"/>.
@@ -300,6 +308,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseListView.bindingSourceSelectionMode"/>.
         /// </summary>
@@ -355,5 +364,6 @@ namespace Aspid.FastTools.UIElements
             element.makeNoneElement = value;
             return element;
         }
+#endif
     }
 }

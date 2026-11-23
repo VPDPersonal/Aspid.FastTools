@@ -16,11 +16,15 @@ For extra constraints, required fields and list appearance, see [TypeSelector](0
 
 - <code lang="csharp">Allow</code> has no effect here: the types must be instantiable.
 - Classes derived from <code lang="class-name">UnityEngine.Object</code> are not offered: keep such an object in a plain field, without <code lang="csharp">[SerializeReference]</code>.
-- Generic arguments are inferred from the field type and the <code lang="csharp">[TypeSelector]</code> types; when they cannot be, the picker asks for types Unity can serialize.
+- On Unity 6, generic arguments are inferred from the field type and the <code lang="csharp">[TypeSelector]</code> types; when they cannot be, the picker asks for types Unity can serialize.
+
+- On Unity 2022.3, choose a non-generic subclass of a closed generic class. For example, use <code lang="class-name">Pistol</code> derived from <code lang="class-name">Weapon&lt;Bullet&gt;</code>.
 
 ## Lists
 
-In a list with <code lang="csharp">[TypeSelector]</code>, “+” opens the class picker and adds a new instance, and `<None>` adds an empty element. With several objects selected, each gets its own instance.
+On Unity 6, in a list with <code lang="csharp">[TypeSelector]</code>, “+” opens the class picker and adds a new instance, and `<None>` adds an empty element. With several objects selected, each gets its own instance.
+
+On Unity 2022.3, the default Inspector draws the selector on each element. For an empty list, use **+** to add an entry, then pick its class.
 
 ![“+” on Sidearms opens the class picker and adds a Shotgun](Images/aspid_fasttools_serialize_reference_list.gif)
 

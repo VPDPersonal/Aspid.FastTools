@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Добавлено
+
+- Поддержка Unity 2022.3.62f3 при установке через Package Manager. В Unity 2022.3 окно выбора SerializeReference предлагает классы без параметров типа, а Fluent API охватывает доступные в этой версии компоненты и методы.
+
 ## [1.0.0] — 2026-11-05
 
 Первый стабильный релиз. Нужен Unity **6000.0.53f1** или новее; все функции Inspector работают и в IMGUI, и в UI Toolkit. Prerelease-версии `1.0.0-rc.*` и их заметки лежат в [GitHub Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases).

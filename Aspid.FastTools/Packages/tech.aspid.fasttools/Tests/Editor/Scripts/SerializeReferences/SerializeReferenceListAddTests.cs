@@ -113,7 +113,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
                 var serialized = new SerializedObject(new Object[] { first, second });
                 var field = SerializeReferenceEditorGUI.CreateList(serialized.FindProperty("sidearms"));
 
-                Assert.IsNotNull(field.Q<ListView>().overridingAddButtonBehavior,
+                Assert.IsTrue(SerializeReferenceListAddBehavior.HasAddPicker(field.Q<ListView>()),
                     "A multi-object selection must get the picker-backed \"+\", not the native add that copies the last element's rid.");
             }
             finally
@@ -124,6 +124,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
         }
 
         // The attribute applies to the list itself, so the "+" is set up before any element exists to set it up.
+#if UNITY_6000_0_OR_NEWER
         [UnityTest]
         public IEnumerator DefaultInspector_EmptySelectorList_OverridesTheAddButton()
         {
@@ -136,7 +137,8 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
                 yield return null;
 
-                Assert.IsNotNull(FindList(window.rootVisualElement, nameof(ListAddTestObject.selected)).overridingAddButtonBehavior,
+                var list = FindList(window.rootVisualElement, nameof(ListAddTestObject.selected));
+                Assert.IsTrue(SerializeReferenceListAddBehavior.HasAddPicker(list),
                     "The first \"+\" of an empty [TypeSelector] list must open the type picker, not append a <None> entry.");
             }
             finally
@@ -160,7 +162,8 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
                 yield return null;
 
-                Assert.IsNotNull(FindList(window.rootVisualElement, nameof(ListAddTestObject.selected)).overridingAddButtonBehavior,
+                var list = FindList(window.rootVisualElement, nameof(ListAddTestObject.selected));
+                Assert.IsTrue(SerializeReferenceListAddBehavior.HasAddPicker(list),
                     "A multi-object selection must get the picker-backed \"+\" too, one instance per object.");
             }
             finally
@@ -171,6 +174,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
                 Object.DestroyImmediate(second);
             }
         }
+#endif
 
         [Test]
         public void Append_NestedList_GrowsOnlyTheInnerList()

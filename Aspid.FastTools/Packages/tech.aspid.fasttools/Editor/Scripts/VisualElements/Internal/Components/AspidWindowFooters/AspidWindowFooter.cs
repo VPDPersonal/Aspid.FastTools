@@ -5,7 +5,11 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if ASPID_UNITY_HAS_UXML_LIBRARY
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
     internal sealed partial class AspidWindowFooter : VisualElement
     {
         private const string GitHubUrl = "https://github.com/VPDPersonal/Aspid.FastTools";

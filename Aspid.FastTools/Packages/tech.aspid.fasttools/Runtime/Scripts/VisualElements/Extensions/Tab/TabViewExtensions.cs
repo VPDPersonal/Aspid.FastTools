@@ -1,3 +1,4 @@
+#if UNITY_6000_0_OR_NEWER
 using System;
 using UnityEngine.UIElements;
 
@@ -148,3 +149,4 @@ namespace Aspid.FastTools.UIElements
         }
     }
 }
+#endif

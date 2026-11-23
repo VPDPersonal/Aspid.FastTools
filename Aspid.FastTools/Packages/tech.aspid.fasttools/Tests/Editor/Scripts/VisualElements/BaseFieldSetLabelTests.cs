@@ -42,7 +42,9 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             yield return Case(() => new Vector4Field().SetLabel(Label));
             yield return Case(() => new Vector2IntField().SetLabel(Label));
             yield return Case(() => new Vector3IntField().SetLabel(Label));
+#if UNITY_6000_0_OR_NEWER
             yield return Case(() => new ToggleButtonGroup().SetLabel(Label));
+#endif
         }
 
         private static TestCaseData Case<TField>(Func<TField> create)

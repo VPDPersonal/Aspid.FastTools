@@ -1,3 +1,4 @@
+#if UNITY_6000_0_OR_NEWER
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
@@ -194,3 +195,4 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         }
     }
 }
+#endif

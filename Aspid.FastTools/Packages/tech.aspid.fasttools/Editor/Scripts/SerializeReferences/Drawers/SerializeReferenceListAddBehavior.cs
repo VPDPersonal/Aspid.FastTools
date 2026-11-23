@@ -20,17 +20,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!TryResolveAppendTarget(elementProperty, out var targets, out var arrayPath)) return;
 
             var listView = elementField.GetFirstAncestorOfType<ListView>();
-            if (listView is null || listView.overridingAddButtonBehavior != null) return;
+            if (listView is null || HasAddPicker(listView)) return;
 
-            // Assigning overridingAddButtonBehavior refreshes the items, which throws mid-attach — TryInstall runs
-            // from AttachToPanelEvent. Defer a tick and re-check the guard, since siblings queue their own installs.
-            listView.schedule.Execute(() =>
-            {
-                if (listView.overridingAddButtonBehavior != null) return;
+            // Changing the add behavior can refresh the list. Defer until after AttachToPanelEvent.
+            listView.schedule.Execute(() => InstallAddPicker(listView, openPicker: button =>
+                OpenAppendPicker(targets, arrayPath, elementType, baseTypesProvider(), button)));
+        }
 
-                listView.overridingAddButtonBehavior = (_, button) =>
-                    OpenAppendPicker(targets, arrayPath, elementType, baseTypesProvider(), button);
-            });
+        internal static bool HasAddPicker(ListView listView) =>
+#if UNITY_6000_0_OR_NEWER
+            listView.overridingAddButtonBehavior != null;
+#else
+            listView.Q<Button>(BaseListView.footerAddButtonName)?.clickable is PickerClickable;
+#endif
+
+        internal static void InstallAddPicker(ListView listView, Action<Button> openPicker)
+        {
+            if (HasAddPicker(listView)) return;
+
+#if UNITY_6000_0_OR_NEWER
+            listView.overridingAddButtonBehavior = (_, button) => openPicker(button);
+#else
+            var button = listView.Q<Button>(BaseListView.footerAddButtonName);
+            if (button is not null) button.clickable = new PickerClickable(button, openPicker: openPicker);
+#endif
         }
 
         // The objects and the array an element's "+" appends to: every selected object, and the innermost array, so a
@@ -112,5 +125,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // One Undo step for the whole selection.
             Undo.CollapseUndoOperations(undoGroup);
         }
+
+#if !UNITY_6000_0_OR_NEWER
+        private sealed class PickerClickable : Clickable
+        {
+            public PickerClickable(Button button, Action<Button> openPicker)
+                : base(() => openPicker(button)) { }
+        }
+#endif
     }
 }

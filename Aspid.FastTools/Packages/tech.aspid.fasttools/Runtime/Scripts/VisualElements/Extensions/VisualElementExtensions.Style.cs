@@ -587,6 +587,7 @@ namespace Aspid.FastTools.UIElements
         }
 #endif
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="IStyle.unityTextGenerator"/>.
         /// </summary>
@@ -618,7 +619,9 @@ namespace Aspid.FastTools.UIElements
             element.style.SetUnityTextGenerator(value);
             return element;
         }
+#endif
 
+#if ASPID_UNITY_HAS_EDITOR_TEXT_RENDERING_MODE
         /// <summary>
         /// Sets <see cref="IStyle.unityEditorTextRenderingMode"/>.
         /// </summary>
@@ -650,6 +653,7 @@ namespace Aspid.FastTools.UIElements
             element.style.SetUnityEditorTextRenderingMode(value);
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="IStyle.textOverflow"/>.
@@ -2663,6 +2667,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if ASPID_UNITY_HAS_SLICE_TYPE
         /// <summary>
         /// Sets <see cref="IStyle.unitySliceType"/>.
         /// </summary>
@@ -2694,6 +2699,7 @@ namespace Aspid.FastTools.UIElements
             element.style.SetUnitySliceType(value);
             return element;
         }
+#endif
         #endregion
 
         #region Visibility

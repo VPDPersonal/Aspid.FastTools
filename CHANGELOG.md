@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Unity 2022.3.62f3 support through Package Manager. On Unity 2022.3, the SerializeReference picker offers non-generic classes and the fluent API includes the controls and methods available in that Editor.
+
 ## [1.0.0] — 2026-11-05
 
 First stable release. Unity **6000.0.53f1** or newer; every Inspector feature works in both IMGUI and UI Toolkit. The `1.0.0-rc.*` prereleases and their notes are on [GitHub Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases).

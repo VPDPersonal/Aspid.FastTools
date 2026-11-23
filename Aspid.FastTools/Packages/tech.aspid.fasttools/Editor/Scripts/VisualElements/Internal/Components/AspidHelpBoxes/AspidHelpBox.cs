@@ -3,7 +3,11 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if ASPID_UNITY_HAS_UXML_LIBRARY
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
     internal sealed partial class AspidHelpBox : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidHelpBox";
@@ -25,7 +29,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private HelpBoxMessageType _messageType;
         private bool _isStatusFromMessageType;
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public string Title
         {
             get => _titleElement is { parent: not null } ? _titleElement.Text : string.Empty;
@@ -49,14 +55,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             }
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public string Message
         {
             get => _messageElement.Text;
             set => _messageElement.Text = value;
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public StatusStyle.Type Status
         {
             get => _status.Value;
@@ -67,7 +77,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             }
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public HelpBoxMessageType MessageType
         {
             get => _messageType;

@@ -27,7 +27,7 @@ public static class CallbackEventHandlerExtensions
 
 ### RegisterCallbackOnceSelf\<T, TEventType\>\(T, EventCallback\<TEventType\>, TrickleDown\) {#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__2___0_UnityEngine_UIElements_EventCallback___1__UnityEngine_UIElements_TrickleDown_}
 
-Registers a callback that runs for one event and is then removed, via [`RegisterCallbackOnce<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.CallbackEventHandler.RegisterCallbackOnce.html).
+Registers a callback that runs for one event and is then removed.
 
 ```csharp
 public static T RegisterCallbackOnceSelf<T, TEventType>(this T element, EventCallback<TEventType> callback, TrickleDown useTrickleDown = TrickleDown.NoTrickleDown) where T : CallbackEventHandler where TEventType : EventBase<TEventType>, new()
@@ -69,7 +69,7 @@ Name both type arguments unless the callback has a typed parameter: <code>Regist
 
 ### RegisterCallbackOnceSelf\<T, TEventType, TUserArgsType\>\(T, EventCallback\<TEventType, TUserArgsType\>, TUserArgsType, TrickleDown\) {#Aspid_FastTools_UIElements_CallbackEventHandlerExtensions_RegisterCallbackOnceSelf__3___0_UnityEngine_UIElements_EventCallback___1___2____2_UnityEngine_UIElements_TrickleDown_}
 
-Registers a callback with user arguments that runs for one event and is then removed, via [`RegisterCallbackOnce<T1, T2>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.CallbackEventHandler.RegisterCallbackOnce.html).
+Registers a callback with user arguments that runs for one event and is then removed.
 
 ```csharp
 public static T RegisterCallbackOnceSelf<T, TEventType, TUserArgsType>(this T element, EventCallback<TEventType, TUserArgsType> callback, TUserArgsType userArgs, TrickleDown useTrickleDown = TrickleDown.NoTrickleDown) where T : CallbackEventHandler where TEventType : EventBase<TEventType>, new()

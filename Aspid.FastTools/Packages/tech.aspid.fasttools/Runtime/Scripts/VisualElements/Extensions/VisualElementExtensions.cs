@@ -66,6 +66,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="VisualElement.dataSource"/>.
         /// </summary>
@@ -79,6 +80,7 @@ namespace Aspid.FastTools.UIElements
             element.dataSource = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="VisualElement.viewDataKey"/>.
@@ -94,6 +96,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="VisualElement.dataSourceType"/>.
         /// </summary>
@@ -110,6 +113,7 @@ namespace Aspid.FastTools.UIElements
             element.dataSourceType = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="VisualElement.usageHints"/>.
@@ -143,6 +147,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="VisualElement.disablePlayModeTint"/>.
         /// </summary>
@@ -170,6 +175,7 @@ namespace Aspid.FastTools.UIElements
             element.dataSourcePath = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="VisualElement.languageDirection"/>.

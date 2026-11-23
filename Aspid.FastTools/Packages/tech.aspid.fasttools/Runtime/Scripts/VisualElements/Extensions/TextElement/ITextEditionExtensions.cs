@@ -79,6 +79,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="ITextEdition.placeholder"/>.
         /// </summary>
@@ -92,6 +93,7 @@ namespace Aspid.FastTools.UIElements
             element.placeholder = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="ITextEdition.autoCorrection"/>.
@@ -140,6 +142,7 @@ namespace Aspid.FastTools.UIElements
         }
 #endif
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="ITextEdition.hidePlaceholderOnFocus"/>.
         /// </summary>
@@ -153,6 +156,7 @@ namespace Aspid.FastTools.UIElements
             element.hidePlaceholderOnFocus = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="ITextEdition.keyboardType"/>.

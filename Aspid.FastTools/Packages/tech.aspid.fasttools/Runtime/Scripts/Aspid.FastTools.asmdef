@@ -8,6 +8,17 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "Unity",
+            "expression": "6000.0.1f1",
+            "define": "ASPID_UNITY_HAS_EDITOR_TEXT_RENDERING_MODE"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.46f1",
+            "define": "ASPID_UNITY_HAS_SLICE_TYPE"
+        }
+    ],
     "noEngineReferences": false
 }

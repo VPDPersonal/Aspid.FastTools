@@ -39,6 +39,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.fill"/> controlling whether the track is filled up to the current value.
         /// </summary>
@@ -52,6 +53,7 @@ namespace Aspid.FastTools.UIElements
             element.fill = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.inverted"/> reversing the direction of the element.

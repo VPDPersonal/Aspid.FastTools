@@ -412,7 +412,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (asset == null) continue;
-                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out _, out var fileId)) continue;
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out _, out long fileId)) continue;
 
                 using var serializedObject = new SerializedObject(asset);
                 using var iterator = serializedObject.GetIterator();

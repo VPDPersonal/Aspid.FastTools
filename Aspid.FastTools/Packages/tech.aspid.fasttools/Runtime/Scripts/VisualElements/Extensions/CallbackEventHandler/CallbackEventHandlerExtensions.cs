@@ -58,7 +58,7 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Registers a callback that runs for one event and is then removed, via <see cref="CallbackEventHandler.RegisterCallbackOnce{TEventType}(EventCallback{TEventType}, TrickleDown)"/>.
+        /// Registers a callback that runs for one event and is then removed.
         /// </summary>
         /// <remarks>
         /// Name both type arguments unless the callback has a typed parameter: <c>RegisterCallbackOnceSelf&lt;Button, ClickEvent&gt;(OnClick)</c>.
@@ -76,12 +76,24 @@ namespace Aspid.FastTools.UIElements
             where T : CallbackEventHandler
             where TEventType : EventBase<TEventType>, new()
         {
+#if UNITY_6000_0_OR_NEWER
             element.RegisterCallbackOnce(callback, useTrickleDown);
+#else
+            if (callback is null) return element;
+
+            void InvokeOnce(TEventType evt)
+            {
+                element.UnregisterCallback<TEventType>(InvokeOnce, useTrickleDown: useTrickleDown);
+                callback(evt);
+            }
+
+            element.RegisterCallback<TEventType>(InvokeOnce, useTrickleDown: useTrickleDown);
+#endif
             return element;
         }
 
         /// <summary>
-        /// Registers a callback with user arguments that runs for one event and is then removed, via <see cref="CallbackEventHandler.RegisterCallbackOnce{TEventType, TUserArgsType}(EventCallback{TEventType, TUserArgsType}, TUserArgsType, TrickleDown)"/>.
+        /// Registers a callback with user arguments that runs for one event and is then removed.
         /// </summary>
         /// <remarks>
         /// Name all type arguments unless the callback has typed parameters: <c>RegisterCallbackOnceSelf&lt;Button, ClickEvent, int&gt;(OnClick, 5)</c>.
@@ -102,8 +114,14 @@ namespace Aspid.FastTools.UIElements
             where T : CallbackEventHandler
             where TEventType : EventBase<TEventType>, new()
         {
+#if UNITY_6000_0_OR_NEWER
             element.RegisterCallbackOnce(callback, userArgs, useTrickleDown);
             return element;
+#else
+            if (callback is null) return element;
+
+            return element.RegisterCallbackOnceSelf<T, TEventType>(evt => callback(evt, userArgs), useTrickleDown: useTrickleDown);
+#endif
         }
 
         /// <summary>

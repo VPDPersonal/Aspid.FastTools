@@ -1,5 +1,5 @@
 // Check that every hand-written copy of the minimum Unity version agrees with package.json, where it is split into
-// "unity" (6000.0) and "unityRelease" (53f1): 6000.0.53f1. Keep agent instructions, documentation and the CI matrix
+// "unity" (2022.3) and "unityRelease" (62f3): 2022.3.62f3. Keep agent instructions, documentation and the CI matrix
 // on the same minimum. ci.yml runs it:
 //   node scripts/check-unity-minimum.mjs
 import { readFileSync } from 'node:fs';
@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
 const PACKAGE_JSON = 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json';
-// Files that name the minimum in prose. Every full Unity version in them (6000.0.53f1) states the minimum, so a
+// Files that name the minimum in prose. Every full Unity version in them (2022.3.62f3) states the minimum, so a
 // second mention left on the old value fails too.
 const MENTIONS = [
   'Aspid.FastTools/AGENTS.md',

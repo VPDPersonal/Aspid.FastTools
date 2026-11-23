@@ -42,9 +42,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static bool DrawnByUnity(FieldInfo field, bool isArrayElement, bool isArray)
         {
-            // [TypeSelector] applies to a collection, not to its elements, so its list draws them with the picker
-            // itself, ahead of any type drawer, as the drawer did when it reached each element.
-            if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true)) return !isArrayElement;
+            if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true))
+            {
+#if UNITY_6000_0_OR_NEWER
+                return !isArrayElement;
+#else
+                return !isArray;
+#endif
+            }
+
             // Unity takes the managed-reference flag from the property itself, and a list of references is no
             // managed-reference property.
             if (CustomDrawerRegistry.DeclaresDrawnAttribute(

@@ -79,7 +79,9 @@ namespace Aspid.FastTools.Types
         /// </summary>
         /// <param name="types">The base types; the picker offers only types assignable to all of them.</param>
         public TypeSelectorAttribute(params Type[]? types)
+#if UNITY_6000_0_OR_NEWER
             : base(applyToCollection: true)
+#endif
         {
             // A generic type parameter has no assembly-qualified name; skip it rather than store a null entry.
             AssemblyQualifiedNames = types?
@@ -110,7 +112,9 @@ namespace Aspid.FastTools.Types
         /// Type or member names, each resolved as in <see cref="TypeSelectorAttribute(string)"/>.
         /// </param>
         public TypeSelectorAttribute(params string[]? assemblyQualifiedNames)
+#if UNITY_6000_0_OR_NEWER
             : base(applyToCollection: true)
+#endif
         {
             AssemblyQualifiedNames = assemblyQualifiedNames?
                 .Where(name => !string.IsNullOrWhiteSpace(name))

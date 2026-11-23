@@ -4,8 +4,9 @@
 # pinned to one).
 # CI (ci.yml) and local runs use it.
 #
-# Usage: scripts/make-unity-test-project.sh <project-dir> [unity-version | project]
+# Usage: scripts/make-unity-test-project.sh <project-dir> [unity-version | project] [--tarball]
 #   unity-version  e.g. 6000.0.64f1; "project" (the default) takes the dev project's version.
+# --tarball installs a packed copy through UPM, as CI does.
 # Prints the resolved Unity version to stdout.
 #
 # Local run:
@@ -14,12 +15,12 @@
 #     -runTests -testPlatform EditMode -testResults /tmp/aspid-ci/results.xml
 set -euo pipefail
 
-if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-  echo "usage: $0 <project-dir> [unity-version | project]" >&2
+if [ $# -lt 1 ] || [ $# -gt 3 ] || { [ $# -eq 3 ] && [ "$3" != "--tarball" ]; }; then
+  echo "usage: $0 <project-dir> [unity-version | project] [--tarball]" >&2
   exit 2
 fi
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 PACKAGE="$ROOT/Aspid.FastTools/Packages/tech.aspid.fasttools"
 PROJECT="$1"
 VERSION="${2:-project}"
@@ -38,10 +39,14 @@ if [ -e "$PROJECT" ] && [ -n "$(ls -A "$PROJECT")" ]; then
 fi
 
 mkdir -p "$PROJECT/Assets" "$PROJECT/Packages" "$PROJECT/ProjectSettings"
-PROJECT="$(cd "$PROJECT" && pwd)"
+PROJECT="$(cd "$PROJECT" && pwd -P)"
 
-# Relative, so the path still resolves when the workspace is mounted elsewhere (the GameCI container).
-PACKAGE_REF="$(python3 -c 'import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$PACKAGE" "$PROJECT/Packages")"
+if [ "${3:-}" = "--tarball" ]; then
+  PACKAGE_REF="$(npm pack --silent --ignore-scripts --pack-destination "$PROJECT/Packages" "$PACKAGE")"
+else
+  # Relative, so the path still resolves when the workspace is mounted elsewhere.
+  PACKAGE_REF="$(python3 -c 'import os, sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$PACKAGE" "$PROJECT/Packages")"
+fi
 
 # test-framework 1.4.6 is the newest one on the registry, which early 6000.0 releases resolve from; later Editors
 # bundle 1.6.0 (not on the registry) and raise the version to it. The modules cover what the samples use.

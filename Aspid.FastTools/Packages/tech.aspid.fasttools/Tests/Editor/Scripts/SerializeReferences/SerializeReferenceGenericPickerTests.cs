@@ -17,10 +17,13 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
 #pragma warning disable CS0169
     [Serializable]
-    internal sealed class GenericPickerEffect<T> : IGenericPickerEffect<T>
+    internal class GenericPickerEffect<T> : IGenericPickerEffect<T>
     {
         [SerializeField] private T _value;
     }
+
+    [Serializable]
+    internal sealed class GenericPickerIntEffect : GenericPickerEffect<int> { }
 
     // The attribute pins T but nothing pins TScale, so the picker has to ask for both.
     [Serializable]
@@ -119,6 +122,23 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
             Assert.IsTrue(SerializeReferenceHelpers.IsValidGenericArgument(typeof(GenericPickerOptional<int>)));
         }
 
+        [Test]
+        public void ClosedNonGenericSubclass_IsOfferedByBothPickers()
+        {
+            var picker = Open(narrowingTypes: new[] { typeof(IGenericPickerEffect<int>) });
+            Assert.IsTrue(picker.Offers(typeof(GenericPickerIntEffect)));
+
+            var filter = ManagedReferenceFilter.For(_fieldType);
+            Assert.IsTrue(filter.Predicate(typeof(GenericPickerIntEffect)));
+#if !UNITY_6000_0_OR_NEWER
+            Assert.IsFalse(picker.Offers(typeof(GenericPickerEffect<int>)));
+            Assert.IsFalse(picker.Offers(typeof(GenericPickerEffect<>)));
+            Assert.IsFalse(filter.Predicate(typeof(GenericPickerEffect<int>)));
+            Assert.IsNull(filter.AdditionalTypes);
+#endif
+        }
+
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void ArgumentPage_GenericStruct_ClosesTheArgument()
         {
@@ -302,6 +322,8 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
             Assert.AreEqual(typeof(GenericPickerEffect<int>).AssemblyQualifiedName, picker.Selected,
                 "typeof(IGenericPickerEffect<>) admits every IGenericPickerEffect<T>.");
         }
+
+#endif
 
         // The filter the [SerializeReference] drawers build for a field of IGenericPickerEffect.
         private static Picker Open(Type[] narrowingTypes) =>

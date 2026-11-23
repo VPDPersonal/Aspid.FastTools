@@ -28,8 +28,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
         [TypeSelector] [SerializeReference] public List<ICollectionTestItem> items = new();
     }
 
-    // [TypeSelector] applies to the collection, so Unity hands its drawer the list instead of each element; the drawer
-    // must then draw every element with the picker itself, in UI Toolkit and in IMGUI.
+    // The default Inspector must give each collection element a picker, whether Unity calls the list or element drawer.
     [TestFixture]
     [Category("Graphics")]
     internal sealed class TypeSelectorCollectionTests
@@ -75,12 +74,12 @@ namespace Aspid.FastTools.Tests.Editors.Types
             foreach (var (bindingPath, listView) in lists)
             {
                 Assert.IsNotNull(listView.Q<InspectorTypeField>(),
-                    $"Each element of '{bindingPath}' must keep the type picker once the attribute reaches only the list.");
+                    $"Each element of '{bindingPath}' must have a type picker.");
             }
         }
 
         [UnityTest]
-        public IEnumerator IMGUI_ManagedReferenceList_IsDrawnByThePickerList()
+        public IEnumerator IMGUI_ManagedReferenceList_UsesTheEditorsCollectionDrawer()
         {
             var serializedObject = new SerializedObject(_target);
             var items = serializedObject.FindProperty(nameof(TypeSelectorCollectionTestObject.items));
@@ -94,12 +93,16 @@ namespace Aspid.FastTools.Tests.Editors.Types
                 height = EditorGUI.GetPropertyHeight(items);
                 EditorGUI.PropertyField(new Rect(0f, 0f, 300f, height), items);
 
+#if UNITY_6000_0_OR_NEWER
                 expected = SerializeReferenceIMGUIList.GetHeight(
                     listProperty: items,
                     label: new GUIContent(items.displayName),
                     elementType: typeof(ICollectionTestItem),
                     baseTypes: Array.Empty<Type>(),
                     depth: 0);
+#else
+                expected = EditorGUIUtility.singleLineHeight;
+#endif
                 drawn = true;
             }));
 
@@ -115,7 +118,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
 
             Assert.IsTrue(drawn, "Precondition: the IMGUI container must be painted.");
             Assert.AreEqual(expected, height,
-                "In IMGUI the drawer must draw the managed-reference list with the picker-backed add of SerializeReferenceIMGUIList.");
+                "The default Inspector must use the list height for this Unity version.");
         }
 
         private ListView FindList(string bindingPath)

@@ -38,8 +38,10 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
                 .SetDelayed(true)
                 .SetReadOnly(true)
                 .SetPassword(true)
+#if UNITY_6000_0_OR_NEWER
                 .SetPlaceholder("Search")
                 .SetHidePlaceholderOnFocus(true)
+#endif
                 .SetAutoCorrection(true)
                 .SetHideMobileInput(true)
                 .SetKeyboardType(TouchScreenKeyboardType.EmailAddress);
@@ -49,8 +51,10 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.IsTrue(field.isDelayed);
             Assert.IsTrue(field.isReadOnly);
             Assert.IsTrue(field.isPasswordField);
+#if UNITY_6000_0_OR_NEWER
             Assert.AreEqual("Search", field.textEdition.placeholder);
             Assert.IsTrue(field.textEdition.hidePlaceholderOnFocus);
+#endif
             Assert.IsTrue(field.autoCorrection);
             Assert.IsTrue(field.hideMobileInput);
             Assert.AreEqual(TouchScreenKeyboardType.EmailAddress, field.keyboardType);
@@ -84,8 +88,8 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
                 .SetLabel("Id")
                 .SetMaxLength(32)
                 .SetDelayed(true)
-                .SetReadOnly(true)
-                .SetPlaceholder("Guid");
+                .SetPlaceholder("Guid")
+                .SetReadOnly(true);
 
             Assert.AreEqual("Id", field.label);
             Assert.AreEqual(32, field.maxLength);
@@ -115,12 +119,13 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         public void TextField_MultilineSettersKeepFieldType()
         {
             // Unity ignores the scroller visibility until the field is multiline.
-            TextField field = new TextField()
-                .SetMultiline(true)
-                .SetVerticalScrollerVisibilitySelf(ScrollerVisibility.AlwaysVisible);
+            TextField field = new TextField().SetMultiline(true);
 
             Assert.IsTrue(field.multiline);
+#if UNITY_6000_0_OR_NEWER
+            field.SetVerticalScrollerVisibilitySelf(ScrollerVisibility.AlwaysVisible);
             Assert.AreEqual(ScrollerVisibility.AlwaysVisible, field.verticalScrollerVisibility);
+#endif
         }
 
         [Test]

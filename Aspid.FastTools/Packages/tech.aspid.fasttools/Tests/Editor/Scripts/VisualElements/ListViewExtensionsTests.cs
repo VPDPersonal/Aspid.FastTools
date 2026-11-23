@@ -35,6 +35,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         }
 
         #region Set, Add and Remove
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void OnAdd_SetAddRemove_ManageTheCallbacks()
         {
@@ -82,6 +83,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
                 first,
                 second);
         }
+#endif
 
         [Test]
         public void ListView_BindItem_SetAddRemove_ManageTheCallbacks()
@@ -248,6 +250,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(afterAdd, calls, "The removed callback must not run.");
         }
 
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void ItemExpandedChanged_AddAndRemove_RaiseOnlyWhileRegistered()
         {
@@ -269,6 +272,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             Assert.AreEqual(1, calls);
         }
+#endif
 
         private static ListView CreateList() =>
             new ListView()
@@ -281,28 +285,39 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         [Test]
         public void BaseListView_Setters_ReturnListAndSetProperties()
         {
+#if UNITY_6000_0_OR_NEWER
             Func<VisualElement> makeNoneElement = () => new Label("None");
+#endif
             var source = new ListView();
 
             ListView list = source
+#if UNITY_6000_0_OR_NEWER
                 .SetAllowAdd(false)
                 .SetAllowRemove(false)
+#endif
                 .SetShowAddRemoveFooter(true)
                 .SetShowBoundCollectionSize(false)
-                .SetReorderMode(ListViewReorderMode.Animated)
+#if UNITY_6000_0_OR_NEWER
                 .SetBindingSourceSelectionMode(BindingSourceSelectionMode.AutoAssign)
-                .SetMakeNoneElement(makeNoneElement);
+                .SetMakeNoneElement(makeNoneElement)
+#endif
+                .SetReorderMode(ListViewReorderMode.Animated);
 
             Assert.AreSame(source, list);
+#if UNITY_6000_0_OR_NEWER
             Assert.IsFalse(list.allowAdd);
             Assert.IsFalse(list.allowRemove);
+#endif
             Assert.IsTrue(list.showAddRemoveFooter);
             Assert.IsFalse(list.showBoundCollectionSize);
             Assert.AreEqual(ListViewReorderMode.Animated, list.reorderMode);
+#if UNITY_6000_0_OR_NEWER
             Assert.AreEqual(BindingSourceSelectionMode.AutoAssign, list.bindingSourceSelectionMode);
             Assert.AreSame(makeNoneElement, list.makeNoneElement);
+#endif
         }
 
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void BaseListView_SetMakeFooter_SetsProperty()
         {
@@ -312,6 +327,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             Assert.AreSame(makeFooter, list.makeFooter);
         }
+#endif
 
         [Test]
         public void BaseListView_FoldoutHeaderSetters_SetProperties()
@@ -322,6 +338,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.IsTrue(list.showFoldoutHeader);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void BaseListView_SetMakeHeader_SetsProperty()
         {
@@ -331,6 +348,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             Assert.AreSame(makeHeader, list.makeHeader);
         }
+#endif
 
         [Test]
         public void BaseVerticalCollectionView_Setters_ReturnListAndSetProperties()
@@ -366,20 +384,26 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         public void ListView_SetMakeItemAndItemTemplate_SetProperties()
         {
             Func<VisualElement> makeItem = () => new Label();
+#if UNITY_6000_0_OR_NEWER
             var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
+#endif
 
             var list = new ListView().SetMakeItem(makeItem);
             Assert.AreSame(makeItem, list.makeItem);
 
+#if UNITY_6000_0_OR_NEWER
             list.SetItemTemplate(template);
             Assert.AreSame(template, list.itemTemplate);
+#endif
         }
 
         [Test]
         public void TreeView_Setters_ReturnTreeAndSetProperties()
         {
             Func<VisualElement> makeItem = () => new Label();
+#if UNITY_6000_0_OR_NEWER
             var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
+#endif
             var source = new TreeView();
 
             TreeView tree = source
@@ -390,10 +414,13 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.IsTrue(tree.autoExpand);
             Assert.AreSame(makeItem, tree.makeItem);
 
+#if UNITY_6000_0_OR_NEWER
             tree.SetItemTemplate(template);
             Assert.AreSame(template, tree.itemTemplate);
+#endif
         }
 
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void MultiColumnViews_SetSortingMode_SetsProperty()
         {
@@ -403,6 +430,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(ColumnSortingMode.Custom, list.sortingMode);
             Assert.AreEqual(ColumnSortingMode.Default, tree.sortingMode);
         }
+#endif
         #endregion
     }
 }

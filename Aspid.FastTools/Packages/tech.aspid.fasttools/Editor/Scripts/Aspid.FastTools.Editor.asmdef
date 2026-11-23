@@ -13,6 +13,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "Unity",
+            "expression": "6000.0.53f1",
+            "define": "ASPID_UNITY_HAS_UXML_LIBRARY"
+        }
+    ],
     "noEngineReferences": false
 }

@@ -3,7 +3,7 @@
   <img src="https://vpdpersonal.github.io/VPDPersonal/banners/aspid-fasttools/banner.png" alt="Aspid.FastTools" />
 </picture>
 
-[![Unity 6000.0.53f1+](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
+[![Unity compatibility](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-unity.svg)](https://assetstore.unity.com/packages/package/2333465)
 [![Release 1.0.0](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
 [![MIT License](https://vpdpersonal.github.io/VPDPersonal/badges/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
@@ -21,12 +21,12 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm
 
 The URL installs the latest release; **Update** in the Package Manager installs the next one.
 
-Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store, skip the git URL and install it from **My Assets** in the Package Manager.
+Requires Unity 2022.3.62f3 or newer. FastTools 1.0.0 requires Unity 6. If you got the package from the Asset Store, skip the git URL and install it from **My Assets** in the Package Manager.
 
 <details>
 <summary>Troubleshooting</summary>
 
-**Compile errors right after the install.** The Unity version is older than 6000.0.53f1: earlier 6000.0 patches lack UI Toolkit APIs that the package uses. Check it in **Help → About Unity** (**Unity → About Unity** on macOS).
+**Compile errors right after the install.** Check the Editor version required by the release you installed. Check it in **Help → About Unity** (**Unity → About Unity** on macOS).
 
 **The Console shows `Assembly with name 'Aspid.FastTools' already exists`.** The project has a second copy of the package, for example its folder under `Assets`. Delete the copy.
 

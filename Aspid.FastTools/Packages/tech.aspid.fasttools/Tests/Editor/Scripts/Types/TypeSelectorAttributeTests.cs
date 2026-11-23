@@ -22,6 +22,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
         }
 
         // Unity then hands the drawer the collection itself, so an empty list can still open the picker from "+".
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void EveryConstructor_AppliesToTheCollection()
         {
@@ -31,6 +32,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
             Assert.IsTrue(new TypeSelectorAttribute("_member").applyToCollection);
             Assert.IsTrue(new TypeSelectorAttribute("_member", "Some.Type, Some").applyToCollection);
         }
+#endif
 
         [Test]
         public void Unconstrained_HasNoNames()

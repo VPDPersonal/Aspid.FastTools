@@ -47,7 +47,7 @@ namespace Aspid.FastTools.Types
 
             // A live script asset re-syncs the stored name after a class rename. A script whose class Unity can no
             // longer find keeps the last known name, which the Inspector shows as missing instead of clearing it.
-            if (!_script) return;
+            if (_script == null) return;
 
             var declared = _script.GetClass();
             if (declared is not null && declared.AssemblyQualifiedName != StoredAssemblyQualifiedName)
@@ -70,7 +70,7 @@ namespace Aspid.FastTools.Types
                 return null;
             }
 
-            return _script ? _script.GetClass() : null;
+            return _script != null ? _script.GetClass() : null;
         }
 #endif
 

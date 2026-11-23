@@ -42,6 +42,7 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         #region CanStartDrag
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
         /// </summary>
@@ -69,6 +70,7 @@ namespace Aspid.FastTools.UIElements
             element.canStartDrag -= value;
             return element;
         }
+#endif
         #endregion
 
         #region SelectionChanged
@@ -132,6 +134,7 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         #region SetupDragAndDrop
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.setupDragAndDrop"/> callback.
         /// </summary>
@@ -159,9 +162,11 @@ namespace Aspid.FastTools.UIElements
             element.setupDragAndDrop -= value;
             return element;
         }
+#endif
         #endregion
 
         #region DragAndDropUpdate
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.dragAndDropUpdate"/> callback.
         /// </summary>
@@ -189,9 +194,11 @@ namespace Aspid.FastTools.UIElements
             element.dragAndDropUpdate -= value;
             return element;
         }
+#endif
         #endregion
 
         #region HandleDrop
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.handleDrop"/> callback.
         /// </summary>
@@ -219,6 +226,7 @@ namespace Aspid.FastTools.UIElements
             element.handleDrop -= value;
             return element;
         }
+#endif
         #endregion
 
         #region ItemsSourceChanged

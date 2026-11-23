@@ -183,10 +183,6 @@
     --unity-selection-color: var(--aspid-colors-overlay-control-hover);
 }
 
-.ability-catalog .unity-base-text-field__input--placeholder {
-    color: var(--aspid-colors-text-darkness);
-}
-
 .ability-catalog .unity-base-text-field:hover > .unity-base-text-field__input {
     border-color: var(--aspid-colors-accent-shade-light);
 }

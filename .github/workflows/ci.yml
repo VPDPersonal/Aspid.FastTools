@@ -314,9 +314,9 @@ jobs:
           EVENT: ${{ github.event_name }}
           BEFORE: ${{ github.event.before }}
           QUICK: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'unity-quick') }}
-          # Every Unity 6000.x line: the minimum that package.json promises, then the newest patch of each later line.
+          # Unity 2022 LTS and every Unity 6000.x line. Keep the Unity 6.0 baseline after the package minimum.
           # The first version is the minimum of package.json: scripts/check-unity-minimum.mjs checks it.
-          UNITY_VERSIONS: 6000.0.53f1 6000.1.17f1 6000.2.15f1 6000.3.26f1 6000.4.12f1 6000.5.11f1 6000.6.5f1
+          UNITY_VERSIONS: 2022.3.62f3 6000.0.53f1 6000.1.17f1 6000.2.15f1 6000.3.26f1 6000.4.12f1 6000.5.11f1 6000.6.5f1
         run: |
           read -ra versions <<<"$UNITY_VERSIONS"
           tested=all
@@ -416,7 +416,7 @@ jobs:
             scripts
 
       - name: Create the test project
-        run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY_VERSION"
+        run: scripts/make-unity-test-project.sh ci-unity-project "$UNITY_VERSION" --tarball
 
       - name: Download the game-ci CLI
         env:

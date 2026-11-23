@@ -3,7 +3,11 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if ASPID_UNITY_HAS_UXML_LIBRARY
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
     internal sealed partial class AspidBox : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidBox";
@@ -11,14 +15,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly ThemeStyle _theme;
         private readonly StatusStyle _status;
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public ThemeStyle.Type Theme
         {
             get => _theme.Value;
             set => _theme.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public StatusStyle.Type Status
         {
             get => _status.Value;

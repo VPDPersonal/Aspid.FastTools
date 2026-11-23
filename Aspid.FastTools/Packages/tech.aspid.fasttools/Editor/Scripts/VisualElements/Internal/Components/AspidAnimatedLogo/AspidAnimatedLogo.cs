@@ -5,7 +5,11 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if ASPID_UNITY_HAS_UXML_LIBRARY
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
     internal sealed partial class AspidAnimatedLogo : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedLogo";
@@ -30,38 +34,50 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private IVisualElementScheduledItem _colorCycle;
         private readonly IVisualElementScheduledItem _pulse;
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public long ColorCycleIntervalMs { get; set; }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float PulseSpeed
         {
             get => _pulseSpeed.Value;
             set => _pulseSpeed.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float PulseHoverAmplitude
         {
             get => _pulseHoverAmplitude.Value;
             set => _pulseHoverAmplitude.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Texture2D Image1
         {
             get => _layer1Image.Value;
             set => _layer1Image.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Texture2D Image2
         {
             get => _layer2Image.Value;
             set => _layer2Image.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Texture2D Image3
         {
             get => _layer3Image.Value;

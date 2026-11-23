@@ -19,7 +19,9 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         public void Setters_ReturnElementAndSetProperties()
         {
             var userData = new object();
+#if UNITY_6000_0_OR_NEWER
             var dataSource = new object();
+#endif
             var source = new VisualElement();
 
             VisualElement element = source
@@ -27,13 +29,19 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
                 .SetVisible(false)
                 .SetTooltip("Hint")
                 .SetUserData(userData)
+#if UNITY_6000_0_OR_NEWER
                 .SetDataSource(dataSource)
+#endif
                 .SetViewDataKey("key")
+#if UNITY_6000_0_OR_NEWER
                 .SetDataSourceType(typeof(string))
+#endif
                 .SetUsageHints(UsageHints.DynamicTransform)
                 .SetPickingMode(PickingMode.Ignore)
+#if UNITY_6000_0_OR_NEWER
                 .SetDisablePlayModeTint(true)
                 .SetDataSourcePath(new PropertyPath("a.b"))
+#endif
                 .SetLanguageDirection(LanguageDirection.RTL);
 
             Assert.AreSame(source, element);
@@ -41,13 +49,19 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.IsFalse(element.visible);
             Assert.AreEqual("Hint", element.tooltip);
             Assert.AreSame(userData, element.userData);
+#if UNITY_6000_0_OR_NEWER
             Assert.AreSame(dataSource, element.dataSource);
+#endif
             Assert.AreEqual("key", element.viewDataKey);
+#if UNITY_6000_0_OR_NEWER
             Assert.AreEqual(typeof(string), element.dataSourceType);
+#endif
             Assert.AreEqual(UsageHints.DynamicTransform, element.usageHints);
             Assert.AreEqual(PickingMode.Ignore, element.pickingMode);
+#if UNITY_6000_0_OR_NEWER
             Assert.IsTrue(element.disablePlayModeTint);
             Assert.AreEqual(new PropertyPath("a.b"), element.dataSourcePath);
+#endif
             Assert.AreEqual(LanguageDirection.RTL, element.languageDirection);
         }
 
