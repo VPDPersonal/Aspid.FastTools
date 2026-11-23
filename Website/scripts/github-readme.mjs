@@ -207,10 +207,10 @@ function donationButtons(tree) {
 
   function button(link, file) {
     const src = `Website/docs/Images/${file}`;
-    return `<a href="${escape(link.url)}"><picture><source media="(max-width: 640px)" srcset="${src}" width="100%" height="48" />`
+    return `<a href="${escape(link.url)}"><picture><source media="(max-width: 640px)" srcset="${src}#stacked" width="100%" height="48" />`
       + `${image(src, inline(link.children), ' width="50%" height="48"')}</picture></a>`;
   }
-  tree.children[index + 2] = html(`<p>${button(kofi, 'support-kofi.svg')}${button(store, 'support-store.svg')}</p>`);
+  tree.children[index + 2] = html(`<p>${button(kofi, 'readme-kofi-button.svg')}${button(store, 'readme-store-button.svg')}</p>`);
 }
 
 /**
