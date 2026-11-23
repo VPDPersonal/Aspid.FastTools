@@ -316,7 +316,7 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement => condition ? element.AddStyleSheetsFromResources(paths) : element;
         #endregion
 
-#if ASPID_UNITY_HAS_STYLE_SHEET_INSERT
+#if ASPID_UNITY_6000_0_49F1_OR_NEWER
         #region InsertStyleSheets
         /// <summary>
         /// Inserts a style sheet into <see cref="VisualElement.styleSheets"/> at the specified index.
@@ -1337,7 +1337,7 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement => condition ? element.ClearStyleSheets() : element;
         #endregion
 
-#if ASPID_UNITY_HAS_STYLE_SHEET_INSERT
+#if ASPID_UNITY_6000_0_49F1_OR_NEWER
         private static int InsertStyleSheetAt(VisualElement element, int index, StyleSheet? styleSheet)
         {
             if (styleSheet == null) return index;

@@ -100,7 +100,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(0, element.styleSheets.count);
         }
 
-#if ASPID_UNITY_HAS_STYLE_SHEET_INSERT
+#if ASPID_UNITY_6000_0_49F1_OR_NEWER
         [Test]
         public void InsertStyleSheet_InsertsAtIndex()
         {

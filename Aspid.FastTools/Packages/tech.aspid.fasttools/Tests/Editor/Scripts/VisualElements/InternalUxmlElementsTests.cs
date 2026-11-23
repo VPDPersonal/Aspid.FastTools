@@ -55,7 +55,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             }
         }
 
-#if ASPID_UNITY_HAS_UXML_LIBRARY
+#if ASPID_UNITY_6000_0_53F1_OR_NEWER
         [Test]
         public void InternalUxmlElements_AreHiddenInLibrary()
         {

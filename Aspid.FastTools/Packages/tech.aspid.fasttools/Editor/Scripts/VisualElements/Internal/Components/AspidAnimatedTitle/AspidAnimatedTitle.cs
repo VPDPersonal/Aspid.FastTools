@@ -7,7 +7,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-#if ASPID_UNITY_HAS_UXML_LIBRARY
+#if ASPID_UNITY_6000_0_53F1_OR_NEWER
     [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
 #elif UNITY_6000_0_OR_NEWER
     [UxmlElement(nameof(AspidAnimatedTitle))]

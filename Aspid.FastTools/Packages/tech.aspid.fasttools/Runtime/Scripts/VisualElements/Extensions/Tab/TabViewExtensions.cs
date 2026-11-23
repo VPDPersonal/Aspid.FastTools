@@ -40,7 +40,7 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-#if ASPID_UNITY_HAS_TAB_VIEW_EVENTS
+#if ASPID_UNITY_6000_0_38F1_OR_NEWER
         #region TabReordered
         /// <summary>
         /// Subscribes to the <see cref="TabView.tabReordered"/> event.

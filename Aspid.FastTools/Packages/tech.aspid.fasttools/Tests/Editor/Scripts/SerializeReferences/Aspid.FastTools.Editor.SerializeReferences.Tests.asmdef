@@ -26,7 +26,7 @@
         {
             "name": "Unity",
             "expression": "6000.0.7f1",
-            "define": "ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR"
+            "define": "ASPID_UNITY_6000_0_7F1_OR_NEWER"
         }
     ],
     "noEngineReferences": false

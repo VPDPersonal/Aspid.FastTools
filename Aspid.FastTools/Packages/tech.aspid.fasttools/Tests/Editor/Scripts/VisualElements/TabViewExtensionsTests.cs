@@ -102,7 +102,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(1, calls.Count);
         }
 
-#if ASPID_UNITY_HAS_TAB_VIEW_EVENTS
+#if ASPID_UNITY_6000_0_38F1_OR_NEWER
         [Test]
         public void TabView_TabReordered_AddAndRemove()
         {

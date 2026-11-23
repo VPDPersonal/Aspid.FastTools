@@ -25,22 +25,22 @@
         {
             "name": "Unity",
             "expression": "6000.0.38f1",
-            "define": "ASPID_UNITY_HAS_TAB_VIEW_EVENTS"
+            "define": "ASPID_UNITY_6000_0_38F1_OR_NEWER"
         },
         {
             "name": "Unity",
             "expression": "6000.0.49f1",
-            "define": "ASPID_UNITY_HAS_STYLE_SHEET_INSERT"
+            "define": "ASPID_UNITY_6000_0_49F1_OR_NEWER"
         },
         {
             "name": "Unity",
             "expression": "6000.0.53f1",
-            "define": "ASPID_UNITY_HAS_UXML_LIBRARY"
+            "define": "ASPID_UNITY_6000_0_53F1_OR_NEWER"
         },
         {
             "name": "Unity",
             "expression": "6000.0.7f1",
-            "define": "ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR"
+            "define": "ASPID_UNITY_6000_0_7F1_OR_NEWER"
         }
     ],
     "noEngineReferences": false
