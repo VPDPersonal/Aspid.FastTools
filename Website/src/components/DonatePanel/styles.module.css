@@ -35,8 +35,9 @@
   text-decoration: none;
 }
 :global(.markdown) .actions a.store:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
-  color: var(--venom-fg-strong);
-  background: var(--venom-panel);
+  /* Keep the white Unity mark visible in both themes. */
+  color: #f0f0f2;
+  background: #10121a;
 }
 :global(.markdown) .actions a:hover {
   box-shadow: 0 0 0 2px var(--venom-accent-mark);
