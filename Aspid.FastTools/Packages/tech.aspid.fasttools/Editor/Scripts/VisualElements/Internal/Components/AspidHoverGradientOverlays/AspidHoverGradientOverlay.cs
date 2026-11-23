@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-#if ASPID_UNITY_6000_0_53F1_OR_NEWER
+#if UNITY_6000_0_53F1_OR_NEWER
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
 #elif UNITY_6000_0_OR_NEWER
     [UxmlElement]

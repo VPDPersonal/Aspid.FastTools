@@ -352,7 +352,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
             using var serializedObject = new SerializedObject(_host);
             var selectorList = serializedObject.FindProperty(nameof(DrawnNestingHost.selectorList));
 
-#if ASPID_UNITY_6000_0_7F1_OR_NEWER
+#if UNITY_6000_0_7F1_OR_NEWER
             Assert.IsFalse(SerializeReferenceNesting.DrawsOwnHeader(selectorList, depth: 0),
                 "[TypeSelector] applies to the collection, so Unity hands the list to the attribute's drawer.");
             Assert.IsTrue(SerializeReferenceNesting.DrawsOwnHeader(selectorList.GetArrayElementAtIndex(0), depth: 0),
@@ -366,7 +366,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
         [TestCase(nameof(DrawnNestingHost.drawnList), typeof(PropertyField))]
         [TestCase(nameof(DrawnNestingHost.undrawnList), typeof(SerializeReferenceField))]
-#if ASPID_UNITY_6000_0_7F1_OR_NEWER
+#if UNITY_6000_0_7F1_OR_NEWER
         [TestCase(nameof(DrawnNestingHost.selectorList), typeof(SerializeReferenceField))]
 #else
         [TestCase(nameof(DrawnNestingHost.selectorList), typeof(PropertyField))]

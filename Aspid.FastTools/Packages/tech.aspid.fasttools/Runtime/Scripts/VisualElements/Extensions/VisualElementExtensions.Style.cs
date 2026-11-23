@@ -621,7 +621,7 @@ namespace Aspid.FastTools.UIElements
         }
 #endif
 
-#if ASPID_UNITY_6000_0_1F1_OR_NEWER
+#if UNITY_6000_0_1F1_OR_NEWER
         /// <summary>
         /// Sets <see cref="IStyle.unityEditorTextRenderingMode"/>.
         /// </summary>
@@ -2667,7 +2667,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
-#if ASPID_UNITY_6000_0_46F1_OR_NEWER
+#if UNITY_6000_0_46F1_OR_NEWER
         /// <summary>
         /// Sets <see cref="IStyle.unitySliceType"/>.
         /// </summary>

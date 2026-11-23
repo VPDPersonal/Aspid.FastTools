@@ -79,7 +79,7 @@ namespace Aspid.FastTools.Types
         /// </summary>
         /// <param name="types">The base types; the picker offers only types assignable to all of them.</param>
         public TypeSelectorAttribute(params Type[]? types)
-#if ASPID_UNITY_6000_0_7F1_OR_NEWER
+#if UNITY_6000_0_7F1_OR_NEWER
             : base(applyToCollection: true)
 #endif
         {
@@ -112,7 +112,7 @@ namespace Aspid.FastTools.Types
         /// Type or member names, each resolved as in <see cref="TypeSelectorAttribute(string)"/>.
         /// </param>
         public TypeSelectorAttribute(params string[]? assemblyQualifiedNames)
-#if ASPID_UNITY_6000_0_7F1_OR_NEWER
+#if UNITY_6000_0_7F1_OR_NEWER
             : base(applyToCollection: true)
 #endif
         {

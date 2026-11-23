@@ -22,7 +22,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
         }
 
         // Unity then hands the drawer the collection itself, so an empty list can still open the picker from "+".
-#if ASPID_UNITY_6000_0_7F1_OR_NEWER
+#if UNITY_6000_0_7F1_OR_NEWER
         [Test]
         public void EveryConstructor_AppliesToTheCollection()
         {
