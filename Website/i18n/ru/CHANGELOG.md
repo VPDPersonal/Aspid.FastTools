@@ -11,8 +11,8 @@
 
 ### Добавлено
 
-- Поддержка Unity 2022.3.62f3 при установке через Package Manager. В Unity 2022.3 окно выбора SerializeReference предлагает классы без параметров типа, а Fluent API охватывает доступные в этой версии компоненты и методы.
-- `SliderFloatExtensions` объединяет методы настройки слайдеров с типом `float` и поддерживает прямые статические вызовы.
+- Поддержка Unity 2022.3.62f3 при установке через Package Manager. В Unity 2022.3 окно выбора SerializeReference предлагает классы без параметров типа, а Fluent API охватывает доступные в этой версии компоненты и методы. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
+- `SliderFloatExtensions` объединяет методы настройки слайдеров с типом `float` и поддерживает прямые статические вызовы. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
 
 ## [1.0.0] — 2026-11-05
 
