@@ -102,6 +102,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(1, calls.Count);
         }
 
+#if ASPID_UNITY_HAS_TAB_VIEW_EVENTS
         [Test]
         public void TabView_TabReordered_AddAndRemove()
         {
@@ -120,6 +121,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             view.RemoveTabReordered(OnReordered).ReorderTab(1, 0);
             Assert.AreEqual(1, calls.Count);
         }
+#endif
 
         [UnityTest]
         public IEnumerator Tab_Selected_AddAndRemove()
@@ -170,6 +172,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.IsFalse(view.Contains(tab));
         }
 
+#if ASPID_UNITY_HAS_TAB_VIEW_EVENTS
         [UnityTest]
         public IEnumerator TabView_TabClosed_AddAndRemove()
         {
@@ -193,6 +196,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             SendPointerDown(first.tabHeader.Q(className: Tab.closeButtonUssClassName));
             Assert.AreEqual(1, calls.Count);
         }
+#endif
     }
 }
 #endif

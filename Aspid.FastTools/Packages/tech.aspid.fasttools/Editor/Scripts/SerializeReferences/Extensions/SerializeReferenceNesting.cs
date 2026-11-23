@@ -44,7 +44,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true))
             {
-#if UNITY_6000_0_OR_NEWER
+#if ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR
                 return !isArrayElement;
 #else
                 return !isArray;

@@ -124,7 +124,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
         }
 
         // The attribute applies to the list itself, so the "+" is set up before any element exists to set it up.
-#if UNITY_6000_0_OR_NEWER
+#if ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR
         [UnityTest]
         public IEnumerator DefaultInspector_EmptySelectorList_OverridesTheAddButton()
         {

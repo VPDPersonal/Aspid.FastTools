@@ -21,6 +21,27 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "Unity",
+            "expression": "6000.0.38f1",
+            "define": "ASPID_UNITY_HAS_TAB_VIEW_EVENTS"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.49f1",
+            "define": "ASPID_UNITY_HAS_STYLE_SHEET_INSERT"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.53f1",
+            "define": "ASPID_UNITY_HAS_UXML_LIBRARY"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.7f1",
+            "define": "ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR"
+        }
+    ],
     "noEngineReferences": false
 }

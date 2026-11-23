@@ -18,6 +18,21 @@
             "name": "Unity",
             "expression": "6000.0.46f1",
             "define": "ASPID_UNITY_HAS_SLICE_TYPE"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.38f1",
+            "define": "ASPID_UNITY_HAS_TAB_VIEW_EVENTS"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.49f1",
+            "define": "ASPID_UNITY_HAS_STYLE_SHEET_INSERT"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.7f1",
+            "define": "ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR"
         }
     ],
     "noEngineReferences": false

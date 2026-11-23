@@ -18,6 +18,11 @@
             "name": "Unity",
             "expression": "6000.0.53f1",
             "define": "ASPID_UNITY_HAS_UXML_LIBRARY"
+        },
+        {
+            "name": "Unity",
+            "expression": "6000.0.7f1",
+            "define": "ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR"
         }
     ],
     "noEngineReferences": false

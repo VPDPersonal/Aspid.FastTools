@@ -93,7 +93,7 @@ namespace Aspid.FastTools.Tests.Editors.Types
                 height = EditorGUI.GetPropertyHeight(items);
                 EditorGUI.PropertyField(new Rect(0f, 0f, 300f, height), items);
 
-#if UNITY_6000_0_OR_NEWER
+#if ASPID_UNITY_HAS_COLLECTION_TYPE_SELECTOR
                 expected = SerializeReferenceIMGUIList.GetHeight(
                     listProperty: items,
                     label: new GUIContent(items.displayName),

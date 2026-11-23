@@ -100,7 +100,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(0, element.styleSheets.count);
         }
 
-#if UNITY_6000_0_OR_NEWER
+#if ASPID_UNITY_HAS_STYLE_SHEET_INSERT
         [Test]
         public void InsertStyleSheet_InsertsAtIndex()
         {
@@ -230,7 +230,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         public int EnableStyleSheetIf_AppliesOnlyWhenTrue(bool condition) =>
             new VisualElement().AddStyleSheet(_first).EnableStyleSheetIf(condition, _first, enable: false).styleSheets.count;
 
-#if UNITY_6000_0_OR_NEWER
+#if ASPID_UNITY_HAS_STYLE_SHEET_INSERT
         [TestCase(true)]
         [TestCase(false)]
         public void InsertStyleSheetIf_InsertsOnlyWhenTrue(bool condition)
