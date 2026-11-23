@@ -123,10 +123,10 @@ test('the donation buttons retain both destinations and accessible link names', 
   const result = layout(section);
   assert.match(result, /Your support helps maintain the package\.\n\n<p>/);
   for (const [url, file, label] of [
-    ['https://ko-fi.com/owner', 'readme-kofi-button.svg', 'Leave a tip on Ko-fi'],
-    ['https://assetstore.unity.com/packages/package/1', 'readme-unity-asset-store-button.svg', 'buy the package on the Unity Asset Store'],
+    ['https://ko-fi.com/owner', 'kofi-button.svg', 'Leave a tip on Ko-fi'],
+    ['https://assetstore.unity.com/packages/package/1', 'unity-asset-store-button.svg', 'buy the package on the Unity Asset Store'],
   ]) {
-    const src = `Website/docs/Images/${file}`;
+    const src = `https://vpdpersonal.github.io/VPDPersonal/support/${file}`;
     assert.ok(result.includes(`<a href="${url}"><picture><source media="(max-width: 640px)" srcset="${src}#stacked" width="100%" height="48" />`
       + `<img src="${src}" alt="${label}" width="50%" height="48"></picture></a>`));
   }

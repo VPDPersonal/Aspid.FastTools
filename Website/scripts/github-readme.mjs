@@ -206,11 +206,11 @@ function donationButtons(tree) {
   if (!kofi || !store || links.length !== 2) return;
 
   function button(link, file) {
-    const src = `Website/docs/Images/${file}`;
+    const src = `https://vpdpersonal.github.io/VPDPersonal/support/${file}`;
     return `<a href="${escape(link.url)}"><picture><source media="(max-width: 640px)" srcset="${src}#stacked" width="100%" height="48" />`
       + `${image(src, inline(link.children), ' width="50%" height="48"')}</picture></a>`;
   }
-  tree.children[index + 2] = html(`<p>${button(kofi, 'readme-kofi-button.svg')}${button(store, 'readme-unity-asset-store-button.svg')}</p>`);
+  tree.children[index + 2] = html(`<p>${button(kofi, 'kofi-button.svg')}${button(store, 'unity-asset-store-button.svg')}</p>`);
 }
 
 /**
