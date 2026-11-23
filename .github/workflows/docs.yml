@@ -7,8 +7,8 @@ name: Docs
 on:
   push:
     branches: [main]
-    # The pull_request trigger reuses this list.
-    paths: &paths
+    # Keep these paths in sync with the pull request check below.
+    paths:
       - 'Website/**'
       # Capture recipes: the site reads only the images they write.
       - '!Website/media/**'
@@ -19,11 +19,11 @@ on:
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
       - '.github/workflows/docs.yml'
   pull_request:
-    paths: *paths
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 # Deploys queue in one group so none is cancelled halfway; a PR build only competes with newer pushes to its own PR.
 concurrency:
@@ -32,31 +32,60 @@ concurrency:
 
 jobs:
   build:
+    name: Docs build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # Run the job on every PR so GitHub always gets a required check result.
+      - name: Check whether the site needs rebuilding
+        id: changes
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: pr.number });
+            const inputs = new Set([
+              'README.md',
+              'CHANGELOG.md',
+              'scripts/frame-doc-captures.sh',
+              'Aspid.FastTools/Packages/tech.aspid.fasttools/README.md',
+              'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json',
+              '.github/workflows/docs.yml',
+            ]);
+            const affectsSite = (path) => inputs.has(path)
+              || (path.startsWith('Website/') && !path.startsWith('Website/media/'));
+            // The endpoint returns at most 3,000 files. Build when the list may be incomplete.
+            const build = files.length >= 3000 || files.length < pr.changed_files
+              || files.some(({ filename, previous_filename }) =>
+                affectsSite(filename) || (previous_filename && affectsSite(previous_filename)));
+
+            core.info(build ? 'Website build required.' : 'No website inputs changed.');
+            core.setOutput('build', build);
+
       # A deploy needs the full history: Docusaurus and sync-changelog read each page's "Last updated" date from git log,
       # which needs only commits and trees, so the blob filter skips the old DLLs and media.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name != 'pull_request' || steps.changes.outputs.build == 'true'
         with:
           fetch-depth: ${{ github.event_name == 'pull_request' && 1 || 0 }}
           filter: blob:none
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: github.event_name != 'pull_request' || steps.changes.outputs.build == 'true'
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: Website/package-lock.json
-      - run: npm ci
-        working-directory: Website
-      - run: npm run check-readme
-        working-directory: Website
-      - run: npm run check-translations
-        working-directory: Website
-      - run: node --test scripts/*.test.mjs
-        working-directory: Website
-      - run: npm run build
-        working-directory: Website
-      - run: npm run check-selectors
+      - name: Validate and build the website
+        if: github.event_name != 'pull_request' || steps.changes.outputs.build == 'true'
+        run: |
+          npm ci
+          npm run check-readme
+          npm run check-translations
+          node --test scripts/*.test.mjs
+          npm run build
+          npm run check-selectors
         working-directory: Website
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.event_name != 'pull_request'
