@@ -1,6 +1,6 @@
 // Check that every hand-written copy of the minimum Unity version agrees with package.json, where it is split into
-// "unity" (6000.0) and "unityRelease" (53f1): 6000.0.53f1. A raised minimum that misses one place leaves an agent, the
-// review bot or the CI matrix on the old version. ci.yml runs it:
+// "unity" (6000.0) and "unityRelease" (53f1): 6000.0.53f1. Keep agent instructions, documentation and the CI matrix
+// on the same minimum. ci.yml runs it:
 //   node scripts/check-unity-minimum.mjs
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +14,6 @@ const MENTIONS = [
   'Aspid.FastTools/AGENTS.md',
   'Website/docs/README.md',
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
-  '.github/claude-review.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',
 ];
