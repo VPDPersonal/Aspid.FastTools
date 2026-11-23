@@ -1,6 +1,8 @@
 // @ts-check
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import venom from './src/prism/venom.js';
 import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-directives';
 import remarkCrossInstanceLinks from './src/remark/crossInstanceLinks.js';
@@ -16,6 +18,7 @@ const LOCALES = ['en', 'ru'];
 const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const ASSET_STORE = 'https://assetstore.unity.com/packages/package/2333465';
 const BASE_URL = '/Aspid.FastTools/';
+const SITE_DIR = fileURLToPath(new URL('.', import.meta.url));
 /** The docs in the working tree describe the package version in the working tree. */
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json`, import.meta.url), 'utf8')).version;
 /**
@@ -139,7 +142,8 @@ const config = {
     // The shared introduction uses a banner instead of a heading; retain its page metadata.
     async parseFrontMatter({filePath, fileContent, defaultParseFrontMatter}) {
       const result = await defaultParseFrontMatter({filePath, fileContent});
-      if (fileContent.includes('/aspid_fasttools_readme_banner.png')) {
+      const sourcePath = relative(SITE_DIR, filePath).replaceAll(sep, '/');
+      if (/^(?:docs|i18n\/[^/]+\/docusaurus-plugin-content-docs\/current)\/README\.md$/.test(sourcePath)) {
         result.frontMatter.title ??= 'Aspid.FastTools';
         // Pagination reuses the untranslated sidebar label of a page without a title; give it the translated one.
         result.frontMatter.pagination_label ??= introductionLabel(filePath);
