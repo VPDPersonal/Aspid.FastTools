@@ -45,8 +45,7 @@ const checkInstallUrls = (file, text) => {
 for (const file of FILES) {
   const text = readFileSync(file, 'utf8');
   const badge = `https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-${branch === 'upm' ? 'release' : 'preview'}.svg`;
-  const unity = `https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/${branch === 'upm' ? '' : 'preview/'}status-badge-unity.svg`;
-  if (!text.includes(badge) || !text.includes(unity)) fail(file, `the shared badge URLs do not match #${branch}; ${fix}`);
+  if (!text.includes(badge)) fail(file, `the shared version badge URL does not match #${branch}; ${fix}`);
   if (file === 'README.md') {
     if (!text.includes(`[![${label}](${badge})]`)) fail(file, `has no dynamic "${label}" badge; ${fix}`);
     const target = `${REPOSITORY}/releases${branch === 'upm' ? '/latest' : ''})`;

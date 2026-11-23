@@ -8,11 +8,12 @@ import { fileURLToPath } from 'node:url';
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 
 const PACKAGE_JSON = 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json';
-// Files that name the minimum in prose. Every full Unity version in them (2022.3.62f3) states the minimum, so a
+// Files that name the minimum. Every full Unity version in them (2022.3.62f3) states the minimum, so a
 // second mention left on the old value fails too.
 const MENTIONS = [
   'Aspid.FastTools/AGENTS.md',
   'Website/docs/README.md',
+  'Website/docs/Images/status-badge-unity.svg',
   'Website/i18n/ru/docusaurus-plugin-content-docs/current/README.md',
   '.github/ISSUE_TEMPLATE/release_checklist.yml',
   'skills/aspid-visual-element-fluent/SKILL.md',
