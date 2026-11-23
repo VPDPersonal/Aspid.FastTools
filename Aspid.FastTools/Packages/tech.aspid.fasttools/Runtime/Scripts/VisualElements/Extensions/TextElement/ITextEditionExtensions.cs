@@ -93,6 +93,20 @@ namespace Aspid.FastTools.UIElements
             element.placeholder = value;
             return element;
         }
+
+        /// <summary>
+        /// Sets <see cref="ITextEdition.hidePlaceholderOnFocus"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">When <see langword="true"/>, the placeholder is hidden while the field has focus.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetHidePlaceholderOnFocus<T>(this T element, bool value)
+            where T : ITextEdition
+        {
+            element.hidePlaceholderOnFocus = value;
+            return element;
+        }
 #endif
 
         /// <summary>
@@ -138,22 +152,6 @@ namespace Aspid.FastTools.UIElements
             where T : ITextEdition
         {
             element.hideSoftKeyboard = value;
-            return element;
-        }
-#endif
-
-#if UNITY_6000_0_OR_NEWER
-        /// <summary>
-        /// Sets <see cref="ITextEdition.hidePlaceholderOnFocus"/>.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, the placeholder is hidden while the field has focus.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T SetHidePlaceholderOnFocus<T>(this T element, bool value)
-            where T : ITextEdition
-        {
-            element.hidePlaceholderOnFocus = value;
             return element;
         }
 #endif

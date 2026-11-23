@@ -121,6 +121,30 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             view.RemoveTabReordered(OnReordered).ReorderTab(1, 0);
             Assert.AreEqual(1, calls.Count);
         }
+
+        [UnityTest]
+        public IEnumerator TabView_TabClosed_AddAndRemove()
+        {
+            using var panel = new TestPanel();
+            var calls = new List<(Tab tab, int index)>();
+            void OnTabClosed(Tab tab, int index) => calls.Add((tab, index));
+
+            var first = new Tab("First").SetCloseable(true);
+            var second = new Tab("Second").SetCloseable(true);
+            var view = new TabView()
+                .AddChild(first)
+                .AddChild(second)
+                .AddTabClosed(OnTabClosed);
+            panel.Root.Add(view);
+            yield return null;
+
+            SendPointerDown(second.tabHeader.Q(className: Tab.closeButtonUssClassName));
+            CollectionAssert.AreEqual(new[] { (second, 1) }, calls);
+
+            view.RemoveTabClosed(OnTabClosed);
+            SendPointerDown(first.tabHeader.Q(className: Tab.closeButtonUssClassName));
+            Assert.AreEqual(1, calls.Count);
+        }
 #endif
 
         [UnityTest]
@@ -171,32 +195,6 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             CollectionAssert.AreEqual(new[] { tab }, closed);
             Assert.IsFalse(view.Contains(tab));
         }
-
-#if ASPID_UNITY_HAS_TAB_VIEW_EVENTS
-        [UnityTest]
-        public IEnumerator TabView_TabClosed_AddAndRemove()
-        {
-            using var panel = new TestPanel();
-            var calls = new List<(Tab tab, int index)>();
-            void OnTabClosed(Tab tab, int index) => calls.Add((tab, index));
-
-            var first = new Tab("First").SetCloseable(true);
-            var second = new Tab("Second").SetCloseable(true);
-            var view = new TabView()
-                .AddChild(first)
-                .AddChild(second)
-                .AddTabClosed(OnTabClosed);
-            panel.Root.Add(view);
-            yield return null;
-
-            SendPointerDown(second.tabHeader.Q(className: Tab.closeButtonUssClassName));
-            CollectionAssert.AreEqual(new[] { (second, 1) }, calls);
-
-            view.RemoveTabClosed(OnTabClosed);
-            SendPointerDown(first.tabHeader.Q(className: Tab.closeButtonUssClassName));
-            Assert.AreEqual(1, calls.Count);
-        }
-#endif
     }
 }
 #endif

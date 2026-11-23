@@ -130,6 +130,28 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             CollectionAssert.AreEqual(new[] { _second, _third, _first }, GetStyleSheets(element));
         }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void InsertStyleSheetIf_InsertsOnlyWhenTrue(bool condition)
+        {
+            var element = new VisualElement().AddStyleSheet(_first);
+
+            element.InsertStyleSheetIf(condition, 0, _second);
+
+            CollectionAssert.AreEqual(condition ? new[] { _second, _first } : new[] { _first }, GetStyleSheets(element));
+        }
+
+        [Test]
+        public void InsertStyleSheetFromResources_InsertsAtIndex()
+        {
+            var element = new VisualElement().AddStyleSheet(_first);
+
+            element.InsertStyleSheetFromResources(0, ExistingPath);
+
+            Assert.AreEqual(2, element.styleSheets.count);
+            Assert.AreSame(_first, element.styleSheets[1]);
+        }
 #endif
 
         [Test]
@@ -229,30 +251,6 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         [TestCase(false, ExpectedResult = 1)]
         public int EnableStyleSheetIf_AppliesOnlyWhenTrue(bool condition) =>
             new VisualElement().AddStyleSheet(_first).EnableStyleSheetIf(condition, _first, enable: false).styleSheets.count;
-
-#if ASPID_UNITY_HAS_STYLE_SHEET_INSERT
-        [TestCase(true)]
-        [TestCase(false)]
-        public void InsertStyleSheetIf_InsertsOnlyWhenTrue(bool condition)
-        {
-            var element = new VisualElement().AddStyleSheet(_first);
-
-            element.InsertStyleSheetIf(condition, 0, _second);
-
-            CollectionAssert.AreEqual(condition ? new[] { _second, _first } : new[] { _first }, GetStyleSheets(element));
-        }
-
-        [Test]
-        public void InsertStyleSheetFromResources_InsertsAtIndex()
-        {
-            var element = new VisualElement().AddStyleSheet(_first);
-
-            element.InsertStyleSheetFromResources(0, ExistingPath);
-
-            Assert.AreEqual(2, element.styleSheets.count);
-            Assert.AreSame(_first, element.styleSheets[1]);
-        }
-#endif
 
         [Test]
         public void EnableStyleSheetFromResources_AddsAndRemoves()

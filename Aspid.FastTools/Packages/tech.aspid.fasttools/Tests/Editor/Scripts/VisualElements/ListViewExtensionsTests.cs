@@ -285,36 +285,40 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         [Test]
         public void BaseListView_Setters_ReturnListAndSetProperties()
         {
-#if UNITY_6000_0_OR_NEWER
-            Func<VisualElement> makeNoneElement = () => new Label("None");
-#endif
             var source = new ListView();
 
             ListView list = source
-#if UNITY_6000_0_OR_NEWER
-                .SetAllowAdd(false)
-                .SetAllowRemove(false)
-#endif
                 .SetShowAddRemoveFooter(true)
                 .SetShowBoundCollectionSize(false)
-#if UNITY_6000_0_OR_NEWER
-                .SetBindingSourceSelectionMode(BindingSourceSelectionMode.AutoAssign)
-                .SetMakeNoneElement(makeNoneElement)
-#endif
                 .SetReorderMode(ListViewReorderMode.Animated);
 
             Assert.AreSame(source, list);
-#if UNITY_6000_0_OR_NEWER
-            Assert.IsFalse(list.allowAdd);
-            Assert.IsFalse(list.allowRemove);
-#endif
             Assert.IsTrue(list.showAddRemoveFooter);
             Assert.IsFalse(list.showBoundCollectionSize);
             Assert.AreEqual(ListViewReorderMode.Animated, list.reorderMode);
+
 #if UNITY_6000_0_OR_NEWER
+            Func<VisualElement> makeNoneElement = () => new Label("None");
+
+            Assert.AreSame(list, list
+                .SetAllowAdd(value: false)
+                .SetAllowRemove(value: false)
+                .SetBindingSourceSelectionMode(BindingSourceSelectionMode.AutoAssign)
+                .SetMakeNoneElement(makeNoneElement));
+            Assert.IsFalse(list.allowAdd);
+            Assert.IsFalse(list.allowRemove);
             Assert.AreEqual(BindingSourceSelectionMode.AutoAssign, list.bindingSourceSelectionMode);
             Assert.AreSame(makeNoneElement, list.makeNoneElement);
 #endif
+        }
+
+        [Test]
+        public void BaseListView_FoldoutHeaderSetters_SetProperties()
+        {
+            var list = new ListView().SetHeaderTitle("Items").SetShowFoldoutHeader(true);
+
+            Assert.AreEqual("Items", list.headerTitle);
+            Assert.IsTrue(list.showFoldoutHeader);
         }
 
 #if UNITY_6000_0_OR_NEWER
@@ -327,18 +331,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             Assert.AreSame(makeFooter, list.makeFooter);
         }
-#endif
 
-        [Test]
-        public void BaseListView_FoldoutHeaderSetters_SetProperties()
-        {
-            var list = new ListView().SetHeaderTitle("Items").SetShowFoldoutHeader(true);
-
-            Assert.AreEqual("Items", list.headerTitle);
-            Assert.IsTrue(list.showFoldoutHeader);
-        }
-
-#if UNITY_6000_0_OR_NEWER
         [Test]
         public void BaseListView_SetMakeHeader_SetsProperty()
         {
@@ -384,14 +377,13 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         public void ListView_SetMakeItemAndItemTemplate_SetProperties()
         {
             Func<VisualElement> makeItem = () => new Label();
-#if UNITY_6000_0_OR_NEWER
-            var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
-#endif
-
             var list = new ListView().SetMakeItem(makeItem);
+
             Assert.AreSame(makeItem, list.makeItem);
 
 #if UNITY_6000_0_OR_NEWER
+            var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
+
             list.SetItemTemplate(template);
             Assert.AreSame(template, list.itemTemplate);
 #endif
@@ -401,9 +393,6 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         public void TreeView_Setters_ReturnTreeAndSetProperties()
         {
             Func<VisualElement> makeItem = () => new Label();
-#if UNITY_6000_0_OR_NEWER
-            var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
-#endif
             var source = new TreeView();
 
             TreeView tree = source
@@ -415,6 +404,8 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreSame(makeItem, tree.makeItem);
 
 #if UNITY_6000_0_OR_NEWER
+            var template = Track(ScriptableObject.CreateInstance<VisualTreeAsset>());
+
             tree.SetItemTemplate(template);
             Assert.AreSame(template, tree.itemTemplate);
 #endif

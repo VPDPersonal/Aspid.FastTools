@@ -10,8 +10,8 @@ namespace Aspid.FastTools.UIElements
     /// </summary>
     public static class BaseListViewExtensions
     {
-        #region OnAdd
 #if UNITY_6000_0_OR_NEWER
+        #region OnAdd
         /// <summary>
         /// Sets <see cref="BaseListView.onAdd"/>, replacing any existing callback.
         /// </summary>
@@ -53,11 +53,9 @@ namespace Aspid.FastTools.UIElements
             element.onAdd -= value;
             return element;
         }
-#endif
         #endregion
 
         #region OnRemove
-#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseListView.onRemove"/>, replacing any existing callback.
         /// </summary>
@@ -99,8 +97,80 @@ namespace Aspid.FastTools.UIElements
             element.onRemove -= value;
             return element;
         }
-#endif
         #endregion
+
+        #region OverridingAddButtonBehavior
+        /// <summary>
+        /// Sets <see cref="BaseListView.overridingAddButtonBehavior"/>, replacing any existing callback.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value)
+            where T : BaseListView
+        {
+            element.overridingAddButtonBehavior = value;
+            return element;
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="BaseListView.overridingAddButtonBehavior"/> callback.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to add.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value)
+            where T : BaseListView
+        {
+            element.overridingAddButtonBehavior += value;
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the <see cref="BaseListView.overridingAddButtonBehavior"/> callback.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value)
+            where T : BaseListView
+        {
+            element.overridingAddButtonBehavior -= value;
+            return element;
+        }
+        #endregion
+
+        /// <summary>
+        /// Sets <see cref="BaseListView.allowRemove"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">When <see langword="true"/>, the Remove button removes an item.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetAllowRemove<T>(this T element, bool value)
+            where T : BaseListView
+        {
+            element.allowRemove = value;
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="BaseListView.allowAdd"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">When <see langword="true"/>, the Add button adds an item.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetAllowAdd<T>(this T element, bool value)
+            where T : BaseListView
+        {
+            element.allowAdd = value;
+            return element;
+        }
+#endif
 
         #region ItemsAdded
         /// <summary>
@@ -161,82 +231,6 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-
-        #region OverridingAddButtonBehavior
-#if UNITY_6000_0_OR_NEWER
-        /// <summary>
-        /// Sets <see cref="BaseListView.overridingAddButtonBehavior"/>, replacing any existing callback.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to set.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T SetOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value)
-            where T : BaseListView
-        {
-            element.overridingAddButtonBehavior = value;
-            return element;
-        }
-
-        /// <summary>
-        /// Subscribes to the <see cref="BaseListView.overridingAddButtonBehavior"/> callback.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to add.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value)
-            where T : BaseListView
-        {
-            element.overridingAddButtonBehavior += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseListView.overridingAddButtonBehavior"/> callback.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value)
-            where T : BaseListView
-        {
-            element.overridingAddButtonBehavior -= value;
-            return element;
-        }
-#endif
-        #endregion
-
-#if UNITY_6000_0_OR_NEWER
-        /// <summary>
-        /// Sets <see cref="BaseListView.allowRemove"/>.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, the Remove button removes an item.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T SetAllowRemove<T>(this T element, bool value)
-            where T : BaseListView
-        {
-            element.allowRemove = value;
-            return element;
-        }
-
-        /// <summary>
-        /// Sets <see cref="BaseListView.allowAdd"/>.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">When <see langword="true"/>, the Add button adds an item.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T SetAllowAdd<T>(this T element, bool value)
-            where T : BaseListView
-        {
-            element.allowAdd = value;
-            return element;
-        }
-#endif
 
         /// <summary>
         /// Sets <see cref="BaseListView.headerTitle"/>.

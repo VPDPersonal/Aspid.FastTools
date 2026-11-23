@@ -41,38 +41,6 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region CanStartDrag
-#if UNITY_6000_0_OR_NEWER
-        /// <summary>
-        /// Subscribes to the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
-            where T : BaseVerticalCollectionView
-        {
-            element.canStartDrag += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
-            where T : BaseVerticalCollectionView
-        {
-            element.canStartDrag -= value;
-            return element;
-        }
-#endif
-        #endregion
-
         #region SelectionChanged
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.selectionChanged"/> event.
@@ -133,8 +101,38 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region SetupDragAndDrop
 #if UNITY_6000_0_OR_NEWER
+        #region CanStartDrag
+        /// <summary>
+        /// Subscribes to the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
+            where T : BaseVerticalCollectionView
+        {
+            element.canStartDrag += value;
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
+            where T : BaseVerticalCollectionView
+        {
+            element.canStartDrag -= value;
+            return element;
+        }
+        #endregion
+
+        #region SetupDragAndDrop
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.setupDragAndDrop"/> callback.
         /// </summary>
@@ -162,11 +160,9 @@ namespace Aspid.FastTools.UIElements
             element.setupDragAndDrop -= value;
             return element;
         }
-#endif
         #endregion
 
         #region DragAndDropUpdate
-#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.dragAndDropUpdate"/> callback.
         /// </summary>
@@ -194,11 +190,9 @@ namespace Aspid.FastTools.UIElements
             element.dragAndDropUpdate -= value;
             return element;
         }
-#endif
         #endregion
 
         #region HandleDrop
-#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.handleDrop"/> callback.
         /// </summary>
@@ -226,8 +220,8 @@ namespace Aspid.FastTools.UIElements
             element.handleDrop -= value;
             return element;
         }
-#endif
         #endregion
+#endif
 
         #region ItemsSourceChanged
         /// <summary>

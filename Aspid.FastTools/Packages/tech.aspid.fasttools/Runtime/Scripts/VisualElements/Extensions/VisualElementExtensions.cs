@@ -66,22 +66,6 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
-#if UNITY_6000_0_OR_NEWER
-        /// <summary>
-        /// Sets <see cref="VisualElement.dataSource"/>.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The data source to set.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T SetDataSource<T>(this T element, object value)
-            where T : VisualElement
-        {
-            element.dataSource = value;
-            return element;
-        }
-#endif
-
         /// <summary>
         /// Sets <see cref="VisualElement.viewDataKey"/>.
         /// </summary>
@@ -98,6 +82,20 @@ namespace Aspid.FastTools.UIElements
 
 #if UNITY_6000_0_OR_NEWER
         /// <summary>
+        /// Sets <see cref="VisualElement.dataSource"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The data source to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetDataSource<T>(this T element, object value)
+            where T : VisualElement
+        {
+            element.dataSource = value;
+            return element;
+        }
+
+        /// <summary>
         /// Sets <see cref="VisualElement.dataSourceType"/>.
         /// </summary>
         /// <remarks>
@@ -111,6 +109,20 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement
         {
             element.dataSourceType = value;
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="VisualElement.dataSourcePath"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The data source path to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetDataSourcePath<T>(this T element, PropertyPath value)
+            where T : VisualElement
+        {
+            element.dataSourcePath = value;
             return element;
         }
 #endif
@@ -159,20 +171,6 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement
         {
             element.disablePlayModeTint = value;
-            return element;
-        }
-
-        /// <summary>
-        /// Sets <see cref="VisualElement.dataSourcePath"/>.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The data source path to set.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T SetDataSourcePath<T>(this T element, PropertyPath value)
-            where T : VisualElement
-        {
-            element.dataSourcePath = value;
             return element;
         }
 #endif
