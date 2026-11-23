@@ -128,7 +128,6 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
-#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="TextInputBaseField{TValueType}.selectAllOnFocus"/>.
         /// </summary>
@@ -156,7 +155,6 @@ namespace Aspid.FastTools.UIElements
             element.selectAllOnMouseUp = value;
             return element;
         }
-#endif
 
         /// <summary>
         /// Sets <see cref="TextInputBaseField{TValueType}.doubleClickSelectsWord"/>.

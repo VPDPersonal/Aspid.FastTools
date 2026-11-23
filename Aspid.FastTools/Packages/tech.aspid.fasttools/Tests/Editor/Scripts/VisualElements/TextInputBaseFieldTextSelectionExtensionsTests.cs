@@ -34,35 +34,27 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         {
             var field = new TextField()
                 .SetSelectable(false)
-#if UNITY_6000_0_OR_NEWER
                 .SetSelectAllOnFocus(false)
                 .SetSelectAllOnMouseUp(false)
-#endif
                 .SetDoubleClickSelectsWord(false)
                 .SetTripleClickSelectsLine(false);
 
             Assert.IsFalse(field.textSelection.isSelectable);
-#if UNITY_6000_0_OR_NEWER
             Assert.IsFalse(field.selectAllOnFocus);
             Assert.IsFalse(field.selectAllOnMouseUp);
-#endif
             Assert.IsFalse(field.doubleClickSelectsWord);
             Assert.IsFalse(field.tripleClickSelectsLine);
 
             field
                 .SetSelectable(true)
-#if UNITY_6000_0_OR_NEWER
                 .SetSelectAllOnFocus(true)
                 .SetSelectAllOnMouseUp(true)
-#endif
                 .SetDoubleClickSelectsWord(true)
                 .SetTripleClickSelectsLine(true);
 
             Assert.IsTrue(field.textSelection.isSelectable);
-#if UNITY_6000_0_OR_NEWER
             Assert.IsTrue(field.selectAllOnFocus);
             Assert.IsTrue(field.selectAllOnMouseUp);
-#endif
             Assert.IsTrue(field.doubleClickSelectsWord);
             Assert.IsTrue(field.tripleClickSelectsLine);
         }
@@ -78,27 +70,33 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(0, field.selectIndex);
         }
 
-#if UNITY_6000_0_OR_NEWER
         [Test]
         public void NumericFields_ResolveTheirValueTypeOverload()
         {
-#if UNITY_6000_0_OR_NEWER
+            DoubleField field = new DoubleField()
+                .SetSelectAllOnFocus(value: false)
+                .SetSelectAllOnMouseUp(value: true);
+
             Assert.IsFalse(new IntegerField().SetSelectAllOnFocus(false).selectAllOnFocus);
             Assert.IsFalse(new LongField().SetSelectAllOnFocus(false).selectAllOnFocus);
             Assert.IsFalse(new FloatField().SetSelectAllOnFocus(false).selectAllOnFocus);
-            Assert.IsFalse(new DoubleField().SetSelectAllOnFocus(false).selectAllOnFocus);
+            Assert.IsFalse(field.selectAllOnFocus);
+            Assert.IsTrue(field.selectAllOnMouseUp);
             Assert.IsFalse(new UnsignedIntegerField().SetSelectAllOnFocus(false).selectAllOnFocus);
             Assert.IsFalse(new UnsignedLongField().SetSelectAllOnFocus(false).selectAllOnFocus);
             Assert.IsFalse(new Hash128Field().SetSelectAllOnFocus(false).selectAllOnFocus);
-#endif
         }
-#endif
 
         [Test]
         public void CustomValueType_UsesExplicitTypeArguments()
         {
-            var field = new ShortField().SetDoubleClickSelectsWord<ShortField, short>(false);
+            var field = new ShortField()
+                .SetSelectAllOnFocus<ShortField, short>(value: false)
+                .SetSelectAllOnMouseUp<ShortField, short>(value: true)
+                .SetDoubleClickSelectsWord<ShortField, short>(value: false);
 
+            Assert.IsFalse(field.selectAllOnFocus);
+            Assert.IsTrue(field.selectAllOnMouseUp);
             Assert.IsFalse(field.doubleClickSelectsWord);
         }
 
