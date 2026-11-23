@@ -180,4 +180,6 @@ Requires Unity 6000.0.53f1 or newer. If you got the package from the Asset Store
 
 ## Support the project
 
-<a href="https://assetstore.unity.com/packages/package/2333465"><img src="Website/docs/Images/support-card.svg" alt="Aspid.FastTools is developed in spare time. If it helps you, support its development on the Unity Asset Store." width="100%"></a>
+I develop Aspid.FastTools in my spare time. Your support helps me maintain the package and its documentation.
+
+<p><a href="https://ko-fi.com/vpdaspid"><picture><source media="(max-width: 640px)" srcset="https://vpdpersonal.github.io/VPDPersonal/support/kofi-button.svg#stacked" width="100%" height="48" /><img src="https://vpdpersonal.github.io/VPDPersonal/support/kofi-button.svg" alt="Tip on Ko-fi" width="50%" height="48"></picture></a><a href="https://assetstore.unity.com/packages/package/2333465"><picture><source media="(max-width: 640px)" srcset="https://vpdpersonal.github.io/VPDPersonal/support/unity-asset-store-button.svg#stacked" width="100%" height="48" /><img src="https://vpdpersonal.github.io/VPDPersonal/support/unity-asset-store-button.svg" alt="Buy on the Unity Asset Store" width="50%" height="48"></picture></a></p>

@@ -235,19 +235,20 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           {type: 'mdxJsxAttribute', name: 'repo', value: repo},
         ]});
       }
-      // The donation section — one sentence linking the Asset Store — becomes a card with a button to it; the link in
-      // the sentence turns into plain text, since the button carries it.
-      const isStore = (url) => /^https:\/\/assetstore\.unity\.com\//.test(url);
+      // Keep the introduction as card copy and use the next paragraph's links as actions.
+      const donation = {kofi: (url) => /^https:\/\/ko-fi\.com\//.test(url), store: (url) => /^https:\/\/assetstore\.unity\.com\//.test(url)};
       const donate = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
-        && tree.children[index + 1]?.type === 'paragraph'
-        && tree.children[index + 1].children.some((part) => part.type === 'link' && isStore(part.url))
-        && (!tree.children[index + 2] || tree.children[index + 2].type === 'heading'));
+        && tree.children[index + 1]?.type === 'paragraph' && tree.children[index + 2]?.type === 'paragraph'
+        && Object.values(donation).some((test) => linkIn(tree.children[index + 2], test))
+        && (!tree.children[index + 3] || tree.children[index + 3].type === 'heading'));
       if (donate !== -1) {
-        const sentence = tree.children[donate + 1].children;
-        const store = sentence.find((part) => part.type === 'link' && isStore(part.url));
-        tree.children[donate + 1] = {type: 'mdxJsxFlowElement', name: 'DonatePanel',
-          attributes: [{type: 'mdxJsxAttribute', name: 'href', value: store.url}],
-          children: sentence.flatMap((part) => (part === store ? part.children : [part]))};
+        const [copy, actions] = tree.children.slice(donate + 1, donate + 3);
+        tree.children.splice(donate + 1, 2, {type: 'mdxJsxFlowElement', name: 'DonatePanel', children: copy.children,
+          attributes: Object.entries(donation).flatMap(([name, test]) => {
+            const link = linkIn(actions, test);
+            return link ? [{type: 'mdxJsxAttribute', name, value: link.url},
+              {type: 'mdxJsxAttribute', name: `${name}Label`, value: link.children.map((part) => part.value).join('')}] : [];
+          })});
       }
       // Keep absolute site links on GitHub, and native local links on the site.
       function visit(node) {

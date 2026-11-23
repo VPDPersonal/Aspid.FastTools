@@ -14,7 +14,7 @@ function layout(markdown, files = []) {
   const tree = processor.parse(markdown);
   githubLayout(tree, {site, locales: ['en', 'ru'], repository, previews: 'Website/docs/Images/readme-previews',
     installation: 'https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools',
-    images: 'Website/docs/Images', exists: (url) => files.includes(url)});
+    exists: (url) => files.includes(url)});
   return processor.stringify(tree);
 }
 
@@ -117,12 +117,21 @@ test('the help section becomes the call to action, without the licence line', ()
     + '<p><a href="https://github.com/owner/repo/issues"><b>Open an issue</b></a> · <a href="https://github.com/owner/repo">Star on GitHub</a></p>\n');
 });
 
-test('the donation sentence gives way to the card image, the sentence its alt text', () => {
-  const store = 'https://assetstore.unity.com/packages/package/1';
-  const section = `## Support\n\nSupport it on the [Asset Store](${store}).\n`;
-  assert.equal(layout(section, ['Website/docs/Images/support-card.svg']), '## Support\n\n'
-    + `<a href="${store}"><img src="Website/docs/Images/support-card.svg" alt="Support it on the Asset Store." width="100%"></a>\n`);
-  assert.equal(layout(section), section, 'without the card image the section stays as it is');
+test('the donation buttons retain both destinations and accessible link names', () => {
+  const section = '## Support the project\n\nYour support helps maintain the package.\n\n[Leave a tip on Ko-fi](https://ko-fi.com/owner) or '
+    + '[buy the package on the Unity Asset Store](https://assetstore.unity.com/packages/package/1).\n';
+  const result = layout(section);
+  assert.match(result, /Your support helps maintain the package\.\n\n<p>/);
+  for (const [url, file, label] of [
+    ['https://ko-fi.com/owner', 'kofi-button.svg', 'Leave a tip on Ko-fi'],
+    ['https://assetstore.unity.com/packages/package/1', 'unity-asset-store-button.svg', 'buy the package on the Unity Asset Store'],
+  ]) {
+    const src = `https://vpdpersonal.github.io/VPDPersonal/support/${file}`;
+    assert.ok(result.includes(`<a href="${url}"><picture><source media="(max-width: 640px)" srcset="${src}#stacked" width="100%" height="48" />`
+      + `<img src="${src}" alt="${label}" width="50%" height="48"></picture></a>`));
+  }
+  const singleLink = '## Support the project\n\n[Ko-fi](https://ko-fi.com/owner)\n';
+  assert.equal(layout(singleLink), singleLink);
 });
 
 test('images and the banner stay as they are, without a light variant', () => {

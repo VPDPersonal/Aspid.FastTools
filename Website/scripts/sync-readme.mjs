@@ -51,7 +51,6 @@ function generate() {
     repository,
     installation: 'https://vpdpersonal.github.io/VPDPersonal/installation/aspid-fasttools',
     previews: path.posix.relative(destinationDir, 'Website/docs/Images/readme-previews'),
-    images: path.posix.relative(destinationDir, 'Website/docs/Images'),
     exists: (url) => fs.existsSync(path.join(repoDir, destinationDir, url)),
   });
   // remark escapes the bracket that opens a GitHub alert (`> [!WARNING]`); GitHub needs it literal.

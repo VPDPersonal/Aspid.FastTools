@@ -50,11 +50,15 @@ for (const [language, file] of Object.entries(introduction)) {
     assert.match(attribute(support, 'repo'), /^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/);
   });
 
-  test(`${language} introduction: the donation section becomes a card with a button to the Asset Store`, () => {
+  test(`${language} introduction: the donation section becomes a card with buttons to Ko-fi and the Asset Store`, () => {
     const [donate, ...more] = find(tree, element('DonatePanel'));
     assert.equal(more.length, 0);
-    assert.match(attribute(donate, 'href'), /^https:\/\/assetstore\.unity\.com\//);
-    assert.equal(find(donate, node => node.type === 'link').length, 0, 'the button carries the link');
+    assert.match(attribute(donate, 'kofi'), /^https:\/\/ko-fi\.com\//);
+    assert.match(attribute(donate, 'store'), /^https:\/\/assetstore\.unity\.com\//);
+    assert.match(attribute(donate, 'kofiLabel'), /Ko-fi/);
+    assert.match(attribute(donate, 'storeLabel'), /Unity Asset Store/);
+    assert.ok(donate.children.some(node => node.type === 'text' && node.value.includes('Aspid.FastTools')));
+    assert.equal(find(donate, node => node.type === 'link').length, 0, 'the buttons carry the links');
   });
 
   test(`${language} introduction: absolute links to the site become site links`, () => {

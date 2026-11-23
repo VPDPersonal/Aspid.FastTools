@@ -140,4 +140,6 @@ caster.GetDisplayNameWithIndex();
 
 ## Поддержать проект
 
-Aspid.FastTools развивается в свободное время. Если пакет вам помогает, поддержите его развитие в [Unity Asset Store](https://assetstore.unity.com/packages/package/2333465).
+Я развиваю Aspid.FastTools в свободное время. Ваша поддержка помогает мне обновлять пакет и документацию.
+
+[Поддержать на Ko-fi](https://ko-fi.com/vpdaspid) · [Купить в Unity Asset Store](https://assetstore.unity.com/packages/package/2333465)
