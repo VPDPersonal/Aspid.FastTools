@@ -63,8 +63,8 @@ Generated **and committed**: the root `README.md` and `Website/api/`.
   order from the file name (`NN-` prefix orders, is stripped from the route).
 - **One `# H1` per file.** Use `##` in the body. Exception: the introduction (`Website/docs/README.md` and
   its translations) starts with the banner `<picture>` and the status badges, without an H1. `parseFrontMatter`
-  in `docusaurus.config.js` recognises that page by the banner's file name and supplies the title,
-  description, `hide_title` and the translated `pagination_label` — do not rename `aspid_fasttools_readme_banner.png`.
+  in `docusaurus.config.js` recognises the introduction by its source path and supplies the title,
+  description, `hide_title` and the translated `pagination_label`.
 - **Admonitions**: GitHub style only — `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`. Never `:::note`.
 - **Links** are relative paths to the `.md` file: `[EnumValues](08-enum-values.md)`, from a sample
   `[Selector](../../docs/04-serialize-reference-selector.md)`, from a doc `[Types sample](../tutorials/Types/README.md)`.
