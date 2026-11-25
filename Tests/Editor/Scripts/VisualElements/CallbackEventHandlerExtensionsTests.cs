@@ -201,6 +201,89 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreEqual(7, received);
         }
 
+        [UnityTest]
+        public IEnumerator RegisterCallbackOnceSelf_DuplicateRegistration_InvokesCallbackOnce()
+        {
+            var calls = 0;
+            var button = new Button();
+            _panel.Root.Add(button);
+            yield return null;
+
+            EventCallback<MouseEnterEvent> callback = _ => calls++;
+            button
+                .RegisterCallbackOnceSelf(callback)
+                .RegisterCallbackOnceSelf(callback);
+            Send<MouseEnterEvent>(button);
+
+            Assert.AreEqual(1, calls);
+        }
+
+        [UnityTest]
+        public IEnumerator RegisterCallbackOnceSelf_UserArgs_DuplicateRegistration_UsesLatestArgsOnce()
+        {
+            var calls = 0;
+            var received = 0;
+            var button = new Button();
+            _panel.Root.Add(button);
+            yield return null;
+
+            EventCallback<MouseEnterEvent, int> callback = (_, args) =>
+            {
+                calls++;
+                received = args;
+            };
+            button
+                .RegisterCallbackOnceSelf(callback, userArgs: 7)
+                .RegisterCallbackOnceSelf(callback, userArgs: 9);
+            Send<MouseEnterEvent>(button);
+
+            Assert.AreEqual(1, calls);
+            Assert.AreEqual(9, received);
+        }
+
+        [UnityTest]
+        public IEnumerator UnregisterCallbackSelf_CancelsOneShotCallback()
+        {
+            var calls = 0;
+            var button = new Button();
+            _panel.Root.Add(button);
+            yield return null;
+
+            EventCallback<MouseEnterEvent> callback = _ => calls++;
+            button
+                .RegisterCallbackOnceSelf(callback)
+                .UnregisterCallbackSelf(callback);
+            Send<MouseEnterEvent>(button);
+
+            Assert.AreEqual(0, calls);
+
+            button.RegisterCallbackOnceSelf(callback);
+            Send<MouseEnterEvent>(button);
+
+            Assert.AreEqual(1, calls);
+        }
+
+        [UnityTest]
+        public IEnumerator UnregisterCallbackSelf_UserArgs_CancelsOneShotCallbackInSelectedPhase()
+        {
+            var total = 0;
+            var parent = new VisualElement();
+            var child = new VisualElement();
+            parent.Add(child);
+            _panel.Root.Add(parent);
+            yield return null;
+
+            EventCallback<ClickEvent, int> callback = (_, args) => total += args;
+            parent
+                .RegisterCallbackOnceSelf(callback, userArgs: 3, useTrickleDown: TrickleDown.TrickleDown)
+                .RegisterCallbackOnceSelf(callback, userArgs: 5)
+                .UnregisterCallbackSelf(callback, useTrickleDown: TrickleDown.TrickleDown);
+            Send<ClickEvent>(child);
+            Send<ClickEvent>(child);
+
+            Assert.AreEqual(5, total);
+        }
+
         private static void Send<TEvent>(VisualElement target)
             where TEvent : EventBase<TEvent>, new()
         {
