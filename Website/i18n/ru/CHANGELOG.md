@@ -9,10 +9,13 @@
 
 ## [Unreleased]
 
+### Несовместимые изменения
+
+- Методы `SetDirection`, `SetFill`, `SetInverted`, `SetPageSize` и `SetShowInputField` для слайдеров с типом `float` перенесены из `SliderExtensions` в `SliderFloatExtensions`. В прямых статических вызовах замените имя класса, как в <code lang="csharp">SliderFloatExtensions.SetInverted(slider, true)</code>. Также можно вызвать <code lang="csharp">slider.SetInverted(true)</code>. Пересоберите сборки, скомпилированные со старыми методами. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
+
 ### Добавлено
 
-- Поддержка Unity 2022.3.62f3 при установке через Package Manager. В Unity 2022.3 окно выбора SerializeReference предлагает классы без параметров типа, а Fluent API охватывает доступные в этой версии компоненты и методы. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
-- `SliderFloatExtensions` содержит методы расширения для настройки слайдеров с типом `float`. В прямых статических вызовах перенесённых методов замените `SliderExtensions` на `SliderFloatExtensions`. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
+- Добавлена поддержка Unity 2022.3 LTS начиная с 2022.3.62f3, включая установку по Git URL через Package Manager. В Unity 2022.3 окно выбора типа для `[SerializeReference]` предлагает конкретные классы без параметров типа, в том числе наследников обобщённых классов. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
 
 ## [1.0.0] — 2026-11-05
 

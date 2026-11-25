@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- The float slider methods `SetDirection`, `SetFill`, `SetInverted`, `SetPageSize`, and `SetShowInputField` moved from `SliderExtensions` to `SliderFloatExtensions`. For direct static calls, replace the class name, as in <code lang="csharp">SliderFloatExtensions.SetInverted(slider, true)</code>. You can also call <code lang="csharp">slider.SetInverted(true)</code>. Rebuild any assemblies compiled against the old methods. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
+
 ### Added
 
-- Unity 2022.3.62f3 support through Package Manager. On Unity 2022.3, the SerializeReference picker offers non-generic classes and the fluent API includes the controls and methods available in that Editor. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
-- `SliderFloatExtensions` provides extension methods for configuring float sliders. Use it in place of `SliderExtensions` for direct static calls to the moved setters. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
+- Added support for Unity 2022.3 LTS starting with 2022.3.62f3, including installation from a Git URL in Package Manager. On Unity 2022.3, the `[SerializeReference]` picker offers concrete non-generic classes, including subclasses of generic classes. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
 
 ## [1.0.0] — 2026-11-05
 
