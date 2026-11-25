@@ -1,4 +1,7 @@
+using System;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
@@ -80,13 +83,7 @@ namespace Aspid.FastTools.UIElements
             element.RegisterCallbackOnce(callback, useTrickleDown);
 #else
             if (callback is null) return element;
-            element.RegisterCallback<TEventType>(InvokeOnce, useTrickleDown: useTrickleDown);
-
-            void InvokeOnce(TEventType evt)
-            {
-                element.UnregisterCallback<TEventType>(InvokeOnce, useTrickleDown: useTrickleDown);
-                callback(evt);
-            }
+            OnceCallbacks<TEventType>.Register(element, callback: callback, invoke: callback.Invoke, useTrickleDown: useTrickleDown);
 #endif
             return element;
         }
@@ -115,11 +112,11 @@ namespace Aspid.FastTools.UIElements
         {
 #if UNITY_6000_0_OR_NEWER
             element.RegisterCallbackOnce(callback, userArgs, useTrickleDown);
-            return element;
 #else
             if (callback is null) return element;
-            return element.RegisterCallbackOnceSelf<T, TEventType>(evt => callback(evt, userArgs), useTrickleDown: useTrickleDown);
+            OnceCallbacks<TEventType>.Register(element, callback: callback, invoke: evt => callback(evt, userArgs), useTrickleDown: useTrickleDown);
 #endif
+            return element;
         }
 
         /// <summary>
@@ -141,6 +138,9 @@ namespace Aspid.FastTools.UIElements
             where T : CallbackEventHandler
             where TEventType : EventBase<TEventType>, new()
         {
+#if !UNITY_6000_0_OR_NEWER
+            OnceCallbacks<TEventType>.Unregister(element, callback: callback, useTrickleDown: useTrickleDown);
+#endif
             element.UnregisterCallback(callback, useTrickleDown);
             return element;
         }
@@ -165,8 +165,52 @@ namespace Aspid.FastTools.UIElements
             where T : CallbackEventHandler
             where TEventType : EventBase<TEventType>, new()
         {
+#if !UNITY_6000_0_OR_NEWER
+            OnceCallbacks<TEventType>.Unregister(element, callback: callback, useTrickleDown: useTrickleDown);
+#endif
             element.UnregisterCallback(callback, useTrickleDown);
             return element;
         }
+
+#if !UNITY_6000_0_OR_NEWER
+        private static class OnceCallbacks<TEventType>
+            where TEventType : EventBase<TEventType>, new()
+        {
+            private static readonly ConditionalWeakTable<CallbackEventHandler,
+                Dictionary<(Delegate Callback, TrickleDown Phase), EventCallback<TEventType, Action<TEventType>>>> Callbacks = new();
+
+            public static void Register(CallbackEventHandler element, Delegate callback, Action<TEventType> invoke, TrickleDown useTrickleDown)
+            {
+                var key = (callback, useTrickleDown);
+                var callbacks = Callbacks.GetOrCreateValue(element);
+
+                if (!callbacks.TryGetValue(key, out var wrapper))
+                {
+                    wrapper = InvokeOnce;
+                    callbacks.Add(key, value: wrapper);
+                }
+
+                element.RegisterCallback(wrapper, userArgs: invoke, useTrickleDown: useTrickleDown);
+
+                void InvokeOnce(TEventType evt, Action<TEventType> currentCallback)
+                {
+                    // Unity 2022 may still invoke a removed wrapper from its current dispatch list.
+                    if (!callbacks.TryGetValue(key, out var pending) || !ReferenceEquals(pending, wrapper)) return;
+
+                    callbacks.Remove(key);
+                    element.UnregisterCallback(wrapper, useTrickleDown: useTrickleDown);
+                    currentCallback(evt);
+                }
+            }
+
+            public static void Unregister(CallbackEventHandler element, Delegate callback, TrickleDown useTrickleDown)
+            {
+                if (callback is null || !Callbacks.TryGetValue(element, out var callbacks)) return;
+                if (!callbacks.Remove((callback, useTrickleDown), out var wrapper)) return;
+
+                element.UnregisterCallback(wrapper, useTrickleDown: useTrickleDown);
+            }
+        }
+#endif
     }
 }
