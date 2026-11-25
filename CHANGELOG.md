@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed one-shot UI Toolkit callbacks on Unity 2022.3. They can be cancelled and repeated registration invokes the callback only once. ([#580](https://github.com/VPDPersonal/Aspid.FastTools/pull/580))
 - Keep the create button inside the Ability Catalog sidebar when searching. ([#579](https://github.com/VPDPersonal/Aspid.FastTools/pull/579))
 
 ## [1.0.0] — 2026-11-05

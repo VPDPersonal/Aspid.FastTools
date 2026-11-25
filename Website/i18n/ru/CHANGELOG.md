@@ -19,7 +19,6 @@
 
 ### Исправлено
 
-- В Unity 2022.3 одноразовые обработчики UI Toolkit теперь можно отменить, а повторная регистрация вызывает обработчик только один раз. ([#580](https://github.com/VPDPersonal/Aspid.FastTools/pull/580))
 - Кнопка создания способности остаётся внутри боковой панели Ability Catalog при поиске. ([#579](https://github.com/VPDPersonal/Aspid.FastTools/pull/579))
 
 ## [1.0.0] — 2026-11-05
