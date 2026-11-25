@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Keep the create button inside the Ability Catalog sidebar when searching.
+- Keep the create button inside the Ability Catalog sidebar when searching. ([#579](https://github.com/VPDPersonal/Aspid.FastTools/pull/579))
 
 ## [1.0.0] — 2026-11-05
 
