@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 namespace Aspid.FastTools.UIElements
 {
     /// <summary>
-    /// Configures <see cref="BaseSlider{TValueType}"/> of <see cref="float"/>.
+    /// Provides extension methods for <see cref="BaseSlider{TValueType}"/> of <see cref="float"/>.
     /// </summary>
     public static class SliderFloatExtensions
     {
@@ -16,7 +16,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">When <see langword="true"/>, the track is filled up to the current value.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetFill<T>(T element, bool value)
+        public static T SetFill<T>(this T element, bool value)
             where T : BaseSlider<float>
         {
             element.fill = value;
@@ -31,7 +31,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">When <see langword="true"/>, the slider direction is reversed.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetInverted<T>(T element, bool value)
+        public static T SetInverted<T>(this T element, bool value)
             where T : BaseSlider<float>
         {
             element.inverted = value;
@@ -45,7 +45,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The page size to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetPageSize<T>(T element, float value)
+        public static T SetPageSize<T>(this T element, float value)
             where T : BaseSlider<float>
         {
             element.pageSize = value;
@@ -59,7 +59,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">When <see langword="true"/>, a numeric input field is shown next to the slider.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetShowInputField<T>(T element, bool value)
+        public static T SetShowInputField<T>(this T element, bool value)
             where T : BaseSlider<float>
         {
             element.showInputField = value;
@@ -73,7 +73,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The slider direction to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetDirection<T>(T element, SliderDirection value)
+        public static T SetDirection<T>(this T element, SliderDirection value)
             where T : BaseSlider<float>
         {
             element.direction = value;

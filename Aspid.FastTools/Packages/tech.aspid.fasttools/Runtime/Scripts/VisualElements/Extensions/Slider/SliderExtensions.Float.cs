@@ -38,32 +38,5 @@ namespace Aspid.FastTools.UIElements
             element.highValue = value;
             return element;
         }
-
-#if UNITY_6000_0_OR_NEWER
-        /// <inheritdoc cref="SliderFloatExtensions.SetFill{T}(T, bool)"/>
-        public static T SetFill<T>(this T element, bool value)
-            where T : BaseSlider<float> =>
-            SliderFloatExtensions.SetFill(element, value: value);
-#endif
-
-        /// <inheritdoc cref="SliderFloatExtensions.SetInverted{T}(T, bool)"/>
-        public static T SetInverted<T>(this T element, bool value)
-            where T : BaseSlider<float> =>
-            SliderFloatExtensions.SetInverted(element, value: value);
-
-        /// <inheritdoc cref="SliderFloatExtensions.SetPageSize{T}(T, float)"/>
-        public static T SetPageSize<T>(this T element, float value)
-            where T : BaseSlider<float> =>
-            SliderFloatExtensions.SetPageSize(element, value: value);
-
-        /// <inheritdoc cref="SliderFloatExtensions.SetShowInputField{T}(T, bool)"/>
-        public static T SetShowInputField<T>(this T element, bool value)
-            where T : BaseSlider<float> =>
-            SliderFloatExtensions.SetShowInputField(element, value: value);
-
-        /// <inheritdoc cref="SliderFloatExtensions.SetDirection{T}(T, SliderDirection)"/>
-        public static T SetDirection<T>(this T element, SliderDirection value)
-            where T : BaseSlider<float> =>
-            SliderFloatExtensions.SetDirection(element, value: value);
     }
 }

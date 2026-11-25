@@ -269,7 +269,7 @@ Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.6
 
  [SliderFloatExtensions](Aspid.FastTools.UIElements.SliderFloatExtensions.md)
 
-Configures [`BaseSlider<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Single`](https://learn.microsoft.com/dotnet/api/system.single).
+Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Single`](https://learn.microsoft.com/dotnet/api/system.single).
 
  [SliderIntExtensions](Aspid.FastTools.UIElements.SliderIntExtensions.md)
 

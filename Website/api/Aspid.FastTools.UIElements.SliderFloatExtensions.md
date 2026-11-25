@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Configures [`BaseSlider<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Single`](https://learn.microsoft.com/dotnet/api/system.single).
+Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Single`](https://learn.microsoft.com/dotnet/api/system.single).
 
 ```csharp
 public static class SliderFloatExtensions
@@ -30,7 +30,7 @@ public static class SliderFloatExtensions
 Sets [`direction`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-direction.html) controlling the orientation of the element.
 
 ```csharp
-public static T SetDirection<T>(T element, SliderDirection value) where T : BaseSlider<float>
+public static T SetDirection<T>(this T element, SliderDirection value) where T : BaseSlider<float>
 ```
 
 #### Parameters
@@ -60,7 +60,7 @@ The element type.
 Sets [`fill`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-fill.html) controlling whether the track is filled up to the current value.
 
 ```csharp
-public static T SetFill<T>(T element, bool value) where T : BaseSlider<float>
+public static T SetFill<T>(this T element, bool value) where T : BaseSlider<float>
 ```
 
 #### Parameters
@@ -90,7 +90,7 @@ The element type.
 Sets [`inverted`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-inverted.html) reversing the direction of the element.
 
 ```csharp
-public static T SetInverted<T>(T element, bool value) where T : BaseSlider<float>
+public static T SetInverted<T>(this T element, bool value) where T : BaseSlider<float>
 ```
 
 #### Parameters
@@ -120,7 +120,7 @@ The element type.
 Sets [`pageSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-pageSize.html) controlling how much the value changes per page step.
 
 ```csharp
-public static T SetPageSize<T>(T element, float value) where T : BaseSlider<float>
+public static T SetPageSize<T>(this T element, float value) where T : BaseSlider<float>
 ```
 
 #### Parameters
@@ -150,7 +150,7 @@ The element type.
 Sets [`showInputField`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-showInputField.html) controlling whether a numeric input field is shown alongside the element.
 
 ```csharp
-public static T SetShowInputField<T>(T element, bool value) where T : BaseSlider<float>
+public static T SetShowInputField<T>(this T element, bool value) where T : BaseSlider<float>
 ```
 
 #### Parameters
