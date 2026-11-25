@@ -28,8 +28,9 @@ needs a test.
 ## CHANGELOG and docs
 
 - A user-visible package change goes under `[Unreleased]` in both [CHANGELOG.md](../CHANGELOG.md) and
-  [Website/i18n/ru/CHANGELOG.md](../Website/i18n/ru/CHANGELOG.md); a breaking change says how to migrate. Nothing
-  visible: ask for the `no-changelog` label.
+  [Website/i18n/ru/CHANGELOG.md](../Website/i18n/ru/CHANGELOG.md). End each entry with a link to the PR that made
+  the change, in the form `([#123](https://github.com/VPDPersonal/Aspid.FastTools/pull/123))`. For breaking changes,
+  explain how to migrate. If users see no change, ask for the `no-changelog` label.
 - Docs in `Website/docs/` and `Website/tutorials/` have Russian twins in `Website/i18n/ru/`. Machine translation, or
   English text in the Russian file noted in the PR, is fine.
 - Do not edit the root `README.md`: it is generated from `Website/docs/README.md` by
