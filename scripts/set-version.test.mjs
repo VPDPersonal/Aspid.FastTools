@@ -116,7 +116,8 @@ test('a prerelease moves the files to the preview channel', (t) => {
   }
   for (const file of SKILLS_PAGES) assert.deepEqual([...new Set(skillsChannels(read(dir, file)))], ['skills-preview'], file);
   assert.match(read(dir, DOCS), /aspid-fasttools\/status-badge-preview\.svg/);
-  assert.match(read(dir, DOCS), /aspid-fasttools\/preview\/status-badge-unity\.svg/);
+  assert.match(read(dir, DOCS), /\]\(Images\/status-badge-unity\.svg\)/);
+  assert.match(read(dir, 'README.md'), /\]\(Website\/docs\/Images\/status-badge-unity\.svg\)/);
   assert.match(read(dir, 'README.md'), /\[!\[Preview\]/);
 
   for (const file of ['CHANGELOG.md', 'Website/i18n/ru/CHANGELOG.md']) {
@@ -145,6 +146,7 @@ test('a stable version moves the files to the release channel and ships the anal
   }
   for (const file of SKILLS_PAGES) assert.deepEqual([...new Set(skillsChannels(read(dir, file)))], ['skills'], file);
   assert.match(read(dir, DOCS), /aspid-fasttools\/status-badge-release\.svg/);
+  assert.match(read(dir, DOCS), /\]\(Images\/status-badge-unity\.svg\)/);
   assert.doesNotMatch(read(dir, DOCS), /aspid-fasttools\/preview\//);
   assert.match(read(dir, 'CHANGELOG.md'), /^## \[99\.0\.0\] — \d{4}-\d{2}-\d{2}$/m);
 
@@ -252,7 +254,7 @@ const OUT_OF_STEP = [
     name: 'a badge URL from the wrong shared channel',
     file: DOCS,
     change: (text) => text.replaceAll('status-badge-' + (branch === 'upm' ? 'release' : 'preview') + '.svg', 'status-badge-wrong.svg'),
-    message: /shared badge URLs do not match/,
+    message: /shared version badge URL does not match/,
   },
   {
     name: 'an install URL of the other channel',

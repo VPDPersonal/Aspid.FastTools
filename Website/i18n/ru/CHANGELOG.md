@@ -9,6 +9,14 @@
 
 ## [Unreleased]
 
+### Несовместимые изменения
+
+- Методы `SetDirection`, `SetFill`, `SetInverted`, `SetPageSize` и `SetShowInputField` для слайдеров с типом `float` перенесены из `SliderExtensions` в `SliderFloatExtensions`. В прямых статических вызовах замените имя класса, как в <code lang="csharp">SliderFloatExtensions.SetInverted(slider, true)</code>. Также можно вызвать <code lang="csharp">slider.SetInverted(true)</code>. Пересоберите сборки, скомпилированные со старыми методами. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
+
+### Добавлено
+
+- Добавлена поддержка Unity 2022.3 LTS начиная с 2022.3.62f3, включая установку по Git URL через Package Manager. В Unity 2022.3 окно выбора типа для `[SerializeReference]` предлагает конкретные классы без параметров типа, в том числе наследников обобщённых классов. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
+
 ## [1.0.0] — 2026-11-05
 
 Первый стабильный релиз. Нужен Unity **6000.0.53f1** или новее; все функции Inspector работают и в IMGUI, и в UI Toolkit. Prerelease-версии `1.0.0-rc.*` и их заметки лежат в [GitHub Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases).

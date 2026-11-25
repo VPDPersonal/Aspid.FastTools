@@ -22,6 +22,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="TextInputBaseField{TValueType}.verticalScrollerVisibility"/>.
         /// </summary>
@@ -44,5 +45,6 @@ namespace Aspid.FastTools.UIElements
             element.verticalScrollerVisibility = value;
             return element;
         }
+#endif
     }
 }

@@ -33,66 +33,6 @@ while <code>new Slider().SetHighValue(100f).SetValue(50f)</code> ends at 50.
 
 ## Methods
 
-### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}
-
-Sets [`direction`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-direction.html) controlling the orientation of the element.
-
-```csharp
-public static T SetDirection<T>(this T element, SliderDirection value) where T : BaseSlider<float>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` SliderDirection
-
-The slider direction to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### SetFill\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetFill__1___0_System_Boolean_}
-
-Sets [`fill`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-fill.html) controlling whether the track is filled up to the current value.
-
-```csharp
-public static T SetFill<T>(this T element, bool value) where T : BaseSlider<float>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the track is filled up to the current value.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
 ### SetHighValue\<T\>\(T, byte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Byte_}
 
 Sets [`highValue`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-highValue.html).
@@ -471,36 +411,6 @@ The value type of the element.
 
 Call before <code>SetValue</code>: a slider clamps its value to the range.
 
-### SetInverted\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetInverted__1___0_System_Boolean_}
-
-Sets [`inverted`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-inverted.html) reversing the direction of the element.
-
-```csharp
-public static T SetInverted<T>(this T element, bool value) where T : BaseSlider<float>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the slider direction is reversed.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
 ### SetLowValue\<T\>\(T, byte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Byte_}
 
 Sets [`lowValue`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-lowValue.html).
@@ -878,64 +788,4 @@ The value type of the element.
 #### Remarks
 
 Call before <code>SetValue</code>: a slider clamps its value to the range.
-
-### SetPageSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetPageSize__1___0_System_Single_}
-
-Sets [`pageSize`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-pageSize.html) controlling how much the value changes per page step.
-
-```csharp
-public static T SetPageSize<T>(this T element, float value) where T : BaseSlider<float>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-The page size to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
-
-### SetShowInputField\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetShowInputField__1___0_System_Boolean_}
-
-Sets [`showInputField`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1-showInputField.html) controlling whether a numeric input field is shown alongside the element.
-
-```csharp
-public static T SetShowInputField<T>(this T element, bool value) where T : BaseSlider<float>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a numeric input field is shown next to the slider.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-The element type.
 

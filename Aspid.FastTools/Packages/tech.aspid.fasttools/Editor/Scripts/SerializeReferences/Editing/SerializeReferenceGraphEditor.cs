@@ -237,7 +237,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (obj == null) continue;
-                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var id) || id != fileId) continue;
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out long id) || id != fileId) continue;
 
                 var serialized = new SerializedObject(obj);
                 var found = serialized.FindProperty(propertyPath);

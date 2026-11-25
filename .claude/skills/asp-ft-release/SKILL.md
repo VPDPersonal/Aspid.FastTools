@@ -165,10 +165,10 @@ fixed.
   the download otherwise. It lives only in the upload project: never commit it to the dev project manifest, where it
   would fail the package resolve of every clone without that entitlement. Do not use the old Asset Store Tools
   (`com.unity.asset-store-tools`): their "Local UPM Package" uploads a `.unitypackage` to the old portal.
-- **Editor: 6000.0.53f1**, the minimum of `package.json` and of the `ci.yml` matrix. The portal records the Editor
-  version of every uploaded package. An upload from the dev project (6000.6) can list buyers on 6000.0–6000.5 as
-  unsupported. Do not open the dev project in 6000.0.53f1: it is a 6000.6 project, and the downgrade rewrites its files.
-- **Upload project:** a new project on 6000.0.53f1.
+- **Editor: 2022.3.62f3**, the minimum of `package.json` and of the `ci.yml` matrix. The portal records the Editor
+  version of every uploaded package. An upload from the dev project (6000.6) can list buyers on older supported versions as
+  unsupported. Do not open the dev project in 2022.3.62f3: it is a 6000.6 project, and the downgrade rewrites its files.
+- **Upload project:** a new project on 2022.3.62f3.
   1. Check out the head of `chore/release-<version>` in a worktree, run `node scripts/package-changelog.mjs v<version>`
      there, and copy `Aspid.FastTools/Packages/tech.aspid.fasttools` into `Packages/tech.aspid.fasttools` of the
      upload project. With the hold above, it is the content that the Release workflow later publishes to
@@ -178,8 +178,7 @@ fixed.
   `ProfilerMarkerExtensionsForGenerator` stays: the generator finds that type by name. Put it into the submission
   notes and name that type.
 - **Uploader:** the **UPM Packages** tab, **Upload** on `tech.aspid.fasttools`.
-- **Portal, package metadata:** the compatible Unity versions (every `6000.x` from 6000.0 that the `ci.yml` matrix
-  covers), the release notes (the version's CHANGELOG section) and the package information.
+- **Portal, package metadata:** the compatible Unity versions (2022.3 and each Unity 6 line covered by `ci.yml`), the release notes (the version's CHANGELOG section) and the package information.
 - **Submit** with **Manually publish**. Unity reviews in about five business days.
 - **Rejected:** close the release PR without a merge. The fixes go to `main` in ordinary PRs, then "Phase 1" runs
   again: its notes are still under `[Unreleased]` on `main`. Keep the version if the portal takes a new upload of it,
@@ -191,7 +190,7 @@ fixed.
   in the `## [<version>] — <date>` heading of both CHANGELOGs becomes the publication day. That date is the one
   expected difference between `upm/<version>` and the uploaded package, whose `CHANGELOG.md` keeps the upload day.
   The user merges the PR, and "Phase 2" tags it.
-- **Check the install:** in a clean 6000.0.53f1 project, **My Assets → Aspid.FastTools → Install**. The package lands
+- **Check the install:** in a clean 2022.3.62f3 project, **My Assets → Aspid.FastTools → Install**. The package lands
   in the **Packages** list (not in `Assets/`), its **Samples** tab imports the samples, and the Test Runner lists no
   FastTools tests.
 

@@ -79,7 +79,9 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
     internal class DrawnCollectionInspectorAttribute : UnityEngine.PropertyAttribute
     {
+#if UNITY_6000_0_OR_NEWER
         public DrawnCollectionInspectorAttribute() : base(applyToCollection: true) { }
+#endif
     }
 
     internal sealed class DrawnDerivedCollectionInspectorAttribute : DrawnCollectionInspectorAttribute { }
@@ -106,22 +108,30 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
     internal sealed class ChildrenDrawnBaseEffectDrawer : PropertyDrawer { }
 
     // Unity uses a drawer marked with [SupportedOnRenderPipeline] only under that pipeline, never in the Built-in one.
+#if UNITY_6000_0_OR_NEWER
     [SupportedOnRenderPipeline(typeof(DrawnPipelineAsset))]
+#endif
     [CustomPropertyDrawer(typeof(PipelineDrawnEffect))]
     internal sealed class PipelineDrawnEffectDrawer : PropertyDrawer { }
 
+#if UNITY_6000_0_OR_NEWER
     [SupportedOnRenderPipeline(typeof(RenderPipelineAsset))]
+#endif
     [CustomPropertyDrawer(typeof(AnyPipelineDrawnEffect))]
     internal sealed class AnyPipelineDrawnEffectDrawer : PropertyDrawer { }
 
+#if UNITY_6000_0_OR_NEWER
     [SupportedOnRenderPipeline(typeof(DrawnPipelineAsset))]
+#endif
     [CustomPropertyDrawer(typeof(MixedPipelineDrawnEffect))]
     internal sealed class MixedPipelineDrawnEffectDrawer : PropertyDrawer { }
 
     [CustomPropertyDrawer(typeof(MixedPipelineDrawnEffect))]
     internal sealed class MixedPipelineDrawnEffectFallbackDrawer : PropertyDrawer { }
 
+#if UNITY_6000_0_OR_NEWER
     [SupportedOnRenderPipeline(typeof(DrawnPipelineAsset))]
+#endif
     [CustomPropertyDrawer(typeof(DrawnPipelineInspectorAttribute))]
     internal sealed class DrawnPipelineInspectorAttributeDrawer : PropertyDrawer { }
 
@@ -129,7 +139,9 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
     {
         [SerializeReference] public object single;
         [SerializeReference] public DrawnDerivedEffect baseDrawn;
+#if UNITY_6000_0_OR_NEWER
         [SerializeReference] public DrawnGenericEffect<int> genericDrawn;
+#endif
         [SerializeReference] public IDrawnChildEffect interfaceDrawn;
         [SerializeReference] public UndrawnEffect undrawn;
         [SerializeReference, DrawnDerivedInspector] public object attributed;
@@ -198,6 +210,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
                 "Without useForChildren a base-attribute drawer does not apply to a plain field.");
         }
 
+#if UNITY_6000_0_OR_NEWER
         [TestCase(typeof(PipelineDrawnEffect), null, false)]
         [TestCase(typeof(PipelineDrawnEffect), typeof(OtherPipelineAsset), false)]
         [TestCase(typeof(PipelineDrawnEffect), typeof(DrawnPipelineAsset), true)]
@@ -215,6 +228,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
             Assert.IsFalse(CustomDrawerRegistry.DeclaresDrawnAttribute(field, isManagedReference: true));
         }
+#endif
 
         [Test]
         public void DeclaresDrawnAttribute_ListAttribute_BelongsToTheListOrToItsElements()
@@ -224,17 +238,29 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
             Assert.IsFalse(CustomDrawerRegistry.DeclaresDrawnAttribute(perElement, isManagedReference: true, isCollection: true));
             Assert.IsTrue(CustomDrawerRegistry.DeclaresDrawnAttribute(perElement, isManagedReference: true, isArrayElement: true));
+#if UNITY_6000_0_OR_NEWER
             Assert.IsTrue(CustomDrawerRegistry.DeclaresDrawnAttribute(perList, isManagedReference: true, isCollection: true));
             Assert.IsFalse(CustomDrawerRegistry.DeclaresDrawnAttribute(perList, isManagedReference: true, isArrayElement: true));
+#else
+            Assert.IsFalse(CustomDrawerRegistry.DeclaresDrawnAttribute(perList, isManagedReference: true, isCollection: true));
+            Assert.IsTrue(CustomDrawerRegistry.DeclaresDrawnAttribute(perList, isManagedReference: true, isArrayElement: true));
+#endif
         }
 
         [TestCase(nameof(DrawnNestingHost.baseDrawn), false)]
+#if UNITY_6000_0_OR_NEWER
         [TestCase(nameof(DrawnNestingHost.genericDrawn), false)]
+#endif
         [TestCase(nameof(DrawnNestingHost.interfaceDrawn), false)]
         [TestCase(nameof(DrawnNestingHost.attributed), false)]
         [TestCase(nameof(DrawnNestingHost.undrawn), true)]
+#if UNITY_6000_0_OR_NEWER
         [TestCase(nameof(DrawnNestingHost.pipelineDrawn), true)]
         [TestCase(nameof(DrawnNestingHost.pipelineAttributed), true)]
+#else
+        [TestCase(nameof(DrawnNestingHost.pipelineDrawn), false)]
+        [TestCase(nameof(DrawnNestingHost.pipelineAttributed), false)]
+#endif
         public void DrawsOwnHeader_FollowsTheDrawerOfTheDeclaredType(string fieldName, bool expected)
         {
             using var serializedObject = new SerializedObject(_host);
@@ -245,7 +271,9 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
         // Unity would draw these with the stored type's drawer, which has no type picker to change or clear it.
         [TestCase(typeof(DrawnDerivedEffect))]
+#if UNITY_6000_0_OR_NEWER
         [TestCase(typeof(DrawnGenericEffect<int>))]
+#endif
         [TestCase(typeof(DrawnInterfaceEffect))]
         public void DrawsOwnHeader_KeepsThePickerWhenOnlyTheStoredTypeHasADrawer(Type instanceType)
         {
@@ -287,6 +315,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
             Assert.IsFalse(SerializeReferenceNesting.DrawsOwnHeader(list.GetArrayElementAtIndex(0), depth: 0));
         }
 
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void DrawsOwnHeader_ListWithACollectionAttribute_GoesToItsDrawerAndDrawsItsElements()
         {
@@ -299,6 +328,7 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
                 "The attribute applies to the collection, so Unity hands the list to its drawer.");
             Assert.IsTrue(SerializeReferenceNesting.DrawsOwnHeader(list.GetArrayElementAtIndex(0), depth: 0));
         }
+#endif
 
         // Unity reads the managed-reference flag of the list itself, which is false, so a drawer registered for the base
         // attribute without useForChildren does not reach a list with a derived collection attribute.
@@ -322,16 +352,25 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
             using var serializedObject = new SerializedObject(_host);
             var selectorList = serializedObject.FindProperty(nameof(DrawnNestingHost.selectorList));
 
+#if UNITY_6000_0_7F1_OR_NEWER
             Assert.IsFalse(SerializeReferenceNesting.DrawsOwnHeader(selectorList, depth: 0),
                 "[TypeSelector] applies to the collection, so Unity hands the list to the attribute's drawer.");
             Assert.IsTrue(SerializeReferenceNesting.DrawsOwnHeader(selectorList.GetArrayElementAtIndex(0), depth: 0),
                 "Unity no longer hands [TypeSelector] to an element, so the list draws it with the picker, ahead of the " +
                 "element type's drawer.");
+#else
+            Assert.IsTrue(SerializeReferenceNesting.DrawsOwnHeader(selectorList, depth: 0));
+            Assert.IsFalse(SerializeReferenceNesting.DrawsOwnHeader(selectorList.GetArrayElementAtIndex(0), depth: 0));
+#endif
         }
 
         [TestCase(nameof(DrawnNestingHost.drawnList), typeof(PropertyField))]
         [TestCase(nameof(DrawnNestingHost.undrawnList), typeof(SerializeReferenceField))]
+#if UNITY_6000_0_7F1_OR_NEWER
         [TestCase(nameof(DrawnNestingHost.selectorList), typeof(SerializeReferenceField))]
+#else
+        [TestCase(nameof(DrawnNestingHost.selectorList), typeof(PropertyField))]
+#endif
         public void ListField_BindItem_HandsOverTheSameElementsAsTheIMGUIList(string listName, Type expectedField)
         {
             _host.drawnList.Add(new DrawnDerivedEffect());

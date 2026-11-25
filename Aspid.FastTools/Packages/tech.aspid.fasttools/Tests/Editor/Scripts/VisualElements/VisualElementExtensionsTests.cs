@@ -19,7 +19,6 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         public void Setters_ReturnElementAndSetProperties()
         {
             var userData = new object();
-            var dataSource = new object();
             var source = new VisualElement();
 
             VisualElement element = source
@@ -27,13 +26,9 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
                 .SetVisible(false)
                 .SetTooltip("Hint")
                 .SetUserData(userData)
-                .SetDataSource(dataSource)
                 .SetViewDataKey("key")
-                .SetDataSourceType(typeof(string))
                 .SetUsageHints(UsageHints.DynamicTransform)
                 .SetPickingMode(PickingMode.Ignore)
-                .SetDisablePlayModeTint(true)
-                .SetDataSourcePath(new PropertyPath("a.b"))
                 .SetLanguageDirection(LanguageDirection.RTL);
 
             Assert.AreSame(source, element);
@@ -41,14 +36,26 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.IsFalse(element.visible);
             Assert.AreEqual("Hint", element.tooltip);
             Assert.AreSame(userData, element.userData);
-            Assert.AreSame(dataSource, element.dataSource);
             Assert.AreEqual("key", element.viewDataKey);
-            Assert.AreEqual(typeof(string), element.dataSourceType);
             Assert.AreEqual(UsageHints.DynamicTransform, element.usageHints);
             Assert.AreEqual(PickingMode.Ignore, element.pickingMode);
-            Assert.IsTrue(element.disablePlayModeTint);
-            Assert.AreEqual(new PropertyPath("a.b"), element.dataSourcePath);
             Assert.AreEqual(LanguageDirection.RTL, element.languageDirection);
+
+#if UNITY_6000_0_OR_NEWER
+            var dataSource = new object();
+            var dataSourcePath = new PropertyPath("a.b");
+
+            Assert.AreSame(element, element
+                .SetDataSource(dataSource)
+                .SetDataSourceType(typeof(string))
+                .SetDataSourcePath(dataSourcePath));
+            Assert.AreSame(dataSource, element.dataSource);
+            Assert.AreEqual(typeof(string), element.dataSourceType);
+            Assert.AreEqual(dataSourcePath, element.dataSourcePath);
+
+            Assert.AreSame(element, element.SetDisablePlayModeTint(value: true));
+            Assert.IsTrue(element.disablePlayModeTint);
+#endif
         }
 
         [Test]

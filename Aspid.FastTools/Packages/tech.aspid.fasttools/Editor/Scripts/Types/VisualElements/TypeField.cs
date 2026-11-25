@@ -24,7 +24,9 @@ namespace Aspid.FastTools.Types.Editors
     /// </para>
     /// <para>Not designed for inheritance outside the package.</para>
     /// </remarks>
+#if UNITY_6000_0_OR_NEWER
     [UxmlElement]
+#endif
     public partial class TypeField : BaseField<Type>
     {
         private const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeField";
@@ -53,7 +55,9 @@ namespace Aspid.FastTools.Types.Editors
         /// <see cref="TypeAllow.None"/> by default, so only concrete types are offered, unlike
         /// <see cref="TypeSelectorAttribute.Allow"/>, which defaults to <see cref="TypeAllow.All"/>.
         /// </remarks>
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public TypeAllow Allow { get; set; } = TypeAllow.None;
 
         /// <summary>
@@ -79,7 +83,9 @@ namespace Aspid.FastTools.Types.Editors
         /// Gets or sets a value indicating whether the <c>&lt;None&gt;</c> row is left out, for a field whose value
         /// must never be cleared.
         /// </summary>
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public bool HideNoneOption { get; set; }
 
         /// <summary>
@@ -87,7 +93,9 @@ namespace Aspid.FastTools.Types.Editors
         /// player build must resolve.
         /// </summary>
         /// <remarks>A bound field turns it on when its property belongs to an object of a runtime assembly.</remarks>
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public bool ExcludeEditorOnlyTypes { get; set; }
 
         /// <summary>
@@ -259,7 +267,9 @@ namespace Aspid.FastTools.Types.Editors
         /// changed.
         /// </summary>
         /// <remarks>The open-in-script-editor button stays active.</remarks>
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public bool IsReadOnly
         {
             get => _isReadOnly;
@@ -454,9 +464,9 @@ namespace Aspid.FastTools.Types.Editors
             {
                 _sourceSerializedObject.Update();
             }
-            catch (NullReferenceException)
+            catch (Exception exception) when (exception is NullReferenceException or ArgumentNullException)
             {
-                // The caller disposed it: a disposed SerializedObject throws on access, and nothing reads it anymore.
+                // Unity 2022 and Unity 6 throw different exceptions after the caller disposes the SerializedObject.
             }
         }
 

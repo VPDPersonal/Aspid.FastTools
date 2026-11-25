@@ -89,6 +89,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             Assert.AreSame(clickable, button.clickable);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [Test]
         public void Button_SetIconImage_SetsBackground()
         {
@@ -98,6 +99,7 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             Assert.AreSame(texture, button.iconImage.texture);
         }
+#endif
 
         // A submit event is what Enter and the gamepad button send, and Button turns it into a click.
         private static void Click(Button button)
@@ -121,12 +123,17 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         {
             var source = new Foldout();
 
-            Foldout foldout = source.SetText("Section").SetToggleOnLabelClick(false);
+            Foldout foldout = source.SetText("Section");
+#if UNITY_6000_0_OR_NEWER
+            foldout.SetToggleOnLabelClick(false);
+#endif
 
             Assert.AreSame(source, foldout);
             Assert.AreEqual("Section", foldout.text);
+#if UNITY_6000_0_OR_NEWER
             Assert.IsFalse(foldout.toggleOnLabelClick);
             Assert.IsTrue(foldout.SetToggleOnLabelClick(true).toggleOnLabelClick);
+#endif
         }
 
         [Test]
@@ -146,13 +153,18 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         {
             var source = new Toggle();
 
-            Toggle toggle = source.SetText("Enabled").SetLabel("Option").SetToggleOnLabelClick(false);
+            Toggle toggle = source.SetText("Enabled").SetLabel("Option");
+#if UNITY_6000_0_OR_NEWER
+            toggle.SetToggleOnLabelClick(false);
+#endif
 
             Assert.AreSame(source, toggle);
             Assert.AreEqual("Enabled", toggle.text);
             Assert.AreEqual("Option", toggle.label);
+#if UNITY_6000_0_OR_NEWER
             Assert.IsFalse(toggle.toggleOnLabelClick);
             Assert.IsTrue(toggle.SetToggleOnLabelClick(true).toggleOnLabelClick);
+#endif
         }
 
         [Test]
@@ -178,13 +190,17 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
 
             Label label = source
                 .SetEnableRichText(false)
+#if UNITY_6000_0_OR_NEWER
                 .SetEmojiFallbackSupport(false)
+#endif
                 .SetParseEscapeSequences(true)
                 .SetDisplayTooltipWhenElided(false);
 
             Assert.AreSame(source, label);
             Assert.IsFalse(label.enableRichText);
+#if UNITY_6000_0_OR_NEWER
             Assert.IsFalse(label.emojiFallbackSupport);
+#endif
             Assert.IsTrue(label.parseEscapeSequences);
             Assert.IsFalse(label.displayTooltipWhenElided);
         }

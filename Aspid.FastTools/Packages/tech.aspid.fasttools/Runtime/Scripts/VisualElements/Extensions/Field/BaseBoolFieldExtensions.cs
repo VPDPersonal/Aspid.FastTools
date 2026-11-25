@@ -36,6 +36,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseBoolField.toggleOnLabelClick"/>.
         /// </summary>
@@ -49,5 +50,6 @@ namespace Aspid.FastTools.UIElements
             element.toggleOnLabelClick = value;
             return element;
         }
+#endif
     }
 }

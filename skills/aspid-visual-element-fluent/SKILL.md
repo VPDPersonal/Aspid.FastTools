@@ -139,7 +139,8 @@ Editor (`Aspid.FastTools.UIElements.Editors`): `BindTo(serializedObject[, path])
   has overloads without type arguments.
 - `RegisterCallbackSelf` infers its type arguments only from a callback with a typed parameter, such as
   `(ClickEvent evt) => ...`. For a method group or an untyped lambda name both: `RegisterCallbackSelf<Button, ClickEvent>(OnClick)`.
-- The package supports Unity 6000.0.53f1. Wrap these in `#if UNITY_6000_x_OR_NEWER` when the project must support older
-  versions: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
+- The package supports Unity 2022.3.62f3. Guard Fluent methods backed by Unity 6-only APIs with
+  `#if UNITY_6000_0_OR_NEWER`, including tabs, data binding, placeholder setters, and list drag-and-drop callbacks.
+  Use a version guard for later APIs too: `SetUnityTextAutoSize` (6000.2); `SetAspectRatio`, `SetFilter`, `SetUnityMaterial`,
   `Add/RemoveOnCursorIndexChange`, `Add/RemoveOnSelectIndexChange` (6000.3); `SetHideSoftKeyboard`, `GUID` values and
   `GUIDField` setters (6000.4); the `SetTextSelf` overloads for numbers, spans, builders and arrays (6000.6).

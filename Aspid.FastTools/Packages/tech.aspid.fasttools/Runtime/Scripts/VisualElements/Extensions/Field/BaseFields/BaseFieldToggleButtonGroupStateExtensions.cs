@@ -1,3 +1,4 @@
+#if UNITY_6000_0_OR_NEWER
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -23,3 +24,4 @@ namespace Aspid.FastTools.UIElements
         }
     }
 }
+#endif

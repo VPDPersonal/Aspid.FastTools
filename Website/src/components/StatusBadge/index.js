@@ -54,7 +54,8 @@ export default function StatusBadge({kind, label, href}) {
     : kind === 'license' ? label.replace(/ License$/, '') : label;
   const content = <>{ICONS[kind]}<span>{text}</span></>;
   const className = clsx('readme-status-badge', styles.badge, styles[kind]);
+  const tabAttributes = href?.startsWith('#') ? {} : {target: '_blank', rel: 'noopener noreferrer'};
   return href
-    ? <a className={className} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>{content}</a>
+    ? <a className={className} href={href} {...tabAttributes} aria-label={label}>{content}</a>
     : <span className={className} aria-label={label}>{content}</span>;
 }

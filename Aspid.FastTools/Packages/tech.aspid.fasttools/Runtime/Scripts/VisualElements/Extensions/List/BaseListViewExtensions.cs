@@ -10,6 +10,7 @@ namespace Aspid.FastTools.UIElements
     /// </summary>
     public static class BaseListViewExtensions
     {
+#if UNITY_6000_0_OR_NEWER
         #region OnAdd
         /// <summary>
         /// Sets <see cref="BaseListView.onAdd"/>, replacing any existing callback.
@@ -98,66 +99,6 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region ItemsAdded
-        /// <summary>
-        /// Subscribes to the <see cref="BaseListView.itemsAdded"/> event.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddItemsAdded<T>(this T element, Action<IEnumerable<int>> value)
-            where T : BaseListView
-        {
-            element.itemsAdded += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseListView.itemsAdded"/> event.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveItemsAdded<T>(this T element, Action<IEnumerable<int>> value)
-            where T : BaseListView
-        {
-            element.itemsAdded -= value;
-            return element;
-        }
-        #endregion
-
-        #region ItemsRemoved
-        /// <summary>
-        /// Subscribes to the <see cref="BaseListView.itemsRemoved"/> event.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddItemsRemoved<T>(this T element, Action<IEnumerable<int>> value)
-            where T : BaseListView
-        {
-            element.itemsRemoved += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseListView.itemsRemoved"/> event.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveItemsRemoved<T>(this T element, Action<IEnumerable<int>> value)
-            where T : BaseListView
-        {
-            element.itemsRemoved -= value;
-            return element;
-        }
-        #endregion
-
         #region OverridingAddButtonBehavior
         /// <summary>
         /// Sets <see cref="BaseListView.overridingAddButtonBehavior"/>, replacing any existing callback.
@@ -229,6 +170,67 @@ namespace Aspid.FastTools.UIElements
             element.allowAdd = value;
             return element;
         }
+#endif
+
+        #region ItemsAdded
+        /// <summary>
+        /// Subscribes to the <see cref="BaseListView.itemsAdded"/> event.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddItemsAdded<T>(this T element, Action<IEnumerable<int>> value)
+            where T : BaseListView
+        {
+            element.itemsAdded += value;
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the <see cref="BaseListView.itemsAdded"/> event.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveItemsAdded<T>(this T element, Action<IEnumerable<int>> value)
+            where T : BaseListView
+        {
+            element.itemsAdded -= value;
+            return element;
+        }
+        #endregion
+
+        #region ItemsRemoved
+        /// <summary>
+        /// Subscribes to the <see cref="BaseListView.itemsRemoved"/> event.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddItemsRemoved<T>(this T element, Action<IEnumerable<int>> value)
+            where T : BaseListView
+        {
+            element.itemsRemoved += value;
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the <see cref="BaseListView.itemsRemoved"/> event.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveItemsRemoved<T>(this T element, Action<IEnumerable<int>> value)
+            where T : BaseListView
+        {
+            element.itemsRemoved -= value;
+            return element;
+        }
+        #endregion
 
         /// <summary>
         /// Sets <see cref="BaseListView.headerTitle"/>.
@@ -300,6 +302,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseListView.bindingSourceSelectionMode"/>.
         /// </summary>
@@ -355,5 +358,6 @@ namespace Aspid.FastTools.UIElements
             element.makeNoneElement = value;
             return element;
         }
+#endif
     }
 }

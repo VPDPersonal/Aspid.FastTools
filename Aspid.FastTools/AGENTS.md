@@ -4,8 +4,8 @@ The dev project; the package is in `Packages/tech.aspid.fasttools/`.
 
 ## Never
 
-- Use Unity APIs newer than **6000.0.53f1** without a `#if UNITY_6000_x_OR_NEWER` guard. An API from a later 6000.0
-  patch needs a higher `unityRelease` instead.
+- Use Unity APIs newer than **2022.3.62f3** without a version guard. Use a Unity version define in the asmdef
+  for APIs introduced in a patch. Test the fallback on the minimum and the newer path on Unity 6.
 - Commit `com.unity.upm-publishing-tools` to `Packages/manifest.json`.
 - Use `UnityEngine.Input` in the dev project: it uses only the Input System.
 

@@ -267,6 +267,10 @@ Provides extension methods for [`ScrollView`](https://docs.unity3d.com/6000.6/Do
 
 Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1.html).
 
+ [SliderFloatExtensions](Aspid.FastTools.UIElements.SliderFloatExtensions.md)
+
+Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Single`](https://learn.microsoft.com/dotnet/api/system.single).
+
  [SliderIntExtensions](Aspid.FastTools.UIElements.SliderIntExtensions.md)
 
 Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/UIElements.BaseSlider_1.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).

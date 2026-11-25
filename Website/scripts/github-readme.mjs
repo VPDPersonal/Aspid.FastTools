@@ -223,7 +223,7 @@ function donationButtons(tree) {
  * @param options.exists whether a URL relative to the README names a file
  */
 export function githubLayout(tree, options) {
-  // The site's chips describe its documented version; GitHub images follow the published channel automatically.
+  // The site's chips describe its documented version. The shared release badges follow the published channel.
   function sharedBadges(node) {
     if (node.type === 'link') {
       const badge = node.children?.find((child) => child.type === 'image'

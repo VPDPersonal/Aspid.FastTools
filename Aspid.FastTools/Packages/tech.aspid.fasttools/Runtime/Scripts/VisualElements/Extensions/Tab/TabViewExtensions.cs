@@ -1,3 +1,4 @@
+#if UNITY_6000_0_OR_NEWER
 using System;
 using UnityEngine.UIElements;
 
@@ -39,6 +40,7 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
+#if UNITY_6000_0_38F1_OR_NEWER
         #region TabReordered
         /// <summary>
         /// Subscribes to the <see cref="TabView.tabReordered"/> event.
@@ -98,6 +100,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
+#endif
 
         /// <summary>
         /// Sets <see cref="TabView.activeTab"/>.
@@ -148,3 +151,4 @@ namespace Aspid.FastTools.UIElements
         }
     }
 }
+#endif

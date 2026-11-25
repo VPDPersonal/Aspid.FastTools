@@ -6,7 +6,11 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if UNITY_6000_0_53F1_OR_NEWER
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
     internal sealed partial class AspidAnimatedDotsBackground : VisualElement
     {
         // The field drifts slowly, so 20 frames per second look smooth.
@@ -39,49 +43,63 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly IVisualElementScheduledItem _animation;
         private bool _dotsVisible = true;
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public StatusStyle.Type Status
         {
             get => _status.Value;
             set => _status.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Color Color1
         {
             get => _colors.Color1;
             set => _colors.SetColor1(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Color Color2
         {
             get => _colors.Color2;
             set => _colors.SetColor2(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Color Color3
         {
             get => _colors.Color3;
             set => _colors.SetColor3(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float DotRadius
         {
             get => _size.DotRadius;
             set => _size.SetDotRadius(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float DotSpacing
         {
             get => _size.DotSpacing;
             set => _size.SetDotSpacing(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float ScaleReferenceSize
         {
             get => _size.ScaleReference;

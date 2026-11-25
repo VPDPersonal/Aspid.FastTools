@@ -42,8 +42,8 @@ case "$NEW" in
   *) BRANCH=upm SKILLS=skills LABEL=Release EN='latest release' RU='последнюю версию' ;;
 esac
 export NEW BRANCH SKILLS LABEL EN RU
-case "$BRANCH" in upm) BADGE_KIND=release UNITY_CHANNEL= ;; *) BADGE_KIND=preview UNITY_CHANNEL=preview/ ;; esac
-export BADGE_KIND UNITY_CHANNEL
+case "$BRANCH" in upm) BADGE_KIND=release ;; *) BADGE_KIND=preview ;; esac
+export BADGE_KIND
 # Only the "version" line: a dependency can be at the same number.
 OLD=$OLD perl -pi -e 's/^(  "version": ")\Q$ENV{OLD}\E(",)$/$1$ENV{NEW}$2/' "$PKG/package.json"
 # Each file replaces the version its own badge carries, whole: 1.0.0 does not rewrite 1.0.0-rc.8 or 11.0.0.
@@ -53,7 +53,6 @@ for f in "$DOCS/README.md" "$RU_DOCS/README.md"; do
   perl -0pi -e 'my ($old) = /\[!\[(?:Preview|Release) ([^\]]+)\]/; '"$WHOLE"';
     s/\[!\[(?:Preview|Release) /[![$ENV{LABEL} /g;
     s{(vpdpersonal\.github\.io/VPDPersonal/badges/aspid-fasttools/)status-badge-(?:release|preview)\.svg}{$1status-badge-$ENV{BADGE_KIND}.svg}g;
-    s{(vpdpersonal\.github\.io/VPDPersonal/badges/aspid-fasttools/)(?:preview/)?status-badge-unity\.svg}{$1$ENV{UNITY_CHANNEL}status-badge-unity.svg}g;
     s/\.git#upm(?:-preview)?\b/.git#$ENV{BRANCH}/g;
     s/the latest (?:preview|release);/the $ENV{EN};/;
     s/на последнюю (?:preview-)?версию;/на $ENV{RU};/' "$f"
@@ -62,7 +61,7 @@ done
 for f in "$DOCS/13-agent-skills.md" "$RU_DOCS/13-agent-skills.md"; do
   perl -pi -e 's/Aspid\.FastTools#skills(?:-preview)?\b/Aspid.FastTools#$ENV{SKILLS}/g' "$f"
 done
-# Shared SVGs are refreshed from published releases by VPDPersonal's badge workflow.
+# VPDPersonal's badge workflow refreshes the shared version badge from published releases.
 # Analyzer release tracking: the unshipped rules ship with a stable version. Its release headers accept only
 # System.Version numbers (RS2007), so pre-releases keep them unshipped. A version that already has its header is
 # never given a second one.

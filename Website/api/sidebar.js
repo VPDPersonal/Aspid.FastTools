@@ -596,6 +596,11 @@ export default { api: [
           },
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.SliderFloatExtensions",
+            "label": "SliderFloatExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.SliderIntExtensions",
             "label": "SliderIntExtensions"
           },

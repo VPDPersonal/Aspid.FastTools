@@ -23,11 +23,6 @@ public static class SliderIntExtensions
 [SliderIntExtensions](Aspid.FastTools.UIElements.SliderIntExtensions.md)
 
 
-## Remarks
-
-Kept apart from [`SliderExtensions`](Aspid.FastTools.UIElements.SliderExtensions.md): overloads that differ only by the constraint on the element type
-cannot share one class.
-
 ## Methods
 
 ### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderIntExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}

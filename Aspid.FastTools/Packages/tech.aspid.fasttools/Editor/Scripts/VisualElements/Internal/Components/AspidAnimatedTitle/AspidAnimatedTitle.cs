@@ -7,7 +7,11 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if UNITY_6000_0_53F1_OR_NEWER
     [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement(nameof(AspidAnimatedTitle))]
+#endif
     internal sealed partial class AspidAnimatedTitle : VisualElement
     {
         private const long TickMs = 33;
@@ -30,7 +34,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private double _lastTick = EditorApplication.timeSinceStartup;
         private readonly IVisualElementScheduledItem _animation;
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public string Text
         {
             get => _text;
@@ -44,56 +50,72 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             }
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float ColorStride
         {
             get => _colorAnimation.Stride;
             set => _colorAnimation.SetStride(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float ColorSpeed
         {
             get => _colorAnimation.Speed;
             set => _colorAnimation.SetSpeed(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float WaveStride
         {
             get => _waveAnimation.Stride;
             set => _waveAnimation.SetStride(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float WaveSpeed
         {
             get => _waveAnimation.Speed;
             set => _waveAnimation.SetSpeed(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float WaveAmplitude
         {
             get => _waveAnimation.Amplitude;
             set => _waveAnimation.SetAmplitude(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Color Color1
         {
             get => _colors.Color1;
             set => _colors.SetColor1(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Color Color2
         {
             get => _colors.Color2;
             set => _colors.SetColor2(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Color Color3
         {
             get => _colors.Color3;

@@ -97,8 +97,10 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
 
                 StringAssert.Contains("NestedTypeHolder/IEffect", effect.managedReferenceFieldTypename);
                 Assert.AreEqual(typeof(NestedTypeHolder.IEffect), SerializeReferenceHelpers.GetFieldType(effect));
+#if UNITY_6000_0_OR_NEWER
                 Assert.AreEqual(typeof(ITestGenericEffect<NestedTypeHolder.Impl>),
                     SerializeReferenceHelpers.GetFieldType(serialized.FindProperty(nameof(NestedFieldTypeObject.generic))));
+#endif
                 Assert.AreEqual(typeof(NestedTypeHolder.IEffect),
                     SerializeReferenceHelpers.GetFieldType(serialized.FindProperty("effects.Array.data[0]")));
             }

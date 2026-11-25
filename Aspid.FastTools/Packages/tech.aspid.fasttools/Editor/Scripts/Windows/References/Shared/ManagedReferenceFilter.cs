@@ -13,15 +13,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static TypeSelectorFilter For(Type[] constraints, bool includeHidden = false)
         {
             var baseType = constraints is { Length: > 0 } ? constraints[0] : typeof(object);
+#if UNITY_6000_0_OR_NEWER
             var narrowTypes = constraints is { Length: > 1 } ? constraints[1..] : null;
+#endif
 
             return new TypeSelectorFilter
             {
                 Types = constraints is { Length: > 0 } ? constraints : new[] { baseType },
                 Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
+#if UNITY_6000_0_OR_NEWER
                 AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType, narrowTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                 ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                 InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
+#endif
                 IncludeHidden = includeHidden,
             };
         }

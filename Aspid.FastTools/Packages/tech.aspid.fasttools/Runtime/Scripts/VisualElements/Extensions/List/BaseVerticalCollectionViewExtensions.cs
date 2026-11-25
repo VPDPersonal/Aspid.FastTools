@@ -41,36 +41,6 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region CanStartDrag
-        /// <summary>
-        /// Subscribes to the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
-            where T : BaseVerticalCollectionView
-        {
-            element.canStartDrag += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
-        /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
-            where T : BaseVerticalCollectionView
-        {
-            element.canStartDrag -= value;
-            return element;
-        }
-        #endregion
-
         #region SelectionChanged
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.selectionChanged"/> event.
@@ -127,6 +97,37 @@ namespace Aspid.FastTools.UIElements
             where T : BaseVerticalCollectionView
         {
             element.itemIndexChanged -= value;
+            return element;
+        }
+        #endregion
+
+#if UNITY_6000_0_OR_NEWER
+        #region CanStartDrag
+        /// <summary>
+        /// Subscribes to the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
+            where T : BaseVerticalCollectionView
+        {
+            element.canStartDrag += value;
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveCanStartDrag<T>(this T element, Func<CanStartDragArgs, bool> value)
+            where T : BaseVerticalCollectionView
+        {
+            element.canStartDrag -= value;
             return element;
         }
         #endregion
@@ -220,6 +221,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
+#endif
 
         #region ItemsSourceChanged
         /// <summary>
