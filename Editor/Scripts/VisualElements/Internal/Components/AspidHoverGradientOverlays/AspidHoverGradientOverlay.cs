@@ -4,7 +4,11 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if UNITY_6000_0_53F1_OR_NEWER
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
     internal sealed partial class AspidHoverGradientOverlay : VisualElement
     {
         private const long TickMs = 16;
@@ -25,28 +29,36 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private float _targetProgress;
         private readonly IVisualElementScheduledItem _animation;
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public Color Color
         {
             get => _color.Value;
             set => _color.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public int Steps
         {
             get => _metrics.Steps;
             set => _metrics.SetSteps(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float LerpRate
         {
             get => _metrics.LerpRate;
             set => _metrics.SetLerpRate(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public float AlphaScale
         {
             get => _metrics.AlphaScale;

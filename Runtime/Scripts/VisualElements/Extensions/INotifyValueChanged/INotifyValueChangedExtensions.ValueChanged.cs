@@ -1256,6 +1256,7 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
+#if UNITY_6000_0_OR_NEWER
         #region ToggleButtonGroupState
         /// <summary>
         /// Subscribes to the value-changed event of the element.
@@ -1291,6 +1292,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
+#endif
 
         #region UnityEngine.Object
         /// <summary>

@@ -84,6 +84,7 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="ITextEdition.placeholder"/> of <see cref="TextInputBaseField{TValueType}.textEdition"/>.
         /// </summary>
@@ -113,6 +114,7 @@ namespace Aspid.FastTools.UIElements
             element.textEdition.hidePlaceholderOnFocus = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="TextInputBaseField{TValueType}.autoCorrection"/>.

@@ -10,7 +10,9 @@ namespace Aspid.FastTools.Types.Editors
     /// <summary>
     /// <see cref="TypeField"/> pre-styled as an Inspector property row, so its label aligns with sibling fields.
     /// </summary>
+#if UNITY_6000_0_OR_NEWER
     [UxmlElement]
+#endif
     public sealed partial class InspectorTypeField : TypeField
     {
         /// <summary>

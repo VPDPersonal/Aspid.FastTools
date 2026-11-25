@@ -769,8 +769,6 @@ Aspid.FastTools.UIElements.ScrollViewExtensions
 
 Aspid.FastTools.UIElements.SliderExtensions
     public static class SliderExtensions
-    public static T SetDirection<T>(this T element, UnityEngine.UIElements.SliderDirection value) where T : UnityEngine.UIElements.BaseSlider<float>
-    public static T SetFill<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
     public static T SetHighValue<T, TValue>(this T element, TValue value) where T : UnityEngine.UIElements.BaseSlider<TValue> where TValue : System.IComparable<TValue>
     public static T SetHighValue<T>(this T element, byte value) where T : UnityEngine.UIElements.BaseSlider<byte>
     public static T SetHighValue<T>(this T element, double value) where T : UnityEngine.UIElements.BaseSlider<double>
@@ -782,7 +780,6 @@ Aspid.FastTools.UIElements.SliderExtensions
     public static T SetHighValue<T>(this T element, uint value) where T : UnityEngine.UIElements.BaseSlider<uint>
     public static T SetHighValue<T>(this T element, ulong value) where T : UnityEngine.UIElements.BaseSlider<ulong>
     public static T SetHighValue<T>(this T element, ushort value) where T : UnityEngine.UIElements.BaseSlider<ushort>
-    public static T SetInverted<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
     public static T SetLowValue<T, TValue>(this T element, TValue value) where T : UnityEngine.UIElements.BaseSlider<TValue> where TValue : System.IComparable<TValue>
     public static T SetLowValue<T>(this T element, byte value) where T : UnityEngine.UIElements.BaseSlider<byte>
     public static T SetLowValue<T>(this T element, double value) where T : UnityEngine.UIElements.BaseSlider<double>
@@ -794,6 +791,12 @@ Aspid.FastTools.UIElements.SliderExtensions
     public static T SetLowValue<T>(this T element, uint value) where T : UnityEngine.UIElements.BaseSlider<uint>
     public static T SetLowValue<T>(this T element, ulong value) where T : UnityEngine.UIElements.BaseSlider<ulong>
     public static T SetLowValue<T>(this T element, ushort value) where T : UnityEngine.UIElements.BaseSlider<ushort>
+
+Aspid.FastTools.UIElements.SliderFloatExtensions
+    public static class SliderFloatExtensions
+    public static T SetDirection<T>(this T element, UnityEngine.UIElements.SliderDirection value) where T : UnityEngine.UIElements.BaseSlider<float>
+    public static T SetFill<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
+    public static T SetInverted<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
     public static T SetPageSize<T>(this T element, float value) where T : UnityEngine.UIElements.BaseSlider<float>
     public static T SetShowInputField<T>(this T element, bool value) where T : UnityEngine.UIElements.BaseSlider<float>
 

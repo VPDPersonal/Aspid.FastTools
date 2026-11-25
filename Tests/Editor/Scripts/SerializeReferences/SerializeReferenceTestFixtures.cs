@@ -33,7 +33,9 @@ namespace Aspid.FastTools.Tests.Editors.SerializeReferences
     internal sealed class NestedFieldTypeObject : ScriptableObject
     {
         [SerializeReference] public NestedTypeHolder.IEffect effect;
+#if UNITY_6000_0_OR_NEWER
         [SerializeReference] public ITestGenericEffect<NestedTypeHolder.Impl> generic;
+#endif
         [SerializeReference] public NestedTypeHolder.IEffect[] effects = { null };
     }
 

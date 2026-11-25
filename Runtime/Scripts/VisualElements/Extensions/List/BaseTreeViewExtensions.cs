@@ -11,6 +11,7 @@ namespace Aspid.FastTools.UIElements
     public static class BaseTreeViewExtensions
     {
         #region ItemExpandedChanged
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="BaseTreeView.itemExpandedChanged"/> event.
         /// </summary>
@@ -38,6 +39,7 @@ namespace Aspid.FastTools.UIElements
             element.itemExpandedChanged -= value;
             return element;
         }
+#endif
         #endregion
 
         /// <summary>

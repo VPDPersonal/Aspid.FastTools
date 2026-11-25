@@ -62,8 +62,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var serializedObject = property.serializedObject;
             var targets = serializedObject.targetObjects;
             var arrayPath = property.propertyPath;
-            listView.overridingAddButtonBehavior = (_, button) =>
-                SerializeReferenceListAddBehavior.OpenAppendPicker(targets, arrayPath, elementType, _baseTypes, button);
+            SerializeReferenceListAddBehavior.InstallAddPicker(listView, openPicker: button =>
+                SerializeReferenceListAddBehavior.OpenAppendPicker(targets, arrayPath, elementType, _baseTypes, button));
 
             this.AddChild(listView);
 

@@ -687,6 +687,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Managed-reference candidates do not require IsSerializable here; by-value generic arguments are checked separately.
         public static bool IsAssignableManagedReference(Type type) =>
             type is { IsClass: true, IsAbstract: false, ContainsGenericParameters: false } &&
+#if !UNITY_6000_0_OR_NEWER
+            !type.IsGenericType &&
+#endif
             type != typeof(string) &&
             !typeof(Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type);
@@ -705,10 +708,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             Types = new[] { fieldType },
             Predicate = BuildAssignableFilter(baseTypes),
+#if UNITY_6000_0_OR_NEWER
             AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
             ArgumentFilter = IsValidGenericArgument,
             InferredArgumentFilter = IsAcceptableGenericArgument,
             GenericDefinitionFilter = IsValidGenericArgumentDefinition,
+#endif
             NarrowingTypes = baseTypes,
             ExcludeEditorOnly = excludeEditorOnly,
         };
@@ -1783,7 +1788,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (obj == null) continue;
-                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var fileId)) continue;
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out long fileId)) continue;
 
                 visited.Clear();
 

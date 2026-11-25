@@ -22,6 +22,12 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "Unity",
+            "expression": "6000.0.7f1",
+            "define": "UNITY_6000_0_7F1_OR_NEWER"
+        }
+    ],
     "noEngineReferences": false
 }

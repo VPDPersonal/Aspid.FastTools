@@ -16,7 +16,9 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
             var source = new Slider();
 
             Slider slider = source
+#if UNITY_6000_0_OR_NEWER
                 .SetFill(true)
+#endif
                 .SetInverted(true)
                 .SetPageSize(5f)
                 .SetShowInputField(true)
@@ -25,7 +27,9 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
                 .SetHighValue(10f);
 
             Assert.AreSame(source, slider);
+#if UNITY_6000_0_OR_NEWER
             Assert.IsTrue(slider.fill);
+#endif
             Assert.IsTrue(slider.inverted);
             Assert.AreEqual(5f, slider.pageSize);
             Assert.IsTrue(slider.showInputField);
@@ -35,12 +39,34 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
         }
 
         [Test]
+        public void FloatSetters_CanBeCalledDirectlyOnSliderFloatExtensions()
+        {
+            var slider = new Slider();
+
+#if UNITY_6000_0_OR_NEWER
+            Assert.AreSame(slider, SliderFloatExtensions.SetFill(slider, value: true));
+            Assert.IsTrue(slider.fill);
+#endif
+            Assert.AreSame(slider, SliderFloatExtensions.SetInverted(slider, value: true));
+            Assert.AreSame(slider, SliderFloatExtensions.SetPageSize(slider, value: 5f));
+            Assert.AreSame(slider, SliderFloatExtensions.SetShowInputField(slider, value: true));
+            Assert.AreSame(slider, SliderFloatExtensions.SetDirection(slider, value: SliderDirection.Vertical));
+
+            Assert.IsTrue(slider.inverted);
+            Assert.AreEqual(5f, slider.pageSize);
+            Assert.IsTrue(slider.showInputField);
+            Assert.AreEqual(SliderDirection.Vertical, slider.direction);
+        }
+
+        [Test]
         public void Setters_ReturnSliderInt()
         {
             var source = new SliderInt();
 
             SliderInt slider = source
+#if UNITY_6000_0_OR_NEWER
                 .SetFill(true)
+#endif
                 .SetInverted(true)
                 .SetPageSize(5f)
                 .SetShowInputField(true)
@@ -49,7 +75,9 @@ namespace Aspid.FastTools.Tests.Editors.VisualElements
                 .SetHighValue(10);
 
             Assert.AreSame(source, slider);
+#if UNITY_6000_0_OR_NEWER
             Assert.IsTrue(slider.fill);
+#endif
             Assert.IsTrue(slider.inverted);
             Assert.AreEqual(5f, slider.pageSize);
             Assert.IsTrue(slider.showInputField);

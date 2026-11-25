@@ -61,7 +61,11 @@ namespace Aspid.FastTools.Editors
             var pipelineType = CurrentPipelineType();
             foreach (var attribute in field.GetCustomAttributes<PropertyAttribute>(inherit: true))
             {
+#if UNITY_6000_0_OR_NEWER
                 if (attribute.applyToCollection ? isArrayElement : isCollection) continue;
+#else
+                if (isCollection) continue;
+#endif
                 if (HasDrawerFor(attribute.GetType(), isManagedReference, pipelineType: pipelineType)) return true;
             }
 
@@ -101,7 +105,11 @@ namespace Aspid.FastTools.Editors
             {
                 if (!typeof(PropertyDrawer).IsAssignableFrom(drawer)) continue;
 
+#if UNITY_6000_0_OR_NEWER
                 var pipelines = drawer.GetCustomAttribute<SupportedOnRenderPipelineAttribute>(inherit: true)?.renderPipelineTypes;
+#else
+                Type[] pipelines = null;
+#endif
 
                 // Unity exposes no public drawer registry, and the attribute keeps its arguments in internal fields, so
                 // they are read from the attribute's constructor call. That data skips inherited attributes, hence the

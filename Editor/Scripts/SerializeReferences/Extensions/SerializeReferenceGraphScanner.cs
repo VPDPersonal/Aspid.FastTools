@@ -366,7 +366,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
                 {
                     if (obj == null) continue;
-                    if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var fileId)) continue;
+                    if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out long fileId)) continue;
 
                     map[fileId] = obj;
                 }

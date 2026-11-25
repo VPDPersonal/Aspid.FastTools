@@ -297,7 +297,11 @@ namespace Aspid.FastTools.Enums.Editors
         {
             if (_headerLabelStyle is null || _headerLabelStylePro != EditorGUIUtility.isProSkin)
             {
+#if UNITY_6000_0_OR_NEWER
                 _headerLabelStyle = new GUIStyle(EditorStyles.label) { clipping = TextClipping.Ellipsis };
+#else
+                _headerLabelStyle = new GUIStyle(EditorStyles.label) { clipping = TextClipping.Clip };
+#endif
                 _headerLabelStylePro = EditorGUIUtility.isProSkin;
             }
 

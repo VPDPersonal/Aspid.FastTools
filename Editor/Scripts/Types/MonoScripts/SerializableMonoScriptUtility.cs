@@ -47,7 +47,7 @@ namespace Aspid.FastTools.Types.Editors
             assemblyQualifiedName = wrapperProperty.FindPropertyRelative(SerializableTypeUtility.BackingFieldName)?.stringValue ?? string.Empty;
 
             var script = wrapperProperty.FindPropertyRelative(ScriptFieldName)?.objectReferenceValue as MonoScript;
-            if (script && script.GetClass() is { } declared) return declared;
+            if (script != null && script.GetClass() is { } declared) return declared;
 
             return TypeUtility.GetTypeOrNull(assemblyQualifiedName);
         }

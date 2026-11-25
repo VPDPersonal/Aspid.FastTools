@@ -3,7 +3,11 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
+#if UNITY_6000_0_53F1_OR_NEWER
     [UxmlElement(libraryPath = "Aspid/FastTools", visibility = LibraryVisibility.Hidden)]
+#elif UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
     internal sealed partial class AspidDividingLine : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidDividingLine";
@@ -13,28 +17,36 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly AspidDividingLineSizeStyle _size;
         private readonly AspidDividingLineDirectionStyle _direction;
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public ThemeStyle.Type Theme
         {
             get => _theme.Value;
             set => _theme.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public StatusStyle.Type Status
         {
             get => _status.Value;
             set => _status.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public AspidDividingLineSizeStyle.Type Size
         {
             get => _size.Value;
             set => _size.SetValue(value);
         }
 
+#if UNITY_6000_0_OR_NEWER
         [UxmlAttribute]
+#endif
         public AspidDividingLineDirectionStyle.Type Direction
         {
             get => _direction.Value;

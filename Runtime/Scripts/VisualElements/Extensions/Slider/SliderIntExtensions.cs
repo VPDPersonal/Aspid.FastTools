@@ -6,12 +6,9 @@ namespace Aspid.FastTools.UIElements
     /// <summary>
     /// Provides extension methods for <see cref="BaseSlider{TValueType}"/> of <see cref="int"/>.
     /// </summary>
-    /// <remarks>
-    /// Kept apart from <see cref="SliderExtensions"/>: overloads that differ only by the constraint on the element type
-    /// cannot share one class.
-    /// </remarks>
     public static class SliderIntExtensions
     {
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.fill"/> controlling whether the track is filled up to the current value.
         /// </summary>
@@ -25,6 +22,7 @@ namespace Aspid.FastTools.UIElements
             element.fill = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="BaseSlider{TValueType}.inverted"/> reversing the direction of the element.

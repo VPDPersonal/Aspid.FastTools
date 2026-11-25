@@ -147,6 +147,9 @@ namespace Aspid.FastTools.Tests.Editors.Types
             Assert.GreaterOrEqual(folder, 0, "The root must list the probes' namespace as a folder.");
 
             list.selectedIndex = folder;
+            list.Focus();
+            yield return null;
+
             SendKey(list, '\0', KeyCode.RightArrow);
             var crumbsInside = Crumbs(view).Count;
             Assert.Greater(crumbsInside, 1, "Sanity: the picker must be inside the folder.");

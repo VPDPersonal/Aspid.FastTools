@@ -9,6 +9,7 @@ namespace Aspid.FastTools.UIElements
     /// </summary>
     public static class MultiColumnListViewExtensions
     {
+#if UNITY_6000_0_OR_NEWER
         /// <summary>
         /// Sets <see cref="MultiColumnListView.sortingMode"/>.
         /// </summary>
@@ -22,6 +23,7 @@ namespace Aspid.FastTools.UIElements
             element.sortingMode = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Subscribes to the <see cref="MultiColumnListView.columnSortingChanged"/> event.
