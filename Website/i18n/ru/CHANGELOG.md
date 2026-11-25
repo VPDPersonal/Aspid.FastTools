@@ -9,6 +9,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-11-25
+
 ### Несовместимые изменения
 
 - Методы `SetDirection`, `SetFill`, `SetInverted`, `SetPageSize` и `SetShowInputField` для слайдеров с типом `float` перенесены из `SliderExtensions` в `SliderFloatExtensions`. В прямых статических вызовах замените имя класса, как в <code lang="csharp">SliderFloatExtensions.SetInverted(slider, true)</code>. Также можно вызвать <code lang="csharp">slider.SetInverted(true)</code>. Пересоберите сборки, скомпилированные со старыми методами. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
@@ -36,4 +38,5 @@
 - Окно FastTools (**Tools → Aspid 🐍 → FastTools**) с вкладками Welcome, Asset References, Project References и Settings и темы для окон FastTools.
 - Сэмплы для каждой функции и Agent Skills, которые учат агента писать код с FastTools.
 
+[1.1.0]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.1.0
 [1.0.0]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0

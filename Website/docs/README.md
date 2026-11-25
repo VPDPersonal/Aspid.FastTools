@@ -4,7 +4,7 @@
 </picture>
 
 [![Unity 2022.3.62f3+](Images/status-badge-unity.svg)](#installation)
-[![Release 1.0.0](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0)
+[![Release 1.1.0](https://vpdpersonal.github.io/VPDPersonal/badges/aspid-fasttools/status-badge-release.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.1.0)
 [![MIT License](https://vpdpersonal.github.io/VPDPersonal/badges/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
 Aspid.FastTools is a Unity package that takes the routine out of serialization, profiling and editor code.
