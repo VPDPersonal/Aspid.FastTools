@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for Unity 2022.3 LTS starting with 2022.3.62f3, including installation from a Git URL in Package Manager. On Unity 2022.3, the `[SerializeReference]` picker offers concrete non-generic classes, including subclasses of generic classes. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
 
+### Fixed
+
+- Keep the create button inside the Ability Catalog sidebar when searching. ([#579](https://github.com/VPDPersonal/Aspid.FastTools/pull/579))
+
 ## [1.0.0] — 2026-11-05
 
 First stable release. Unity **6000.0.53f1** or newer; every Inspector feature works in both IMGUI and UI Toolkit. The `1.0.0-rc.*` prereleases and their notes are on [GitHub Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases).
