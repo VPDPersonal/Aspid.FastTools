@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-11-26
+
 ### Breaking Changes
 
 - The float slider methods `SetDirection`, `SetFill`, `SetInverted`, `SetPageSize`, and `SetShowInputField` moved from `SliderExtensions` to `SliderFloatExtensions`. For direct static calls, replace the class name, as in <code lang="csharp">SliderFloatExtensions.SetInverted(slider, true)</code>. You can also call <code lang="csharp">slider.SetInverted(true)</code>. Rebuild any assemblies compiled against the old methods. ([#575](https://github.com/VPDPersonal/Aspid.FastTools/pull/575))
@@ -40,4 +42,5 @@ First stable release. Unity **6000.0.53f1** or newer; every Inspector feature wo
 - The FastTools window (**Tools → Aspid 🐍 → FastTools**) with the Welcome, Asset References, Project References and Settings tabs, and themes for the FastTools windows.
 - Samples for every feature, and Agent Skills that teach a coding agent to write code with FastTools.
 
+[1.1.0]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.1.0
 [1.0.0]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0
